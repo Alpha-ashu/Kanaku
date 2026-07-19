@@ -399,6 +399,45 @@ export const StatementImport: React.FC<StatementImportProps> = ({
  ))}
  </div>
 
+ {/* Statement metadata (server-side parser) */}
+ {importResult.statementMeta && (
+ <div data-testid="statement-import-meta" className="bg-white border border-gray-100 rounded-xl p-3 shadow-sm space-y-2">
+ <div className="flex items-center justify-between">
+ <div className="min-w-0">
+ <p className="text-xs font-black text-gray-900 truncate">
+ {importResult.statementMeta.bankName || 'Bank statement'}
+ {importResult.statementMeta.accountNumber ? ` · ${importResult.statementMeta.accountNumber}` : ''}
+ </p>
+ {importResult.statementMeta.period?.from && (
+ <p className="text-[10px] font-bold text-gray-400">
+ {importResult.statementMeta.period.from} → {importResult.statementMeta.period.to || '…'}
+ </p>
+ )}
+ </div>
+ {importResult.statementMeta.reconciled !== null && importResult.statementMeta.reconciled !== undefined && (
+ <span data-testid="statement-import-reconciled" className={`shrink-0 px-2 py-1 rounded-full text-[9px] font-black uppercase tracking-wide ${
+ importResult.statementMeta.reconciled ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'
+ }`}>
+ {importResult.statementMeta.reconciled ? '✓ Balances reconcile' : '✗ Does not reconcile'}
+ </span>
+ )}
+ </div>
+ {(importResult.statementMeta.openingBalance !== undefined || importResult.statementMeta.closingBalance !== undefined) && (
+ <div className="flex gap-4 text-[10px] font-bold text-gray-500">
+ {importResult.statementMeta.openingBalance !== undefined && (
+ <span>Opening: {formatCurrency(importResult.statementMeta.openingBalance)}</span>
+ )}
+ {importResult.statementMeta.closingBalance !== undefined && (
+ <span>Closing: {formatCurrency(importResult.statementMeta.closingBalance)}</span>
+ )}
+ {importResult.statementMeta.parser && (
+ <span className="ml-auto uppercase text-gray-300">{importResult.statementMeta.parser}</span>
+ )}
+ </div>
+ )}
+ </div>
+ )}
+
  {/* Warnings/Metadata */}
  <div className="flex flex-col gap-3">
  {importResult.errors.length > 0 && (

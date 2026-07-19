@@ -1,8 +1,11 @@
 import { Response } from 'express';
+import { createHash } from 'crypto';
 import { AuthRequest, getUserId } from '../../middleware/auth';
 import { logger } from '../../config/logger';
 import { categorizeTextForUser } from '../categorization/categorization.engine';
 import { getAIConfigurations } from '../../utils/aiConfig';
+import { audit } from '../../utils/auditLogger';
+import { extractStatementText, parseStatementText, type ParsedStatement } from './statement.parser';
 
 type JsonRow = Record<string, string>;
 
@@ -111,6 +114,9 @@ export interface ImportedTransaction {
   description: string;
   amount?: number;
   date: string;
+  /** debit = money out (expense), credit = money in (income). Absent for legacy CSV imports (treated as debit). */
+  type?: 'debit' | 'credit';
+  reference?: string;
   rawCategory?: string;
   suggestedCategory: string;
   suggestedSubcategory: string;
@@ -126,6 +132,8 @@ export interface ImportPreview {
   transactions: ImportedTransaction[];
   highConfidence: number;
   lowConfidence: number;
+  /** Present when the session came from POST /import/statement */
+  statement?: Omit<ParsedStatement, 'transactions'>;
 }
 
 // In-memory import sessions (replace with Redis/DB for production)
@@ -265,12 +273,122 @@ export const uploadImport = async (req: AuthRequest, res: Response) => {
   }
 };
 
+/**
+ * POST /import/statement — parse a bank statement (PDF or CSV/TXT export)
+ * into statement metadata + typed transaction rows, ready for review.
+ *
+ * PDF text layers are read directly; scanned PDFs go through page
+ * rasterisation + Tesseract. Structured extraction is LLM-first (Gemini →
+ * Groq → OpenRouter) with a deterministic heuristic parser as offline
+ * fallback. The result is stored as an import session so the same
+ * /import/confirm endpoint bulk-saves the reviewed selection.
+ */
+export const uploadStatement = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = getUserId(req);
+    const config = await getAIConfigurations();
+
+    if (!config.import.enabled) {
+      return res.status(400).json({ error: 'Statement import is currently disabled by administrator.' });
+    }
+
+    const file = req.file;
+    if (!file) {
+      return res.status(400).json({ error: 'Statement file is required (PDF, CSV, or TXT)' });
+    }
+
+    const ext = file.originalname.split('.').pop()?.toLowerCase() || '';
+    if (!['pdf', 'csv', 'txt', 'tsv'].includes(ext)) {
+      return res.status(400).json({ error: `Unsupported statement format .${ext}. Upload PDF, CSV, or TXT.` });
+    }
+
+    const { text, ocrUsed } = await extractStatementText(file.buffer, file.mimetype || '', file.originalname);
+    if (text.trim().length < 20) {
+      return res.status(422).json({ error: 'Could not read any text from this statement. If it is a scanned image, try a clearer copy.' });
+    }
+
+    const parsed = await parseStatementText(text);
+    if (parsed.transactions.length === 0) {
+      return res.status(422).json({
+        error: 'No transactions could be detected in this statement.',
+        statement: { ...parsed, transactions: undefined },
+      });
+    }
+
+    audit({
+      event: 'ai.statement_parse',
+      userId,
+      meta: { parser: parsed.parser, rows: parsed.transactions.length, reconciled: parsed.reconciled, ocrUsed },
+    });
+
+    // Categorise each row with the user's categorization engine
+    const transactions: ImportedTransaction[] = await Promise.all(
+      parsed.transactions.slice(0, 2000).map(async (row, idx) => {
+        let suggestedCategory = row.type === 'credit' ? 'Other Income' : 'Others';
+        let suggestedSubcategory = 'General';
+        let confidence = 0.4;
+        try {
+          const result = await categorizeTextForUser(userId, row.description);
+          suggestedCategory = result.category;
+          suggestedSubcategory = result.subcategory;
+          confidence = result.confidence;
+        } catch { /* use defaults */ }
+
+        return {
+          rowIndex: idx,
+          description: row.description,
+          amount: row.amount,
+          date: row.date,
+          type: row.type,
+          reference: row.reference,
+          suggestedCategory,
+          suggestedSubcategory,
+          confidence,
+          requiresReview: confidence < 0.7,
+          rawRow: {} as JsonRow,
+        };
+      }),
+    );
+
+    const { transactions: _rows, ...statementMeta } = parsed;
+    const sessionId = `stmt_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    const preview: ImportPreview = {
+      sessionId,
+      totalRows: transactions.length,
+      columnMap: {},
+      transactions,
+      highConfidence: transactions.filter((t) => t.confidence >= 0.7).length,
+      lowConfidence: transactions.filter((t) => t.confidence < 0.7).length,
+      statement: statementMeta,
+    };
+
+    importSessions.set(sessionId, preview);
+    setTimeout(() => importSessions.delete(sessionId), 30 * 60 * 1000);
+
+    return res.json(preview);
+  } catch (error: any) {
+    logger.error('Statement upload failed', { error: error.message, stack: error.stack });
+    return res.status(500).json({ error: 'Failed to parse statement. Please try again.' });
+  }
+};
+
+/**
+ * POST /import/confirm — bulk-save the reviewed selection into the ledger.
+ *
+ * The entire import commits in ONE database transaction: every selected row
+ * plus a single net balance adjustment on the target account, with the same
+ * no-overdraw invariant as the live transaction path. Rows already imported
+ * (same dedup hash) are skipped, so re-confirming a statement never
+ * double-books. Credit rows post as income, debit rows as expense.
+ */
 export const confirmImport = async (req: AuthRequest, res: Response) => {
   try {
     const userId = getUserId(req);
-    const { sessionId, overrides } = req.body as {
+    const { sessionId, accountId, selectedRows, overrides } = req.body as {
       sessionId: string;
-      overrides?: Record<number, { category?: string; subcategory?: string; amount?: number; description?: string }>;
+      accountId: string;
+      selectedRows?: number[];
+      overrides?: Record<number, { category?: string; subcategory?: string; amount?: number; description?: string; type?: 'debit' | 'credit' }>;
     };
 
     const session = importSessions.get(sessionId);
@@ -279,52 +397,139 @@ export const confirmImport = async (req: AuthRequest, res: Response) => {
     }
 
     const { prisma } = await import('../../db/prisma');
+    const { Prisma } = await import('../../db/prisma-client');
+    const { isOverdraw } = await import('../../utils/money');
 
-    let saved = 0;
-    const errors: number[] = [];
+    // Ownership check — the target account must belong to the caller
+    const account = await prisma.account.findFirst({
+      where: { id: accountId, userId, deletedAt: null, isActive: true },
+      select: { id: true, type: true, name: true },
+    });
+    if (!account) {
+      return res.status(404).json({ error: 'Target account not found. Select one of your active accounts.' });
+    }
 
-    for (const tx of session.transactions) {
+    const selection = selectedRows && selectedRows.length > 0
+      ? session.transactions.filter((t) => selectedRows.includes(t.rowIndex))
+      : session.transactions;
+
+    if (selection.length === 0) {
+      return res.status(400).json({ error: 'No rows selected for import' });
+    }
+    const MAX_BULK_ROWS = 1000;
+    if (selection.length > MAX_BULK_ROWS) {
+      return res.status(400).json({ error: `Too many rows selected (max ${MAX_BULK_ROWS} per import)` });
+    }
+
+    const dedupHashFor = (amount: number, date: Date, description: string) =>
+      createHash('sha256')
+        .update(`${userId}:${amount}:${date.toISOString().slice(0, 10)}:${description}`)
+        .digest('hex');
+
+    // Build the validated row set up-front so the DB transaction stays fast
+    const invalidRows: number[] = [];
+    const rows = selection.flatMap((tx) => {
       const override = overrides?.[tx.rowIndex];
-      const category = override?.category ?? tx.suggestedCategory;
-      const subcategory = override?.subcategory ?? tx.suggestedSubcategory;
       const amount = override?.amount ?? tx.amount;
-      const description = override?.description ?? tx.description;
-
-      if (!amount || amount <= 0) {
-        errors.push(tx.rowIndex);
-        continue;
+      const description = (override?.description ?? tx.description) || 'Imported transaction';
+      if (!amount || amount <= 0 || Number.isNaN(new Date(tx.date).getTime())) {
+        invalidRows.push(tx.rowIndex);
+        return [];
       }
+      const rowType = override?.type ?? tx.type ?? 'debit';
+      const date = new Date(tx.date);
+      return [{
+        rowIndex: tx.rowIndex,
+        amount: Number(amount.toFixed(2)),
+        description: description.slice(0, 300),
+        category: override?.category ?? tx.suggestedCategory,
+        subcategory: override?.subcategory ?? tx.suggestedSubcategory,
+        type: rowType === 'credit' ? 'income' : 'expense',
+        date,
+        dedupHash: dedupHashFor(Number(amount.toFixed(2)), date, description),
+      }];
+    });
 
-      try {
-        await (prisma as any).transaction.create({
+    if (rows.length === 0) {
+      return res.status(400).json({ error: 'All selected rows are invalid (missing amount or date)', failedRows: invalidRows });
+    }
+
+    const result = await prisma.$transaction(async (tx) => {
+      // Skip rows already imported (idempotent re-confirm)
+      const existing = await tx.transaction.findMany({
+        where: { dedupHash: { in: rows.map((r) => r.dedupHash) } },
+        select: { dedupHash: true },
+      });
+      const existingHashes = new Set(existing.map((e) => e.dedupHash));
+      const toInsert = rows.filter((r) => !existingHashes.has(r.dedupHash));
+      const duplicates = rows.length - toInsert.length;
+
+      let netDelta = new Prisma.Decimal(0);
+      for (const row of toInsert) {
+        await tx.transaction.create({
           data: {
             userId,
-            type: 'expense',
-            amount,
-            description: description || 'Imported transaction',
-            category,
-            subcategory,
-            date: new Date(tx.date),
-            merchant: description?.slice(0, 100) ?? '',
-            source: 'import',
+            accountId: account.id,
+            type: row.type,
+            amount: new Prisma.Decimal(row.amount),
+            category: row.category,
+            subcategory: row.subcategory,
+            description: row.description,
+            merchant: row.description.slice(0, 100),
+            date: row.date,
+            dedupHash: row.dedupHash,
+            synced: true,
+            syncStatus: 'synced',
           },
         });
-        saved++;
-      } catch (err: any) {
-        logger.warn('Failed to save imported transaction', { rowIndex: tx.rowIndex, error: err.message });
-        errors.push(tx.rowIndex);
+        netDelta = row.type === 'income' ? netDelta.plus(row.amount) : netDelta.minus(row.amount);
       }
-    }
+
+      // One net balance adjustment; the row lock serialises concurrent imports
+      if (!netDelta.isZero()) {
+        const updated = await tx.account.update({
+          where: { id: account.id },
+          data: { balance: { increment: netDelta } },
+          select: { balance: true },
+        });
+        if (isOverdraw(updated.balance, netDelta, account.type)) {
+          throw Object.assign(
+            new Error(`Import would overdraw '${account.name}' (balance would fall below zero). Deselect some debit rows or choose another account.`),
+            { code: 'IMPORT_OVERDRAW' },
+          );
+        }
+      }
+
+      return { saved: toInsert.length, duplicates, netDelta: netDelta.toNumber() };
+    }, { timeout: 60_000 });
 
     importSessions.delete(sessionId);
 
+    // Imported rows change balances/lists — evict this user's response caches
+    try {
+      const { cacheDeleteByUserId } = await import('../../cache/redis');
+      await cacheDeleteByUserId(userId);
+    } catch { /* cache eviction is best-effort */ }
+
+    audit({
+      event: 'data.create',
+      userId,
+      action: 'import.confirm',
+      meta: { sessionId, accountId: account.id, saved: result.saved, duplicates: result.duplicates, invalid: invalidRows.length },
+    });
+
     return res.json({
       success: true,
-      saved,
-      failed: errors.length,
-      failedRows: errors,
+      saved: result.saved,
+      duplicates: result.duplicates,
+      failed: invalidRows.length,
+      failedRows: invalidRows,
+      netBalanceChange: result.netDelta,
     });
   } catch (error: any) {
+    if (error?.code === 'IMPORT_OVERDRAW') {
+      return res.status(400).json({ error: error.message, code: 'IMPORT_OVERDRAW' });
+    }
     logger.error('Import confirm failed', { error: error.message });
     return res.status(500).json({ error: 'Failed to save imported transactions' });
   }

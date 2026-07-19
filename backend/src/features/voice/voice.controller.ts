@@ -1,15 +1,37 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { AuthRequest, getUserId } from '../../middleware/auth';
 import { prisma } from '../../db/prisma';
-import { processVoiceTranscript, FinancialAction } from './voice.nlp';
+import { processVoiceTranscript, detectLanguage } from './voice.nlp';
+import { recordCorrection } from './voice.learning';
+import { transcribeAudio, validateAudioUpload } from './voice.stt';
 import { logger } from '../../config/logger';
 import { getAIConfigurations } from '../../utils/aiConfig';
+import { audit } from '../../utils/auditLogger';
+
+/**
+ * Persist a processed transcript. Fail-safe: a missing table (migration not
+ * yet applied) or DB blip never breaks the user-facing response.
+ */
+const storeTranscript = async (userId: string, transcript: string, actionsCount: number) => {
+  try {
+    await prisma.voiceTranscript.create({
+      data: {
+        userId,
+        originalText: transcript,
+        cleanedText: transcript,
+        actionsCount,
+      },
+    });
+  } catch (err: any) {
+    logger.warn('Voice: transcript persistence failed (non-fatal)', { error: err.message });
+  }
+};
 
 export const processVoice = async (req: AuthRequest, res: Response) => {
   try {
     const userId = getUserId(req);
     const config = await getAIConfigurations();
-    
+
     if (!config.voice.enabled) {
       return res.status(400).json({ error: 'Voice processing is currently disabled by administrator' });
     }
@@ -24,24 +46,13 @@ export const processVoice = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ error: 'Transcript too long (max 5000 characters)' });
     }
 
-    const actions = await processVoiceTranscript(transcript);
-
-    // Store transcript in DB (fail-safe)
-    try {
-      await (prisma as any).voiceTranscript?.create?.({
-        data: {
-          userId,
-          originalText: transcript,
-          cleanedText: transcript,
-          actionsCount: actions.length,
-          processedAt: new Date(),
-        },
-      }).catch(() => {/* table may not exist yet */});
-    } catch { /* non-critical */ }
+    const actions = await processVoiceTranscript(transcript, userId);
+    await storeTranscript(userId, transcript, actions.length);
 
     return res.json({
       success: true,
       transcript,
+      language: detectLanguage(transcript),
       actions,
       totalActions: actions.length,
       requiresReview: actions.some(a => a.requiresReview),
@@ -66,21 +77,21 @@ export const learnFromCorrection = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ error: 'originalSegment is required' });
     }
 
-    // Store learning record (fail-safe)
     try {
-      await (prisma as any).userVoiceLearning?.create?.({
-        data: {
-          userId,
-          originalText: originalSegment,
-          correctedType: correctedType ?? null,
-          correctedCategory: correctedCategory ?? null,
-          correctedAmount: correctedAmount ?? null,
-          createdAt: new Date(),
-        },
-      }).catch(() => {});
-    } catch { /* non-critical */ }
+      await recordCorrection(userId, { originalSegment, correctedType, correctedCategory, correctedAmount });
+      audit({
+        event: 'ai.voice_correction',
+        userId,
+        meta: { correctedType: correctedType ?? null, correctedCategory: correctedCategory ?? null },
+      });
+    } catch (err: any) {
+      // Table missing / DB blip — acknowledge without failing the client flow,
+      // but say so honestly instead of pretending the correction was stored.
+      logger.warn('Voice: learning persistence failed', { error: err.message });
+      return res.json({ success: true, stored: false, message: 'Correction received but not persisted' });
+    }
 
-    return res.json({ success: true, message: 'Learning recorded' });
+    return res.json({ success: true, stored: true, message: 'Learning recorded' });
   } catch (error: any) {
     logger.error('Voice learning failed', { error: error.message });
     return res.status(500).json({ error: 'Failed to record correction' });
@@ -101,104 +112,48 @@ export const processVoiceAudio = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ error: 'Audio file is required' });
     }
 
-    let transcript = '';
+    const uploadError = validateAudioUpload(file);
+    if (uploadError) {
+      return res.status(400).json({ error: uploadError });
+    }
+
     const provider = config.voice.provider || 'gemini';
 
     if (provider === 'webkit') {
-      // Force client-side transcription fallback
+      // Administrator has pinned client-side transcription
       return res.json({
         success: false,
         error: 'Web Speech API (client-side) transcription configured by administrator.',
-        fallbackToWebSpeech: true
+        fallbackToWebSpeech: true,
       });
     }
 
-    // Google Gemini Audio Transcription
-    if (provider === 'gemini' && process.env.GOOGLE_API_KEY) {
-      try {
-        const { GoogleGenerativeAI } = await import('@google/generative-ai');
-        const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
-        const modelName = config.voice.model || 'gemini-2.5-flash';
-        const model = genAI.getGenerativeModel({ model: modelName });
+    const stt = await transcribeAudio(file, provider, config.voice.model || 'gemini-2.5-flash');
 
-        const result = await model.generateContent([
-          {
-            inlineData: {
-              data: file.buffer.toString('base64'),
-              mimeType: file.mimetype || 'audio/webm',
-            },
-          },
-          'Transcribe the following audio. Return only the transcription. Do not explain or add commentary.',
-        ]);
-
-        transcript = result.response.text().trim();
-      } catch (geminiErr: any) {
-        logger.error('Gemini transcription failed', { error: geminiErr.message });
-      }
-    }
-
-    // OpenAI Whisper Audio Transcription
-    if (!transcript && (provider === 'whisper' || !transcript) && process.env.OPENAI_API_KEY) {
-      try {
-        const OpenAIModule = (require as any)('openai');
-        const openai = new OpenAIModule({ apiKey: process.env.OPENAI_API_KEY });
-        
-        const tempFs = (require as any)('fs');
-        const tempPath = (require as any)('path');
-        const os = (require as any)('os');
-        
-        const tempFilePath = tempPath.join(os.tmpdir(), `voice-${Date.now()}.webm`);
-        tempFs.writeFileSync(tempFilePath, file.buffer);
-        
-        const response = await openai.audio.transcriptions.create({
-          file: tempFs.createReadStream(tempFilePath),
-          model: 'whisper-1',
-        });
-        
-        transcript = response.text;
-        
-        tempFs.unlinkSync(tempFilePath);
-      } catch (openaiErr: any) {
-        logger.error('OpenAI Whisper transcription failed', { error: openaiErr.message });
-      }
-    }
-
-    // If no transcription is available (e.g. no keys or failed), return flag for web speech fallback
-    if (!transcript) {
-      return res.status(503).json({ 
+    if (!stt) {
+      // No STT provider configured/reachable — client falls back to Web Speech API
+      return res.status(503).json({
         error: 'Backend speech-to-text API keys not configured or unavailable. Falling back to local Web Speech API.',
-        fallbackToWebSpeech: true
+        fallbackToWebSpeech: true,
       });
     }
 
-    // Now process the extracted transcript using the NLP pipeline
-    const actions = await processVoiceTranscript(transcript);
+    audit({ event: 'ai.voice_stt', userId, meta: { provider: stt.provider, chars: stt.transcript.length } });
 
-    // Store transcript in DB (fail-safe)
-    try {
-      await (prisma as any).voiceTranscript?.create?.({
-        data: {
-          userId,
-          originalText: transcript,
-          cleanedText: transcript,
-          actionsCount: actions.length,
-          processedAt: new Date(),
-        },
-      }).catch(() => {});
-    } catch { /* non-critical */ }
+    const actions = await processVoiceTranscript(stt.transcript, userId);
+    await storeTranscript(userId, stt.transcript, actions.length);
 
     return res.json({
       success: true,
-      transcript,
+      transcript: stt.transcript,
+      sttProvider: stt.provider,
+      language: stt.language ?? detectLanguage(stt.transcript),
       actions,
       totalActions: actions.length,
       requiresReview: actions.some(a => a.requiresReview),
     });
-
   } catch (error: any) {
     logger.error('Audio voice processing failed', { error: error.message });
     return res.status(500).json({ error: 'Failed to process voice audio. Please try again.' });
   }
 };
-
-

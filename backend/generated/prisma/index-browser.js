@@ -980,6 +980,28 @@ exports.Prisma.FinancialEventScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.VoiceTranscriptScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  memoId: 'memoId',
+  originalText: 'originalText',
+  cleanedText: 'cleanedText',
+  actionsCount: 'actionsCount',
+  processedAt: 'processedAt',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.UserVoiceLearningScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  originalText: 'originalText',
+  correctedType: 'correctedType',
+  correctedCategory: 'correctedCategory',
+  correctedAmount: 'correctedAmount',
+  appliedCount: 'appliedCount',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -1138,7 +1160,9 @@ exports.Prisma.ModelName = {
   DailyAccountBalance: 'DailyAccountBalance',
   MonthlyCategorySpend: 'MonthlyCategorySpend',
   MonthlyCashflow: 'MonthlyCashflow',
-  FinancialEvent: 'FinancialEvent'
+  FinancialEvent: 'FinancialEvent',
+  VoiceTranscript: 'VoiceTranscript',
+  UserVoiceLearning: 'UserVoiceLearning'
 };
 
 /**

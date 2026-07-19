@@ -278,6 +278,16 @@ export type MonthlyCashflow = $Result.DefaultSelection<Prisma.$MonthlyCashflowPa
  * 
  */
 export type FinancialEvent = $Result.DefaultSelection<Prisma.$FinancialEventPayload>
+/**
+ * Model VoiceTranscript
+ * 
+ */
+export type VoiceTranscript = $Result.DefaultSelection<Prisma.$VoiceTranscriptPayload>
+/**
+ * Model UserVoiceLearning
+ * 
+ */
+export type UserVoiceLearning = $Result.DefaultSelection<Prisma.$UserVoiceLearningPayload>
 
 /**
  * Enums
@@ -1056,6 +1066,26 @@ export class PrismaClient<
     * ```
     */
   get financialEvent(): Prisma.FinancialEventDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.voiceTranscript`: Exposes CRUD operations for the **VoiceTranscript** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more VoiceTranscripts
+    * const voiceTranscripts = await prisma.voiceTranscript.findMany()
+    * ```
+    */
+  get voiceTranscript(): Prisma.VoiceTranscriptDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.userVoiceLearning`: Exposes CRUD operations for the **UserVoiceLearning** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more UserVoiceLearnings
+    * const userVoiceLearnings = await prisma.userVoiceLearning.findMany()
+    * ```
+    */
+  get userVoiceLearning(): Prisma.UserVoiceLearningDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -1549,7 +1579,9 @@ export namespace Prisma {
     DailyAccountBalance: 'DailyAccountBalance',
     MonthlyCategorySpend: 'MonthlyCategorySpend',
     MonthlyCashflow: 'MonthlyCashflow',
-    FinancialEvent: 'FinancialEvent'
+    FinancialEvent: 'FinancialEvent',
+    VoiceTranscript: 'VoiceTranscript',
+    UserVoiceLearning: 'UserVoiceLearning'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1568,7 +1600,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "account" | "advisorApplication" | "advisorAvailability" | "advisorSession" | "bookingRequest" | "category" | "chatMessage" | "device" | "expenseBill" | "friend" | "goal" | "goalContribution" | "importLog" | "investment" | "loan" | "loanPayment" | "notification" | "payment" | "refreshToken" | "syncQueue" | "todo" | "transaction" | "user" | "userPin" | "userSettings" | "platformSettings" | "otpCode" | "aiScan" | "ai_events" | "ai_insights" | "ai_model_runs" | "auditLog" | "groupExpense" | "groupExpenseMember" | "collaborationParticipant" | "goalMember" | "user_features" | "profiles" | "otpRequest" | "aaConsent" | "aaConsentArtifact" | "aaDataSession" | "aaFinancialData" | "aaTransaction" | "recurringTransaction" | "budget" | "goldAsset" | "recurringExecution" | "journalEntry" | "dailyAccountBalance" | "monthlyCategorySpend" | "monthlyCashflow" | "financialEvent"
+      modelProps: "account" | "advisorApplication" | "advisorAvailability" | "advisorSession" | "bookingRequest" | "category" | "chatMessage" | "device" | "expenseBill" | "friend" | "goal" | "goalContribution" | "importLog" | "investment" | "loan" | "loanPayment" | "notification" | "payment" | "refreshToken" | "syncQueue" | "todo" | "transaction" | "user" | "userPin" | "userSettings" | "platformSettings" | "otpCode" | "aiScan" | "ai_events" | "ai_insights" | "ai_model_runs" | "auditLog" | "groupExpense" | "groupExpenseMember" | "collaborationParticipant" | "goalMember" | "user_features" | "profiles" | "otpRequest" | "aaConsent" | "aaConsentArtifact" | "aaDataSession" | "aaFinancialData" | "aaTransaction" | "recurringTransaction" | "budget" | "goldAsset" | "recurringExecution" | "journalEntry" | "dailyAccountBalance" | "monthlyCategorySpend" | "monthlyCashflow" | "financialEvent" | "voiceTranscript" | "userVoiceLearning"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -5494,6 +5526,154 @@ export namespace Prisma {
           }
         }
       }
+      VoiceTranscript: {
+        payload: Prisma.$VoiceTranscriptPayload<ExtArgs>
+        fields: Prisma.VoiceTranscriptFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.VoiceTranscriptFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VoiceTranscriptPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.VoiceTranscriptFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VoiceTranscriptPayload>
+          }
+          findFirst: {
+            args: Prisma.VoiceTranscriptFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VoiceTranscriptPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.VoiceTranscriptFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VoiceTranscriptPayload>
+          }
+          findMany: {
+            args: Prisma.VoiceTranscriptFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VoiceTranscriptPayload>[]
+          }
+          create: {
+            args: Prisma.VoiceTranscriptCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VoiceTranscriptPayload>
+          }
+          createMany: {
+            args: Prisma.VoiceTranscriptCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.VoiceTranscriptCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VoiceTranscriptPayload>[]
+          }
+          delete: {
+            args: Prisma.VoiceTranscriptDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VoiceTranscriptPayload>
+          }
+          update: {
+            args: Prisma.VoiceTranscriptUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VoiceTranscriptPayload>
+          }
+          deleteMany: {
+            args: Prisma.VoiceTranscriptDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.VoiceTranscriptUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.VoiceTranscriptUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VoiceTranscriptPayload>[]
+          }
+          upsert: {
+            args: Prisma.VoiceTranscriptUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VoiceTranscriptPayload>
+          }
+          aggregate: {
+            args: Prisma.VoiceTranscriptAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateVoiceTranscript>
+          }
+          groupBy: {
+            args: Prisma.VoiceTranscriptGroupByArgs<ExtArgs>
+            result: $Utils.Optional<VoiceTranscriptGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.VoiceTranscriptCountArgs<ExtArgs>
+            result: $Utils.Optional<VoiceTranscriptCountAggregateOutputType> | number
+          }
+        }
+      }
+      UserVoiceLearning: {
+        payload: Prisma.$UserVoiceLearningPayload<ExtArgs>
+        fields: Prisma.UserVoiceLearningFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.UserVoiceLearningFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserVoiceLearningPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.UserVoiceLearningFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserVoiceLearningPayload>
+          }
+          findFirst: {
+            args: Prisma.UserVoiceLearningFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserVoiceLearningPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.UserVoiceLearningFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserVoiceLearningPayload>
+          }
+          findMany: {
+            args: Prisma.UserVoiceLearningFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserVoiceLearningPayload>[]
+          }
+          create: {
+            args: Prisma.UserVoiceLearningCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserVoiceLearningPayload>
+          }
+          createMany: {
+            args: Prisma.UserVoiceLearningCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.UserVoiceLearningCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserVoiceLearningPayload>[]
+          }
+          delete: {
+            args: Prisma.UserVoiceLearningDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserVoiceLearningPayload>
+          }
+          update: {
+            args: Prisma.UserVoiceLearningUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserVoiceLearningPayload>
+          }
+          deleteMany: {
+            args: Prisma.UserVoiceLearningDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.UserVoiceLearningUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.UserVoiceLearningUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserVoiceLearningPayload>[]
+          }
+          upsert: {
+            args: Prisma.UserVoiceLearningUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserVoiceLearningPayload>
+          }
+          aggregate: {
+            args: Prisma.UserVoiceLearningAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateUserVoiceLearning>
+          }
+          groupBy: {
+            args: Prisma.UserVoiceLearningGroupByArgs<ExtArgs>
+            result: $Utils.Optional<UserVoiceLearningGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.UserVoiceLearningCountArgs<ExtArgs>
+            result: $Utils.Optional<UserVoiceLearningCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -5643,6 +5823,8 @@ export namespace Prisma {
     monthlyCategorySpend?: MonthlyCategorySpendOmit
     monthlyCashflow?: MonthlyCashflowOmit
     financialEvent?: FinancialEventOmit
+    voiceTranscript?: VoiceTranscriptOmit
+    userVoiceLearning?: UserVoiceLearningOmit
   }
 
   /* Types for Logging */
@@ -69871,6 +70053,2146 @@ export namespace Prisma {
 
 
   /**
+   * Model VoiceTranscript
+   */
+
+  export type AggregateVoiceTranscript = {
+    _count: VoiceTranscriptCountAggregateOutputType | null
+    _avg: VoiceTranscriptAvgAggregateOutputType | null
+    _sum: VoiceTranscriptSumAggregateOutputType | null
+    _min: VoiceTranscriptMinAggregateOutputType | null
+    _max: VoiceTranscriptMaxAggregateOutputType | null
+  }
+
+  export type VoiceTranscriptAvgAggregateOutputType = {
+    actionsCount: number | null
+  }
+
+  export type VoiceTranscriptSumAggregateOutputType = {
+    actionsCount: number | null
+  }
+
+  export type VoiceTranscriptMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    memoId: string | null
+    originalText: string | null
+    cleanedText: string | null
+    actionsCount: number | null
+    processedAt: Date | null
+    createdAt: Date | null
+  }
+
+  export type VoiceTranscriptMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    memoId: string | null
+    originalText: string | null
+    cleanedText: string | null
+    actionsCount: number | null
+    processedAt: Date | null
+    createdAt: Date | null
+  }
+
+  export type VoiceTranscriptCountAggregateOutputType = {
+    id: number
+    userId: number
+    memoId: number
+    originalText: number
+    cleanedText: number
+    actionsCount: number
+    processedAt: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type VoiceTranscriptAvgAggregateInputType = {
+    actionsCount?: true
+  }
+
+  export type VoiceTranscriptSumAggregateInputType = {
+    actionsCount?: true
+  }
+
+  export type VoiceTranscriptMinAggregateInputType = {
+    id?: true
+    userId?: true
+    memoId?: true
+    originalText?: true
+    cleanedText?: true
+    actionsCount?: true
+    processedAt?: true
+    createdAt?: true
+  }
+
+  export type VoiceTranscriptMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    memoId?: true
+    originalText?: true
+    cleanedText?: true
+    actionsCount?: true
+    processedAt?: true
+    createdAt?: true
+  }
+
+  export type VoiceTranscriptCountAggregateInputType = {
+    id?: true
+    userId?: true
+    memoId?: true
+    originalText?: true
+    cleanedText?: true
+    actionsCount?: true
+    processedAt?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type VoiceTranscriptAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which VoiceTranscript to aggregate.
+     */
+    where?: VoiceTranscriptWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of VoiceTranscripts to fetch.
+     */
+    orderBy?: VoiceTranscriptOrderByWithRelationInput | VoiceTranscriptOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: VoiceTranscriptWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` VoiceTranscripts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` VoiceTranscripts.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned VoiceTranscripts
+    **/
+    _count?: true | VoiceTranscriptCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: VoiceTranscriptAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: VoiceTranscriptSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: VoiceTranscriptMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: VoiceTranscriptMaxAggregateInputType
+  }
+
+  export type GetVoiceTranscriptAggregateType<T extends VoiceTranscriptAggregateArgs> = {
+        [P in keyof T & keyof AggregateVoiceTranscript]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateVoiceTranscript[P]>
+      : GetScalarType<T[P], AggregateVoiceTranscript[P]>
+  }
+
+
+
+
+  export type VoiceTranscriptGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: VoiceTranscriptWhereInput
+    orderBy?: VoiceTranscriptOrderByWithAggregationInput | VoiceTranscriptOrderByWithAggregationInput[]
+    by: VoiceTranscriptScalarFieldEnum[] | VoiceTranscriptScalarFieldEnum
+    having?: VoiceTranscriptScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: VoiceTranscriptCountAggregateInputType | true
+    _avg?: VoiceTranscriptAvgAggregateInputType
+    _sum?: VoiceTranscriptSumAggregateInputType
+    _min?: VoiceTranscriptMinAggregateInputType
+    _max?: VoiceTranscriptMaxAggregateInputType
+  }
+
+  export type VoiceTranscriptGroupByOutputType = {
+    id: string
+    userId: string
+    memoId: string | null
+    originalText: string
+    cleanedText: string | null
+    actionsCount: number
+    processedAt: Date
+    createdAt: Date
+    _count: VoiceTranscriptCountAggregateOutputType | null
+    _avg: VoiceTranscriptAvgAggregateOutputType | null
+    _sum: VoiceTranscriptSumAggregateOutputType | null
+    _min: VoiceTranscriptMinAggregateOutputType | null
+    _max: VoiceTranscriptMaxAggregateOutputType | null
+  }
+
+  type GetVoiceTranscriptGroupByPayload<T extends VoiceTranscriptGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<VoiceTranscriptGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof VoiceTranscriptGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], VoiceTranscriptGroupByOutputType[P]>
+            : GetScalarType<T[P], VoiceTranscriptGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type VoiceTranscriptSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    memoId?: boolean
+    originalText?: boolean
+    cleanedText?: boolean
+    actionsCount?: boolean
+    processedAt?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["voiceTranscript"]>
+
+  export type VoiceTranscriptSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    memoId?: boolean
+    originalText?: boolean
+    cleanedText?: boolean
+    actionsCount?: boolean
+    processedAt?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["voiceTranscript"]>
+
+  export type VoiceTranscriptSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    memoId?: boolean
+    originalText?: boolean
+    cleanedText?: boolean
+    actionsCount?: boolean
+    processedAt?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["voiceTranscript"]>
+
+  export type VoiceTranscriptSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    memoId?: boolean
+    originalText?: boolean
+    cleanedText?: boolean
+    actionsCount?: boolean
+    processedAt?: boolean
+    createdAt?: boolean
+  }
+
+  export type VoiceTranscriptOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "memoId" | "originalText" | "cleanedText" | "actionsCount" | "processedAt" | "createdAt", ExtArgs["result"]["voiceTranscript"]>
+
+  export type $VoiceTranscriptPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "VoiceTranscript"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      memoId: string | null
+      originalText: string
+      cleanedText: string | null
+      actionsCount: number
+      processedAt: Date
+      createdAt: Date
+    }, ExtArgs["result"]["voiceTranscript"]>
+    composites: {}
+  }
+
+  type VoiceTranscriptGetPayload<S extends boolean | null | undefined | VoiceTranscriptDefaultArgs> = $Result.GetResult<Prisma.$VoiceTranscriptPayload, S>
+
+  type VoiceTranscriptCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<VoiceTranscriptFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: VoiceTranscriptCountAggregateInputType | true
+    }
+
+  export interface VoiceTranscriptDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['VoiceTranscript'], meta: { name: 'VoiceTranscript' } }
+    /**
+     * Find zero or one VoiceTranscript that matches the filter.
+     * @param {VoiceTranscriptFindUniqueArgs} args - Arguments to find a VoiceTranscript
+     * @example
+     * // Get one VoiceTranscript
+     * const voiceTranscript = await prisma.voiceTranscript.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends VoiceTranscriptFindUniqueArgs>(args: SelectSubset<T, VoiceTranscriptFindUniqueArgs<ExtArgs>>): Prisma__VoiceTranscriptClient<$Result.GetResult<Prisma.$VoiceTranscriptPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one VoiceTranscript that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {VoiceTranscriptFindUniqueOrThrowArgs} args - Arguments to find a VoiceTranscript
+     * @example
+     * // Get one VoiceTranscript
+     * const voiceTranscript = await prisma.voiceTranscript.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends VoiceTranscriptFindUniqueOrThrowArgs>(args: SelectSubset<T, VoiceTranscriptFindUniqueOrThrowArgs<ExtArgs>>): Prisma__VoiceTranscriptClient<$Result.GetResult<Prisma.$VoiceTranscriptPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first VoiceTranscript that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VoiceTranscriptFindFirstArgs} args - Arguments to find a VoiceTranscript
+     * @example
+     * // Get one VoiceTranscript
+     * const voiceTranscript = await prisma.voiceTranscript.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends VoiceTranscriptFindFirstArgs>(args?: SelectSubset<T, VoiceTranscriptFindFirstArgs<ExtArgs>>): Prisma__VoiceTranscriptClient<$Result.GetResult<Prisma.$VoiceTranscriptPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first VoiceTranscript that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VoiceTranscriptFindFirstOrThrowArgs} args - Arguments to find a VoiceTranscript
+     * @example
+     * // Get one VoiceTranscript
+     * const voiceTranscript = await prisma.voiceTranscript.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends VoiceTranscriptFindFirstOrThrowArgs>(args?: SelectSubset<T, VoiceTranscriptFindFirstOrThrowArgs<ExtArgs>>): Prisma__VoiceTranscriptClient<$Result.GetResult<Prisma.$VoiceTranscriptPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more VoiceTranscripts that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VoiceTranscriptFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all VoiceTranscripts
+     * const voiceTranscripts = await prisma.voiceTranscript.findMany()
+     * 
+     * // Get first 10 VoiceTranscripts
+     * const voiceTranscripts = await prisma.voiceTranscript.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const voiceTranscriptWithIdOnly = await prisma.voiceTranscript.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends VoiceTranscriptFindManyArgs>(args?: SelectSubset<T, VoiceTranscriptFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VoiceTranscriptPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a VoiceTranscript.
+     * @param {VoiceTranscriptCreateArgs} args - Arguments to create a VoiceTranscript.
+     * @example
+     * // Create one VoiceTranscript
+     * const VoiceTranscript = await prisma.voiceTranscript.create({
+     *   data: {
+     *     // ... data to create a VoiceTranscript
+     *   }
+     * })
+     * 
+     */
+    create<T extends VoiceTranscriptCreateArgs>(args: SelectSubset<T, VoiceTranscriptCreateArgs<ExtArgs>>): Prisma__VoiceTranscriptClient<$Result.GetResult<Prisma.$VoiceTranscriptPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many VoiceTranscripts.
+     * @param {VoiceTranscriptCreateManyArgs} args - Arguments to create many VoiceTranscripts.
+     * @example
+     * // Create many VoiceTranscripts
+     * const voiceTranscript = await prisma.voiceTranscript.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends VoiceTranscriptCreateManyArgs>(args?: SelectSubset<T, VoiceTranscriptCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many VoiceTranscripts and returns the data saved in the database.
+     * @param {VoiceTranscriptCreateManyAndReturnArgs} args - Arguments to create many VoiceTranscripts.
+     * @example
+     * // Create many VoiceTranscripts
+     * const voiceTranscript = await prisma.voiceTranscript.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many VoiceTranscripts and only return the `id`
+     * const voiceTranscriptWithIdOnly = await prisma.voiceTranscript.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends VoiceTranscriptCreateManyAndReturnArgs>(args?: SelectSubset<T, VoiceTranscriptCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VoiceTranscriptPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a VoiceTranscript.
+     * @param {VoiceTranscriptDeleteArgs} args - Arguments to delete one VoiceTranscript.
+     * @example
+     * // Delete one VoiceTranscript
+     * const VoiceTranscript = await prisma.voiceTranscript.delete({
+     *   where: {
+     *     // ... filter to delete one VoiceTranscript
+     *   }
+     * })
+     * 
+     */
+    delete<T extends VoiceTranscriptDeleteArgs>(args: SelectSubset<T, VoiceTranscriptDeleteArgs<ExtArgs>>): Prisma__VoiceTranscriptClient<$Result.GetResult<Prisma.$VoiceTranscriptPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one VoiceTranscript.
+     * @param {VoiceTranscriptUpdateArgs} args - Arguments to update one VoiceTranscript.
+     * @example
+     * // Update one VoiceTranscript
+     * const voiceTranscript = await prisma.voiceTranscript.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends VoiceTranscriptUpdateArgs>(args: SelectSubset<T, VoiceTranscriptUpdateArgs<ExtArgs>>): Prisma__VoiceTranscriptClient<$Result.GetResult<Prisma.$VoiceTranscriptPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more VoiceTranscripts.
+     * @param {VoiceTranscriptDeleteManyArgs} args - Arguments to filter VoiceTranscripts to delete.
+     * @example
+     * // Delete a few VoiceTranscripts
+     * const { count } = await prisma.voiceTranscript.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends VoiceTranscriptDeleteManyArgs>(args?: SelectSubset<T, VoiceTranscriptDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more VoiceTranscripts.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VoiceTranscriptUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many VoiceTranscripts
+     * const voiceTranscript = await prisma.voiceTranscript.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends VoiceTranscriptUpdateManyArgs>(args: SelectSubset<T, VoiceTranscriptUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more VoiceTranscripts and returns the data updated in the database.
+     * @param {VoiceTranscriptUpdateManyAndReturnArgs} args - Arguments to update many VoiceTranscripts.
+     * @example
+     * // Update many VoiceTranscripts
+     * const voiceTranscript = await prisma.voiceTranscript.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more VoiceTranscripts and only return the `id`
+     * const voiceTranscriptWithIdOnly = await prisma.voiceTranscript.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends VoiceTranscriptUpdateManyAndReturnArgs>(args: SelectSubset<T, VoiceTranscriptUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VoiceTranscriptPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one VoiceTranscript.
+     * @param {VoiceTranscriptUpsertArgs} args - Arguments to update or create a VoiceTranscript.
+     * @example
+     * // Update or create a VoiceTranscript
+     * const voiceTranscript = await prisma.voiceTranscript.upsert({
+     *   create: {
+     *     // ... data to create a VoiceTranscript
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the VoiceTranscript we want to update
+     *   }
+     * })
+     */
+    upsert<T extends VoiceTranscriptUpsertArgs>(args: SelectSubset<T, VoiceTranscriptUpsertArgs<ExtArgs>>): Prisma__VoiceTranscriptClient<$Result.GetResult<Prisma.$VoiceTranscriptPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of VoiceTranscripts.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VoiceTranscriptCountArgs} args - Arguments to filter VoiceTranscripts to count.
+     * @example
+     * // Count the number of VoiceTranscripts
+     * const count = await prisma.voiceTranscript.count({
+     *   where: {
+     *     // ... the filter for the VoiceTranscripts we want to count
+     *   }
+     * })
+    **/
+    count<T extends VoiceTranscriptCountArgs>(
+      args?: Subset<T, VoiceTranscriptCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], VoiceTranscriptCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a VoiceTranscript.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VoiceTranscriptAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends VoiceTranscriptAggregateArgs>(args: Subset<T, VoiceTranscriptAggregateArgs>): Prisma.PrismaPromise<GetVoiceTranscriptAggregateType<T>>
+
+    /**
+     * Group by VoiceTranscript.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VoiceTranscriptGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends VoiceTranscriptGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: VoiceTranscriptGroupByArgs['orderBy'] }
+        : { orderBy?: VoiceTranscriptGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, VoiceTranscriptGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetVoiceTranscriptGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the VoiceTranscript model
+   */
+  readonly fields: VoiceTranscriptFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for VoiceTranscript.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__VoiceTranscriptClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the VoiceTranscript model
+   */
+  interface VoiceTranscriptFieldRefs {
+    readonly id: FieldRef<"VoiceTranscript", 'String'>
+    readonly userId: FieldRef<"VoiceTranscript", 'String'>
+    readonly memoId: FieldRef<"VoiceTranscript", 'String'>
+    readonly originalText: FieldRef<"VoiceTranscript", 'String'>
+    readonly cleanedText: FieldRef<"VoiceTranscript", 'String'>
+    readonly actionsCount: FieldRef<"VoiceTranscript", 'Int'>
+    readonly processedAt: FieldRef<"VoiceTranscript", 'DateTime'>
+    readonly createdAt: FieldRef<"VoiceTranscript", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * VoiceTranscript findUnique
+   */
+  export type VoiceTranscriptFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VoiceTranscript
+     */
+    select?: VoiceTranscriptSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VoiceTranscript
+     */
+    omit?: VoiceTranscriptOmit<ExtArgs> | null
+    /**
+     * Filter, which VoiceTranscript to fetch.
+     */
+    where: VoiceTranscriptWhereUniqueInput
+  }
+
+  /**
+   * VoiceTranscript findUniqueOrThrow
+   */
+  export type VoiceTranscriptFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VoiceTranscript
+     */
+    select?: VoiceTranscriptSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VoiceTranscript
+     */
+    omit?: VoiceTranscriptOmit<ExtArgs> | null
+    /**
+     * Filter, which VoiceTranscript to fetch.
+     */
+    where: VoiceTranscriptWhereUniqueInput
+  }
+
+  /**
+   * VoiceTranscript findFirst
+   */
+  export type VoiceTranscriptFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VoiceTranscript
+     */
+    select?: VoiceTranscriptSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VoiceTranscript
+     */
+    omit?: VoiceTranscriptOmit<ExtArgs> | null
+    /**
+     * Filter, which VoiceTranscript to fetch.
+     */
+    where?: VoiceTranscriptWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of VoiceTranscripts to fetch.
+     */
+    orderBy?: VoiceTranscriptOrderByWithRelationInput | VoiceTranscriptOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for VoiceTranscripts.
+     */
+    cursor?: VoiceTranscriptWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` VoiceTranscripts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` VoiceTranscripts.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of VoiceTranscripts.
+     */
+    distinct?: VoiceTranscriptScalarFieldEnum | VoiceTranscriptScalarFieldEnum[]
+  }
+
+  /**
+   * VoiceTranscript findFirstOrThrow
+   */
+  export type VoiceTranscriptFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VoiceTranscript
+     */
+    select?: VoiceTranscriptSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VoiceTranscript
+     */
+    omit?: VoiceTranscriptOmit<ExtArgs> | null
+    /**
+     * Filter, which VoiceTranscript to fetch.
+     */
+    where?: VoiceTranscriptWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of VoiceTranscripts to fetch.
+     */
+    orderBy?: VoiceTranscriptOrderByWithRelationInput | VoiceTranscriptOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for VoiceTranscripts.
+     */
+    cursor?: VoiceTranscriptWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` VoiceTranscripts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` VoiceTranscripts.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of VoiceTranscripts.
+     */
+    distinct?: VoiceTranscriptScalarFieldEnum | VoiceTranscriptScalarFieldEnum[]
+  }
+
+  /**
+   * VoiceTranscript findMany
+   */
+  export type VoiceTranscriptFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VoiceTranscript
+     */
+    select?: VoiceTranscriptSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VoiceTranscript
+     */
+    omit?: VoiceTranscriptOmit<ExtArgs> | null
+    /**
+     * Filter, which VoiceTranscripts to fetch.
+     */
+    where?: VoiceTranscriptWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of VoiceTranscripts to fetch.
+     */
+    orderBy?: VoiceTranscriptOrderByWithRelationInput | VoiceTranscriptOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing VoiceTranscripts.
+     */
+    cursor?: VoiceTranscriptWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` VoiceTranscripts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` VoiceTranscripts.
+     */
+    skip?: number
+    distinct?: VoiceTranscriptScalarFieldEnum | VoiceTranscriptScalarFieldEnum[]
+  }
+
+  /**
+   * VoiceTranscript create
+   */
+  export type VoiceTranscriptCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VoiceTranscript
+     */
+    select?: VoiceTranscriptSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VoiceTranscript
+     */
+    omit?: VoiceTranscriptOmit<ExtArgs> | null
+    /**
+     * The data needed to create a VoiceTranscript.
+     */
+    data: XOR<VoiceTranscriptCreateInput, VoiceTranscriptUncheckedCreateInput>
+  }
+
+  /**
+   * VoiceTranscript createMany
+   */
+  export type VoiceTranscriptCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many VoiceTranscripts.
+     */
+    data: VoiceTranscriptCreateManyInput | VoiceTranscriptCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * VoiceTranscript createManyAndReturn
+   */
+  export type VoiceTranscriptCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VoiceTranscript
+     */
+    select?: VoiceTranscriptSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the VoiceTranscript
+     */
+    omit?: VoiceTranscriptOmit<ExtArgs> | null
+    /**
+     * The data used to create many VoiceTranscripts.
+     */
+    data: VoiceTranscriptCreateManyInput | VoiceTranscriptCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * VoiceTranscript update
+   */
+  export type VoiceTranscriptUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VoiceTranscript
+     */
+    select?: VoiceTranscriptSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VoiceTranscript
+     */
+    omit?: VoiceTranscriptOmit<ExtArgs> | null
+    /**
+     * The data needed to update a VoiceTranscript.
+     */
+    data: XOR<VoiceTranscriptUpdateInput, VoiceTranscriptUncheckedUpdateInput>
+    /**
+     * Choose, which VoiceTranscript to update.
+     */
+    where: VoiceTranscriptWhereUniqueInput
+  }
+
+  /**
+   * VoiceTranscript updateMany
+   */
+  export type VoiceTranscriptUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update VoiceTranscripts.
+     */
+    data: XOR<VoiceTranscriptUpdateManyMutationInput, VoiceTranscriptUncheckedUpdateManyInput>
+    /**
+     * Filter which VoiceTranscripts to update
+     */
+    where?: VoiceTranscriptWhereInput
+    /**
+     * Limit how many VoiceTranscripts to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * VoiceTranscript updateManyAndReturn
+   */
+  export type VoiceTranscriptUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VoiceTranscript
+     */
+    select?: VoiceTranscriptSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the VoiceTranscript
+     */
+    omit?: VoiceTranscriptOmit<ExtArgs> | null
+    /**
+     * The data used to update VoiceTranscripts.
+     */
+    data: XOR<VoiceTranscriptUpdateManyMutationInput, VoiceTranscriptUncheckedUpdateManyInput>
+    /**
+     * Filter which VoiceTranscripts to update
+     */
+    where?: VoiceTranscriptWhereInput
+    /**
+     * Limit how many VoiceTranscripts to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * VoiceTranscript upsert
+   */
+  export type VoiceTranscriptUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VoiceTranscript
+     */
+    select?: VoiceTranscriptSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VoiceTranscript
+     */
+    omit?: VoiceTranscriptOmit<ExtArgs> | null
+    /**
+     * The filter to search for the VoiceTranscript to update in case it exists.
+     */
+    where: VoiceTranscriptWhereUniqueInput
+    /**
+     * In case the VoiceTranscript found by the `where` argument doesn't exist, create a new VoiceTranscript with this data.
+     */
+    create: XOR<VoiceTranscriptCreateInput, VoiceTranscriptUncheckedCreateInput>
+    /**
+     * In case the VoiceTranscript was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<VoiceTranscriptUpdateInput, VoiceTranscriptUncheckedUpdateInput>
+  }
+
+  /**
+   * VoiceTranscript delete
+   */
+  export type VoiceTranscriptDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VoiceTranscript
+     */
+    select?: VoiceTranscriptSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VoiceTranscript
+     */
+    omit?: VoiceTranscriptOmit<ExtArgs> | null
+    /**
+     * Filter which VoiceTranscript to delete.
+     */
+    where: VoiceTranscriptWhereUniqueInput
+  }
+
+  /**
+   * VoiceTranscript deleteMany
+   */
+  export type VoiceTranscriptDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which VoiceTranscripts to delete
+     */
+    where?: VoiceTranscriptWhereInput
+    /**
+     * Limit how many VoiceTranscripts to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * VoiceTranscript without action
+   */
+  export type VoiceTranscriptDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VoiceTranscript
+     */
+    select?: VoiceTranscriptSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VoiceTranscript
+     */
+    omit?: VoiceTranscriptOmit<ExtArgs> | null
+  }
+
+
+  /**
+   * Model UserVoiceLearning
+   */
+
+  export type AggregateUserVoiceLearning = {
+    _count: UserVoiceLearningCountAggregateOutputType | null
+    _avg: UserVoiceLearningAvgAggregateOutputType | null
+    _sum: UserVoiceLearningSumAggregateOutputType | null
+    _min: UserVoiceLearningMinAggregateOutputType | null
+    _max: UserVoiceLearningMaxAggregateOutputType | null
+  }
+
+  export type UserVoiceLearningAvgAggregateOutputType = {
+    correctedAmount: Decimal | null
+    appliedCount: number | null
+  }
+
+  export type UserVoiceLearningSumAggregateOutputType = {
+    correctedAmount: Decimal | null
+    appliedCount: number | null
+  }
+
+  export type UserVoiceLearningMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    originalText: string | null
+    correctedType: string | null
+    correctedCategory: string | null
+    correctedAmount: Decimal | null
+    appliedCount: number | null
+    createdAt: Date | null
+  }
+
+  export type UserVoiceLearningMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    originalText: string | null
+    correctedType: string | null
+    correctedCategory: string | null
+    correctedAmount: Decimal | null
+    appliedCount: number | null
+    createdAt: Date | null
+  }
+
+  export type UserVoiceLearningCountAggregateOutputType = {
+    id: number
+    userId: number
+    originalText: number
+    correctedType: number
+    correctedCategory: number
+    correctedAmount: number
+    appliedCount: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type UserVoiceLearningAvgAggregateInputType = {
+    correctedAmount?: true
+    appliedCount?: true
+  }
+
+  export type UserVoiceLearningSumAggregateInputType = {
+    correctedAmount?: true
+    appliedCount?: true
+  }
+
+  export type UserVoiceLearningMinAggregateInputType = {
+    id?: true
+    userId?: true
+    originalText?: true
+    correctedType?: true
+    correctedCategory?: true
+    correctedAmount?: true
+    appliedCount?: true
+    createdAt?: true
+  }
+
+  export type UserVoiceLearningMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    originalText?: true
+    correctedType?: true
+    correctedCategory?: true
+    correctedAmount?: true
+    appliedCount?: true
+    createdAt?: true
+  }
+
+  export type UserVoiceLearningCountAggregateInputType = {
+    id?: true
+    userId?: true
+    originalText?: true
+    correctedType?: true
+    correctedCategory?: true
+    correctedAmount?: true
+    appliedCount?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type UserVoiceLearningAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which UserVoiceLearning to aggregate.
+     */
+    where?: UserVoiceLearningWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserVoiceLearnings to fetch.
+     */
+    orderBy?: UserVoiceLearningOrderByWithRelationInput | UserVoiceLearningOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: UserVoiceLearningWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserVoiceLearnings from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserVoiceLearnings.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned UserVoiceLearnings
+    **/
+    _count?: true | UserVoiceLearningCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: UserVoiceLearningAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: UserVoiceLearningSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: UserVoiceLearningMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: UserVoiceLearningMaxAggregateInputType
+  }
+
+  export type GetUserVoiceLearningAggregateType<T extends UserVoiceLearningAggregateArgs> = {
+        [P in keyof T & keyof AggregateUserVoiceLearning]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateUserVoiceLearning[P]>
+      : GetScalarType<T[P], AggregateUserVoiceLearning[P]>
+  }
+
+
+
+
+  export type UserVoiceLearningGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: UserVoiceLearningWhereInput
+    orderBy?: UserVoiceLearningOrderByWithAggregationInput | UserVoiceLearningOrderByWithAggregationInput[]
+    by: UserVoiceLearningScalarFieldEnum[] | UserVoiceLearningScalarFieldEnum
+    having?: UserVoiceLearningScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: UserVoiceLearningCountAggregateInputType | true
+    _avg?: UserVoiceLearningAvgAggregateInputType
+    _sum?: UserVoiceLearningSumAggregateInputType
+    _min?: UserVoiceLearningMinAggregateInputType
+    _max?: UserVoiceLearningMaxAggregateInputType
+  }
+
+  export type UserVoiceLearningGroupByOutputType = {
+    id: string
+    userId: string
+    originalText: string
+    correctedType: string | null
+    correctedCategory: string | null
+    correctedAmount: Decimal | null
+    appliedCount: number
+    createdAt: Date
+    _count: UserVoiceLearningCountAggregateOutputType | null
+    _avg: UserVoiceLearningAvgAggregateOutputType | null
+    _sum: UserVoiceLearningSumAggregateOutputType | null
+    _min: UserVoiceLearningMinAggregateOutputType | null
+    _max: UserVoiceLearningMaxAggregateOutputType | null
+  }
+
+  type GetUserVoiceLearningGroupByPayload<T extends UserVoiceLearningGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<UserVoiceLearningGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof UserVoiceLearningGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], UserVoiceLearningGroupByOutputType[P]>
+            : GetScalarType<T[P], UserVoiceLearningGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type UserVoiceLearningSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    originalText?: boolean
+    correctedType?: boolean
+    correctedCategory?: boolean
+    correctedAmount?: boolean
+    appliedCount?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["userVoiceLearning"]>
+
+  export type UserVoiceLearningSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    originalText?: boolean
+    correctedType?: boolean
+    correctedCategory?: boolean
+    correctedAmount?: boolean
+    appliedCount?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["userVoiceLearning"]>
+
+  export type UserVoiceLearningSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    originalText?: boolean
+    correctedType?: boolean
+    correctedCategory?: boolean
+    correctedAmount?: boolean
+    appliedCount?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["userVoiceLearning"]>
+
+  export type UserVoiceLearningSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    originalText?: boolean
+    correctedType?: boolean
+    correctedCategory?: boolean
+    correctedAmount?: boolean
+    appliedCount?: boolean
+    createdAt?: boolean
+  }
+
+  export type UserVoiceLearningOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "originalText" | "correctedType" | "correctedCategory" | "correctedAmount" | "appliedCount" | "createdAt", ExtArgs["result"]["userVoiceLearning"]>
+
+  export type $UserVoiceLearningPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "UserVoiceLearning"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      originalText: string
+      correctedType: string | null
+      correctedCategory: string | null
+      correctedAmount: Prisma.Decimal | null
+      appliedCount: number
+      createdAt: Date
+    }, ExtArgs["result"]["userVoiceLearning"]>
+    composites: {}
+  }
+
+  type UserVoiceLearningGetPayload<S extends boolean | null | undefined | UserVoiceLearningDefaultArgs> = $Result.GetResult<Prisma.$UserVoiceLearningPayload, S>
+
+  type UserVoiceLearningCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<UserVoiceLearningFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: UserVoiceLearningCountAggregateInputType | true
+    }
+
+  export interface UserVoiceLearningDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['UserVoiceLearning'], meta: { name: 'UserVoiceLearning' } }
+    /**
+     * Find zero or one UserVoiceLearning that matches the filter.
+     * @param {UserVoiceLearningFindUniqueArgs} args - Arguments to find a UserVoiceLearning
+     * @example
+     * // Get one UserVoiceLearning
+     * const userVoiceLearning = await prisma.userVoiceLearning.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends UserVoiceLearningFindUniqueArgs>(args: SelectSubset<T, UserVoiceLearningFindUniqueArgs<ExtArgs>>): Prisma__UserVoiceLearningClient<$Result.GetResult<Prisma.$UserVoiceLearningPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one UserVoiceLearning that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {UserVoiceLearningFindUniqueOrThrowArgs} args - Arguments to find a UserVoiceLearning
+     * @example
+     * // Get one UserVoiceLearning
+     * const userVoiceLearning = await prisma.userVoiceLearning.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends UserVoiceLearningFindUniqueOrThrowArgs>(args: SelectSubset<T, UserVoiceLearningFindUniqueOrThrowArgs<ExtArgs>>): Prisma__UserVoiceLearningClient<$Result.GetResult<Prisma.$UserVoiceLearningPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first UserVoiceLearning that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserVoiceLearningFindFirstArgs} args - Arguments to find a UserVoiceLearning
+     * @example
+     * // Get one UserVoiceLearning
+     * const userVoiceLearning = await prisma.userVoiceLearning.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends UserVoiceLearningFindFirstArgs>(args?: SelectSubset<T, UserVoiceLearningFindFirstArgs<ExtArgs>>): Prisma__UserVoiceLearningClient<$Result.GetResult<Prisma.$UserVoiceLearningPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first UserVoiceLearning that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserVoiceLearningFindFirstOrThrowArgs} args - Arguments to find a UserVoiceLearning
+     * @example
+     * // Get one UserVoiceLearning
+     * const userVoiceLearning = await prisma.userVoiceLearning.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends UserVoiceLearningFindFirstOrThrowArgs>(args?: SelectSubset<T, UserVoiceLearningFindFirstOrThrowArgs<ExtArgs>>): Prisma__UserVoiceLearningClient<$Result.GetResult<Prisma.$UserVoiceLearningPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more UserVoiceLearnings that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserVoiceLearningFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all UserVoiceLearnings
+     * const userVoiceLearnings = await prisma.userVoiceLearning.findMany()
+     * 
+     * // Get first 10 UserVoiceLearnings
+     * const userVoiceLearnings = await prisma.userVoiceLearning.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const userVoiceLearningWithIdOnly = await prisma.userVoiceLearning.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends UserVoiceLearningFindManyArgs>(args?: SelectSubset<T, UserVoiceLearningFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserVoiceLearningPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a UserVoiceLearning.
+     * @param {UserVoiceLearningCreateArgs} args - Arguments to create a UserVoiceLearning.
+     * @example
+     * // Create one UserVoiceLearning
+     * const UserVoiceLearning = await prisma.userVoiceLearning.create({
+     *   data: {
+     *     // ... data to create a UserVoiceLearning
+     *   }
+     * })
+     * 
+     */
+    create<T extends UserVoiceLearningCreateArgs>(args: SelectSubset<T, UserVoiceLearningCreateArgs<ExtArgs>>): Prisma__UserVoiceLearningClient<$Result.GetResult<Prisma.$UserVoiceLearningPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many UserVoiceLearnings.
+     * @param {UserVoiceLearningCreateManyArgs} args - Arguments to create many UserVoiceLearnings.
+     * @example
+     * // Create many UserVoiceLearnings
+     * const userVoiceLearning = await prisma.userVoiceLearning.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends UserVoiceLearningCreateManyArgs>(args?: SelectSubset<T, UserVoiceLearningCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many UserVoiceLearnings and returns the data saved in the database.
+     * @param {UserVoiceLearningCreateManyAndReturnArgs} args - Arguments to create many UserVoiceLearnings.
+     * @example
+     * // Create many UserVoiceLearnings
+     * const userVoiceLearning = await prisma.userVoiceLearning.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many UserVoiceLearnings and only return the `id`
+     * const userVoiceLearningWithIdOnly = await prisma.userVoiceLearning.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends UserVoiceLearningCreateManyAndReturnArgs>(args?: SelectSubset<T, UserVoiceLearningCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserVoiceLearningPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a UserVoiceLearning.
+     * @param {UserVoiceLearningDeleteArgs} args - Arguments to delete one UserVoiceLearning.
+     * @example
+     * // Delete one UserVoiceLearning
+     * const UserVoiceLearning = await prisma.userVoiceLearning.delete({
+     *   where: {
+     *     // ... filter to delete one UserVoiceLearning
+     *   }
+     * })
+     * 
+     */
+    delete<T extends UserVoiceLearningDeleteArgs>(args: SelectSubset<T, UserVoiceLearningDeleteArgs<ExtArgs>>): Prisma__UserVoiceLearningClient<$Result.GetResult<Prisma.$UserVoiceLearningPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one UserVoiceLearning.
+     * @param {UserVoiceLearningUpdateArgs} args - Arguments to update one UserVoiceLearning.
+     * @example
+     * // Update one UserVoiceLearning
+     * const userVoiceLearning = await prisma.userVoiceLearning.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends UserVoiceLearningUpdateArgs>(args: SelectSubset<T, UserVoiceLearningUpdateArgs<ExtArgs>>): Prisma__UserVoiceLearningClient<$Result.GetResult<Prisma.$UserVoiceLearningPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more UserVoiceLearnings.
+     * @param {UserVoiceLearningDeleteManyArgs} args - Arguments to filter UserVoiceLearnings to delete.
+     * @example
+     * // Delete a few UserVoiceLearnings
+     * const { count } = await prisma.userVoiceLearning.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends UserVoiceLearningDeleteManyArgs>(args?: SelectSubset<T, UserVoiceLearningDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more UserVoiceLearnings.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserVoiceLearningUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many UserVoiceLearnings
+     * const userVoiceLearning = await prisma.userVoiceLearning.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends UserVoiceLearningUpdateManyArgs>(args: SelectSubset<T, UserVoiceLearningUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more UserVoiceLearnings and returns the data updated in the database.
+     * @param {UserVoiceLearningUpdateManyAndReturnArgs} args - Arguments to update many UserVoiceLearnings.
+     * @example
+     * // Update many UserVoiceLearnings
+     * const userVoiceLearning = await prisma.userVoiceLearning.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more UserVoiceLearnings and only return the `id`
+     * const userVoiceLearningWithIdOnly = await prisma.userVoiceLearning.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends UserVoiceLearningUpdateManyAndReturnArgs>(args: SelectSubset<T, UserVoiceLearningUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserVoiceLearningPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one UserVoiceLearning.
+     * @param {UserVoiceLearningUpsertArgs} args - Arguments to update or create a UserVoiceLearning.
+     * @example
+     * // Update or create a UserVoiceLearning
+     * const userVoiceLearning = await prisma.userVoiceLearning.upsert({
+     *   create: {
+     *     // ... data to create a UserVoiceLearning
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the UserVoiceLearning we want to update
+     *   }
+     * })
+     */
+    upsert<T extends UserVoiceLearningUpsertArgs>(args: SelectSubset<T, UserVoiceLearningUpsertArgs<ExtArgs>>): Prisma__UserVoiceLearningClient<$Result.GetResult<Prisma.$UserVoiceLearningPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of UserVoiceLearnings.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserVoiceLearningCountArgs} args - Arguments to filter UserVoiceLearnings to count.
+     * @example
+     * // Count the number of UserVoiceLearnings
+     * const count = await prisma.userVoiceLearning.count({
+     *   where: {
+     *     // ... the filter for the UserVoiceLearnings we want to count
+     *   }
+     * })
+    **/
+    count<T extends UserVoiceLearningCountArgs>(
+      args?: Subset<T, UserVoiceLearningCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], UserVoiceLearningCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a UserVoiceLearning.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserVoiceLearningAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends UserVoiceLearningAggregateArgs>(args: Subset<T, UserVoiceLearningAggregateArgs>): Prisma.PrismaPromise<GetUserVoiceLearningAggregateType<T>>
+
+    /**
+     * Group by UserVoiceLearning.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserVoiceLearningGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends UserVoiceLearningGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: UserVoiceLearningGroupByArgs['orderBy'] }
+        : { orderBy?: UserVoiceLearningGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, UserVoiceLearningGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetUserVoiceLearningGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the UserVoiceLearning model
+   */
+  readonly fields: UserVoiceLearningFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for UserVoiceLearning.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__UserVoiceLearningClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the UserVoiceLearning model
+   */
+  interface UserVoiceLearningFieldRefs {
+    readonly id: FieldRef<"UserVoiceLearning", 'String'>
+    readonly userId: FieldRef<"UserVoiceLearning", 'String'>
+    readonly originalText: FieldRef<"UserVoiceLearning", 'String'>
+    readonly correctedType: FieldRef<"UserVoiceLearning", 'String'>
+    readonly correctedCategory: FieldRef<"UserVoiceLearning", 'String'>
+    readonly correctedAmount: FieldRef<"UserVoiceLearning", 'Decimal'>
+    readonly appliedCount: FieldRef<"UserVoiceLearning", 'Int'>
+    readonly createdAt: FieldRef<"UserVoiceLearning", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * UserVoiceLearning findUnique
+   */
+  export type UserVoiceLearningFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserVoiceLearning
+     */
+    select?: UserVoiceLearningSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserVoiceLearning
+     */
+    omit?: UserVoiceLearningOmit<ExtArgs> | null
+    /**
+     * Filter, which UserVoiceLearning to fetch.
+     */
+    where: UserVoiceLearningWhereUniqueInput
+  }
+
+  /**
+   * UserVoiceLearning findUniqueOrThrow
+   */
+  export type UserVoiceLearningFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserVoiceLearning
+     */
+    select?: UserVoiceLearningSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserVoiceLearning
+     */
+    omit?: UserVoiceLearningOmit<ExtArgs> | null
+    /**
+     * Filter, which UserVoiceLearning to fetch.
+     */
+    where: UserVoiceLearningWhereUniqueInput
+  }
+
+  /**
+   * UserVoiceLearning findFirst
+   */
+  export type UserVoiceLearningFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserVoiceLearning
+     */
+    select?: UserVoiceLearningSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserVoiceLearning
+     */
+    omit?: UserVoiceLearningOmit<ExtArgs> | null
+    /**
+     * Filter, which UserVoiceLearning to fetch.
+     */
+    where?: UserVoiceLearningWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserVoiceLearnings to fetch.
+     */
+    orderBy?: UserVoiceLearningOrderByWithRelationInput | UserVoiceLearningOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for UserVoiceLearnings.
+     */
+    cursor?: UserVoiceLearningWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserVoiceLearnings from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserVoiceLearnings.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of UserVoiceLearnings.
+     */
+    distinct?: UserVoiceLearningScalarFieldEnum | UserVoiceLearningScalarFieldEnum[]
+  }
+
+  /**
+   * UserVoiceLearning findFirstOrThrow
+   */
+  export type UserVoiceLearningFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserVoiceLearning
+     */
+    select?: UserVoiceLearningSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserVoiceLearning
+     */
+    omit?: UserVoiceLearningOmit<ExtArgs> | null
+    /**
+     * Filter, which UserVoiceLearning to fetch.
+     */
+    where?: UserVoiceLearningWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserVoiceLearnings to fetch.
+     */
+    orderBy?: UserVoiceLearningOrderByWithRelationInput | UserVoiceLearningOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for UserVoiceLearnings.
+     */
+    cursor?: UserVoiceLearningWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserVoiceLearnings from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserVoiceLearnings.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of UserVoiceLearnings.
+     */
+    distinct?: UserVoiceLearningScalarFieldEnum | UserVoiceLearningScalarFieldEnum[]
+  }
+
+  /**
+   * UserVoiceLearning findMany
+   */
+  export type UserVoiceLearningFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserVoiceLearning
+     */
+    select?: UserVoiceLearningSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserVoiceLearning
+     */
+    omit?: UserVoiceLearningOmit<ExtArgs> | null
+    /**
+     * Filter, which UserVoiceLearnings to fetch.
+     */
+    where?: UserVoiceLearningWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserVoiceLearnings to fetch.
+     */
+    orderBy?: UserVoiceLearningOrderByWithRelationInput | UserVoiceLearningOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing UserVoiceLearnings.
+     */
+    cursor?: UserVoiceLearningWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserVoiceLearnings from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserVoiceLearnings.
+     */
+    skip?: number
+    distinct?: UserVoiceLearningScalarFieldEnum | UserVoiceLearningScalarFieldEnum[]
+  }
+
+  /**
+   * UserVoiceLearning create
+   */
+  export type UserVoiceLearningCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserVoiceLearning
+     */
+    select?: UserVoiceLearningSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserVoiceLearning
+     */
+    omit?: UserVoiceLearningOmit<ExtArgs> | null
+    /**
+     * The data needed to create a UserVoiceLearning.
+     */
+    data: XOR<UserVoiceLearningCreateInput, UserVoiceLearningUncheckedCreateInput>
+  }
+
+  /**
+   * UserVoiceLearning createMany
+   */
+  export type UserVoiceLearningCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many UserVoiceLearnings.
+     */
+    data: UserVoiceLearningCreateManyInput | UserVoiceLearningCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * UserVoiceLearning createManyAndReturn
+   */
+  export type UserVoiceLearningCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserVoiceLearning
+     */
+    select?: UserVoiceLearningSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserVoiceLearning
+     */
+    omit?: UserVoiceLearningOmit<ExtArgs> | null
+    /**
+     * The data used to create many UserVoiceLearnings.
+     */
+    data: UserVoiceLearningCreateManyInput | UserVoiceLearningCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * UserVoiceLearning update
+   */
+  export type UserVoiceLearningUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserVoiceLearning
+     */
+    select?: UserVoiceLearningSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserVoiceLearning
+     */
+    omit?: UserVoiceLearningOmit<ExtArgs> | null
+    /**
+     * The data needed to update a UserVoiceLearning.
+     */
+    data: XOR<UserVoiceLearningUpdateInput, UserVoiceLearningUncheckedUpdateInput>
+    /**
+     * Choose, which UserVoiceLearning to update.
+     */
+    where: UserVoiceLearningWhereUniqueInput
+  }
+
+  /**
+   * UserVoiceLearning updateMany
+   */
+  export type UserVoiceLearningUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update UserVoiceLearnings.
+     */
+    data: XOR<UserVoiceLearningUpdateManyMutationInput, UserVoiceLearningUncheckedUpdateManyInput>
+    /**
+     * Filter which UserVoiceLearnings to update
+     */
+    where?: UserVoiceLearningWhereInput
+    /**
+     * Limit how many UserVoiceLearnings to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * UserVoiceLearning updateManyAndReturn
+   */
+  export type UserVoiceLearningUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserVoiceLearning
+     */
+    select?: UserVoiceLearningSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserVoiceLearning
+     */
+    omit?: UserVoiceLearningOmit<ExtArgs> | null
+    /**
+     * The data used to update UserVoiceLearnings.
+     */
+    data: XOR<UserVoiceLearningUpdateManyMutationInput, UserVoiceLearningUncheckedUpdateManyInput>
+    /**
+     * Filter which UserVoiceLearnings to update
+     */
+    where?: UserVoiceLearningWhereInput
+    /**
+     * Limit how many UserVoiceLearnings to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * UserVoiceLearning upsert
+   */
+  export type UserVoiceLearningUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserVoiceLearning
+     */
+    select?: UserVoiceLearningSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserVoiceLearning
+     */
+    omit?: UserVoiceLearningOmit<ExtArgs> | null
+    /**
+     * The filter to search for the UserVoiceLearning to update in case it exists.
+     */
+    where: UserVoiceLearningWhereUniqueInput
+    /**
+     * In case the UserVoiceLearning found by the `where` argument doesn't exist, create a new UserVoiceLearning with this data.
+     */
+    create: XOR<UserVoiceLearningCreateInput, UserVoiceLearningUncheckedCreateInput>
+    /**
+     * In case the UserVoiceLearning was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<UserVoiceLearningUpdateInput, UserVoiceLearningUncheckedUpdateInput>
+  }
+
+  /**
+   * UserVoiceLearning delete
+   */
+  export type UserVoiceLearningDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserVoiceLearning
+     */
+    select?: UserVoiceLearningSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserVoiceLearning
+     */
+    omit?: UserVoiceLearningOmit<ExtArgs> | null
+    /**
+     * Filter which UserVoiceLearning to delete.
+     */
+    where: UserVoiceLearningWhereUniqueInput
+  }
+
+  /**
+   * UserVoiceLearning deleteMany
+   */
+  export type UserVoiceLearningDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which UserVoiceLearnings to delete
+     */
+    where?: UserVoiceLearningWhereInput
+    /**
+     * Limit how many UserVoiceLearnings to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * UserVoiceLearning without action
+   */
+  export type UserVoiceLearningDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserVoiceLearning
+     */
+    select?: UserVoiceLearningSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserVoiceLearning
+     */
+    omit?: UserVoiceLearningOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -70900,6 +73222,34 @@ export namespace Prisma {
   };
 
   export type FinancialEventScalarFieldEnum = (typeof FinancialEventScalarFieldEnum)[keyof typeof FinancialEventScalarFieldEnum]
+
+
+  export const VoiceTranscriptScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    memoId: 'memoId',
+    originalText: 'originalText',
+    cleanedText: 'cleanedText',
+    actionsCount: 'actionsCount',
+    processedAt: 'processedAt',
+    createdAt: 'createdAt'
+  };
+
+  export type VoiceTranscriptScalarFieldEnum = (typeof VoiceTranscriptScalarFieldEnum)[keyof typeof VoiceTranscriptScalarFieldEnum]
+
+
+  export const UserVoiceLearningScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    originalText: 'originalText',
+    correctedType: 'correctedType',
+    correctedCategory: 'correctedCategory',
+    correctedAmount: 'correctedAmount',
+    appliedCount: 'appliedCount',
+    createdAt: 'createdAt'
+  };
+
+  export type UserVoiceLearningScalarFieldEnum = (typeof UserVoiceLearningScalarFieldEnum)[keyof typeof UserVoiceLearningScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -76453,6 +78803,145 @@ export namespace Prisma {
     payload?: JsonWithAggregatesFilter<"FinancialEvent">
     metadata?: JsonNullableWithAggregatesFilter<"FinancialEvent">
     createdAt?: DateTimeWithAggregatesFilter<"FinancialEvent"> | Date | string
+  }
+
+  export type VoiceTranscriptWhereInput = {
+    AND?: VoiceTranscriptWhereInput | VoiceTranscriptWhereInput[]
+    OR?: VoiceTranscriptWhereInput[]
+    NOT?: VoiceTranscriptWhereInput | VoiceTranscriptWhereInput[]
+    id?: StringFilter<"VoiceTranscript"> | string
+    userId?: StringFilter<"VoiceTranscript"> | string
+    memoId?: StringNullableFilter<"VoiceTranscript"> | string | null
+    originalText?: StringFilter<"VoiceTranscript"> | string
+    cleanedText?: StringNullableFilter<"VoiceTranscript"> | string | null
+    actionsCount?: IntFilter<"VoiceTranscript"> | number
+    processedAt?: DateTimeFilter<"VoiceTranscript"> | Date | string
+    createdAt?: DateTimeFilter<"VoiceTranscript"> | Date | string
+  }
+
+  export type VoiceTranscriptOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    memoId?: SortOrderInput | SortOrder
+    originalText?: SortOrder
+    cleanedText?: SortOrderInput | SortOrder
+    actionsCount?: SortOrder
+    processedAt?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type VoiceTranscriptWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: VoiceTranscriptWhereInput | VoiceTranscriptWhereInput[]
+    OR?: VoiceTranscriptWhereInput[]
+    NOT?: VoiceTranscriptWhereInput | VoiceTranscriptWhereInput[]
+    userId?: StringFilter<"VoiceTranscript"> | string
+    memoId?: StringNullableFilter<"VoiceTranscript"> | string | null
+    originalText?: StringFilter<"VoiceTranscript"> | string
+    cleanedText?: StringNullableFilter<"VoiceTranscript"> | string | null
+    actionsCount?: IntFilter<"VoiceTranscript"> | number
+    processedAt?: DateTimeFilter<"VoiceTranscript"> | Date | string
+    createdAt?: DateTimeFilter<"VoiceTranscript"> | Date | string
+  }, "id">
+
+  export type VoiceTranscriptOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    memoId?: SortOrderInput | SortOrder
+    originalText?: SortOrder
+    cleanedText?: SortOrderInput | SortOrder
+    actionsCount?: SortOrder
+    processedAt?: SortOrder
+    createdAt?: SortOrder
+    _count?: VoiceTranscriptCountOrderByAggregateInput
+    _avg?: VoiceTranscriptAvgOrderByAggregateInput
+    _max?: VoiceTranscriptMaxOrderByAggregateInput
+    _min?: VoiceTranscriptMinOrderByAggregateInput
+    _sum?: VoiceTranscriptSumOrderByAggregateInput
+  }
+
+  export type VoiceTranscriptScalarWhereWithAggregatesInput = {
+    AND?: VoiceTranscriptScalarWhereWithAggregatesInput | VoiceTranscriptScalarWhereWithAggregatesInput[]
+    OR?: VoiceTranscriptScalarWhereWithAggregatesInput[]
+    NOT?: VoiceTranscriptScalarWhereWithAggregatesInput | VoiceTranscriptScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"VoiceTranscript"> | string
+    userId?: StringWithAggregatesFilter<"VoiceTranscript"> | string
+    memoId?: StringNullableWithAggregatesFilter<"VoiceTranscript"> | string | null
+    originalText?: StringWithAggregatesFilter<"VoiceTranscript"> | string
+    cleanedText?: StringNullableWithAggregatesFilter<"VoiceTranscript"> | string | null
+    actionsCount?: IntWithAggregatesFilter<"VoiceTranscript"> | number
+    processedAt?: DateTimeWithAggregatesFilter<"VoiceTranscript"> | Date | string
+    createdAt?: DateTimeWithAggregatesFilter<"VoiceTranscript"> | Date | string
+  }
+
+  export type UserVoiceLearningWhereInput = {
+    AND?: UserVoiceLearningWhereInput | UserVoiceLearningWhereInput[]
+    OR?: UserVoiceLearningWhereInput[]
+    NOT?: UserVoiceLearningWhereInput | UserVoiceLearningWhereInput[]
+    id?: StringFilter<"UserVoiceLearning"> | string
+    userId?: StringFilter<"UserVoiceLearning"> | string
+    originalText?: StringFilter<"UserVoiceLearning"> | string
+    correctedType?: StringNullableFilter<"UserVoiceLearning"> | string | null
+    correctedCategory?: StringNullableFilter<"UserVoiceLearning"> | string | null
+    correctedAmount?: DecimalNullableFilter<"UserVoiceLearning"> | Decimal | DecimalJsLike | number | string | null
+    appliedCount?: IntFilter<"UserVoiceLearning"> | number
+    createdAt?: DateTimeFilter<"UserVoiceLearning"> | Date | string
+  }
+
+  export type UserVoiceLearningOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    originalText?: SortOrder
+    correctedType?: SortOrderInput | SortOrder
+    correctedCategory?: SortOrderInput | SortOrder
+    correctedAmount?: SortOrderInput | SortOrder
+    appliedCount?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type UserVoiceLearningWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    userId_originalText?: UserVoiceLearningUserIdOriginalTextCompoundUniqueInput
+    AND?: UserVoiceLearningWhereInput | UserVoiceLearningWhereInput[]
+    OR?: UserVoiceLearningWhereInput[]
+    NOT?: UserVoiceLearningWhereInput | UserVoiceLearningWhereInput[]
+    userId?: StringFilter<"UserVoiceLearning"> | string
+    originalText?: StringFilter<"UserVoiceLearning"> | string
+    correctedType?: StringNullableFilter<"UserVoiceLearning"> | string | null
+    correctedCategory?: StringNullableFilter<"UserVoiceLearning"> | string | null
+    correctedAmount?: DecimalNullableFilter<"UserVoiceLearning"> | Decimal | DecimalJsLike | number | string | null
+    appliedCount?: IntFilter<"UserVoiceLearning"> | number
+    createdAt?: DateTimeFilter<"UserVoiceLearning"> | Date | string
+  }, "id" | "userId_originalText">
+
+  export type UserVoiceLearningOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    originalText?: SortOrder
+    correctedType?: SortOrderInput | SortOrder
+    correctedCategory?: SortOrderInput | SortOrder
+    correctedAmount?: SortOrderInput | SortOrder
+    appliedCount?: SortOrder
+    createdAt?: SortOrder
+    _count?: UserVoiceLearningCountOrderByAggregateInput
+    _avg?: UserVoiceLearningAvgOrderByAggregateInput
+    _max?: UserVoiceLearningMaxOrderByAggregateInput
+    _min?: UserVoiceLearningMinOrderByAggregateInput
+    _sum?: UserVoiceLearningSumOrderByAggregateInput
+  }
+
+  export type UserVoiceLearningScalarWhereWithAggregatesInput = {
+    AND?: UserVoiceLearningScalarWhereWithAggregatesInput | UserVoiceLearningScalarWhereWithAggregatesInput[]
+    OR?: UserVoiceLearningScalarWhereWithAggregatesInput[]
+    NOT?: UserVoiceLearningScalarWhereWithAggregatesInput | UserVoiceLearningScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"UserVoiceLearning"> | string
+    userId?: StringWithAggregatesFilter<"UserVoiceLearning"> | string
+    originalText?: StringWithAggregatesFilter<"UserVoiceLearning"> | string
+    correctedType?: StringNullableWithAggregatesFilter<"UserVoiceLearning"> | string | null
+    correctedCategory?: StringNullableWithAggregatesFilter<"UserVoiceLearning"> | string | null
+    correctedAmount?: DecimalNullableWithAggregatesFilter<"UserVoiceLearning"> | Decimal | DecimalJsLike | number | string | null
+    appliedCount?: IntWithAggregatesFilter<"UserVoiceLearning"> | number
+    createdAt?: DateTimeWithAggregatesFilter<"UserVoiceLearning"> | Date | string
   }
 
   export type AccountCreateInput = {
@@ -82615,6 +85104,160 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type VoiceTranscriptCreateInput = {
+    id?: string
+    userId: string
+    memoId?: string | null
+    originalText: string
+    cleanedText?: string | null
+    actionsCount?: number
+    processedAt?: Date | string
+    createdAt?: Date | string
+  }
+
+  export type VoiceTranscriptUncheckedCreateInput = {
+    id?: string
+    userId: string
+    memoId?: string | null
+    originalText: string
+    cleanedText?: string | null
+    actionsCount?: number
+    processedAt?: Date | string
+    createdAt?: Date | string
+  }
+
+  export type VoiceTranscriptUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    memoId?: NullableStringFieldUpdateOperationsInput | string | null
+    originalText?: StringFieldUpdateOperationsInput | string
+    cleanedText?: NullableStringFieldUpdateOperationsInput | string | null
+    actionsCount?: IntFieldUpdateOperationsInput | number
+    processedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type VoiceTranscriptUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    memoId?: NullableStringFieldUpdateOperationsInput | string | null
+    originalText?: StringFieldUpdateOperationsInput | string
+    cleanedText?: NullableStringFieldUpdateOperationsInput | string | null
+    actionsCount?: IntFieldUpdateOperationsInput | number
+    processedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type VoiceTranscriptCreateManyInput = {
+    id?: string
+    userId: string
+    memoId?: string | null
+    originalText: string
+    cleanedText?: string | null
+    actionsCount?: number
+    processedAt?: Date | string
+    createdAt?: Date | string
+  }
+
+  export type VoiceTranscriptUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    memoId?: NullableStringFieldUpdateOperationsInput | string | null
+    originalText?: StringFieldUpdateOperationsInput | string
+    cleanedText?: NullableStringFieldUpdateOperationsInput | string | null
+    actionsCount?: IntFieldUpdateOperationsInput | number
+    processedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type VoiceTranscriptUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    memoId?: NullableStringFieldUpdateOperationsInput | string | null
+    originalText?: StringFieldUpdateOperationsInput | string
+    cleanedText?: NullableStringFieldUpdateOperationsInput | string | null
+    actionsCount?: IntFieldUpdateOperationsInput | number
+    processedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserVoiceLearningCreateInput = {
+    id?: string
+    userId: string
+    originalText: string
+    correctedType?: string | null
+    correctedCategory?: string | null
+    correctedAmount?: Decimal | DecimalJsLike | number | string | null
+    appliedCount?: number
+    createdAt?: Date | string
+  }
+
+  export type UserVoiceLearningUncheckedCreateInput = {
+    id?: string
+    userId: string
+    originalText: string
+    correctedType?: string | null
+    correctedCategory?: string | null
+    correctedAmount?: Decimal | DecimalJsLike | number | string | null
+    appliedCount?: number
+    createdAt?: Date | string
+  }
+
+  export type UserVoiceLearningUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    originalText?: StringFieldUpdateOperationsInput | string
+    correctedType?: NullableStringFieldUpdateOperationsInput | string | null
+    correctedCategory?: NullableStringFieldUpdateOperationsInput | string | null
+    correctedAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    appliedCount?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserVoiceLearningUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    originalText?: StringFieldUpdateOperationsInput | string
+    correctedType?: NullableStringFieldUpdateOperationsInput | string | null
+    correctedCategory?: NullableStringFieldUpdateOperationsInput | string | null
+    correctedAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    appliedCount?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserVoiceLearningCreateManyInput = {
+    id?: string
+    userId: string
+    originalText: string
+    correctedType?: string | null
+    correctedCategory?: string | null
+    correctedAmount?: Decimal | DecimalJsLike | number | string | null
+    appliedCount?: number
+    createdAt?: Date | string
+  }
+
+  export type UserVoiceLearningUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    originalText?: StringFieldUpdateOperationsInput | string
+    correctedType?: NullableStringFieldUpdateOperationsInput | string | null
+    correctedCategory?: NullableStringFieldUpdateOperationsInput | string | null
+    correctedAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    appliedCount?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserVoiceLearningUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    originalText?: StringFieldUpdateOperationsInput | string
+    correctedType?: NullableStringFieldUpdateOperationsInput | string | null
+    correctedCategory?: NullableStringFieldUpdateOperationsInput | string | null
+    correctedAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    appliedCount?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -86565,6 +89208,95 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedEnumSourceModuleNullableFilter<$PrismaModel>
     _max?: NestedEnumSourceModuleNullableFilter<$PrismaModel>
+  }
+
+  export type VoiceTranscriptCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    memoId?: SortOrder
+    originalText?: SortOrder
+    cleanedText?: SortOrder
+    actionsCount?: SortOrder
+    processedAt?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type VoiceTranscriptAvgOrderByAggregateInput = {
+    actionsCount?: SortOrder
+  }
+
+  export type VoiceTranscriptMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    memoId?: SortOrder
+    originalText?: SortOrder
+    cleanedText?: SortOrder
+    actionsCount?: SortOrder
+    processedAt?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type VoiceTranscriptMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    memoId?: SortOrder
+    originalText?: SortOrder
+    cleanedText?: SortOrder
+    actionsCount?: SortOrder
+    processedAt?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type VoiceTranscriptSumOrderByAggregateInput = {
+    actionsCount?: SortOrder
+  }
+
+  export type UserVoiceLearningUserIdOriginalTextCompoundUniqueInput = {
+    userId: string
+    originalText: string
+  }
+
+  export type UserVoiceLearningCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    originalText?: SortOrder
+    correctedType?: SortOrder
+    correctedCategory?: SortOrder
+    correctedAmount?: SortOrder
+    appliedCount?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type UserVoiceLearningAvgOrderByAggregateInput = {
+    correctedAmount?: SortOrder
+    appliedCount?: SortOrder
+  }
+
+  export type UserVoiceLearningMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    originalText?: SortOrder
+    correctedType?: SortOrder
+    correctedCategory?: SortOrder
+    correctedAmount?: SortOrder
+    appliedCount?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type UserVoiceLearningMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    originalText?: SortOrder
+    correctedType?: SortOrder
+    correctedCategory?: SortOrder
+    correctedAmount?: SortOrder
+    appliedCount?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type UserVoiceLearningSumOrderByAggregateInput = {
+    correctedAmount?: SortOrder
+    appliedCount?: SortOrder
   }
 
   export type UserCreateNestedOneWithoutAccountsInput = {

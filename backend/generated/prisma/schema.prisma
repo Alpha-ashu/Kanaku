@@ -1403,3 +1403,39 @@ model FinancialEvent {
   @@map("financial_events")
   @@schema("public")
 }
+
+// ── Voice Intelligence (tables originally created by supabase/migrations/015) ──
+// Mapped to the existing snake_case tables. No FK relation to User is declared:
+// the Supabase-created variant references auth.users, which lives outside the
+// Prisma-managed "public" model set; rows are scoped by userId in queries.
+
+model VoiceTranscript {
+  id           String   @id @default(uuid())
+  userId       String   @map("user_id")
+  memoId       String?  @map("memo_id")
+  originalText String   @map("original_text")
+  cleanedText  String?  @map("cleaned_text")
+  actionsCount Int      @default(0) @map("actions_count")
+  processedAt  DateTime @default(now()) @map("processed_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@index([userId, createdAt(sort: Desc)], map: "idx_voice_transcripts_user")
+  @@map("voice_transcripts")
+  @@schema("public")
+}
+
+model UserVoiceLearning {
+  id                String   @id @default(uuid())
+  userId            String   @map("user_id")
+  originalText      String   @map("original_text")
+  correctedType     String?  @map("corrected_type")
+  correctedCategory String?  @map("corrected_category")
+  correctedAmount   Decimal? @map("corrected_amount") @db.Decimal(15, 2)
+  appliedCount      Int      @default(1) @map("applied_count")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  @@unique([userId, originalText], map: "user_voice_learning_user_id_original_text_key")
+  @@index([userId], map: "idx_user_voice_learning_user")
+  @@map("user_voice_learning")
+  @@schema("public")
+}

@@ -225,19 +225,19 @@ model ExpenseBill {
 }
 
 model Friend {
-  id           String               @id @default(uuid())
-  userId       String
-  deviceId     String?
-  name         String
-  email        String?
-  phone        String?
-  avatar       String?
-  notes        String?
-  syncStatus   String               @default("synced")
-  createdAt    DateTime             @default(now())
-  updatedAt    DateTime             @updatedAt
-  deletedAt    DateTime?
-  user         User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                  String               @id @default(uuid())
+  userId              String
+  deviceId            String?
+  name                String
+  email               String?
+  phone               String?
+  avatar              String?
+  notes               String?
+  syncStatus          String               @default("synced")
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  deletedAt           DateTime?
+  user                User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
   groupExpenseMembers GroupExpenseMember[]
 
   @@index([syncStatus])
@@ -323,44 +323,44 @@ model ImportLog {
 }
 
 model Investment {
-  id              String    @id @default(uuid())
-  userId          String
-  assetType       String
-  assetName       String
-  quantity        Decimal   @db.Decimal(12, 4)
-  buyPrice        Decimal   @db.Decimal(12, 2)
-  currentPrice    Decimal   @db.Decimal(12, 2)
-  totalInvested   Decimal   @db.Decimal(12, 2) // Computed by trigger: quantity * buyPrice
-  currentValue    Decimal   @db.Decimal(12, 2) // Computed by trigger: quantity * currentPrice
-  profitLoss      Decimal   @db.Decimal(12, 2) // Computed by trigger: currentValue - totalInvested
-  purchaseDate    DateTime
-  lastUpdated     DateTime
-  metadata        Json?
-  clientRequestId String?   @unique
+  id                  String    @id @default(uuid())
+  userId              String
+  assetType           String
+  assetName           String
+  quantity            Decimal   @db.Decimal(12, 4)
+  buyPrice            Decimal   @db.Decimal(12, 2)
+  currentPrice        Decimal   @db.Decimal(12, 2)
+  totalInvested       Decimal   @db.Decimal(12, 2) // Computed by trigger: quantity * buyPrice
+  currentValue        Decimal   @db.Decimal(12, 2) // Computed by trigger: quantity * currentPrice
+  profitLoss          Decimal   @db.Decimal(12, 2) // Computed by trigger: currentValue - totalInvested
+  purchaseDate        DateTime
+  lastUpdated         DateTime
+  metadata            Json?
+  clientRequestId     String?   @unique
   // ─── Extended fields (schema alignment with Dexie client) ───
-  broker             String?
-  description        String?
-  assetCurrency      String?
-  baseCurrency       String?
-  buyFxRate          Decimal?  @db.Decimal(18, 8)
-  lastKnownFxRate    Decimal?  @db.Decimal(18, 8)
-  totalInvestedNative Decimal? @db.Decimal(18, 2)
-  currentValueNative Decimal?  @db.Decimal(18, 2)
-  valuationVersion   Int?
-  positionStatus     String?   @default("open") // open | closed
-  closedAt           DateTime?
-  closePrice         Decimal?  @db.Decimal(18, 2)
-  closeFxRate        Decimal?  @db.Decimal(18, 8)
-  grossSaleValue     Decimal?  @db.Decimal(18, 2)
-  netSaleValue       Decimal?  @db.Decimal(18, 2)
-  purchaseFees       Decimal?  @db.Decimal(18, 2)
-  closingFees        Decimal?  @db.Decimal(18, 2)
-  realizedProfitLoss Decimal?  @db.Decimal(18, 2)
-  closeNotes         String?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  deletedAt       DateTime?
-  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  broker              String?
+  description         String?
+  assetCurrency       String?
+  baseCurrency        String?
+  buyFxRate           Decimal?  @db.Decimal(18, 8)
+  lastKnownFxRate     Decimal?  @db.Decimal(18, 8)
+  totalInvestedNative Decimal?  @db.Decimal(18, 2)
+  currentValueNative  Decimal?  @db.Decimal(18, 2)
+  valuationVersion    Int?
+  positionStatus      String?   @default("open") // open | closed
+  closedAt            DateTime?
+  closePrice          Decimal?  @db.Decimal(18, 2)
+  closeFxRate         Decimal?  @db.Decimal(18, 8)
+  grossSaleValue      Decimal?  @db.Decimal(18, 2)
+  netSaleValue        Decimal?  @db.Decimal(18, 2)
+  purchaseFees        Decimal?  @db.Decimal(18, 2)
+  closingFees         Decimal?  @db.Decimal(18, 2)
+  realizedProfitLoss  Decimal?  @db.Decimal(18, 2)
+  closeNotes          String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  deletedAt           DateTime?
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([assetType])
   @@index([userId])
@@ -549,12 +549,12 @@ model Todo {
 }
 
 model Transaction {
-  id                  String        @id @default(uuid())
+  id                  String              @id @default(uuid())
   userId              String
   deviceId            String?
   accountId           String
   type                String
-  amount              Decimal       @db.Decimal(12, 2)
+  amount              Decimal             @db.Decimal(12, 2)
   category            String
   subcategory         String?
   description         String?
@@ -572,12 +572,12 @@ model Transaction {
   importMetadata      String?
   originalCategory    String?
   importedAt          DateTime?
-  dedupHash           String?       @unique
-  version             Int           @default(1)
-  synced              Boolean       @default(false)
-  syncStatus          String        @default("synced")
-  createdAt           DateTime      @default(now())
-  updatedAt           DateTime      @updatedAt
+  dedupHash           String?             @unique
+  version             Int                 @default(1)
+  synced              Boolean             @default(false)
+  syncStatus          String              @default("synced")
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
   deletedAt           DateTime?
   referenceType       LedgerReferenceType @default(MANUAL)
   referenceId         String?
@@ -593,9 +593,9 @@ model Transaction {
   sequenceNumber      String?             @unique
   metadata            Json?
   journalEntry        JournalEntry?       @relation(fields: [journalEntryId], references: [id], onDelete: SetNull)
-  account             Account       @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  groupExpense        GroupExpense? @relation(fields: [groupExpenseId], references: [id])
-  user                User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  account             Account             @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  groupExpense        GroupExpense?       @relation(fields: [groupExpenseId], references: [id])
+  user                User                @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, sourceModule, idempotencyKey])
   @@index([accountId])
@@ -1099,34 +1099,34 @@ model AaTransaction {
 // ─── Recurring Transactions (Subscriptions & Bills) ────────────────────────────
 
 model RecurringTransaction {
-  id              String    @id @default(uuid())
-  userId          String
-  title           String
-  amount          Decimal   @db.Decimal(12, 2)
-  category        String
-  subcategory     String?
-  interval        String    @default("monthly") // weekly, monthly, yearly
-  nextDueDate     DateTime
-  autoProcess     Boolean   @default(false)
-  status          String    @default("active") // active, paused, cancelled
-  accountId       String?
-  description     String?
-  merchant        String?
-  lastProcessedAt DateTime?
-  clientRequestId String?   @unique
-  syncStatus      String    @default("synced")
+  id                  String               @id @default(uuid())
+  userId              String
+  title               String
+  amount              Decimal              @db.Decimal(12, 2)
+  category            String
+  subcategory         String?
+  interval            String               @default("monthly") // weekly, monthly, yearly
+  nextDueDate         DateTime
+  autoProcess         Boolean              @default(false)
+  status              String               @default("active") // active, paused, cancelled
+  accountId           String?
+  description         String?
+  merchant            String?
+  lastProcessedAt     DateTime?
+  clientRequestId     String?              @unique
+  syncStatus          String               @default("synced")
   // ─── Extended fields (schema alignment with Dexie client) ───
-  type               String?   // income | expense | transfer
-  startDate          DateTime?
-  endDate            DateTime?
-  reminderDaysBefore Int?
-  notes              String?
+  type                String? // income | expense | transfer
+  startDate           DateTime?
+  endDate             DateTime?
+  reminderDaysBefore  Int?
+  notes               String?
   transferToAccountId String?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  deletedAt       DateTime?
-  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  executions      RecurringExecution[]
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  deletedAt           DateTime?
+  user                User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  executions          RecurringExecution[]
 
   @@index([userId])
   @@index([status])
@@ -1331,12 +1331,12 @@ model DailyAccountBalance {
 }
 
 model MonthlyCategorySpend {
-  id       String   @id @default(uuid())
+  id       String  @id @default(uuid())
   userId   String
   year     Int
   month    Int
   category String
-  total    Decimal  @db.Decimal(12, 2)
+  total    Decimal @db.Decimal(12, 2)
 
   @@unique([userId, year, month, category])
   @@index([userId, year, month])
@@ -1345,12 +1345,12 @@ model MonthlyCategorySpend {
 }
 
 model MonthlyCashflow {
-  id      String   @id @default(uuid())
+  id      String  @id @default(uuid())
   userId  String
   year    Int
   month   Int
-  income  Decimal  @db.Decimal(12, 2)
-  expense Decimal  @db.Decimal(12, 2)
+  income  Decimal @db.Decimal(12, 2)
+  expense Decimal @db.Decimal(12, 2)
 
   @@unique([userId, year, month])
   @@index([userId, year, month])
@@ -1379,21 +1379,21 @@ enum FinancialEventLogType {
 }
 
 model FinancialEvent {
-  id             String               @id @default(uuid())
+  id             String                @id @default(uuid())
   eventType      FinancialEventLogType
   aggregateType  String
   aggregateId    String
   userId         String
   journalEntryId String?
   transactionId  String?
-  eventVersion   Int                  @default(1)
+  eventVersion   Int                   @default(1)
   correlationId  String?
   requestId      String?
   sessionId      String?
   sourceModule   SourceModule?
   payload        Json
   metadata       Json?
-  createdAt      DateTime             @default(now())
+  createdAt      DateTime              @default(now())
 
   @@index([userId])
   @@index([aggregateId])
@@ -1404,4 +1404,38 @@ model FinancialEvent {
   @@schema("public")
 }
 
+// ── Voice Intelligence (tables originally created by supabase/migrations/015) ──
+// Mapped to the existing snake_case tables. No FK relation to User is declared:
+// the Supabase-created variant references auth.users, which lives outside the
+// Prisma-managed "public" model set; rows are scoped by userId in queries.
 
+model VoiceTranscript {
+  id           String   @id @default(uuid())
+  userId       String   @map("user_id")
+  memoId       String?  @map("memo_id")
+  originalText String   @map("original_text")
+  cleanedText  String?  @map("cleaned_text")
+  actionsCount Int      @default(0) @map("actions_count")
+  processedAt  DateTime @default(now()) @map("processed_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@index([userId, createdAt(sort: Desc)], map: "idx_voice_transcripts_user")
+  @@map("voice_transcripts")
+  @@schema("public")
+}
+
+model UserVoiceLearning {
+  id                String   @id @default(uuid())
+  userId            String   @map("user_id")
+  originalText      String   @map("original_text")
+  correctedType     String?  @map("corrected_type")
+  correctedCategory String?  @map("corrected_category")
+  correctedAmount   Decimal? @map("corrected_amount") @db.Decimal(15, 2)
+  appliedCount      Int      @default(1) @map("applied_count")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  @@unique([userId, originalText], map: "user_voice_learning_user_id_original_text_key")
+  @@index([userId], map: "idx_user_voice_learning_user")
+  @@map("user_voice_learning")
+  @@schema("public")
+}

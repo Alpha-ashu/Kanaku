@@ -14,18 +14,22 @@ import { eventBus } from '../../utils/eventBus';
 type JsonMap = Record<string, unknown>;
 
 /**
- * Convert a PDF buffer to a PNG image buffer for OCR processing.
- * Uses pdf-parse to extract text first; if that yields enough text we use it directly.
- * Otherwise falls back to rendering the first page via sharp (creates a placeholder).
+ * Convert a PDF buffer into an OCR-processable form.
+ *
+ * Strategy 1 — digital PDFs: pdf-parse extracts the selectable text layer and
+ *   the pipeline structures it directly (Gemini when configured, local
+ *   heuristic parser otherwise) with no visual OCR at all.
+ * Strategy 2 — scanned/flat PDFs: rasterise the first page to a real PNG via
+ *   pdfjs-dist + @napi-rs/canvas, then run the normal image OCR pipeline
+ *   (Gemini vision / Tesseract) on it.
  */
 const convertPdfToImageForOcr = async (validated: ValidatedUpload): Promise<ValidatedUpload> => {
   logger.info('Converting PDF to processable format for OCR...');
 
   // Strategy 1: Extract text directly from the PDF (works for digital/text PDFs)
   try {
-    const pdfParse = require('pdf-parse');
-    const pdfData = await pdfParse(validated.buffer);
-    const extractedText = (pdfData.text || '').trim();
+    const { extractPdfText } = await import('../../utils/pdfRender');
+    const extractedText = await extractPdfText(validated.buffer);
 
     if (extractedText.length > 50) {
       logger.info('PDF contains extractable text, using direct text extraction', {
@@ -43,37 +47,21 @@ const convertPdfToImageForOcr = async (validated: ValidatedUpload): Promise<Vali
       } as ValidatedUpload & { _pdfExtractedText: string };
     }
   } catch (pdfErr: any) {
-    logger.warn('pdf-parse failed, will attempt image conversion', { error: pdfErr.message });
+    logger.warn('pdf-parse failed, will attempt page rasterisation', { error: pdfErr.message });
   }
 
-  // Strategy 2: For scanned PDFs with no extractable text, render first page to image
-  // We use sharp to create a white canvas with the PDF text overlaid  this is a
-  // lightweight approach that avoids heavy dependencies like poppler/pdf2image
-  try {
-    const sharp = require('sharp');
-    // Create a blank canvas and composite  Tesseract will process this
-    // For true PDF rendering, a production system would use pdf-poppler or pdf2pic
-    const placeholderImage = await sharp({
-      create: { width: 800, height: 1200, channels: 3, background: { r: 255, g: 255, b: 255 } },
-    })
-      .png()
-      .toBuffer();
-
-    logger.info('Created placeholder image from PDF for Tesseract processing');
-    return {
-      kind: 'image',
-      originalName: validated.originalName,
-      contentType: 'image/png',
-      extension: 'png',
-      buffer: placeholderImage,
-    };
-  } catch (sharpErr: any) {
-    logger.warn('sharp PDF fallback failed', { error: sharpErr.message });
-  }
-
-  // Strategy 3: Last resort  pass the raw PDF buffer and let Tesseract try (will likely fail)
-  logger.warn('All PDF conversion strategies failed, passing raw buffer');
-  return { ...validated, kind: 'image' as const };
+  // Strategy 2: Scanned PDF (no text layer) — rasterise the first page and let
+  // the standard image OCR pipeline handle the PNG.
+  const { renderPdfFirstPageToPng } = await import('../../utils/pdfRender');
+  const png = await renderPdfFirstPageToPng(validated.buffer);
+  logger.info('Scanned PDF rasterised to PNG for OCR', { bytes: png.length });
+  return {
+    kind: 'image',
+    originalName: validated.originalName,
+    contentType: 'image/png',
+    extension: 'png',
+    buffer: png,
+  };
 };
 
 const DEFAULT_OCR_ENDPOINT = 'http://127.0.0.1:8001/scan-receipt';
@@ -502,12 +490,14 @@ const extractJson = async (response: globalThis.Response): Promise<JsonMap> => {
 const OCR_JOBS = new Map<string, { status: string; data?: any; error?: string }>();
 
 const executeFullOcrPipeline = async (userId: string, file: any, validated: any) => {
-  const processed = await processImage(validated.buffer);
+  // If PDF text was already extracted (digital PDF), there is no image to
+  // preprocess — sharp would throw on the UTF-8 pseudo-buffer.
+  const pdfExtractedText = validated._pdfExtractedText as string | undefined;
+  const processed = pdfExtractedText
+    ? { buffer: validated.buffer, contentType: 'text/plain', extension: 'txt', size: validated.buffer.length }
+    : await processImage(validated.buffer);
   let raw: JsonMap = {};
   let source = 'unknown';
-
-  // If PDF text was already extracted (digital PDF), skip image OCR entirely
-  const pdfExtractedText = validated._pdfExtractedText as string | undefined;
 
   audit({ event: 'ai.ocr_request', userId, meta: { fileSize: file.size, contentType: validated.contentType, isPdfText: !!pdfExtractedText } });
 
@@ -529,7 +519,18 @@ const executeFullOcrPipeline = async (userId: string, file: any, validated: any)
     }
   }
 
-  // 2. Fallback to OCR.space
+  // 2. Digital-PDF local fallback — when the PDF had a text layer but no LLM
+  // is configured (or Gemini failed), structure the text with the same
+  // heuristic parser used for OCR.space raw text. Fully offline.
+  if (source === 'unknown' && pdfExtractedText) {
+    raw = parseOcrSpaceRawText(pdfExtractedText);
+    raw._rawOcrText = pdfExtractedText;
+    raw.confidence = 0.7;
+    source = 'pdf-text-local';
+    audit({ event: 'ai.ocr_success', userId, meta: { source } });
+  }
+
+  // 3. Fallback to OCR.space
   if (source === 'unknown' && process.env.RECEIPT_OCR_API_KEY) {
     try {
       raw = await withCircuitBreaker(

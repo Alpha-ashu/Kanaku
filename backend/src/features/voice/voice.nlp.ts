@@ -1,26 +1,34 @@
 /**
- * Voice Financial NLP Engine — v2
+ * Voice Financial NLP Engine — v3
  *
- * Architecture: LLM-first understanding, regex as offline fallback.
+ * Architecture: LLM-first understanding, regex as offline fallback,
+ * user-personalised via the voice learning loop (user_voice_learning).
  *
- * Phase 1: English only.
- * Language detection + translation stubs are wired but inactive, so future
- * multilingual support (Hindi, Tamil, Telugu, etc.) can be enabled here
- * without touching the rest of the pipeline.
+ * Multilingual: the LLM providers understand Hindi/Tamil/Telugu/etc. and
+ * code-switched speech (Hinglish) natively — the prompt instructs them to
+ * interpret any input language and emit English fields, so no separate
+ * translation hop is needed. detectLanguage is a script-based heuristic used
+ * for logging/metadata; the regex fallback remains English-only.
  *
  * Flow:
  *   transcript
  *   → cleanTranscript (filler removal)
- *   → detectLanguage (stub — always 'en' in Phase 1)
- *   → [translateToEnglish if lang ≠ 'en'] (stub — no-op in Phase 1)
- *   → LLM extraction (Gemini primary, Groq/OpenRouter as fallback providers — each
- *     extracts ALL actions in one shot)
- *   → fallback: regexPipeline (if every LLM provider is unavailable or returns nothing)
+ *   → detectLanguage (Unicode-script heuristic)
+ *   → LLM extraction with user-preference few-shots (Gemini primary,
+ *     Groq/OpenRouter fallbacks — each extracts ALL actions in one shot)
+ *   → fallback: regexPipeline (if every LLM provider is unavailable or empty)
+ *   → applyLearnedCorrections (deterministic user-correction overrides)
  *   → FinancialAction[]
  */
 
 import { logger } from '../../config/logger';
 import { getAIConfigurations } from '../../utils/aiConfig';
+import {
+  applyLearnedCorrections,
+  buildLearningPromptBlock,
+  getLearnedPreferences,
+  type LearnedPreference,
+} from './voice.learning';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -66,27 +74,23 @@ export interface FinancialAction {
 export type SupportedLanguage = 'en' | 'hi' | 'ta' | 'te' | 'ml' | 'kn' | 'bn';
 
 /**
- * Detect the language of a transcript.
- *
- * Phase 1: always returns 'en'.
- * Phase 2 (multilingual): integrate Google Translate langdetect or Gemini
- * language-identification before handing off to extractWithLLM.
+ * Detect the dominant language of a transcript from its Unicode script.
+ * Latin-script Hinglish still reads as 'en' — that's fine, the LLM handles
+ * code-switching natively. Used for logging/metadata and to warn when the
+ * regex fallback (English-only) is about to run on non-Latin text.
  */
-function detectLanguage(_transcript: string): SupportedLanguage {
-  return 'en';
-}
-
-/**
- * Translate a non-English transcript to English.
- *
- * Phase 1: no-op (returns input unchanged).
- * Phase 2: call Google Translate API or use Gemini's translation capability.
- */
-async function translateToEnglish(
-  transcript: string,
-  _fromLang: SupportedLanguage,
-): Promise<string> {
-  return transcript;
+export function detectLanguage(transcript: string): SupportedLanguage {
+  const counts: Array<[SupportedLanguage, number]> = [
+    ['hi', (transcript.match(/[ऀ-ॿ]/g) || []).length], // Devanagari (Hindi/Marathi)
+    ['ta', (transcript.match(/[஀-௿]/g) || []).length], // Tamil
+    ['te', (transcript.match(/[ఀ-౿]/g) || []).length], // Telugu
+    ['kn', (transcript.match(/[ಀ-೿]/g) || []).length], // Kannada
+    ['ml', (transcript.match(/[ഀ-ൿ]/g) || []).length], // Malayalam
+    ['bn', (transcript.match(/[ঀ-৿]/g) || []).length], // Bengali
+  ];
+  const [lang, count] = counts.sort((a, b) => b[1] - a[1])[0];
+  // Require a meaningful share of non-Latin characters before switching
+  return count >= Math.max(4, transcript.length * 0.15) ? lang : 'en';
 }
 
 // ─── Filler-word cleaner ──────────────────────────────────────────────────────
@@ -117,14 +121,20 @@ interface LLMRawAction {
 const TODAY = () => new Date().toISOString().slice(0, 10);
 
 /**
- * Build the extraction prompt for Gemini.
+ * Build the extraction prompt for the LLM providers.
  * Keeping it in one place makes it easy to tune without touching logic.
  */
-function buildExtractionPrompt(transcript: string): string {
+function buildExtractionPrompt(transcript: string, learningBlock = ''): string {
   return `You are a financial assistant that extracts structured financial actions from natural human speech.
 
 CRITICAL RULE: Extract EVERY financial action. Never drop an action because of sentence structure or missing verbs.
 
+LANGUAGE: The input may be in ANY language (Hindi, Tamil, Telugu, Bengali, etc.) or
+code-switched (e.g. Hinglish: "maine 500 ka petrol bharwaya"). Understand it in its
+original language, but ALWAYS return the output fields (description, category, person,
+merchant) in English. Amounts spoken in Indian units convert numerically:
+"5 hazaar"/"5k" → 5000, "2 lakh" → 200000, "dedh sau" → 150.
+${learningBlock}
 INPUT: "${transcript}"
 TODAY: ${TODAY()}
 
@@ -242,6 +252,7 @@ async function extractWithGemini(
   transcript: string,
   modelName: string,
   confidenceThreshold: number,
+  learningBlock: string,
 ): Promise<FinancialAction[]> {
   const { GoogleGenerativeAI } = await import('@google/generative-ai');
   const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!);
@@ -255,7 +266,7 @@ async function extractWithGemini(
     },
   });
 
-  const result = await model.generateContent(buildExtractionPrompt(transcript));
+  const result = await model.generateContent(buildExtractionPrompt(transcript, learningBlock));
   const parsed = parseLLMJson(result.response.text());
   return normaliseRawActions(parsed, transcript, confidenceThreshold);
 }
@@ -269,8 +280,9 @@ async function extractWithOpenAICompatible(
   transcript: string,
   opts: { baseUrl: string; apiKey: string; model: string; label: string },
   confidenceThreshold: number,
+  learningBlock: string,
 ): Promise<FinancialAction[]> {
-  const prompt = `${buildExtractionPrompt(transcript)}\n\nIMPORTANT: Wrap your answer as a single JSON object {"actions": [ ... ]}, not a bare array.`;
+  const prompt = `${buildExtractionPrompt(transcript, learningBlock)}\n\nIMPORTANT: Wrap your answer as a single JSON object {"actions": [ ... ]}, not a bare array.`;
 
   const res = await fetch(`${opts.baseUrl}/chat/completions`, {
     method: 'POST',
@@ -476,7 +488,10 @@ function regexPipeline(transcript: string, threshold: number): FinancialAction[]
 
 // ─── Main Pipeline ────────────────────────────────────────────────────────────
 
-export async function processVoiceTranscript(transcript: string): Promise<FinancialAction[]> {
+export async function processVoiceTranscript(
+  transcript: string,
+  userId?: string,
+): Promise<FinancialAction[]> {
   const config = await getAIConfigurations();
 
   if (!config.voice.enabled) {
@@ -488,11 +503,14 @@ export async function processVoiceTranscript(transcript: string): Promise<Financ
   const cleaned = cleanTranscript(transcript);
   logger.debug('Voice NLP: cleaned', { original: transcript.slice(0, 120), cleaned: cleaned.slice(0, 120) });
 
-  // Step 2: Detect language (Phase 1: always 'en')
+  // Step 2: Detect language (script heuristic — the LLM handles the actual
+  // multilingual understanding; this is metadata + fallback awareness)
   const lang = detectLanguage(cleaned);
 
-  // Step 3: Translate to English if needed (Phase 1: no-op)
-  const english = lang === 'en' ? cleaned : await translateToEnglish(cleaned, lang);
+  // Step 3: Load this user's learned corrections (few-shot personalization +
+  // deterministic post-parse overrides). Empty when userId is absent.
+  const prefs: LearnedPreference[] = userId ? await getLearnedPreferences(userId) : [];
+  const learningBlock = buildLearningPromptBlock(prefs);
 
   const threshold = config.voice.autoSaveThreshold ?? 0.7;
   const modelName = config.voice.model ?? 'gemini-2.5-flash';
@@ -506,29 +524,29 @@ export async function processVoiceTranscript(transcript: string): Promise<Financ
   if (process.env.GOOGLE_API_KEY) {
     providers.push({
       label: 'Gemini',
-      run: () => extractWithGemini(english, modelName, threshold),
+      run: () => extractWithGemini(cleaned, modelName, threshold, learningBlock),
     });
   }
   if (process.env.GROQ_API_KEY) {
     providers.push({
       label: 'Groq',
-      run: () => extractWithOpenAICompatible(english, {
+      run: () => extractWithOpenAICompatible(cleaned, {
         baseUrl: 'https://api.groq.com/openai/v1',
         apiKey: process.env.GROQ_API_KEY!,
         model: 'llama-3.3-70b-versatile',
         label: 'Groq',
-      }, threshold),
+      }, threshold, learningBlock),
     });
   }
   if (process.env.OPENROUTER_API_KEY) {
     providers.push({
       label: 'OpenRouter',
-      run: () => extractWithOpenAICompatible(english, {
+      run: () => extractWithOpenAICompatible(cleaned, {
         baseUrl: 'https://openrouter.ai/api/v1',
         apiKey: process.env.OPENROUTER_API_KEY!,
         model: 'meta-llama/llama-3.3-70b-instruct',
         label: 'OpenRouter',
-      }, threshold),
+      }, threshold, learningBlock),
     });
   }
 
@@ -538,10 +556,11 @@ export async function processVoiceTranscript(transcript: string): Promise<Financ
       if (actions.length > 0) {
         logger.info(`Voice NLP: ${provider.label} extracted actions`, {
           count: actions.length,
+          language: lang,
           types: actions.map(a => a.type),
           amounts: actions.map(a => a.entities.amount),
         });
-        return actions;
+        return applyLearnedCorrections(actions, prefs);
       }
       logger.warn(`Voice NLP: ${provider.label} returned empty result, trying next provider`);
     } catch (err: any) {
@@ -549,10 +568,15 @@ export async function processVoiceTranscript(transcript: string): Promise<Financ
     }
   }
 
-  // Step 5: Regex fallback (offline / no API keys / every LLM provider failed)
-  const fallbackActions = regexPipeline(english, threshold);
+  // Step 5: Regex fallback (offline / no API keys / every LLM provider failed).
+  // English-only — non-Latin transcripts flow through with low extraction odds,
+  // which surfaces as requiresReview rather than silent data loss.
+  if (lang !== 'en') {
+    logger.warn('Voice NLP: regex fallback running on non-English transcript', { language: lang });
+  }
+  const fallbackActions = regexPipeline(cleaned, threshold);
   logger.info('Voice NLP: regex fallback extracted actions', {
     count: fallbackActions.length,
   });
-  return fallbackActions;
+  return applyLearnedCorrections(fallbackActions, prefs);
 }

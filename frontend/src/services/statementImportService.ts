@@ -34,6 +34,22 @@ export interface ParsedTransaction {
   confidenceScore?: number;
 }
 
+export interface StatementMeta {
+  bankName?: string;
+  accountNumber?: string;
+  accountHolder?: string;
+  currency?: string;
+  period?: { from?: string; to?: string };
+  openingBalance?: number;
+  closingBalance?: number;
+  /** opening + credits − debits ≈ closing (null when balances weren't printed) */
+  reconciled?: boolean | null;
+  reconciliationDelta?: number;
+  /** Which engine produced the rows: gemini/groq/openrouter (server LLM), heuristic (server), or client */
+  parser?: string;
+  warnings?: string[];
+}
+
 export interface ImportResult {
   success: boolean;
   transactions: ParsedTransaction[];
@@ -49,6 +65,8 @@ export interface ImportResult {
   suggestedAccountId?: number;
   suggestedAccountName?: string;
   documentId?: number;
+  /** Statement-level metadata when the server-side parser was used */
+  statementMeta?: StatementMeta;
 }
 
 export interface StatementImportOptions {
@@ -317,7 +335,114 @@ function isBoilerplateText(text: string): boolean {
 }
 
 class StatementImportService {
+  /**
+   * Parse a statement, server-first: the backend `/import/statement` endpoint
+   * runs LLM-structured extraction (with statement metadata + reconciliation),
+   * and this client falls back to the local pdfjs/regex pipeline when offline
+   * or when the server can't produce rows.
+   */
   async parseStatement(file: File, options: StatementImportOptions): Promise<ImportResult> {
+    if (typeof navigator === 'undefined' || navigator.onLine !== false) {
+      try {
+        const serverResult = await this.parseStatementViaServer(file, options);
+        if (serverResult && serverResult.transactions.length > 0) {
+          return serverResult;
+        }
+      } catch (error) {
+        console.warn('[StatementImport] Server parse unavailable, using local parser:', error);
+      }
+    }
+    return this.parseStatementLocally(file, options);
+  }
+
+  /** Upload to the backend statement parser and map its preview into ImportResult. */
+  private async parseStatementViaServer(file: File, options: StatementImportOptions): Promise<ImportResult | null> {
+    const { TokenManager } = await import('@/lib/api');
+    const token = TokenManager.getAccessToken?.();
+    if (!token) return null; // guest/limited mode — local parsing only
+
+    const API_BASE = (import.meta.env.VITE_API_URL || '/api/v1').replace(/\/+$/, '');
+    const formData = new FormData();
+    formData.append('file', file, file.name);
+
+    const response = await fetch(`${API_BASE}/import/statement`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData,
+    });
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}));
+      throw new Error(body.error || `Statement parse failed (${response.status})`);
+    }
+
+    const preview = await response.json() as {
+      sessionId: string;
+      transactions: Array<{
+        rowIndex: number; description: string; amount?: number; date: string;
+        type?: 'debit' | 'credit'; reference?: string;
+        suggestedCategory: string; confidence: number;
+      }>;
+      statement?: StatementMeta;
+    };
+
+    const rows: ParsedTransaction[] = (preview.transactions || [])
+      .filter((row) => typeof row.amount === 'number' && row.amount > 0)
+      .map((row) => {
+        const description = row.reference ? `${row.description} (Ref: ${row.reference})` : row.description;
+        return {
+          transaction_date: new Date(`${row.date}T00:00:00`),
+          raw_description: row.description,
+          cleaned_description: cleanDescription(description) || row.description,
+          amount: row.amount as number,
+          transaction_type: row.type === 'credit' ? 'income' as const : 'expense' as const,
+          payment_channel: extractPaymentChannel(row.description),
+          merchant_name: pickMerchantName(row.description),
+          category: row.suggestedCategory,
+          currency: preview.statement?.currency,
+          confidenceScore: row.confidence,
+        };
+      });
+    if (rows.length === 0) return null;
+
+    const documentId = options.documentId ?? await documentIntelligenceService.createDocumentRecord({
+      documentType: 'statement',
+      file,
+      processingStatus: 'processing',
+      accountId: options.accountId,
+    });
+
+    const meta = preview.statement;
+    const suggestedAccount = await this.findSuggestedAccount(meta?.bankName, meta?.accountNumber);
+    const annotatedTransactions = await this.annotateTransactions(rows, options);
+    const summary = this.generateSummary(annotatedTransactions);
+
+    await documentIntelligenceService.updateDocumentRecord(documentId, {
+      processingStatus: 'preview',
+      sourceAccountName: meta?.bankName,
+      metadata: {
+        detectedBank: meta?.bankName || '',
+        accountNumber: meta?.accountNumber || '',
+        openingBalance: meta?.openingBalance?.toString() || '',
+        transactionCount: String(annotatedTransactions.length),
+        parser: meta?.parser || 'server',
+      },
+    });
+
+    return {
+      success: true,
+      transactions: annotatedTransactions,
+      errors: meta?.warnings ?? [],
+      summary,
+      statementAccountName: meta?.bankName,
+      suggestedAccountId: suggestedAccount?.id,
+      suggestedAccountName: suggestedAccount?.name,
+      documentId,
+      statementMeta: meta,
+    };
+  }
+
+  /** Original on-device parsing pipeline (pdfjs text/OCR + heuristics). */
+  private async parseStatementLocally(file: File, options: StatementImportOptions): Promise<ImportResult> {
     const errors: string[] = [];
     const documentId = options.documentId ?? await documentIntelligenceService.createDocumentRecord({
       documentType: 'statement',
