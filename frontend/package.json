@@ -11,7 +11,8 @@
     "test:unit:watch": "vitest --config vitest.config.ts",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "type-check": "tsc --noEmit --skipLibCheck",
-    "format": "prettier --write \"**/*.{ts,tsx,json,md}\""
+    "format": "prettier --write \"**/*.{ts,tsx,json,md}\"",
+    "test": "vitest run --config vitest.config.ts"
   },
   "dependencies": {
     "@capacitor/app": "^8.0.0",

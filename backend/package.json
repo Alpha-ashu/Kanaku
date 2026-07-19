@@ -38,7 +38,9 @@
     "test:watch": "jest --watch",
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
-    "schemas:scaffold": "powershell -ExecutionPolicy Bypass -File scripts/scaffold-feature-schemas.ps1"
+    "schemas:scaffold": "powershell -ExecutionPolicy Bypass -File scripts/scaffold-feature-schemas.ps1",
+    "db:generate": "prisma generate",
+    "type-check": "tsc --noEmit"
   },
   "keywords": [
     "KANAKU",
