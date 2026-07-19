@@ -15,6 +15,12 @@ All documentation files have been consolidated into single, topic-specific files
 | 05 | [05_DATABASE_SCHEMA.md](./05_DATABASE_SCHEMA.md) | Database Schema & Tables Definition: cloud Postgres tables (Prisma) and client IndexedDB schemas (Dexie v15), Index history, local rules, and ERD diagrams. |
 | 06 | [06_IMPLEMENTATION_PLAN.md](./06_IMPLEMENTATION_PLAN.md) | Project Roadmap & Implementation Plan: sprint timelines, task breakdowns, dependency backlogs, and developer AI prompt guardrails. |
 
+## Release Audit (Beta)
+
+- **[release/](./release/README.md)** — 2026-07-19 Beta Release Readiness audit: readiness report,
+  security audit, RBAC matrix, test plan/results, performance report, deployment guide,
+  operations runbook, known limitations, release checklist, and verified architecture snapshots.
+
 ## Additional Resources
 - **[Feature_List.csv](./Feature_List.csv)**: Complete feature spreadsheet list.
 - **[openapi.yaml](./openapi.yaml)**: Swagger-ready API specifications.

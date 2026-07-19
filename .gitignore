@@ -33,6 +33,7 @@ jspm_packages/
 backend/.env
 backend/.env.*
 !backend/.env.example
+!backend/.env.test.example
 frontend/.env
 frontend/.env.*
 !frontend/.env.example

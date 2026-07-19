@@ -122,6 +122,30 @@ export class FinancialEventStore {
   }
 
   /**
+   * Read-side accessor: all events for a user, newest first.
+   * Accepts either the shared client or an open transaction so callers can
+   * read their own writes inside a transaction.
+   */
+  static async getEventsByUser(tx: PrismaTx, userId: string, limit = 100) {
+    return tx.financialEvent.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+    });
+  }
+
+  /**
+   * Read-side accessor: full event history for one aggregate (e.g. a
+   * JournalEntry id), oldest first — the replay order.
+   */
+  static async getEventsByAggregate(tx: PrismaTx, aggregateId: string) {
+    return tx.financialEvent.findMany({
+      where: { aggregateId },
+      orderBy: { createdAt: 'asc' },
+    });
+  }
+
+  /**
    * Records a FACTORY_RESET_STARTED, FACTORY_RESET_COMPLETED, or
    * FACTORY_RESET_FAILED lifecycle event directly into the FinancialEvent
    * table (outside a transaction — these are operational events, not financial

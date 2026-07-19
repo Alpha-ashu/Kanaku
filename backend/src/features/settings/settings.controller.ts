@@ -424,18 +424,22 @@ export const clearAllUserData = async (req: AuthRequest, res: Response) => {
       });
       const nextVersion = (currentSettings?.factoryResetVersion ?? 0) + 1;
 
-      await tx.userSettings.update({
+      // upsert, not update: a user who never touched their settings has no
+      // UserSettings row yet, and update() would throw P2025 and abort the
+      // entire factory-reset transaction with a 500.
+      const factoryDefaults = {
+        theme: 'light',
+        language: 'en',
+        currency: 'USD',
+        timezone: 'UTC',
+        settings: {},
+        lastFactoryResetAt: new Date(),
+        factoryResetVersion: nextVersion,
+      };
+      await tx.userSettings.upsert({
         where: { userId },
-        data: {
-          theme: 'light',
-          language: 'en',
-          currency: 'USD',
-          timezone: 'UTC',
-          settings: {},
-          lastFactoryResetAt: new Date(),
-          factoryResetCount: { increment: 1 },
-          factoryResetVersion: nextVersion,
-        },
+        update: { ...factoryDefaults, factoryResetCount: { increment: 1 } },
+        create: { userId, ...factoryDefaults, factoryResetCount: 1 },
       });
 
       const p1End = Date.now();

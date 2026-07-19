@@ -157,7 +157,8 @@ async function seedData(token) {
       const batch = [];
       for (let j = 0; j < geBatchSize && i + j < GROUP_EXPENSE_COUNT; j++) {
         const idx = i + j;
-        batch.push(request('POST', '/group-expenses', {
+        batch.push(request('POST', '/groups', {
+          name: `BENCH_GE_${idx}`,
           description: `BENCH_GE_${idx}`,
           totalAmount: 2000,
           paidBy: 'me',
@@ -252,7 +253,7 @@ async function cleanupAndVerify(token) {
   const checks = [
     { name: 'accounts', endpoint: '/accounts' },
     { name: 'transactions', endpoint: '/transactions' },
-    { name: 'group-expenses', endpoint: '/group-expenses' },
+    { name: 'group-expenses', endpoint: '/groups' },
     { name: 'recurring rules', endpoint: '/recurring' },
   ];
 
@@ -298,9 +299,16 @@ async function main() {
   readResults.push(await benchmarkEndpoint('Dashboard Cashflow', 'GET', '/dashboard/cashflow', null, token));
   readResults.push(await benchmarkEndpoint('Accounts List', 'GET', '/accounts', null, token));
   readResults.push(await benchmarkEndpoint('Transactions List', 'GET', '/transactions', null, token));
-  readResults.push(await benchmarkEndpoint('Group Expenses List', 'GET', '/group-expenses', null, token));
+  readResults.push(await benchmarkEndpoint('Group Expenses List', 'GET', '/groups', null, token));
   readResults.push(await benchmarkEndpoint('Recurring Rules List', 'GET', '/recurring', null, token));
-  readResults.push(await benchmarkEndpoint('System Integrity', 'GET', '/system/integrity', null, token));
+  // /system/integrity is admin-only; benchmark it only when the login user has
+  // the admin role (probe once instead of recording 15 guaranteed 403s).
+  const integrityProbe = await request('GET', '/system/integrity', null, token, true);
+  if (integrityProbe.status !== 403) {
+    readResults.push(await benchmarkEndpoint('System Integrity', 'GET', '/system/integrity', null, token));
+  } else {
+    console.log('  [SKIP] System Integrity — requires admin role (set BENCHMARK_EMAIL to an admin account to include it)');
+  }
 
   console.log('\n> Write Performance Benchmarks (10 iterations each)');
   const writeResults = [];

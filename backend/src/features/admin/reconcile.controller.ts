@@ -70,26 +70,53 @@ export const reconcileLedger = async (req: AuthRequest, res: Response, next: Nex
     });
     console.log('[DEBUG-RECONCILE] Group sums loaded:', transactionSums.length);
 
-    // Map the sums for fast O(1) lookup
-    const sumMap = new Map();
+    // Map signed impact per account. Three type vocabularies exist and all must
+    // reconcile identically (types are stored as written by their source path):
+    //   income / expense              — manual & ledger single legs
+    //   transfer (+transferToAccountId) — live single-row transfer path
+    //   transfer_out / transfer_in    — Ledger V2 double-entry legs (any case)
+    const sumMap = new Map<string, Decimal>();
+    const addImpact = (accountId: string | null, delta: Decimal) => {
+      if (!accountId) return;
+      sumMap.set(accountId, (sumMap.get(accountId) || new Decimal(0)).plus(delta));
+    };
     for (const group of transactionSums) {
-      const key = group.accountId;
-      if (!key) continue;
-      const current = sumMap.get(key) || { income: new Decimal(0), expense: new Decimal(0) };
+      if (!group.accountId) continue;
       const amountVal = group._sum.amount ? new Decimal(group._sum.amount) : new Decimal(0);
-      if (group.type === 'income') {
-        current.income = amountVal;
-      } else if (group.type === 'expense') {
-        current.expense = amountVal;
+      switch ((group.type || '').toLowerCase()) {
+        case 'income':
+        case 'transfer_in':
+          addImpact(group.accountId, amountVal);
+          break;
+        case 'expense':
+        case 'transfer_out':
+        case 'transfer': // single-row transfer debits its source account
+          addImpact(group.accountId, amountVal.negated());
+          break;
       }
-      sumMap.set(key, current);
+    }
+
+    // Credit side of single-row transfers (destination account)
+    const transferInSums = await prisma.transaction.groupBy({
+      by: ['transferToAccountId'],
+      where: {
+        type: 'transfer',
+        transferToAccountId: { not: null },
+        status: 'POSTED',
+        deletedAt: null
+      },
+      _sum: { amount: true }
+    });
+    for (const group of transferInSums) {
+      const amountVal = group._sum.amount ? new Decimal(group._sum.amount) : new Decimal(0);
+      addImpact(group.transferToAccountId, amountVal);
     }
 
     for (const account of accounts) {
-      const sums = sumMap.get(account.id) || { income: new Decimal(0), expense: new Decimal(0) };
+      const impact = sumMap.get(account.id) || new Decimal(0);
       const openingBalance = new Decimal(account.openingBalance);
 
-      const expected = openingBalance.plus(sums.income).minus(sums.expense);
+      const expected = openingBalance.plus(impact);
       const actual = new Decimal(account.balance);
 
       if (!expected.equals(actual)) {
@@ -147,15 +174,16 @@ export const reconcileLedger = async (req: AuthRequest, res: Response, next: Nex
       report.errors.push(`Duplicate idempotency key constraint violation: User ${dup.userId}, Module ${dup.sourceModule}, Key ${dup.idempotencyKey} (appears ${dup.count} times)`);
     }
 
-    // 4. Double-Entry Journal Imbalances check
+    // 4. Double-Entry Journal Imbalances check — same debit/credit vocabulary
+    // as the /system/integrity auditor (INCOME/TRANSFER_IN vs EXPENSE/TRANSFER_OUT)
     const unbalancedJournals = await prisma.$queryRaw<{ journalId: string; debitSum: number; creditSum: number }[]>`
       SELECT t."journalEntryId" as "journalId",
-             COALESCE(SUM(CASE WHEN t.type = 'income' THEN t.amount ELSE 0 END), 0)::float as "debitSum",
-             COALESCE(SUM(CASE WHEN t.type = 'expense' THEN t.amount ELSE 0 END), 0)::float as "creditSum"
+             COALESCE(SUM(CASE WHEN UPPER(t.type) IN ('INCOME', 'TRANSFER_IN') THEN t.amount ELSE 0 END), 0)::float as "debitSum",
+             COALESCE(SUM(CASE WHEN UPPER(t.type) IN ('EXPENSE', 'TRANSFER_OUT') THEN t.amount ELSE 0 END), 0)::float as "creditSum"
       FROM "Transaction" t
       WHERE t."journalEntryId" IS NOT NULL AND t."deletedAt" IS NULL
       GROUP BY t."journalEntryId"
-      HAVING COUNT(*) > 1 AND ABS(COALESCE(SUM(CASE WHEN t.type = 'income' THEN t.amount ELSE 0 END), 0) - COALESCE(SUM(CASE WHEN t.type = 'expense' THEN t.amount ELSE 0 END), 0)) > 0.009
+      HAVING COUNT(*) > 1 AND ABS(COALESCE(SUM(CASE WHEN UPPER(t.type) IN ('INCOME', 'TRANSFER_IN') THEN t.amount ELSE 0 END), 0) - COALESCE(SUM(CASE WHEN UPPER(t.type) IN ('EXPENSE', 'TRANSFER_OUT') THEN t.amount ELSE 0 END), 0)) > 0.009
     `;
     console.log('[DEBUG-RECONCILE] Unbalanced journals checked:', unbalancedJournals.length);
     
@@ -177,12 +205,13 @@ export const reconcileLedger = async (req: AuthRequest, res: Response, next: Nex
       report.errors.push(`Cross-user isolation violation: Transaction ${violation.transactionId} (User ${violation.txUser}) linked to Journal ${violation.journalId} (User ${violation.jUser})`);
     }
 
-    // 6. Transfer Audit (TRANSFER_OUT count == TRANSFER_IN count)
+    // 6. Transfer Audit (TRANSFER_OUT count == TRANSFER_IN count) — legs are
+    // stored in the case their source path wrote, so match case-insensitively.
     const transferOutCount = await prisma.transaction.count({
-      where: { type: 'TRANSFER_OUT', status: 'POSTED', deletedAt: null }
+      where: { type: { equals: 'TRANSFER_OUT', mode: 'insensitive' }, status: 'POSTED', deletedAt: null }
     });
     const transferInCount = await prisma.transaction.count({
-      where: { type: 'TRANSFER_IN', status: 'POSTED', deletedAt: null }
+      where: { type: { equals: 'TRANSFER_IN', mode: 'insensitive' }, status: 'POSTED', deletedAt: null }
     });
     if (transferOutCount !== transferInCount) {
       report.summary.transferImbalances = Math.abs(transferOutCount - transferInCount);

@@ -163,9 +163,11 @@ describe('LEDGER V2 FOUNDATION & RECONCILIATION', () => {
             description: 'Balanced Transfer test'
           },
           [
+            // TRANSFER journals must use transfer_out/transfer_in leg types
+            // (FinancialInvariantValidator.assertValidTransfer contract)
             {
               accountId: 'test-ledger-acc-1',
-              type: 'expense',
+              type: 'transfer_out',
               amount: 100,
               category: 'transfer',
               description: 'Outflow leg',
@@ -173,7 +175,7 @@ describe('LEDGER V2 FOUNDATION & RECONCILIATION', () => {
             },
             {
               accountId: 'test-ledger-acc-2',
-              type: 'income',
+              type: 'transfer_in',
               amount: 100,
               category: 'transfer',
               description: 'Inflow leg',

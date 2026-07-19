@@ -974,9 +974,9 @@ export const api = {
         stored ? { headers: { 'x-refresh-token': stored } } : undefined);
     },
 
-    verifyEmail: (token: string) =>
-      apiClient.post('/auth/verify-email', { token }),
-
+    // NOTE: email verification is handled by Supabase (AuthCallback flow) and
+    // password changes go through the reset flow below — the backend exposes no
+    // /auth/verify-email or /auth/change-password endpoints, so no wrappers here.
     forgotPassword: (email: string) =>
       apiClient.post('/auth/forgot-password', { email }),
 
@@ -985,9 +985,6 @@ export const api = {
 
     resetPassword: (data: any) =>
       apiClient.post('/auth/reset-password', data),
-
-    changePassword: (oldPassword: string, newPassword: string) =>
-      apiClient.post('/auth/change-password', { oldPassword, newPassword }),
 
     deleteAccount: () =>
       apiClient.delete('/auth/account', { showErrorToast: true }),
@@ -1063,8 +1060,8 @@ export const api = {
         showSuccessToast: true,
         successMessage: 'Goal deleted successfully',
       }),
-    addContribution: (id: string, amount: number) =>
-      apiClient.post(`/goals/${id}/contributions`, { amount }),
+    // NOTE: goal contributions are recorded locally (Dexie) and reach the
+    // backend through /sync — there is no /goals/:id/contributions endpoint.
   },
 
   // Loans
@@ -1116,8 +1113,11 @@ export const api = {
     getSummary: (period: string) => apiClient.get(`/dashboard/summary?period=${period}`),
     getCategoryBreakdown: () => apiClient.get('/dashboard/cashflow'),
     getTrends: () => apiClient.get('/dashboard/cashflow'),
-    export: (format: 'pdf' | 'excel' | 'csv', filters?: any) =>
-      apiClient.post('/reports/export', { format, filters }),
+    // Server-side export lives at GET /reports/export/{csv|excel|pdf}; the UI
+    // currently generates statements client-side (lib/statementReportPdf.ts).
+    exportCsv: () => apiClient.get('/reports/export/csv'),
+    exportExcel: () => apiClient.get('/reports/export/excel'),
+    exportPdf: () => apiClient.get('/reports/export/pdf'),
   },
 
   // Admin

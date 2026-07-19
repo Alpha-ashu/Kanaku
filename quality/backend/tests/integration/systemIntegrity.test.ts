@@ -7,7 +7,9 @@ import { LedgerStatus, LedgerReferenceType, SourceModule, LedgerDirection, Finan
 const API = '/api/v1';
 const TEST_USER_ID = 'da6d92bf-33ab-41c6-a675-ea285f524021';
 
-const getSignedAuthToken = (userId: string = TEST_USER_ID, role: string = 'user', email: string = 'integrity_test@example.com') => {
+// The integrity endpoint is admin-only (system-wide operational data), so the
+// suite signs an admin token; NODE_ENV=test lets the role claim be trusted.
+const getSignedAuthToken = (userId: string = TEST_USER_ID, role: string = 'admin', email: string = 'integrity_test@example.com') => {
   if (!process.env.JWT_SECRET) {
     process.env.JWT_SECRET = 'test-jwt-secret';
   }
@@ -45,6 +47,15 @@ describe('System Integrity Diagnostic Endpoint Integration Tests', () => {
     await prisma.account.deleteMany({ where: { userId: TEST_USER_ID } });
   }
 
+  it('should reject non-admin users with 403', async () => {
+    const userToken = getSignedAuthToken(TEST_USER_ID, 'user');
+    const res = await request(app)
+      .get(`${API}/system/integrity`)
+      .set('Authorization', `Bearer ${userToken}`);
+
+    expect(res.status).toBe(403);
+  });
+
   it('should return isHealthy = true on a clean ledger', async () => {
     const res = await request(app)
       .get(`${API}/system/integrity`)
@@ -53,7 +64,8 @@ describe('System Integrity Diagnostic Endpoint Integration Tests', () => {
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
     expect(res.body.data.isHealthy).toBe(true);
-    expect(res.body.data.ledgerBalanced).toBe(true);
+    // Ledger fields are nested under data.ledger since the Phase 9.5 restructure
+    expect(res.body.data.ledger.ledgerBalanced).toBe(true);
   }, 30000);
 
   it('should flag imbalanced journal entries', async () => {
@@ -123,9 +135,9 @@ describe('System Integrity Diagnostic Endpoint Integration Tests', () => {
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
     expect(res.body.data.isHealthy).toBe(false);
-    expect(res.body.data.ledgerBalanced).toBe(false);
-    expect(res.body.data.imbalancedJournalEntries.length).toBeGreaterThan(0);
-    const found = res.body.data.imbalancedJournalEntries.find((e: any) => e.journalEntryId === journalEntry.id);
+    expect(res.body.data.ledger.ledgerBalanced).toBe(false);
+    expect(res.body.data.ledger.imbalancedJournalEntries.length).toBeGreaterThan(0);
+    const found = res.body.data.ledger.imbalancedJournalEntries.find((e: any) => e.journalEntryId === journalEntry.id);
     expect(found).toBeDefined();
   }, 30000);
 });
