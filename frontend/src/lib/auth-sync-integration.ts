@@ -267,10 +267,17 @@ const isMissingRemoteRow = (error: any) =>
  * exception: the FIFO queue may sync a deposit first, after which the same
  * expense legitimately succeeds on retry.
  */
-const isPermanentValidationError = (error: any) => {
-  const status = Number(error?.status ?? 0);
+export const isPermanentValidationError = (error: any) => {
+  // Status may live on the APIError itself, on an axios-style wrapper, or on a
+  // response object depending on which layer threw — check every shape so a
+  // deterministic 4xx is never mistaken for a retryable failure.
+  const status = Number(error?.status ?? error?.statusCode ?? error?.response?.status ?? 0);
   if (![400, 404, 409, 422].includes(status)) return false;
-  return error?.code !== 'INSUFFICIENT_BALANCE';
+
+  // INSUFFICIENT_BALANCE is the deliberate exception: the FIFO queue may sync
+  // a deposit first, after which the same expense legitimately succeeds.
+  const errCode = error?.code ?? error?.details?.code ?? error?.response?.data?.code;
+  return errCode !== 'INSUFFICIENT_BALANCE';
 };
 
 const getRemoteTableName = (table: SyncedTableName) => REMOTE_TABLE_NAMES[table];
