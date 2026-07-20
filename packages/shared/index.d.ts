@@ -25,6 +25,7 @@ export type VoiceActionType =
   | 'loan_lend'
   | 'goal'
   | 'investment'
+  | 'group_expense'
   | 'unknown';
 
 /** Entities extracted from one spoken financial action. */
@@ -42,6 +43,10 @@ export interface VoiceActionEntities {
   goalTarget?: number;
   goalDuration?: string;
   goalMonthly?: number;
+  /** group_expense: other participants' names (never includes the speaker) */
+  members?: string[];
+  /** group_expense split style; equal when unspecified */
+  splitType?: 'equal' | 'custom';
 }
 
 /**
@@ -60,6 +65,9 @@ export interface VoiceFinancialAction<
   requiresReview: boolean;
 }
 
+/** Which engine produced the extracted actions. */
+export type VoiceParserSource = 'gemini' | 'groq' | 'openrouter' | 'regex' | 'local';
+
 /** Response envelope of POST /voice/process and /voice/process-audio. */
 export interface VoiceProcessResponse {
   success: boolean;
@@ -67,6 +75,8 @@ export interface VoiceProcessResponse {
   /** BCP-47-ish language hint (script-detected or STT-reported) */
   language?: string;
   sttProvider?: 'gemini' | 'whisper';
+  /** engine that parsed the actions — regex/local mean the AI was unavailable */
+  parser?: VoiceParserSource;
   actions: VoiceFinancialAction[];
   totalActions: number;
   requiresReview: boolean;

@@ -1,7 +1,7 @@
 import { Response } from 'express';
 import { AuthRequest, getUserId } from '../../middleware/auth';
 import { prisma } from '../../db/prisma';
-import { processVoiceTranscript, detectLanguage } from './voice.nlp';
+import { processVoiceTranscriptDetailed, detectLanguage } from './voice.nlp';
 import { recordCorrection } from './voice.learning';
 import { transcribeAudio, validateAudioUpload } from './voice.stt';
 import { logger } from '../../config/logger';
@@ -46,13 +46,14 @@ export const processVoice = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ error: 'Transcript too long (max 5000 characters)' });
     }
 
-    const actions = await processVoiceTranscript(transcript, userId);
+    const { actions, parser } = await processVoiceTranscriptDetailed(transcript, userId);
     await storeTranscript(userId, transcript, actions.length);
 
     return res.json({
       success: true,
       transcript,
       language: detectLanguage(transcript),
+      parser,
       actions,
       totalActions: actions.length,
       requiresReview: actions.some(a => a.requiresReview),
@@ -140,7 +141,7 @@ export const processVoiceAudio = async (req: AuthRequest, res: Response) => {
 
     audit({ event: 'ai.voice_stt', userId, meta: { provider: stt.provider, chars: stt.transcript.length } });
 
-    const actions = await processVoiceTranscript(stt.transcript, userId);
+    const { actions, parser } = await processVoiceTranscriptDetailed(stt.transcript, userId);
     await storeTranscript(userId, stt.transcript, actions.length);
 
     return res.json({
@@ -148,6 +149,7 @@ export const processVoiceAudio = async (req: AuthRequest, res: Response) => {
       transcript: stt.transcript,
       sttProvider: stt.provider,
       language: stt.language ?? detectLanguage(stt.transcript),
+      parser,
       actions,
       totalActions: actions.length,
       requiresReview: actions.some(a => a.requiresReview),

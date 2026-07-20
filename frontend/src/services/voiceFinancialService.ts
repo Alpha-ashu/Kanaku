@@ -34,6 +34,8 @@ export interface VoiceProcessResponse {
   transcript: string;
   language?: string;
   sttProvider?: 'gemini' | 'whisper';
+  /** engine that parsed: gemini/groq/openrouter (backend AI), regex (backend fallback), local (on-device) */
+  parser?: 'gemini' | 'groq' | 'openrouter' | 'regex' | 'local';
   actions: FinancialAction[];
   totalActions: number;
   requiresReview: boolean;
@@ -444,6 +446,7 @@ export function parseTranscriptLocally(transcript: string): VoiceProcessResponse
     return {
       success: false,
       transcript,
+      parser: 'local',
       actions: [],
       totalActions: 0,
       requiresReview: false,
@@ -453,6 +456,7 @@ export function parseTranscriptLocally(transcript: string): VoiceProcessResponse
   return {
     success: actions.length > 0,
     transcript,
+    parser: 'local',
     actions,
     totalActions: actions.length,
     requiresReview: actions.some(a => a.requiresReview),

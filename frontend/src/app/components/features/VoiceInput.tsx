@@ -23,6 +23,7 @@ interface VoiceState {
   error: string | null;
   fallbackReason: FallbackReason;
   actions: FinancialAction[];
+  parser?: string;
   showManualInput: boolean;
   manualInput: string;
   showCommandCenter: boolean;
@@ -39,6 +40,7 @@ type VA =
   | { type: 'SET_ERROR'; payload: { msg: string; reason?: FallbackReason } }
   | { type: 'CLEAR_ERROR' }
   | { type: 'SET_ACTIONS'; payload: FinancialAction[] }
+  | { type: 'SET_PARSER'; payload?: string }
   | { type: 'TOGGLE_MANUAL'; payload?: boolean }
   | { type: 'SET_MANUAL_INPUT'; payload: string }
   | { type: 'SHOW_COMMAND_CENTER'; payload: boolean }
@@ -71,6 +73,8 @@ function reducer(s: VoiceState, a: VA): VoiceState {
       return { ...s, error: null, fallbackReason: null, mode: 'idle' };
     case 'SET_ACTIONS':
       return { ...s, actions: a.payload };
+    case 'SET_PARSER':
+      return { ...s, parser: a.payload };
     case 'TOGGLE_MANUAL':
       return { ...s, showManualInput: a.payload !== undefined ? a.payload : !s.showManualInput };
     case 'SET_MANUAL_INPUT':
@@ -181,6 +185,7 @@ function useVoiceEngine() {
       const res = await processVoiceTranscript(text);
       if (res.actions?.length > 0) {
         dispatch({ type: 'SET_ACTIONS', payload: res.actions });
+        dispatch({ type: 'SET_PARSER', payload: res.parser });
         dispatch({ type: 'SHOW_COMMAND_CENTER', payload: true });
       } else {
         dispatch({
@@ -571,6 +576,7 @@ export function VoiceInput() {
           <VoiceAICommandCenter
             transcript={state.transcript || state.manualInput}
             actions={state.actions}
+            parser={state.parser}
             userId={user?.id}
             onClose={() => dispatch({ type: 'SHOW_COMMAND_CENTER', payload: false })}
             onAddMore={() => {

@@ -92,6 +92,7 @@ interface LLMRawAction {
   category?: string;
   description?: string;
   person?: string | null;
+  members?: unknown;
   merchant?: string | null;
   date?: string | null;
   confidence?: number;
@@ -121,15 +122,26 @@ OUTPUT: Return a JSON array only. No markdown, no explanation.
 
 Each element must have:
 {
-  "type": "expense" | "income" | "transfer" | "loan_borrow" | "loan_lend" | "goal" | "investment",
+  "type": "expense" | "income" | "transfer" | "loan_borrow" | "loan_lend" | "goal" | "investment" | "group_expense",
   "amount": <positive number, required>,
   "category": <string — see list below>,
   "description": <short noun phrase, 1-5 words, e.g. "Petrol", "Dinner", "Netflix subscription">,
   "person": <name string if relevant, else null>,
+  "members": <group_expense only: array of the OTHER participants' names (exclude the speaker/"me"), else null>,
   "merchant": <merchant/place name if mentioned, else null>,
   "date": <"YYYY-MM-DD" or null — use today's date if "today" is said, yesterday's date if "yesterday">,
   "confidence": <0.0 to 1.0>
 }
+
+GROUP EXPENSES:
+  "me and Arun and Preeti had dinner, we spent a group expense of 6000"
+  → {"type":"group_expense","amount":6000,"category":"Food & Dining","description":"Dinner","members":["Arun","Preeti"]}
+  Names may appear SENTENCES BEFORE the amount — connect them. "split with X" / "we spent" / "group expense" all signal group_expense.
+
+SPOKEN CORRECTIONS: when the speaker corrects a number ("1008 not 2... so 1802",
+"5000 I mean 500"), ALWAYS use the FINAL corrected number. Ignore filler like
+"umm", "mm-hmm" — never emit an action for a segment that contains no real
+financial content.
 
 CATEGORIES (use these exact strings):
   Expenses: "Food & Dining", "Transport", "Housing", "Shopping", "Health",
@@ -191,6 +203,10 @@ function normaliseRawActions(
         date = d.toISOString().slice(0, 10);
       }
 
+      const members = Array.isArray(a.members)
+        ? a.members.map((m) => String(m).trim()).filter((m) => m.length > 0 && m.toLowerCase() !== 'me')
+        : undefined;
+
       return {
         type,
         rawSegment: transcript,
@@ -200,6 +216,7 @@ function normaliseRawActions(
           description: a.description ?? undefined,
           person: a.person ?? undefined,
           merchant: a.merchant ?? undefined,
+          members: members && members.length > 0 ? members : undefined,
           date,
         },
         confidence,
@@ -292,7 +309,7 @@ async function extractWithOpenAICompatible(
 function normaliseType(raw: string | undefined): FinancialActionType {
   const t = (raw ?? '').toLowerCase().replace(/-/g, '_');
   const valid: FinancialActionType[] = [
-    'expense', 'income', 'transfer', 'loan_borrow', 'loan_lend', 'goal', 'investment',
+    'expense', 'income', 'transfer', 'loan_borrow', 'loan_lend', 'goal', 'investment', 'group_expense',
   ];
   return (valid.includes(t as FinancialActionType) ? t : 'expense') as FinancialActionType;
 }
@@ -363,6 +380,15 @@ function regexClassifyIntent(segment: string): { type: FinancialActionType; conf
   const hasAmount = regexExtractAmount(segment) !== undefined;
   const isExplicitExpense = /\b(?:paid|pay|spent|spend|bought|buy|purchased|purchase|got|ordered)\b/.test(lower) && /\b(?:for|on|at|from)\b/.test(lower);
 
+  // Group expenses outrank everything with a verb: "we spent a group expense
+  // of 89,948" contains 'spent' but is a shared bill, not a personal expense.
+  // Scope the check to the segment's OPENING clause — disfluent speech merges
+  // segments, and a trailing "…group expense." aside must not hijack an
+  // unrelated leading action ("Done recharge for my Jio… group expense.").
+  const openingClause = lower.split(/[.!?]/, 1)[0].slice(0, 100);
+  if (/\bgroup\s+expen[sd]|\bsplit\s+(?:with|between|among)|\bwe\s+(?:spent|paid)\b/i.test(openingClause)) {
+    return { type: 'group_expense', confidence: 0.84 };
+  }
   if (isExplicitExpense && hasAmount) return { type: 'expense', confidence: 0.92 };
   // Loan intents outrank investment: disfluent speech often merges segments
   // ("lent 50,000 to Arun for marriage… I did an investment…"), and the leading
@@ -399,6 +425,20 @@ function regexExtractDescription(text: string): string {
     .trim();
 }
 
+/**
+ * Turn a spoken companion phrase ("G Joe and Arun and Preeti, Amala") into a
+ * clean name list: split on and/commas, keep tokens that start capitalised,
+ * drop pronouns/verbs that follow the names in run-on speech.
+ */
+function extractNameList(phrase: string): string[] {
+  return phrase
+    .split(/,|\band\b/i)
+    .map((n) => n.trim().replace(/[.،]+$/g, ''))
+    .filter((n) => /^[A-Z]/.test(n) && n.length >= 1 && n.split(/\s+/).length <= 3)
+    .filter((n) => !/^(Me|We|I|Us|The|Then|So|And|But|He|She|They|It|Uh|Um|Umm|Mm+)\b/i.test(n))
+    .slice(0, 12);
+}
+
 function regexExtractEntities(segment: string, type: FinancialActionType): ExtractedEntity {
   const entities: ExtractedEntity = {};
   entities.amount = regexExtractAmount(segment);
@@ -407,6 +447,17 @@ function regexExtractEntities(segment: string, type: FinancialActionType): Extra
 
   const merchantMatch = segment.match(/(?:at|from|on)\s+([A-Za-z][A-Za-z\s]{2,20})(?:\s|,|$)/i);
   if (merchantMatch) entities.merchant = merchantMatch[1].trim();
+
+  if (type === 'group_expense') {
+    entities.splitType = 'equal';
+    // Capture the companion list up to the sentence break, then keep name-like
+    // tokens — permissive on purpose so initials ("G Joe") survive.
+    const companions = segment.match(/\b(?:me|we|us)\s+and\s+([A-Z][^.!?]*)/)
+      ?? segment.match(/\b(?:with|between|among)\s+([A-Z][^.!?]*)/);
+    if (companions) {
+      entities.members = extractNameList(companions[1]);
+    }
+  }
 
   if (type === 'loan_lend' || type === 'loan_borrow' || type === 'transfer') {
     NAME_CONTEXT_PATTERN.lastIndex = 0;
@@ -459,7 +510,7 @@ function regexPipeline(transcript: string, threshold: number): FinancialAction[]
 
   const rawSegments = segments.length > 0 ? segments : [transcript];
 
-  return rawSegments
+  const actions = rawSegments
     .map(segment => {
       const { type, confidence } = regexClassifyIntent(segment);
       const entities = regexExtractEntities(segment, type);
@@ -471,7 +522,31 @@ function regexPipeline(transcript: string, threshold: number): FinancialAction[]
         requiresReview: confidence < threshold || !entities.amount,
       } satisfies FinancialAction;
     })
-    .filter(a => a.type !== 'unknown' || a.entities.amount !== undefined);
+    // Disfluent speech produces junk segments ("As weekend, , , time") that
+    // classify as expense via a stray verb but carry NO financial payload.
+    // Keep an action only when it has an amount or something actionable
+    // (a counterparty, group members, or a goal target).
+    .filter(a =>
+      a.entities.amount !== undefined ||
+      a.entities.person !== undefined ||
+      (a.entities.members?.length ?? 0) > 0 ||
+      a.entities.goalTarget !== undefined
+    );
+
+  // Merge orphaned group context: "me and A and B ... dinner" often lands in a
+  // different segment than "group expense of N". When a group_expense action
+  // has no members, adopt names from the full transcript's companion phrase.
+  for (const action of actions) {
+    if (action.type === 'group_expense' && !(action.entities.members?.length)) {
+      const companions = transcript.match(/\b(?:me|we)\s+and\s+([A-Z][^.!?]*)/);
+      if (companions) {
+        const names = extractNameList(companions[1]);
+        if (names.length > 0) action.entities.members = names;
+      }
+    }
+  }
+
+  return actions;
 }
 
 // ─── Main Pipeline ────────────────────────────────────────────────────────────
@@ -480,11 +555,26 @@ export async function processVoiceTranscript(
   transcript: string,
   userId?: string,
 ): Promise<FinancialAction[]> {
+  const { actions } = await processVoiceTranscriptDetailed(transcript, userId);
+  return actions;
+}
+
+export type VoiceParserSource = 'gemini' | 'groq' | 'openrouter' | 'regex';
+
+/**
+ * Same pipeline, but also reports WHICH engine produced the actions so the
+ * API/UI can surface silent AI degradation (quota exhaustion, outages) instead
+ * of letting regex-quality output masquerade as the LLM's.
+ */
+export async function processVoiceTranscriptDetailed(
+  transcript: string,
+  userId?: string,
+): Promise<{ actions: FinancialAction[]; parser: VoiceParserSource }> {
   const config = await getAIConfigurations();
 
   if (!config.voice.enabled) {
     logger.warn('Voice NLP: Voice processing is disabled by configuration');
-    return [];
+    return { actions: [], parser: 'regex' };
   }
 
   // Step 1: Remove filler words
@@ -507,17 +597,19 @@ export async function processVoiceTranscript(
   // Gemini is primary; Groq/OpenRouter are fallbacks for outages, rate limits, or
   // a missing/invalid Gemini key. Each provider is independent — a failure on one
   // simply moves to the next, regex is the last resort.
-  const providers: Array<{ label: string; run: () => Promise<FinancialAction[]> }> = [];
+  const providers: Array<{ label: string; parser: VoiceParserSource; run: () => Promise<FinancialAction[]> }> = [];
 
   if (process.env.GOOGLE_API_KEY) {
     providers.push({
       label: 'Gemini',
+      parser: 'gemini',
       run: () => extractWithGemini(cleaned, modelName, threshold, learningBlock),
     });
   }
   if (process.env.GROQ_API_KEY) {
     providers.push({
       label: 'Groq',
+      parser: 'groq',
       run: () => extractWithOpenAICompatible(cleaned, {
         baseUrl: 'https://api.groq.com/openai/v1',
         apiKey: process.env.GROQ_API_KEY!,
@@ -529,6 +621,7 @@ export async function processVoiceTranscript(
   if (process.env.OPENROUTER_API_KEY) {
     providers.push({
       label: 'OpenRouter',
+      parser: 'openrouter',
       run: () => extractWithOpenAICompatible(cleaned, {
         baseUrl: 'https://openrouter.ai/api/v1',
         apiKey: process.env.OPENROUTER_API_KEY!,
@@ -548,7 +641,7 @@ export async function processVoiceTranscript(
           types: actions.map(a => a.type),
           amounts: actions.map(a => a.entities.amount),
         });
-        return applyLearnedCorrections(actions, prefs);
+        return { actions: applyLearnedCorrections(actions, prefs), parser: provider.parser };
       }
       logger.warn(`Voice NLP: ${provider.label} returned empty result, trying next provider`);
     } catch (err: any) {
@@ -566,5 +659,5 @@ export async function processVoiceTranscript(
   logger.info('Voice NLP: regex fallback extracted actions', {
     count: fallbackActions.length,
   });
-  return applyLearnedCorrections(fallbackActions, prefs);
+  return { actions: applyLearnedCorrections(fallbackActions, prefs), parser: 'regex' };
 }

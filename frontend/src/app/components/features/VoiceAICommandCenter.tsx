@@ -87,14 +87,25 @@ interface VoiceAICommandCenterProps {
  onClose: () => void;
  onAddMore: () => void;
  userId?: string;
+ /** which engine parsed the actions — surfaces silent AI degradation */
+ parser?: string;
 }
+
+const PARSER_BADGES: Record<string, { label: string; degraded: boolean }> = {
+ gemini: { label: 'AI · Gemini', degraded: false },
+ groq: { label: 'AI · Groq', degraded: false },
+ openrouter: { label: 'AI · OpenRouter', degraded: false },
+ regex: { label: 'Offline heuristics — AI unavailable, review carefully', degraded: true },
+ local: { label: 'On-device parser — backend unreachable, review carefully', degraded: true },
+};
 
 export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
  transcript,
  actions: initialActions,
  onClose,
  onAddMore,
- userId
+ userId,
+ parser
 }) => {
  const { accounts, currency, goals, setCurrentPage } = useApp();
  // STT/parsers leave artefacts like "T-shirt. ." and "Jijo." — normalise the
@@ -173,7 +184,7 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
  // Stats for the header
  const totalAmount = useMemo(() => {
  return actions.reduce((sum, action) => {
- if (['expense', 'loan_lend', 'investment', 'goal', 'subscription', 'bill_scan'].includes(action.type)) {
+ if (['expense', 'loan_lend', 'investment', 'goal', 'subscription', 'bill_scan', 'group_expense'].includes(action.type)) {
  return sum + (action.entities.amount || 0);
  }
  return sum;
@@ -218,7 +229,7 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
     const accountForCheck = await db.accounts.get(selectedAccountId);
     const netOutflow = actions.reduce((sum, a) => {
       const amount = a.entities.amount || 0;
-      if (['expense', 'loan_lend', 'investment', 'goal', 'subscription', 'bill_scan'].includes(a.type)) return sum + amount;
+      if (['expense', 'loan_lend', 'investment', 'goal', 'subscription', 'bill_scan', 'group_expense'].includes(a.type)) return sum + amount;
       if (a.type === 'income' || a.type === 'loan_borrow') return sum - amount;
       return sum;
     }, 0);
@@ -296,10 +307,43 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
             action.rawSegment,
             action.entities.category
           ].join(' ').toLowerCase();
-          const targetGoal = goals.find(g =>
+          let targetGoal: (typeof goals)[number] | undefined = goals.find(g =>
             searchTerm.includes(g.name.toLowerCase()) ||
             g.name.toLowerCase().split(' ').some(word => word.length > 3 && searchTerm.includes(word))
           ) || goals[0];
+
+          // "Goal setting" from voice: with no existing goal to match, CREATE
+          // one instead of silently dropping the action (previous behaviour).
+          if (!targetGoal) {
+            const targetAmount = action.entities.goalTarget || action.entities.amount;
+            const targetDate = new Date(now);
+            targetDate.setFullYear(targetDate.getFullYear() + 1);
+            const newGoalId = await db.goals.add({
+              name: action.entities.description || 'Savings Goal',
+              description: action.rawSegment,
+              targetAmount,
+              currentAmount: 0,
+              targetDate,
+              category: action.entities.category || 'Savings',
+              isGroupGoal: false,
+              createdAt: now,
+              updatedAt: now,
+            } as any);
+            queueRecordUpsertSync('goals', newGoalId as number);
+            const created = await db.goals.get(newGoalId as number);
+            targetGoal = created ?? undefined;
+            // Setting a goal target is NOT spending — only contribute the
+            // spoken amount when it differs from the target (e.g. "save 50k,
+            // starting with 5k") — otherwise record the goal and stop here.
+            if (targetGoal && action.entities.goalTarget && action.entities.amount === action.entities.goalTarget) {
+              successCount++;
+              continue;
+            }
+            if (targetGoal && !action.entities.goalTarget) {
+              successCount++;
+              continue;
+            }
+          }
 
           if (targetGoal) {
             const amount = action.entities.amount;
@@ -506,9 +550,13 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
           // Accumulate balance change
           netBalanceChanges.set(selectedAccountId, (netBalanceChanges.get(selectedAccountId) || 0) - amount);
 
-          // Add investment record
+          // Add investment record. assetType must be one of the known kinds —
+          // a category tag like "GENERAL" leaking in here made saved
+          // investments invisible to the Investments page filters.
+          const KNOWN_ASSET_TYPES = new Set(['stock', 'crypto', 'mutual_fund', 'gold', 'silver', 'fd', 'bond', 'real_estate', 'other']);
+          const rawAssetType = (action.entities.assetType || '').toLowerCase().replace(/\s+/g, '_');
           const investmentId = await db.investments.add({
-            assetType: (action.entities.assetType?.toLowerCase() as any) || (action.entities.category?.toLowerCase() as any) || 'other',
+            assetType: (KNOWN_ASSET_TYPES.has(rawAssetType) ? rawAssetType : 'other') as any,
             assetName: action.entities.description || 'Voice Investment',
             quantity: action.entities.quantity || 1,
             buyPrice: amount / (action.entities.quantity || 1),
@@ -539,6 +587,62 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
           });
           queueRecordUpsertSync('transactions', transactionId);
 
+          successCount++;
+        } else if (action.type === 'group_expense') {
+          // Previously group_expense actions fell through this chain silently —
+          // "group expense is not getting updated". Create the shared bill with
+          // an equal split across the spoken members + the current user.
+          const amount = action.entities.amount!;
+          const memberNames = (action.entities.members ?? []).filter(Boolean);
+          const shareCount = memberNames.length + 1; // + current user
+          const share = Number((amount / shareCount).toFixed(2));
+
+          const groupMembers = [
+            { name: 'You', share, paid: true, isCurrentUser: true },
+            ...(await Promise.all(memberNames.map(async (name) => {
+              let friend = await db.friends.filter(f => f.name.toLowerCase() === name.toLowerCase() && !f.deletedAt).first();
+              if (!friend) {
+                const friendId = await db.friends.add({ name, createdAt: now, updatedAt: now });
+                queueRecordUpsertSync('friends', friendId as number);
+                friend = await db.friends.get(friendId as number);
+              }
+              return { name, share, paid: false, friendId: friend?.id };
+            }))),
+          ];
+
+          const groupExpenseId = await db.groupExpenses.add({
+            name: action.entities.description || `Group expense with ${memberNames.slice(0, 3).join(', ')}${memberNames.length > 3 ? '…' : ''}`,
+            totalAmount: amount,
+            paidBy: selectedAccountId,
+            date: now,
+            members: groupMembers,
+            description: action.rawSegment.slice(0, 300),
+            category: action.entities.category || 'Group',
+            splitType: action.entities.splitType || 'equal',
+            yourShare: share,
+            status: 'pending',
+            createdAt: now,
+            updatedAt: now,
+          } as any);
+          queueRecordUpsertSync('group_expenses', groupExpenseId as number);
+
+          // The payer fronts the whole bill from the selected account; member
+          // settlements later reconcile the receivable side.
+          const transactionId = await db.transactions.add({
+            type: 'expense',
+            amount,
+            accountId: selectedAccountId,
+            category: action.entities.category || 'Group Expense',
+            description: action.entities.description || `Group expense (${shareCount} people)`,
+            date: now,
+            groupExpenseId: groupExpenseId as number,
+            tags: ['group-expense', 'voice-ai'],
+            createdAt: now,
+            updatedAt: now,
+          } as any);
+          queueRecordUpsertSync('transactions', transactionId as number);
+
+          netBalanceChanges.set(selectedAccountId, (netBalanceChanges.get(selectedAccountId) || 0) - amount);
           successCount++;
         }
       }
@@ -631,7 +735,16 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
  </div>
  <h2 className="text-xl md:text-3xl font-black text-slate-900 tracking-tight">AI Command Center</h2>
  </div>
- <p className="text-xs md:text-sm text-slate-500 font-medium">Multi-Intent Financial Extraction</p>
+ <p className="text-xs md:text-sm text-slate-500 font-medium">
+ Multi-Intent Financial Extraction
+ {parser && PARSER_BADGES[parser] && (
+ <span data-testid="voice-parser-badge" className={`ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold align-middle ${
+ PARSER_BADGES[parser].degraded ? 'bg-amber-100 text-amber-700' : 'bg-indigo-50 text-indigo-600'
+ }`}>
+ {PARSER_BADGES[parser].label}
+ </span>
+ )}
+ </p>
  </div>
  <button onClick={onClose} className="p-2 md:p-3 bg-slate-100 hover:bg-slate-200 rounded-xl md:rounded-2xl transition-colors" data-testid="voice-ai-close-button">
  <X size={18} className="text-slate-600" />
