@@ -272,7 +272,7 @@ export const getPlatformStats = async (req: AuthRequest, res: Response) => {
       payments: {
         total: totalPayments,
         totalRevenue: totalRevenue._sum.amount || 0,
-        currency: 'USD',
+        currency: 'INR',
       },
       system
     });
@@ -682,7 +682,7 @@ export const getRevenueReport = async (req: AuthRequest, res: Response) => {
     res.json({
       totalRevenue,
       paymentCount: payments.length,
-      currency: 'USD',
+      currency: 'INR',
       byAdvisor,
       generatedAt: new Date(),
     });

@@ -174,7 +174,7 @@ const normalizeRemoteProfile = (profile: any): RemoteProfileSnapshot => {
   const city = String(profile?.city ?? '').trim();
   const updatedAt = profile?.updated_at ?? profile?.updatedAt ?? null;
   const role = String(profile?.role ?? '').trim().toLowerCase();
-  const currency = String(profile?.currency ?? 'USD').trim();
+  const currency = String(profile?.currency ?? 'INR').trim();
   const language = String(profile?.language ?? 'en').trim();
 
   return {

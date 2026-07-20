@@ -786,7 +786,7 @@ export class ProductionDB extends KANAKUDB {
       for (const record of legacyInvestments as Array<Record<string, any>>) {
         const assetName = String(record.assetName || '').toUpperCase();
         const assetType = String(record.assetType || '').toLowerCase();
-        let inferredCurrency = 'USD';
+        let inferredCurrency = 'INR'; // India-first default; explicit asset rules below override
 
         if (assetName.endsWith('.NS') || assetName.endsWith('.BO')) {
           inferredCurrency = 'INR';
@@ -795,7 +795,7 @@ export class ProductionDB extends KANAKUDB {
         } else if (assetName.endsWith('=X') && assetName.length >= 6) {
           inferredCurrency = assetName.slice(3, 6);
         } else if (assetType === 'gold' || assetType === 'silver' || assetType === 'other') {
-          inferredCurrency = record.baseCurrency || 'USD';
+          inferredCurrency = record.baseCurrency || 'INR';
         }
 
         await investmentTable.put({

@@ -255,7 +255,19 @@ async function predictCategory(input: {
 
 function detectCurrency(text: string, defaultCurrency: string = 'INR') {
   const t = text.toLowerCase();
-  
+
+  // Location/currency evidence for Vietnam wins before anything else: an
+  // "INDIAN RESTAURANT" in Hanoi would otherwise trip the /india/ heuristic
+  // below and book an 872,000 VND dinner as ₹872,000.
+  if (
+    t.includes('vnd') || t.includes('₫') ||
+    t.includes('vietnam') || t.includes('viet nam') ||
+    t.includes('hanoi') || t.includes('ha noi') ||
+    t.includes('ho chi minh') || t.includes('saigon') || t.includes('da nang')
+  ) {
+    return 'VND';
+  }
+
   // Strong exact string matches win first to prevent hallucination overrides
   if (t.includes('inr') || t.includes('rs.') || t.includes('INR')) return 'INR';
   if (t.includes('usd') || t.includes('$')) return 'USD';

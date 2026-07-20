@@ -85,13 +85,19 @@ export class EnhancedReceiptScannerService {
       }
     }
 
-    // Clean garbage merchant name (e.g. `\`, `|`, single chars)
-    if (next.merchantName && (next.merchantName.length < 3 || !/[a-z]{2,}/i.test(next.merchantName))) {
+    // Clean garbage merchant/subcategory. Two failure shapes from table-layout
+    // OCR merges: pure noise ("y + oR", single symbols) and receipt-metadata
+    // bleed-through ("Code: #VCNKA CS: Tacka? | Table: 11-FLOOR") — neither
+    // belongs in a user-facing field; blank beats garbage in the review card.
+    const looksLikeGarbage = (val: string) =>
+      val.length < 3 ||
+      !/[a-z]{2,}/i.test(val) ||
+      /[#|+]|Code:|Table:|Bill number|C\/S:|CS:/i.test(val);
+
+    if (next.merchantName && looksLikeGarbage(next.merchantName)) {
       next.merchantName = undefined;
     }
-
-    // Clean garbage subcategory
-    if (next.subcategory && (next.subcategory.length < 3 || !/[a-z]{2,}/i.test(next.subcategory))) {
+    if (next.subcategory && looksLikeGarbage(next.subcategory)) {
       next.subcategory = undefined;
     }
 

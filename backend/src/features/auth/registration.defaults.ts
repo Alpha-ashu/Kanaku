@@ -18,7 +18,7 @@ export interface CountryDefaults {
 }
 
 /** Conservative global fallback when the country can't be determined. */
-export const FALLBACK_DEFAULTS: CountryDefaults = { currency: 'USD', language: 'en', timezone: 'UTC' };
+export const FALLBACK_DEFAULTS: CountryDefaults = { currency: 'INR', language: 'en', timezone: 'Asia/Kolkata' }; // India-first app default
 
 /**
  * Calling-code → locale defaults. Keyed by the E.164 country calling code that

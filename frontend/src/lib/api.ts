@@ -302,15 +302,24 @@ const resolveAuthToken = async (): Promise<string | null> => {
 
 // ==================== Error Handler ====================
 
-class APIError extends Error {
-  constructor(
-    public code: string,
-    message: string,
-    public status: number,
-    public details?: any
-  ) {
+export class APIError extends Error {
+  public status: number;
+  public code: string;
+  public details?: any;
+
+  constructor(code: string, message: string, status: number, details?: any) {
     super(message);
     this.name = 'APIError';
+    this.status = status;
+    this.code = code;
+    this.details = details;
+
+    // Subclassing Error can lose the prototype chain (and with it own
+    // properties reached via instanceof narrowing) when the bundle runs on
+    // older WebViews or after downlevel transforms. The sync engine's
+    // permanent-4xx classifier depends on `status`/`code` surviving here —
+    // set the prototype explicitly so the contract holds everywhere.
+    Object.setPrototypeOf(this, APIError.prototype);
   }
 }
 

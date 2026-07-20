@@ -312,7 +312,9 @@ class PermissionService {
 
       if (!profileResponse.success) {
         if (cachedRole) {
-          console.warn('Failed to load backend profile role, using cached permissions role:', profileResponse.message);
+          // Background refresh with a warm cache — expected under slow/pooled
+          // backends; not a user-facing problem, so keep the console quiet.
+          console.info('[Permissions] Backend role refresh unavailable, serving cached role.');
           return cachedRole;
         }
 
@@ -325,7 +327,9 @@ class PermissionService {
       return this.rememberResolvedRole(userId, backendRole, profileResponse.data?.isApproved);
     } catch (error) {
       if (cachedRole) {
-        console.warn('Unexpected backend role lookup failure, using cached permissions role:', error);
+        // Timeouts here are routine (profile lookup races a hard deadline while
+        // the pooled backend warms up); the cached role keeps the UI correct.
+        console.info('[Permissions] Backend role refresh failed, serving cached role.');
         return cachedRole;
       }
 

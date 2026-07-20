@@ -328,7 +328,7 @@ export const initiatePayment = async (req: AuthRequest, res: Response) => {
         clientId,
         advisorId: session.advisorId,
         amount: booking.amount,
-        currency: 'USD',
+        currency: 'INR',
         status: 'pending',
         paymentMethod,
         description: typeof description === 'string' && description.trim()

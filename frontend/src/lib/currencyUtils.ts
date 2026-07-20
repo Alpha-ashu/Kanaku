@@ -26,7 +26,7 @@ type QuoteLike = {
   lastPrice: number;
 } | null;
 
-export function normalizeCurrencyCode(value?: string, fallback = 'USD') {
+export function normalizeCurrencyCode(value?: string, fallback = 'INR') {
   const trimmed = (value || '').trim();
   if (!trimmed) {
     return fallback;

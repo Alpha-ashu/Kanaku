@@ -106,7 +106,7 @@ const buildProfilePayload = (
   const role = userRecord?.role || authUser?.role || 'user';
 
   const countryVal = (profileRecord?.country || '').trim();
-  let defaultCurrency = 'USD';
+  let defaultCurrency = 'INR';
   if (countryVal === 'India') {
     defaultCurrency = 'INR';
   } else if (countryVal === 'United Kingdom' || countryVal === 'UK') {

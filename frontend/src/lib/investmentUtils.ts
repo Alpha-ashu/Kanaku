@@ -69,10 +69,12 @@ export const inferInvestmentAssetCurrency = (
   }
 
   if (normalizedName.endsWith('=X') && normalizedName.length >= 6) {
-    return normalizeCurrencyCode(normalizedName.slice(3, 6), 'USD');
+    return normalizeCurrencyCode(normalizedName.slice(3, 6), 'INR');
   }
 
-  return 'USD';
+  // India-first default: NSE/BSE tickers, gold, FDs and unlabelled holdings are
+  // INR; explicitly foreign assets matched above keep their native currency.
+  return 'INR';
 };
 
 export const getRequiredInvestmentQuoteSymbols = (
