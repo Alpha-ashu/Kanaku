@@ -4,7 +4,7 @@ All documentation files have been consolidated into single, topic-specific files
 
 > **📕 Build governance:** Before creating any new feature, read **`RULEBOOK.md`** (binding rules derived from the app Terms & Conditions + guardrails) and fill **`FEATURE_TEMPLATE.md`**. A feature is only "done" when the Rulebook §9 Definition of Done is satisfied.
 
-> **Depth note (updated):** These docs are now mined directly from the live codebase — **36 backend feature modules**, every `/api/v1` endpoint, **48 Prisma models**, **Dexie schema v15** (40+ local tables), and **every React screen/component**. For the full canonical context, also read the repo-root `KANAKU_PROJECT_OVERVIEW.md` (living architecture reference) and `docs/FEATURE_INVENTORY.md`.
+> **Depth note (updated):** These docs are now mined directly from the live codebase — **36 backend feature modules**, every `/api/v1` endpoint, **48 Prisma models**, **Dexie schema v15** (40+ local tables), and **every React screen/component**. For the full canonical context, also read [`architecture/OVERVIEW.md`](./architecture/OVERVIEW.md) (living architecture reference) and `docs/FEATURE_INVENTORY.md`.
 
 | Topic # | Consolidated File | Scope & Contents |
 |:---:|---|---|

@@ -1,7 +1,7 @@
 # Kanaku — System Architecture (Beta Audit Snapshot, 2026-07-19)
 
 > Verified against the live codebase during the Beta Release Readiness audit.
-> Deep-dive canonical references: [KANAKU_PROJECT_OVERVIEW.md](../../KANAKU_PROJECT_OVERVIEW.md),
+> Deep-dive canonical references: [architecture/OVERVIEW.md](../architecture/OVERVIEW.md),
 > [02_TRD.md](../02_TRD.md), [04_APP_FLOW.md](../04_APP_FLOW.md), ADRs in [docs/architecture/](../architecture/).
 
 ## Topology

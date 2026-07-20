@@ -31,39 +31,18 @@ import {
 } from './voice.learning';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
+// The wire contract lives in @kanaku/shared so the frontend compiles against
+// the same shapes. Local aliases keep the existing import surface stable.
 
-export type FinancialActionType =
-  | 'expense'
-  | 'income'
-  | 'transfer'
-  | 'loan_borrow'
-  | 'loan_lend'
-  | 'goal'
-  | 'investment'
-  | 'unknown';
+import type {
+  VoiceActionType,
+  VoiceActionEntities,
+  VoiceFinancialAction,
+} from '@kanaku/shared';
 
-export interface ExtractedEntity {
-  amount?: number;
-  currency?: string;
-  category?: string;
-  subcategory?: string;
-  person?: string;
-  merchant?: string;
-  description?: string;
-  date?: string;
-  paymentMethod?: string;
-  goalTarget?: number;
-  goalDuration?: string;
-  goalMonthly?: number;
-}
-
-export interface FinancialAction {
-  type: FinancialActionType;
-  rawSegment: string;
-  entities: ExtractedEntity;
-  confidence: number;
-  requiresReview: boolean;
-}
+export type FinancialActionType = VoiceActionType;
+export type ExtractedEntity = VoiceActionEntities;
+export type FinancialAction = VoiceFinancialAction;
 
 // ─── Language Layer (Phase 1 stubs — English only) ───────────────────────────
 

@@ -1,6 +1,6 @@
 -- Voice Intelligence tables — backend-authoritative shape.
 --
--- These tables were first introduced client-side by supabase/migrations/015
+-- These tables were first introduced client-side by db/supabase/migrations/015
 -- with UUID user columns and an FK to auth.users. The backend API is the
 -- writer of record (POST /voice/process*, /voice/learn) and backend user ids
 -- are TEXT (public."User".id), including non-UUID ids in test environments.

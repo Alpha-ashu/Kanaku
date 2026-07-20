@@ -107,7 +107,7 @@ Database visibility for KANAKU (PostgreSQL via Prisma + Supabase).
 | **Schema (source of truth)** | [\`backend/prisma/schema.prisma\`](../backend/prisma/schema.prisma) (${models.length} models) |
 | **Schema catalog (browsable)** | [\`docs/SCHEMA.md\`](./docs/SCHEMA.md) Ã¢â‚¬â€ generated |
 | **Migrations (Prisma)** | [\`backend/prisma/migrations/\`](../backend/prisma/migrations/) |
-| **Migrations / functions (Supabase)** | [\`supabase/migrations/\`](../supabase/migrations/), [\`supabase/functions/\`](../supabase/functions/) |
+| **Migrations / functions (Supabase)** | [\`db/supabase/migrations/\`](../db/supabase/migrations/), [\`db/supabase/functions/\`](../db/supabase/functions/) |
 | **Legacy SQL** | \`init.sql\`, \`ai_schema.sql\`, \`supabase_schema.sql\`, \`models.js\` (here) |
 
 ## Ã‚Â§4 mapping
@@ -115,8 +115,8 @@ Database visibility for KANAKU (PostgreSQL via Prisma + Supabase).
 | Ã‚Â§4 concept | Where |
 |---|---|
 | schemas/ | Prisma models Ã¢â€ â€™ \`docs/SCHEMA.md\` (per-model tables, columns, relations, indexes) |
-| migrations/ | \`backend/prisma/migrations/\`, \`supabase/migrations/\` |
-| functions/ / triggers/ | \`supabase/functions/\`; triggers in SQL migrations (e.g. balance trigger on Account) |
+| migrations/ | \`backend/prisma/migrations/\`, \`db/supabase/migrations/\` |
+| functions/ / triggers/ | \`db/supabase/functions/\`; triggers in SQL migrations (e.g. balance trigger on Account) |
 | policies/ (RLS) | Supabase RLS Ã¢â‚¬â€ see [[security]] / Phase 8 Supabase review |
 | seeds/ | \`backend/scripts/seed-*.cjs\` |
 | docs/ | \`docs/SCHEMA.md\` (this catalog) |

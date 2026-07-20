@@ -1,0 +1,10 @@
+{
+  "name": "@kanaku/shared",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Shared API contract types between the Kanaku backend and frontend (declaration-only)",
+  "types": "./index.d.ts",
+  "files": [
+    "index.d.ts"
+  ]
+}

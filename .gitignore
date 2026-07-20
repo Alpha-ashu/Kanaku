@@ -212,3 +212,9 @@ backend/qa_results.txt
 !frontend/public/**/*.zip
 
 
+
+# Local throwaway workspaces & stale artifacts (2026-07 cleanup)
+/scratch/
+/test-results/
+/dist/
+/logs/

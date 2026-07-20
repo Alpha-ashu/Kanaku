@@ -17,29 +17,19 @@
 import { logger } from '../../config/logger';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
+// Wire-contract shapes come from @kanaku/shared (also consumed by the
+// frontend); ParsedStatement is the backend's stricter internal variant.
 
-export interface StatementTransaction {
-  date: string;               // YYYY-MM-DD
-  description: string;
-  amount: number;             // always positive
-  type: 'debit' | 'credit';
-  balance?: number;           // running balance when the statement prints one
-  reference?: string;
-}
+import type { StatementMeta, StatementParserSource, StatementTransaction } from '@kanaku/shared';
 
-export interface ParsedStatement {
-  bankName?: string;
-  accountNumber?: string;     // masked as printed (e.g. XXXX1234)
-  accountHolder?: string;
+export type { StatementTransaction };
+
+export interface ParsedStatement extends StatementMeta {
   currency: string;
-  period?: { from?: string; to?: string };
-  openingBalance?: number;
-  closingBalance?: number;
   transactions: StatementTransaction[];
   /** true when opening + credits − debits matches closing within tolerance */
   reconciled: boolean | null;
-  reconciliationDelta?: number;
-  parser: 'gemini' | 'groq' | 'openrouter' | 'heuristic';
+  parser: StatementParserSource;
   warnings: string[];
 }
 

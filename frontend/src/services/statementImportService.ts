@@ -34,21 +34,10 @@ export interface ParsedTransaction {
   confidenceScore?: number;
 }
 
-export interface StatementMeta {
-  bankName?: string;
-  accountNumber?: string;
-  accountHolder?: string;
-  currency?: string;
-  period?: { from?: string; to?: string };
-  openingBalance?: number;
-  closingBalance?: number;
-  /** opening + credits − debits ≈ closing (null when balances weren't printed) */
-  reconciled?: boolean | null;
-  reconciliationDelta?: number;
-  /** Which engine produced the rows: gemini/groq/openrouter (server LLM), heuristic (server), or client */
-  parser?: string;
-  warnings?: string[];
-}
+// Statement metadata is the shared wire contract (same shape the backend emits)
+import type { StatementMeta, ImportPreviewResponse } from '@kanaku/shared';
+
+export type { StatementMeta };
 
 export interface ImportResult {
   success: boolean;
@@ -375,15 +364,7 @@ class StatementImportService {
       throw new Error(body.error || `Statement parse failed (${response.status})`);
     }
 
-    const preview = await response.json() as {
-      sessionId: string;
-      transactions: Array<{
-        rowIndex: number; description: string; amount?: number; date: string;
-        type?: 'debit' | 'credit'; reference?: string;
-        suggestedCategory: string; confidence: number;
-      }>;
-      statement?: StatementMeta;
-    };
+    const preview = await response.json() as ImportPreviewResponse;
 
     const rows: ParsedTransaction[] = (preview.transactions || [])
       .filter((row) => typeof row.amount === 'number' && row.amount > 0)

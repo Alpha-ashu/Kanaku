@@ -3,7 +3,7 @@
  *
  * Exports the Role-Based Access Control + system audit to Excel.
  * One workbook per role (Admin/Manager/User/Advisor) + a master summary,
- * under ./rbac-export/.   Run:  cd backend && npx tsx scripts/generate-rbac-export.ts
+ * under ./quality/reports/rbac/.   Run:  cd backend && npx tsx scripts/generate-rbac-export.ts
  *
  * AUTHORITATIVE SOURCES (read live at generation time):
  *   • Role→feature + sub-feature matrix : src/utils/roleBasedFeatures.ts (imported)
@@ -30,7 +30,7 @@ import { ROLE_FEATURES, SUB_FEATURES, type UserRole, type FeatureKey } from '../
 
 const prisma = new PrismaClient();
 const REPO = path.resolve(process.cwd(), '..');
-const OUT_DIR = path.join(REPO, 'rbac-export');
+const OUT_DIR = path.join(REPO, 'quality', 'reports', 'rbac');
 const ROLES: UserRole[] = ['admin', 'manager', 'advisor', 'user'];
 const yn = (b: boolean) => (b ? 'Yes' : 'No');
 

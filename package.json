@@ -6,25 +6,26 @@
   "type": "module",
   "workspaces": [
     "frontend",
-    "backend"
+    "backend",
+    "packages/*"
   ],
   "scripts": {
-    "dev": "node scripts/dev-full.mjs",
+    "dev": "turbo run dev --parallel",
     "dev:frontend": "npm run dev --workspace frontend",
     "dev:backend": "npm run dev --workspace backend",
-    "build": "npm run build:backend && npm run build:frontend",
+    "build": "turbo run build",
     "build:frontend": "npm run build --workspace frontend",
     "build:backend": "npm run build --workspace backend",
     "build:pwa": "npm run build:frontend && npx cap sync",
     "preview": "npm run preview --workspace frontend",
-    "lint": "npm run lint --workspaces --if-present",
-    "type-check": "npm run type-check --workspace frontend",
+    "lint": "turbo run lint",
+    "type-check": "turbo run type-check",
     "format": "prettier --write \"**/*.{ts,tsx,json,md}\"",
     "docs:modules": "node scripts/gen-module-readmes.mjs",
     "docs:frontend": "node scripts/gen-frontend-readmes.mjs",
     "docs:catalogs": "node scripts/gen-catalogs.mjs",
     "docs:endpoints": "node scripts/gen-endpoint-docs.mjs",
-    "test": "npm run test:unit --workspace frontend",
+    "test": "turbo run test",
     "test:backend": "npm run test --workspace backend",
     "e2e:seed": "node scripts/seed_e2e_users.cjs && node quality/e2e/seed-test-users.cjs",
     "pretest:e2e": "npm run e2e:seed",
@@ -55,16 +56,19 @@
     "qa:regression": "node scripts/qa-regression-diff.mjs",
     "qa:reports": "npm run qa:ui-inventory && npm run qa:contract-audit",
     "clean": "rimraf frontend/dist backend/dist node_modules/.vite",
-    "postinstall": "node -e \"process.env.VERCEL === '1' || require('child_process').execSync('npm run db:generate', {stdio: 'inherit'});\""
+    "postinstall": "node -e \"process.env.VERCEL === '1' || require('child_process').execSync('npm run db:generate', {stdio: 'inherit'});\"",
+    "setup": "npm ci && npm run db:generate",
+    "dev:full": "node scripts/dev-full.mjs"
   },
   "devDependencies": {
     "@capacitor/android": "^8.0.2",
     "@capacitor/cli": "^8.0.2",
     "@playwright/test": "^1.61.1",
+    "@types/express": "^4.17.21",
     "@vercel/node": "^5.8.22",
     "ajv": "^6.14.0",
-    "@types/express": "^4.17.21",
     "prisma": "6.19.2",
+    "turbo": "^2.10.5",
     "typescript": "^5.5.4"
   },
   "overrides": {
@@ -132,5 +136,6 @@
     "overrides": {
       "vite": "8.0.16"
     }
-  }
+  },
+  "packageManager": "npm@11.6.2"
 }

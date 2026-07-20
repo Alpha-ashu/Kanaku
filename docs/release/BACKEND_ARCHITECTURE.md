@@ -1,6 +1,6 @@
 # Kanaku — Backend Architecture (Beta Audit Snapshot, 2026-07-19)
 
-Verified against `backend/src` during the beta audit. Canonical deep-dive: [KANAKU_PROJECT_OVERVIEW.md](../../KANAKU_PROJECT_OVERVIEW.md).
+Verified against `backend/src` during the beta audit. Canonical deep-dive: [architecture/OVERVIEW.md](../architecture/OVERVIEW.md).
 
 ## Layout
 
