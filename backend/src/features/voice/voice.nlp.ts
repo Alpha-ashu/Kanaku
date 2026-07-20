@@ -513,7 +513,7 @@ export async function processVoiceTranscript(
   const learningBlock = buildLearningPromptBlock(prefs);
 
   const threshold = config.voice.autoSaveThreshold ?? 0.7;
-  const modelName = config.voice.model ?? 'gemini-2.5-flash';
+  const modelName = config.voice.model ?? 'gemini-flash-latest';
 
   // Step 4: LLM-first extraction — try providers in order until one returns actions.
   // Gemini is primary; Groq/OpenRouter are fallbacks for outages, rate limits, or

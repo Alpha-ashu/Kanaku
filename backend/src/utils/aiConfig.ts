@@ -48,7 +48,7 @@ export interface AIConfigurations {
 export const DEFAULT_AI_CONFIGS: AIConfigurations = {
   ocr: {
     provider: 'hybrid',
-    model: 'gemini-2.5-flash',
+    model: 'gemini-flash-latest',
     confidenceThreshold: 0.7,
     mode: 'realtime',
     maxRetries: 5,
@@ -76,7 +76,7 @@ export const DEFAULT_AI_CONFIGS: AIConfigurations = {
     provider: 'webkit',
     language: 'en-US',
     autoSaveThreshold: 0.7,
-    model: 'gemini-2.5-flash',
+    model: 'gemini-flash-latest',
   },
   deployment: {
     rolloutPercentage: 100,

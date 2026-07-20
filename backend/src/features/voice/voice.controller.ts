@@ -128,7 +128,7 @@ export const processVoiceAudio = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    const stt = await transcribeAudio(file, provider, config.voice.model || 'gemini-2.5-flash');
+    const stt = await transcribeAudio(file, provider, config.voice.model || 'gemini-flash-latest');
 
     if (!stt) {
       // No STT provider configured/reachable — client falls back to Web Speech API

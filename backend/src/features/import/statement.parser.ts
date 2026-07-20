@@ -150,7 +150,7 @@ const extractWithGemini = async (text: string): Promise<LLMStatementRaw | null> 
   const { GoogleGenerativeAI } = await import('@google/generative-ai');
   const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!);
   const model = genAI.getGenerativeModel({
-    model: process.env.STATEMENT_LLM_MODEL || 'gemini-2.5-flash',
+    model: process.env.STATEMENT_LLM_MODEL || 'gemini-flash-latest',
     generationConfig: {
       responseMimeType: 'application/json',
       temperature: 0,

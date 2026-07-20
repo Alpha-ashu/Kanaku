@@ -511,7 +511,7 @@ const executeFullOcrPipeline = async (userId: string, file: any, validated: any)
       } else {
         raw = await scanReceiptWithGemini(processed.buffer, processed.contentType);
       }
-      source = 'gemini-1.5-flash';
+      source = 'gemini';
       audit({ event: 'ai.ocr_success', userId, meta: { source } });
     } catch (err: any) {
       audit({ event: 'ai.ocr_failure', userId, meta: { error: err.message, source: 'gemini' } });
