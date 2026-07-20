@@ -79,7 +79,6 @@ const AddGoal = lazy(() => import('@/app/components/goals/AddGoal').then(m => ({
 const AddGroup = lazy(() => import('@/app/components/groups/AddGroup').then(m => ({ default: m.AddGroup })));
 const AddInvestment = lazy(() => import('@/app/components/investments/AddInvestment').then(m => ({ default: m.AddInvestment })));
 const EditInvestment = lazy(() => import('@/app/components/investments/EditInvestment').then(m => ({ default: m.EditInvestment })));
-const AddLoan = lazy(() => import('@/app/components/loans/AddLoan').then(m => ({ default: m.AddLoan })));
 const AddGold = lazy(() => import('@/app/components/investments/AddGold').then(m => ({ default: m.AddGold })));
 const AddFriends = lazy(() => import('@/app/components/groups/AddFriends').then(m => ({ default: m.AddFriends })));
 const FriendsList = lazy(() => import('@/app/components/groups/FriendsList').then(m => ({ default: m.FriendsList })));
@@ -229,7 +228,6 @@ const PAGE_REQUIRED_TABLES: Record<string, SyncedTableName[]> = {
   'pay-emi': ['transactions', 'accounts', 'loans'],
   'recurring-transactions': ['transactions', 'accounts'],
   loans: ['loans', 'accounts', 'friends'],
-  'add-loan': ['loans', 'accounts', 'friends'],
   goals: ['goals'],
   'goal-detail': ['goals'],
   'add-goal': ['goals'],
@@ -706,7 +704,7 @@ const AppContent: React.FC = () => {
         localStorage.setItem('quickFormType', 'expense');
         localStorage.setItem('quickExpenseMode', 'loan');
         localStorage.setItem('quickBackPage', 'loans');
-        setCurrentPage('add-loan');
+        setCurrentPage('add-transaction');
         setQuickActionKey(k => k + 1);
         break;
       case 'add-account': setCurrentPage('add-account'); break;
@@ -1008,7 +1006,6 @@ const AppContent: React.FC = () => {
       case 'add-transaction': return <AddTransaction key={quickActionKey} />;
       case 'receipt-scanner': return <ReceiptScannerPage />;
       case 'loans': return <Loans />;
-      case 'add-loan': return <AddLoan />;
       case 'goals': return <Goals />;
       case 'goal-detail': return <GoalDetail />;
       case 'add-goal': return <AddGoal />;

@@ -62,7 +62,7 @@ export class AccountService {
       country: country ? sanitize(country) : null,
       openingBalance: resolvedOpening,
       balance: balance != null ? balance : resolvedOpening,
-      currency: currency || 'USD',
+      currency: currency || 'INR',
       isActive: true,
       clientRequestId: clientRequestId || null,
     });

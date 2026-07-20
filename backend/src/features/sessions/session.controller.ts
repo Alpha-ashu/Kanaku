@@ -262,7 +262,7 @@ export const completeSession = async (req: AuthRequest, res: Response) => {
             clientId: session.clientId,
             advisorId: advisorId,
             amount: booking.amount,
-            currency: 'USD',
+            currency: 'INR',
             status: 'pending',
             description: `Payment for ${session.sessionType} session`,
           },
