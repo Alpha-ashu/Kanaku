@@ -229,9 +229,10 @@ export const createFriend = async (req: AuthRequest, res: Response, next: NextFu
       throw AppError.badRequest('Friend name is required.', 'NAME_REQUIRED');
     }
 
-    if (!email && !phone) {
-      throw AppError.badRequest('Either email or phone is required to identify a friend.', 'CONTACT_REQUIRED');
-    }
+    // Name-only friends are allowed: voice capture ("borrowed 5000 from Jijo")
+    // and quick loan entry legitimately know only a name. Contact info is
+    // required later for invites/settlement emails, not for existing as a
+    // ledger counterparty — the name-based duplicate check below still applies.
 
     const cleanName = name.trim();
     const cleanEmail = email ? String(email).trim().toLowerCase() : null;

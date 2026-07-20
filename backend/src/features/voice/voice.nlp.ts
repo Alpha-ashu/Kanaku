@@ -356,12 +356,17 @@ const BORROW_PERSON_PATTERN = /\b(?:borrowed|borrow|took)\b\s+(?:₹\s*)?(?:rs\.
 
 function regexExtractAmount(text: string): number | undefined {
   for (const pattern of AMOUNT_PATTERNS) {
+    // The patterns are /g regexes shared across calls: exec() advances
+    // lastIndex on success, so without an unconditional reset every HIT
+    // poisoned the NEXT call, which then scanned from mid-string and missed
+    // leading amounts ("spent 5000 petrol" → undefined). Reset before exec.
+    pattern.lastIndex = 0;
     const m = pattern.exec(text);
+    pattern.lastIndex = 0;
     if (m) {
       const val = parseFloat(m[1].replace(/,/g, ''));
       if (!isNaN(val) && val > 0) return val;
     }
-    pattern.lastIndex = 0;
   }
   return undefined;
 }
@@ -380,9 +385,13 @@ function regexClassifyIntent(segment: string): { type: FinancialActionType; conf
   const isExplicitExpense = /\b(?:paid|pay|spent|spend|bought|buy|purchased|purchase|got|ordered)\b/.test(lower) && /\b(?:for|on|at|from)\b/.test(lower);
 
   if (isExplicitExpense && hasAmount) return { type: 'expense', confidence: 0.92 };
-  if (INVESTMENT_KEYWORDS.some(kw => lower.includes(kw))) return { type: 'investment', confidence: 0.80 };
+  // Loan intents outrank investment: disfluent speech often merges segments
+  // ("lent 50,000 to Arun for marriage… I did an investment…"), and the leading
+  // action verb decides the type. Word boundaries prevent 'investment' from
+  // substring-matching 'invest' checks against unrelated trailing clauses.
   if (LOAN_BORROW_KEYWORDS.some(kw => lower.includes(kw))) return { type: 'loan_borrow', confidence: 0.85 };
   if (LOAN_LEND_KEYWORDS.some(kw => lower.includes(kw)) && /to\s+[A-Z]/.test(segment)) return { type: 'loan_lend', confidence: 0.82 };
+  if (/\b(?:invest(?:ed|ment)?|mutual fund|sip|fd|fixed deposit|bought (?:stocks?|shares?))\b/.test(lower)) return { type: 'investment', confidence: 0.80 };
   if (TRANSFER_KEYWORDS.some(kw => lower.includes(kw))) return { type: 'transfer', confidence: 0.83 };
   if (INCOME_KEYWORDS.some(kw => lower.includes(kw))) return { type: 'income', confidence: 0.87 };
   if (EXPENSE_KEYWORDS.some(kw => lower.includes(kw))) return { type: 'expense', confidence: 0.88 };

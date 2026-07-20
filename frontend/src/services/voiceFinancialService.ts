@@ -141,6 +141,20 @@ const COMMON_NOUNS = new Set([
   'general','miscellaneous','expense','income','transfer','goal','savings',
 ]);
 
+// Connectives that must never ride along inside a captured person name
+// ("lent 50,000 to Arun for marriage" must yield "Arun", not "Arun for").
+const NAME_STOP_WORDS = new Set(['for', 'to', 'on', 'in', 'at', 'from', 'and', 'because', 'so', 'the', 'a', 'an']);
+
+const cleanPersonName = (raw: string): string | undefined => {
+  const tokens = raw.trim().replace(/[.,!?]+$/g, '').split(/\s+/);
+  while (tokens.length > 0 && NAME_STOP_WORDS.has(tokens[tokens.length - 1].toLowerCase())) {
+    tokens.pop();
+  }
+  const name = tokens.join(' ');
+  if (!name || COMMON_NOUNS.has(name.toLowerCase())) return undefined;
+  return name.charAt(0).toUpperCase() + name.slice(1);
+};
+
 function extractPerson(text: string): string | undefined {
   const amountText = String.raw`(?:₹\s*)?(?:rs\.?\s*)?[\d,]+(?:\.\d+)?\s*(?:rupees?|rs|inr|k|thousand|hazaar|hazar|lakh|lac|lacs|cr|crore)?`;
 
@@ -149,10 +163,8 @@ function extractPerson(text: string): string | undefined {
   const loanPattern = /\b(?:gave to|lent to|give to|borrowed from|repaid to|returned to|transferred to|sent to)\s+([A-Za-z]+(?:\s[A-Za-z]+)?)/i;
   const loanMatch = text.match(loanPattern);
   if (loanMatch) {
-    const name = loanMatch[1].trim();
-    if (!COMMON_NOUNS.has(name.toLowerCase())) {
-      return name.charAt(0).toUpperCase() + name.slice(1);
-    }
+    const name = cleanPersonName(loanMatch[1]);
+    if (name) return name;
   }
 
   const amountBetweenPattern = new RegExp(
@@ -161,10 +173,8 @@ function extractPerson(text: string): string | undefined {
   );
   const amountBetweenMatch = text.match(amountBetweenPattern);
   if (amountBetweenMatch) {
-    const name = amountBetweenMatch[1].trim();
-    if (!COMMON_NOUNS.has(name.toLowerCase())) {
-      return name.charAt(0).toUpperCase() + name.slice(1);
-    }
+    const name = cleanPersonName(amountBetweenMatch[1]);
+    if (name) return name;
   }
 
   const borrowAmountPattern = new RegExp(
@@ -173,10 +183,8 @@ function extractPerson(text: string): string | undefined {
   );
   const borrowAmountMatch = text.match(borrowAmountPattern);
   if (borrowAmountMatch) {
-    const name = borrowAmountMatch[1].trim();
-    if (!COMMON_NOUNS.has(name.toLowerCase())) {
-      return name.charAt(0).toUpperCase() + name.slice(1);
-    }
+    const name = cleanPersonName(borrowAmountMatch[1]);
+    if (name) return name;
   }
 
   // Hinglish: "Rahul ko", "Rahul se"

@@ -97,7 +97,22 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
  userId
 }) => {
  const { accounts, currency, goals, setCurrentPage } = useApp();
- const [actions, setActions] = useState<FinancialAction[]>(initialActions);
+ // STT/parsers leave artefacts like "T-shirt. ." and "Jijo." — normalise the
+ // user-visible text fields once on entry so display and saves stay clean.
+ const cleanSpeechText = (value?: string) =>
+ value?.replace(/[\s.،。]+$/g, '').replace(/\s{2,}/g, ' ').trim() || undefined;
+
+ const [actions, setActions] = useState<FinancialAction[]>(() =>
+ initialActions.map((a) => ({
+ ...a,
+ entities: {
+ ...a.entities,
+ description: cleanSpeechText(a.entities.description),
+ person: cleanSpeechText(a.entities.person),
+ merchant: cleanSpeechText(a.entities.merchant),
+ },
+ }))
+ );
  const [isSaving, setIsSaving] = useState(false);
  const [editingIndex, setEditingIndex] = useState<number | null>(null);
  const [selectedAccountId, setSelectedAccountId] = useState<number>(accounts[0]?.id || 0);
@@ -180,6 +195,41 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
  const confirmAll = async () => {
     if (!selectedAccountId) {
       toast.error("Please select an account for these transactions");
+      return;
+    }
+
+    // Every financial action needs an amount before it can post — previously
+    // amount-less rows (e.g. a dropped "5000" from speech) were skipped
+    // SILENTLY, so users lost entries without noticing.
+    const missingAmounts = actions.filter(
+      (a) => a.type !== 'query' && (!a.entities.amount || a.entities.amount <= 0)
+    );
+    if (missingAmounts.length > 0) {
+      toast.error(
+        `${missingAmounts.length} action(s) have no amount — tap the amount field to fill it in, or remove them.`,
+        { duration: 6000 }
+      );
+      return;
+    }
+
+    // Pre-check the no-overdraw invariant the backend enforces: net outflow
+    // from the selected account must not exceed its balance. Failing here with
+    // a clear message beats a backend INSUFFICIENT_BALANCE rejection after save.
+    const accountForCheck = await db.accounts.get(selectedAccountId);
+    const netOutflow = actions.reduce((sum, a) => {
+      const amount = a.entities.amount || 0;
+      if (['expense', 'loan_lend', 'investment', 'goal', 'subscription', 'bill_scan'].includes(a.type)) return sum + amount;
+      if (a.type === 'income' || a.type === 'loan_borrow') return sum - amount;
+      return sum;
+    }, 0);
+    const accountTypeAllowsNegative = ['credit', 'credit-card', 'loan', 'overdraft'].includes(
+      String(accountForCheck?.type ?? '').toLowerCase()
+    );
+    if (accountForCheck && !accountTypeAllowsNegative && netOutflow > Number(accountForCheck.balance)) {
+      toast.error(
+        `These actions need ${currency} ${netOutflow.toLocaleString()} but '${accountForCheck.name}' only has ${currency} ${Number(accountForCheck.balance).toLocaleString()}. Choose another account or adjust the amounts.`,
+        { duration: 8000 }
+      );
       return;
     }
 

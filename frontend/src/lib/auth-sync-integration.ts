@@ -260,6 +260,19 @@ const isMissingRemoteRow = (error: any) =>
   error?.details === 'The result contains 0 rows' ||
   String(error?.message || '').toLowerCase().includes('0 rows');
 
+/**
+ * A permanent validation rejection: the backend deterministically refuses this
+ * payload (4xx), so retrying the identical record can never succeed — it only
+ * spams the console and the API. INSUFFICIENT_BALANCE is the deliberate
+ * exception: the FIFO queue may sync a deposit first, after which the same
+ * expense legitimately succeeds on retry.
+ */
+const isPermanentValidationError = (error: any) => {
+  const status = Number(error?.status ?? 0);
+  if (![400, 404, 409, 422].includes(status)) return false;
+  return error?.code !== 'INSUFFICIENT_BALANCE';
+};
+
 const getRemoteTableName = (table: SyncedTableName) => REMOTE_TABLE_NAMES[table];
 
 const normalizeArray = <T,>(value: T[] | null | undefined): T[] =>
@@ -1175,6 +1188,13 @@ async function processPendingSyncQueueBackend(userId: string, pendingItems: Sync
         deferredItems.push(...queue.slice(index));
         break;
       }
+      if (isPermanentValidationError(error)) {
+        // Server will never accept this payload — park it instead of burning
+        // MAX_SYNC_RETRIES attempts on a deterministic 4xx.
+        console.warn(`[Sync] Server permanently rejected ${item.table}:${item.localId} — removing from queue.`, error);
+        completedKeys.push(item.key);
+        continue;
+      }
       console.warn(`[Sync] Queue sync failed for ${item.table}:${item.localId}`, error);
       deferredItems.push({ ...item, retryCount: retryCount + 1 });
     }
@@ -1277,6 +1297,11 @@ export async function processPendingSyncQueue() {
         if (isConnectivityError(error)) {
           deferredItems.push(...queue.slice(index));
           break;
+        }
+        if (isPermanentValidationError(error)) {
+          console.warn(`[Sync] Server permanently rejected ${item.table}:${item.localId} — removing from queue.`, error);
+          completedKeys.push(item.key);
+          continue;
         }
 
         console.warn(`Cloud sync failed for ${item.table}:${item.localId}`, error);
