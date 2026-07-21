@@ -61,15 +61,20 @@ export const extractStatementText = async (
     return { text: text.slice(0, MAX_STATEMENT_TEXT), ocrUsed: false };
   }
 
-  // Scanned statement — rasterise up to 4 pages and OCR them with Tesseract
+  // Scanned statement — rasterise up to 4 pages and OCR them (PaddleOCR when
+  // configured, else Tesseract). Paddle's row reconstruction keeps the debit/
+  // credit/balance columns aligned, which the downstream row parser depends on.
   logger.info('Statement: no text layer, running OCR fallback');
-  const Tesseract = (await import('tesseract.js')).default;
+  const { extractRawText } = await import('../../utils/paddleOcr');
   const pages = await renderPdfPagesToPng(buffer, 4);
   const chunks: string[] = [];
+  let engineUsed = 'tesseract';
   for (const page of pages) {
-    const result = await Tesseract.recognize(page.png, 'eng');
-    chunks.push(result.data.text);
+    const { text, engine } = await extractRawText(page.png, 'image/png');
+    engineUsed = engine;
+    chunks.push(text);
   }
+  logger.info(`Statement OCR complete (${engineUsed})`, { pages: pages.length });
   return { text: chunks.join('\n').slice(0, MAX_STATEMENT_TEXT), ocrUsed: true };
 };
 

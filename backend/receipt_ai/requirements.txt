@@ -14,3 +14,13 @@ Pillow==12.3.0
 torch>=2.12.1
 transformers==5.13.0
 accelerate>=1.14.0
+
+# PaddleOCR — layout-aware OCR (text detection + recognition with bounding
+# boxes + confidence). Powers the /ocr endpoint; markedly more accurate than
+# Tesseract on columnar receipts and bank statements, and the boxes let the
+# service rebuild table rows instead of collapsing them into merged garbage.
+# Pinned to the 2.x line whose stable `.ocr(img, cls=True)` API this code uses
+# (3.x renamed it to `.predict()` and shifts the dependency tree). numpy comes
+# transitively via paddleocr/torch.
+paddleocr>=2.9,<3.0
+paddlepaddle>=2.6.2

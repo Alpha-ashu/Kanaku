@@ -1,6 +1,6 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { logger } from '../../config/logger';
-import Tesseract from 'tesseract.js';
+import { extractRawText } from '../../utils/paddleOcr';
 import { sanitizeAIInput, sanitizeAIOutput, validateOcrResult } from '../../utils/sanitize';
 import { withCircuitBreaker } from '../../utils/circuitBreaker';
 import { audit } from '../../utils/auditLogger';
@@ -75,21 +75,16 @@ Return ONLY the JSON. No explanation.
 `;
 
 /**
- * Tesseract-only fallback: runs OCR and builds structured JSON from
- * the raw text using heuristics  including item table extraction,
- * GST/tax breakdown, GSTIN detection, and math validation.
- * Used when Gemini is unavailable.
+ * Raw-OCR fallback: extracts text (PaddleOCR when configured, else Tesseract)
+ * and builds structured JSON from it using heuristics — item table extraction,
+ * GST/tax breakdown, GSTIN detection, and math validation. Used when Gemini is
+ * unavailable. PaddleOCR's row-reconstructed text makes the heuristic parser
+ * markedly better on table-layout receipts.
  */
-const scanReceiptTesseractOnly = async (imageBuffer: Buffer): Promise<Record<string, unknown>> => {
-  logger.info('Tesseract-only OCR pass (Gemini unavailable)...');
-  const tesseractResult = await Tesseract.recognize(imageBuffer, 'eng', {
-    logger: m => {
-      if (m.status === 'recognizing text' && Math.round(m.progress * 100) % 25 === 0) {
-        logger.debug(`Tesseract progress: ${Math.round(m.progress * 100)}%`);
-      }
-    }
-  });
-  const rawText = tesseractResult.data.text.trim();
+const scanReceiptRawTextOnly = async (imageBuffer: Buffer): Promise<Record<string, unknown>> => {
+  logger.info('Raw-OCR pass (Gemini unavailable)...');
+  const { text: rawText, engine } = await extractRawText(imageBuffer);
+  logger.info(`Raw-OCR pass complete (${engine})`, { extractedLength: rawText.length });
   return extractStructuredDataFromText(rawText);
 };
 
@@ -264,7 +259,7 @@ const extractStructuredDataFromText = (rawText: string): Record<string, unknown>
     confidence: items.length > 0 && grandTotal ? 0.65 : taxBreakdown.length > 0 ? 0.55 : 0.45,
     validationResult,
     _rawOcrText: rawText,
-    _source: 'tesseract-only',
+    _source: 'ocr-heuristic',
   };
 };
 
@@ -273,33 +268,25 @@ export const scanReceiptWithGemini = async (imageBuffer: Buffer, mimeType: strin
 
   if (config.ocr.provider === 'tesseract') {
     logger.info('OCR Provider is set to Tesseract-only. Bypassing Gemini...');
-    return scanReceiptTesseractOnly(imageBuffer);
+    return scanReceiptRawTextOnly(imageBuffer);
   }
 
   if (!GOOGLE_API_KEY) {
     logger.warn('GOOGLE_API_KEY not configured - falling back to Tesseract-only OCR');
-    return scanReceiptTesseractOnly(imageBuffer);
+    return scanReceiptRawTextOnly(imageBuffer);
   }
 
   try {
     let rawOcrText = '';
-    
-    // Check if we need to do Tesseract raw extraction (hybrid mode)
+
+    // Hybrid mode: extract raw text first (PaddleOCR when configured, else
+    // Tesseract), then hand it to Gemini for structuring. PaddleOCR's
+    // layout-reconstructed rows give Gemini cleaner input on table receipts.
     if (config.ocr.provider === 'hybrid') {
-      logger.info('Starting open-source Tesseract OCR pass...');
-      const tesseractResult = await Tesseract.recognize(
-        imageBuffer,
-        'eng',
-        {
-          logger: m => {
-            if (m.status === 'recognizing text' && Math.round(m.progress * 100) % 20 === 0) {
-              logger.debug(`Tesseract progress: ${Math.round(m.progress * 100)}%`);
-            }
-          }
-        }
-      );
-      rawOcrText = tesseractResult.data.text.trim();
-      logger.info('Tesseract OCR pass complete', { extractedLength: rawOcrText.length });
+      logger.info('Starting raw-OCR pass (hybrid mode)...');
+      const { text, engine } = await extractRawText(imageBuffer, mimeType);
+      rawOcrText = text;
+      logger.info(`Raw-OCR pass complete (${engine})`, { extractedLength: rawOcrText.length });
     }
 
     // Prepare content for Gemini
@@ -391,7 +378,7 @@ export const scanReceiptWithGemini = async (imageBuffer: Buffer, mimeType: strin
   } catch (error: any) {
     logger.error('OCR pipeline failed, attempting Tesseract-only fallback', { error: error.message || error });
     try {
-      return await scanReceiptTesseractOnly(imageBuffer);
+      return await scanReceiptRawTextOnly(imageBuffer);
     } catch (fallbackErr: any) {
       logger.error('Tesseract-only fallback also failed', { error: fallbackErr.message });
       throw error;
