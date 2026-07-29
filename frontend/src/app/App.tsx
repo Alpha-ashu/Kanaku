@@ -250,7 +250,15 @@ const PAGE_REQUIRED_TABLES: Record<string, SyncedTableName[]> = {
   'budget-alerts': ['accounts', 'transactions'],
 };
 
-type PublicPage = 'landing' | 'about' | 'pricing' | 'contact' | 'privacy' | 'terms';
+type PublicPage = 'landing' | 'about' | 'pricing' | 'contact' | 'privacy' | 'privacy-policy' | 'terms' | 'data-deletion' | 'account-deletion' | 'delete-account';
+
+const getInitialPublicPage = (): PublicPage => {
+  const path = window.location.pathname.substring(1).split('?')[0].split('#')[0];
+  if (['privacy', 'privacy-policy', 'terms', 'data-deletion', 'account-deletion', 'delete-account', 'about', 'pricing', 'contact'].includes(path)) {
+    return path as PublicPage;
+  }
+  return 'landing';
+};
 
 const AppContent: React.FC = () => {
   const appContext = useOptionalApp();
@@ -268,7 +276,7 @@ const AppContent: React.FC = () => {
   // Landing page: shown only to confirmed unauthenticated visitors (set via effect
   // so we never show it during the async auth-loading window)
   const [showLanding, setShowLanding] = useState(true);
-  const [publicPage, setPublicPage] = useState<PublicPage>('landing');
+  const [publicPage, setPublicPage] = useState<PublicPage>(getInitialPublicPage);
   const [authInitialStep, setAuthInitialStep] = useState<'welcome' | 'signin' | 'signup'>('welcome');
   const [criticalPagesPrefetched, setCriticalPagesPrefetched] = useState(false);
   const hasModuleReloaded = useRef(false);
@@ -786,8 +794,23 @@ const AppContent: React.FC = () => {
             />
           );
         case 'privacy':
+        case 'privacy-policy':
           return (
             <PrivacyPolicy
+              onBack={() => setPublicPage('landing')}
+              onGetStarted={() => setShowLanding(false)}
+              onNavigate={(page) => setPublicPage(page as PublicPage)}
+              onLogin={() => {
+                setAuthInitialStep('signin');
+                setShowLanding(false);
+              }}
+            />
+          );
+        case 'data-deletion':
+        case 'account-deletion':
+        case 'delete-account':
+          return (
+            <DataDeletion
               onBack={() => setPublicPage('landing')}
               onGetStarted={() => setShowLanding(false)}
               onNavigate={(page) => setPublicPage(page as PublicPage)}
