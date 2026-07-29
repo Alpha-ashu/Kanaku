@@ -9,7 +9,7 @@ if (hasSigningProperties) {
 }
 
 android {
-    namespace = "com.financelife.app"
+    namespace = "com.kanaku.app"
     compileSdk = rootProject.ext.compileSdkVersion
     flavorDimensions "smsSupport"
     productFlavors {
@@ -33,7 +33,7 @@ android {
         targetCompatibility JavaVersion.VERSION_17
     }
     defaultConfig {
-        applicationId "com.financelife.app"
+        applicationId "com.kanaku.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 4

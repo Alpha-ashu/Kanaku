@@ -1,4 +1,4 @@
-package com.financelife.app;
+package com.kanaku.app;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

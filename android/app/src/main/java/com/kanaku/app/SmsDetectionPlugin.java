@@ -1,4 +1,4 @@
-package com.financelife.app;
+package com.kanaku.app;
 
 import android.Manifest;
 import android.database.Cursor;

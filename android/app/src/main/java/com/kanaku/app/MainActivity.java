@@ -1,4 +1,4 @@
-package com.financelife.app;
+package com.kanaku.app;
 
 import android.os.Bundle;
 import androidx.core.view.WindowCompat;

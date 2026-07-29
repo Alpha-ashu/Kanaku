@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">FinanceLife</string>
-    <string name="title_activity_main">FinanceLife</string>
-    <string name="package_name">com.financelife.app</string>
-    <string name="custom_url_scheme">com.financelife.app</string>
+    <string name="app_name">KANAKU</string>
+    <string name="title_activity_main">KANAKU</string>
+    <string name="package_name">com.kanaku.app</string>
+    <string name="custom_url_scheme">com.kanaku.app</string>
 </resources>

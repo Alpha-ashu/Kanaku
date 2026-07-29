@@ -1,5 +1,5 @@
 {
-  "appId": "com.KANAKU.app",
+  "appId": "com.kanaku.app",
   "appName": "KANAKU",
   "webDir": "frontend/dist",
   "bundledWebRuntime": false,

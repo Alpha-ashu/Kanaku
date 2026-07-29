@@ -1,4 +1,4 @@
-package com.financelife.app;
+package com.kanaku.app;
 
 import org.json.JSONException;
 import org.json.JSONObject;
