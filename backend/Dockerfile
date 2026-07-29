@@ -30,6 +30,9 @@ COPY backend/package.json ./backend/
 COPY packages/shared ./packages/shared
 RUN npm ci --omit=dev --ignore-scripts --workspace=backend && npm cache clean --force
 
+# Overwrite root package.json with backend/package.json so Node runs dist/server.js as CommonJS
+COPY backend/package.json ./package.json
+
 # Copy built output + required assets
 COPY --from=builder /app/backend/dist      ./dist
 COPY --from=builder /app/backend/generated ./generated
