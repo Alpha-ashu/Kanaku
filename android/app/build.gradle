@@ -1,3 +1,5 @@
+import org.gradle.api.GradleException
+
 apply plugin: 'com.android.application'
 
 // Load signing properties from key.properties if present (used by the e2e build script)
