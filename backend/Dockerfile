@@ -8,7 +8,8 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 COPY frontend/package.json ./frontend/
 COPY backend/package.json ./backend/
-RUN npm install --ignore-scripts
+COPY packages/shared/package.json ./packages/shared/
+RUN npm ci --ignore-scripts
 
 # Copy source, generate prisma client, build backend workspace
 COPY . .
@@ -22,9 +23,12 @@ RUN addgroup -S kanaku && adduser -S kanaku -G kanaku
 
 WORKDIR /app
 
-# All runtime deps are in backend/package.json — single clean install
-COPY backend/package.json ./
-RUN npm install --omit=dev --ignore-scripts && npm cache clean --force
+# Workspace manifests + backend & shared packages for production install
+COPY package.json package-lock.json ./
+COPY frontend/package.json ./frontend/
+COPY backend/package.json ./backend/
+COPY packages/shared ./packages/shared
+RUN npm ci --omit=dev --ignore-scripts --workspace=backend && npm cache clean --force
 
 # Copy built output + required assets
 COPY --from=builder /app/backend/dist      ./dist
@@ -41,3 +45,4 @@ HEALTHCHECK --interval=15s --timeout=5s --start-period=10s --retries=3 \
   CMD wget -qO- http://localhost:3000/health || exit 1
 
 CMD ["node", "dist/server.js"]
+
