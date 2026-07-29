@@ -39,6 +39,7 @@ import { PricingPage } from '@/app/components/marketing/PricingPage';
 import { ContactPage } from '@/app/components/marketing/ContactPage';
 import { PrivacyPolicy } from '@/app/components/marketing/PrivacyPolicy';
 import { Terms } from '@/app/components/marketing/Terms';
+import { DataDeletion } from '@/app/components/marketing/DataDeletion';
 
 //  Page components - lazy loaded, each gets its own async chunk 
 const Dashboard = lazy(() => import('@/app/components/core/Dashboard').then(m => ({ default: m.Dashboard })));
@@ -930,8 +931,12 @@ const AppContent: React.FC = () => {
       'settings',
       'user-profile',
       'notifications',
+      'privacy',
       'privacy-policy',
       'terms',
+      'data-deletion',
+      'account-deletion',
+      'delete-account',
       'diagnostics',
     ]);
 
@@ -961,7 +966,7 @@ const AppContent: React.FC = () => {
 
     const isSystemAdminPage = ['admin', 'admin-feature-panel', 'admin-ai', 'ai-management', 'sync-monitor'].includes(currentPage);
     const isManagerPage = ['manager-advisor-verification', 'admin-advisor-verification', 'advisor-verification'].includes(currentPage);
-    const isPublicPage = ['privacy-policy', 'terms', 'diagnostics', 'auth-callback', 'settings', 'user-profile', 'notifications'].includes(currentPage);
+    const isPublicPage = ['privacy', 'privacy-policy', 'terms', 'data-deletion', 'account-deletion', 'delete-account', 'diagnostics', 'auth-callback', 'settings', 'user-profile', 'notifications'].includes(currentPage);
 
     // User-surface build: Admin/Manager pages are compiled out — render the
     // default surface instead (the route-guard effect also redirects).
@@ -1026,8 +1031,17 @@ const AppContent: React.FC = () => {
       case 'settings': return <Settings />;
       case 'notifications': return <Notifications />;
       case 'user-profile': return <UserProfile />;
+      case 'privacy':
       case 'privacy-policy': return (
         <PrivacyPolicy
+          hideNavbar
+          onNavigate={(page) => setCurrentPage(page)}
+        />
+      );
+      case 'data-deletion':
+      case 'account-deletion':
+      case 'delete-account': return (
+        <DataDeletion
           hideNavbar
           onNavigate={(page) => setCurrentPage(page)}
         />
