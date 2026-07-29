@@ -1,5 +1,3 @@
-import org.gradle.api.GradleException
-
 apply plugin: 'com.android.application'
 
 // Load signing properties from key.properties if present (used by the e2e build script)
@@ -79,7 +77,7 @@ gradle.taskGraph.whenReady { taskGraph ->
             (task.name.toLowerCase().startsWith('bundle') || task.name.toLowerCase().startsWith('assemble'))
     }
     if (releaseRequested && !hasSigningProperties) {
-        throw new GradleException(
+        throw new RuntimeException(
             "Missing android/key.properties for release signing. Copy android/key.properties.example to android/key.properties and set secure values."
         )
     }
