@@ -126,7 +126,7 @@ async function getActiveUserId() {
   }
 }
 
-async function showSystemNotification(title: string, body: string) {
+async function showSystemNotification(title: string, body: string, deepLink?: string) {
   if (Capacitor.isNativePlatform()) {
     const permission = await LocalNotifications.requestPermissions();
     if (permission.display === 'granted') {
@@ -137,6 +137,10 @@ async function showSystemNotification(title: string, body: string) {
             title,
             body,
             schedule: { at: new Date(Date.now() + 250) },
+            // Read back by the localNotificationActionPerformed listener in
+            // lib/nativeDeepLinks.ts so a tap lands on the right screen instead
+            // of just raising the app.
+            extra: deepLink ? { deepLink } : undefined,
           },
         ],
       });
@@ -164,7 +168,7 @@ async function showDeliveredNotification(notification: Notification) {
   });
 
   if (shouldUseSystemNotification()) {
-    await showSystemNotification(notification.title, notification.message);
+    await showSystemNotification(notification.title, notification.message, notification.deepLink);
   }
 }
 

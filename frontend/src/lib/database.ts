@@ -280,6 +280,10 @@ export interface Investment {
   settlementAccountId?: number;
   closeNotes?: string;
   metadata?: Record<string, any>;
+  categoryId?: string;
+  subcategoryId?: string;
+  categoryCode?: string;
+  subcategoryCode?: string;
   createdAt?: Date;
   updatedAt?: Date;
   deletedAt?: Date;
@@ -682,6 +686,10 @@ export class ProductionDB extends KANAKUDB {
   userCategoryPreferences!: Table<UserCategoryPreference>;
   documents!: Table<DocumentRecord>;
   smsTransactions!: Table<SmsDetectedTransaction>;
+  investmentCategories!: Table<any>;
+  investmentSubcategories!: Table<any>;
+  investmentDocuments!: Table<any>;
+  investmentLinks!: Table<any>;
 
   constructor() {
     super();
@@ -1140,6 +1148,15 @@ export class OfflineSyncDB extends ProductionDB {
     // merged during cross-device sync (parity with other syncable tables).
     this.version(15).stores({
       gold: '++id, type, unit, purchaseDate, cloudId',
+    });
+
+    // Version 16: Investment Module V2 normalized categories, subcategories, documents & cross-module links
+    this.version(16).stores({
+      investments: '++id, remoteId, cloudId, assetType, categoryId, subcategoryId, categoryCode, subcategoryCode, positionStatus, assetCurrency, baseCurrency, syncStatus',
+      investmentCategories: 'id, code, status, displayOrder',
+      investmentSubcategories: 'id, categoryId, code, categoryCode, status, displayOrder',
+      investmentDocuments: 'id, investmentId, documentType, uploadedAt',
+      investmentLinks: 'id, investmentId, linkedModule, linkedRecordId, relationshipType',
     });
   }
 }

@@ -28,9 +28,12 @@ android {
             ]
         }
     }
+    // Matches the generated app/capacitor.build.gradle (applied at the bottom of
+    // this file, so it wins anyway) and the Capacitor 8 plugin modules, which
+    // compile at 21 and use kotlin { jvmToolchain(21) }. Requires JDK 21.
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
+        sourceCompatibility JavaVersion.VERSION_21
+        targetCompatibility JavaVersion.VERSION_21
     }
     defaultConfig {
         applicationId "com.kanaku.app"

@@ -8,8 +8,9 @@ group expenses & settlements, investments, an advisor marketplace, and AI captur
 
 ```
 kanaku/
-├── frontend/          @kanaku/frontend — React 18 + Vite SPA/PWA (offline-first via Dexie),
-│                      Capacitor Android wrapper. Deployed on Vercel.
+├── frontend/          @kanaku/frontend — React 18 + Vite SPA/PWA (offline-first via Dexie).
+│                      The same bundle is wrapped by Capacitor for Android and iOS.
+│                      Deployed on Vercel.
 ├── backend/           @kanaku/backend — Express + Prisma API (/api/v1, 37 feature modules),
 │                      Socket.IO realtime, background workers. Deployed on Render (Docker).
 │   └── prisma/        Database schema + migrations (source of truth).
@@ -28,7 +29,9 @@ kanaku/
 │                      deep-dive: docs/architecture/OVERVIEW.md; release audit: docs/release/.
 ├── platform/          Cross-cutting engineering guidelines (database/security/observability docs).
 ├── scripts/           Repo tooling (dev orchestration, doc/QA generators).
-├── android/           Capacitor Android project.
+├── android/           Capacitor Android project (flavors: full = sideload w/ SMS,
+│                      nosms = Play Store build). See docs/release/MOBILE_RELEASE_GUIDE.md.
+├── ios/               Capacitor iOS project (Xcode + Swift Package Manager).
 └── supabase → db/supabase, infra configs at root: vercel.json, render.yaml, fly.toml
                        (render.yaml/fly.toml must stay at root — platform requirement).
 ```
@@ -72,6 +75,28 @@ degrades gracefully without them.
 | `npm run test:e2e` | Playwright suite (needs dev servers + `npm run e2e:seed`) |
 | `npm run lint` / `npm run type-check` | All workspaces via turbo |
 | `npm run db:migrate` / `db:seed` / `db:studio` | Prisma workflows against backend/.env |
+| `npm run clean` / `clean:mobile` / `clean:all` | Drop build caches (vite/turbo/dist; gradle/xcode) |
+
+## Mobile (Android & iOS)
+
+Both apps wrap the same `frontend/dist` bundle via Capacitor 8. Full detail —
+plugin wiring, the pinned Android toolchain, the Play vs sideload flavor split,
+per-platform capability matrix and store-submission status — is in
+**[docs/release/MOBILE_RELEASE_GUIDE.md](docs/release/MOBILE_RELEASE_GUIDE.md)**.
+
+| Command | What it does |
+|---|---|
+| `npm run mobile:build` | `vite build` + `cap sync` for both platforms |
+| `npm run mobile:run:android` | Build, sync and launch on a device/emulator |
+| `npm run mobile:run:ios` | Same for iOS (macOS only) |
+| `npm run mobile:aab:play` | Release AAB for Google Play (`nosms` flavor, no SMS permissions) |
+| `npm run mobile:aab:full` | Release AAB for direct download (`full` flavor, SMS auto-detect) |
+| `npm run cap:doctor` | Diagnose the native setup |
+
+> Capacitor plugins **must** be declared in the root `package.json` — the CLI reads the
+> package.json next to `capacitor.config.json`, not `frontend/`'s. A plugin declared only
+> in the workspace compiles and imports fine but is never linked natively, and every call
+> to it fails at runtime on device. Requires JDK 21 for Android builds.
 
 ## Deployment
 

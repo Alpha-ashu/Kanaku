@@ -7,8 +7,16 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:9.2.1'
-        classpath 'com.google.gms:google-services:4.5.0'
+        // Pinned to the versions Capacitor 8 ships in its android template.
+        //
+        // Do not bump these ahead of Capacitor. Every @capacitor/* plugin module
+        // declares `com.android.tools.build:gradle:8.13.0` and applies
+        // `kotlin-android`; under AGP 9 those subprojects fail to configure
+        // ("Cannot add extension with name 'kotlin'" and a missing compileSdk).
+        // The project ran AGP 9.2.1 without noticing only because no plugin was
+        // linked into the build at all — see docs/release/MOBILE_RELEASE_GUIDE.md.
+        classpath 'com.android.tools.build:gradle:8.13.0'
+        classpath 'com.google.gms:google-services:4.4.4'
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
@@ -24,42 +32,18 @@ allprojects {
     }
 }
 
-// Configure Java compilation for all projects/modules to use Java 17
-// Use configureEach to avoid unnecessary configuration of tasks that don't exist yet
-tasks.withType(JavaCompile).configureEach {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
-}
-
-// Also enforce for all subprojects to catch JavaCompile tasks created within them and
-// set Android module compileOptions to Java 17 (to override module-level settings like VERSION_21)
-subprojects {
-    afterEvaluate { proj ->
-        try {
-            if (proj.extensions.findByName('android')) {
-                proj.android.compileOptions.sourceCompatibility = JavaVersion.VERSION_17
-                proj.android.compileOptions.targetCompatibility = JavaVersion.VERSION_17
-            }
-        } catch (ignored) {
-            // some projects may not have android extension; ignore
-        }
-
-        // Also ensure any JavaCompile tasks use Java 17
-        proj.tasks.withType(JavaCompile).configureEach {
-            sourceCompatibility = JavaVersion.VERSION_17
-            targetCompatibility = JavaVersion.VERSION_17
-        }
-
-        // Ensure Kotlin compile tasks use JVM target 17 to match Java
-        try {
-            proj.tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
-                kotlinOptions.jvmTarget = '17'
-            }
-        } catch (ignored) {
-            // If Kotlin plugin isn't applied, there will be no KotlinCompile tasks; ignore
-        }
-    }
-}
+// Java 17 is deliberately NOT forced across the build any more.
+//
+// This file used to pin every JavaCompile task — and, in an `afterEvaluate` walk
+// over all subprojects, every Android module's compileOptions — to Java 17. That
+// was invisible while the build contained no plugin subprojects, but Capacitor 8
+// plugin modules compile at Java 21 and declare `kotlin { jvmToolchain(21) }`.
+// Dragging their Java tasks back to 17 while Kotlin stays at 21 is a jvmTarget
+// mismatch and the module fails to build.
+//
+// The toolchain is now uniform at 21: app/build.gradle, the generated
+// app/capacitor.build.gradle, and each plugin module all agree. Build with JDK 21
+// (CI pins it in .github/workflows/build-android-aab.yml).
 
 task clean(type: Delete) {
     delete rootProject.buildDir

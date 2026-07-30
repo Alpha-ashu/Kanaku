@@ -1,0 +1,95 @@
+name: Build iOS (Capacitor)
+
+# Compiles the iOS app for the simulator on every change that can affect it.
+#
+# This job deliberately stops at "does it build". Producing a signed .ipa needs an
+# Apple Developer team id, a distribution certificate and a provisioning profile;
+# none of those exist as repository secrets yet. Add them and the archive/export
+# steps at the bottom of this file become a small, self-contained change — see
+# docs/release/MOBILE_RELEASE_GUIDE.md.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "frontend/src/**"
+      - "frontend/public/**"
+      - "ios/**"
+      - "frontend/package.json"
+      - "package.json"
+      - "package-lock.json"
+      - "capacitor.config.*"
+      - ".github/workflows/build-ios.yml"
+  pull_request:
+    paths:
+      - "ios/**"
+      - "capacitor.config.*"
+      - ".github/workflows/build-ios.yml"
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '22'
+
+jobs:
+  build:
+    # Capacitor 8 uses Swift Package Manager, so no CocoaPods install is needed —
+    # but Xcode still only exists on macOS runners.
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Build frontend for Capacitor
+        run: npm run build
+        working-directory: frontend
+
+      - name: Run Capacitor sync
+        run: npx cap sync ios
+
+      # Fails loudly if a Capacitor plugin is declared in frontend/package.json but
+      # not in the root package.json next to capacitor.config.json — the CLI only
+      # reads the latter, and a missing entry silently ships an app whose native
+      # calls all reject at runtime.
+      - name: Verify native plugins were linked
+        run: |
+          PLUGIN_COUNT=$(grep -c 'CapacitorPlugin\|\.package(name:' ios/App/CapApp-SPM/Package.swift || true)
+          echo "Package.swift plugin references: $PLUGIN_COUNT"
+          if [ "$PLUGIN_COUNT" -lt 2 ]; then
+            echo "::error::Capacitor sync linked no plugins into the iOS project."
+            exit 1
+          fi
+
+      - name: Build for simulator
+        run: |
+          xcodebuild \
+            -project App.xcodeproj \
+            -scheme App \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+        working-directory: ios/App
+
+      - name: Build summary
+        if: always()
+        run: |
+          echo "## iOS Build Summary" >> $GITHUB_STEP_SUMMARY
+          if [ -d "ios/App/build/Build/Products/Debug-iphonesimulator/App.app" ]; then
+            echo "- Simulator build: ✅ succeeded" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- Simulator build: ❌ failed" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "- Signed .ipa: ⏭️ skipped (no Apple signing secrets configured)" >> $GITHUB_STEP_SUMMARY

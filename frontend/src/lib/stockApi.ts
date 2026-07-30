@@ -380,39 +380,28 @@ function isForexInstrument(exchange?: string, instrumentType?: string, micCode?:
 function resolveQuoteCurrencyCode(currency?: string, market?: ProviderMarket, symbol?: string) {
   const normalizedSymbol = (symbol || '').trim().toUpperCase();
 
-  if (normalizedSymbol.endsWith('=F')) {
+  // ONLY Forex, Crypto, and US stocks use USD ('$')
+  if (
+    normalizedSymbol.endsWith('-USD') ||
+    normalizedSymbol.endsWith('.US') ||
+    normalizedSymbol.endsWith('=X') ||
+    market === 'crypto' ||
+    market === 'forex' ||
+    market === 'us'
+  ) {
     return 'USD';
   }
 
-  if (normalizedSymbol.endsWith('=X')) {
-    const pair = normalizedSymbol.replace(/=X$/, '');
-    if (pair.length === 3) {
-      return normalizeCurrencyCode(pair, 'USD');
-    }
-
-    if (pair.length >= 6) {
-      return normalizeCurrencyCode(pair.slice(-3), 'USD');
-    }
-  }
-
-  const normalized = normalizeCurrencyCode(currency, '');
-  if (normalized) {
-    return normalized;
-  }
-
-  if (market === 'crypto') {
-    return 'USD';
-  }
-
-  if (market === 'forex' && symbol?.includes('/')) {
-    return normalizeCurrencyCode(symbol.split('/')[1], 'USD');
-  }
-
-  if (market === 'nse' || market === 'bse') {
+  if (normalizedSymbol.endsWith('.NS') || normalizedSymbol.endsWith('.BO') || market === 'nse' || market === 'bse') {
     return 'INR';
   }
 
-  return 'USD';
+  const normalized = normalizeCurrencyCode(currency, '');
+  if (normalized === 'USD') {
+    return 'USD';
+  }
+
+  return 'INR';
 }
 
 function normalizeAppSymbol(symbol: string, exchange?: string, instrumentType?: string, micCode?: string) {

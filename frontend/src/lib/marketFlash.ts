@@ -385,17 +385,19 @@ export function formatFlashPrice(item: FlashItem) {
     return item.displayPriceText;
   }
 
+  const isUsd = item.kind === 'crypto' || item.kind === 'forex' || item.symbol.endsWith('.US') || item.symbol.endsWith('-USD') || item.symbol.endsWith('=X');
+  const currencySymbol = isUsd ? '$' : '₹';
+
   if (item.kind === 'forex') {
     const value = item.quote.lastPrice;
-    return new Intl.NumberFormat('en-US', {
+    return `${currencySymbol}${new Intl.NumberFormat('en-US', {
       minimumFractionDigits: value >= 100 ? 2 : 4,
       maximumFractionDigits: value >= 100 ? 2 : 4,
-    }).format(value);
+    }).format(value)}`;
   }
 
-  const currency = item.quote.currency || '$';
-  const locale = currency === 'INR' ? 'en-IN' : 'en-US';
-  return `${currency}${new Intl.NumberFormat(locale, {
+  const locale = isUsd ? 'en-US' : 'en-IN';
+  return `${currencySymbol}${new Intl.NumberFormat(locale, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(item.quote.lastPrice)}`;

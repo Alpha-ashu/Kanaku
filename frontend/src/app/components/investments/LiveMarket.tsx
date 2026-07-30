@@ -47,13 +47,20 @@ const PriceTag: React.FC<{ value: number; suffix?: string; size?: 'sm' | 'md' | 
  );
 };
 
+const resolveQuoteCurrencySymbol = (q: StockQuote) => {
+  const sym = (q.symbol || '').toUpperCase();
+  const curCode = (q.currencyCode || '').toUpperCase();
+  const isUsd = sym.endsWith('-USD') || sym.endsWith('.US') || sym.endsWith('=X') || curCode === 'USD' || (q.exchange && q.exchange.toUpperCase() === 'US');
+  return isUsd ? '$' : '₹';
+};
+
 /* Stock card (list row) */
 const StockRow: React.FC<{
  quote: StockQuote;
  onClick: (q: StockQuote) => void;
 }> = ({ quote, onClick }) => {
  const positive = quote.change >= 0;
- const cur = quote.currency || 'INR';
+ const cur = resolveQuoteCurrencySymbol(quote);
  return (
  <motion.button data-testid="live-market-button"
  layout
@@ -78,7 +85,7 @@ const StockRow: React.FC<{
 
  {/* Price */}
  <div className="text-right shrink-0">
- <p className="font-bold text-gray-900 text-sm tabular-nums">{cur}{fmtCurrency(quote.lastPrice, cur)}</p>
+ <p className="font-bold text-gray-900 text-sm tabular-nums">{cur}{fmtCurrency(quote.lastPrice, cur === '$' ? '$' : 'INR')}</p>
  <div className="flex items-center justify-end gap-1">
  {positive ? (
  <TrendingUp size={11} className="text-emerald-500" />
@@ -101,7 +108,7 @@ const StockDetail: React.FC<{
  onAddToPortfolio: (quote: StockQuote) => void;
 }> = ({ quote, onClose, onAddToPortfolio }) => {
  const positive = quote.change >= 0;
- const cur = quote.currency || 'INR';
+ const cur = resolveQuoteCurrencySymbol(quote);
  const subtitle = quote.sector && quote.sector !== 'Unknown'
  ? `${quote.exchange} ${quote.sector}`
  : quote.marketState
@@ -112,22 +119,23 @@ const StockDetail: React.FC<{
  : 0;
 
  const rows = [
- { label: 'Open', value: `${cur}${fmtCurrency(quote.open, cur)}` },
- { label: 'Prev Close', value: `${cur}${fmtCurrency(quote.previousClose, cur)}` },
- { label:"Day's High", value: `${cur}${fmtCurrency(quote.dayHigh, cur)}` },
- { label:"Day's Low", value: `${cur}${fmtCurrency(quote.dayLow, cur)}` },
- { label: '52W High', value: `${cur}${fmtCurrency(quote.yearHigh, cur)}` },
- { label: '52W Low', value: `${cur}${fmtCurrency(quote.yearLow, cur)}` },
+ { label: 'Open', value: `${cur}${fmtCurrency(quote.open, cur === '$' ? '$' : 'INR')}` },
+ { label: 'Prev Close', value: `${cur}${fmtCurrency(quote.previousClose, cur === '$' ? '$' : 'INR')}` },
+ { label:"Day's High", value: `${cur}${fmtCurrency(quote.dayHigh, cur === '$' ? '$' : 'INR')}` },
+ { label:"Day's Low", value: `${cur}${fmtCurrency(quote.dayLow, cur === '$' ? '$' : 'INR')}` },
+ { label: '52W High', value: `${cur}${fmtCurrency(quote.yearHigh, cur === '$' ? '$' : 'INR')}` },
+ { label: '52W Low', value: `${cur}${fmtCurrency(quote.yearLow, cur === '$' ? '$' : 'INR')}` },
  { label: 'P/E Ratio', value: quote.peRatio ? `${fmt(quote.peRatio)}x` : '-' },
- { label: 'EPS', value: quote.eps ? `${cur}${fmtCurrency(quote.eps, cur)}` : '-' },
+ { label: 'EPS', value: quote.eps ? `${cur}${fmtCurrency(quote.eps, cur === '$' ? '$' : 'INR')}` : '-' },
  { label: 'Div Yield', value: quote.dividendYield ? `${fmt(quote.dividendYield)}%` : '-' },
- { label: 'Market Cap', value: formatMarketCap(quote.marketCap, cur) },
+ { label: 'Market Cap', value: formatMarketCap(quote.marketCap, cur === '$' ? '$' : 'INR') },
  {
  label: 'Volume',
  value: new Intl.NumberFormat('en-IN').format(quote.volume)
  },
  { label: 'Market', value: quote.marketState === 'open' ? ' Open' : quote.marketState === 'closed' ? ' Closed' : '-' },
  ];
+
 
  return (
  <motion.div
@@ -571,25 +579,26 @@ export const LiveMarket: React.FC = () => {
  </button>
  </div>
 
- {/* Market filter tabs */}
- <div className="px-4 py-2 border-b border-gray-100 shrink-0 overflow-x-auto scrollbar-hide">
- <div className="flex gap-1.5 min-w-max">
- {MARKET_TABS.map((market) => (
- <button data-testid={`live-market-button-2-${market}`}
- key={market}
- onClick={() => handleMarketChange(market)}
- className={cn(
- 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap',
- activeMarket === market
- ? 'bg-gray-900 text-white shadow-sm'
- : 'bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700'
- )}
- >
- {MARKET_LABELS[market]}
- </button>
- ))}
- </div>
- </div>
+  {/* Market filter tabs */}
+  <div className="px-3 sm:px-4 py-2 border-b border-gray-100 shrink-0 w-full overflow-x-auto no-scrollbar scrollbar-none">
+    <div className="flex flex-wrap sm:flex-nowrap gap-1.5 min-w-full sm:min-w-max justify-start sm:justify-start">
+      {MARKET_TABS.map((market) => (
+        <button
+          data-testid={`live-market-button-2-${market}`}
+          key={market}
+          onClick={() => handleMarketChange(market)}
+          className={cn(
+            'px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer select-none shrink-0',
+            activeMarket === market
+              ? 'bg-gray-900 text-white shadow-sm'
+              : 'bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700'
+          )}
+        >
+          {MARKET_LABELS[market]}
+        </button>
+      ))}
+    </div>
+  </div>
 
  {/* Search bar */}
  <div className="px-4 py-2.5 border-b border-gray-100 shrink-0">

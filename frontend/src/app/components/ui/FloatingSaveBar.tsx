@@ -29,23 +29,20 @@ export const FloatingSaveBar: React.FC<FloatingSaveBarProps> = ({
 }) => (
   <div
     className={cn(
-      'fixed left-4 right-4 z-50',
-      // Sit just above the mobile bottom-nav dock. `--bottom-nav-height` is
-      // 64px on mobile/tablet but 0px on desktop (≥1025px, where the dock is
-      // `lg:hidden`), so the bar automatically drops to ~10px from the bottom
-      // on desktop instead of floating 72px up into the form fields.
-      'bottom-[calc(var(--bottom-nav-height,64px)+env(safe-area-inset-bottom,0px)+10px)]',
-      // On desktop and tablet, make it follow the normal layout flow to prevent overlapping input fields
-      'md:relative md:bottom-auto md:left-auto md:right-auto md:z-10 md:mt-8 md:mb-4 md:px-0',
+      'fixed z-50 transition-all duration-300',
+      // Mobile / Tablet layout (bottom centered above mobile nav dock)
+      'left-4 right-4 bottom-[calc(var(--bottom-nav-height,64px)+env(safe-area-inset-bottom,0px)+10px)]',
+      // Desktop view: float on the bottom right side as a fixed right-side widget
+      'lg:left-auto lg:right-8 lg:bottom-8 lg:w-auto',
       className
     )}
   >
-    <div className="flex items-center gap-3 max-w-lg mx-auto bg-white/90 backdrop-blur-xl border border-slate-200/60 shadow-[0_8px_32px_rgba(0,0,0,0.14)] rounded-2xl px-4 py-3">
+    <div className="flex items-center gap-3 w-full lg:w-auto max-w-lg lg:max-w-none mx-auto bg-white/90 backdrop-blur-xl border border-slate-200/60 shadow-[0_8px_32px_rgba(0,0,0,0.14)] rounded-2xl px-4 py-3">
       <button
         onClick={onDiscard}
         disabled={isSaving}
         data-testid={discardTestId}
-        className="flex items-center gap-1.5 px-4 py-2.5 rounded-[12px] text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 active:scale-95 transition-all disabled:opacity-40 shrink-0"
+        className="flex items-center gap-1.5 px-4 py-2.5 rounded-[12px] text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 active:scale-95 transition-all disabled:opacity-40 shrink-0 cursor-pointer"
       >
         <RotateCcw size={13} strokeWidth={3} />
         {discardLabel}
@@ -55,7 +52,7 @@ export const FloatingSaveBar: React.FC<FloatingSaveBarProps> = ({
         disabled={isSaving || disabled}
         data-testid={saveTestId}
         className={cn(
-          'flex-1 flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-[12px] text-xs font-bold text-white active:scale-95 transition-all disabled:opacity-60 shadow-[0_4px_12px_rgba(79,70,229,0.3)] bg-gradient-to-br',
+          'flex-1 lg:flex-none flex items-center justify-center gap-1.5 px-6 py-2.5 rounded-[12px] text-xs font-bold text-white active:scale-95 transition-all disabled:opacity-60 shadow-[0_4px_12px_rgba(79,70,229,0.3)] bg-gradient-to-br cursor-pointer',
           accentClass
         )}
       >

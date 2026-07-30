@@ -23,9 +23,9 @@ body,
    both. `html` (element selector) keeps specificity low so Tailwind's
    `select-none` / `select-text` utilities still override per-element. */
 html {
-  /* Stop iOS Safari from auto-inflating text on orientation change */
+  /* Stop iOS Safari and Firefox from auto-inflating text on orientation change */
   -webkit-text-size-adjust: 100%;
-  text-size-adjust: 100%;
+  -moz-text-size-adjust: 100%;
   /* Pair the WebKit prefix with the standard user-select (older Safari) */
   -webkit-user-select: auto;
   user-select: auto;
@@ -40,6 +40,9 @@ html {
   /* Total space needed for bottom nav + safe area */
   --bottom-reserved-space: calc(var(--bottom-nav-height) + var(--safe-area-bottom));
   --header-height: 64px;
+  /* Live soft-keyboard height, published by the @capacitor/keyboard listeners in
+     app/App.tsx. Stays 0px on web and whenever the keyboard is down. */
+  --keyboard-height: 0px;
 
   /* Responsive breakpoints */
   --mobile-max: 640px;
@@ -61,7 +64,6 @@ html {
     font-size: 14px;
     -webkit-text-size-adjust: 100%;
     -moz-text-size-adjust: 100%;
-    text-size-adjust: 100%;
     line-height: 1.5;
   }
 
@@ -285,14 +287,16 @@ html {
   background: transparent;
 }
 
-/* Firefox scrollbar hiding */
+/* Cross-browser scrollbar hiding rules (Firefox, WebKit/Safari/Chrome, IE) */
 * {
-  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  -ms-overflow-style: none;
 }
 
-/* IE scrollbar hiding */
-* {
-  -ms-overflow-style: none;
+*::-webkit-scrollbar {
+  display: none;
+  width: 0px;
+  height: 0px;
 }
 
 /* Disable zoom on iOS */
@@ -443,6 +447,13 @@ html {
 
 .live-market-flash-track:hover {
   animation-play-state: paused;
+}
+
+/* Native soft keyboard is up (class toggled by the @capacitor/keyboard listeners
+   in app/App.tsx). The bottom nav is position:fixed, so without this it floats
+   on top of the keyboard and covers the field the user is typing into. */
+body.keyboard-open .bottom-nav-container {
+  display: none;
 }
 
 /* Bottom Navigation wrapper style to avoid inline CSS styles */

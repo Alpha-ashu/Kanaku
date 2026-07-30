@@ -114,10 +114,22 @@ export const Investments: React.FC = () => {
 
  const formatCurrency = (amount: number) => formatCurrencyAmount(amount, currency);
 
- const handleDeleteInvestment = (investmentId: number, investmentName: string) => {
- setInvestmentToDelete({ id: investmentId, name: investmentName });
- setDeleteModalOpen(true);
- };
+  const handleDeleteInvestment = async (investmentId: number, investmentName: string) => {
+    // Check if linked to an active loan
+    if (db.investmentLinks) {
+      const linked = await db.investmentLinks
+        .where('investmentId')
+        .equals(String(investmentId))
+        .toArray();
+      const hasLoanLink = linked.some(l => l.linkedModule === 'loans');
+      if (hasLoanLink) {
+        toast.warning(`Cannot delete '${investmentName}' because it is linked to an active loan. Please settle or close the loan first.`);
+        return;
+      }
+    }
+    setInvestmentToDelete({ id: investmentId, name: investmentName });
+    setDeleteModalOpen(true);
+  };
 
  const confirmDeleteInvestment = async () => {
  if (!investmentToDelete) return;

@@ -97,10 +97,13 @@ const BudgetAlertsPage = lazy(() => import('@/app/components/features/BudgetAler
 const ClientManagementPage = lazy(() => import('@/app/components/features/ClientManagementPage').then(m => ({ default: m.ClientManagementPage })));
 const ReceiptScannerPage = lazy(() => import('@/app/components/features/ReceiptScannerPage').then(m => ({ default: m.ReceiptScannerPage })));
 
-//  Capacitor (native only) 
+//  Capacitor (native only)
 import { App as CapacitorApp } from '@capacitor/app';
 import { StatusBar, Style } from '@capacitor/status-bar';
+import { SplashScreen } from '@capacitor/splash-screen';
+import { Keyboard } from '@capacitor/keyboard';
 import { Capacitor } from '@capacitor/core';
+import { registerNativeDeepLinks } from '@/lib/nativeDeepLinks';
 
 //  Minimal page-transition spinner shown while a lazy chunk loads.
 //  The spinner is delayed: for fast (cached/prefetched) navigations the chunk
@@ -286,6 +289,10 @@ const AppContent: React.FC = () => {
   const currentPageRef = useRef<string>('dashboard');
   const goBackRef = useRef<(() => void) | undefined>(undefined);
   const closeOverlaysRef = useRef<() => boolean>(() => false);
+  // Same reasoning for the deep-link listener: registered once at startup, so it
+  // navigates through a ref rather than capturing the first render's setter.
+  const setCurrentPageRef = useRef<((page: string) => void) | undefined>(undefined);
+  const nativeDeepLinkCleanupRef = useRef<(() => void) | undefined>(undefined);
   const lastStateLogged = useRef<string | null>(null);
   const hasTriggeredSyncRef = useRef<string | null>(null);
   const hasAdminRedirectedRef = useRef(false);
@@ -342,6 +349,7 @@ const AppContent: React.FC = () => {
   // state without re-registering it.
   currentPageRef.current = currentPage;
   goBackRef.current = appContext.goBack;
+  setCurrentPageRef.current = setCurrentPage;
   closeOverlaysRef.current = () => {
     if (showQuickAction) { setShowQuickAction(false); return true; }
     return false;
@@ -376,6 +384,11 @@ const AppContent: React.FC = () => {
 
     registerServiceWorker();
     setupPWAInstallPrompt();
+
+    return () => {
+      nativeDeepLinkCleanupRef.current?.();
+      nativeDeepLinkCleanupRef.current = undefined;
+    };
   }, []);
 
   // Recover from stale cached chunks (service worker or CDN mismatch)
@@ -645,9 +658,63 @@ const AppContent: React.FC = () => {
   }, [user, authLoading, dataReady, currentPage, setCurrentPage, visibleFeatures, role, aiCapabilities]);
 
   const setupNativeFeatures = async () => {
+    const platform = Capacitor.getPlatform();
+
+    // Each block is guarded on its own. These used to share one try/catch, which
+    // meant the first failure skipped everything after it — on iOS
+    // setBackgroundColor throws (Android-only API), so the back-button and
+    // lifecycle wiring below never ran at all.
     try {
       await StatusBar.setStyle({ style: Style.Dark });
-      await StatusBar.setBackgroundColor({ color: '#2563eb' });
+      if (platform === 'android') {
+        // Android-only; on iOS the status bar takes its colour from the web view.
+        await StatusBar.setBackgroundColor({ color: '#2563eb' });
+      }
+    } catch (error) {
+      console.warn('[Capacitor] Status bar setup skipped:', error);
+    }
+
+    // The splash screen is configured to auto-hide after 2s. Hiding it here as
+    // well means a fast device stops showing it the moment React is interactive
+    // instead of idling on the brand screen.
+    try {
+      await SplashScreen.hide();
+    } catch (error) {
+      console.warn('[Capacitor] Splash hide skipped:', error);
+    }
+
+    // Notification taps and kanaku:// links route through the app's existing
+    // deepLink convention.
+    try {
+      nativeDeepLinkCleanupRef.current = await registerNativeDeepLinks((page) => {
+        setCurrentPageRef.current?.(page);
+      });
+    } catch (error) {
+      console.warn('[Capacitor] Deep link setup skipped:', error);
+    }
+
+    // Keyboard: `resize: 'body'` in capacitor.config.json reflows the web view,
+    // but the app needs to know the inset so bottom-anchored bars (BottomNav,
+    // sticky form footers) can lift clear of the keyboard rather than sit under it.
+    try {
+      await Keyboard.addListener('keyboardWillShow', (info) => {
+        document.documentElement.style.setProperty('--keyboard-height', `${info.keyboardHeight}px`);
+        document.body.classList.add('keyboard-open');
+      });
+      await Keyboard.addListener('keyboardWillHide', () => {
+        document.documentElement.style.setProperty('--keyboard-height', '0px');
+        document.body.classList.remove('keyboard-open');
+      });
+    } catch (error) {
+      console.warn('[Capacitor] Keyboard listeners skipped:', error);
+    }
+
+    if (platform !== 'android') {
+      // Everything below is Android hardware-back handling; iOS has no back key.
+      return;
+    }
+
+    try {
       // Hardware-back handling.
       //
       // IMPORTANT: never call exitApp() on a single back event. Android dismisses

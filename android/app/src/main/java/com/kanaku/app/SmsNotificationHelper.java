@@ -7,6 +7,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 
 import androidx.core.app.NotificationCompat;
@@ -36,6 +37,21 @@ public final class SmsNotificationHelper {
         Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName());
         if (launchIntent == null) {
             return;
+        }
+
+        // Carry the SMS identity into the app as a deep link so the tap opens the
+        // prefilled add-transaction screen. This side only knows the platform SMS
+        // id; lib/nativeDeepLinks.ts resolves it to the local record id, which is
+        // assigned later by the JS layer when it drains the pending queue.
+        String sourceSmsId = transaction.optString("sourceSmsId", "");
+        if (!sourceSmsId.isEmpty()) {
+            launchIntent.setAction(Intent.ACTION_VIEW);
+            launchIntent.setData(
+                Uri.parse("kanaku://sms-transaction")
+                    .buildUpon()
+                    .appendQueryParameter("sourceSmsId", sourceSmsId)
+                    .build()
+            );
         }
 
         launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);

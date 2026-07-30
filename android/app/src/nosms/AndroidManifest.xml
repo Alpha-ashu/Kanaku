@@ -1,4 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  Flavor-scoped manifest for the `nosms` (Google Play) build.
+
+  Flavor source sets are mutually exclusive, so this build never merges
+  app/src/full/AndroidManifest.xml and the SMS permissions cannot reach it by that
+  route. The tools:node="remove" entries below are kept as a hard guarantee: if a
+  future library or merge ever injects READ_SMS/RECEIVE_SMS, the Play artifact
+  still ships without them. Removing an element that is absent is a no-op.
+-->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 

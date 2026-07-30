@@ -1,6 +1,18 @@
-# Unreachable frontend modules (import-graph walk from src/index.tsx, 2026-07-19)
-# 326 total modules, 193 reachable, 133 unreachable. ~52 are app/components/ui shadcn kit (keep).
-# Regenerate: node scratchpad/dead-modules.mjs (script: BFS over import/require/lazy-import specifiers, '@/' alias aware)
+# Unreachable frontend modules
+# Import-graph BFS from frontend/src/index.tsx (the only entrypoint; the app
+# navigates by state machine in app/App.tsx, not react-router routes).
+# Regenerate: node scripts/analyze-dead-modules.mjs frontend
+#
+# Generated: 2026-07-30  —  total=337 reachable=196 unreachable=141
+#
+# READ BEFORE DELETING:
+#  * app/components/ui/** is the shadcn component kit. Unreachable today, kept
+#    deliberately as a library to build against. Do not bulk-delete.
+#  * *.d.ts files are ambient declarations. They are never imported and must stay.
+#  * Some entries still have passing unit tests under quality/frontend/ —
+#    voiceAIProcessor.ts, bankStatementScannerService.ts, PortfolioValuationEngine.ts.
+#    Deleting the module without relocating or removing its test breaks the suite.
+#  * Nothing here affects bundle size: unreachable modules are never emitted.
 
 app/components/auth/AuthPage.tsx
 app/components/auth/onboarding/OnboardingStep1.tsx
@@ -67,6 +79,7 @@ app/components/ui/textarea.tsx
 app/components/ui/toggle-group.tsx
 app/components/ui/toggle.tsx
 app/components/ui/use-mobile.ts
+app/components/ui/utils.ts
 components/VoiceAssistant.tsx
 components/shared/NotificationCenter.tsx
 components/shared/NotificationToast.tsx
@@ -82,7 +95,9 @@ hooks/useRBAC.ts
 hooks/useResponsive.ts
 hooks/useToast.ts
 hooks/useVoiceAssistant.ts
+lib/PortfolioValuationEngine.ts
 lib/app-integration-guide.tsx
+lib/assetOcrParser.ts
 lib/auth-helpers.ts
 lib/device-manager.ts
 lib/device-sync-manager.ts
@@ -122,11 +137,14 @@ pages/voice-assistant/queries.ts
 services/KANKUIntelligenceEngine.ts
 services/accountAggregatorService.ts
 services/bankStatementScannerService.ts
+services/budgetCoachService.ts
 services/hybridAIService.ts
+services/nlqService.ts
 services/receiptTrainingService.ts
 services/tesseractOCRService.ts
 services/voiceAIProcessor.ts
 services/voiceCommandParser.ts
+services/voiceContextStore.ts
 services/voiceRecognitionService.ts
 services/voiceTransactionService.ts
 utils/appValidator.ts
@@ -135,3 +153,5 @@ utils/serviceWorkerUtils.ts
 utils/supabase/middleware.ts
 utils/supabase/server.ts
 utils/supabase/test.ts
+vercel-node.d.ts
+vite-env.d.ts

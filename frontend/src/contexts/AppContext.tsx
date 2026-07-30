@@ -204,6 +204,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     accounts.filter(acc => acc.isActive).reduce((sum, acc) => sum + acc.balance, 0)
   ), [accounts]);
 
+  // Run V2 Investment Module database migration on startup
+  useEffect(() => {
+    import('@/lib/v2InvestmentMigration').then(m => m.runV2InvestmentMigration()).catch(err => {
+      console.error('V2 Investment migration error:', err);
+    });
+  }, []);
+
   // One-time: repair imported transaction titles that have boilerplate descriptions.
   // Uses the stored merchant field that was saved alongside the transaction.
   useEffect(() => {

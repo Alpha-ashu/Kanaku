@@ -1,7 +1,28 @@
-# Kanaku — Known Limitations (Beta, 2026-07-19)
+# Kanaku — Known Limitations (Beta, 2026-07-19; mobile section added 2026-07-30)
 
 Honest register of what is intentionally partial at beta. None of these block beta;
 each has an owner-decision or a post-beta plan.
+
+## 0. Mobile (Android & iOS)
+
+Full detail — including the capability matrix and the outstanding store-submission
+items — lives in [MOBILE_RELEASE_GUIDE.md](./MOBILE_RELEASE_GUIDE.md). In short:
+
+- **Voice speech-to-text does not work in either native app.** It relies on the Web
+  Speech API, which Android WebView and iOS WKWebView do not implement. The mic and
+  waveform work; only transcription is missing, and the UI falls back to typing.
+  Closing it needs a native STT plugin or server-side STT.
+- **SMS auto-detection is Android-only and permanently so** — iOS exposes no SMS inbox
+  API. It also ships only in the `full` (sideload) flavor; the Play build is `nosms`
+  because Play policy restricts SMS permissions to SMS-first apps.
+- **No biometric unlock.** A `BIOMETRIC_AUTH` flag and a `biometricEnabled` field exist
+  but nothing implements them. PIN lock is the only lock on all platforms.
+- **No push notifications** — local notifications only, no FCM/APNs.
+- **iOS cannot be submitted yet**: the app icon is still the Capacitor placeholder (no
+  usable 1024×1024 source exists in the repo) and no Apple signing secrets are
+  configured. CI builds the simulator target only.
+- **The Android toolchain is pinned** to AGP 8.13.0 / Gradle 8.14.3 / JDK 21 and must not
+  be bumped ahead of Capacitor 8 — newer AGP fails to configure every plugin module.
 
 ## 1. Double-entry Ledger V2 is partially wired (most important)
 The full double-entry machinery exists and is tested (journal entries, invariant validator,

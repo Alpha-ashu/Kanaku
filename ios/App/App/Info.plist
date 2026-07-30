@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CAPACITOR_DEBUG</key>
+	<string>$(CAPACITOR_DEBUG)</string>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>en</string>
+	<key>CFBundleDisplayName</key>
+        <string>KANAKU</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>$(PRODUCT_NAME)</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>$(MARKETING_VERSION)</string>
+	<key>CFBundleVersion</key>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	<!-- Deep links. Mirrors the android:scheme="kanaku" intent-filter so notification
+	     deepLink payloads ("/add-transaction?smsTransactionId=12") resolve identically
+	     on both platforms via the @capacitor/app appUrlOpen listener. -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.kanaku.app</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>kanaku</string>
+			</array>
+		</dict>
+	</array>
+	<!-- Purpose strings. Every one of these is reachable from the shipping UI; App Review
+	     rejects binaries that touch these APIs without a description, and WKWebView
+	     silently fails the getUserMedia/file-picker call rather than prompting. -->
+	<key>NSCameraUsageDescription</key>
+	<string>KANAKU uses the camera so you can photograph a receipt or bill and have its amount, merchant and date filled in for you.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>KANAKU needs access to your photos so you can attach an existing receipt, bill or statement image to a transaction.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>KANAKU saves exported reports and statements to your photo library when you choose to keep a copy.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>KANAKU uses the microphone for voice entry, so you can add a transaction by speaking instead of typing.</string>
+	<key>UIStatusBarStyle</key>
+	<string>UIStatusBarStyleLightContent</string>
+	<key>UILaunchStoryboardName</key>
+	<string>LaunchScreen</string>
+	<key>UIMainStoryboardFile</key>
+	<string>Main</string>
+	<key>UIRequiredDeviceCapabilities</key>
+	<array>
+		<string>armv7</string>
+	</array>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>UISupportedInterfaceOrientations~ipad</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>UIViewControllerBasedStatusBarAppearance</key>
+	<true/>
+</dict>
+</plist>

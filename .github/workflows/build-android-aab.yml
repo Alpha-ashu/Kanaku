@@ -26,7 +26,9 @@ on:
 
 env:
   NODE_VERSION: '22'
-  JAVA_VERSION: '17'
+  # Capacitor 8 plugin modules declare kotlin { jvmToolchain(21) }; building them
+  # on JDK 17 fails to resolve a toolchain.
+  JAVA_VERSION: '21'
 
 jobs:
   build:
@@ -89,6 +91,10 @@ jobs:
             keytool -genkey -v -keystore android/finance-life-release.keystore -alias finance-life -keyalg RSA -keysize 2048 -validity 10000 -storepass dummypass -keypass dummypass -dname "CN=Dummy, O=Dummy, C=US"
           fi
 
+      # The app has a `smsSupport` flavor dimension (full | nosms), so Gradle emits
+      # per-flavor artifacts under outputs/bundle/<flavor>Release/ — there is no
+      # plain app-release.aab. `bundleRelease`/`assembleDebug` are the aggregate
+      # lifecycle tasks and build both flavors.
       - name: Build APK (Debug)
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.build_variant == 'debug'
         run: |
@@ -116,22 +122,50 @@ jobs:
           ./gradlew bundleRelease --no-daemon
           rm -f key.properties
 
-      - name: Upload Debug APK artifact
+      - name: Upload Debug APK artifacts
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.build_variant == 'debug'
         uses: actions/upload-artifact@v7
         with:
           name: app-debug
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          path: android/app/build/outputs/apk/*/debug/*.apk
+          if-no-files-found: error
           retention-days: 7
 
-      - name: Upload Release AAB artifact
+      # nosms is the Play Store upload (no SMS permissions — see
+      # android/app/src/nosms/AndroidManifest.xml).
+      - name: Upload Play Store AAB (nosms)
         if: |
           github.event_name == 'push' ||
           (github.event_name == 'workflow_dispatch' && github.event.inputs.build_variant == 'release')
         uses: actions/upload-artifact@v7
         with:
-          name: app-release-aab
-          path: android/app/build/outputs/bundle/release/app-release.aab
+          name: app-nosms-release-aab
+          path: android/app/build/outputs/bundle/nosmsRelease/*.aab
+          if-no-files-found: error
+          retention-days: 30
+
+      # full is the sideload / direct-download build that keeps SMS auto-detection.
+      - name: Upload Sideload AAB (full)
+        if: |
+          github.event_name == 'push' ||
+          (github.event_name == 'workflow_dispatch' && github.event.inputs.build_variant == 'release')
+        uses: actions/upload-artifact@v7
+        with:
+          name: app-full-release-aab
+          path: android/app/build/outputs/bundle/fullRelease/*.aab
+          if-no-files-found: error
+          retention-days: 30
+
+      # R8 mapping files — required to symbolicate Play Console crash reports.
+      - name: Upload ProGuard mapping files
+        if: |
+          github.event_name == 'push' ||
+          (github.event_name == 'workflow_dispatch' && github.event.inputs.build_variant == 'release')
+        uses: actions/upload-artifact@v7
+        with:
+          name: proguard-mappings
+          path: android/app/build/outputs/mapping/*/mapping.txt
+          if-no-files-found: warn
           retention-days: 30
 
       - name: Clean up keystore
@@ -149,9 +183,9 @@ jobs:
           echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
           echo "- Branch: $BRANCH" >> $GITHUB_STEP_SUMMARY
           echo "- Triggered by: $EVENT" >> $GITHUB_STEP_SUMMARY
-          if [ -f "android/app/build/outputs/apk/debug/app-debug.apk" ]; then
-            echo "- Debug APK: ✅ Built successfully" >> $GITHUB_STEP_SUMMARY
-          fi
-          if [ -f "android/app/build/outputs/bundle/release/app-release.aab" ]; then
-            echo "- Release AAB: ✅ Built successfully" >> $GITHUB_STEP_SUMMARY
-          fi
+          for apk in android/app/build/outputs/apk/*/debug/*.apk; do
+            [ -f "$apk" ] && echo "- Debug APK: ✅ $(basename "$apk")" >> $GITHUB_STEP_SUMMARY
+          done
+          for aab in android/app/build/outputs/bundle/*/*.aab; do
+            [ -f "$aab" ] && echo "- Release AAB: ✅ $(basename "$aab")" >> $GITHUB_STEP_SUMMARY
+          done

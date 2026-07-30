@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Flavor-scoped manifest for the `full` (sideload / direct-download) build.
+
+  READ_SMS and RECEIVE_SMS live here rather than in src/main so that the `nosms`
+  flavor — the one uploaded to Google Play — can never merge them. Play's
+  Permissions Declaration policy restricts SMS access to apps whose *core*
+  function is SMS handling; a finance app that merely reads bank alerts does not
+  qualify, so the Play build must ship without them.
+
+  They are required at build time for the `full` flavor: SmsDetectionPlugin calls
+  requestPermissionForAlias("sms"), and Android returns DENIED immediately for
+  any permission that is not declared in the merged manifest — which is why SMS
+  auto-detection silently did nothing before this file existed.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.READ_SMS" />
+    <uses-permission android:name="android.permission.RECEIVE_SMS" />
+
+</manifest>

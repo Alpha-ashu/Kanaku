@@ -21,8 +21,15 @@ All documentation files have been consolidated into single, topic-specific files
   security audit, RBAC matrix, test plan/results, performance report, deployment guide,
   operations runbook, known limitations, release checklist, and verified architecture snapshots.
 
+## Mobile (Android & iOS)
+
+- **[release/MOBILE_RELEASE_GUIDE.md](./release/MOBILE_RELEASE_GUIDE.md)** — the single
+  reference for the native apps: Capacitor plugin wiring, the pinned Android toolchain,
+  the `full`/`nosms` flavor split for Play, the iOS project, per-platform capability
+  matrix, build/release commands, and the outstanding App Store items.
+
 ## Additional Resources
-- **[Feature_List.csv](./Feature_List.csv)**: Complete feature spreadsheet list.
+
 - **[openapi.yaml](./openapi.yaml)**: Swagger-ready API specifications.
 - **[api-viewer.html](./api-viewer.html)**: Interactive viewer interface for API specifications.
 - **[AUTOMATION_REGISTRY.md](./AUTOMATION_REGISTRY.md)**: Playwright test-ids reference.

@@ -1,1062 +1,562 @@
-
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useApp } from '@/contexts/AppContext';
-import { Button } from '@/app/components/ui/button';
-import { SearchableDropdown } from '@/app/components/ui/SearchableDropdown';
-import { backendService } from '@/lib/backend-api';
-import { saveTransactionWithBackendSync } from '@/lib/auth-sync-integration';
 import { db } from '@/lib/database';
+import { backendService } from '@/lib/backend-api';
 import {
-  TrendingUp, Loader2, RefreshCw, ChevronLeft, ArrowLeft, Check,
-  Search, Calendar, Wallet, AlignLeft, Info, Plus, ArrowUpRight,
-  BarChart3, Globe, Shield, Scan, Upload, CheckCircle2, AlertCircle,
-  Weight, Tag, MapPin, Users, Gift, ShoppingBag, Building2, Briefcase, Gem, ScanLine, Paperclip,
+  TrendingUp, Loader2, ArrowLeft, Plus, BarChart3, Shield, CreditCard,
+  Layers, CheckCircle2, DollarSign, Building2, Gem,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import { searchStocks, fetchStockQuote, StockQuote, StockSearchResult, displaySymbol } from '@/lib/stockApi';
-import { formatCurrencyAmount, formatNativeMoney, getCurrencySymbol, normalizeCurrencyCode } from '@/lib/currencyUtils';
-import { fetchCurrencyConversionRate } from '@/lib/investmentUtils';
-import { inferInvestmentTypeFromText } from '@/lib/voiceExpenseParser';
-import { takeVoiceDraft, VOICE_INVESTMENT_DRAFT_KEY, type VoiceInvestmentDraft } from '@/lib/voiceDrafts';
-import { extractAssetMetadata, ExtractedAssetMetadata } from '@/lib/assetOcrParser';
-
+import { SearchableDropdown } from '@/app/components/ui/SearchableDropdown';
 import { FloatingSaveBar } from '@/app/components/ui/FloatingSaveBar';
+import { Button } from '@/app/components/ui/button';
 
-// ─── Types ──────────────────────────────────────────────────────────────────────
-type InvestmentFormType =
-  | 'stocks' | 'crypto' | 'mutual-funds' | 'bonds'
-  | 'gold' | 'silver' | 'platinum' | 'bronze'
-  | 'real-estate' | 'business' | 'other';
+import {
+  MainCategoryCode,
+  SubcategoryCode,
+  PhysicalAssetDetailsV2,
+  PropertyDetailsV2,
+  BusinessDetailsV2,
+  FixedDepositDetailsV2,
+  InvestmentDocumentV2,
+  InvestmentV2,
+} from '@/types/investmentV2';
 
-type OwnershipTag = 'self' | 'inherited' | 'gifted';
+import { InvestmentCategoryTabs } from '@/app/components/investments/InvestmentCategoryTabs';
+import { MarketAssetsForm } from '@/app/components/investments/forms/MarketAssetsForm';
+import { PhysicalAssetsForm } from '@/app/components/investments/forms/PhysicalAssetsForm';
+import { OtherInvestmentsForm } from '@/app/components/investments/forms/OtherInvestmentsForm';
+import { mapLegacyAssetTypeToV2 } from '@/lib/v2InvestmentMigration';
+import { formatCurrencyAmount, formatNativeMoney, getCurrencySymbol, normalizeCurrencyCode } from '@/lib/currencyUtils';
 
-// ─── Constants ──────────────────────────────────────────────────────────────────
-const INVESTMENT_TYPES: { key: InvestmentFormType; label: string; icon: string; group: 'market' | 'physical' | 'asset' }[] = [
-  { key: 'stocks',       label: 'Stocks',    icon: '📈', group: 'market' },
-  { key: 'crypto',       label: 'Crypto',    icon: '₿',  group: 'market' },
-  { key: 'mutual-funds', label: 'Funds',     icon: '📊', group: 'market' },
-  { key: 'gold',         label: 'Gold',      icon: '🥇', group: 'physical' },
-  { key: 'silver',       label: 'Silver',    icon: '🥈', group: 'physical' },
-  { key: 'platinum',     label: 'Platinum',  icon: '💎', group: 'physical' },
-  { key: 'bronze',       label: 'Bronze',    icon: '🏆', group: 'physical' },
-  { key: 'real-estate',  label: 'Property',  icon: '🏠', group: 'asset' },
-  { key: 'business',     label: 'Business',  icon: '🏢', group: 'asset' },
-  { key: 'bonds',        label: 'Bonds',     icon: '📜', group: 'market' },
-  { key: 'other',        label: 'Other',     icon: '💼', group: 'asset' },
-];
-
-const PHYSICAL_METALS: InvestmentFormType[] = ['gold', 'silver', 'platinum', 'bronze'];
-const MARKET_ASSETS: InvestmentFormType[] = ['stocks', 'crypto', 'mutual-funds', 'bonds'];
-
-const METAL_ACCENT: Record<string, string> = {
-  gold: '#D4AF37', silver: '#C0C0C0', platinum: '#E5E4E2', bronze: '#CD7F32',
-};
-
-const PENDING_INVESTMENT_DRAFT_KEY = 'pendingInvestmentDraft';
-
-// ─── Sub-components ────────────────────────────────────────────────────────────
-
-const AssetTypeGrid = ({
-  selectedType,
-  onSelect,
-}: {
-  selectedType: string;
-  onSelect: (type: InvestmentFormType) => void;
-}) => (
-  <div className="space-y-2">
-    {[
-      { label: 'Market Assets', keys: MARKET_ASSETS },
-      { label: 'Physical Metals', keys: PHYSICAL_METALS },
-      { label: 'Other Assets', keys: ['real-estate', 'business', 'other'] as InvestmentFormType[] },
-    ].map(group => (
-      <div key={group.label}>
-        <p className="text-[8px] font-extrabold tracking-[0.15em] uppercase text-slate-400 mb-1.5">
-          {group.label}
-        </p>
-        <div className="flex flex-wrap gap-2">
-          {group.keys.map(key => {
-            const type = INVESTMENT_TYPES.find(t => t.key === key)!;
-            const isSelected = selectedType === key;
-            const isPhysical = PHYSICAL_METALS.includes(key);
-            const accentColor = isPhysical ? METAL_ACCENT[key] : undefined;
-            return (
-              <button
-                key={key}
-                onClick={() => onSelect(key)}
-                data-testid={`investments-create-type-${key}-button`}
-                ref={el => {
-                  if (el) {
-                    el.style.background = isSelected ? (accentColor ? `${accentColor}22` : '#4f46e5') : 'rgba(248,250,252,1)';
-                    el.style.border = isSelected ? `1.5px solid ${accentColor ?? '#4f46e5'}` : '1.5px solid transparent';
-                    el.style.color = isSelected ? (accentColor ?? '#4f46e5') : '#64748b';
-                  }
-                }}
-                className={cn('flex items-center gap-1.5 px-3 py-2 rounded-xl transition-all text-[10px] font-black', isSelected ? 'shadow-lg' : 'hover:opacity-80')}
-              >
-                <span>{type.icon}</span>
-                <span>{type.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-    ))}
-  </div>
-);
-
-// Physical asset metadata form section
-const PhysicalAssetForm: React.FC<{
-  metalType: InvestmentFormType;
-  metadata: PhysicalMeta;
-  onChange: (key: keyof PhysicalMeta, val: any) => void;
-}> = ({ metalType, metadata, onChange }) => {
-  const accent = METAL_ACCENT[metalType] ?? '#94a3b8';
-  return (
-    <div className="space-y-3 pt-2">
-      <div ref={el => { if (el) el.style.background = `linear-gradient(to right, ${accent}40, transparent)`; }} className="h-px" />
-      <p ref={el => { if (el) el.style.color = accent; }} className="text-[9px] font-black tracking-[0.18em] uppercase">
-        Physical Asset Details
-      </p>
-
-      <div className="grid grid-cols-2 gap-3">
-        {/* Weight */}
-        <div className="space-y-1">
-          <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Weight</label>
-          <div className="flex gap-1">
-            <input
-              id="investment-weight"
-              name="weightValue"
-              aria-label="Weight"
-              type="number"
-              value={metadata.weightValue || ''}
-              onChange={e => onChange('weightValue', parseFloat(e.target.value) || 0)}
-              data-testid="investments-create-weight-input"
-              className="w-2/3 bg-slate-50 border-none rounded-xl py-2 px-3 font-bold text-slate-900 text-xs"
-              placeholder="0.00"
-            />
-            <select
-              value={metadata.weightUnit || 'g'}
-              onChange={e => onChange('weightUnit', e.target.value)}
-              aria-label="Weight unit"
-              data-testid="investments-create-weight-unit"
-              className="w-1/3 bg-slate-50 border-none rounded-xl py-2 px-2 font-bold text-xs text-slate-700"
-            >
-              <option data-testid="add-investment-g" value="g">g</option>
-              <option data-testid="add-investment-tola" value="tola">tola</option>
-              <option data-testid="add-investment-oz" value="oz">oz</option>
-              <option data-testid="add-investment-kg" value="kg">kg</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Purity */}
-        <div className="space-y-1">
-          <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Purity / Fineness</label>
-          <input
-            id="investment-purity"
-            name="purity"
-            aria-label="Purity / Fineness"
-            type="text"
-            value={metadata.purity || ''}
-            onChange={e => onChange('purity', e.target.value)}
-            data-testid="investments-create-purity-input"
-            className="w-full bg-slate-50 border-none rounded-xl py-2 px-3 font-bold text-slate-900 text-xs"
-            placeholder="e.g. 22K (916)"
-          />
-        </div>
-
-        {/* Form / Type */}
-        <div className="space-y-1">
-          <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Form</label>
-          <select
-            value={metadata.form || ''}
-            onChange={e => onChange('form', e.target.value)}
-            aria-label="Gold form"
-            data-testid="investments-create-form-select"
-            className="w-full bg-slate-50 border-none rounded-xl py-2 px-3 font-bold text-xs text-slate-700"
-          >
-            <option data-testid="add-investment-select-form" value="">Select form</option>
-            <option data-testid="add-investment-jewelry-ornament" value="jewelry">Jewelry / Ornament</option>
-            <option data-testid="add-investment-coin" value="coin">Coin</option>
-            <option data-testid="add-investment-bar-ingot" value="bar">Bar / Ingot</option>
-            <option data-testid="add-investment-biscuit" value="biscuit">Biscuit</option>
-            <option data-testid="add-investment-other" value="other">Other</option>
-          </select>
-        </div>
-
-        {/* Hallmark HUID */}
-        <div className="space-y-1">
-          <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">BIS HUID</label>
-          <input
-            id="investment-huid"
-            name="hallmarkNumber"
-            aria-label="BIS HUID"
-            type="text"
-            value={metadata.hallmarkNumber || ''}
-            onChange={e => onChange('hallmarkNumber', e.target.value.toUpperCase().slice(0, 6))}
-            data-testid="investments-create-huid-input"
-            className="w-full bg-slate-50 border-none rounded-xl py-2 px-3 font-bold text-slate-900 text-xs tracking-widest"
-            placeholder="6-digit code"
-            maxLength={6}
-          />
-        </div>
-      </div>
-
-      {/* Jeweler Name */}
-      <div className="space-y-1">
-        <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Jeweler / Shop</label>
-        <input
-          id="investment-jeweler"
-          name="jewelerName"
-          aria-label="Jeweler / Shop"
-          type="text"
-          value={metadata.jewelerName || ''}
-          onChange={e => onChange('jewelerName', e.target.value)}
-          data-testid="investments-create-jeweler-input"
-          className="w-full bg-slate-50 border-none rounded-xl py-2 px-3 font-bold text-slate-900 text-xs"
-          placeholder="e.g. Tanishq, Kalyan Jewellers"
-        />
-      </div>
-
-      {/* Locker Name */}
-      <div className="space-y-1">
-        <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Storage / Locker</label>
-        <input
-          id="investment-locker"
-          name="lockerName"
-          aria-label="Storage / Locker"
-          type="text"
-          value={metadata.lockerName || ''}
-          onChange={e => onChange('lockerName', e.target.value)}
-          data-testid="investments-create-locker-input"
-          className="w-full bg-slate-50 border-none rounded-xl py-2 px-3 font-bold text-slate-900 text-xs"
-          placeholder="e.g. SBI Bank Locker, Home Safe"
-        />
-      </div>
-
-      {/* Ownership */}
-      <div className="space-y-1">
-        <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Ownership</label>
-        <div className="flex gap-2">
-          {(['self', 'inherited', 'gifted'] as OwnershipTag[]).map(tag => {
-            const icons = { self: <ShoppingBag size={10} />, inherited: <Users size={10} />, gifted: <Gift size={10} /> };
-            const labels = { self: 'Self-Purchased', inherited: 'Inherited', gifted: 'Gifted' };
-            const isActive = metadata.ownershipTag === tag;
-            return (
-              <button
-                key={tag}
-                onClick={() => onChange('ownershipTag', tag)}
-                data-testid={`investments-create-ownership-${tag}-button`}
-                ref={el => {
-                  if (el) {
-                    el.style.background = isActive ? `${accent}18` : 'rgba(248,250,252,1)';
-                    el.style.border = `1.5px solid ${isActive ? accent : 'transparent'}`;
-                    el.style.color = isActive ? accent : '#64748b';
-                  }
-                }}
-                className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-[9px] font-black transition-all"
-              >
-                {icons[tag]} {labels[tag]}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Real Estate form section
-const RealEstateForm: React.FC<{
-  metadata: RealEstateMeta;
-  onChange: (key: keyof RealEstateMeta, val: any) => void;
-}> = ({ metadata, onChange }) => (
-  <div className="space-y-3 pt-2">
-    <div className="invest-divider-indigo" />
-    <p className="text-[9px] font-black tracking-[0.18em] uppercase text-[#818CF8]">
-      Property Details
-    </p>
-    <div className="grid grid-cols-2 gap-3">
-      <div className="space-y-1">
-        <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Property Type</label>
-        <select
-          value={metadata.propertyType || ''}
-          onChange={e => onChange('propertyType', e.target.value)}
-          aria-label="Property type"
-          data-testid="investments-create-property-type"
-          className="w-full bg-slate-50 border-none rounded-xl py-2 px-3 font-bold text-xs text-slate-700"
-        >
-          <option data-testid="add-investment-select-type" value="">Select type</option>
-          <option data-testid="add-investment-residential" value="Residential">Residential</option>
-          <option data-testid="add-investment-commercial" value="Commercial">Commercial</option>
-          <option data-testid="add-investment-agricultural-land" value="Agricultural Land">Agricultural Land</option>
-          <option data-testid="add-investment-plot-land" value="Plot / Land">Plot / Land</option>
-          <option data-testid="add-investment-industrial" value="Industrial">Industrial</option>
-        </select>
-      </div>
-      <div className="space-y-1">
-        <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Location</label>
-        <input
-          id="investment-property-location"
-          name="location"
-          aria-label="Location"
-          type="text"
-          value={metadata.location || ''}
-          onChange={e => onChange('location', e.target.value)}
-          data-testid="investments-create-property-location"
-          className="w-full bg-slate-50 border-none rounded-xl py-2 px-3 font-bold text-slate-900 text-xs"
-          placeholder="City, Area"
-        />
-      </div>
-      <div className="space-y-1">
-        <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Area (sq.ft)</label>
-        <input
-          id="investment-property-area"
-          name="areaSqft"
-          aria-label="Area (sq.ft)"
-          type="number"
-          value={metadata.areaSqft || ''}
-          onChange={e => onChange('areaSqft', parseFloat(e.target.value) || 0)}
-          data-testid="investments-create-property-area"
-          className="w-full bg-slate-50 border-none rounded-xl py-2 px-3 font-bold text-slate-900 text-xs"
-          placeholder="0"
-        />
-      </div>
-      <div className="space-y-1">
-        <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Rental Yield %</label>
-        <input
-          id="investment-property-yield"
-          name="rentalYield"
-          aria-label="Rental yield %"
-          type="number"
-          value={metadata.rentalYield || ''}
-          onChange={e => onChange('rentalYield', parseFloat(e.target.value) || 0)}
-          data-testid="investments-create-property-yield"
-          className="w-full bg-slate-50 border-none rounded-xl py-2 px-3 font-bold text-slate-900 text-xs"
-          placeholder="e.g. 4.5"
-        />
-      </div>
-    </div>
-    <div className="space-y-1">
-      <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Document Storage</label>
-      <input
-        id="investment-property-docsafe"
-        name="documentSafe"
-        aria-label="Document storage"
-        type="text"
-        value={metadata.documentSafe || ''}
-        onChange={e => onChange('documentSafe', e.target.value)}
-        data-testid="investments-create-property-docsafe"
-        className="w-full bg-slate-50 border-none rounded-xl py-2 px-3 font-bold text-slate-900 text-xs"
-        placeholder="Where are the documents kept?"
-      />
-    </div>
-  </div>
-);
-
-// Business form section
-const BusinessForm: React.FC<{
-  metadata: BusinessMeta;
-  onChange: (key: keyof BusinessMeta, val: any) => void;
-}> = ({ metadata, onChange }) => (
-  <div className="space-y-3 pt-2">
-    <div className="invest-divider-emerald" />
-    <p className="text-[9px] font-black tracking-[0.18em] uppercase text-[#34D399]">
-      Business Details
-    </p>
-    <div className="grid grid-cols-2 gap-3">
-      <div className="space-y-1">
-        <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Ownership %</label>
-        <input
-          id="investment-business-percent"
-          name="ownershipPercent"
-          aria-label="Ownership %"
-          type="number"
-          value={metadata.ownershipPercent || ''}
-          onChange={e => onChange('ownershipPercent', parseFloat(e.target.value) || 0)}
-          data-testid="investments-create-business-percent"
-          className="w-full bg-slate-50 border-none rounded-xl py-2 px-3 font-bold text-slate-900 text-xs"
-          placeholder="e.g. 51"
-          min={0} max={100}
-        />
-      </div>
-      <div className="space-y-1">
-        <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Sector</label>
-        <input
-          id="investment-business-sector"
-          name="sector"
-          aria-label="Sector"
-          type="text"
-          value={metadata.sector || ''}
-          onChange={e => onChange('sector', e.target.value)}
-          data-testid="investments-create-business-sector"
-          className="w-full bg-slate-50 border-none rounded-xl py-2 px-3 font-bold text-slate-900 text-xs"
-          placeholder="e.g. Retail, Tech"
-        />
-      </div>
-    </div>
-  </div>
-);
-
-// OCR bill scanner component
-const OcrBillScanner: React.FC<{
-  onExtracted: (data: ExtractedAssetMetadata) => void;
-  accentColor?: string;
-}> = ({ onExtracted, accentColor = '#D4AF37' }) => {
-  const [scanning, setScanning] = useState(false);
-  const [result, setResult] = useState<ExtractedAssetMetadata | null>(null);
-  const [attachedFileName, setAttachedFileName] = useState<string | null>(null);
-  const fileRef = useRef<HTMLInputElement>(null);
-  const [mode, setMode] = useState<'scan' | 'attachment' | null>(null);
-
-  const handleFile = async (file: File, runOcr: boolean) => {
-    setAttachedFileName(file.name);
-    if (!runOcr) {
-      toast.success(`Attached ${file.name} successfully`);
-      return;
-    }
-    setScanning(true);
-    setResult(null);
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-
-      // Try backend OCR
-      let rawText = '';
-      try {
-        const response = await backendService.uploadExpenseBill({ file });
-        rawText = response?.rawText ?? response?.text ?? '';
-      } catch (e) {
-        // If OCR backend fails, read as text (for PDF text layer)
-        rawText = await file.text();
-      }
-
-      if (!rawText) {
-        toast.error('Could not extract text from bill');
-        return;
-      }
-
-      const extracted = extractAssetMetadata(rawText);
-      setResult(extracted);
-
-      if (extracted.confidenceScore >= 20) {
-        onExtracted(extracted);
-        toast.success(`AI extracted details with ${extracted.confidenceScore}% confidence`);
-      } else {
-        toast.warning('Low confidence extraction — please fill details manually');
-      }
-    } catch (e) {
-      toast.error('Bill scan failed');
-    } finally {
-      setScanning(false);
-    }
-  };
-
-  return (
-    <div className="premium-glass-card p-4 space-y-3">
-      <div className="flex items-center justify-between">
-        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Jeweller Bill</label>
-        {attachedFileName && (
-          <button 
-            type="button"
-            onClick={() => {
-              setAttachedFileName(null);
-              setResult(null);
-            }}
-            className="text-[9px] font-black text-red-500 hover:text-red-600 uppercase tracking-wider"
-          >
-            Remove
-          </button>
-        )}
-      </div>
-
-      <input
-        ref={fileRef}
-        type="file"
-        accept="image/*,.pdf"
-        aria-label="Upload bill or document"
-        data-testid="investments-ocr-file-input"
-        className="hidden"
-        onChange={e => { 
-          if (e.target.files?.[0]) {
-            handleFile(e.target.files[0], mode === 'scan'); 
-          }
-        }}
-      />
-
-      {!attachedFileName ? (
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            type="button"
-            onClick={() => {
-              setMode('scan');
-              setTimeout(() => fileRef.current?.click(), 0);
-            }}
-            disabled={scanning}
-            data-testid="investments-ocr-scan-button"
-            className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-slate-900 text-white hover:bg-slate-800 active:scale-[0.97] transition-all shadow-lg shadow-slate-200"
-          >
-            <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center">
-              {scanning ? <Loader2 size={18} className="animate-spin" /> : <ScanLine size={18} />}
-            </div>
-            <div className="text-center">
-              <p className="text-[10px] font-black uppercase tracking-wide leading-none">{scanning ? 'Scanning…' : 'Scan Bill'}</p>
-              <p className="text-[9px] font-semibold text-white/40 mt-0.5 leading-none">OCR auto-fill</p>
-            </div>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              setMode('attachment');
-              setTimeout(() => fileRef.current?.click(), 0);
-            }}
-            className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-slate-50 text-slate-900 hover:bg-slate-100 active:scale-[0.97] transition-all border border-slate-100"
-          >
-            <div className="w-9 h-9 rounded-xl bg-slate-200 flex items-center justify-center">
-              <Paperclip size={18} className="text-slate-600" />
-            </div>
-            <div className="text-center">
-              <p className="text-[10px] font-black uppercase tracking-wide leading-none">Attach File</p>
-            </div>
-          </button>
-        </div>
-      ) : (
-        <div className="flex items-center gap-3 p-3 bg-emerald-50 rounded-xl border border-emerald-100">
-          <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-600 shrink-0">
-            <Paperclip size={16} />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-[10px] font-bold text-slate-700 truncate leading-none">{attachedFileName}</p>
-            <p className="text-[8px] font-semibold text-emerald-600 uppercase tracking-wider mt-0.5 leading-none">
-              {result ? 'AI Analyzed' : 'Attached'}
-            </p>
-          </div>
-        </div>
-      )}
-
-      {result && (
-        <div
-          ref={el => {
-            if (el) {
-              const ok = result.confidenceScore >= 50;
-              el.style.background = ok ? 'rgba(74,222,128,0.08)' : 'rgba(251,191,36,0.08)';
-              el.style.border = `1px solid ${ok ? 'rgba(74,222,128,0.2)' : 'rgba(251,191,36,0.2)'}`;
-            }
-          }}
-          className="p-2.5 rounded-xl text-[9px] font-bold mt-2"
-        >
-          {result.confidenceScore >= 50
-            ? <CheckCircle2 size={12} className="inline mr-1 text-green-500" />
-            : <AlertCircle size={12} className="inline mr-1 text-yellow-500" />}
-          Confidence: {result.confidenceScore}%
-          {result.assetType && ` · ${result.assetType}`}
-          {result.weight && ` · ${result.weight.toFixed(2)}g`}
-          {result.purity && ` · ${result.purity}`}
-          {result.hallmarkNumber && ` · HUID: ${result.hallmarkNumber}`}
-        </div>
-      )}
-    </div>
-  );
-};
-
-// ─── Metadata interfaces ────────────────────────────────────────────────────────
-interface PhysicalMeta {
-  weightValue: number;
-  weightUnit: 'g' | 'tola' | 'oz' | 'kg';
-  weightGrams?: number;
-  purity: string;
-  form: string;
-  hallmarkNumber: string;
-  jewelerName: string;
-  lockerName: string;
-  ownershipTag: OwnershipTag;
-}
-
-interface RealEstateMeta {
-  propertyType: string;
-  location: string;
-  areaSqft: number;
-  rentalYield: number;
-  documentSafe: string;
-  registrationStatus: string;
-}
-
-interface BusinessMeta {
-  ownershipPercent: number;
-  sector: string;
-  dividendFrequency: string;
-}
-
-function toGrams(val: number, unit: string): number {
-  if (unit === 'kg') return val * 1000;
-  if (unit === 'oz') return val * 31.1034768;
-  if (unit === 'tola') return val * 11.6638;
-  return val;
-}
-
-// ─── Main Component ────────────────────────────────────────────────────────────
 export const AddInvestment: React.FC = () => {
   const { accounts, setCurrentPage, currency, refreshData } = useApp();
   const activeAccounts = accounts.filter(a => a.isActive);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Category & Subcategory Navigation State
+  const [selectedCategory, setSelectedCategory] = useState<MainCategoryCode>('market_assets');
+  const [selectedSubcategory, setSelectedSubcategory] = useState<SubcategoryCode>('stocks');
+
+  // Core Form Data
   const [formData, setFormData] = useState({
     name: '',
-    type: 'stocks' as InvestmentFormType,
+    symbol: '',
+    country: 'IN',
+    exchange: '',
+    broker: '',
     quantity: 0,
     purchasePrice: 0,
     currentPrice: 0,
     date: new Date().toISOString().split('T')[0],
-    broker: '',
     description: '',
     fundingAccountId: activeAccounts[0]?.id || 0,
     purchaseFees: 0,
   });
 
-  const [physicalMeta, setPhysicalMeta] = useState<PhysicalMeta>({
-    weightValue: 0, weightUnit: 'g', purity: '', form: '', hallmarkNumber: '',
-    jewelerName: '', lockerName: '', ownershipTag: 'self',
+  // Dynamic Detail Blocks
+  const [physicalDetails, setPhysicalDetails] = useState<PhysicalAssetDetailsV2>({
+    assetType: 'coins',
+    weight: 0,
+    weightUnit: 'g',
+    purity: '',
+    storageLocation: '',
+    isPledged: false,
+    bankName: '',
+    loanAmount: 0,
+    interestRate: 0,
+    loanDate: new Date().toISOString().split('T')[0],
+    loanAccountNumber: '',
+    loanStatus: 'active',
   });
-  const [realEstateMeta, setRealEstateMeta] = useState<RealEstateMeta>({
-    propertyType: '', location: '', areaSqft: 0, rentalYield: 0, documentSafe: '', registrationStatus: '',
+
+  const [propertyDetails, setPropertyDetails] = useState<PropertyDetailsV2>({
+    propertyType: 'residential',
+    location: '',
+    ownershipPercentage: 100,
+    coOwner: '',
+    areaSqft: 0,
+    isRental: false,
+    monthlyRentalIncome: 0,
+    annualRentalIncome: 0,
+    tenantSince: '',
+    recurringIncomeEnabled: false,
+    isFinanced: false,
+    bankName: '',
+    loanAmount: 0,
+    interestRate: 0,
+    loanDate: new Date().toISOString().split('T')[0],
+    loanAccountNumber: '',
   });
-  const [businessMeta, setBusinessMeta] = useState<BusinessMeta>({
-    ownershipPercent: 0, sector: '', dividendFrequency: '',
+
+  const [businessDetails, setBusinessDetails] = useState<BusinessDetailsV2>({
+    businessName: '',
+    businessType: '',
+    ownershipPercentage: 100,
+    investmentAmount: 0,
+    estimatedValue: 0,
+    annualRevenue: 0,
+    annualProfit: 0,
+    gstNumber: '',
+    panNumber: '',
   });
 
-  const [searchResults, setSearchResults] = useState<StockSearchResult[]>([]);
-  const [searching, setSearching] = useState(false);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [fetchingPrice, setFetchingPrice] = useState(false);
-  const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null);
-  const [quoteSnapshot, setQuoteSnapshot] = useState<any>(null);
-  const searchTimer = useRef<any>(null);
+  const [fdDetails, setFdDetails] = useState<FixedDepositDetailsV2>({
+    bankName: '',
+    depositAmount: 0,
+    interestRate: 7,
+    compoundingType: 'quarterly',
+    startDate: new Date().toISOString().split('T')[0],
+    maturityDate: '',
+    maturityAmount: 0,
+  });
 
-  const isMarketAsset = MARKET_ASSETS.includes(formData.type);
-  const isPhysicalMetal = PHYSICAL_METALS.includes(formData.type);
-  const isRealEstate = formData.type === 'real-estate';
-  const isBusiness = formData.type === 'business';
+  const [documents, setDocuments] = useState<InvestmentDocumentV2[]>([]);
 
-  const assetCurrencyCode = quoteSnapshot?.currencyCode || normalizeCurrencyCode(currency);
-  const assetCurrency = getCurrencySymbol(assetCurrencyCode);
-  const livePrice = quoteSnapshot?.currentPrice || formData.currentPrice;
-  const accentColor = isPhysicalMetal ? (METAL_ACCENT[formData.type] ?? '#4f46e5') : '#4f46e5';
-
-  // Load voice draft
-  useEffect(() => {
-    const draft = takeVoiceDraft<VoiceInvestmentDraft>(VOICE_INVESTMENT_DRAFT_KEY);
-    if (draft) {
-      setFormData(prev => ({ ...prev, name: draft.description || '', purchasePrice: draft.amount || 0 }));
-    }
-  }, []);
-
-  const handleSelectStock = async (stock: StockSearchResult) => {
-    const nextType = stock.symbol.endsWith('-USD') ? 'crypto' : (formData.type === 'crypto' ? 'crypto' : 'stocks');
-    setSelectedSymbol(stock.symbol);
-    setFormData(prev => ({ ...prev, name: displaySymbol(stock.symbol), type: nextType }));
-    setShowSuggestions(false);
-
-    setFetchingPrice(true);
-    try {
-      const quote = await fetchStockQuote(stock.symbol, nextType === 'crypto' ? 'crypto' : undefined);
-      if (quote) {
-        setQuoteSnapshot({ currentPrice: quote.lastPrice, currencyCode: normalizeCurrencyCode(quote.currencyCode || quote.currency) });
-        setFormData(prev => ({ ...prev, currentPrice: quote.lastPrice, purchasePrice: prev.purchasePrice || quote.lastPrice }));
-      }
-    } finally {
-      setFetchingPrice(false);
-    }
+  // Category selection handler
+  const handleSelectCategory = (cat: MainCategoryCode, defaultSub: SubcategoryCode) => {
+    setSelectedCategory(cat);
+    setSelectedSubcategory(defaultSub);
   };
 
-  useEffect(() => {
-    if (!isMarketAsset || !formData.name || formData.name.length < 2 || !showSuggestions) return;
-    setSearching(true);
-    if (searchTimer.current) clearTimeout(searchTimer.current);
-    searchTimer.current = setTimeout(async () => {
-      const results = await searchStocks(formData.name, formData.type === 'crypto' ? 'crypto' : undefined);
-      setSearchResults(results);
-      setSearching(false);
-    }, 300);
-  }, [formData.name, formData.type, isMarketAsset, showSuggestions]);
-
-  // Handle OCR extracted data
-  const handleOcrExtracted = (data: ExtractedAssetMetadata) => {
-    if (data.assetType && PHYSICAL_METALS.includes(data.assetType as InvestmentFormType)) {
-      setFormData(prev => ({ ...prev, type: data.assetType as InvestmentFormType }));
-    }
-    setPhysicalMeta(prev => ({
-      ...prev,
-      weightValue: data.weight ?? prev.weightValue,
-      weightUnit: 'g',
-      purity: data.purity ?? prev.purity,
-      form: data.form ?? prev.form,
-      hallmarkNumber: data.hallmarkNumber ?? prev.hallmarkNumber,
-      jewelerName: data.jewelerName ?? prev.jewelerName,
-    }));
-    if (data.price && data.price > 0) {
-      setFormData(prev => ({ ...prev, purchasePrice: data.price! }));
-    }
+  const handleSelectSubcategory = (sub: SubcategoryCode) => {
+    setSelectedSubcategory(sub);
   };
+
+  const assetCurrencyCode = normalizeCurrencyCode(currency);
+  const assetCurrencySymbol = getCurrencySymbol(assetCurrencyCode);
+
+  const calculatedSubtotal = selectedCategory === 'physical_assets'
+    ? (formData.purchasePrice || (physicalDetails.weight * (formData.purchasePrice || 1)))
+    : (formData.quantity > 0 ? formData.quantity * formData.purchasePrice : formData.purchasePrice);
+
+  const calculatedTotalCapital = calculatedSubtotal + formData.purchaseFees;
 
   const handleSubmit = async () => {
-    if (!formData.name.trim()) { toast.error('Enter asset name'); return; }
-
-    if (isPhysicalMetal) {
-      if (physicalMeta.weightValue <= 0) { toast.error('Enter weight for physical metal'); return; }
-    } else {
-      if (formData.quantity <= 0 && formData.type !== 'mutual-funds') {
-        toast.error('Enter quantity'); return;
-      }
+    if (!formData.name.trim() && selectedSubcategory !== 'fd' && selectedSubcategory !== 'rd') {
+      toast.error('Enter investment asset name');
+      return;
     }
-    if (formData.purchasePrice <= 0 && !isPhysicalMetal) {
-      toast.error('Enter purchase price'); return;
+
+    if (selectedCategory === 'physical_assets' && physicalDetails.weight <= 0) {
+      toast.error('Weight must be greater than 0');
+      return;
+    }
+
+    if (selectedCategory === 'other_investments' && selectedSubcategory === 'business' && (businessDetails.ownershipPercentage < 0 || businessDetails.ownershipPercentage > 100)) {
+      toast.error('Ownership percentage must be between 0 and 100%');
+      return;
     }
 
     setIsSubmitting(true);
     try {
-      const assetTypeMap: Record<InvestmentFormType, string> = {
-        stocks: 'stock', crypto: 'crypto', 'mutual-funds': 'other', bonds: 'other',
-        gold: 'gold', silver: 'silver', platinum: 'platinum', bronze: 'bronze',
-        'real-estate': 'real_estate', business: 'business', other: 'other',
-      };
+      const isPhysical = selectedCategory === 'physical_assets';
+      const qty = isPhysical
+        ? physicalDetails.weight
+        : (formData.quantity <= 0 ? 1 : formData.quantity);
 
-      const buyFxRate = await fetchCurrencyConversionRate(assetCurrencyCode, currency);
+      const price = formData.purchasePrice;
+      const curPrice = formData.currentPrice || price;
 
-      // Build metadata object
-      let metadata: Record<string, any> = {};
-      if (isPhysicalMetal) {
-        const weightGrams = toGrams(physicalMeta.weightValue, physicalMeta.weightUnit);
-        metadata = {
-          weightGrams,
-          weightValue: physicalMeta.weightValue,
-          weightUnit: physicalMeta.weightUnit,
-          purity: physicalMeta.purity,
-          form: physicalMeta.form,
-          hallmarkNumber: physicalMeta.hallmarkNumber,
-          jewelerName: physicalMeta.jewelerName,
-          lockerName: physicalMeta.lockerName,
-          ownershipTag: physicalMeta.ownershipTag,
-        };
-      } else if (isRealEstate) {
-        metadata = { ...realEstateMeta };
-      } else if (isBusiness) {
-        metadata = { ...businessMeta };
-      }
-
-      // For physical metals: quantity = weight in grams, purchasePrice = per-gram price
-      const quantity = isPhysicalMetal
-        ? toGrams(physicalMeta.weightValue, physicalMeta.weightUnit)
-        : (formData.type === 'mutual-funds' && formData.quantity <= 0 ? 1 : formData.quantity);
-      const purchasePrice = formData.purchasePrice;
-      const totalPurchaseCost = (purchasePrice * quantity * buyFxRate) + formData.purchaseFees;
-
-      await backendService.createInvestment({
-        assetType: assetTypeMap[formData.type],
-        assetName: selectedSymbol || formData.name,
-        quantity,
-        buyPrice: purchasePrice,
-        currentPrice: livePrice || purchasePrice,
-        totalInvested: totalPurchaseCost,
-        currentValue: (livePrice || purchasePrice) * quantity * buyFxRate,
-        profitLoss: ((livePrice || purchasePrice) * quantity * buyFxRate) - totalPurchaseCost,
+      // 1. Create Core Investment in Dexie
+      const invId = await db.investments.add({
+        assetType: (selectedSubcategory === 'gold' || selectedSubcategory === 'silver' ? selectedSubcategory : (selectedCategory === 'physical_assets' ? 'gold' : (selectedSubcategory === 'property' ? 'real_estate' : (selectedSubcategory === 'business' ? 'business' : 'stock')))) as any,
+        assetName: formData.name || `${fdDetails.bankName || 'Fixed'} Deposit`,
+        quantity: qty,
+        buyPrice: price,
+        currentPrice: curPrice,
+        totalInvested: calculatedTotalCapital,
+        currentValue: qty * curPrice,
+        profitLoss: (qty * curPrice) - calculatedTotalCapital,
         purchaseDate: new Date(formData.date),
         lastUpdated: new Date(),
-        updatedAt: new Date(),
-        broker: formData.broker,
+        broker: formData.broker || fdDetails.bankName,
         description: formData.description,
-        assetCurrency: assetCurrencyCode,
-        baseCurrency: currency,
-        buyFxRate,
         fundingAccountId: formData.fundingAccountId,
         purchaseFees: formData.purchaseFees,
-        metadata,
+        positionStatus: 'open',
+
+        // V2 Normalized Metadata Fields
+        categoryId: `cat_${selectedCategory}`,
+        categoryCode: selectedCategory,
+        subcategoryId: `sub_${selectedSubcategory}`,
+        subcategoryCode: selectedSubcategory,
+
+        metadata: {
+          physicalDetails: isPhysical ? physicalDetails : undefined,
+          propertyDetails: selectedSubcategory === 'property' ? propertyDetails : undefined,
+          businessDetails: selectedSubcategory === 'business' ? businessDetails : undefined,
+          fdDetails: (selectedSubcategory === 'fd' || selectedSubcategory === 'rd') ? fdDetails : undefined,
+          documents: documents.length > 0 ? documents : undefined,
+        },
       } as any);
+
+      // 2. Gold Loan Auto-Creation (Cross-module sync to Loans)
+      if (isPhysical && physicalDetails.isPledged && physicalDetails.loanAmount && physicalDetails.loanAmount > 0) {
+        const loanId = await db.loans.add({
+          type: 'borrowed',
+          name: `${physicalDetails.bankName || 'Gold'} Loan (${formData.name || 'Gold'})`,
+          principalAmount: physicalDetails.loanAmount,
+          outstandingBalance: physicalDetails.loanAmount,
+          interestRate: physicalDetails.interestRate || 0,
+          loanDate: new Date(physicalDetails.loanDate || formData.date),
+          status: 'active',
+          bankName: physicalDetails.bankName,
+          loanCategory: 'gold_loan',
+          notes: `Linked Gold Asset #${invId} (${physicalDetails.weight}${physicalDetails.weightUnit} ${formData.name})`,
+          createdAt: new Date(),
+        });
+
+        // Store cross-module relationship link
+        if (db.investmentLinks) {
+          await db.investmentLinks.add({
+            investmentId: String(invId),
+            linkedModule: 'loans',
+            linkedRecordId: String(loanId),
+            relationshipType: 'gold_loan',
+            createdAt: new Date(),
+          });
+        }
+        toast.success(`Gold Loan automatically created in Loans module`);
+      }
+
+      // 3. Property Loan Auto-Creation (Cross-module sync to Loans)
+      if (selectedSubcategory === 'property' && propertyDetails.isFinanced && propertyDetails.loanAmount && propertyDetails.loanAmount > 0) {
+        const loanId = await db.loans.add({
+          type: 'borrowed',
+          name: `${propertyDetails.bankName || 'Home'} Loan (${formData.name || 'Property'})`,
+          principalAmount: propertyDetails.loanAmount,
+          outstandingBalance: propertyDetails.loanAmount,
+          interestRate: propertyDetails.interestRate || 0,
+          loanDate: new Date(propertyDetails.loanDate || formData.date),
+          status: 'active',
+          bankName: propertyDetails.bankName,
+          loanCategory: 'home_loan',
+          notes: `Linked Property Asset #${invId} (${formData.name})`,
+          createdAt: new Date(),
+        });
+
+        if (db.investmentLinks) {
+          await db.investmentLinks.add({
+            investmentId: String(invId),
+            linkedModule: 'loans',
+            linkedRecordId: String(loanId),
+            relationshipType: 'property_loan',
+            createdAt: new Date(),
+          });
+        }
+        toast.success(`Home Loan automatically created in Loans module`);
+      }
+
+      // 4. Rental Income Auto-Creation (Cross-module sync to Recurring Income)
+      if (selectedSubcategory === 'property' && propertyDetails.isRental && propertyDetails.recurringIncomeEnabled && propertyDetails.monthlyRentalIncome && propertyDetails.monthlyRentalIncome > 0) {
+        if (db.recurringTransactions) {
+          await db.recurringTransactions.add({
+            name: `Rental Income (${formData.name})`,
+            type: 'income',
+            amount: propertyDetails.monthlyRentalIncome,
+            accountId: formData.fundingAccountId || activeAccounts[0]?.id || 1,
+            category: 'Rental Income',
+            frequency: 'monthly',
+            startDate: new Date(),
+            nextDueDate: new Date(),
+            status: 'active',
+            notes: `Linked Property #${invId}`,
+            createdAt: new Date(),
+          });
+        }
+        toast.success(`Recurring Rental Income created in Income module`);
+      }
+
+      // 5. Sync to backend API if available
+      try {
+        await backendService.createInvestment({
+          assetType: selectedSubcategory,
+          assetName: formData.name || `${fdDetails.bankName} Deposit`,
+          quantity: qty,
+          buyPrice: price,
+          currentPrice: curPrice,
+          totalInvested: calculatedTotalCapital,
+          currentValue: qty * curPrice,
+          profitLoss: (qty * curPrice) - calculatedTotalCapital,
+          purchaseDate: new Date(formData.date),
+          broker: formData.broker,
+          description: formData.description,
+          metadata: {
+            categoryCode: selectedCategory,
+            subcategoryCode: selectedSubcategory,
+            physicalDetails,
+            propertyDetails,
+            businessDetails,
+          },
+        } as any);
+      } catch (e) {
+        // Backend optional fallback
+      }
 
       toast.success('Investment added successfully');
       refreshData();
       setCurrentPage('investments');
     } catch (e) {
       console.error(e);
-      toast.error('Failed to save investment');
+      toast.error('Failed to save investment record');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-white">
-
-      {/* Header */}
-      <header className="px-4 lg:px-6 py-4 bg-white border-b border-slate-100">
-        <div className="flex flex-row flex-wrap items-center justify-between gap-4 w-full">
-          <div className="flex items-center gap-3">
-            <button onClick={() => setCurrentPage('investments')} title="Back" data-testid="investments-create-back-button" className="lg:!hidden p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all">
-              <ChevronLeft size={20} />
+    <div className="flex flex-col min-h-screen bg-white text-slate-900 pb-28">
+      {/* Sticky Header with Title and Category Pill Bar (Matching AddTransaction) */}
+      <header className="bg-white border-b border-slate-100 sticky top-0 z-30">
+        {/* Row 1: Back Button & Title */}
+        <div className="flex items-center justify-between px-4 lg:px-6 py-3 h-14">
+          <div className="flex items-center gap-2 min-w-0">
+            <button
+              type="button"
+              onClick={() => setCurrentPage('investments')}
+              title="Back to Portfolio"
+              data-testid="investments-create-back-button"
+              className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all cursor-pointer shrink-0"
+            >
+              <ArrowLeft size={18} />
             </button>
-            <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">Add Investment</h1>
+            <h1 className="text-base font-black text-slate-900 tracking-tight leading-none uppercase">Add Investment</h1>
           </div>
+        </div>
 
+        {/* Row 2: Category & Subcategory Selector Pills */}
+        <div className="px-4 lg:px-6 pb-3">
+          <InvestmentCategoryTabs
+            selectedCategory={selectedCategory}
+            selectedSubcategory={selectedSubcategory}
+            onSelectCategory={handleSelectCategory}
+            onSelectSubcategory={handleSelectSubcategory}
+          />
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 p-3 lg:p-5 grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-5 pb-48">
-
-        {/* Left Column */}
-        <div className="lg:col-span-7 flex flex-col gap-3 lg:overflow-y-auto">
-
-          {/* Asset Type Selector */}
-          <div className="premium-glass-card p-4 space-y-4">
-            <div className="space-y-1">
-              <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Asset Category</label>
-              <AssetTypeGrid selectedType={formData.type} onSelect={t => { setFormData(prev => ({ ...prev, type: t })); setQuoteSnapshot(null); setSelectedSymbol(null); }} />
-            </div>
-
-            {/* Asset Name / Search */}
-            <div className="space-y-1 relative">
-              <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">
-                {isPhysicalMetal ? 'Asset Name / Description' : isRealEstate ? 'Property Name' : isBusiness ? 'Business Name' : 'Asset Search / Name'}
-              </label>
-              <div className="relative">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
-                <input
-                  id="investment-name"
-                  aria-label="Asset name or search"
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={e => { setFormData(prev => ({ ...prev, name: e.target.value })); if (isMarketAsset) setShowSuggestions(true); }}
-                  data-testid="investments-create-name-input"
-                  className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-300 text-xs"
-                  placeholder={
-                    isMarketAsset ? 'Search Symbol (AAPL, BTC...)' :
-                    isPhysicalMetal ? 'e.g. Gold Necklace, 22K Ring' :
-                    isRealEstate ? 'e.g. 2BHK Apartment, Chennai' :
-                    isBusiness ? 'e.g. Family Textile Shop' : 'Asset Name'
-                  }
-                />
-                {fetchingPrice && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-indigo-500" size={12} />}
-              </div>
-
-              {/* Autocomplete */}
-              {showSuggestions && (searchResults.length > 0 || searching) && (
-                <div className="absolute z-50 top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95">
-                  {searching ? (
-                    <div className="p-4 text-center text-[9px] font-black text-slate-300 uppercase tracking-widest">Searching Market...</div>
-                  ) : searchResults.slice(0, 5).map(r => (
-                    <button key={r.symbol} onClick={() => handleSelectStock(r)} data-testid={`investments-create-suggestion-${r.symbol}`} className="w-full flex items-center justify-between p-3 hover:bg-slate-50 transition-colors border-b border-slate-50 last:border-0">
-                      <div className="text-left">
-                        <p className="text-xs font-black text-slate-900">{displaySymbol(r.symbol)}</p>
-                        <p className="text-[9px] font-bold text-slate-400 uppercase truncate max-w-[180px]">{r.companyName}</p>
-                      </div>
-                      <ArrowUpRight size={14} className="text-slate-300" />
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Physical Metal section */}
-            {isPhysicalMetal && (
-              <>
-                <OcrBillScanner onExtracted={handleOcrExtracted} accentColor={accentColor} />
-                <PhysicalAssetForm
-                  metalType={formData.type}
-                  metadata={physicalMeta}
-                  onChange={(k, v) => setPhysicalMeta(prev => ({ ...prev, [k]: v }))}
-                />
-              </>
-            )}
-
-            {/* Real Estate section */}
-            {isRealEstate && (
-              <RealEstateForm
-                metadata={realEstateMeta}
-                onChange={(k, v) => setRealEstateMeta(prev => ({ ...prev, [k]: v }))}
-              />
-            )}
-
-            {/* Business section */}
-            {isBusiness && (
-              <BusinessForm
-                metadata={businessMeta}
-                onChange={(k, v) => setBusinessMeta(prev => ({ ...prev, [k]: v }))}
-              />
-            )}
-
-            {/* Broker & Date */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Broker / Platform</label>
-                <div className="relative">
-                  <Globe className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
-                  <input id="investment-broker" name="broker" aria-label="Broker / Platform" type="text" value={formData.broker} onChange={e => setFormData(prev => ({ ...prev, broker: e.target.value }))} data-testid="investments-create-broker-input" className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-300 text-xs" placeholder="e.g. Zerodha" />
-                </div>
-              </div>
-              <div className="space-y-1">
-                <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Date</label>
-                <div className="relative">
-                  <Calendar className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
-                  <input type="date" value={formData.date} onChange={e => setFormData(prev => ({ ...prev, date: e.target.value }))} aria-label="Investment date" data-testid="investments-create-date-input" className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-xs" />
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Notes</label>
-              <textarea id="investment-notes" name="description" aria-label="Notes" value={formData.description} onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))} data-testid="investments-create-notes-textarea" className="w-full bg-slate-50 border-none rounded-xl py-2.5 px-3 font-bold text-slate-900 text-xs min-h-[60px] resize-none" placeholder="Long term holding..." />
-            </div>
-          </div>
-
-          {/* Account Source */}
-          <div className="premium-glass-card p-4 space-y-3">
-            <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Payment Account</label>
-            <SearchableDropdown
-              options={activeAccounts.map(a => ({
-                value: String(a.id),
-                label: a.name,
-                description: formatCurrencyAmount(a.balance, currency),
-                icon: <div className="w-7 h-7 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 font-black text-[8px]">{(a.type || 'BK').substring(0, 2).toUpperCase()}</div>
-              }))}
-              value={String(formData.fundingAccountId)}
-              onChange={val => setFormData(prev => ({ ...prev, fundingAccountId: parseInt(val) }))}
-              placeholder="Select Account"
-              testId="investments-create-account-dropdown"
-              className="h-12 rounded-xl border-none bg-slate-50 font-bold text-xs"
-            />
-          </div>
-        </div>
-
-        {/* Right Column: Financials */}
-        <div className="lg:col-span-5 flex flex-col gap-4 lg:overflow-y-auto">
-
-          <div className="premium-glass-card p-5 bg-white relative overflow-hidden">
-            <div className="absolute -top-10 -right-10 w-32 h-32 bg-indigo-500/5 blur-[40px] rounded-full" />
-            <div className="grid grid-cols-2 gap-6">
-              {/* Quantity / Weight */}
-              <div className="flex flex-col items-center">
-                <span className="text-[8px] font-black text-slate-300 uppercase tracking-[0.2em] mb-2">
-                  {isPhysicalMetal ? `Weight (${physicalMeta.weightUnit})` : 'Quantity'}
-                </span>
-                {isPhysicalMetal ? (
-                  <input
-                    type="number"
-                    name="quantity"
-                    value={physicalMeta.weightValue || ''}
-                    onChange={e => setPhysicalMeta(prev => ({ ...prev, weightValue: parseFloat(e.target.value) || 0 }))}
-                    aria-label="Quantity"
-                    data-testid="investments-create-quantity-input"
-                    className="bg-transparent text-3xl font-black text-slate-900 outline-none w-full text-center tracking-tighter"
-                    placeholder="0.00"
-                  />
-                ) : (
-                  <input
-                    id="investment-quantity"
-                    aria-label="Quantity"
-                    type="number"
-                    name="quantity"
-                    value={formData.quantity || ''}
-                    onChange={e => setFormData(prev => ({ ...prev, quantity: parseFloat(e.target.value) || 0 }))}
-                    data-testid="investments-create-quantity-input"
-                    className="bg-transparent text-3xl font-black text-slate-900 outline-none w-full text-center tracking-tighter"
-                    placeholder="0.00"
-                  />
-                )}
-              </div>
-              <div className="flex flex-col items-center border-l border-slate-100">
-                <span className="text-[8px] font-black text-slate-300 uppercase tracking-[0.2em] mb-2">
-                  {isPhysicalMetal ? `Total Cost (${currency})` : `Buy Price (${assetCurrency})`}
-                </span>
-                <input
-                  id="investment-price"
-                  aria-label="Buy price"
-                  type="number"
-                  name={isPhysicalMetal ? "pricePerGram" : (formData.type === 'mutual-funds' ? "amount" : "purchasePrice")}
-                  value={formData.purchasePrice || ''}
-                  onChange={e => setFormData(prev => ({ ...prev, purchasePrice: parseFloat(e.target.value) || 0 }))}
-                  data-testid="investments-create-price-input"
-                  className="bg-transparent text-3xl font-black text-slate-900 outline-none w-full text-center tracking-tighter"
-                  placeholder="0.00"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="premium-glass-card p-4 space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Fees ({currency})</label>
-                <input id="investment-fees" name="purchaseFees" aria-label="Fees" type="number" value={formData.purchaseFees || ''} onChange={e => setFormData(prev => ({ ...prev, purchaseFees: parseFloat(e.target.value) || 0 }))} data-testid="investments-create-fees-input" className="w-full bg-slate-50 border-none rounded-xl py-2.5 px-3 font-bold text-xs" placeholder="0" />
-              </div>
-              <div className="text-right">
-                <p className="text-[8px] font-black text-slate-300 uppercase tracking-widest">Subtotal</p>
-                <p className="text-xl font-black text-slate-900">
-                  {formatNativeMoney(
-                    isPhysicalMetal
-                      ? formData.purchasePrice
-                      : formData.quantity * formData.purchasePrice,
-                    assetCurrencyCode
-                  )}
-                </p>
-              </div>
-            </div>
-
-            {isMarketAsset && selectedSymbol && (
-              <div className="p-3 bg-indigo-50 border border-indigo-100/50 rounded-xl flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center shrink-0"><BarChart3 size={16} className="text-white" /></div>
-                <div className="flex-1">
-                  <p className="text-[8px] font-black text-indigo-600 uppercase tracking-widest">Live Market Pulse</p>
-                  <p className="text-[10px] font-bold text-slate-700">Trading at <span className="text-indigo-600">{formatNativeMoney(livePrice, assetCurrencyCode)}</span></p>
-                </div>
-              </div>
-            )}
-
-            <div className="p-3 bg-slate-900 rounded-xl text-white flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center"><Shield size={16} className="text-indigo-400" /></div>
-                <div>
-                  <p className="text-[8px] font-black text-white/40 uppercase tracking-widest">Portfolio Exposure</p>
-                  <p className="text-[10px] font-bold">This {formData.type} asset adds to your wealth mix.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Total Summary Footer */}
-          <div
-            ref={el => {
-              if (el) {
-                el.style.background = isPhysicalMetal
-                  ? `linear-gradient(135deg, ${accentColor}CC, ${accentColor}88)`
-                  : 'linear-gradient(135deg, #4f46e5, #7c3aed)';
-                el.style.boxShadow = isPhysicalMetal ? `0 8px 32px ${accentColor}33` : '0 8px 32px rgba(79,70,229,0.25)';
-              }
-            }}
-            className="mt-auto p-4 rounded-2xl text-white flex items-center justify-between shadow-xl"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center"><TrendingUp size={16} className="text-white" /></div>
-              <div>
-                <p className="text-[8px] font-black text-white/60 uppercase">Total Investment</p>
-                <p className="text-[10px] font-black truncate max-w-[120px]">{formData.name || 'New Asset'}</p>
-              </div>
+      <main className="max-w-7xl mx-auto w-full p-4 sm:p-6 lg:p-8 space-y-6">
+        {/* Total Summary Banner (Below Header Section) */}
+        <div className="p-5 sm:p-6 rounded-2xl bg-gradient-to-br from-slate-900 via-indigo-950 to-indigo-900 text-white shadow-xl border border-indigo-500/20">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-bold text-white/70 uppercase tracking-wider">Asset</p>
+              <p className="text-base sm:text-lg font-extrabold text-white truncate max-w-[220px]">
+                {formData.name || `${selectedSubcategory.toUpperCase()}`}
+              </p>
             </div>
             <div className="text-right">
-              <p className="text-[8px] font-black text-white/60 uppercase">Total Capital</p>
-              <p className="text-lg font-black tracking-tighter">
-                {formatCurrencyAmount(
-                  (isPhysicalMetal
-                    ? formData.purchasePrice
-                    : formData.quantity * formData.purchasePrice) + formData.purchaseFees,
-                  currency
-                )}
+              <p className="text-xs font-bold text-white/70 uppercase tracking-wider">Total Capital Required</p>
+              <p className="text-2xl sm:text-3xl font-black tracking-tight text-white">
+                {formatCurrencyAmount(calculatedTotalCapital, currency)}
               </p>
             </div>
           </div>
         </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+          {/* Left Column: Dynamic Form */}
+          <div className="lg:col-span-7 space-y-6">
+            {/* Dynamic Form Component based on Category/Subcategory */}
+            <div className="bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 shadow-xs space-y-5">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                  <BarChart3 className="text-indigo-600" size={18} />
+                  {selectedSubcategory.replace('_', ' ').toUpperCase()} Specification
+                </h2>
+              </div>
+
+              {selectedCategory === 'market_assets' && (
+                <MarketAssetsForm
+                  subcategory={selectedSubcategory}
+                  formData={formData}
+                  setFormData={setFormData}
+                  fdDetails={fdDetails}
+                  setFdDetails={setFdDetails}
+                  currency={currency}
+                />
+              )}
+
+              {selectedCategory === 'physical_assets' && (
+                <PhysicalAssetsForm
+                  subcategory={selectedSubcategory}
+                  details={physicalDetails}
+                  setDetails={setPhysicalDetails}
+                  formData={formData}
+                  setFormData={setFormData}
+                  currency={currency}
+                />
+              )}
+
+              {selectedCategory === 'other_investments' && (
+                <OtherInvestmentsForm
+                  subcategory={selectedSubcategory}
+                  propertyDetails={propertyDetails}
+                  setPropertyDetails={setPropertyDetails}
+                  businessDetails={businessDetails}
+                  setBusinessDetails={setBusinessDetails}
+                  documents={documents}
+                  setDocuments={setDocuments}
+                  formData={formData}
+                  setFormData={setFormData}
+                  currency={currency}
+                />
+              )}
+
+              {/* Common Metadata Fields: Broker/Platform & Date */}
+              {selectedSubcategory !== 'fd' && selectedSubcategory !== 'rd' && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-slate-100">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-600">Broker / Platform</label>
+                    <input
+                      type="text"
+                      value={formData.broker}
+                      onChange={e => setFormData(prev => ({ ...prev, broker: e.target.value }))}
+                      data-testid="investments-create-broker-input"
+                      className="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl px-3.5 text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
+                      placeholder="e.g. Zerodha, Groww, Bank"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-600">Purchase Date</label>
+                    <input
+                      type="date"
+                      value={formData.date}
+                      onChange={e => setFormData(prev => ({ ...prev, date: e.target.value }))}
+                      data-testid="investments-create-date-input"
+                      className="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl px-3.5 text-sm font-semibold text-slate-900 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Notes */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-600">Notes / Strategy</label>
+                <textarea
+                  value={formData.description}
+                  onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                  data-testid="investments-create-notes-textarea"
+                  className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none min-h-[80px] resize-none"
+                  placeholder="Notes, portfolio strategy..."
+                />
+              </div>
+            </div>
+
+            {/* Payment Account */}
+            <div className="bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 shadow-xs space-y-3">
+              <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
+                <CreditCard className="text-indigo-600" size={18} />
+                <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Payment Account</h2>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-600">Source Account</label>
+                <SearchableDropdown
+                  options={activeAccounts.map(a => ({
+                    value: String(a.id),
+                    label: a.name,
+                    description: formatCurrencyAmount(a.balance, currency),
+                    icon: (
+                      <div className="w-7 h-7 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-700 font-bold text-xs">
+                        {(a.type || 'BK').substring(0, 2).toUpperCase()}
+                      </div>
+                    ),
+                  }))}
+                  value={String(formData.fundingAccountId)}
+                  onChange={val => setFormData(prev => ({ ...prev, fundingAccountId: parseInt(val) }))}
+                  placeholder="Select Funding Account"
+                  testId="investments-create-account-dropdown"
+                  className="h-12 rounded-xl border border-slate-200 bg-slate-50 font-semibold text-sm text-slate-900"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column: Financial Breakdown */}
+          <div className="lg:col-span-5 space-y-6 lg:sticky lg:top-20">
+            {/* Pricing & Quantity Card */}
+            <div className="bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 shadow-xs space-y-5">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="text-indigo-600" size={18} />
+                  <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Financial Breakdown</h2>
+                </div>
+              </div>
+
+              {/* Quantity / Weight and Buy Price Inputs */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-center space-y-1.5 focus-within:bg-white focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all">
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
+                    {selectedCategory === 'physical_assets' ? `Weight (${physicalDetails.weightUnit})` : 'Quantity'}
+                  </span>
+                  {selectedCategory === 'physical_assets' ? (
+                    <input
+                      type="number"
+                      value={physicalDetails.weight || ''}
+                      onChange={e => setPhysicalDetails(prev => ({ ...prev, weight: parseFloat(e.target.value) || 0 }))}
+                      data-testid="investments-create-quantity-input"
+                      className="w-full text-center text-2xl sm:text-3xl font-extrabold text-slate-900 bg-transparent outline-none tracking-tight placeholder:text-slate-300"
+                      placeholder="0.00"
+                    />
+                  ) : (
+                    <input
+                      type="number"
+                      value={formData.quantity || ''}
+                      onChange={e => setFormData(prev => ({ ...prev, quantity: parseFloat(e.target.value) || 0 }))}
+                      data-testid="investments-create-quantity-input"
+                      className="w-full text-center text-2xl sm:text-3xl font-extrabold text-slate-900 bg-transparent outline-none tracking-tight placeholder:text-slate-300"
+                      placeholder="0.00"
+                    />
+                  )}
+                </div>
+
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-center space-y-1.5 focus-within:bg-white focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all">
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
+                    {selectedCategory === 'physical_assets' ? `Price per unit` : `Buy Price (${assetCurrencySymbol})`}
+                  </span>
+                  <input
+                    type="number"
+                    value={formData.purchasePrice || ''}
+                    onChange={e => setFormData(prev => ({ ...prev, purchasePrice: parseFloat(e.target.value) || 0 }))}
+                    data-testid="investments-create-price-input"
+                    className="w-full text-center text-2xl sm:text-3xl font-extrabold text-slate-900 bg-transparent outline-none tracking-tight placeholder:text-slate-300"
+                    placeholder="0.00"
+                  />
+                </div>
+              </div>
+
+              {/* Fees and Subtotal Row */}
+              <div className="flex items-center justify-between gap-4 pt-3 border-t border-slate-100">
+                <div className="w-1/2 space-y-1">
+                  <label className="text-xs font-semibold text-slate-600">Fees ({currency})</label>
+                  <input
+                    type="number"
+                    value={formData.purchaseFees || ''}
+                    onChange={e => setFormData(prev => ({ ...prev, purchaseFees: parseFloat(e.target.value) || 0 }))}
+                    data-testid="investments-create-fees-input"
+                    className="w-full h-10 bg-slate-50 border border-slate-200 rounded-xl px-3 text-sm font-semibold text-slate-900 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all outline-none"
+                    placeholder="0"
+                  />
+                </div>
+                <div className="w-1/2 text-right">
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Subtotal</p>
+                  <p className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight mt-0.5">
+                    {formatNativeMoney(calculatedSubtotal, assetCurrencyCode)}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </main>
+
+
+      {/* Floating Save Bar */}
       <FloatingSaveBar
         onSave={handleSubmit}
         onDiscard={() => setCurrentPage('investments')}

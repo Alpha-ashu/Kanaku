@@ -1,4 +1,18 @@
+import { Capacitor } from '@capacitor/core';
+
 export type DownloadResult = 'shared' | 'downloaded' | 'opened' | 'cancelled';
+
+const isNativeFileTarget = (): boolean => {
+  try {
+    return Capacitor.isNativePlatform();
+  } catch {
+    return false;
+  }
+};
+
+// Loaded lazily so the Filesystem/Share plugin code stays out of the web bundle,
+// where this branch is never taken.
+const loadNativeFiles = () => import('./nativeFiles');
 
 interface DownloadOptions {
   filename: string;
@@ -32,6 +46,19 @@ export const shareFile = async ({
   data,
   shareTitle,
 }: ShareOptions): Promise<DownloadResult> => {
+  // Android/iOS: navigator.share is absent (or cannot carry files) inside the
+  // Capacitor WebView. Go through the native share sheet instead.
+  if (isNativeFileTarget()) {
+    try {
+      const { saveAndShareFile } = await loadNativeFiles();
+      const result = await saveAndShareFile({ filename, mimeType, data, shareTitle });
+      return result.shared ? 'shared' : 'downloaded';
+    } catch (error) {
+      console.error('[Share] Native share failed:', error);
+      return 'cancelled';
+    }
+  }
+
   if (typeof window === 'undefined' || typeof navigator === 'undefined' || !('share' in navigator)) {
     return 'cancelled';
   }
@@ -68,6 +95,26 @@ export const downloadFile = async ({
   shareTitle,
 }: DownloadOptions): Promise<DownloadResult> => {
   if (typeof window === 'undefined') return 'downloaded';
+
+  // Android/iOS: the blob-URL + <a download> path below is a no-op inside the
+  // Capacitor WebView, so exports silently produced nothing. Write the file to
+  // app storage and offer the system share sheet.
+  if (isNativeFileTarget()) {
+    try {
+      const { saveAndShareFile } = await loadNativeFiles();
+      const result = await saveAndShareFile({
+        filename,
+        mimeType,
+        data,
+        shareTitle,
+        share: preferShare,
+      });
+      return result.shared ? 'shared' : 'downloaded';
+    } catch (error) {
+      console.error('[Download] Native file write failed:', error);
+      return 'cancelled';
+    }
+  }
 
   const blob = createBlob(data, mimeType);
 

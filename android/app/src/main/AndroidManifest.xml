@@ -25,6 +25,17 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
+            <!-- Deep links (kanaku://add-transaction?smsTransactionId=12). Mirrors the
+                 CFBundleURLTypes entry in ios/App/App/Info.plist so notification
+                 deepLink payloads resolve the same way on both platforms through the
+                 @capacitor/app appUrlOpen listener. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="kanaku" />
+            </intent-filter>
+
         </activity>
 
         <provider
@@ -52,4 +63,20 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- Voice entry. Capacitor's BridgeWebChromeClient answers the WebView's
+         AUDIO_CAPTURE request by asking for exactly these two at runtime; if they
+         are absent from the merged manifest the request resolves to DENIED without
+         ever showing a prompt, so getUserMedia({ audio: true }) fails on device. -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+
+    <!-- The receipt scanner's <input capture="environment"> is served by the system
+         camera app through ACTION_IMAGE_CAPTURE, which needs no CAMERA permission.
+         Declaring one anyway would make that intent throw, so this app deliberately
+         does not request android.permission.CAMERA. -->
+
+    <!-- SMS permissions are declared only in the `full` flavor
+         (app/src/full/AndroidManifest.xml) so the Play Store build never carries them. -->
+
 </manifest>
