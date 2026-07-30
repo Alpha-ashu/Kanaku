@@ -6,6 +6,16 @@ import { AppError } from '../../utils/AppError';
 import { logger } from '../../config/logger';
 import { cacheDeleteByPrefix } from '../../cache/redis';
 import { isDatabaseUnavailableError } from '../../utils/databaseAvailability';
+import { FinancialLedgerService } from '../transactions/ledger.service';
+// NOTE: LoanDisbursedEvent is deliberately not published here. It requires an
+// accountId for the cash leg, and POST /loans accepts no account — a loan is
+// created as a standalone obligation with no modelled cash movement. Wiring
+// disbursement means adding an account to the create contract, which is a product
+// decision, not mechanical wiring. See docs/release/MOBILE_RELEASE_GUIDE.md.
+import {
+  FinancialEventDispatcher,
+  LoanPaymentCreatedEvent,
+} from '../transactions/dispatcher';
 
 export const getLoans = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
@@ -239,8 +249,11 @@ export const addLoanPayment = async (req: AuthRequest, res: Response, next: Next
     // Atomically create payment record and update outstanding balance
     const newBalance = Math.max(0, Number(loan.outstandingBalance) - numericAmount);
 
-    const [payment] = await prisma.$transaction([
-      prisma.loanPayment.create({
+    // Interactive transaction (was the array form) so the Ledger V2 event can be
+    // published on the same connection, inside the same atomic unit — a journal
+    // entry must never be able to commit without its loan payment, or vice versa.
+    const payment = await prisma.$transaction(async (tx) => {
+      const created = await tx.loanPayment.create({
         data: {
           loanId: id,
           amount: numericAmount,
@@ -248,15 +261,34 @@ export const addLoanPayment = async (req: AuthRequest, res: Response, next: Next
           date: new Date(),
           notes,
         },
-      }),
-      prisma.loan.update({
+      });
+
+      await tx.loan.update({
         where: { id },
         data: {
           outstandingBalance: newBalance,
           status: newBalance === 0 ? 'completed' : 'active',
         },
-      }),
-    ]);
+      });
+
+      // Ledger V2 Integration.
+      // Inert unless LEDGER_V2_ENABLED=true (and LEDGER_LOANS_ENABLED not 'false').
+      // Needs an accountId — a payment recorded without one has no cash leg to post.
+      if (FinancialLedgerService.isEnabled('loans') && accountId) {
+        await FinancialEventDispatcher.publish(tx, new LoanPaymentCreatedEvent(
+          userId,
+          created.id,
+          id,
+          accountId,
+          numericAmount,
+          loan.name,
+          loan.type as 'borrowed' | 'lent',
+          `loan-payment-${created.id}`,
+        ));
+      }
+
+      return created;
+    });
 
     await cacheDeleteByPrefix('loans:');
 
@@ -295,8 +327,10 @@ export const settleLoan = async (req: AuthRequest, res: Response, next: NextFunc
       throw AppError.badRequest('Loan is already settled or completed', 'LOAN_ALREADY_CLOSED');
     }
 
-    const [payment, updatedLoan] = await prisma.$transaction([
-      prisma.loanPayment.create({
+    // Interactive transaction (was the array form) so the Ledger V2 event commits
+    // atomically with the settlement rows.
+    const { payment, updatedLoan } = await prisma.$transaction(async (tx) => {
+      const created = await tx.loanPayment.create({
         data: {
           loanId: id,
           amount: numericAmount,
@@ -304,16 +338,36 @@ export const settleLoan = async (req: AuthRequest, res: Response, next: NextFunc
           date: new Date(),
           notes: notes ? sanitize(notes) : 'Loan settlement',
         },
-      }),
-      prisma.loan.update({
+      });
+
+      const loanRow = await tx.loan.update({
         where: { id },
         data: {
           outstandingBalance: 0,
           status: 'settled',
         },
         include: { payments: true },
-      }),
-    ]);
+      });
+
+      // Ledger V2 Integration. A settlement is a loan payment for ledger purposes —
+      // it moves cash and closes the obligation; the discount (if any) is the
+      // difference between outstandingBalance and settledAmount and is not a cash leg.
+      // Inert unless LEDGER_V2_ENABLED=true.
+      if (FinancialLedgerService.isEnabled('loans') && accountId && numericAmount > 0) {
+        await FinancialEventDispatcher.publish(tx, new LoanPaymentCreatedEvent(
+          userId,
+          created.id,
+          id,
+          accountId,
+          numericAmount,
+          loan.name,
+          loan.type as 'borrowed' | 'lent',
+          `loan-settlement-${created.id}`,
+        ));
+      }
+
+      return { payment: created, updatedLoan: loanRow };
+    });
 
     await cacheDeleteByPrefix('loans:');
     logger.info(`Loan ${id} settled by user ${userId} for amount ${numericAmount}`);

@@ -561,9 +561,20 @@ class SocketClient {
     if (!this.socket) return;
 
     this.socket.on('connect_error', (error) => {
-      console.error('Socket connection error:', error);
       this.isConnected = false;
       this.emit('error', error);
+
+      // An auth rejection is permanent for this token — reconnecting replays the
+      // exact same credential, so the retry ladder can only ever fail five more
+      // times while adding startup latency and console noise. It resolves when the
+      // token is refreshed or the user signs in again, both of which call connect()
+      // afresh. Anything else (network drop, server restart) is worth retrying.
+      if (this.isAuthError(error)) {
+        console.info('[Socket] Auth rejected — not retrying until a new token is issued.');
+        return;
+      }
+
+      console.error('Socket connection error:', error);
       this.handleReconnection();
     });
 
@@ -571,6 +582,16 @@ class SocketClient {
       console.error('Socket error:', error);
       this.emit('error', error);
     });
+  }
+
+  /**
+   * Is this connect_error the server rejecting our credential, rather than a
+   * transport problem? The server sends `Authentication error: <reason>` from its
+   * Socket.IO auth middleware.
+   */
+  private isAuthError(error: unknown): boolean {
+    const message = error instanceof Error ? error.message : String(error ?? '');
+    return /authentication error|invalid token|unauthorized|jwt/i.test(message);
   }
 
   /**

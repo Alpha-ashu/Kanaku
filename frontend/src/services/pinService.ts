@@ -34,6 +34,13 @@ export interface PinVerifyRequest {
 
 const PIN_NOT_SET_MESSAGE = /pin not set|no pin key backup found/i;
 const PIN_SERVICE_FAILURE_MESSAGE = /(internal server error|http 5\d\d|network error|failed to fetch|request timeout|pin request failed)/i;
+
+/**
+ * Hard deadline for a single PIN request. Verification is user-initiated and worth
+ * waiting on a little longer than a background poll, but not indefinitely — the PIN
+ * screen is the first thing a returning user sees.
+ */
+const PIN_REQUEST_TIMEOUT_MS = 8000;
 const PIN_STATUS_CACHE_TTL_MS = 5_000;
 const PIN_STATUS_RATE_LIMIT_BACKOFF_MS = 30_000;
 
@@ -150,7 +157,7 @@ class PinService {
     init: RequestInit,
     headers: Record<string, string>,
   ): Promise<Response> {
-    const response = await fetch(url, { ...init, headers });
+    const response = await this.fetchWithTimeout(url, { ...init, headers });
     // Only an auth-layer rejection (expired/invalid token) is recoverable by a
     // refresh. A route-level PIN rejection (wrong PIN) is also a 401 but must
     // NOT trigger a refresh — refreshing on every wrong PIN is wasteful and, on
@@ -162,10 +169,37 @@ class PinService {
     const newToken = await refreshAccessToken();
     if (!newToken) return response;
 
-    return fetch(url, {
+    return this.fetchWithTimeout(url, {
       ...init,
       headers: { ...headers, Authorization: `Bearer ${newToken}` },
     });
+  }
+
+  /**
+   * fetch() with a hard deadline.
+   *
+   * Nothing in the PIN path had a timeout, and the path is longer than it looks:
+   * `get()` walks every API base candidate, and each attempt can be
+   * fetch → 401 → refreshAccessToken() → retry. Against a cold or unreachable
+   * backend that chain hangs, and the PIN screen used to sit behind it — so the
+   * app showed a spinner instead of a keypad for as long as the network took.
+   *
+   * A PIN status/backup GET is a few hundred bytes; anything slower than this is
+   * not going to arrive usefully. On abort we surface a normal failure so the
+   * caller's existing offline/degraded handling takes over.
+   */
+  private async fetchWithTimeout(
+    url: string,
+    init: RequestInit,
+    timeoutMs = PIN_REQUEST_TIMEOUT_MS,
+  ): Promise<Response> {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      return await fetch(url, { ...init, signal: controller.signal });
+    } finally {
+      clearTimeout(timer);
+    }
   }
 
   /**

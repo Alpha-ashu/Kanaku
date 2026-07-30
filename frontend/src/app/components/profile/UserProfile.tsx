@@ -18,6 +18,7 @@ import { api } from '@/lib/api';
 import { shouldSkipOptionalBackendRequests } from '@/lib/apiBase';
 import { format, parseISO } from 'date-fns';
 import { pinService } from '@/services/pinService';
+import { syncBiometricPin } from '@/services/biometricAuthService';
 import { AdvisorRoleSection } from './AdvisorRoleSection';
 
 interface ProfileData {
@@ -717,6 +718,13 @@ export const UserProfile: React.FC = () => {
       }
 
       storeMasterKey(newPin);
+
+      // Re-bind biometric unlock to the new PIN. Without this the secure store keeps
+      // handing back the old PIN, which then fails server verification on every
+      // biometric attempt — the feature would look broken with no way to tell why.
+      // No-op when biometrics are off or unavailable.
+      await syncBiometricPin(newPin, user?.email || 'KANAKU account');
+
       const pinBackup = backupPINKeys();
       if (pinBackup.hash && pinBackup.salt) {
         const backupResult = await pinService.saveKeyBackup(`${pinBackup.hash}|${pinBackup.salt}`, secResult.securityToken);

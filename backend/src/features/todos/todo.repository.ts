@@ -1,5 +1,55 @@
 import { prisma } from '../../db/prisma';
 
+let todoTablesEnsured = false;
+
+export async function ensureTodoTablesExist() {
+  if (todoTablesEnsured) return;
+  try {
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS public.todo_lists (
+        id          BIGSERIAL PRIMARY KEY,
+        user_id     UUID NOT NULL,
+        name        TEXT NOT NULL,
+        description TEXT,
+        archived    BOOLEAN DEFAULT false,
+        created_at  TIMESTAMPTZ DEFAULT NOW(),
+        updated_at  TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS public.todo_items (
+        id           BIGSERIAL PRIMARY KEY,
+        list_id      BIGINT REFERENCES public.todo_lists(id) ON DELETE CASCADE NOT NULL,
+        user_id      UUID NOT NULL,
+        title        TEXT NOT NULL,
+        description  TEXT,
+        completed    BOOLEAN DEFAULT false,
+        priority     TEXT CHECK (priority IN ('low','medium','high')) DEFAULT 'medium',
+        due_date     TIMESTAMPTZ,
+        created_by   UUID,
+        created_at   TIMESTAMPTZ DEFAULT NOW(),
+        updated_at   TIMESTAMPTZ DEFAULT NOW(),
+        completed_at TIMESTAMPTZ
+      );
+
+      CREATE TABLE IF NOT EXISTS public.todo_list_shares (
+        id                  BIGSERIAL PRIMARY KEY,
+        list_id             BIGINT REFERENCES public.todo_lists(id) ON DELETE CASCADE NOT NULL,
+        shared_with_user_id UUID NOT NULL,
+        shared_by           UUID NOT NULL,
+        permission          TEXT CHECK (permission IN ('view','edit')) DEFAULT 'view',
+        shared_at           TIMESTAMPTZ DEFAULT NOW(),
+        UNIQUE(list_id, shared_with_user_id)
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_todo_lists_user_id ON public.todo_lists(user_id);
+      CREATE INDEX IF NOT EXISTS idx_todo_items_list_id ON public.todo_items(list_id);
+    `);
+    todoTablesEnsured = true;
+  } catch (err) {
+    // Silently continue if DDL fails (e.g. read-only replica)
+  }
+}
+
 export class TodoRepository {
   // Legacy Single Todos
   async findTodos(userId: string) {
@@ -44,6 +94,7 @@ export class TodoRepository {
 
   // Shared Todo Lists
   async findLists(userId: string) {
+    await ensureTodoTablesExist();
     return prisma.$queryRaw<any[]>`
       SELECT id::INT, user_id AS "userId", name, description, archived, created_at AS "createdAt", updated_at AS "updatedAt"
       FROM public.todo_lists
@@ -55,12 +106,14 @@ export class TodoRepository {
   }
 
   async createList(userId: string, name: string, description?: string) {
+    await ensureTodoTablesExist();
     return prisma.$queryRaw<any[]>`
       INSERT INTO public.todo_lists (user_id, name, description, archived, created_at, updated_at)
       VALUES (${userId}::uuid, ${name}, ${description || null}, false, NOW(), NOW())
       RETURNING id::INT, user_id AS "userId", name, description, archived, created_at AS "createdAt", updated_at AS "updatedAt"
     `;
   }
+
 
   async updateList(id: number, userId: string, name?: string, description?: string, archived?: boolean) {
     return prisma.$queryRaw<any[]>`
@@ -103,6 +156,7 @@ export class TodoRepository {
   }
 
   async findListItems(listId: number) {
+    await ensureTodoTablesExist();
     return prisma.$queryRaw<any[]>`
       SELECT id::INT, list_id::INT AS "listId", user_id AS "userId", title, description, completed, priority, due_date AS "dueDate", created_by AS "createdBy", created_at AS "createdAt", updated_at AS "updatedAt", completed_at AS "completedAt"
       FROM public.todo_items
@@ -112,6 +166,7 @@ export class TodoRepository {
   }
 
   async findAllListItems(userId: string) {
+    await ensureTodoTablesExist();
     return prisma.$queryRaw<any[]>`
       SELECT id::INT, list_id::INT AS "listId", user_id AS "userId", title, description, completed, priority, due_date AS "dueDate", created_by AS "createdBy", created_at AS "createdAt", updated_at AS "updatedAt", completed_at AS "completedAt"
       FROM public.todo_items
@@ -125,12 +180,14 @@ export class TodoRepository {
   }
 
   async createItem(listId: number, userId: string, title: string, description?: string, priority?: string, dueDate?: string) {
+    await ensureTodoTablesExist();
     return prisma.$queryRaw<any[]>`
       INSERT INTO public.todo_items (list_id, user_id, title, description, completed, priority, due_date, created_by, created_at, updated_at)
       VALUES (${listId}::bigint, ${userId}::uuid, ${title}, ${description || null}, false, ${priority || 'medium'}, ${dueDate ? new Date(dueDate) : null}, ${userId}::uuid, NOW(), NOW())
       RETURNING id::INT, list_id::INT AS "listId", user_id AS "userId", title, description, completed, priority, due_date AS "dueDate", created_by AS "createdBy", created_at AS "createdAt", updated_at AS "updatedAt"
     `;
   }
+
 
   async updateItem(id: number, title?: string, description?: string, completed?: boolean, priority?: string, dueDate?: string) {
     return prisma.$queryRaw<any[]>`

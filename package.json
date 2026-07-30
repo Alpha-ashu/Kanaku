@@ -74,6 +74,7 @@
   },
   "capacitorPluginsNote": "Capacitor plugins MUST be declared in this file's `dependencies`, not only in frontend/package.json. The Capacitor CLI resolves the native plugin list from the package.json that sits next to capacitor.config.json (this one); anything declared only in a workspace is invisible to `cap sync` and never gets compiled into the android/ios projects. Keep the versions here in sync with frontend/package.json.",
   "dependencies": {
+    "@capacitor-community/speech-recognition": "7.0.1",
     "@capacitor/app": "8.1.0",
     "@capacitor/core": "8.4.1",
     "@capacitor/device": "8.0.2",
@@ -82,9 +83,11 @@
     "@capacitor/keyboard": "8.0.5",
     "@capacitor/local-notifications": "8.2.0",
     "@capacitor/preferences": "8.0.1",
+    "@capacitor/push-notifications": "8.1.2",
     "@capacitor/share": "8.0.1",
     "@capacitor/splash-screen": "8.0.1",
-    "@capacitor/status-bar": "8.0.2"
+    "@capacitor/status-bar": "8.0.2",
+    "@capgo/capacitor-native-biometric": "8.6.2"
   },
   "devDependencies": {
     "@capacitor/android": "^8.0.2",

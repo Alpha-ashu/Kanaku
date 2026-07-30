@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { LogOut, KeyRound, AlertCircle, ChevronLeft, ShieldCheck, Eye, EyeOff, Lock, Loader2 } from 'lucide-react';
+import { LogOut, KeyRound, AlertCircle, ChevronLeft, ShieldCheck, Eye, EyeOff, Lock, Loader2, Fingerprint, ScanFace } from 'lucide-react';
 import { KANAKULogo } from '@/app/components/ui/KANAKULogo';
 import { clearSecurityData, isPINSet, verifyPIN, storeMasterKey, backupPINKeys, restorePINKeys } from '@/lib/encryption';
 import { isPinMissing, isPinServiceUnavailable, isSessionExpired, pinService } from '@/services/pinService';
@@ -10,6 +10,17 @@ import { useAuth } from '@/contexts/AuthContext';
 import { isGuestMode } from '@/lib/guestMode';
 import supabase from '@/utils/supabase/client';
 import { apiClient } from '@/lib/api';
+import {
+  type BiometricAvailability,
+  enableBiometricUnlock,
+  getBiometricAvailability,
+  isBiometricEnabled,
+  isBiometricOfferDismissed,
+  isBiometricSuppressed,
+  dismissBiometricOffer,
+  suppressBiometricForSession,
+  unlockWithBiometrics,
+} from '@/services/biometricAuthService';
 
 interface PINAuthProps {
  onAuthenticated: (encryptionKey: string) => void;
@@ -25,7 +36,11 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  const [pin, setPin] = useState('');
  const [firstPin, setFirstPin] = useState(''); // stores first entry during create
  const [showReveal, setShowReveal] = useState(false);
- const [isLoading, setIsLoading] = useState(true); // loading while checking server
+ // Only block on the server when we genuinely cannot tell create-from-enter, i.e.
+ // there are no local PIN keys. A returning user (the overwhelmingly common case)
+ // starts at `false` and gets the keypad on the very first paint — a lazy initialiser
+ // rather than an effect, so not even one frame of spinner is shown.
+ const [isLoading, setIsLoading] = useState(() => !isPINSet() && !isGuestMode());
  const [isSubmitting, setIsSubmitting] = useState(false);
  const [shake, setShake] = useState(false);
  const [errorMsg, setErrorMsg] = useState('');
@@ -36,6 +51,19 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  const [resetOtpSent, setResetOtpSent] = useState(false);
  const [resetOtpInputs, setResetOtpInputs] = useState<string[]>(Array(6).fill(''));
  const resetOtpRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+ // Biometric unlock (native only). `biometric` is null until the capability probe
+ // resolves, so nothing biometric-shaped renders on web or on a device without it.
+ const [biometric, setBiometric] = useState<BiometricAvailability | null>(null);
+ const [biometricEnrolled, setBiometricEnrolled] = useState(false);
+ const [biometricBusy, setBiometricBusy] = useState(false);
+ // Set after a successful *typed* unlock when biometrics are available but not yet
+ // enrolled — holds the verified PIN just long enough to offer enrolment.
+ const [enrolOffer, setEnrolOffer] = useState<{ pin: string } | null>(null);
+ // Held while the enrolment offer is on screen — the unlock is already authorised,
+ // we are just deferring the hand-off until the user answers.
+ const [pendingUnlock, setPendingUnlock] = useState<{ key: string; msg: string } | null>(null);
+ const autoPromptedRef = useRef(false);
 
  const handleResetOtpChange = (index: number, val: string) => {
    const sanitized = val.replace(/\D/g, '').slice(-1);
@@ -98,24 +126,50 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  }
  }, []);
 
- // Init 
+ // Init
+ //
+ // PERF: the keypad must never wait on the network.
+ //
+ // This used to `await pinService.getStatus()` (and sometimes getKeyBackup() after
+ // it) before flipping `isLoading`, so the full-screen blue spinner below covered
+ // the keypad for the length of a round-trip — and worse, when the access token has
+ // expired that call 401s, triggers refreshAccessToken(), and retries, so it is two
+ // to three sequential requests against a possibly cold backend before a user can
+ // type a single digit.
+ //
+ // A returning user already has everything needed locally: isPINSet() tells us the
+ // encryption keys exist, which means "show the enter keypad". The server call only
+ // decides create-vs-enter for someone with NO local PIN, and restores the key
+ // backup — both fine to resolve in the background and reconcile afterwards.
  useEffect(() => {
  let mounted = true;
- (async () => {
- try {
- // Guest mode: no server calls - PIN is local only
- if (isGuestMode()) {
- if (mounted) {
- setIsCreating(!isPINSet());
- setIsLoading(false);
- }
- return;
- }
 
- const status = await pinService.getStatus();
  const hasLocalPin = isPINSet();
 
- if (status.success && !hasLocalPin) {
+ // Local PIN present ⇒ unambiguously "enter your PIN". Render the keypad now and
+ // let the server call below run behind it.
+ //
+ // No local PIN is genuinely ambiguous — a brand-new user (create) and a returning
+ // user on fresh storage (enter) look identical from here, and guessing "create"
+ // would let someone set a PIN that disagrees with the server's. That case still
+ // waits for the authoritative answer.
+ if (hasLocalPin) {
+   setIsCreating(false);
+   setIsLoading(false);
+ }
+
+ // Guest mode is local-only — nothing to reconcile.
+ if (isGuestMode()) {
+   setIsCreating(!hasLocalPin);
+   setIsLoading(false);
+   return () => { mounted = false; };
+ }
+
+ (async () => {
+ try {
+ const status = await pinService.getStatus();
+
+ if (status.success && !isPINSet()) {
  const kbr = await pinService.getKeyBackup();
  if (kbr.success && kbr.backup) {
  const [hash, salt] = kbr.backup.split('|');
@@ -123,24 +177,23 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  }
  }
 
-  if (mounted) {
-    const serverHasNoPin = isPinMissing(status);
-    // Show create flow ONLY if the server explicitly has no PIN configured.
-    // If the server has a PIN, we show the enter/verify screen so the user can
-    // type it in to verify and restore the local encryption keys.
-    const shouldCreate = serverHasNoPin;
-    setIsCreating(shouldCreate);
-    setIsLoading(false);
-  }
- } catch {
- // Network/server error -> if no local PIN, assume new user and show create flow
  if (mounted) {
- const hasLocalPin = isPINSet();
- setIsCreating(!hasLocalPin);
- setIsLoading(false);
+   // Reconcile the optimistic guess. Only the server can say authoritatively
+   // that no PIN exists, so a user who guessed "enter" is switched to "create"
+   // here (and vice versa) once we know.
+   setIsCreating(isPinMissing(status));
+   setIsLoading(false);
+ }
+ } catch {
+ // Network/server error. A user with a local PIN is already on the keypad; one
+ // without has nothing else to go on, so fall back to the create flow as before.
+ if (mounted) {
+   if (!isPINSet()) setIsCreating(true);
+   setIsLoading(false);
  }
  }
  })();
+
  return () => { mounted = false; };
  }, []);
 
@@ -165,6 +218,125 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
   toast.success(msg);
   onAuthenticated(key);
   }, [onAuthenticated]);
+
+  /**
+   * Single exit point for every successful unlock (create, guest, server-verified,
+   * offline fallback). Before letting the user through, this is the one moment we
+   * hold a PIN that is known-good — so it is also the only safe moment to offer
+   * biometric enrolment without asking them to type it again.
+   */
+  const completeUnlock = useCallback(async (key: string, msg: string, verifiedPin: string) => {
+    const canOffer =
+      biometric?.available &&
+      !isBiometricEnabled() &&
+      !isBiometricOfferDismissed() &&
+      !isGuestMode();
+
+    if (canOffer) {
+      setEnrolOffer({ pin: verifiedPin });
+      setPendingUnlock({ key, msg });
+      setIsSubmitting(false);
+      return;
+    }
+
+    await finalizeAuth(key, msg);
+  }, [biometric, finalizeAuth]);
+
+ // Probe biometric capability once. Runs on every platform but resolves to
+ // `available: false` off-device, which keeps the render path free of platform checks.
+ useEffect(() => {
+   let mounted = true;
+   (async () => {
+     const availability = await getBiometricAvailability();
+     if (!mounted) return;
+     setBiometric(availability);
+     setBiometricEnrolled(isBiometricEnabled());
+   })();
+   return () => { mounted = false; };
+ }, []);
+
+ /**
+  * Unlocks via biometrics. The retrieved PIN is pushed into `pin` state rather than
+  * verified here, so it flows through exactly the same auto-submit → server verify →
+  * key derivation path as a typed PIN. Biometrics replace typing, not verification.
+  */
+ const handleBiometricUnlock = useCallback(async () => {
+   if (biometricBusy || isSubmitting) return;
+   setBiometricBusy(true);
+   setErrorMsg('');
+
+   try {
+     const outcome = await unlockWithBiometrics();
+
+     switch (outcome.status) {
+       case 'success':
+         setPin(outcome.pin);
+         break;
+       case 'cancelled':
+         // Deliberate dismissal — stop auto-prompting so the keypad is usable.
+         suppressBiometricForSession();
+         break;
+       case 'unavailable':
+         suppressBiometricForSession();
+         setBiometricEnrolled(isBiometricEnabled());
+         setErrorMsg(outcome.message);
+         break;
+       case 'failed':
+         suppressBiometricForSession();
+         setErrorMsg(outcome.message);
+         break;
+     }
+   } finally {
+     setBiometricBusy(false);
+   }
+ }, [biometricBusy, isSubmitting]);
+
+ /** Accepts the enrolment offer, then hands off the unlock that was held pending. */
+ const handleAcceptEnrolment = useCallback(async () => {
+   if (!enrolOffer || !pendingUnlock || biometricBusy) return;
+   setBiometricBusy(true);
+
+   const label = user?.email || 'KANAKU account';
+   const result = await enableBiometricUnlock(enrolOffer.pin, label);
+
+   if (result.ok) {
+     setBiometricEnrolled(true);
+     toast.success(`${biometric?.label ?? 'Biometric'} unlock enabled`);
+   } else if (result.message) {
+     toast.error(result.message);
+   }
+
+   // Whether or not enrolment succeeded, the PIN was already verified — never
+   // strand the user on this screen.
+   const unlock = pendingUnlock;
+   setEnrolOffer(null);
+   setPendingUnlock(null);
+   setBiometricBusy(false);
+   await finalizeAuth(unlock.key, unlock.msg);
+ }, [enrolOffer, pendingUnlock, biometricBusy, user, biometric, finalizeAuth]);
+
+ /** Declines the offer. `permanent` stops us asking again until Settings re-arms it. */
+ const handleDeclineEnrolment = useCallback(async (permanent: boolean) => {
+   if (!pendingUnlock) return;
+   if (permanent) dismissBiometricOffer();
+
+   const unlock = pendingUnlock;
+   setEnrolOffer(null);
+   setPendingUnlock(null);
+   await finalizeAuth(unlock.key, unlock.msg);
+ }, [pendingUnlock, finalizeAuth]);
+
+ // Auto-prompt once per mount, as soon as we know biometrics are enrolled and the
+ // screen is in "enter your PIN" mode (never during PIN creation).
+ useEffect(() => {
+   if (autoPromptedRef.current) return;
+   if (isLoading || isCreating || sessionExpired) return;
+   if (!biometric?.available || !biometricEnrolled) return;
+   if (isBiometricSuppressed()) return;
+
+   autoPromptedRef.current = true;
+   void handleBiometricUnlock();
+ }, [isLoading, isCreating, sessionExpired, biometric, biometricEnrolled, handleBiometricUnlock]);
 
  // PIN input handler (hidden input + numpad both write here) 
   const appendDigit = (d: string) => {
@@ -254,7 +426,7 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
         }
 
         const key = await storeMasterKey(pin);
-        await finalizeAuth(key, 'PIN created! Welcome to KANAKU');
+        await completeUnlock(key, 'PIN created! Welcome to KANAKU', pin);
 
       } else {
         // Guest mode: verify locally only, no server call.
@@ -287,14 +459,14 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
 
           // If we still don't have local keys, re-derive them using the validated PIN
           const key = localResult.key || await storeMasterKey(pin);
-          await finalizeAuth(key, 'Welcome back!');
+          await completeUnlock(key, 'Welcome back!', pin);
         } else {
           // Server verification failed
           if (isPinServiceUnavailable(serverResult)) {
             // Server is unreachable -> fall back to checking local hash to support offline access
             const localResult = await verifyPIN(pin);
             if (localResult.isValid && localResult.key) {
-              await finalizeAuth(localResult.key, 'Welcome back! (Offline Mode)');
+              await completeUnlock(localResult.key, 'Welcome back! (Offline Mode)', pin);
               return;
             }
             triggerShake('Unable to verify PIN right now. Please try again.');
@@ -648,6 +820,28 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  </button>
  </div>
 
+ {/* Biometric unlock. Rendered only on a device that has it enrolled for this
+     account — the auto-prompt already fired once, so this is the retry affordance
+     for anyone who dismissed it or came back to the screen. */}
+ {!isCreating && biometric?.available && biometricEnrolled && (
+ <button
+ type="button"
+ onClick={() => void handleBiometricUnlock()}
+ disabled={isSubmitting || biometricBusy}
+ data-testid="pin-auth-biometric-button"
+ className="flex items-center justify-center gap-2 mx-auto rounded-full border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-gray-900 transition-all hover:bg-gray-50 active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
+ >
+ {biometricBusy ? (
+   <Loader2 size={17} className="animate-spin" />
+ ) : biometric.isFace ? (
+   <ScanFace size={17} />
+ ) : (
+   <Fingerprint size={17} />
+ )}
+ {biometricBusy ? 'Waiting…' : `Unlock with ${biometric.label}`}
+ </button>
+ )}
+
  {/* Sign out / different account */}
  {!isCreating && (
  <button
@@ -674,6 +868,61 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  </div>
  </div>
  </div>
+
+ {/* Biometric enrolment offer. Shown once, immediately after a verified PIN entry —
+     the only moment we hold a known-good PIN without asking the user to retype it.
+     The unlock is already authorised; every path out of here calls finalizeAuth. */}
+  {enrolOffer && (
+    <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md">
+      <div className="bg-white/95 border border-slate-100 rounded-[32px] w-full max-w-sm p-6 md:p-8 shadow-2xl flex flex-col gap-6 animate-in fade-in-50 zoom-in-95 duration-200 select-none">
+        <div className="flex flex-col items-center text-center gap-2">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-500 to-violet-400 flex items-center justify-center shadow-lg shadow-indigo-500/20 mb-2">
+            {biometric?.isFace
+              ? <ScanFace className="text-white" size={24} />
+              : <Fingerprint className="text-white" size={24} />}
+          </div>
+          <h3 className="text-xl font-black text-slate-900 tracking-tight">
+            Unlock with {biometric?.label ?? 'biometrics'}?
+          </h3>
+          <p className="text-sm font-semibold text-slate-500 leading-relaxed max-w-[280px]">
+            Skip the keypad next time. Your PIN is stored in this device's secure hardware
+            and never leaves it — you can still use your PIN whenever you want.
+          </p>
+        </div>
+
+        <div className="flex flex-col gap-2.5">
+          <button
+            type="button"
+            onClick={() => void handleAcceptEnrolment()}
+            disabled={biometricBusy}
+            data-testid="pin-auth-biometric-enrol-accept"
+            className="w-full h-12 rounded-2xl bg-slate-900 text-white text-sm font-bold transition-all hover:bg-slate-800 active:scale-[0.98] disabled:opacity-60 disabled:pointer-events-none flex items-center justify-center gap-2"
+          >
+            {biometricBusy && <Loader2 size={16} className="animate-spin" />}
+            {biometricBusy ? 'Setting up…' : `Enable ${biometric?.label ?? 'biometrics'}`}
+          </button>
+          <button
+            type="button"
+            onClick={() => void handleDeclineEnrolment(false)}
+            disabled={biometricBusy}
+            data-testid="pin-auth-biometric-enrol-later"
+            className="w-full h-11 rounded-2xl bg-transparent text-slate-600 text-sm font-bold transition-colors hover:bg-slate-50 disabled:opacity-60 disabled:pointer-events-none"
+          >
+            Not now
+          </button>
+          <button
+            type="button"
+            onClick={() => void handleDeclineEnrolment(true)}
+            disabled={biometricBusy}
+            data-testid="pin-auth-biometric-enrol-never"
+            className="w-full text-slate-400 text-xs font-semibold transition-colors hover:text-slate-600 disabled:opacity-60 disabled:pointer-events-none"
+          >
+            Don't ask again
+          </button>
+        </div>
+      </div>
+    </div>
+  )}
 
  {/* Forgot PIN modal */}
   {showResetModal && (

@@ -67,9 +67,15 @@
     <!-- Voice entry. Capacitor's BridgeWebChromeClient answers the WebView's
          AUDIO_CAPTURE request by asking for exactly these two at runtime; if they
          are absent from the merged manifest the request resolves to DENIED without
-         ever showing a prompt, so getUserMedia({ audio: true }) fails on device. -->
+         ever showing a prompt, so getUserMedia({ audio: true }) fails on device.
+         (@capacitor-community/speech-recognition also contributes RECORD_AUDIO and
+         the <queries> entry for RecognitionService package visibility.) -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+
+    <!-- Biometric unlock. Normal permission (granted at install), but BiometricPrompt
+         still requires it to be declared. The plugin's own manifest does not. -->
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
 
     <!-- The receipt scanner's <input capture="environment"> is served by the system
          camera app through ACTION_IMAGE_CAPTURE, which needs no CAMERA permission.

@@ -49,6 +49,10 @@
 	<string>KANAKU saves exported reports and statements to your photo library when you choose to keep a copy.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>KANAKU uses the microphone for voice entry, so you can add a transaction by speaking instead of typing.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>KANAKU converts your speech to text on this device so you can add a transaction by speaking instead of typing.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>KANAKU uses Face ID to unlock the app, so you do not have to type your PIN every time.</string>
 	<key>UIStatusBarStyle</key>
 	<string>UIStatusBarStyleLightContent</string>
 	<key>UILaunchStoryboardName</key>

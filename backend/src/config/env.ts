@@ -27,6 +27,16 @@ const envSchema = z.object({
     .regex(/^[0-9a-fA-F]{64}$/, 'AA_ENCRYPTION_ROOT_KEY must be 64 hex characters (32 bytes)')
     .optional(),
 
+  // Account Aggregator (Setu). Optional at the schema level because the /aa module
+  // is mounted only when ENABLED_MODULES includes 'aa'; the config manifest below
+  // escalates them to "required" in that case. AA_BASE_URL defaults to the sandbox
+  // in aa.service.ts — set it explicitly before going anywhere near live data.
+  AA_BASE_URL: z.string().url().optional(),
+  AA_CLIENT_ID: z.string().optional(),
+  AA_CLIENT_SECRET: z.string().optional(),
+  AA_FIU_ID: z.string().optional(),
+  AA_REDIRECT_URL: z.string().url().optional(),
+
   // HMAC secrets for inbound webhook verification.
   WEBHOOK_SETU_SECRET: z.string().min(16).optional(),
   WEBHOOK_SETU_SIGNATURE_HEADER: z.string().optional(),
@@ -193,6 +203,18 @@ const ALL: Service[] = ['api', 'worker'];
 const prodRequired = (nodeEnv: string): Tier => (nodeEnv === 'production' ? 'required' : 'recommended');
 
 /**
+ * Mirrors the ENABLED_MODULES allowlist parsed in routes/index.ts, so a config
+ * item can be "required only when its module is actually mounted". Kept local
+ * rather than imported to avoid pulling the route graph into config loading.
+ */
+const isModuleEnabled = (key: string): boolean =>
+  (process.env.ENABLED_MODULES ?? '')
+    .split(',')
+    .map((m) => m.trim().toLowerCase())
+    .filter(Boolean)
+    .includes(key);
+
+/**
  * The configuration manifest. Add a line here when a service grows a new
  * mandatory dependency — this is the single source of truth for "what must be
  * configured for Kanaku to run."
@@ -253,6 +275,22 @@ const CONFIG_MANIFEST: readonly ConfigItem[] = [
     services: ['api'],
     // Recommended: the AA module is phase-gated; non-AA deploys must still boot.
     tier: () => 'recommended',
+  },
+
+  // ── Account Aggregator (Setu) credentials ────────────────────────────────────
+  // The /aa module is fully implemented but mounted only when ENABLED_MODULES
+  // includes 'aa'. These four are what it needs to talk to Setu; without them the
+  // service builds requests against empty credentials and every call 401s at the
+  // provider, which is hard to diagnose from the outside. Reported as one row so a
+  // half-configured AA deploy is visible at startup instead of at first consent.
+  {
+    key: 'AA_CLIENT_ID',
+    group: 'Account Aggregator (Setu)',
+    purpose: 'Setu FIU credentials — required only when ENABLED_MODULES includes "aa"',
+    services: ['api'],
+    tier: () => (isModuleEnabled('aa') ? 'required' : 'optional'),
+    present: () =>
+      has('AA_CLIENT_ID') && has('AA_CLIENT_SECRET') && has('AA_FIU_ID') && has('AA_REDIRECT_URL'),
   },
 
   // ── Observability (Grafana Cloud / Render) ────────────────────────────────────

@@ -10,6 +10,12 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { processVoiceTranscript, FinancialAction } from '@/services/voiceFinancialService';
 import { VoiceAICommandCenter } from './VoiceAICommandCenter';
+import { Capacitor } from '@capacitor/core';
+import {
+  isSpeechRecognitionSupported,
+  startSpeechRecognition,
+  type SpeechSession,
+} from '@/services/speechRecognitionAdapter';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -176,7 +182,7 @@ const HINTS = [
 
 function useVoiceEngine() {
   const [state, dispatch] = useReducer(reducer, init);
-  const recRef = useRef<any>(null);
+  const recRef = useRef<SpeechSession | null>(null);
   const transcriptRef = useRef('');
 
   const processTranscript = useCallback(async (text: string) => {
@@ -201,78 +207,64 @@ function useVoiceEngine() {
   }, []);
 
   const startListening = useCallback(async () => {
-    const SR = (window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition;
-    if (!SR) {
+    // Engine selection lives in the adapter: native SpeechRecognizer/SFSpeechRecognizer
+    // on device, Web Speech API in the browser. Neither exists in a Capacitor WebView,
+    // which is why voice entry used to dead-end on mobile.
+    if (!(await isSpeechRecognitionSupported())) {
       dispatch({
         type: 'SET_ERROR',
-        payload: { msg: 'Speech recognition not supported in this browser. Please type below.', reason: 'not-supported' },
+        payload: { msg: 'Speech recognition is not available on this device. Please type below.', reason: 'not-supported' },
       });
       return;
     }
 
-    try {
-      await navigator.mediaDevices.getUserMedia({ audio: true });
-    } catch {
-      dispatch({ type: 'SET_ERROR', payload: { msg: 'Microphone access denied.', reason: 'denied' } });
-      return;
+    // On web the browser prompts here (and this also feeds the waveform). On native
+    // the adapter asks through the plugin, which covers iOS's separate speech
+    // entitlement as well as the microphone.
+    if (!Capacitor.isNativePlatform()) {
+      try {
+        await navigator.mediaDevices.getUserMedia({ audio: true });
+      } catch {
+        dispatch({ type: 'SET_ERROR', payload: { msg: 'Microphone access denied.', reason: 'denied' } });
+        return;
+      }
     }
 
     dispatch({ type: 'START_LISTENING' });
     transcriptRef.current = '';
 
-    const rec = new SR();
-    rec.continuous = true;
-    rec.interimResults = true;
-    rec.lang = 'en-US'; // Use en-US for better offline support in Chrome
-    rec.maxAlternatives = 1;
-
-    rec.onresult = (e: any) => {
-      let interim = '';
-      let final = '';
-      for (let i = e.resultIndex; i < e.results.length; i++) {
-        if (e.results[i].isFinal) final += e.results[i][0].transcript + ' ';
-        else interim += e.results[i][0].transcript;
-      }
-      if (interim) dispatch({ type: 'SET_INTERIM', payload: interim });
-      if (final) {
-        const next = (transcriptRef.current + ' ' + final).trim().replace(/\s+/g, ' ');
+    const session = await startSpeechRecognition({
+      onPartial: (text) => dispatch({ type: 'SET_INTERIM', payload: text }),
+      onFinal: (text) => {
+        const next = `${transcriptRef.current} ${text}`.trim().replace(/\s+/g, ' ');
         transcriptRef.current = next;
         dispatch({ type: 'SET_TRANSCRIPT', payload: next });
         dispatch({ type: 'SET_INTERIM', payload: '' });
-      }
-    };
+      },
+      onEnd: () => {
+        const val = transcriptRef.current.trim();
+        if (val) processTranscript(val);
+        else dispatch({ type: 'STOP_PROCESSING' });
+      },
+      onError: (reason, msg) => {
+        console.warn('[ASR] error:', reason, msg);
+        // A silent utterance is not worth an error banner — onEnd handles it.
+        if (reason === 'no-speech') return;
+        // Only the reasons the UI knows how to offer a fallback for are forwarded;
+        // anything else surfaces as a plain message.
+        const fallback: FallbackReason =
+          reason === 'network' || reason === 'denied' || reason === 'not-supported' ? reason : null;
+        dispatch({ type: 'SET_ERROR', payload: { msg, reason: fallback } });
+      },
+    });
 
-    rec.onerror = (e: any) => {
-      console.warn('[ASR] error:', e.error);
-      if (e.error === 'not-allowed') {
-        dispatch({ type: 'SET_ERROR', payload: { msg: 'Microphone access denied.', reason: 'denied' } });
-      } else if (e.error === 'network') {
-        dispatch({
-          type: 'SET_ERROR',
-          payload: {
-            msg: 'Offline mode unavailable. Please use the keyboard icon to type your transaction.',
-            reason: 'network',
-          },
-        });
-        // We do NOT auto-open manual input here anymore to prevent annoying popups
-      } else if (e.error !== 'no-speech') {
-        dispatch({ type: 'SET_ERROR', payload: { msg: `Speech error: ${e.error}` } });
-      }
-    };
-
-    rec.onend = () => {
-      const val = transcriptRef.current.trim();
-      if (val) processTranscript(val);
-      else dispatch({ type: 'STOP_PROCESSING' });
-    };
-
-    recRef.current = rec;
-    rec.start();
+    recRef.current = session;
   }, [processTranscript]);
 
   const stopListening = useCallback(() => {
-    recRef.current?.stop();
+    const session = recRef.current;
     recRef.current = null;
+    void session?.stop();
     dispatch({ type: 'STOP_LISTENING' });
     setTimeout(() => {
       const val = transcriptRef.current.trim();

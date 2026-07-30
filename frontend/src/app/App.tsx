@@ -1,4 +1,4 @@
-import React, { useEffect, useState, Suspense, lazy, useRef } from 'react';
+import React, { useEffect, useLayoutEffect, useState, Suspense, lazy, useRef } from 'react';
 import { AppProvider, useOptionalApp } from '@/contexts/AppContext';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { SecurityProvider, useSecurity } from '@/contexts/SecurityContext';
@@ -9,6 +9,7 @@ import { registerServiceWorker, setupPWAInstallPrompt, setupNetworkListener } fr
 import { HealthChecker } from '@/lib/health';
 import { toast } from 'sonner';
 import { initializeSmsTransactionDetection } from '@/services/smsTransactionDetectionService';
+import { initializePushNotifications } from '@/services/pushNotificationService';
 import { canAccessPage } from '@/lib/featureFlags';
 import { ADMIN_UI_ENABLED } from '@/config/platform';
 
@@ -104,6 +105,8 @@ import { SplashScreen } from '@capacitor/splash-screen';
 import { Keyboard } from '@capacitor/keyboard';
 import { Capacitor } from '@capacitor/core';
 import { registerNativeDeepLinks } from '@/lib/nativeDeepLinks';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { db } from '@/lib/database';
 
 //  Minimal page-transition spinner shown while a lazy chunk loads.
 //  The spinner is delayed: for fast (cached/prefetched) navigations the chunk
@@ -272,6 +275,13 @@ const AppContent: React.FC = () => {
   const currentPage = appContext?.currentPage ?? 'dashboard';
   const [isInitialized, setIsInitialized] = useState(false);
   const [showQuickAction, setShowQuickAction] = useState(false);
+
+  // Is the local store still empty? Reactive, so it flips to false the moment the first
+  // accounts row lands and the content area swaps from the loader to the real page.
+  // `undefined` while the very first count is in flight — treated as "not empty" so a
+  // returning user with a warm cache never sees a loader.
+  const localAccountCount = useLiveQuery(() => db.accounts.count(), [], undefined);
+  const hasNoLocalData = localAccountCount === 0;
 
   // Auto scroll to top when page changes
   useScrollToTopOnPageChange(currentPage);
@@ -504,17 +514,29 @@ const AppContent: React.FC = () => {
 
   // SECURITY: notifications + SMS detection fetch user data — start them only AFTER the
   // user has unlocked with their PIN (never on the pre-auth PIN screen).
+  //
+  // Push registration belongs here for the same reason: it binds a device token to
+  // an authenticated user and the payloads that come back reference that user's data.
   useEffect(() => {
     if (user && isAuthenticated) {
       void Promise.resolve().then(() => initializeNotifications());
       void Promise.resolve().then(() => initializeSmsTransactionDetection());
+      void Promise.resolve().then(() =>
+        initializePushNotifications((page) => setCurrentPageRef.current?.(page)),
+      );
     }
   }, [user, isAuthenticated]);
 
   // Trigger data sync after PIN verification — runs once per user+auth session.
   // currentPage is intentionally excluded from deps: we don't want to retrigger
   // the full sync on every page navigation. Per-page syncs are handled below.
-  useEffect(() => {
+  //
+  // useLayoutEffect, not useEffect: triggerDataSync flips `dataReady` synchronously
+  // before its first await. A passive effect runs *after* paint, so the data gate below
+  // would paint its full-screen spinner for one frame on every unlock. Running before
+  // paint makes the transition from the PIN screen to the dashboard seamless. The sync
+  // itself is still async and off the critical path.
+  useLayoutEffect(() => {
     if (user && isAuthenticated && !dataReady && !dataSyncing) {
       const syncKey = `${user.id}:${isAuthenticated}`;
       if (hasTriggeredSyncRef.current === syncKey) {
@@ -555,15 +577,22 @@ const AppContent: React.FC = () => {
     return () => window.removeEventListener('online', handleReconnect);
   }, [user, isAuthenticated, dataReady, currentPage]);
 
-  // Handle background sync when page changes
+  // Handle background sync when page changes.
+  //
+  // Skipped while `dataSyncing` is true: `dataReady` now flips the instant the PIN gate
+  // passes (rendering no longer waits on the network), so without this guard the initial
+  // post-unlock sync and this per-page sync would fire together on the first render.
+  // syncUserDataFromCloud has an in-flight guard, so the duplicate is dropped rather than
+  // double-fetched — but whichever call won the race decided whether the pull was forced.
+  // Letting triggerDataSync own the first sync keeps that deterministic.
   useEffect(() => {
-    if (user && isAuthenticated && dataReady && currentPage) {
+    if (user && isAuthenticated && dataReady && !dataSyncing && currentPage) {
       const requiredTables = PAGE_REQUIRED_TABLES[currentPage] || [];
       if (requiredTables.length > 0) {
         void syncUserDataFromCloud(user.id, requiredTables);
       }
     }
-  }, [currentPage, user, isAuthenticated, dataReady]);
+  }, [currentPage, user, isAuthenticated, dataReady, dataSyncing]);
 
   // Ensure we land on the correct default page after login, and guard disabled features.
   useEffect(() => {
@@ -983,7 +1012,13 @@ const AppContent: React.FC = () => {
     return <PINAuth onAuthenticated={setAuthenticated} />;
   }
 
-  // Gate 3: Data Ready (heavy sync & permissions) - only after PIN is verified!
+  // Gate 3: safety net only.
+  //
+  // This used to be the login bottleneck — `dataReady` waited on permissions + a full
+  // cloud sync (12s budget, 30s retry), so the whole app sat behind this full-screen
+  // spinner on every login and re-login. triggerDataSync now flips `dataReady` before its
+  // first await and the trigger runs in a layout effect, so this should never paint.
+  // Kept for the genuine edge cases (sync trigger not yet mounted, unexpected reset).
   if (user && !dataReady) {
     return (
       <div className="flex items-center justify-center h-screen bg-gradient-to-br from-pink-500 to-rose-600">
@@ -1030,8 +1065,16 @@ const AppContent: React.FC = () => {
       'diagnostics',
     ]);
 
-    // Enhanced data guard: Show loading if user is authenticated but data isn't ready yet
-    if (user && !dataReady && !bypassDataGatePages.has(currentPage)) {
+    // Data guard, scoped to the only case that still needs it.
+    //
+    // `dataReady` now flips as soon as the PIN gate passes, so this no longer blocks a
+    // returning user whose Dexie cache survived — they get real content immediately.
+    // It still catches the genuinely-empty case: signing out wipes Dexie, so straight
+    // after a re-login there is nothing local to show. Rendering a ₹0 dashboard there
+    // reads as "my data is gone", so the shell (header + nav) paints instantly and only
+    // the content area waits for the first rows — which arrive reactively via useLiveQuery.
+    const awaitingFirstRows = hasNoLocalData && dataSyncing;
+    if (user && (!dataReady || awaitingFirstRows) && !bypassDataGatePages.has(currentPage)) {
       return (
         <div className="flex items-center justify-center h-[60vh] w-full">
           <div className="text-center">

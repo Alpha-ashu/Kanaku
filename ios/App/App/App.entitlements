@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+	  Push Notifications capability.
+
+	  `development` is correct for debug builds and TestFlight; Xcode's automatic
+	  signing rewrites it to `production` for App Store distribution. The
+	  @capacitor/push-notifications registration call fails immediately without this
+	  entitlement, which is what "registrationError" on a device usually means.
+
+	  This file is referenced by CODE_SIGN_ENTITLEMENTS in App.xcodeproj.
+	-->
+	<key>aps-environment</key>
+	<string>development</string>
+</dict>
+</plist>

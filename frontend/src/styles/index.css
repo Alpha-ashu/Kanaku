@@ -23,9 +23,6 @@ body,
    both. `html` (element selector) keeps specificity low so Tailwind's
    `select-none` / `select-text` utilities still override per-element. */
 html {
-  /* Stop iOS Safari and Firefox from auto-inflating text on orientation change */
-  -webkit-text-size-adjust: 100%;
-  -moz-text-size-adjust: 100%;
   /* Pair the WebKit prefix with the standard user-select (older Safari) */
   -webkit-user-select: auto;
   user-select: auto;
@@ -62,8 +59,6 @@ html {
 
   body {
     font-size: 14px;
-    -webkit-text-size-adjust: 100%;
-    -moz-text-size-adjust: 100%;
     line-height: 1.5;
   }
 
@@ -287,11 +282,11 @@ html {
   background: transparent;
 }
 
-/* Cross-browser scrollbar hiding rules (Firefox, WebKit/Safari/Chrome, IE) */
+/* Cross-browser scrollbar hiding rules (WebKit/Safari/Chrome, IE/Edge) */
 * {
-  -webkit-overflow-scrolling: touch;
   -ms-overflow-style: none;
 }
+
 
 *::-webkit-scrollbar {
   display: none;

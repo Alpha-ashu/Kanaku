@@ -1,9 +1,9 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { db } from '@/lib/database';
 import {
  Upload, Trash2, Database, Globe,
  Bell, ExternalLink, FileText,
- Smartphone, RefreshCw, Coins, Lock
+ Smartphone, RefreshCw, Coins, Lock, Fingerprint
 } from 'lucide-react';
 import { Settings as SettingsIcon } from 'lucide-react';
 import { toast } from 'sonner';
@@ -18,6 +18,13 @@ import {
  createBackup,
  listBackups
 } from '@/lib/importExport';
+import {
+ type BiometricAvailability,
+ disableBiometricUnlock,
+ getBiometricAvailability,
+ isBiometricEnabled,
+ restoreBiometricOffer,
+} from '@/services/biometricAuthService';
 import supabase from '@/utils/supabase/client';
 import { api, apiClient } from '@/lib/api';
 import { permissionService } from '@/services/permissionService';
@@ -45,6 +52,47 @@ export const Settings: React.FC = () => {
  const [importHistory, setImportHistory] = useState<Array<any>>([]);
  const [showImportHistory, setShowImportHistory] = useState(false);
  const [isSigningOut, setIsSigningOut] = useState(false);
+
+ // Biometric unlock. `biometric` stays null off-device, so the row never renders on web.
+ const [biometric, setBiometric] = useState<BiometricAvailability | null>(null);
+ const [biometricEnabled, setBiometricEnabled] = useState(false);
+ const [biometricBusy, setBiometricBusy] = useState(false);
+
+ useEffect(() => {
+   let mounted = true;
+   void (async () => {
+     const availability = await getBiometricAvailability();
+     if (!mounted) return;
+     setBiometric(availability);
+     setBiometricEnabled(isBiometricEnabled());
+   })();
+   return () => { mounted = false; };
+ }, []);
+
+ /**
+  * Turning it OFF happens here and now — no PIN needed to reduce your own security.
+  *
+  * Turning it ON cannot happen here: enrolment needs a verified PIN, and this screen
+  * only sees an already-unlocked session. Rather than make the user retype their PIN,
+  * we re-arm the offer that appears at the next unlock, where a known-good PIN is
+  * already in hand.
+  */
+ const handleBiometricToggle = async () => {
+   if (biometricBusy) return;
+   setBiometricBusy(true);
+   try {
+     if (biometricEnabled) {
+       await disableBiometricUnlock();
+       setBiometricEnabled(false);
+       toast.success(`${biometric?.label ?? 'Biometric'} unlock turned off`);
+     } else {
+       restoreBiometricOffer();
+       toast.info(`You'll be asked to enable ${biometric?.label ?? 'biometrics'} at your next unlock`);
+     }
+   } finally {
+     setBiometricBusy(false);
+   }
+ };
  const [smsStatus, setSmsStatus] = useState<SmsDetectionStatus>({
  supported: false,
  enabled: false,
@@ -507,6 +555,45 @@ export const Settings: React.FC = () => {
  </select>
  </div>
  </div>
+
+ {/* Biometric unlock — only rendered where the hardware actually exists. */}
+ {biometric?.available && (
+ <div className="p-6">
+ <div className="flex items-center justify-between gap-4">
+ <div className="flex items-center gap-3 min-w-0">
+ <div className="w-10 h-10 bg-indigo-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+ <Fingerprint className="text-indigo-600" size={20} />
+ </div>
+ <div className="min-w-0">
+ <h4 className="font-medium text-gray-900">{biometric.label} Unlock</h4>
+ <p className="text-xs text-gray-500 mt-0.5">
+ {biometricEnabled
+ ? `Use ${biometric.label} instead of typing your PIN`
+ : `Turn on at your next unlock — we'll ask once your PIN is verified`}
+ </p>
+ </div>
+ </div>
+ <button
+ type="button"
+ role="switch"
+ aria-checked={biometricEnabled}
+ aria-label={`${biometric.label} unlock`}
+ data-testid="settings-biometric-toggle"
+ onClick={() => void handleBiometricToggle()}
+ disabled={biometricBusy}
+ className={`relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors disabled:opacity-50 ${
+ biometricEnabled ? 'bg-indigo-600' : 'bg-gray-300'
+ }`}
+ >
+ <span
+ className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+ biometricEnabled ? 'translate-x-6' : 'translate-x-1'
+ }`}
+ />
+ </button>
+ </div>
+ </div>
+ )}
  </div>
  </motion.div>
  ),

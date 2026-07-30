@@ -8,16 +8,20 @@ each has an owner-decision or a post-beta plan.
 Full detail — including the capability matrix and the outstanding store-submission
 items — lives in [MOBILE_RELEASE_GUIDE.md](./MOBILE_RELEASE_GUIDE.md). In short:
 
-- **Voice speech-to-text does not work in either native app.** It relies on the Web
-  Speech API, which Android WebView and iOS WKWebView do not implement. The mic and
-  waveform work; only transcription is missing, and the UI falls back to typing.
-  Closing it needs a native STT plugin or server-side STT.
+- **Voice speech-to-text works on web and Android; iOS is pending.** The plugin
+  (`@capacitor-community/speech-recognition`) ships no `Package.swift`, so it does not
+  link into the SPM-based iOS project — switching iOS to CocoaPods would fix it, which is
+  an owner decision. iOS degrades to the keyboard, as before.
 - **SMS auto-detection is Android-only and permanently so** — iOS exposes no SMS inbox
   API. It also ships only in the `full` (sideload) flavor; the Play build is `nosms`
   because Play policy restricts SMS permissions to SMS-first apps.
-- **No biometric unlock.** A `BIOMETRIC_AUTH` flag and a `biometricEnabled` field exist
-  but nothing implements them. PIN lock is the only lock on all platforms.
-- **No push notifications** — local notifications only, no FCM/APNs.
+- **Biometric unlock is implemented** (Face ID / Touch ID / fingerprint) and does not
+  bypass the PIN — it unlocks a hardware-stored copy of the PIN that then runs through the
+  normal server verification.
+- **Push notifications are wired end-to-end but deliver nothing yet** — they need
+  `google-services.json`, an Apple APNs key, and `FIREBASE_*` server env. The backend
+  pipeline (outbox, FCM sender, retry, dead-token cleanup) already existed; the client
+  registration that was missing is now in place.
 - **iOS cannot be submitted yet**: the app icon is still the Capacitor placeholder (no
   usable 1024×1024 source exists in the repo) and no Apple signing secrets are
   configured. CI builds the simulator target only.
@@ -35,12 +39,22 @@ event dispatcher/store, snapshots, reconciliation, integrity audit) **but**:
 - The **live** money path used by every module is the hardened single-entry engine
   (atomic transactions, row-lock balance updates, no-overdraw invariant, idempotency,
   Decimal math) — financial correctness does not depend on V2.
-**Plan:** publish events from goals/loans/investments/transactions post-beta, then enable
-V2 per-module via its existing sub-flags, using `migrationSafety` backfill for history.
+**Update 2026-07-30:** loan payments and settlements now publish `LOAN_PAYMENT_CREATED`.
+The remaining modules turned out **not** to be a wiring job: investments have no
+`accountId` column at all, `POST /loans` accepts no account for disbursement, and goals
+have no server-side contribution endpoint — so there is no cash account to post against in
+any of them. Closing those needs schema and API changes, not publishers. Full analysis and
+the pre-enablement checklist: [LEDGER_V2_AND_AA_STATUS.md](./LEDGER_V2_AND_AA_STATUS.md).
 
 ## 2. Account Aggregator (Setu) is dormant by design
 `/aa` (9 endpoints, 5 tables) is mount-gated behind `ENABLED_MODULES=aa` (Phase 5,
 regulated integration). Returns 404 in production until enabled.
+
+**Update 2026-07-30:** the `AA_*` credentials are now declared in the env schema and
+reported at startup, escalating to *required* when `ENABLED_MODULES` includes `aa` — a
+half-configured AA deploy is visible at boot instead of failing at the first consent call.
+Everything else remaining is external (Setu onboarding, encryption key, compliance
+sign-off): [LEDGER_V2_AND_AA_STATUS.md](./LEDGER_V2_AND_AA_STATUS.md) §2.
 
 ## 3. Test-infra: full-suite runs against remote staging DB are flaky
 54-suite serial runs exhaust the pgbouncer session pool (15 clients). Every suite passes

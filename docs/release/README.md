@@ -13,6 +13,7 @@ Reference set:
 |---|---|
 | Architecture | [SYSTEM](SYSTEM_ARCHITECTURE.md) · [BACKEND](BACKEND_ARCHITECTURE.md) · [FRONTEND](FRONTEND_ARCHITECTURE.md) · [DATABASE](DATABASE_ARCHITECTURE.md) |
 | Mobile | **[MOBILE_RELEASE_GUIDE.md](MOBILE_RELEASE_GUIDE.md)** — Capacitor wiring, Android flavors, iOS project, native capability matrix, build/release commands (added 2026-07-30) |
+| Ledger V2 / AA | **[LEDGER_V2_AND_AA_STATUS.md](LEDGER_V2_AND_AA_STATUS.md)** — which ledger publishers are wired, why the rest need schema/API changes, and the Setu AA config surface (added 2026-07-30) |
 | API | [API_REFERENCE.md](API_REFERENCE.md) (index over docs/api/reference + OpenAPI) |
 | Security | [SECURITY_AUDIT.md](SECURITY_AUDIT.md) · [RBAC_MATRIX.md](RBAC_MATRIX.md) |
 | Quality | [TEST_PLAN.md](TEST_PLAN.md) · [TEST_RESULTS.md](TEST_RESULTS.md) · [CODE_QUALITY_REPORT.md](CODE_QUALITY_REPORT.md) · [UI_UX_REVIEW.md](UI_UX_REVIEW.md) · [dead-modules-inventory.txt](dead-modules-inventory.txt) |

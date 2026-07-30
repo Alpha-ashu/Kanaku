@@ -19,6 +19,8 @@ import {
 import { backendService } from '@/lib/backend-api';
 import { shouldSkipOptionalBackendRequests } from '@/lib/apiBase';
 import { pinService } from '@/services/pinService';
+import { disableBiometricUnlock } from '@/services/biometricAuthService';
+import { teardownPushNotifications } from '@/services/pushNotificationService';
 import socketClient from '@/lib/socket-client';
 
 interface AuthContextType {
@@ -318,6 +320,11 @@ const clearLocalAuthPresentationState = (preservePinKeys = false) => {
   if (!preservePinKeys) {
     pinService.clearPinData();
     clearSecurityData();
+    // The biometric credential is a copy of *this account's* PIN held in the device
+    // secure store. Whenever the PIN keys go, it must go with them — otherwise the
+    // next account on this device would have a biometric unlock bound to someone
+    // else's PIN, which then fails server verification on every attempt.
+    void disableBiometricUnlock();
   }
 };
 
@@ -1110,6 +1117,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     // Backend-managed auth: revoke the backend session (refresh token + cookie);
     // there is no Supabase session to clear. Guarantee local DB and presentation
     // clearing to ensure complete isolation.
+    // Detach this device's push token first, while the access token is still valid —
+    // afterwards the deactivate call would 401 and the server would keep sending this
+    // user's notifications to a device they have signed out of.
+    await teardownPushNotifications().catch(() => undefined);
+
     await handleBackendLogout();
     TokenManager.clearTokens();
     await clearLocalUserData();
@@ -1136,28 +1148,38 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setDataSyncing(true);
     setDataSyncError(null);
 
-    try {
-      // Returning user with offline Dexie data: unblock the UI immediately and refresh in
-      // the background, so post-PIN unlock is instant instead of a blocking sync screen.
-      const localAccountsCount = await db.accounts.count().catch(() => 0);
-      if (localAccountsCount > 0 && activeSyncUserId.current === targetUserId) {
-        setDataReady(true);
-      }
-      const permissions = await permissionService.fetchUserPermissions(targetUserId, resolveUserRole(user));
-      setRole(permissions.role);
+    // Render immediately. Never hold the whole UI behind a network round-trip.
+    //
+    // `dataReady` gates a full-screen spinner in App.tsx. It used to flip only after
+    // fetchUserPermissions() AND syncFromSupabase() had both resolved, which put every
+    // login behind a 12s budget (30s on the retry). There was a "returning user" fast
+    // path keyed on `db.accounts.count() > 0`, but it could never fire on re-login:
+    // signing out calls clearLocalUserData(), which empties Dexie, so the count was
+    // always 0 and re-login took the blocking path every single time. That is the
+    // "relogin takes forever" symptom.
+    //
+    // Holding the UI back buys nothing here — the app is offline-first, every screen
+    // reads Dexie through useLiveQuery, and rows re-render as the sync lands. So we
+    // unblock now and refresh behind `dataSyncing`, which already drives the non-blocking
+    // "Syncing..." affordance and the Re-sync control in the header.
+    setDataReady(true);
 
-      // CTO OPTIMIZATION: Skip heavy database/profile sync if the page does not require financial data
+    try {
+      // Role resolves from the localStorage snapshot when one exists (permissionService
+      // refreshes it in the background), so this is usually instant. It is awaited only
+      // to apply the role — it no longer gates rendering.
+      const permissions = await permissionService.fetchUserPermissions(targetUserId, resolveUserRole(user));
+      if (activeSyncUserId.current === targetUserId) {
+        setRole(permissions.role);
+      }
+
+      // Skip the heavy table sync entirely when the current page needs no financial data.
       if (requestedTables && requestedTables.length > 0) {
         await syncFromSupabase(user, true, requestedTables);
-      }
-
-      if (activeSyncUserId.current === targetUserId) {
-        setDataReady(true);
       }
     } catch (err) {
       if (activeSyncUserId.current === targetUserId) {
         setDataSyncError(formatSupabaseError(err));
-        setDataReady(true);
       }
     } finally {
       if (activeSyncUserId.current === targetUserId) {
