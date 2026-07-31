@@ -52,6 +52,12 @@ const isNative = (): boolean => {
   }
 };
 
+/**
+ * The live native session, if any. Tracked module-wide because the plugin's
+ * listeners are global — see startNative().
+ */
+let activeNativeSession: SpeechSession | null = null;
+
 const getWebEngine = (): (new () => any) | null => {
   if (typeof window === 'undefined') return null;
   const w = window as unknown as Record<string, unknown>;
@@ -106,6 +112,17 @@ const startNative = async (
     callbacks.onError('denied', 'Microphone access is needed for voice entry.');
     callbacks.onEnd();
     return { stop: async () => undefined };
+  }
+
+  // Plugin listeners are global, not per-session. A second start() without an
+  // intervening stop() — rapid tapping of the mic button — would stack a second set
+  // on top of the first, so every partial would be delivered twice. Tear down any
+  // previous session before opening this one; only one can be live at a time.
+  await activeNativeSession?.stop().catch(() => undefined);
+  try {
+    await SpeechRecognition.removeAllListeners();
+  } catch {
+    /* nothing attached yet */
   }
 
   const handles: PluginListenerHandle[] = [];
@@ -176,7 +193,7 @@ const startNative = async (
     await finish();
   }
 
-  return {
+  const session: SpeechSession = {
     stop: async () => {
       try {
         await SpeechRecognition.stop();
@@ -184,8 +201,12 @@ const startNative = async (
         /* already stopped */
       }
       await finish();
+      if (activeNativeSession === session) activeNativeSession = null;
     },
   };
+
+  activeNativeSession = session;
+  return session;
 };
 
 /** Web path — the original Web Speech API behaviour, unchanged. */

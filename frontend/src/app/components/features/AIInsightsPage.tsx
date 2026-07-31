@@ -60,18 +60,36 @@ export const AIInsightsPage: React.FC = () => {
     const lastMonthExpense = sum(expenses(lastMonth));
     const thisMonthIncome = sum(income(thisMonth));
 
-    // Category breakdown this month
+    // Category breakdown this month.
+    //
+    // Two views of the same data: `categoryTotals` keeps the user's original casing for
+    // display, `categorySpendByKey` is normalised for lookups. Budgets are stored with
+    // whatever casing the user typed ("Food & Dining"), while transaction categories
+    // carry their own casing — comparing the two directly silently matched nothing.
     const categoryTotals: Record<string, number> = {};
+    const categorySpendByKey: Record<string, number> = {};
+    const categoryCountByKey: Record<string, number> = {};
+    const categoryLabelByKey: Record<string, string> = {};
+    const catKey = (value?: string) => (value ?? '').trim().toLowerCase();
+
     expenses(thisMonth).forEach((t) => {
+      const key = catKey(t.category);
+      if (!key) return;
       categoryTotals[t.category] = (categoryTotals[t.category] ?? 0) + t.amount;
+      categorySpendByKey[key] = (categorySpendByKey[key] ?? 0) + t.amount;
+      categoryCountByKey[key] = (categoryCountByKey[key] ?? 0) + 1;
+      categoryLabelByKey[key] = categoryLabelByKey[key] ?? t.category;
     });
     const topCategory = Object.entries(categoryTotals).sort((a, b) => b[1] - a[1])[0];
 
-    // Budget breach detection
-    const breachedBudgets = (budgets as any[]).filter((b) => {
-      const spent = categoryTotals[b.category?.toLowerCase()] ?? 0;
-      return spent > (b.amount ?? 0) * ((b.threshold ?? 85) / 100);
-    });
+    // Budget breach detection.
+    //
+    // Was `categoryTotals[b.category?.toLowerCase()]` against a map keyed by the
+    // ORIGINAL casing — so the lookup missed on every budget whose category was not
+    // already lowercase, `spent` was always 0, and the breach insight could never fire.
+    const breachedBudgets = (budgets as any[])
+      .map((b) => ({ ...b, spent: categorySpendByKey[catKey(b.category)] ?? 0 }))
+      .filter((b) => b.amount > 0 && b.spent > b.amount * ((b.threshold ?? 85) / 100));
 
     // Savings rate
     const savingsRate = thisMonthIncome > 0
@@ -99,6 +117,9 @@ export const AIInsightsPage: React.FC = () => {
       topCategory,
       breachedBudgets,
       categoryTotals,
+      categorySpendByKey,
+      categoryCountByKey,
+      categoryLabelByKey,
       goalPct,
       totalGoalTarget,
       totalGoalCurrent,
@@ -170,30 +191,33 @@ export const AIInsightsPage: React.FC = () => {
         title: `${breachedBudgets.length} Budget${breachedBudgets.length > 1 ? 's' : ''} Near Limit`,
         icon: AlertTriangle,
         color: 'text-rose-500 bg-rose-500/10',
-        description: `The following categories are approaching or have breached their limits this month: ${breachedBudgets.map((b: any) => `${b.category} (${fc(categoryTotals[b.category?.toLowerCase()] ?? 0)}/${fc(b.amount)})`).join(', ')}. Review and adjust your spending to stay on track.`,
+        description: `The following categories are approaching or have breached their limits this month: ${breachedBudgets.map((b: any) => `${b.category} (${fc(b.spent)}/${fc(b.amount)})`).join(', ')}. Review and adjust your spending to stay on track.`,
         impact: 'Action Required',
         impactColor: 'text-rose-600 bg-rose-50 border-rose-200',
       });
     }
 
-    // Insight 5: Recurring potential (categories with 4+ transactions)
-    const catFrequency: Record<string, number> = {};
-    Object.keys(categoryTotals).forEach((cat) => {
-      catFrequency[cat] = 0;
-    });
-    if (analysisData.categoryTotals) {
-      const highFreqCat = Object.entries(catFrequency).find(([, n]) => n >= 4);
-      if (highFreqCat) {
-        list.push({
-          id: 'recurring',
-          title: `Recurring Pattern in ${highFreqCat[0]}`,
-          icon: Zap,
-          color: 'text-purple-500 bg-purple-500/10',
-          description: `You have ${highFreqCat[1]} transactions in "${highFreqCat[0]}" this month. Consider converting repeating payments to Recurring Transactions for better tracking and auto-reminders.`,
-          impact: 'Optimize',
-          impactColor: 'text-purple-600 bg-purple-50 border-purple-200',
-        });
-      }
+    // Insight 5: recurring potential — categories with 4+ transactions this month.
+    //
+    // The counts were previously initialised to 0 for every category and never
+    // incremented, so the `>= 4` test could not match and this insight never rendered.
+    // They are now tallied alongside the spend totals in the query above.
+    const highFreqCat = Object.entries(analysisData.categoryCountByKey)
+      .filter(([, n]) => n >= 4)
+      .sort((a, b) => b[1] - a[1])[0];
+
+    if (highFreqCat) {
+      const [key, count] = highFreqCat;
+      const label = analysisData.categoryLabelByKey[key] ?? key;
+      list.push({
+        id: 'recurring',
+        title: `Recurring Pattern in ${label}`,
+        icon: Zap,
+        color: 'text-purple-500 bg-purple-500/10',
+        description: `You have ${count} transactions in "${label}" this month, totalling ${fc(analysisData.categorySpendByKey[key] ?? 0)}. Converting the repeating ones to Recurring Transactions gives you automatic tracking and reminders.`,
+        impact: 'Optimize',
+        impactColor: 'text-purple-600 bg-purple-50 border-purple-200',
+      });
     }
 
     return list.slice(0, 6);

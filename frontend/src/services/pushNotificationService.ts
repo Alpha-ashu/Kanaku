@@ -127,8 +127,11 @@ export const initializePushNotifications = async (navigate: NavigateToPage): Pro
     }
 
     if (permission.receive !== 'granted') {
+      // Stay "initialised" so we do not re-check on every unlock. iOS never
+      // re-prompts once refused, and on Android checkPermissions would just keep
+      // returning 'denied'. A fresh launch resets this module, and signing out calls
+      // teardown — both give the user a natural retry after granting in Settings.
       console.info('[Push] Permission not granted; push disabled for this device.');
-      initialised = false;
       return;
     }
 

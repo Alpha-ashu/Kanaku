@@ -42,6 +42,7 @@
     "cap:sync:android": "npx cap sync android",
     "cap:sync:ios": "npx cap sync ios && npm run cap:fix:spm",
     "cap:fix:spm": "node scripts/normalize-spm-paths.mjs",
+    "assets:icons": "node scripts/gen-app-icons.mjs",
     "cap:doctor": "npx cap doctor",
     "cap:open:android": "npx cap open android",
     "cap:open:ios": "npx cap open ios",

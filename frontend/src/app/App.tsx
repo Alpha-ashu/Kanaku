@@ -28,6 +28,7 @@ import { BottomNav } from '@/app/components/core/BottomNav';
 import { QuickActionModal } from '@/app/components/shared/QuickActionModal';
 import { PWAInstallPrompt } from '@/app/components/shared/PWAInstallPrompt';
 import { LimitedModeBanner } from '@/app/components/shared/LimitedModeBanner';
+import { OfflineBadge } from '@/app/components/shared/OfflineBadge';
 import { OfflineBanner } from '@/app/components/shared/OfflineBanner';
 
 //  Auth / Security (shown before app shell - eager load) 
@@ -1224,6 +1225,7 @@ const AppContent: React.FC = () => {
       <div className="flex-1 lg:ml-28 flex flex-col min-h-screen relative overflow-x-hidden">
         <div className="w-full lg:max-w-[90%] xl:max-w-[85%] mx-auto flex flex-col flex-1 mobile-content relative">
           <LimitedModeBanner />
+          <OfflineBadge />
           <TopBar />
           <main className="w-full pt-24 lg:pt-28 overflow-x-hidden mobile-safe-bottom mobile-main flex-1 bg-transparent">
             {dataSyncError && (
@@ -1235,9 +1237,14 @@ const AppContent: React.FC = () => {
                     <p className="text-amber-700">
                       Showing last saved data. Changes will sync when the connection is restored.
                     </p>
+                    {/* Must pass the current page's tables: triggerDataSync() with no
+                        argument skips syncFromSupabase entirely (it only runs when
+                        requestedTables is non-empty), so the bare call refreshed
+                        permissions and nothing else — a "Re-sync now" button that did
+                        not re-sync any data. */}
                     <button data-testid="app-button"
                       type="button"
-                      onClick={() => void triggerDataSync()}
+                      onClick={() => void triggerDataSync(PAGE_REQUIRED_TABLES[currentPage] || [])}
                       disabled={dataSyncing}
                       className="mt-2 inline-flex items-center rounded-full border border-amber-300 bg-white px-3 py-1 text-xs font-semibold text-amber-800 hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-60"
                     >

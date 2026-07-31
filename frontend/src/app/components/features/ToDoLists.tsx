@@ -61,12 +61,13 @@ export const ToDoLists: React.FC = () => {
 
   const toDoLists = useLiveQuery<ToDoList[]>(
     async () => {
-      if (!currentUserId) return [];
-      const owned = await db.toDoLists.filter(list => list.ownerId === currentUserId).toArray();
-      const shares = await db.toDoListShares.where('sharedWithUserId').equals(currentUserId).toArray();
+      const owned = await db.toDoLists.filter(list => !list.ownerId || list.ownerId === 'user-default' || (currentUserId ? list.ownerId === currentUserId : true)).toArray();
+      const shares = currentUserId
+        ? await db.toDoListShares.where('sharedWithUserId').equals(currentUserId).toArray()
+        : [];
       const sharedListIds = shares.map(share => share.listId);
       const shared = sharedListIds.length > 0
-        ? await db.toDoLists.filter(list => sharedListIds.includes(list.id!) && list.ownerId !== currentUserId).toArray()
+        ? await db.toDoLists.filter(list => sharedListIds.includes(list.id!) && list.ownerId !== currentUserId && list.ownerId !== 'user-default').toArray()
         : [];
       const combined = [...owned, ...shared];
       const uniqueMap = new Map<number, ToDoList>();
@@ -76,14 +77,15 @@ export const ToDoLists: React.FC = () => {
     [currentUserId]
   ) || [];
 
-  // Split: individual + owned together → "My Lists"; shared together → "Shared Lists"
-  const myLists = toDoLists.filter(l => l.ownerId === currentUserId);
-  const sharedLists = toDoLists.filter(l => l.ownerId !== currentUserId);
+
+  const myLists = toDoLists.filter(l => !l.ownerId || l.ownerId === 'user-default' || l.ownerId === currentUserId);
+  const sharedLists = toDoLists.filter(l => l.ownerId && l.ownerId !== 'user-default' && l.ownerId !== currentUserId);
 
   const activeMy = myLists.filter(l => !l.archived);
   const archivedMy = myLists.filter(l => l.archived);
   const activeShared = sharedLists.filter(l => !l.archived);
   const archivedShared = sharedLists.filter(l => l.archived);
+
 
   const displayedMy = activeTab === 'active' ? activeMy : archivedMy;
   const displayedShared = activeTab === 'active' ? activeShared : archivedShared;

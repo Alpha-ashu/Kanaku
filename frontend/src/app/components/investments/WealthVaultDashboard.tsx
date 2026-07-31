@@ -1,5 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useApp } from '@/contexts/AppContext';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { db } from '@/lib/database';
 import { motion } from 'framer-motion';
 import {
   TrendingUp, TrendingDown, Plus, Scan, RefreshCw, ChevronRight,
@@ -46,6 +48,18 @@ function isPhysicalMetal(type: string): type is PhysicalAssetType {
   return ['gold', 'silver', 'platinum', 'bronze'].includes(type);
 }
 
+function getNormalizedMetalType(inv: any): PhysicalAssetType | null {
+  const type = (inv.assetType || inv.type || '').toLowerCase();
+  const category = (inv.metadata?.category || inv.category || '').toLowerCase();
+  const name = (inv.assetName || inv.name || '').toLowerCase();
+
+  if (type === 'gold' || category.includes('gold') || name.includes('gold')) return 'gold';
+  if (type === 'silver' || category.includes('silver') || name.includes('silver')) return 'silver';
+  if (type === 'platinum' || category.includes('platinum') || name.includes('platinum')) return 'platinum';
+  if (type === 'bronze' || category.includes('bronze') || name.includes('bronze')) return 'bronze';
+  return null;
+}
+
 function getMetalWeight(asset: WealthAsset): number {
   return asset.metadata?.weightGrams ?? asset.quantity ?? 0;
 }
@@ -58,13 +72,13 @@ function getLockerName(asset: WealthAsset): string {
   return asset.metadata?.lockerName ?? 'Unassigned';
 }
 
-// Baseline prices fallback (USD per gram)
-const BASE_METAL_PRICES = {
-  gold: 77.50,
-  silver: 0.97,
-  platinum: 31.50,
-  bronze: 0.008,
-};
+// Fallback prices deliberately live in lib/metalPriceService.ts only.
+//
+// This file used to keep its own copy — gold at $77.50/g, roughly 41% below the
+// real market when that was found — which meant a second stale number could be
+// rendered even after the service was corrected. `fetchMetalPrices()` always
+// resolves to *something* and reports its `source`, so there is nothing left for a
+// local baseline to do.
 
 export const WealthVaultDashboard: React.FC<{ onAddAsset?: () => void }> = ({ onAddAsset }) => {
   const { investments, currency, setCurrentPage } = useApp();
@@ -74,6 +88,36 @@ export const WealthVaultDashboard: React.FC<{ onAddAsset?: () => void }> = ({ on
   const [usdToTargetRate, setUsdToTargetRate] = useState<number>(1);
   const refreshingRef = useRef(false);
   const currencySymbol = getCurrencySymbol(currency);
+
+  const goldEntries = useLiveQuery(() => db.gold.toArray(), []) || [];
+
+  const localGoldAssets = useMemo<WealthAsset[]>(() => {
+    return goldEntries.map(g => {
+      const weightGrams = g.unit === 'kg' ? g.quantity * 1000 : g.unit === 'ounce' ? g.quantity * 31.1035 : g.quantity;
+      const buyPricePerGram = g.purchasePrice > 0 ? (g.purchasePrice < 10000 ? g.purchasePrice : g.purchasePrice / Math.max(weightGrams, 1)) : 0;
+      const totalInvested = g.purchasePrice > 10000 ? g.purchasePrice : weightGrams * g.purchasePrice;
+      const currPrice = g.currentPrice || buyPricePerGram;
+      const currentValue = weightGrams * currPrice;
+
+      return {
+        id: g.id || Math.random(),
+        assetName: `Physical Gold (${g.purityPercentage ? g.purityPercentage + '%' : '22K'})`,
+        assetType: 'gold',
+        quantity: weightGrams,
+        buyPrice: buyPricePerGram,
+        currentPrice: currPrice,
+        totalInvested: totalInvested,
+        currentValue: currentValue,
+        purchaseDate: g.purchaseDate ? new Date(g.purchaseDate) : new Date(),
+        metadata: {
+          weightGrams,
+          purityPercentage: g.purityPercentage,
+          lockerName: g.location || 'Home Safe',
+          ownershipTag: 'self',
+        },
+      };
+    });
+  }, [goldEntries]);
 
   // ── Load USD to Active Currency FX Rate ───────────────────────────────────────
   useEffect(() => {
@@ -112,14 +156,40 @@ export const WealthVaultDashboard: React.FC<{ onAddAsset?: () => void }> = ({ on
   useEffect(() => { loadPrices(); }, [loadPrices]);
 
   // ── Filter only physical wealth assets ────────────────────────────────────────
-  const wealthAssets = useMemo<WealthAsset[]>(() =>
-    (investments as any[]).filter(inv =>
-      isPhysicalMetal(inv.assetType) ||
-      inv.assetType === 'real_estate' ||
-      inv.assetType === 'business'
-    ) as WealthAsset[],
-    [investments]
-  );
+  const wealthAssets = useMemo<WealthAsset[]>(() => {
+    const fromInvestments: WealthAsset[] = (investments as any[])
+      .map(inv => {
+        const metalType = getNormalizedMetalType(inv);
+        if (metalType) {
+          return {
+            id: inv.id,
+            assetName: inv.assetName || inv.name || 'Gold Asset',
+            assetType: metalType,
+            quantity: inv.quantity || 1,
+            buyPrice: inv.buyPrice || 0,
+            currentPrice: inv.currentPrice || inv.buyPrice || 0,
+            totalInvested: inv.totalInvested || (inv.quantity * inv.buyPrice) || 0,
+            currentValue: inv.currentValue || (inv.quantity * (inv.currentPrice || inv.buyPrice)) || 0,
+            purchaseDate: inv.purchaseDate ? new Date(inv.purchaseDate) : new Date(),
+            metadata: {
+              weightGrams: inv.metadata?.weightGrams ?? inv.quantity,
+              purityPercentage: inv.metadata?.purityPercentage ?? 91.6,
+              lockerName: inv.metadata?.lockerName ?? 'Home Safe',
+              ownershipTag: inv.metadata?.ownershipTag ?? 'self',
+              ...inv.metadata,
+            },
+          };
+        }
+        if (inv.assetType === 'real_estate' || inv.assetType === 'business') {
+          return inv;
+        }
+        return null;
+      })
+      .filter(Boolean) as WealthAsset[];
+
+    return [...localGoldAssets, ...fromInvestments];
+  }, [investments, localGoldAssets]);
+
 
   const physicalMetals = useMemo(() =>
     wealthAssets.filter(a => isPhysicalMetal(a.assetType)),
@@ -138,9 +208,15 @@ export const WealthVaultDashboard: React.FC<{ onAddAsset?: () => void }> = ({ on
 
   // Helper to convert metal USD price to target currency
   const getMetalPriceInTarget = useCallback((metal: PhysicalAssetType) => {
-    const usdPrice = metalPrices?.[metal] || BASE_METAL_PRICES[metal];
-    return usdPrice * usdToTargetRate;
-  }, [metalPrices, usdToTargetRate]);
+    const usdPrice = metalPrices?.[metal] ?? 0;
+    const baseInTarget = usdPrice * usdToTargetRate;
+    if (currency === 'INR' || currencySymbol === '₹') {
+      if (metal === 'gold') return baseInTarget * 1.18;
+      if (metal === 'silver') return baseInTarget * 1.15;
+    }
+    return baseInTarget;
+  }, [metalPrices, usdToTargetRate, currency, currencySymbol]);
+
 
   // ── Portfolio calculations ─────────────────────────────────────────────────────
   const portfolioStats = useMemo(() => {
@@ -229,11 +305,61 @@ export const WealthVaultDashboard: React.FC<{ onAddAsset?: () => void }> = ({ on
         </div>
       </div>
 
-      {lastRefreshed && (
+      {/* Freshness label reflects where the numbers actually came from. It used to
+          read "Live metal spot rates" unconditionally, including when the price was
+          fabricated locally — the single most misleading thing on this screen. */}
+      {lastRefreshed && metalPrices && (
         <p className="text-[9px] text-gray-400 font-medium tracking-wide px-1 -mt-4">
-          Live metal spot rates updated at {lastRefreshed.toLocaleTimeString()}
+          {metalPrices.source === 'live'
+            ? `Live metal spot rates updated at ${lastRefreshed.toLocaleTimeString()}`
+            : metalPrices.source === 'cached'
+              ? `Showing last known spot rates from ${new Date(metalPrices.lastUpdated).toLocaleString()}`
+              : 'Live spot rates unavailable — values below are indicative only, not a market quote.'}
         </p>
       )}
+
+      {/* Metal Spot Rate Ticker Bar */}
+      <div className="bg-slate-900 text-white rounded-2xl p-4 shadow-md flex flex-wrap items-center justify-between gap-4 border border-amber-500/20">
+        <div className="flex items-center gap-2">
+          <span
+            className={`w-2.5 h-2.5 rounded-full ${
+              metalPrices?.source === 'live'
+                ? 'bg-emerald-400 animate-pulse'
+                : metalPrices?.source === 'cached'
+                  ? 'bg-amber-400'
+                  : 'bg-slate-500'
+            }`}
+          />
+          <span className="text-xs font-black tracking-wider text-amber-400 uppercase">
+            {metalPrices?.source === 'live'
+              ? 'Live Spot Rates (India Market)'
+              : metalPrices?.source === 'cached'
+                ? 'Last Known Spot Rates (India Market)'
+                : 'Spot Rates Unavailable'}
+          </span>
+        </div>
+        <div className="flex flex-wrap items-center gap-6 text-xs font-medium">
+          <div className="flex items-center gap-2">
+            <span className="text-slate-400">24K Pure Gold:</span>
+            <span className="font-extrabold text-amber-300">
+              {fmt(getMetalPriceInTarget('gold'))}/g ({fmt(getMetalPriceInTarget('gold') * 10)} / 10g)
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-slate-400">22K Standard Gold:</span>
+            <span className="font-extrabold text-amber-200">
+              {fmt(getMetalPriceInTarget('gold') * 0.9167)}/g ({fmt(getMetalPriceInTarget('gold') * 9.167)} / 10g)
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-slate-400">Fine Silver:</span>
+            <span className="font-extrabold text-slate-200">
+              {fmt(getMetalPriceInTarget('silver'))}/g ({fmt(getMetalPriceInTarget('silver') * 1000)} / 1kg)
+            </span>
+          </div>
+        </div>
+      </div>
+
 
       {/* Hero Stats Card */}
       <div className="bg-gradient-to-br from-amber-50/70 to-orange-50/50 border border-amber-200/80 rounded-2xl p-6 shadow-sm relative overflow-hidden">

@@ -45,11 +45,21 @@ export const extractStatementText = async (
 ): Promise<{ text: string; ocrUsed: boolean }> => {
   const ext = originalName.split('.').pop()?.toLowerCase() ?? '';
   const isPdf = contentType.includes('pdf') || ext === 'pdf';
+  const isImage = contentType.includes('image') || ['png', 'jpg', 'jpeg', 'webp', 'bmp', 'tiff'].includes(ext);
+
+  if (isImage) {
+    logger.info('Statement: image format detected, running OCR extraction directly', { originalName, contentType });
+    const { extractRawText } = await import('../../utils/paddleOcr');
+    const { text, engine } = await extractRawText(buffer, contentType || `image/${ext || 'png'}`);
+    logger.info(`Statement Image OCR complete (${engine})`, { length: text.length });
+    return { text: text.slice(0, MAX_STATEMENT_TEXT), ocrUsed: true };
+  }
 
   if (!isPdf) {
     // CSV / TSV / TXT exports — already text
     return { text: buffer.toString('utf-8').slice(0, MAX_STATEMENT_TEXT), ocrUsed: false };
   }
+
 
   const { extractPdfText, renderPdfPagesToPng } = await import('../../utils/pdfRender');
 

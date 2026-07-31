@@ -270,6 +270,214 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     });
   }, [rawAccounts, transactions, goalContributions, loanPayments]);
 
+  // Auto-seed local Dexie mock data for Budgets, Recurring Transactions, Notifications, Documents, and To-Dos if empty
+  useEffect(() => {
+    async function populateMockDataIfEmpty() {
+      try {
+        // 1. Budgets
+        const budgetCount = await db.budgets.count();
+        if (budgetCount === 0) {
+          await db.budgets.bulkAdd([
+            { id: 'b-1', category: 'Food', amount: 15000, period: 'monthly', spent: 6650, createdAt: new Date() },
+            { id: 'b-2', category: 'Transportation', amount: 8000, period: 'monthly', spent: 2800, createdAt: new Date() },
+            { id: 'b-3', category: 'Entertainment', amount: 5000, period: 'monthly', spent: 649, createdAt: new Date() },
+            { id: 'b-4', category: 'Shopping', amount: 10000, period: 'monthly', spent: 6200, createdAt: new Date() },
+            { id: 'b-5', category: 'Bills', amount: 5000, period: 'monthly', spent: 1850, createdAt: new Date() },
+          ]);
+        }
+
+        // 2. Recurring Transactions
+        const recurringCount = await db.recurringTransactions.count();
+        if (recurringCount === 0) {
+          const accountsList = await db.accounts.toArray();
+          const accId = accountsList[0]?.id ?? 1;
+          const now = new Date();
+          await db.recurringTransactions.bulkAdd([
+            {
+              name: 'Netflix Premium 4K Plan',
+              type: 'expense',
+              amount: 649,
+              accountId: accId,
+              category: 'Entertainment',
+              frequency: 'monthly',
+              startDate: now,
+              nextDueDate: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000),
+              status: 'active',
+              createdAt: now,
+            },
+            {
+              name: 'Airtel Xstream Fiber Broadband',
+              type: 'expense',
+              amount: 999,
+              accountId: accId,
+              category: 'Bills',
+              frequency: 'monthly',
+              startDate: now,
+              nextDueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
+              status: 'active',
+              createdAt: now,
+            },
+            {
+              name: 'HDFC Top 100 MF SIP',
+              type: 'expense',
+              amount: 10000,
+              accountId: accId,
+              category: 'Investment',
+              frequency: 'monthly',
+              startDate: now,
+              nextDueDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
+              status: 'active',
+              createdAt: now,
+            },
+          ]);
+        }
+
+        // 3. Notifications
+        const notifCount = await db.notifications.count();
+        if (notifCount === 0) {
+          await db.notifications.bulkAdd([
+            {
+              type: 'emi',
+              title: 'SBI Home Loan EMI Due',
+              message: 'Upcoming EMI payment of ₹30,200 is due in 3 days for SBI Home Loan.',
+              dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+              isRead: false,
+              createdAt: new Date(),
+            },
+            {
+              type: 'goal',
+              title: 'Emergency Fund Goal Milestone',
+              message: 'Congratulations! You reached 61% of your Emergency Fund goal (₹1,85,000 / ₹3,00,000).',
+              isRead: false,
+              createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
+            },
+            {
+              type: 'booking',
+              title: 'Upcoming Advisor Session',
+              message: 'Tax Optimization consultation with Vikram Nair scheduled for tomorrow at 4:00 PM.',
+              dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000),
+              isRead: false,
+              createdAt: new Date(),
+            },
+            {
+              type: 'group',
+              title: 'Goa Trip Settlement Pending',
+              message: 'Rahul Sharma settled ₹6,000 for Goa Trip.',
+              isRead: true,
+              createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+            },
+          ]);
+        }
+
+        // 4. Documents & Receipts
+        const docCount = await db.documents.count();
+        if (docCount === 0) {
+          await db.documents.bulkAdd([
+            {
+              documentType: 'receipt',
+              fileName: 'D-Mart_Grocery_Bill.png',
+              fileType: 'image/png',
+              fileSize: 450000,
+              uploadDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+              processingStatus: 'completed',
+              metadata: { merchantName: 'D-Mart Supermarket', amount: '5400', category: 'Food' },
+              createdAt: new Date(),
+            },
+            {
+              documentType: 'receipt',
+              fileName: 'BESCOM_Electricity_Invoice.png',
+              fileType: 'image/png',
+              fileSize: 320000,
+              uploadDate: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000),
+              processingStatus: 'completed',
+              metadata: { merchantName: 'BESCOM', amount: '1850', category: 'Bills' },
+              createdAt: new Date(),
+            },
+            {
+              documentType: 'receipt',
+              fileName: 'Swiggy_Dinner_Order.png',
+              fileType: 'image/png',
+              fileSize: 210000,
+              uploadDate: new Date(Date.now() - 24 * 60 * 60 * 1000),
+              processingStatus: 'completed',
+              metadata: { merchantName: 'Swiggy', amount: '1250', category: 'Food' },
+              createdAt: new Date(),
+            },
+            {
+              documentType: 'statement',
+              fileName: 'Canara_Bank_Statement_Q3.pdf',
+              fileType: 'application/pdf',
+              fileSize: 1250000,
+              uploadDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
+              processingStatus: 'completed',
+              metadata: { merchantName: 'Canara Bank', amount: '120000', category: 'Income' },
+              createdAt: new Date(),
+            },
+          ]);
+        }
+
+        // 5. To-Dos
+        const todoListCount = await db.toDoLists.count();
+        if (todoListCount === 0) {
+          const listId = await db.toDoLists.add({
+            name: 'Financial Action Items 2026',
+            description: 'Key tax, investment, and insurance reminders',
+            ownerId: 'user-default',
+            listType: 'individual',
+            createdAt: new Date(),
+            archived: false,
+          });
+
+          await db.toDoItems.bulkAdd([
+            {
+              listId: Number(listId),
+              title: 'File ITR Returns for FY 2025-26',
+              description: 'Gather Form 16 & Capital Gains Statement',
+              completed: false,
+              priority: 'high',
+              dueDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
+              createdBy: 'user-default',
+              createdAt: new Date(),
+            },
+            {
+              listId: Number(listId),
+              title: 'Review Mutual Fund SIP Performance',
+              description: 'Compare HDFC Top 100 vs Nifty 50 benchmark',
+              completed: false,
+              priority: 'medium',
+              dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+              createdBy: 'user-default',
+              createdAt: new Date(),
+            },
+            {
+              listId: Number(listId),
+              title: 'Renew Health Insurance Policy',
+              description: 'Star Health floater plan renewal due',
+              completed: false,
+              priority: 'high',
+              dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
+              createdBy: 'user-default',
+              createdAt: new Date(),
+            },
+            {
+              listId: Number(listId),
+              title: 'Purchase Smart LED Ceiling Lights',
+              description: 'Home improvement items',
+              completed: true,
+              priority: 'low',
+              createdBy: 'user-default',
+              createdAt: new Date(),
+            },
+          ]);
+        }
+
+      } catch (err) {
+        console.warn('Dexie mock data population error:', err);
+      }
+    }
+    populateMockDataIfEmpty();
+  }, []);
+
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
@@ -278,6 +486,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       applyStoredPreferences();
       setManualRefreshToken(prev => prev + 1);
     };
+
 
     const handleStorageChange = (e: StorageEvent) => {
       if (

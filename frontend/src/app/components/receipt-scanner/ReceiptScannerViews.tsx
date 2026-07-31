@@ -18,6 +18,11 @@ import {
 import { parseDateInputValue, toLocalDateKey } from '@/lib/dateUtils';
 import { normalizeCategorySelection, getSubcategoriesForCategory } from '@/lib/expenseCategories';
 import { type Account } from '@/lib/database';
+import {
+  CONFIDENCE_TITLES,
+  describeConfidence,
+  resolveConfidenceTier,
+} from '@/lib/receiptConfidence';
 import { cn } from '@/lib/utils';
 import type { ReceiptScanResult, TaxComponent, TotalValidationResult } from '@/types/receipt.types';
 
@@ -439,28 +444,51 @@ const LocationBadge: React.FC<{ location: string }> = ({ location }) => {
  );
 };
 
+/**
+ * Confidence is reported in three tiers, not two — see lib/receiptConfidence.ts for
+ * the thresholds and why the low tier exists.
+ */
 const ConfidenceBadge: React.FC<{ confidence: number }> = ({ confidence }) => {
- const isHighConfidence = confidence >= 0.8;
+ const tier = resolveConfidenceTier(confidence);
+
+ const styles = {
+   high: {
+     wrap: 'border border-emerald-100 bg-emerald-50',
+     icon: 'text-emerald-600',
+     title: 'text-emerald-800',
+     body: 'text-emerald-600',
+   },
+   medium: {
+     wrap: 'border border-amber-100 bg-amber-50',
+     icon: 'text-amber-600',
+     title: 'text-amber-800',
+     body: 'text-amber-600',
+   },
+   low: {
+     wrap: 'border-2 border-rose-300 bg-rose-50',
+     icon: 'text-rose-600',
+     title: 'text-rose-800',
+     body: 'text-rose-700',
+   },
+ }[tier];
+
+ const title = CONFIDENCE_TITLES[tier];
+ const body = describeConfidence(tier, confidence);
 
  return (
  <div
- className={cn(
- 'flex items-center gap-3 rounded-2xl p-3.5',
- isHighConfidence ? 'border border-emerald-100 bg-emerald-50' : 'border border-amber-100 bg-amber-50',
- )}
+ className={cn('flex items-center gap-3 rounded-2xl p-3.5', styles.wrap)}
+ role={tier === 'low' ? 'alert' : undefined}
+ data-testid={`receipt-confidence-${tier}`}
  >
- {isHighConfidence ? (
- <CheckCircle2 size={18} className="shrink-0 text-emerald-600" />
+ {tier === 'high' ? (
+ <CheckCircle2 size={18} className={cn('shrink-0', styles.icon)} />
  ) : (
- <AlertCircle size={18} className="shrink-0 text-amber-600" />
+ <AlertCircle size={tier === 'low' ? 20 : 18} className={cn('shrink-0', styles.icon)} />
  )}
  <div>
- <p className={cn('text-sm font-bold', isHighConfidence ? 'text-emerald-800' : 'text-amber-800')}>
- {isHighConfidence ? 'High confidence scan' : 'Please review the extracted data'}
- </p>
- <p className={cn('text-xs', isHighConfidence ? 'text-emerald-600' : 'text-amber-600')}>
- Confidence: {(confidence * 100).toFixed(0)}% - edit any field if needed
- </p>
+ <p className={cn('text-sm font-bold', styles.title)}>{title}</p>
+ <p className={cn('text-xs', styles.body)}>{body}</p>
  </div>
  </div>
  );

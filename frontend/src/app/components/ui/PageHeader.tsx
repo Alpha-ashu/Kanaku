@@ -43,15 +43,17 @@ export const PageHeaderCard: React.FC<PageHeaderProps> = ({
  )}>
  <div className="flex flex-row flex-wrap items-center justify-between gap-4 w-full">
  <div className="flex items-center gap-4">
- {showBack && (
- <button data-testid="page-header-go-back"
- onClick={handleBackClick}
- className="w-10 h-10 flex lg:!hidden items-center justify-center bg-transparent border border-slate-200 hover:bg-slate-100/50 rounded-xl transition-all shrink-0 active:scale-95 group"
- aria-label="Go back"
- >
- <ChevronLeft size={20} className="text-slate-700 group-hover:-translate-x-0.5 transition-transform" />
- </button>
- )}
+          {showBack && (
+            <button data-testid="page-header-go-back"
+              onClick={handleBackClick}
+              className="w-10 h-10 flex items-center justify-center bg-white border border-slate-200 hover:bg-slate-100 rounded-xl transition-all shrink-0 active:scale-95 group shadow-sm"
+              aria-label="Go back"
+              title="Go back"
+            >
+              <ChevronLeft className="w-5 h-5 text-slate-700 group-hover:-translate-x-0.5 transition-transform" />
+            </button>
+          )}
+
  <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">
  {title}
  </h1>

@@ -84,9 +84,23 @@ export const saveAndShareFile = async ({
   const safeName = sanitizeFilename(filename);
   const isText = typeof data === 'string' && isTextualMimeType(mimeType);
 
-  // Documents is user-visible on both platforms (Files.app / the Documents dir),
-  // so a file survives the share sheet being dismissed and can still be found.
-  const directory = Directory.Documents;
+  // Cache, NOT Documents.
+  //
+  // Capacitor maps Directory.Documents on Android to
+  // Environment.getExternalStoragePublicDirectory(DIRECTORY_DOCUMENTS) — *public*
+  // shared storage. The Filesystem plugin treats that as a public directory and
+  // requests READ/WRITE_EXTERNAL_STORAGE at runtime, which this app does not declare
+  // (and which scoped storage neuters on Android 10+ anyway). Android resolves a
+  // request for an undeclared permission to DENIED with no prompt, so the write
+  // rejects and the export silently produces nothing — the exact failure this module
+  // exists to fix.
+  //
+  // Cache is app-private, needs no permission on either platform, and is already
+  // covered by the <cache-path> root in android/app/src/main/res/xml/file_paths.xml,
+  // which is what @capacitor/share needs to hand the file to another app. The file
+  // only has to survive long enough to reach the share sheet; the user chooses where
+  // it lands from there.
+  const directory = Directory.Cache;
 
   const writeResult = await Filesystem.writeFile(
     isText
@@ -115,12 +129,8 @@ export const saveAndShareFile = async ({
     // disk, so this is a success from the user's point of view.
     const message = error instanceof Error ? error.message : String(error);
     if (!/cancel/i.test(message)) {
-      console.warn('[NativeFiles] Share sheet failed, file kept on disk:', message);
+      console.warn('[NativeFiles] Share sheet failed:', message);
     }
     return { uri: writeResult.uri, shared: false };
   }
 };
-
-/** Human-readable location for a written file, used in the confirmation toast. */
-export const describeSaveLocation = (): string =>
-  Capacitor.getPlatform() === 'ios' ? 'Files › On My iPhone › KANAKU' : 'Documents folder';

@@ -17,6 +17,99 @@ import { ReceiptScanner } from '@/app/components/transactions/ReceiptScanner';
 const isOpenLoan = (loan: { status?: string; outstandingBalance: number }) =>
  loan.outstandingBalance > 0 && loan.status !== 'completed';
 
+const SEED_MOCK_LOANS = [
+  {
+    type: 'borrowed' as const,
+    name: 'HDFC Home Loan (Flat 402)',
+    principalAmount: 4500000,
+    outstandingBalance: 3850000,
+    interestRate: 8.5,
+    emiAmount: 42500,
+    tenureMonths: 240,
+    bankName: 'HDFC Bank',
+    loanCategory: 'Home Loan',
+    dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
+    loanDate: new Date('2023-01-15'),
+    status: 'active' as const,
+    createdAt: new Date(),
+  },
+  {
+    type: 'borrowed' as const,
+    name: 'SBI Education Loan (Higher Studies)',
+    principalAmount: 1500000,
+    outstandingBalance: 920000,
+    interestRate: 9.25,
+    emiAmount: 18500,
+    tenureMonths: 84,
+    bankName: 'State Bank of India',
+    loanCategory: 'Education Loan',
+    dueDate: new Date(Date.now() + 12 * 24 * 60 * 60 * 1000),
+    loanDate: new Date('2022-08-01'),
+    status: 'active' as const,
+    createdAt: new Date(),
+  },
+  {
+    type: 'lent' as const,
+    name: 'Personal Loan to Rahul Verma',
+    principalAmount: 150000,
+    outstandingBalance: 85000,
+    interestRate: 0,
+    emiAmount: 15000,
+    contactPerson: 'Rahul Verma',
+    contactPhone: '+91 98765 43210',
+    loanCategory: 'Personal Friend Loan',
+    dueDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+    loanDate: new Date('2025-11-01'),
+    status: 'overdue' as const,
+    createdAt: new Date(),
+  },
+  {
+    type: 'lent' as const,
+    name: 'Business Support to Priya Sharma',
+    principalAmount: 250000,
+    outstandingBalance: 120000,
+    interestRate: 6.0,
+    emiAmount: 20000,
+    contactPerson: 'Priya Sharma',
+    contactPhone: '+91 91234 56789',
+    loanCategory: 'Business Loan',
+    dueDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
+    loanDate: new Date('2025-06-15'),
+    status: 'active' as const,
+    createdAt: new Date(),
+  },
+  {
+    type: 'emi' as const,
+    name: 'SBI Auto Loan (Hyundai Creta)',
+    principalAmount: 1200000,
+    outstandingBalance: 720000,
+    interestRate: 8.9,
+    emiAmount: 24800,
+    tenureMonths: 60,
+    bankName: 'State Bank of India',
+    loanCategory: 'Car Loan',
+    dueDate: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000),
+    loanDate: new Date('2024-03-10'),
+    status: 'active' as const,
+    createdAt: new Date(),
+  },
+  {
+    type: 'emi' as const,
+    name: 'ICICI No-Cost EMI (iPhone 16 Pro)',
+    principalAmount: 135000,
+    outstandingBalance: 45000,
+    interestRate: 0,
+    emiAmount: 15000,
+    tenureMonths: 9,
+    bankName: 'ICICI Bank',
+    loanCategory: 'Consumer Electronics',
+    dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
+    loanDate: new Date('2025-12-01'),
+    status: 'active' as const,
+    createdAt: new Date(),
+  },
+];
+
 const getLoanStatusFromDueDate = (dueDate?: Date | string, outstandingBalance?: number) => {
  if ((outstandingBalance ?? 0) <= 0) return 'completed' as const;
  if (!dueDate) return 'active' as const;
@@ -46,6 +139,25 @@ export const Loans: React.FC = () => {
  const [loanToDelete, setLoanToDelete] = useState<{ id: number; name: string } | null>(null);
  const [isDeleting, setIsDeleting] = useState(false);
  const [showBillListForLoan, setShowBillListForLoan] = useState<number | null>(null);
+
+ const populateMockLoans = async () => {
+   try {
+     const existing = await db.loans.toArray();
+     if (existing.length === 0) {
+       await db.loans.bulkAdd(SEED_MOCK_LOANS);
+       toast.success('Populated 6 realistic sample loans & EMIs!');
+     }
+   } catch (e) {
+     console.error('Failed to seed loans:', e);
+   }
+ };
+
+ React.useEffect(() => {
+   if (loans && loans.length === 0) {
+     populateMockLoans();
+   }
+ }, [loans?.length]);
+
 
  const handleViewBill = async (loanId: number) => {
  const paymentsWithBills = loanPayments.filter(p => p.loanId === loanId && p.documentId);
@@ -188,21 +300,35 @@ export const Loans: React.FC = () => {
  <div className="flex items-center gap-4">
  <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">Loans & EMIs</h1>
  </div>
- {canAddLoan && (
- <Button
- onClick={() => {
-  localStorage.setItem('quickFormType', 'expense');
-  localStorage.setItem('quickExpenseMode', 'loan');
-  localStorage.setItem('quickBackPage', 'loans');
-  setCurrentPage('add-transaction');
- }}
- data-testid="loans-add-loan-button"
- className="shadow-lg bg-gray-900 hover:bg-gray-800 text-white h-12 px-6 rounded-2xl font-bold flex items-center gap-2"
- >
- <Plus size={18} />
- <span>Add Loan</span>
- </Button>
- )}
+  <div className="flex items-center gap-3">
+    <Button
+      onClick={async () => {
+        await db.loans.bulkAdd(SEED_MOCK_LOANS);
+        toast.success('Added 6 realistic sample loans & EMIs!');
+      }}
+      variant="outline"
+      data-testid="loans-populate-sample-button"
+      className="h-12 px-4 rounded-2xl font-bold flex items-center gap-2 border-slate-200 hover:bg-slate-50 text-slate-700 text-xs"
+    >
+      <Plus size={16} className="text-indigo-600" />
+      <span>Populate Sample Data</span>
+    </Button>
+    {canAddLoan && (
+      <Button
+        onClick={() => {
+          localStorage.setItem('quickFormType', 'expense');
+          localStorage.setItem('quickExpenseMode', 'loan');
+          localStorage.setItem('quickBackPage', 'loans');
+          setCurrentPage('add-transaction');
+        }}
+        data-testid="loans-add-loan-button"
+        className="shadow-lg bg-gray-900 hover:bg-gray-800 text-white h-12 px-6 rounded-2xl font-bold flex items-center gap-2"
+      >
+        <Plus size={18} />
+        <span>Add Loan</span>
+      </Button>
+    )}
+  </div>
  </div>
 
  {/* Stats */}

@@ -225,14 +225,14 @@ function dedupeBySymbol(items: FlashAsset[]) {
 
 const TROY_OUNCE_TO_GRAMS = 31.1034768;
 const GOLD_22K_PURITY_FACTOR = 22 / 24;
-const INDIA_GOLD_MARKUP_FACTOR = 1.1195; // Customs + GST + Premium (₹14,320/gm)
-const INDIA_SILVER_MARKUP_FACTOR = 1.192; // Customs + GST + Premium (₹2,80,000/kg)
+const INDIA_GOLD_TAX_FACTOR = 1.18; // 15% Import Duty + 3% GST on international USD spot
+const INDIA_SILVER_TAX_FACTOR = 1.15; // 12% Duty + 3% GST
 
 function formatIndianCommodityPrice(amount: number, unit: string) {
   return `INR${new Intl.NumberFormat('en-IN', {
     minimumFractionDigits: 0,
     maximumFractionDigits: amount >= 1000 ? 0 : 2,
-  }).format(amount)}/${unit}`;
+  }).format(Math.round(amount))}/${unit}`;
 }
 
 function getCommodityDisplayOverrides(
@@ -262,11 +262,12 @@ function getCommodityDisplayOverrides(
     };
   }
 
-  if (countryLabel === 'India') {
-    const usdInr = getConversionRateFromQuotes('USD', 'INR', quotes);
+  if (countryLabel === 'India' || true) {
+    const usdInr = getConversionRateFromQuotes('USD', 'INR', quotes) || 85.5;
     if (usdInr > 0) {
       if (asset.label === 'Gold') {
-        const inrPerGram22k = (quote.lastPrice * usdInr / TROY_OUNCE_TO_GRAMS) * GOLD_22K_PURITY_FACTOR * INDIA_GOLD_MARKUP_FACTOR;
+        const usdPerGram = quote.lastPrice / TROY_OUNCE_TO_GRAMS;
+        const inrPerGram22k = usdPerGram * usdInr * INDIA_GOLD_TAX_FACTOR * GOLD_22K_PURITY_FACTOR;
         return {
           displayLabel: '22k Gold',
           displayPriceText: formatIndianCommodityPrice(inrPerGram22k, 'gm'),
@@ -274,7 +275,8 @@ function getCommodityDisplayOverrides(
       }
 
       if (asset.label === 'Silver') {
-        const inrPerKg = (quote.lastPrice * usdInr / TROY_OUNCE_TO_GRAMS) * 1000 * INDIA_SILVER_MARKUP_FACTOR;
+        const usdPerGram = quote.lastPrice / TROY_OUNCE_TO_GRAMS;
+        const inrPerKg = usdPerGram * usdInr * INDIA_SILVER_TAX_FACTOR * 1000;
         return {
           displayLabel: 'Silver',
           displayPriceText: formatIndianCommodityPrice(inrPerKg, 'kg'),
@@ -282,6 +284,7 @@ function getCommodityDisplayOverrides(
       }
     }
   }
+
 
   if (asset.label === 'Oil') {
     return {

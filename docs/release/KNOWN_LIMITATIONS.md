@@ -22,9 +22,10 @@ items — lives in [MOBILE_RELEASE_GUIDE.md](./MOBILE_RELEASE_GUIDE.md). In shor
   `google-services.json`, an Apple APNs key, and `FIREBASE_*` server env. The backend
   pipeline (outbox, FCM sender, retry, dead-token cleanup) already existed; the client
   registration that was missing is now in place.
-- **iOS cannot be submitted yet**: the app icon is still the Capacitor placeholder (no
-  usable 1024×1024 source exists in the repo) and no Apple signing secrets are
-  configured. CI builds the simulator target only.
+- **iOS cannot be submitted yet** — but only for want of an Apple account. The app icon
+  and splash are now generated from `logo.svg` (`node scripts/gen-app-icons.mjs`); what
+  remains is Apple signing secrets (team id, distribution certificate, provisioning
+  profile) and the export-compliance declaration. CI builds the simulator target only.
 - **The Android toolchain is pinned** to AGP 8.13.0 / Gradle 8.14.3 / JDK 21 and must not
   be bumped ahead of Capacitor 8 — newer AGP fails to configure every plugin module.
 

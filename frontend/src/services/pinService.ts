@@ -36,11 +36,20 @@ const PIN_NOT_SET_MESSAGE = /pin not set|no pin key backup found/i;
 const PIN_SERVICE_FAILURE_MESSAGE = /(internal server error|http 5\d\d|network error|failed to fetch|request timeout|pin request failed)/i;
 
 /**
- * Hard deadline for a single PIN request. Verification is user-initiated and worth
- * waiting on a little longer than a background poll, but not indefinitely — the PIN
- * screen is the first thing a returning user sees.
+ * Hard deadline for a background PIN request (status, key backup). These run while
+ * the keypad is already interactive, so cutting them short costs nothing — the
+ * screen simply keeps its optimistic local state.
  */
 const PIN_REQUEST_TIMEOUT_MS = 8000;
+
+/**
+ * Deadline for a request the user is actively waiting on (verify, create, update).
+ *
+ * Deliberately much longer than the background budget: the server bcrypts the PIN
+ * and may be cold-starting, and a premature abort here reads to the user as "my
+ * correct PIN was rejected" — far worse than a few extra seconds of spinner.
+ */
+const PIN_MUTATION_TIMEOUT_MS = 25000;
 const PIN_STATUS_CACHE_TTL_MS = 5_000;
 const PIN_STATUS_RATE_LIMIT_BACKOFF_MS = 30_000;
 
@@ -156,8 +165,9 @@ class PinService {
     url: string,
     init: RequestInit,
     headers: Record<string, string>,
+    timeoutMs = PIN_REQUEST_TIMEOUT_MS,
   ): Promise<Response> {
-    const response = await this.fetchWithTimeout(url, { ...init, headers });
+    const response = await this.fetchWithTimeout(url, { ...init, headers }, timeoutMs);
     // Only an auth-layer rejection (expired/invalid token) is recoverable by a
     // refresh. A route-level PIN rejection (wrong PIN) is also a 401 but must
     // NOT trigger a refresh — refreshing on every wrong PIN is wasteful and, on
@@ -172,7 +182,7 @@ class PinService {
     return this.fetchWithTimeout(url, {
       ...init,
       headers: { ...headers, Authorization: `Bearer ${newToken}` },
-    });
+    }, timeoutMs);
   }
 
   /**
@@ -194,9 +204,31 @@ class PinService {
     timeoutMs = PIN_REQUEST_TIMEOUT_MS,
   ): Promise<Response> {
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    let timedOut = false;
+    const timer = setTimeout(() => {
+      timedOut = true;
+      controller.abort();
+    }, timeoutMs);
+
     try {
       return await fetch(url, { ...init, signal: controller.signal });
+    } catch (error) {
+      // Translate the abort into a classifiable failure.
+      //
+      // The raw rejection is "signal is aborted without reason", which is both
+      // meaningless to a user AND — critically — does not match
+      // PIN_SERVICE_FAILURE_MESSAGE. That made isPinServiceUnavailable() return
+      // false, so a timeout skipped the graceful offline-fallback branch and fell
+      // through to the generic rejection path, which surfaced the raw string on the
+      // unlock screen as if it were a reason the PIN was wrong.
+      //
+      // "request timeout" is matched by that regex, so the existing degraded-service
+      // handling now takes over: verify falls back to the local hash check, and the
+      // user sees "Unable to verify PIN right now" instead of abort internals.
+      if (timedOut || (error instanceof Error && error.name === 'AbortError')) {
+        throw new Error(`PIN service request timeout after ${timeoutMs}ms`);
+      }
+      throw error;
     } finally {
       clearTimeout(timer);
     }
@@ -351,7 +383,7 @@ class PinService {
           const response = await this.fetchPin(buildApiUrl(apiBase, `/pin/${path}`), {
             method: 'POST',
             body: JSON.stringify(body),
-          }, headers);
+          }, headers, PIN_MUTATION_TIMEOUT_MS);
 
           if (!response.ok && index < apiBases.length - 1 && shouldRetryWithLocalApiFallback(response.status)) {
             markOptionalBackendUnavailable(apiBase);

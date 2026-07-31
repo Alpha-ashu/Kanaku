@@ -44,7 +44,21 @@ export function normalizeCurrencyCode(value?: string, fallback = 'INR') {
   return fallback;
 }
 
-export function getCurrencySymbol(codeOrSymbol?: string, fallback = 'USD') {
+/**
+ * Resolves a currency code or symbol to its display symbol.
+ *
+ * The fallback is INR, matching `normalizeCurrencyCode` above and
+ * `DEFAULT_APP_CURRENCY` in lib/userPreferences.ts. It previously defaulted to USD
+ * while its own sibling defaulted to INR — so any caller passing an empty or
+ * undefined currency rendered `$` on an India-first app. That is what put dollar
+ * signs on investments: `investmentUtils.getCurrencySymbol(assetCurrency)` hits
+ * this path for any holding stored before `assetCurrency` existed, and
+ * `WealthVaultDashboard` hits it on first paint before preferences have loaded.
+ *
+ * Pass an explicit fallback where a non-INR default is genuinely wanted; nothing
+ * in the app currently does.
+ */
+export function getCurrencySymbol(codeOrSymbol?: string, fallback = 'INR') {
   const code = normalizeCurrencyCode(codeOrSymbol, fallback);
   return CURRENCY_SYMBOLS[code] ?? code;
 }

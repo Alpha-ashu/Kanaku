@@ -107,7 +107,13 @@ export const downloadFile = async ({
         mimeType,
         data,
         shareTitle,
-        share: preferShare,
+        // `preferShare` is deliberately ignored on native. It means "prefer the
+        // share sheet over a browser download", and there is no browser download
+        // here — the file is written to app-private cache the user cannot browse to,
+        // so skipping the share sheet would hand them nothing at all. Reports.tsx
+        // passes preferShare:false, which is right on web and would silently produce
+        // an invisible file on device.
+        share: true,
       });
       return result.shared ? 'shared' : 'downloaded';
     } catch (error) {

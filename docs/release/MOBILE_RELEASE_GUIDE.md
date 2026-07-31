@@ -241,15 +241,28 @@ certificate and a provisioning profile — none of which exist as repo secrets y
 
 ## 6. Outstanding before an App Store / Play submission
 
+Everything here needs something that does not exist in this repository — a credential,
+a paid account, or a legal decision. Nothing below is blocked on code.
+
 | # | Item | Platform | Owner action |
 | --- | --- | --- | --- |
-| B-1 | **App icon is the Capacitor placeholder** | iOS | Supply a 1024×1024 **PNG, no alpha**, at `ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png`. The largest brand raster in the repo is 192×192 (`android/.../mipmap-xxxhdpi/ic_launcher.png`); `play-store-assets/icon_512x512.png` is **actually a JPEG** despite its name, so neither is usable as-is. |
 | B-2 | **Apple signing secrets** | iOS | Add team id, distribution cert and provisioning profile; then extend `build-ios.yml` with archive + export. |
 | B-3 | `ITSAppUsesNonExemptEncryption` not declared | iOS | Deliberately omitted — it is a legal export-compliance declaration. Set it in `Info.plist` once counsel confirms, or answer the prompt per upload. |
-| B-4 | Splash assets are Capacitor defaults | iOS | Replace `Assets.xcassets/Splash.imageset/*`. |
-| B-5 | Play listing AAB is stale | Android | The v8 AAB previously committed to the repo predates the plugin fix and is functionally broken on device. Rebuild from CI before the next upload. |
 | B-6 | **Firebase / APNs credentials for push** | Both | Push is fully wired end-to-end but delivers nothing until: `android/app/google-services.json` (Firebase console), an APNs key + the Push Notifications capability on the Apple team, and `FIREBASE_PROJECT_ID` / `FIREBASE_PRIVATE_KEY` / `FIREBASE_CLIENT_EMAIL` on the server. See §7.4. |
-| B-7 | iOS voice needs a CocoaPods project | iOS | `@capacitor-community/speech-recognition` ships no `Package.swift`, so it does not link into the SPM iOS project. See §7.1. |
+| B-7 | iOS voice needs a CocoaPods project | iOS | `@capacitor-community/speech-recognition` ships no `Package.swift`, so it does not link into the SPM iOS project. Not a credential problem, but changing it is an architectural decision — see §7.1. |
+
+### Closed on 2026-07-31
+
+| # | Item | Resolution |
+| --- | --- | --- |
+| B-1 | App icon was the Capacitor placeholder | Generated from vector: `node scripts/gen-app-icons.mjs` rasterises `play-store-assets/logo.svg` to a 1024×1024 opaque PNG. No usable raster source existed — the largest brand PNG was 192×192 and `play-store-assets/icon_512x512.png` is a JPEG despite its name, so both would have upscaled badly. |
+| B-4 | Splash assets were Capacitor defaults | Same generator, 2732×2732 brand splash for all three imageset slots. |
+| B-5 | Play listing AAB was stale | The two committed v8 AABs (byte-identical, predating the plugin fix) were removed and `*.aab` git-ignored. CI now uploads per-flavor artifacts; a fresh pair is built by `npm run mobile:aab:play` / `:full`. |
+
+**App icons are generated, not hand-placed.** Re-run `node scripts/gen-app-icons.mjs`
+after any change to `logo.svg`. The script asserts the output is a 3-channel opaque PNG
+at the exact expected size — App Store Connect rejects an icon carrying an alpha channel
+even when every pixel is opaque, and `sharp.flatten()` alone does not drop the channel.
 
 ---
 
@@ -277,8 +290,18 @@ plugins on iOS. Two ways out, both an owner decision:
    (needs macOS + `pod install`, and re-applying the Info.plist / entitlements /
    AppDelegate edits). Links all 13, but CocoaPods is the legacy path in the Capacitor
    ecosystem.
-2. **Wait for the plugin to add SPM support**, or vendor a `Package.swift` for it via
-   `patch-package` (this repo already has patch-package wired).
+2. **Wait for the plugin to add SPM support**, or vendor a `Package.swift` for it.
+
+Option 2 was deliberately not attempted here. It means restructuring a third-party
+plugin's iOS sources (`ios/Plugin/` → the SPM layout) and authoring a manifest for it,
+where the result has to survive both `npm install` *and* `cap sync` regenerating
+`Package.swift`. None of it can be compiled from a non-macOS machine, and a mistake does
+not degrade voice — it breaks the **entire iOS build**. That is a worse outcome than the
+current one, where voice falls back to the keyboard on iOS and everything else works.
+(An earlier revision of this guide claimed patch-package was already wired in this repo.
+It was not: the package was never installed, `patches/` did not exist, and the
+`scripts/postinstall.js` that referenced it was itself unreferenced and looked in the
+wrong directory. That dead scaffolding has been removed.)
 
 Until then the adapter degrades exactly as before on iOS — `available()` returns false and
 the UI offers the keyboard. No regression, and no code change needed when it does land.

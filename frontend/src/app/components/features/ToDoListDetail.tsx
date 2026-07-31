@@ -247,12 +247,14 @@ export const ToDoListDetail: React.FC = () => {
             <button
               type="button"
               onClick={() => setCurrentPage('todo-lists')}
-              className="lg:!hidden p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all"
-              title="Back"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl font-bold text-xs transition-all active:scale-95 cursor-pointer"
+              title="Back to To-Do Lists"
               data-testid="tododetail-back-button"
             >
-              <ArrowLeft size={18} />
+              <ArrowLeft size={16} />
+              <span>Back</span>
             </button>
+
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-base font-black text-slate-900 leading-none">{toDoList.name}</h1>

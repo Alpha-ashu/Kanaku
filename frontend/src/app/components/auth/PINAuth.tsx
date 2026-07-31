@@ -365,14 +365,19 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
     }
   };
 
- // Auto-submit when 6 digits entered
+ // Auto-submit when 6 digits entered.
+ //
+ // Suppressed while the biometric enrolment offer is up: that unlock is already
+ // authorised and merely deferred, but the offscreen PIN input keeps focus behind
+ // the modal, so a stray keystroke would edit `pin`, re-fire this effect and run a
+ // second verification over the top of the pending one.
  useEffect(() => {
- if (pin.length === 6 && !isSubmitting) {
+ if (pin.length === 6 && !isSubmitting && !enrolOffer) {
  const t = setTimeout(handleSubmit, 120);
  return () => clearTimeout(t);
  }
  // eslint-disable-next-line react-hooks/exhaustive-deps
- }, [pin]);
+ }, [pin, enrolOffer]);
 
   // Submit logic 
   const handleSubmit = async () => {

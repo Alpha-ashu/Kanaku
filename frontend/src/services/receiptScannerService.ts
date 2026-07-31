@@ -99,6 +99,82 @@ const normalizeForMatching = (value: string) =>
 
 const countMatches = (value: string, pattern: RegExp) => value.match(pattern)?.length || 0;
 
+/**
+ * Repairs the spacing artefact thermal-receipt OCR introduces around a decimal
+ * separator: "1,050 . 00" is read where "1,050.00" was printed.
+ *
+ * Without this the separator is orphaned, `1,050` and `00` are seen as two
+ * separate numbers, and the smaller one can win the total — a 21x under-read
+ * measured on `TOTAL  1,050 . 00`, which parsed as 50.
+ *
+ * Deliberately narrow: only a separator BETWEEN digits with exactly two trailing
+ * digits is joined, so "Table 4 . Order 12" is left alone.
+ */
+const repairSpacedDecimals = (value: string) => value.replace(/(\d)\s+([.,])\s*(\d{2})(?!\d)/g, '$1$2$3');
+
+/**
+ * Resolves a money token to a number, choosing the decimal separator by
+ * convention rather than assuming commas are always thousands separators.
+ *
+ * Previously every comma was stripped, so the European "EUR 12,50" became 1250 —
+ * a 100x over-read on any receipt using that convention.
+ *
+ * Rules, in order:
+ *   both separators present → the LAST one is the decimal ("1.234,56", "1,234.56")
+ *   one comma, exactly 3 trailing digits → thousands ("1,050" = 1050)
+ *   one comma, 1-2 trailing digits → decimal ("12,50" = 12.5)
+ *   otherwise → dot is the decimal, commas are grouping
+ */
+const parseMoneyToken = (token: string): number => {
+  const cleaned = token
+    .replace(/(?:rs\.?|inr|eur|gbp|usd)/gi, '')
+    .replace(/[₹$€£()\s]/g, '');
+
+  if (!cleaned) return Number.NaN;
+
+  const lastDot = cleaned.lastIndexOf('.');
+  const lastComma = cleaned.lastIndexOf(',');
+
+  let normalized: string;
+  if (lastDot >= 0 && lastComma >= 0) {
+    const decimalAt = Math.max(lastDot, lastComma);
+    normalized = `${cleaned.slice(0, decimalAt).replace(/[.,]/g, '')}.${cleaned.slice(decimalAt + 1)}`;
+  } else if (lastComma >= 0) {
+    const trailing = cleaned.length - lastComma - 1;
+    const singleComma = cleaned.indexOf(',') === lastComma;
+    normalized = singleComma && trailing > 0 && trailing < 3
+      ? `${cleaned.slice(0, lastComma)}.${cleaned.slice(lastComma + 1)}`
+      : cleaned.replace(/,/g, '');
+  } else {
+    normalized = cleaned;
+  }
+
+  return Number.parseFloat(normalized);
+};
+
+/**
+ * Undoes the letter-for-digit substitutions OCR makes on receipt totals —
+ * O→0, l/I→1, S→5, B→8, Z→2. `TOTAL: 1O5O.OO` otherwise yields no number at all.
+ *
+ * Applied ONLY as a retry on a line already known to carry a money label, and only
+ * to tokens made purely of digits, separators and the confusable letters, with at
+ * least one genuine digit present. That keeps "B2B", "SOS" and ordinary words out
+ * of reach — the repair can never invent a number from a word.
+ */
+const OCR_DIGIT_SUBSTITUTIONS: Record<string, string> = {
+  O: '0', o: '0', D: '0', Q: '0',
+  l: '1', I: '1', i: '1', '|': '1',
+  S: '5', s: '5',
+  B: '8', Z: '2', z: '2',
+};
+
+const repairOcrDigitsInMoneyLine = (line: string) =>
+  line.replace(/[\dOoDQlIi|SsBZz][\dOoDQlIi|SsBZz.,]{1,}/g, (token) => {
+    if (!/\d/.test(token)) return token;
+    const repaired = token.replace(/[OoDQlIi|SsBZz]/g, (ch) => OCR_DIGIT_SUBSTITUTIONS[ch] ?? ch);
+    return /^\d[\d.,]*$/.test(repaired) ? repaired : token;
+  });
+
 const hasSummaryBoundary = (line: string) => {
   const normalizedLine = normalizeForMatching(line);
   return (
@@ -133,32 +209,44 @@ const isHeaderOrDateLine = (line: string) => {
   return headerMetadataKeywords.test(normalizedLine) || headerMetadataKeywords.test(line);
 };
 
+const MONEY_TOKEN_PATTERN = /(?:rs\.?|inr|INR|EUR|GBP|USD|[₹$€£])\s*\(?\s*\d[\d,.]*\s*\)?|\b\d[\d,]*\.\d{1,2}\b|\b\d[\d.]*,\d{1,2}\b|\b\d{1,5}\b/gi;
+const CURRENCY_MARKER_PATTERN = /rs\.?|inr|eur|gbp|usd|[₹$€£]/i;
+
 const extractAmounts = (text: string, options?: { allowLooseIntegers?: boolean }) => {
   const allowLooseIntegers = options?.allowLooseIntegers ?? false;
-  const matches = text.match(/(?:rs\.?|inr|INR|EUR|GBP|\$)\s*\(?\s*\d[\d,]*(?:\.\d{1,2})?\s*\)?|\b\d[\d,]*\.\d{1,2}\b|\b\d{1,5}\b/gi) || [];
+  // Rejoin OCR-split decimals before tokenising, or "1,050 . 00" tokenises as two
+  // unrelated numbers and the fragment can outrank the real total.
+  const matches = repairSpacedDecimals(text).match(MONEY_TOKEN_PATTERN) || [];
 
   return matches
     .map((match) => {
-      const hasCurrencySymbol = /rs\.?|inr|INR|EUR|GBP|\$/i.test(match);
-      const hasDecimalOrGrouping = /[\.,]/.test(match);
-      const normalized = match
-        .replace(/rs\.?|inr|INR|EUR|GBP|\$/gi, '')
-        .replace(/[()\s]/g, '')
-        .replace(/,/g, '');
+      const hasCurrencySymbol = CURRENCY_MARKER_PATTERN.test(match);
+      const hasDecimalOrGrouping = /[.,]/.test(match);
 
-      if (!normalized) return Number.NaN;
       if (!hasCurrencySymbol && !hasDecimalOrGrouping && !allowLooseIntegers) {
         return Number.NaN;
       }
 
-      if (!hasCurrencySymbol && !hasDecimalOrGrouping && !/^\d{1,4}$/.test(normalized)) {
+      const value = parseMoneyToken(match);
+      if (!Number.isFinite(value)) return Number.NaN;
+
+      // A bare integer with no currency marker is weak evidence; cap its length so
+      // GSTIN/phone/invoice digit runs cannot masquerade as money.
+      if (!hasCurrencySymbol && !hasDecimalOrGrouping && !/^\d{1,4}$/.test(match.trim())) {
         return Number.NaN;
       }
 
-      return Number.parseFloat(normalized);
+      return value;
     })
     .filter((value) => Number.isFinite(value) && value > 0 && value < 1000000);
 };
+
+/**
+ * extractAmounts with the OCR letter-for-digit repair applied. Used as a second
+ * pass on money-labelled lines only, so a clean receipt never pays for it.
+ */
+const extractAmountsWithOcrRepair = (text: string, options?: { allowLooseIntegers?: boolean }) =>
+  extractAmounts(repairOcrDigitsInMoneyLine(text), options);
 
 const isReasonableReceiptDate = (date: Date) => {
   if (Number.isNaN(date.getTime())) return false;
@@ -275,7 +363,17 @@ const extractSectionAmount = (lines: string[], patterns: RegExp[], lineGuard?: (
   for (const line of lines) {
     if (!patterns.some((pattern) => pattern.test(line))) continue;
     if (lineGuard && !lineGuard(line)) continue;
-    const amounts = extractAmounts(line, { allowLooseIntegers: true });
+
+    let amounts = extractAmounts(line, { allowLooseIntegers: true });
+
+    // The line is labelled as money but yielded no number — the usual cause is OCR
+    // reading letters for digits ("TOTAL: 1O5O.OO"). Retry with the substitution
+    // repair. Strict extraction still runs first, so a clean receipt is unaffected
+    // and this can only add a reading where there was none.
+    if (amounts.length === 0) {
+      amounts = extractAmountsWithOcrRepair(line, { allowLooseIntegers: true });
+    }
+
     if (amounts.length === 0) continue;
     best = Math.max(best, Math.max(...amounts));
   }
@@ -463,6 +561,20 @@ const extractBestTotalAmount = (lines: string[]) => {
     const nextAmounts = extractAmounts(nextLine, { allowLooseIntegers: true });
     if (nextAmounts.length > 0) {
       candidates.push({ index: index + 1, amount: Math.max(...nextAmounts) });
+      return;
+    }
+
+    // Still nothing on a line that is definitely a total — retry both with the OCR
+    // letter-for-digit repair. Last resort, so clean receipts never reach it.
+    const repaired = extractAmountsWithOcrRepair(line, { allowLooseIntegers: true });
+    if (repaired.length > 0) {
+      candidates.push({ index, amount: Math.max(...repaired) });
+      return;
+    }
+
+    const repairedNext = extractAmountsWithOcrRepair(nextLine, { allowLooseIntegers: true });
+    if (repairedNext.length > 0) {
+      candidates.push({ index: index + 1, amount: Math.max(...repairedNext) });
     }
   });
 

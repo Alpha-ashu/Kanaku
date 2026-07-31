@@ -184,8 +184,20 @@ function useVoiceEngine() {
   const [state, dispatch] = useReducer(reducer, init);
   const recRef = useRef<SpeechSession | null>(null);
   const transcriptRef = useRef('');
+  // Guards against processing the same utterance twice.
+  //
+  // Stopping fires two completion paths: the engine's own end event (onEnd below)
+  // and stopListening's 300ms safety-net timer. Both call processTranscript, so a
+  // single "stop" used to run the parse twice — two AI round-trips against a Gemini
+  // free tier that already 429s easily, and two Command Center opens over one
+  // utterance. Racy on web (whichever fired first); deterministic on native, where
+  // the adapter always emits onEnd.
+  const processedRef = useRef(false);
 
   const processTranscript = useCallback(async (text: string) => {
+    if (processedRef.current) return;
+    processedRef.current = true;
+
     dispatch({ type: 'START_PROCESSING' });
     try {
       const res = await processVoiceTranscript(text);
@@ -232,6 +244,8 @@ function useVoiceEngine() {
 
     dispatch({ type: 'START_LISTENING' });
     transcriptRef.current = '';
+    // New utterance — re-arm the once-only guard.
+    processedRef.current = false;
 
     const session = await startSpeechRecognition({
       onPartial: (text) => dispatch({ type: 'SET_INTERIM', payload: text }),
@@ -278,6 +292,10 @@ function useVoiceEngine() {
     dispatch({ type: 'SET_TRANSCRIPT', payload: text });
     dispatch({ type: 'TOGGLE_MANUAL', payload: false });
     dispatch({ type: 'CLEAR_ERROR' });
+    // A deliberate submit is always a fresh utterance — re-arm the guard, or typing
+    // after a voice attempt (the exact fallback path when recognition fails) would
+    // be silently swallowed.
+    processedRef.current = false;
     processTranscript(text);
   }, [state.manualInput, processTranscript]);
 

@@ -14,7 +14,26 @@ import * as pdfjsLib from 'pdfjs-dist/build/pdf.mjs';
 import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
-const STANDARD_FONT_DATA_URL = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsLib.version}/standard_fonts/`;
+
+/**
+ * pdf.js standard-font data, served from our own origin.
+ *
+ * This pointed at `https://cdn.jsdelivr.net/npm/pdfjs-dist@<version>/standard_fonts/`,
+ * which is wrong for this app on three counts:
+ *
+ *  1. **Offline-first.** Statement import is a core offline flow; a PDF that relies on
+ *     the standard 14 fonts could not resolve them without a network round-trip, and
+ *     pdf.js then falls back to substitute metrics — which shifts glyph positions and
+ *     corrupts the column alignment the row parser depends on.
+ *  2. **Native.** The WebView runs on `https://localhost`, so this is a cross-origin
+ *     fetch that a tightened CSP blocks outright.
+ *  3. **Privacy.** A bank statement is the most sensitive document this app touches;
+ *     parsing one should not announce itself to a third-party CDN.
+ *
+ * The 16 font files are already bundled in `frontend/public/standard_fonts/` — they were
+ * simply not being used. BASE_URL keeps this correct under a non-root deploy base.
+ */
+const STANDARD_FONT_DATA_URL = `${import.meta.env.BASE_URL ?? '/'}standard_fonts/`;
 
 export interface ParsedTransaction {
   transaction_date: Date;
@@ -448,6 +467,9 @@ class StatementImportService {
         }
 
         transactions = await this.extractTransactionsFromText(rawText, options.userId);
+      } else if (file.type.startsWith('image/') || /\.(png|jpe?g|webp|bmp|tiff)$/i.test(file.name)) {
+        rawText = await this.extractImageTextWithOcr(file);
+        transactions = await this.extractTransactionsFromText(rawText, options.userId);
       } else if (file.type === 'text/csv' || file.name.toLowerCase().endsWith('.csv')) {
         rawText = await file.text();
         transactions = await this.extractTransactionsFromDelimitedText(rawText, options.userId);
@@ -459,6 +481,7 @@ class StatementImportService {
         rawText = spreadsheet.rawText;
         transactions = spreadsheet.transactions;
       }
+
 
       const statementBankName = documentIntelligenceService.detectBankName(rawText);
       const statementAccountNumber = documentIntelligenceService.detectAccountNumber(rawText);
@@ -866,6 +889,22 @@ class StatementImportService {
 
     return pageTexts.join('\n');
   }
+
+  private async extractImageTextWithOcr(file: File): Promise<string> {
+    const worker = await createWorker('eng');
+    try {
+      const imageUrl = URL.createObjectURL(file);
+      const result = await worker.recognize(imageUrl);
+      URL.revokeObjectURL(imageUrl);
+      return result.data.text || '';
+    } catch (err) {
+      console.warn('[StatementImport] Local image OCR failed:', err);
+      return '';
+    } finally {
+      await worker.terminate();
+    }
+  }
+
 
   private async extractTransactionsFromText(text: string, userId: string) {
     const rawLines = text.split(/\r?\n/).map(l => l.replace(/\s+/g, ' ').trim());
