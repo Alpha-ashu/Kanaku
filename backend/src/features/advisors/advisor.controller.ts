@@ -23,8 +23,21 @@ export const listAdvisors = async (req: AuthRequest, res: Response) => {
           select: { expertise: true, experienceYears: true, bio: true, organizationName: true, hourlyRate: true },
         },
         sessionsAsAdvisor: { where: { status: 'completed' }, select: { rating: true } },
+        _count: { select: { advisorFollowers: true } },
       },
     });
+
+    // The follow graph is per-caller; anonymous browsing simply has none.
+    const viewerId = req.user?.id;
+    const followedIds = viewerId
+      ? new Set(
+        (await prisma.advisorFollow.findMany({
+          where: { followerId: viewerId },
+          select: { advisorId: true },
+        })).map((follow) => follow.advisorId),
+      )
+      : new Set<string>();
+
     const enriched = advisors.map((a) => {
       const { sessionsAsAdvisor, ...rest } = a;
       const ratings = sessionsAsAdvisor.map((s: any) => s.rating).filter(Boolean);
@@ -40,6 +53,8 @@ export const listAdvisors = async (req: AuthRequest, res: Response) => {
         hourlyRate: rest.advisorApplication?.hourlyRate != null
           ? Number(rest.advisorApplication.hourlyRate)
           : null,
+        followersCount: rest._count.advisorFollowers,
+        isFollowing: followedIds.has(rest.id),
       };
     });
     res.json(enriched);

@@ -6,6 +6,7 @@ import { requireFeature } from '../../middleware/featureGate';
 import { uploadFields } from '../../middleware/upload';
 import { validateBody, validateParams } from '../../middleware/validate';
 import * as AdvisorController from './advisor.controller';
+import * as PostController from './post.controller';
 import {
   advisorIdParamSchema,
   documentParamSchema,
@@ -15,6 +16,7 @@ import {
   roleModeSchema,
   rateSessionSchema,
   rejectApplicationSchema,
+  createPostSchema,
 } from './advisor.validation';
 
 const router = Router();
@@ -54,6 +56,19 @@ router.get('/me/sessions', requireRole('advisor'), requireApproved, AdvisorContr
 
 // Client only
 router.put('/sessions/:id/rate', validateParams(advisorIdParamSchema), validateBody(rateSessionSchema), AdvisorController.rateSession);
+
+// ─── Advisor feed & follow graph ─────────────────────────────────────────────
+// Registered before the /:id catch-all below, or "posts" and "following" would
+// be read as advisor ids.
+router.get('/posts', requireFeature('bookAdvisor'), PostController.listPosts);
+router.post('/posts', requireRole('advisor'), requireApproved, validateBody(createPostSchema), PostController.createPost);
+router.delete('/posts/:id', requireRole('advisor'), requireApproved, validateParams(advisorIdParamSchema), PostController.deletePost);
+router.post('/posts/:id/like', requireFeature('bookAdvisor'), validateParams(advisorIdParamSchema), PostController.likePost);
+router.delete('/posts/:id/like', requireFeature('bookAdvisor'), validateParams(advisorIdParamSchema), PostController.unlikePost);
+
+router.get('/following', requireFeature('bookAdvisor'), PostController.listFollowing);
+router.post('/:id/follow', requireFeature('bookAdvisor'), validateParams(advisorIdParamSchema), PostController.followAdvisor);
+router.delete('/:id/follow', requireFeature('bookAdvisor'), validateParams(advisorIdParamSchema), PostController.unfollowAdvisor);
 
 // Admin / Manager — the verification queue is part of the Admin/Manager
 // platform, so it is also origin-gated (no-op until ADMIN_UI_HOSTS is set).

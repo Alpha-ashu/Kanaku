@@ -43,3 +43,11 @@ export const rateSessionSchema = z
 export const rejectApplicationSchema = z
   .object({ reason: z.string().max(2000).optional() })
   .passthrough();
+
+export const createPostSchema = z
+  .object({
+    category: z.string().trim().max(60).optional(),
+    title: z.string().trim().min(1, 'Title is required').max(160),
+    content: z.string().trim().min(1, 'Content is required').max(5000),
+  })
+  .passthrough();

@@ -3,6 +3,8 @@ import { AuthRequest, getUserId } from '../../middleware/auth';
 import { prisma } from '../../db/prisma';
 import { getSocketManager } from '../../sockets';
 import { logger } from '../../config/logger';
+import { validateBillUpload, makeStoragePath } from '../../utils/uploadPolicy';
+import { uploadBuffer, createSignedUrl } from '../../utils/storage';
 
 // Get session details
 export const getSession = async (req: AuthRequest, res: Response) => {
@@ -133,6 +135,133 @@ export const sendMessage = async (req: AuthRequest, res: Response) => {
   }
 };
 
+/**
+ * Share a document inside a consultation thread.
+ *
+ * Kept separate from sendMessage rather than turning that route multipart: the
+ * JSON path is what the chat input uses on every keystroke-send, and mixing the
+ * two would make every plain message pay for multipart parsing.
+ *
+ * The file is validated by content (magic bytes), not by the name or the
+ * client-declared type — an .exe renamed to .pdf is rejected — and is stored
+ * under a private key. Only a short-lived signed URL is ever handed out.
+ */
+export const uploadMessageAttachment = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = getUserId(req);
+    const { id: sessionId } = req.params;
+    const file = req.file;
+
+    if (!file) {
+      return res.status(400).json({ error: 'A file is required' });
+    }
+
+    const session = await prisma.advisorSession.findFirst({
+      where: {
+        id: sessionId,
+        OR: [{ advisorId: userId }, { clientId: userId }],
+      },
+    });
+
+    if (!session) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
+
+    if (session.status !== 'in-progress' && session.status !== 'scheduled') {
+      return res.status(400).json({ error: 'Cannot share files in an ended session' });
+    }
+
+    let validated;
+    try {
+      validated = await validateBillUpload(file);
+    } catch (err: any) {
+      return res.status(400).json({ error: err?.message || 'Unsupported file type' });
+    }
+
+    const storagePath = makeStoragePath(userId, validated.extension, `session-${sessionId}`);
+    await uploadBuffer(storagePath, validated.buffer, validated.contentType);
+
+    const caption = typeof req.body?.message === 'string' ? req.body.message.trim().slice(0, 1000) : '';
+
+    const chatMessage = await prisma.chatMessage.create({
+      data: {
+        sessionId,
+        senderId: userId,
+        message: caption,
+        attachmentPath: storagePath,
+        attachmentName: validated.originalName,
+        attachmentType: validated.contentType,
+        attachmentSize: validated.buffer.length,
+      },
+      include: { sender: { select: { id: true, name: true } } },
+    });
+
+    const otherUserId = session.advisorId === userId ? session.clientId : session.advisorId;
+    const senderName = req.user?.name || 'User';
+
+    try {
+      getSocketManager().notifyUser(otherUserId, 'new_message', { sessionId, message: chatMessage });
+    } catch (emitErr) {
+      logger.warn('[Sessions] Real-time attachment emit failed (non-fatal)', {
+        sessionId,
+        error: emitErr instanceof Error ? emitErr.message : String(emitErr),
+      });
+    }
+
+    await prisma.notification.create({
+      data: {
+        userId: otherUserId,
+        title: 'New Document',
+        message: `${senderName} shared ${validated.originalName}`,
+        category: 'session',
+        deepLink: `/sessions/${sessionId}`,
+      },
+    });
+
+    // The storage key never leaves the server.
+    const { attachmentPath, ...safe } = chatMessage;
+    res.status(201).json({ ...safe, hasAttachment: true });
+  } catch (error: any) {
+    logger.error('Failed to attach file to session message', { error: error.message });
+    res.status(500).json({ error: 'Failed to share the document' });
+  }
+};
+
+/**
+ * Issue a short-lived signed URL for an attachment. Both parties to the session
+ * can read it; nobody else can, and the URL expires on its own.
+ */
+export const getMessageAttachment = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = getUserId(req);
+    const { id: sessionId, messageId } = req.params;
+
+    const message = await prisma.chatMessage.findFirst({
+      where: {
+        id: messageId,
+        sessionId,
+        session: {
+          OR: [{ advisorId: userId }, { clientId: userId }],
+        },
+      },
+      select: { attachmentPath: true, attachmentName: true, attachmentType: true },
+    });
+
+    if (!message?.attachmentPath) {
+      return res.status(404).json({ error: 'Attachment not found' });
+    }
+
+    const url = await createSignedUrl(message.attachmentPath);
+    if (!url) {
+      return res.status(503).json({ error: 'Attachment storage is unavailable' });
+    }
+
+    res.json({ url, name: message.attachmentName, contentType: message.attachmentType });
+  } catch (error: any) {
+    res.status(500).json({ error: 'Failed to open the attachment' });
+  }
+};
+
 // Get session messages
 export const getMessages = async (req: AuthRequest, res: Response) => {
   try {
@@ -161,10 +290,19 @@ export const getMessages = async (req: AuthRequest, res: Response) => {
     const messages = await prisma.chatMessage.findMany({
       where: { sessionId },
       orderBy: { timestamp: 'asc' },
-      include: {
-        sender: {
-          select: { id: true, name: true },
-        },
+      // Explicit select: attachmentPath is a private storage key and must not
+      // travel to the client. Attachments are opened through the signed-URL
+      // route instead.
+      select: {
+        id: true,
+        sessionId: true,
+        senderId: true,
+        message: true,
+        timestamp: true,
+        attachmentName: true,
+        attachmentType: true,
+        attachmentSize: true,
+        sender: { select: { id: true, name: true } },
       },
     });
 

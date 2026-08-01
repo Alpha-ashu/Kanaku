@@ -11,7 +11,18 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 
-type WorkspaceTab = 'bookings' | 'clients' | 'schedule' | 'earnings';
+type WorkspaceTab = 'bookings' | 'clients' | 'schedule' | 'earnings' | 'updates';
+
+interface AdvisorPostRow {
+  id: string;
+  category: string;
+  title: string;
+  content: string;
+  createdAt: string;
+  likes: number;
+}
+
+const POST_CATEGORIES = ['Tax Alert', 'GST Update', 'Market Insight', 'Investment', 'Compliance', 'Update'];
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const DAYS_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -42,6 +53,9 @@ export const AdvisorWorkspace: React.FC = () => {
  const [processingId, setProcessingId] = useState<string | null>(null);
  const [isTogglingAvail, setIsTogglingAvail] = useState(false);
  const [rescheduleModal, setRescheduleModal] = useState<{ id: string; date: string; time: string } | null>(null);
+ const [posts, setPosts] = useState<AdvisorPostRow[]>([]);
+ const [postForm, setPostForm] = useState({ category: POST_CATEGORIES[0], title: '', content: '' });
+ const [isPublishing, setIsPublishing] = useState(false);
 
  // Only advisors can access this
  if (role !== 'advisor') {
@@ -60,21 +74,57 @@ export const AdvisorWorkspace: React.FC = () => {
  const fetchData = useCallback(async () => {
  setLoading(true);
  try {
- const [profileRes, bookingsRes, sessionsRes, availRes] = await Promise.allSettled([
+ const [profileRes, bookingsRes, sessionsRes, availRes, postsRes] = await Promise.allSettled([
  backendService.api.get(`/advisors/${user?.id}`),
  backendService.api.get('/bookings?role=advisor'),
  backendService.api.get('/advisors/me/sessions'),
  backendService.api.get(`/advisors/${user?.id}/availability`),
+ backendService.api.get(`/advisors/posts?advisorId=${user?.id}`),
  ]);
  if (profileRes.status === 'fulfilled') setAdvisorProfile(profileRes.value.data);
  if (bookingsRes.status === 'fulfilled') setBookings(Array.isArray(bookingsRes.value.data) ? bookingsRes.value.data : []);
  if (sessionsRes.status === 'fulfilled') setSessions(Array.isArray(sessionsRes.value.data) ? sessionsRes.value.data : []);
  if (availRes.status === 'fulfilled') setAvailability(Array.isArray(availRes.value.data) ? availRes.value.data : []);
+ if (postsRes.status === 'fulfilled') setPosts(Array.isArray(postsRes.value.data) ? postsRes.value.data : []);
  } catch { toast.error('Failed to load workspace data'); }
  finally { setLoading(false); }
  }, [user?.id]);
 
  useEffect(() => { fetchData(); }, [fetchData]);
+
+ const handlePublishPost = async () => {
+ if (!postForm.title.trim() || !postForm.content.trim()) {
+ toast.error('Add a title and the update text');
+ return;
+ }
+ setIsPublishing(true);
+ try {
+ await backendService.api.post('/advisors/posts', {
+ category: postForm.category,
+ title: postForm.title.trim(),
+ content: postForm.content.trim(),
+ });
+ setPostForm({ category: POST_CATEGORIES[0], title: '', content: '' });
+ // Every follower is notified server-side, so say so rather than implying
+ // the update just sits on a page.
+ toast.success('Update published — your followers have been notified');
+ fetchData();
+ } catch (err: any) {
+ toast.error(err?.response?.data?.error || 'Could not publish the update');
+ } finally {
+ setIsPublishing(false);
+ }
+ };
+
+ const handleDeletePost = async (id: string) => {
+ try {
+ await backendService.api.delete(`/advisors/posts/${id}`);
+ setPosts(prev => prev.filter(post => post.id !== id));
+ toast.success('Update removed');
+ } catch (err: any) {
+ toast.error(err?.response?.data?.error || 'Could not remove the update');
+ }
+ };
 
  const handleAccept = async (id: string) => {
  setProcessingId(id);
@@ -130,6 +180,7 @@ export const AdvisorWorkspace: React.FC = () => {
  { id: 'clients', label: 'Clients', icon: Users },
  { id: 'schedule', label: 'Schedule', icon: Clock },
  { id: 'earnings', label: 'Earnings', icon: IndianRupee },
+ { id: 'updates', label: 'Updates', icon: Bell },
  ];
 
  return (
@@ -333,6 +384,92 @@ export const AdvisorWorkspace: React.FC = () => {
  {s.rating && <span className="flex items-center gap-0.5 text-amber-500 text-xs justify-end"><Star size={10} className="fill-amber-400" />{s.rating}</span>}
  </div>
  {getStatusBadge(s.status)}
+ </div>
+ ))}
+ </div>
+ )}
+
+ {/* UPDATES — published to the client Discover feed; followers are notified */}
+ {activeTab === 'updates' && (
+ <div className="space-y-5">
+ <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-3">
+ <div>
+ <h2 className="text-sm font-black text-gray-900">Publish an update</h2>
+ <p className="text-xs text-gray-500 mt-0.5">
+ Appears in the client Discover feed. Everyone following you gets a notification.
+ </p>
+ </div>
+
+ <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+ <select
+ title="Category"
+ value={postForm.category}
+ onChange={e => setPostForm(f => ({ ...f, category: e.target.value }))}
+ className="px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-300"
+ data-testid="advisor-ws-post-category"
+ >
+ {POST_CATEGORIES.map(category => <option key={category} value={category}>{category}</option>)}
+ </select>
+ <input
+ type="text"
+ placeholder="Headline"
+ maxLength={160}
+ value={postForm.title}
+ onChange={e => setPostForm(f => ({ ...f, title: e.target.value }))}
+ className="sm:col-span-2 px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+ data-testid="advisor-ws-post-title"
+ />
+ </div>
+
+ <textarea
+ rows={4}
+ maxLength={5000}
+ placeholder="What should your clients know?"
+ value={postForm.content}
+ onChange={e => setPostForm(f => ({ ...f, content: e.target.value }))}
+ className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+ data-testid="advisor-ws-post-content"
+ />
+
+ <div className="flex justify-end">
+ <button
+ onClick={() => void handlePublishPost()}
+ disabled={isPublishing}
+ className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-xl font-bold text-sm flex items-center gap-2"
+ data-testid="advisor-ws-post-publish"
+ >
+ {isPublishing ? <Loader2 size={15} className="animate-spin" /> : <Bell size={15} />}
+ Publish
+ </button>
+ </div>
+ </div>
+
+ <h2 className="text-[11px] font-bold uppercase tracking-widest text-gray-400">Your updates</h2>
+ {posts.length === 0 ? (
+ <div className="text-center py-10 bg-white rounded-2xl border border-gray-100">
+ <Bell size={32} className="mx-auto text-gray-300 mb-2" />
+ <p className="text-gray-500 text-sm">You have not published anything yet</p>
+ </div>
+ ) : posts.map(post => (
+ <div key={post.id} className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm">
+ <div className="flex items-start justify-between gap-3">
+ <div className="min-w-0">
+ <span className="px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded-lg text-[10px] font-black uppercase">{post.category}</span>
+ <h3 className="font-bold text-gray-900 text-sm mt-2">{post.title}</h3>
+ <p className="text-xs text-gray-600 mt-1 whitespace-pre-line">{post.content}</p>
+ <p className="text-[11px] text-gray-400 mt-2">
+ {new Date(post.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+ {' · '}{post.likes} like{post.likes === 1 ? '' : 's'}
+ </p>
+ </div>
+ <button
+ onClick={() => void handleDeletePost(post.id)}
+ className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl shrink-0"
+ title="Remove update"
+ >
+ <XCircle size={16} />
+ </button>
+ </div>
  </div>
  ))}
  </div>

@@ -126,7 +126,24 @@ interface SessionMessageApiRow {
   senderId: string;
   message: string;
   timestamp: string;
+  attachmentName?: string | null;
+  attachmentType?: string | null;
+  attachmentSize?: number | null;
   sender?: { id: string; name: string } | null;
+}
+
+interface AdvisorPostApiRow {
+  id: string;
+  advisorId: string;
+  advisorName: string;
+  advisorAvatarId?: string | null;
+  advisorTitle: string;
+  category: string;
+  title: string;
+  content: string;
+  createdAt: string;
+  likes: number;
+  liked: boolean;
 }
 
 const SESSION_DURATION_MINUTES = 60;
@@ -196,38 +213,35 @@ const mapSessionMessage = (row: SessionMessageApiRow, currentUserId?: string): C
   receiverId: row.senderId === currentUserId ? 'advisor' : (currentUserId ?? 'user'),
   text: row.message,
   timestamp: new Date(row.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+  attachmentName: row.attachmentName ?? undefined,
   isEncrypted: true,
 });
 
-// ─── Editorial feed (static content, no backend model) ───────────────────────
-const INITIAL_POSTS: AdvisorPost[] = [
-  {
-    id: 'post-1',
-    advisorId: 'adv-vikram',
-    advisorName: 'Vikram Nair',
-    advisorAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-    advisorTitle: 'SEBI Registered RIA',
-    timestamp: '2 hours ago',
-    category: 'Tax Alert',
-    title: 'Important Tax Saving Deadlines for Q3 2026',
-    content: 'Ensure your advance tax estimates for Q2/Q3 are calculated before Sept 15th to avoid Section 234C interest penalties. Book a quick 15-min session if you had major capital gains!',
-    likes: 42,
-    liked: false,
-  },
-  {
-    id: 'post-2',
-    advisorId: 'adv-pooja',
-    advisorName: 'CA Pooja Krishnan',
-    advisorAvatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80',
-    advisorTitle: 'Chartered Accountant',
-    timestamp: 'Yesterday',
-    category: 'GST Update',
-    title: 'New E-Invoicing Threshold Rules Introduced',
-    content: 'CBIC has updated GST e-invoicing requirements for businesses with annual turnover exceeding ₹5 Cr. Download the official compliance guide in my profile resources.',
-    likes: 28,
-    liked: true,
-  },
-];
+const relativeTime = (isoDate: string) => {
+  const minutes = Math.max(0, Math.round((Date.now() - new Date(isoDate).getTime()) / 60000));
+  if (minutes < 1) return 'Just now';
+  if (minutes < 60) return `${minutes} min ago`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+  const days = Math.round(hours / 24);
+  if (days === 1) return 'Yesterday';
+  if (days < 7) return `${days} days ago`;
+  return new Date(isoDate).toLocaleDateString();
+};
+
+const mapPost = (row: AdvisorPostApiRow): AdvisorPost => ({
+  id: row.id,
+  advisorId: row.advisorId,
+  advisorName: row.advisorName,
+  advisorAvatar: resolveAvatarSelection({ avatarId: row.advisorAvatarId }).url,
+  advisorTitle: row.advisorTitle,
+  timestamp: relativeTime(row.createdAt),
+  category: row.category,
+  title: row.title,
+  content: row.content,
+  likes: row.likes,
+  liked: row.liked,
+});
 
 const FILTER_CHIPS = ['All', 'Tax', 'GST', 'Business', 'Investment', 'Loan', 'Retirement', 'Legal'];
 
@@ -261,7 +275,7 @@ export const BookAdvisor: React.FC = () => {
   const [bookings, setBookings] = useState<BookingData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [posts, setPosts] = useState<AdvisorPost[]>(INITIAL_POSTS);
+  const [posts, setPosts] = useState<AdvisorPost[]>([]);
   const [followedAdvisorIds, setFollowedAdvisorIds] = useState<string[]>([]);
   
   // Filters & Search
@@ -289,16 +303,24 @@ export const BookAdvisor: React.FC = () => {
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [chatMessages, setChatMessages] = useState<Record<string, ChatMessage[]>>({});
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
+  const [isUploadingAttachment, setIsUploadingAttachment] = useState(false);
   const [newMessageText, setNewMessageText] = useState('');
+  const attachmentInputRef = React.useRef<HTMLInputElement>(null);
 
   // ── Data loading ───────────────────────────────────────────────────────────
   const loadAdvisorsAndBookings = useCallback(async () => {
     setIsLoading(true);
     setLoadError(null);
     try {
-      const [advisorRows, bookingRows] = await Promise.all([
+      // The feed and follow graph are secondary — a failure there must not blank
+      // the directory, so they are settled independently of the two that matter.
+      const [advisorRows, bookingRows, postResult, followResult] = await Promise.all([
         backendService.api.get<AdvisorApiRow[]>('/advisors').then((r) => r.data),
         backendService.api.get<BookingApiRow[]>('/bookings').then((r) => r.data),
+        backendService.api.get<AdvisorPostApiRow[]>('/advisors/posts')
+          .then((r) => r.data).catch(() => [] as AdvisorPostApiRow[]),
+        backendService.api.get<Array<{ advisorId: string }>>('/advisors/following')
+          .then((r) => r.data).catch(() => [] as Array<{ advisorId: string }>),
       ]);
 
       const mappedAdvisors = (Array.isArray(advisorRows) ? advisorRows : []).map(mapAdvisor);
@@ -308,6 +330,8 @@ export const BookAdvisor: React.FC = () => {
 
       setAdvisors(mappedAdvisors);
       setBookings(mappedBookings);
+      setPosts((Array.isArray(postResult) ? postResult : []).map(mapPost));
+      setFollowedAdvisorIds((Array.isArray(followResult) ? followResult : []).map((row) => row.advisorId));
       setActiveSessionId((current) => current ?? mappedBookings.find((b) => b.sessionId)?.sessionId ?? null);
     } catch (error: any) {
       setLoadError(error?.message || 'Could not load advisors. Check your connection and try again.');
@@ -354,13 +378,52 @@ export const BookAdvisor: React.FC = () => {
   }, [activeSessionId, chatMessages, user?.id]);
 
   // ── Handlers ───────────────────────────────────────────────────────────────
-  const handleToggleFollow = (advisorId: string) => {
-    if (followedAdvisorIds.includes(advisorId)) {
-      setFollowedAdvisorIds(prev => prev.filter(id => id !== advisorId));
-      toast.success('Unfollowed advisor');
-    } else {
-      setFollowedAdvisorIds(prev => [...prev, advisorId]);
-      toast.success('Now following advisor! You will receive tax & webinar updates.');
+  const handleToggleFollow = async (advisorId: string) => {
+    const wasFollowing = followedAdvisorIds.includes(advisorId);
+
+    // Optimistic: the follow graph is cheap to correct and the button should not
+    // wait on a round-trip.
+    setFollowedAdvisorIds(prev => wasFollowing ? prev.filter(id => id !== advisorId) : [...prev, advisorId]);
+
+    try {
+      if (wasFollowing) {
+        await backendService.api.delete(`/advisors/${advisorId}/follow`);
+        toast.success('Unfollowed advisor');
+      } else {
+        await backendService.api.post(`/advisors/${advisorId}/follow`, {});
+        toast.success('Following — you will be notified when this advisor posts an update');
+      }
+    } catch (error: any) {
+      setFollowedAdvisorIds(prev => wasFollowing ? [...prev, advisorId] : prev.filter(id => id !== advisorId));
+      toast.error(error?.message || 'Could not update your follow list');
+    }
+  };
+
+  const handleToggleLikePost = async (postId: string) => {
+    const post = posts.find(item => item.id === postId);
+    if (!post) return;
+    const wasLiked = Boolean(post.liked);
+
+    setPosts(prev => prev.map(item => item.id === postId
+      ? { ...item, liked: !wasLiked, likes: item.likes + (wasLiked ? -1 : 1) }
+      : item));
+
+    try {
+      const response = wasLiked
+        ? await backendService.api.delete<{ liked: boolean; likes: number }>(`/advisors/posts/${postId}/like`)
+        : await backendService.api.post<{ liked: boolean; likes: number }>(`/advisors/posts/${postId}/like`, {});
+
+      // Reconcile with the server count so concurrent likes from other readers
+      // are reflected rather than drifting from the optimistic guess.
+      const { liked, likes } = response.data ?? {};
+      if (typeof likes === 'number') {
+        setPosts(prev => prev.map(item => item.id === postId ? { ...item, liked: Boolean(liked), likes } : item));
+      }
+    } catch {
+      setPosts(prev => prev.map(item => item.id === postId
+        ? { ...item, liked: wasLiked, likes: item.likes + (wasLiked ? 1 : -1) }
+        : item));
+      toast.error('Could not register that. Please try again.');
     }
   };
 
@@ -478,15 +541,58 @@ export const BookAdvisor: React.FC = () => {
     }
   };
 
-  const handleToggleLikePost = (postId: string) => {
-    setPosts(prev => prev.map(p => {
-      if (p.id === postId) {
-        const liked = !p.liked;
-        return { ...p, liked, likes: liked ? p.likes + 1 : p.likes - 1 };
+  const handleAttachFile = async (file: File) => {
+    if (!activeSessionId) return;
+
+    setIsUploadingAttachment(true);
+    try {
+      const form = new FormData();
+      form.append('file', file);
+      // Whatever is already typed rides along as the caption.
+      if (newMessageText.trim()) form.append('message', newMessageText.trim());
+
+      const response = await backendService.api.post<SessionMessageApiRow>(
+        `/sessions/${activeSessionId}/attachments`,
+        form,
+        { headers: { 'Content-Type': 'multipart/form-data' } },
+      );
+
+      const saved = response.data;
+      if (saved?.id) {
+        setChatMessages((prev) => ({
+          ...prev,
+          [activeSessionId]: [...(prev[activeSessionId] || []), mapSessionMessage(saved, user?.id)],
+        }));
       }
-      return p;
-    }));
+      setNewMessageText('');
+      toast.success(`${file.name} shared`);
+    } catch (error: any) {
+      toast.error(error?.message || 'Could not share that file');
+    } finally {
+      setIsUploadingAttachment(false);
+    }
   };
+
+  const handleOpenAttachment = async (messageId: string) => {
+    if (!activeSessionId) return;
+    try {
+      // The file lives in private storage; the server hands back a short-lived
+      // signed URL rather than a permanent link.
+      const response = await backendService.api.get<{ url: string }>(
+        `/sessions/${activeSessionId}/messages/${messageId}/attachment`,
+      );
+      const url = response.data?.url;
+      if (!url) throw new Error('Attachment unavailable');
+      window.open(url, '_blank', 'noopener,noreferrer');
+    } catch (error: any) {
+      toast.error(error?.message || 'Could not open the attachment');
+    }
+  };
+
+  const followedPosts = useMemo(
+    () => posts.filter(post => followedAdvisorIds.includes(post.advisorId)),
+    [posts, followedAdvisorIds],
+  );
 
   // Filtered Advisors
   const filteredAdvisors = useMemo(() => {
@@ -693,7 +799,7 @@ export const BookAdvisor: React.FC = () => {
                           )}
                         </div>
                         <button
-                          onClick={() => handleToggleFollow(adv.id)}
+                          onClick={() => void handleToggleFollow(adv.id)}
                           className={cn(
                             'px-3 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all flex items-center gap-1.5 cursor-pointer border',
                             isFollowed ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
@@ -941,15 +1047,20 @@ export const BookAdvisor: React.FC = () => {
                         'p-3.5 rounded-2xl text-xs font-semibold shadow-xs',
                         isMe ? 'bg-indigo-600 text-white rounded-br-none' : 'bg-white text-slate-900 border border-slate-200/80 rounded-bl-none'
                       )}>
-                        <p className="leading-relaxed">{msg.text}</p>
+                        {msg.text && <p className="leading-relaxed">{msg.text}</p>}
                         {msg.attachmentName && (
-                          <div className={cn(
-                            'mt-2 p-2 rounded-xl flex items-center gap-2 text-[11px] font-bold border',
-                            isMe ? 'bg-indigo-700/60 text-white border-indigo-500' : 'bg-slate-100 text-slate-700 border-slate-200'
-                          )}>
-                            <FileText size={14} />
+                          <button
+                            onClick={() => void handleOpenAttachment(msg.id)}
+                            className={cn(
+                              'mt-2 p-2 rounded-xl flex items-center gap-2 text-[11px] font-bold border w-full text-left cursor-pointer transition-opacity hover:opacity-80',
+                              isMe ? 'bg-indigo-700/60 text-white border-indigo-500' : 'bg-slate-100 text-slate-700 border-slate-200'
+                            )}
+                            title="Open document"
+                          >
+                            <FileText size={14} className="shrink-0" />
                             <span className="truncate">{msg.attachmentName}</span>
-                          </div>
+                            <ExternalLink size={12} className="shrink-0 ml-auto" />
+                          </button>
                         )}
                       </div>
                       <span className="text-[9px] font-bold text-slate-400 mt-1 px-1">{msg.timestamp}</span>
@@ -961,6 +1072,26 @@ export const BookAdvisor: React.FC = () => {
 
               {/* Chat Input Bar */}
               <div className="p-4 border-t border-slate-200/80 flex items-center gap-2 bg-white">
+                <input
+                  ref={attachmentInputRef}
+                  type="file"
+                  className="hidden"
+                  accept="image/jpeg,image/png,application/pdf"
+                  onChange={(event) => {
+                    const file = event.target.files?.[0];
+                    // Reset first: picking the same file twice must still fire.
+                    event.target.value = '';
+                    if (file) void handleAttachFile(file);
+                  }}
+                />
+                <button
+                  onClick={() => attachmentInputRef.current?.click()}
+                  disabled={!activeThread || isUploadingAttachment}
+                  className="p-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Share a document (JPG, PNG or PDF, up to 5MB)"
+                >
+                  {isUploadingAttachment ? <Loader2 size={18} className="animate-spin" /> : <Paperclip size={18} />}
+                </button>
                 <input
                   type="text"
                   value={newMessageText}
@@ -992,6 +1123,22 @@ export const BookAdvisor: React.FC = () => {
               </div>
             </div>
 
+            {followedAdvisorIds.length === 0 && (
+              <div className="bg-white rounded-3xl border border-slate-200/80 p-10 text-center">
+                <UserPlus size={28} className="mx-auto text-slate-300" />
+                <p className="text-sm font-black text-slate-900 mt-3">You are not following anyone yet</p>
+                <p className="text-xs text-slate-500 font-semibold mt-1">
+                  Follow an advisor from Discover to get their updates here and as notifications.
+                </p>
+                <button
+                  onClick={() => setActiveTab('discover')}
+                  className="mt-4 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-black text-xs uppercase tracking-wider cursor-pointer"
+                >
+                  Browse advisors
+                </button>
+              </div>
+            )}
+
             {/* Followed Advisors Row */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
               {advisors.filter(a => followedAdvisorIds.includes(a.id)).map(adv => (
@@ -1004,7 +1151,7 @@ export const BookAdvisor: React.FC = () => {
                     </div>
                   </div>
                   <button
-                    onClick={() => handleToggleFollow(adv.id)}
+                    onClick={() => void handleToggleFollow(adv.id)}
                     className="p-1.5 hover:bg-slate-100 rounded-xl text-slate-400 hover:text-rose-600 transition-colors shrink-0 cursor-pointer"
                     title="Unfollow"
                   >
@@ -1014,9 +1161,17 @@ export const BookAdvisor: React.FC = () => {
               ))}
             </div>
 
-            {/* Posts Feed */}
+            {/* Posts Feed — only from advisors this user follows */}
             <div className="max-w-2xl mx-auto space-y-4">
-              {posts.map(post => (
+              {followedAdvisorIds.length > 0 && followedPosts.length === 0 && (
+                <div className="bg-white rounded-3xl border border-slate-200/80 p-8 text-center">
+                  <MessageSquare size={24} className="mx-auto text-slate-300" />
+                  <p className="text-xs font-bold text-slate-500 mt-3">
+                    No updates yet from the advisors you follow.
+                  </p>
+                </div>
+              )}
+              {followedPosts.map(post => (
                 <div key={post.id} className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -1038,7 +1193,7 @@ export const BookAdvisor: React.FC = () => {
 
                   <div className="flex items-center justify-between pt-3 border-t border-slate-100 text-xs font-bold text-slate-500">
                     <button
-                      onClick={() => handleToggleLikePost(post.id)}
+                      onClick={() => void handleToggleLikePost(post.id)}
                       className={cn(
                         'flex items-center gap-1.5 py-1.5 px-3 rounded-xl transition-all cursor-pointer',
                         post.liked ? 'bg-rose-50 text-rose-600 font-black' : 'hover:bg-slate-100'
@@ -1049,11 +1204,20 @@ export const BookAdvisor: React.FC = () => {
                     </button>
 
                     <button
-                      onClick={() => toast.success('Link copied to clipboard!')}
+                      onClick={async () => {
+                        // Posts have no public URL, so what gets shared is the
+                        // text itself rather than a link that goes nowhere.
+                        try {
+                          await navigator.clipboard.writeText(`${post.title}\n\n${post.content}\n\n— ${post.advisorName}`);
+                          toast.success('Update copied to clipboard');
+                        } catch {
+                          toast.error('Could not copy to clipboard');
+                        }
+                      }}
                       className="flex items-center gap-1.5 py-1.5 px-3 rounded-xl hover:bg-slate-100 transition-all cursor-pointer"
                     >
                       <Share2 size={14} />
-                      <span>Share</span>
+                      <span>Copy</span>
                     </button>
                   </div>
                 </div>
@@ -1196,10 +1360,12 @@ export const BookAdvisor: React.FC = () => {
 
               <div className="p-5 border-t border-slate-100 bg-slate-50/50 flex gap-2">
                 <button
-                  onClick={() => handleToggleFollow(viewingProfileAdvisor.id)}
+                  onClick={() => void handleToggleFollow(viewingProfileAdvisor.id)}
                   className="py-3 px-4 bg-white border border-slate-200 text-slate-700 rounded-xl text-xs font-black uppercase tracking-wider flex items-center justify-center gap-1.5 hover:bg-slate-50 transition-all cursor-pointer"
                 >
-                  <UserPlus size={14} /> Follow
+                  {followedAdvisorIds.includes(viewingProfileAdvisor.id)
+                    ? <><UserCheck size={14} /> Following</>
+                    : <><UserPlus size={14} /> Follow</>}
                 </button>
                 <button
                   onClick={() => {

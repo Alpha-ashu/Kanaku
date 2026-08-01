@@ -15,3 +15,8 @@ export const completeSessionSchema = z.object({
 export const cancelSessionSchema = z.object({
   reason: z.string().trim().max(500).optional(),
 });
+
+export const messageAttachmentParamSchema = z.object({
+  id: z.string().trim().min(1, 'Session ID is required'),
+  messageId: z.string().trim().min(1, 'Message ID is required'),
+});
