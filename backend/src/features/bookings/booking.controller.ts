@@ -14,11 +14,14 @@ export const createBooking = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    // Verify advisor exists and is approved
-    let advisor = null;
+    // Verify advisor exists and is approved.
+    // The declared type is needed: `let advisor = null` infers `null`, so the
+    // role/isApproved reads below fail to compile.
+    let advisor: { id: string; role: string; isApproved: boolean } | null = null;
     try {
       advisor = await prisma.user.findUnique({
         where: { id: advisorId },
+        select: { id: true, role: true, isApproved: true },
       });
     } catch {
       return res.status(404).json({ error: 'Advisor not found or not approved' });
