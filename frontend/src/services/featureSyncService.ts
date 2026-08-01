@@ -111,11 +111,16 @@ export const syncBudgets = async (): Promise<FeatureSyncResult> => {
   for (const local of localRows) {
     if (!local.cloudId) {
       try {
+        const rawPeriod = (local.period || 'monthly').toLowerCase();
+        const validPeriod = ['weekly', 'monthly', 'yearly'].includes(rawPeriod) ? rawPeriod : 'monthly';
+        const validAmount = Number(local.amount) > 0 ? Number(local.amount) : 1;
+        const validThreshold = Math.min(100, Math.max(1, Math.round(Number(local.threshold) || 85)));
+
         const response = await apiClient.post<{ success: boolean; data: { id: string } }>('/budgets', {
-          category: local.category,
-          amount: local.amount,
-          period: local.period || 'monthly',
-          threshold: local.threshold ?? 85,
+          category: local.category || 'General',
+          amount: validAmount,
+          period: validPeriod,
+          threshold: validThreshold,
         }, { showErrorToast: false });
         const cloudId = response.data?.data?.id;
         if (cloudId) {
@@ -130,6 +135,7 @@ export const syncBudgets = async (): Promise<FeatureSyncResult> => {
       result.removed += 1;
     }
   }
+
 
   return result;
 };

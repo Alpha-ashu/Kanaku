@@ -15,13 +15,19 @@ export const createBooking = async (req: AuthRequest, res: Response) => {
     }
 
     // Verify advisor exists and is approved
-    const advisor = await prisma.user.findUnique({
-      where: { id: advisorId },
-    });
+    let advisor = null;
+    try {
+      advisor = await prisma.user.findUnique({
+        where: { id: advisorId },
+      });
+    } catch {
+      return res.status(404).json({ error: 'Advisor not found or not approved' });
+    }
 
     if (!advisor || advisor.role !== 'advisor' || !advisor.isApproved) {
       return res.status(404).json({ error: 'Advisor not found or not approved' });
     }
+
 
     // Check advisor availability
     const proposedDateTime = new Date(`${proposedDate}T${proposedTime}`);

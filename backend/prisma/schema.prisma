@@ -165,12 +165,64 @@ model ChatMessage {
   senderId  String
   message   String
   timestamp DateTime       @default(now())
+  /// Storage object key for a file shared in the thread. Never a public URL —
+  /// the object is private and reached through a short-lived signed URL issued
+  /// per request, so a leaked message row does not leak the document.
+  attachmentPath String?
+  attachmentName String?
+  attachmentType String?
+  attachmentSize Int?
   sender    User           @relation(fields: [senderId], references: [id], onDelete: Cascade)
   session   AdvisorSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
   @@index([senderId])
   @@index([sessionId])
   @@index([timestamp])
+  @@schema("public")
+}
+
+/// A published update from an advisor — the content behind the Discover and
+/// Following feeds.
+model AdvisorPost {
+  id        String            @id @default(uuid())
+  advisorId String
+  category  String
+  title     String
+  content   String
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+  deletedAt DateTime?
+  advisor   User              @relation("AdvisorPost_advisor", fields: [advisorId], references: [id], onDelete: Cascade)
+  likes     AdvisorPostLike[]
+
+  @@index([advisorId])
+  @@index([createdAt])
+  @@schema("public")
+}
+
+model AdvisorPostLike {
+  id        String      @id @default(uuid())
+  postId    String
+  userId    String
+  createdAt DateTime    @default(now())
+  post      AdvisorPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User        @relation("AdvisorPostLike_user", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@index([userId])
+  @@schema("public")
+}
+
+model AdvisorFollow {
+  id         String   @id @default(uuid())
+  advisorId  String
+  followerId String
+  createdAt  DateTime @default(now())
+  advisor    User     @relation("AdvisorFollow_advisor", fields: [advisorId], references: [id], onDelete: Cascade)
+  follower   User     @relation("AdvisorFollow_follower", fields: [followerId], references: [id], onDelete: Cascade)
+
+  @@unique([advisorId, followerId])
+  @@index([followerId])
   @@schema("public")
 }
 
@@ -677,6 +729,10 @@ model User {
   goldAssets                  GoldAsset[]
   collaborationParticipations CollaborationParticipant[] @relation("CollaborationParticipant_user")
   collaborationInvitesSent    CollaborationParticipant[] @relation("CollaborationParticipant_invitedBy")
+  advisorPosts                AdvisorPost[]              @relation("AdvisorPost_advisor")
+  advisorPostLikes            AdvisorPostLike[]          @relation("AdvisorPostLike_user")
+  advisorFollowers            AdvisorFollow[]            @relation("AdvisorFollow_advisor")
+  advisorFollowing            AdvisorFollow[]            @relation("AdvisorFollow_follower")
 
   @@index([isApproved])
   @@index([role])
