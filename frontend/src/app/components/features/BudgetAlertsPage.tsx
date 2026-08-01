@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { PageHeader } from '@/app/components/ui/PageHeader';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { Card } from '@/app/components/ui/card';
@@ -8,6 +8,7 @@ import { db } from '@/lib/database';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useApp } from '@/contexts/AppContext';
 import { backendService } from '@/lib/backend-api';
+import { syncBudgets, pushBudgetUpdate, deleteBudgetEverywhere } from '@/services/featureSyncService';
 
 interface BudgetLimit {
   id: string;
@@ -31,6 +32,13 @@ export const BudgetAlertsPage: React.FC = () => {
   const [newCategory, setNewCategory] = useState('');
   const [newLimit, setNewLimit] = useState<number>(0);
   const [dismissedAlerts, setDismissedAlerts] = useState<string[]>([]);
+
+  // Reconcile with the backend on open: budgets created on another device (or
+  // pushed from here while offline) are otherwise invisible, and the server-side
+  // alert engine works off the server's copy either way.
+  useEffect(() => {
+    void syncBudgets();
+  }, []);
 
   // Notification channel preferences — persisted to Dexie settings
   const notifPrefs = useLiveQuery(async () => {
@@ -112,12 +120,19 @@ export const BudgetAlertsPage: React.FC = () => {
   const handleUpdateThreshold = async (id: string, val: number) => {
     try {
       const budget = await db.budgets.get(id);
-      if (budget) {
-        await db.budgets.update(id, { ...budget, threshold: val } as any);
-        toast.success('Warning threshold updated');
-      }
+      if (!budget) return;
+
+      // Only the changed field — spreading the whole record back in passes the
+      // primary key to update(), which Dexie refuses to modify.
+      await db.budgets.update(id, { threshold: val, updatedAt: new Date() });
+      // The server-side alert engine reads its own copy of the threshold, so a
+      // local-only change meant the UI showed one number and alerts fired on
+      // another.
+      await pushBudgetUpdate({ id, cloudId: budget.cloudId }, { threshold: val });
+      toast.success('Warning threshold updated');
     } catch (error) {
       console.error('Failed to update threshold:', error);
+      toast.error('Could not update the threshold');
     }
   };
 
@@ -152,14 +167,18 @@ export const BudgetAlertsPage: React.FC = () => {
         spent: 0,
         createdAt: new Date(),
         threshold: 85,
-      } as any);
+        syncStatus: 'pending',
+      });
 
       toast.success('Budget ceiling added successfully');
       setNewCategory('');
       setNewLimit(0);
       setShowAddModal(false);
 
-      // Background sync to backend
+      // Push to the backend and record the server id in `cloudId`. It must not
+      // go into `id`: Dexie cannot change a primary key, so writing it there
+      // detached the row from its own key and every later update or delete was
+      // sent with an id the server did not recognise.
       try {
         const resp = await backendService.createBudget({
           category: newCategory.trim(),
@@ -168,10 +187,10 @@ export const BudgetAlertsPage: React.FC = () => {
           threshold: 85,
         });
         if (resp?.id) {
-          await db.budgets.update(budgetId, { id: resp.id } as any);
+          await db.budgets.update(budgetId, { cloudId: resp.id, syncStatus: 'synced' });
         }
       } catch {
-        // Keep locally — backend sync will retry on next session
+        // Left pending — syncBudgets() retries it on the next visit.
       }
     } catch (error) {
       console.error('Failed to add budget:', error);
@@ -181,10 +200,10 @@ export const BudgetAlertsPage: React.FC = () => {
 
   const handleDeleteBudget = async (id: string) => {
     try {
-      await db.budgets.delete(id);
+      const budget = await db.budgets.get(id);
+      if (!budget) return;
+      await deleteBudgetEverywhere(budget);
       toast.success('Budget deleted successfully');
-
-      try { await backendService.deleteBudget(id); } catch { /* offline */ }
     } catch (error) {
       console.error('Failed to delete budget:', error);
       toast.error('Failed to delete budget');

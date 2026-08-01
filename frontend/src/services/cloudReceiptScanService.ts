@@ -211,9 +211,13 @@ export class CloudReceiptScanService {
         const date = parseScanDate(payload.date);
         const location = typeof payload.location === 'string' ? payload.location : 'UNKNOWN';
 
+        // A missing score means the backend could not vouch for the reading, so
+        // it is treated as unreliable. Defaulting to 0.85 here painted every
+        // such scan as a "High confidence scan" — including ones the extractor
+        // had already scored as guesswork.
         const confidence = typeof payload.confidence === 'number' && Number.isFinite(payload.confidence)
           ? payload.confidence
-          : 0.85;
+          : 0.4;
 
         const taxBreakdown = parseTaxBreakdown(payload.taxBreakdown);
         const items = parseItems(payload.items);

@@ -19,6 +19,7 @@ import { ADMIN_UI_ENABLED } from '@/config/platform';
 // chunks from a user-surface (VITE_APP_SURFACE=user) build.
 declare const __ADMIN_UI_ENABLED__: boolean;
 import { syncUserDataFromCloud, SyncedTableName } from '@/lib/auth-sync-integration';
+import { syncBudgets, syncRecurringTransactions } from '@/services/featureSyncService';
 
 
 //  Shell components (always visible - eager load) 
@@ -306,6 +307,7 @@ const AppContent: React.FC = () => {
   const nativeDeepLinkCleanupRef = useRef<(() => void) | undefined>(undefined);
   const lastStateLogged = useRef<string | null>(null);
   const hasTriggeredSyncRef = useRef<string | null>(null);
+  const hasSyncedFeatureTablesRef = useRef<string | null>(null);
   const hasAdminRedirectedRef = useRef(false);
   const [quickActionKey, setQuickActionKey] = useState(0);
   const [slidesViewed, setSlidesViewed] = useState(() => localStorage.getItem('onboarding_slides_viewed') === 'true');
@@ -561,8 +563,23 @@ const AppContent: React.FC = () => {
   useEffect(() => {
     if (!isAuthenticated) {
       hasTriggeredSyncRef.current = null;
+      hasSyncedFeatureTablesRef.current = null;
     }
   }, [isAuthenticated]);
+
+  // Budgets and recurring rules are not part of the Dexie sync engine (they are
+  // backend-owned tables mirrored locally), so they are reconciled once per
+  // session here as well as on their own pages. Without this the dashboard and
+  // AI insights judge budgets that exist only in this browser, while the
+  // server-side alert engine and recurring worker run on a different set.
+  useEffect(() => {
+    if (!user || !isAuthenticated || !dataReady) return;
+    if (hasSyncedFeatureTablesRef.current === user.id) return;
+    hasSyncedFeatureTablesRef.current = user.id;
+
+    void syncBudgets();
+    void syncRecurringTransactions();
+  }, [user, isAuthenticated, dataReady]);
 
   // SECURITY: re-sync the current page's tables when the network reconnects — only while
   // unlocked (replaces the eager re-sync removed from AuthContext.handleOnline).

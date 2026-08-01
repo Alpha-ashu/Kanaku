@@ -12,9 +12,13 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { resolveAvatarSelection } from '@/lib/avatar-gallery';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // ─── Interfaces ──────────────────────────────────────────────────────────────
+// Fields the backend has no column for are optional and are simply not rendered
+// when absent. They were previously filled with demo values, which made the
+// directory look populated while showing numbers no advisor had ever supplied.
 export interface AdvisorProfileData {
   id: string;
   name: string;
@@ -24,16 +28,17 @@ export interface AdvisorProfileData {
   experienceYears: number;
   rating: number;
   reviewCount: number;
-  hourlyRate: number;
+  /** null when the advisor has not published a rate. */
+  hourlyRate: number | null;
   availability: boolean;
-  languages: string[];
   bio: string;
-  successRate: number;
-  responseTime: string;
-  followersCount: number;
   verified: boolean;
   online: boolean;
   availableDays: number[];
+  languages?: string[];
+  successRate?: number;
+  responseTime?: string;
+  followersCount?: number;
 }
 
 export interface BookingData {
@@ -49,6 +54,8 @@ export interface BookingData {
   notes?: string;
   amount: number;
   createdAt: string;
+  /** Present once the advisor accepts — this is what the chat thread hangs off. */
+  sessionId?: string;
 }
 
 export interface ChatMessage {
@@ -79,214 +86,120 @@ export interface AdvisorPost {
 
 type AdvisorModuleTab = 'discover' | 'consultations' | 'messages' | 'following' | 'bookings';
 
-// ─── Initial Mock Data ────────────────────────────────────────────────────────
-const TOP_ADVISORS: AdvisorProfileData[] = [
-  {
-    id: 'adv-vikram',
-    name: 'Vikram Nair',
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-    title: 'SEBI Registered Investment Advisor (RIA)',
-    expertise: ['Tax Planning', 'Wealth Management', 'Retirement'],
-    experienceYears: 12,
-    rating: 5.0,
-    reviewCount: 42,
-    hourlyRate: 1500,
-    availability: true,
-    languages: ['English', 'Hindi', 'Malayalam'],
-    bio: 'Specialized in high-net-worth tax optimization, ITR-2/3/4 filings, and long-term equity wealth building.',
-    successRate: 99,
-    responseTime: '10 mins',
-    followersCount: 1420,
+// ─── Backend row shapes (GET /advisors, GET /bookings) ───────────────────────
+interface AdvisorApiRow {
+  id: string;
+  name: string;
+  email?: string;
+  avatarId?: string | null;
+  advisorStatus?: string;
+  hourlyRate?: number | null;
+  averageRating?: number;
+  reviewCount?: number;
+  availability?: boolean;
+  advisorAvailability?: Array<{ dayOfWeek: number; isActive: boolean }>;
+  advisorApplication?: {
+    expertise?: string | null;
+    experienceYears?: number | null;
+    bio?: string | null;
+    organizationName?: string | null;
+  } | null;
+}
+
+interface BookingApiRow {
+  id: string;
+  advisorId: string;
+  sessionType: string;
+  description?: string | null;
+  proposedDate: string;
+  proposedTime: string;
+  duration?: number;
+  amount?: number | string;
+  status?: string;
+  createdAt?: string;
+  advisor?: { id: string; name: string } | null;
+  session?: { id: string; status: string } | null;
+}
+
+interface SessionMessageApiRow {
+  id: string;
+  senderId: string;
+  message: string;
+  timestamp: string;
+  sender?: { id: string; name: string } | null;
+}
+
+const SESSION_DURATION_MINUTES = 60;
+
+const mapAdvisor = (row: AdvisorApiRow): AdvisorProfileData => {
+  const application = row.advisorApplication ?? undefined;
+  const expertise = (application?.expertise ?? '')
+    .split(/[,/|]/)
+    .map((value) => value.trim())
+    .filter(Boolean);
+
+  return {
+    id: row.id,
+    name: row.name,
+    avatar: resolveAvatarSelection({ avatarId: row.avatarId }).url,
+    title: application?.organizationName?.trim() || expertise[0] || 'Financial Advisor',
+    expertise,
+    experienceYears: application?.experienceYears ?? 0,
+    rating: Number(row.averageRating ?? 0),
+    reviewCount: Number(row.reviewCount ?? 0),
+    hourlyRate: typeof row.hourlyRate === 'number' ? row.hourlyRate : null,
+    availability: Boolean(row.availability),
+    bio: application?.bio?.trim() || '',
+    // Only approved advisors are returned by GET /advisors.
     verified: true,
-    online: true,
-    availableDays: [1, 2, 3, 4, 5],
-  },
-  {
-    id: 'adv-pooja',
-    name: 'CA Pooja Krishnan',
-    avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80',
-    title: 'Chartered Accountant & Corporate Tax Consultant',
-    expertise: ['GST', 'Tax Planning', 'Business'],
-    experienceYears: 9,
-    rating: 4.9,
-    reviewCount: 38,
-    hourlyRate: 2000,
-    availability: true,
-    languages: ['English', 'Kannada', 'Hindi'],
-    bio: 'Helping startups and individuals structure business taxes, GST compliance, and audit defense.',
-    successRate: 98,
-    responseTime: '15 mins',
-    followersCount: 980,
-    verified: true,
-    online: true,
-    availableDays: [1, 3, 5],
-  },
-  {
-    id: 'adv-nikhil',
-    name: 'Nikhil Desai',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
-    title: 'Certified Financial Planner (CFP)',
-    expertise: ['Investment', 'Loan', 'Retirement'],
-    experienceYears: 7,
-    rating: 4.8,
-    reviewCount: 29,
-    hourlyRate: 1200,
-    availability: true,
-    languages: ['English', 'Marathi', 'Gujarati'],
-    bio: 'Expert in home loan restructuring, fixed vs floating rate advisory, and mutual fund asset allocation.',
-    successRate: 96,
-    responseTime: '20 mins',
-    followersCount: 750,
-    verified: true,
-    online: true,
-    availableDays: [2, 4, 6],
-  },
-  {
-    id: 'adv-sameer',
-    name: 'Sameer Khan',
-    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80',
-    title: 'GST & International Tax Consultant',
-    expertise: ['GST', 'Legal', 'Business'],
-    experienceYears: 10,
-    rating: 4.9,
-    reviewCount: 31,
-    hourlyRate: 1800,
-    availability: true,
-    languages: ['English', 'Hindi', 'Urdu'],
-    bio: 'Cross-border tax compliance, NRI investments, and GST registration strategy for e-commerce sellers.',
-    successRate: 97,
-    responseTime: '12 mins',
-    followersCount: 1120,
-    verified: true,
-    online: true,
-    availableDays: [1, 2, 4, 5],
-  },
-  {
-    id: 'adv-lakshmi',
-    name: 'Adv. Lakshmi Menon',
-    avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80',
-    title: 'High Court Advocate & Estate Attorney',
-    expertise: ['Legal', 'Retirement', 'Business'],
-    experienceYears: 14,
-    rating: 5.0,
-    reviewCount: 56,
-    hourlyRate: 2500,
-    availability: true,
-    languages: ['English', 'Tamil', 'Hindi'],
-    bio: 'Estate planning, succession wills, family trust management, and commercial property title verification.',
-    successRate: 100,
-    responseTime: '25 mins',
-    followersCount: 2100,
-    verified: true,
-    online: true,
-    availableDays: [1, 3, 5, 6],
-  },
-  {
-    id: 'adv-arvind',
-    name: 'Arvind Reddy',
-    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80',
-    title: 'Wealth Management & Crypto Tax Lead',
-    expertise: ['Investment', 'Tax Planning', 'Business'],
-    experienceYears: 8,
-    rating: 4.8,
-    reviewCount: 24,
-    hourlyRate: 2200,
-    availability: true,
-    languages: ['English', 'Telugu', 'Hindi'],
-    bio: 'VDA (Crypto/NFT) tax reporting under Section 194S and multi-asset portfolio rebalancing.',
-    successRate: 95,
-    responseTime: '15 mins',
-    followersCount: 890,
-    verified: true,
-    online: true,
-    availableDays: [2, 3, 4, 5],
-  },
-  {
-    id: 'adv-meera',
-    name: 'Meera Iyer',
-    avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80',
-    title: 'NRI Taxation & DTAA Advisory Specialist',
-    expertise: ['Tax Planning', 'Legal'],
-    experienceYears: 11,
-    rating: 5.0,
-    reviewCount: 40,
-    hourlyRate: 3000,
-    availability: true,
-    languages: ['English', 'Tamil', 'Hindi'],
-    bio: 'Double Taxation Avoidance Agreement (DTAA) relief, Form 15CA/CB certificates, and repatriations.',
-    successRate: 99,
-    responseTime: '8 mins',
-    followersCount: 1650,
-    verified: true,
-    online: true,
-    availableDays: [1, 2, 3, 5],
-  },
-  {
-    id: 'adv-ananya',
-    name: 'Ananya Sen',
-    avatar: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=150&auto=format&fit=crop&q=80',
-    title: 'Corporate Tax Lead & M&A Strategist',
-    expertise: ['Business', 'Tax Planning'],
-    experienceYears: 10,
-    rating: 4.9,
-    reviewCount: 22,
-    hourlyRate: 2800,
-    availability: true,
-    languages: ['English', 'Bengali', 'Hindi'],
-    bio: 'M&A tax structuring, MCA filings, employee ESOP taxation, and corporate compliance audit.',
-    successRate: 98,
-    responseTime: '18 mins',
-    followersCount: 720,
-    verified: true,
-    online: true,
-    availableDays: [1, 4, 5],
-  },
+    online: row.advisorStatus === 'AVAILABLE',
+    availableDays: (row.advisorAvailability ?? [])
+      .filter((slot) => slot.isActive)
+      .map((slot) => slot.dayOfWeek),
+  };
+};
+
+const BOOKING_STATUSES: BookingData['status'][] = [
+  'pending', 'accepted', 'rejected', 'reschedule', 'completed', 'cancelled',
 ];
 
-const INITIAL_BOOKINGS: BookingData[] = [
-  {
-    id: 'bkg-101',
-    advisorId: 'adv-vikram',
-    advisorName: 'Vikram Nair',
-    advisorAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-    status: 'accepted',
-    proposedDate: '2026-08-05',
-    proposedTime: '16:00',
-    sessionType: 'video',
-    topic: 'Tax Optimization & ITR 2026 Strategy Review',
-    notes: 'Please review last year ITR V and capital gains statement.',
-    amount: 1500,
-    createdAt: '2026-07-30T10:00:00Z',
-  },
-  {
-    id: 'bkg-102',
-    advisorId: 'adv-pooja',
-    advisorName: 'CA Pooja Krishnan',
-    advisorAvatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80',
-    status: 'pending',
-    proposedDate: '2026-08-08',
-    proposedTime: '11:30',
-    sessionType: 'video',
-    topic: 'GST Input Tax Credit & Quarter 2 Filing',
-    amount: 2000,
-    createdAt: '2026-07-31T14:30:00Z',
-  },
-  {
-    id: 'bkg-103',
-    advisorId: 'adv-nikhil',
-    advisorName: 'Nikhil Desai',
-    advisorAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
-    status: 'completed',
-    proposedDate: '2026-07-26',
-    proposedTime: '14:00',
-    sessionType: 'audio',
-    topic: 'Home Loan Fixed vs Floating Interest Advisory',
-    notes: 'Recommended switching to SBI repo-linked rate (8.40%). Saved ₹1.2L in interest.',
-    amount: 1200,
-    createdAt: '2026-07-25T09:15:00Z',
-  },
-];
+const mapBooking = (row: BookingApiRow, advisorLookup: Map<string, AdvisorProfileData>): BookingData => {
+  const advisor = advisorLookup.get(row.advisorId);
+  const status = BOOKING_STATUSES.includes(row.status as BookingData['status'])
+    ? (row.status as BookingData['status'])
+    : 'pending';
+  const sessionType = ['video', 'audio', 'chat'].includes(row.sessionType)
+    ? (row.sessionType as BookingData['sessionType'])
+    : 'video';
 
+  return {
+    id: row.id,
+    advisorId: row.advisorId,
+    advisorName: row.advisor?.name || advisor?.name || 'Advisor',
+    advisorAvatar: advisor?.avatar || resolveAvatarSelection({ avatarId: null }).url,
+    status,
+    // The API returns a full ISO timestamp; the card renders a plain date.
+    proposedDate: String(row.proposedDate).slice(0, 10),
+    proposedTime: row.proposedTime,
+    sessionType,
+    topic: row.description || 'Consultation',
+    amount: Number(row.amount ?? 0),
+    createdAt: row.createdAt || new Date().toISOString(),
+    sessionId: row.session?.id,
+  };
+};
+
+const mapSessionMessage = (row: SessionMessageApiRow, currentUserId?: string): ChatMessage => ({
+  id: row.id,
+  senderId: row.senderId,
+  senderName: row.senderId === currentUserId ? 'You' : (row.sender?.name || 'Advisor'),
+  receiverId: row.senderId === currentUserId ? 'advisor' : (currentUserId ?? 'user'),
+  text: row.message,
+  timestamp: new Date(row.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+  isEncrypted: true,
+});
+
+// ─── Editorial feed (static content, no backend model) ───────────────────────
 const INITIAL_POSTS: AdvisorPost[] = [
   {
     id: 'post-1',
@@ -342,11 +255,14 @@ export const BookAdvisor: React.FC = () => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<AdvisorModuleTab>('discover');
   
-  // States
-  const [advisors] = useState<AdvisorProfileData[]>(TOP_ADVISORS);
-  const [bookings, setBookings] = useState<BookingData[]>(INITIAL_BOOKINGS);
+  // States — advisors and bookings come from the API; there is no local cache
+  // for them, so a failed load shows an error instead of stale sample data.
+  const [advisors, setAdvisors] = useState<AdvisorProfileData[]>([]);
+  const [bookings, setBookings] = useState<BookingData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [posts, setPosts] = useState<AdvisorPost[]>(INITIAL_POSTS);
-  const [followedAdvisorIds, setFollowedAdvisorIds] = useState<string[]>(['adv-vikram', 'adv-pooja']);
+  const [followedAdvisorIds, setFollowedAdvisorIds] = useState<string[]>([]);
   
   // Filters & Search
   const [searchQuery, setSearchQuery] = useState('');
@@ -367,43 +283,75 @@ export const BookAdvisor: React.FC = () => {
   });
   const [isSubmittingBooking, setIsSubmittingBooking] = useState(false);
 
-  // Messages / Chat State
-  const [activeChatAdvisorId, setActiveChatAdvisorId] = useState<string>('adv-vikram');
-  const [chatMessages, setChatMessages] = useState<Record<string, ChatMessage[]>>({
-    'adv-vikram': [
-      {
-        id: 'msg-1',
-        senderId: 'adv-vikram',
-        senderName: 'Vikram Nair',
-        receiverId: 'user',
-        text: 'Hello! I noticed your booking for Tax Optimization & ITR 2026. Please share your Form 16 or capital gain statements whenever convenient.',
-        timestamp: '10:30 AM',
-        isEncrypted: true,
-      },
-      {
-        id: 'msg-2',
-        senderId: 'user',
-        senderName: 'You',
-        receiverId: 'adv-vikram',
-        text: 'Sure Vikram, I have uploaded the Form 16 PDF from Zerodha. Let me know if you need AIS/TIS summary as well.',
-        timestamp: '10:35 AM',
-        attachmentName: 'Zerodha_Tax_Statement_2026.pdf',
-        isEncrypted: true,
-      },
-    ],
-    'adv-pooja': [
-      {
-        id: 'msg-3',
-        senderId: 'adv-pooja',
-        senderName: 'CA Pooja Krishnan',
-        receiverId: 'user',
-        text: 'Hi! Looking forward to reviewing your GST Input Tax Credit query on Aug 8th.',
-        timestamp: 'Yesterday',
-        isEncrypted: true,
-      },
-    ],
-  });
+  // Messages / Chat State. Chat hangs off an AdvisorSession, which only exists
+  // after the advisor accepts a booking — so threads are keyed by session id,
+  // not by advisor.
+  const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
+  const [chatMessages, setChatMessages] = useState<Record<string, ChatMessage[]>>({});
+  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const [newMessageText, setNewMessageText] = useState('');
+
+  // ── Data loading ───────────────────────────────────────────────────────────
+  const loadAdvisorsAndBookings = useCallback(async () => {
+    setIsLoading(true);
+    setLoadError(null);
+    try {
+      const [advisorRows, bookingRows] = await Promise.all([
+        backendService.api.get<AdvisorApiRow[]>('/advisors').then((r) => r.data),
+        backendService.api.get<BookingApiRow[]>('/bookings').then((r) => r.data),
+      ]);
+
+      const mappedAdvisors = (Array.isArray(advisorRows) ? advisorRows : []).map(mapAdvisor);
+      const lookup = new Map(mappedAdvisors.map((advisor) => [advisor.id, advisor]));
+      const mappedBookings = (Array.isArray(bookingRows) ? bookingRows : [])
+        .map((row) => mapBooking(row, lookup));
+
+      setAdvisors(mappedAdvisors);
+      setBookings(mappedBookings);
+      setActiveSessionId((current) => current ?? mappedBookings.find((b) => b.sessionId)?.sessionId ?? null);
+    } catch (error: any) {
+      setLoadError(error?.message || 'Could not load advisors. Check your connection and try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadAdvisorsAndBookings();
+  }, [loadAdvisorsAndBookings]);
+
+  // Chat threads: one per booking that has reached a session.
+  const chatThreads = useMemo(
+    () => bookings.filter((booking) => Boolean(booking.sessionId)),
+    [bookings],
+  );
+
+  useEffect(() => {
+    if (!activeSessionId || chatMessages[activeSessionId]) return;
+    let cancelled = false;
+
+    setIsLoadingMessages(true);
+    backendService.api
+      .get<SessionMessageApiRow[]>(`/sessions/${activeSessionId}/messages`)
+      .then((response) => {
+        if (cancelled) return;
+        const rows = Array.isArray(response.data) ? response.data : [];
+        setChatMessages((prev) => ({
+          ...prev,
+          [activeSessionId]: rows.map((row) => mapSessionMessage(row, user?.id)),
+        }));
+      })
+      .catch(() => {
+        if (!cancelled) {
+          toast.error('Could not load this conversation');
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoadingMessages(false);
+      });
+
+    return () => { cancelled = true; };
+  }, [activeSessionId, chatMessages, user?.id]);
 
   // ── Handlers ───────────────────────────────────────────────────────────────
   const handleToggleFollow = (advisorId: string) => {
@@ -430,63 +378,86 @@ export const BookAdvisor: React.FC = () => {
     });
   };
 
-  const handleSubmitBooking = () => {
+  const handleSubmitBooking = async () => {
     if (!bookingAdvisor || !bookingForm.date || !bookingForm.time || !bookingForm.topic) {
       toast.error('Please complete date, time, and consultation topic');
       return;
     }
+
     setIsSubmittingBooking(true);
-    setTimeout(() => {
-      const newBooking: BookingData = {
-        id: `bkg-${Date.now()}`,
+    try {
+      // The topic is the booking's description; notes are appended so nothing
+      // the user typed is silently dropped (the API has no separate field).
+      const description = bookingForm.notes.trim()
+        ? `${bookingForm.topic.trim()}\n\n${bookingForm.notes.trim()}`
+        : bookingForm.topic.trim();
+
+      await backendService.api.post('/bookings', {
         advisorId: bookingAdvisor.id,
-        advisorName: bookingAdvisor.name,
-        advisorAvatar: bookingAdvisor.avatar,
-        status: 'pending',
+        sessionType: bookingForm.sessionType,
+        description,
         proposedDate: bookingForm.date,
         proposedTime: bookingForm.time,
-        sessionType: bookingForm.sessionType,
-        topic: bookingForm.topic,
-        notes: bookingForm.notes,
-        amount: bookingAdvisor.hourlyRate,
-        createdAt: new Date().toISOString(),
-      };
-      setBookings(prev => [newBooking, ...prev]);
-      setIsSubmittingBooking(false);
+        duration: SESSION_DURATION_MINUTES,
+        amount: bookingAdvisor.hourlyRate ?? 0,
+      });
+
+      // Re-read rather than optimistically appending: the server assigns the id
+      // and status, and the advisor may already have acted on it.
+      await loadAdvisorsAndBookings();
       setBookingAdvisor(null);
-      toast.success(`Booking request submitted to ${bookingAdvisor.name}! Status: Pending Approval.`);
+      toast.success(`Booking request sent to ${bookingAdvisor.name}. Status: pending approval.`);
       setActiveTab('consultations');
-    }, 600);
+    } catch (error: any) {
+      toast.error(error?.message || 'Could not submit the booking request. Please try again.');
+    } finally {
+      setIsSubmittingBooking(false);
+    }
   };
 
-  const handleSendMessage = () => {
-    if (!newMessageText.trim() || !activeChatAdvisorId) return;
-    const currentChat = chatMessages[activeChatAdvisorId] || [];
-    
-    // Check 5-message free restriction if no accepted booking exists
-    const hasAcceptedBooking = bookings.some(b => b.advisorId === activeChatAdvisorId && b.status === 'accepted');
-    const userSentCount = currentChat.filter(m => m.senderId === 'user').length;
-    
-    if (!hasAcceptedBooking && userSentCount >= 5) {
-      toast.error('Free tier message limit reached (5 messages). Confirm a consultation booking to unlock unlimited messaging!');
-      return;
+  const handleCancelBooking = async (bookingId: string) => {
+    try {
+      await backendService.api.put(`/bookings/${bookingId}/cancel`, {});
+      toast.success('Booking cancelled');
+      await loadAdvisorsAndBookings();
+    } catch (error: any) {
+      toast.error(error?.message || 'Could not cancel the booking');
     }
+  };
 
-    const newMsg: ChatMessage = {
-      id: `msg-${Date.now()}`,
-      senderId: 'user',
-      senderName: 'You',
-      receiverId: activeChatAdvisorId,
-      text: newMessageText,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      isEncrypted: true,
-    };
+  const handleSendMessage = async () => {
+    const text = newMessageText.trim();
+    if (!text || !activeSessionId) return;
 
-    setChatMessages(prev => ({
-      ...prev,
-      [activeChatAdvisorId]: [...(prev[activeChatAdvisorId] || []), newMsg],
-    }));
     setNewMessageText('');
+    try {
+      const response = await backendService.api.post<SessionMessageApiRow>(
+        `/sessions/${activeSessionId}/messages`,
+        { message: text },
+      );
+      const saved = response.data;
+      setChatMessages((prev) => ({
+        ...prev,
+        [activeSessionId]: [
+          ...(prev[activeSessionId] || []),
+          saved?.id
+            ? mapSessionMessage(saved, user?.id)
+            : {
+              id: `local-${Date.now()}`,
+              senderId: user?.id ?? 'user',
+              senderName: 'You',
+              receiverId: 'advisor',
+              text,
+              timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              isEncrypted: true,
+            },
+        ],
+      }));
+    } catch (error: any) {
+      // Put the text back so it is not lost to a failed send.
+      setNewMessageText(text);
+      toast.error(error?.message || 'Message not delivered. Please try again.');
+    }
   };
 
   const handleToggleLikePost = (postId: string) => {
@@ -514,7 +485,7 @@ export const BookAdvisor: React.FC = () => {
     });
   }, [advisors, searchQuery, activeCategoryFilter]);
 
-  const activeChatAdvisor = advisors.find(a => a.id === activeChatAdvisorId) || advisors[0];
+  const activeThread = chatThreads.find((thread) => thread.sessionId === activeSessionId) ?? null;
 
   return (
     <div className="flex flex-col min-h-screen bg-white pb-28">
@@ -646,6 +617,41 @@ export const BookAdvisor: React.FC = () => {
               </div>
             </div>
 
+            {isLoading && (
+              <div className="flex flex-col items-center justify-center py-20 text-slate-400">
+                <Loader2 size={26} className="animate-spin" />
+                <p className="text-xs font-bold mt-3">Loading advisors…</p>
+              </div>
+            )}
+
+            {!isLoading && loadError && (
+              <div className="bg-white rounded-3xl border border-rose-200/80 p-8 text-center">
+                <XCircle size={28} className="mx-auto text-rose-500" />
+                <p className="text-sm font-black text-slate-900 mt-3">Could not load advisors</p>
+                <p className="text-xs text-slate-500 font-semibold mt-1">{loadError}</p>
+                <button
+                  onClick={() => void loadAdvisorsAndBookings()}
+                  className="mt-4 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-black text-xs uppercase tracking-wider cursor-pointer"
+                >
+                  Retry
+                </button>
+              </div>
+            )}
+
+            {!isLoading && !loadError && filteredAdvisors.length === 0 && (
+              <div className="bg-white rounded-3xl border border-slate-200/80 p-10 text-center">
+                <Users size={28} className="mx-auto text-slate-300" />
+                <p className="text-sm font-black text-slate-900 mt-3">
+                  {advisors.length === 0 ? 'No advisors are available yet' : 'No advisors match this search'}
+                </p>
+                <p className="text-xs text-slate-500 font-semibold mt-1">
+                  {advisors.length === 0
+                    ? 'Approved advisors appear here as soon as they join the platform.'
+                    : 'Try a different specialization or clear the filters.'}
+                </p>
+              </div>
+            )}
+
             {/* 4-Column Desktop Responsive Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {filteredAdvisors.map(adv => {
@@ -694,7 +700,9 @@ export const BookAdvisor: React.FC = () => {
                           {adv.rating.toFixed(1)} ({adv.reviewCount})
                         </span>
                         <span className="text-slate-400">{adv.experienceYears}y exp</span>
-                        <span className="text-indigo-600 font-extrabold">₹{adv.hourlyRate}/hr</span>
+                        <span className="text-indigo-600 font-extrabold">
+                          {adv.hourlyRate !== null ? `₹${adv.hourlyRate}/hr` : 'Fee on request'}
+                        </span>
                       </div>
 
                       {/* Expertise Badges */}
@@ -773,23 +781,35 @@ export const BookAdvisor: React.FC = () => {
                   <div className="grid grid-cols-3 gap-2 pt-2">
                     <button
                       onClick={() => {
-                        setActiveChatAdvisorId(bkg.advisorId);
+                        if (!bkg.sessionId) {
+                          toast.info('Chat opens once the advisor accepts this request.');
+                          return;
+                        }
+                        setActiveSessionId(bkg.sessionId);
                         setActiveTab('messages');
                       }}
-                      className="py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl text-[10px] font-black uppercase flex items-center justify-center gap-1 cursor-pointer shadow-xs"
+                      disabled={!bkg.sessionId}
+                      className="py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl text-[10px] font-black uppercase flex items-center justify-center gap-1 cursor-pointer shadow-xs disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <MessageSquare size={12} /> Chat
                     </button>
-                    <button
-                      onClick={() => toast.info('Consultation Notes: Shared tax worksheet attached.')}
-                      className="py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl text-[10px] font-black uppercase flex items-center justify-center gap-1 cursor-pointer shadow-xs"
-                    >
-                      <FileText size={12} /> Notes
-                    </button>
+                    {bkg.status === 'pending' || bkg.status === 'accepted' ? (
+                      <button
+                        onClick={() => void handleCancelBooking(bkg.id)}
+                        className="py-2 bg-white border border-rose-200 hover:bg-rose-50 text-rose-600 rounded-xl text-[10px] font-black uppercase flex items-center justify-center gap-1 cursor-pointer shadow-xs"
+                      >
+                        <XCircle size={12} /> Cancel
+                      </button>
+                    ) : (
+                      <span className="py-2 text-center text-[10px] font-black uppercase text-slate-300">
+                        —
+                      </span>
+                    )}
                     <button
                       onClick={() => {
                         const adv = advisors.find(a => a.id === bkg.advisorId);
                         if (adv) handleOpenBookingModal(adv);
+                        else toast.error('This advisor is no longer available');
                       }}
                       className="py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-[10px] font-black uppercase flex items-center justify-center gap-1 cursor-pointer"
                     >
@@ -799,6 +819,16 @@ export const BookAdvisor: React.FC = () => {
                 </div>
               ))}
             </div>
+
+            {!isLoading && bookings.length === 0 && (
+              <div className="bg-white rounded-3xl border border-slate-200/80 p-10 text-center">
+                <Briefcase size={28} className="mx-auto text-slate-300" />
+                <p className="text-sm font-black text-slate-900 mt-3">No consultations yet</p>
+                <p className="text-xs text-slate-500 font-semibold mt-1">
+                  Book an advisor from the Discover tab to start your first consultation.
+                </p>
+              </div>
+            )}
           </div>
         )}
 
@@ -813,30 +843,38 @@ export const BookAdvisor: React.FC = () => {
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Encrypted Direct Messaging</p>
               </div>
               <div className="flex-1 overflow-y-auto p-2 space-y-1">
-                {advisors.map(adv => {
-                  const isSelected = activeChatAdvisorId === adv.id;
-                  const msgs = chatMessages[adv.id] || [];
+                {chatThreads.length === 0 && (
+                  <div className="p-6 text-center">
+                    <MessageSquare size={28} className="mx-auto text-slate-300" />
+                    <p className="text-xs font-bold text-slate-500 mt-3">No conversations yet</p>
+                    <p className="text-[11px] text-slate-400 font-medium mt-1">
+                      A secure chat opens once an advisor accepts your booking request.
+                    </p>
+                  </div>
+                )}
+                {chatThreads.map(thread => {
+                  const isSelected = activeSessionId === thread.sessionId;
+                  const msgs = chatMessages[thread.sessionId!] || [];
                   const lastMsg = msgs[msgs.length - 1];
                   return (
                     <div
-                      key={adv.id}
-                      onClick={() => setActiveChatAdvisorId(adv.id)}
+                      key={thread.sessionId}
+                      onClick={() => setActiveSessionId(thread.sessionId!)}
                       className={cn(
                         'p-3 rounded-2xl transition-all cursor-pointer flex items-center gap-3',
                         isSelected ? 'bg-indigo-50/60 shadow-xs border border-indigo-200/60' : 'hover:bg-slate-50'
                       )}
                     >
                       <div className="relative shrink-0">
-                        <img src={adv.avatar} alt={adv.name} className="w-10 h-10 rounded-2xl object-cover" />
-                        {adv.online && <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full" />}
+                        <img src={thread.advisorAvatar} alt={thread.advisorName} className="w-10 h-10 rounded-2xl object-cover" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
-                          <h4 className="font-extrabold text-slate-900 text-xs truncate">{adv.name}</h4>
+                          <h4 className="font-extrabold text-slate-900 text-xs truncate">{thread.advisorName}</h4>
                           {lastMsg && <span className="text-[9px] font-bold text-slate-400">{lastMsg.timestamp}</span>}
                         </div>
                         <p className="text-[11px] text-slate-500 truncate mt-0.5 font-medium">
-                          {lastMsg ? lastMsg.text : 'Tap to start consultation chat'}
+                          {lastMsg ? lastMsg.text : thread.topic}
                         </p>
                       </div>
                     </div>
@@ -850,26 +888,35 @@ export const BookAdvisor: React.FC = () => {
               {/* Chat Header */}
               <div className="p-4 border-b border-slate-200/80 flex items-center justify-between bg-white">
                 <div className="flex items-center gap-3">
-                  <img src={activeChatAdvisor.avatar} alt={activeChatAdvisor.name} className="w-10 h-10 rounded-2xl object-cover" />
+                  {activeThread && (
+                    <img src={activeThread.advisorAvatar} alt={activeThread.advisorName} className="w-10 h-10 rounded-2xl object-cover" />
+                  )}
                   <div>
                     <div className="flex items-center gap-1.5">
-                      <h3 className="font-black text-slate-900 text-sm">{activeChatAdvisor.name}</h3>
-                      <CheckCircle2 size={14} className="text-indigo-600" />
+                      <h3 className="font-black text-slate-900 text-sm">
+                        {activeThread ? activeThread.advisorName : 'Select a conversation'}
+                      </h3>
+                      {activeThread && <CheckCircle2 size={14} className="text-indigo-600" />}
                     </div>
-                    <p className="text-[10px] font-bold text-slate-400">{activeChatAdvisor.title}</p>
+                    <p className="text-[10px] font-bold text-slate-400">{activeThread?.topic ?? ''}</p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2 text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200/60 text-[10px] font-black uppercase">
                   <Lock size={12} />
-                  <span>AES-256 Encrypted</span>
+                  <span>Encrypted in transit</span>
                 </div>
               </div>
 
               {/* Message History */}
               <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-white">
-                {(chatMessages[activeChatAdvisorId] || []).map(msg => {
-                  const isMe = msg.senderId === 'user';
+                {isLoadingMessages && (
+                  <div className="flex items-center justify-center py-8 text-slate-400">
+                    <Loader2 size={18} className="animate-spin" />
+                  </div>
+                )}
+                {(activeSessionId ? chatMessages[activeSessionId] || [] : []).map(msg => {
+                  const isMe = msg.senderId === user?.id;
                   return (
                     <div key={msg.id} className={cn('flex flex-col max-w-[75%]', isMe ? 'ml-auto items-end' : 'mr-auto items-start')}>
                       <div className={cn(
@@ -896,24 +943,19 @@ export const BookAdvisor: React.FC = () => {
 
               {/* Chat Input Bar */}
               <div className="p-4 border-t border-slate-200/80 flex items-center gap-2 bg-white">
-                <button
-                  onClick={() => toast.info('Selected document attached for tax review.')}
-                  className="p-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl transition-colors cursor-pointer"
-                  title="Attach document"
-                >
-                  <Paperclip size={18} />
-                </button>
                 <input
                   type="text"
                   value={newMessageText}
+                  disabled={!activeThread}
                   onChange={e => setNewMessageText(e.target.value)}
-                  onKeyDown={e => { if (e.key === 'Enter') handleSendMessage(); }}
-                  placeholder={`Message ${activeChatAdvisor.name}...`}
-                  className="flex-1 bg-slate-50 border border-slate-200/80 rounded-xl py-2.5 px-4 font-semibold text-slate-900 text-xs focus:ring-2 focus:ring-indigo-500/20 outline-none"
+                  onKeyDown={e => { if (e.key === 'Enter') void handleSendMessage(); }}
+                  placeholder={activeThread ? `Message ${activeThread.advisorName}...` : 'Select a conversation to start messaging'}
+                  className="flex-1 bg-slate-50 border border-slate-200/80 rounded-xl py-2.5 px-4 font-semibold text-slate-900 text-xs focus:ring-2 focus:ring-indigo-500/20 outline-none disabled:opacity-60"
                 />
                 <button
-                  onClick={handleSendMessage}
-                  className="p-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-all shadow-sm active:scale-95 cursor-pointer"
+                  onClick={() => void handleSendMessage()}
+                  disabled={!activeThread || !newMessageText.trim()}
+                  className="p-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 text-white rounded-xl transition-all shadow-sm active:scale-95 cursor-pointer disabled:cursor-not-allowed"
                 >
                   <Send size={18} />
                 </button>
@@ -1087,7 +1129,7 @@ export const BookAdvisor: React.FC = () => {
                         <Star size={12} className="fill-current" /> {viewingProfileAdvisor.rating.toFixed(1)}
                       </span>
                       <span>· {viewingProfileAdvisor.experienceYears} Years Exp</span>
-                      <span>· {viewingProfileAdvisor.followersCount} Followers</span>
+                      <span>· {viewingProfileAdvisor.reviewCount} Reviews</span>
                     </div>
                   </div>
                 </div>
@@ -1101,29 +1143,37 @@ export const BookAdvisor: React.FC = () => {
 
                 <div className="grid grid-cols-3 gap-2 p-3 bg-slate-50 rounded-2xl text-center">
                   <div>
-                    <p className="text-[9px] font-black uppercase text-slate-400">Success Rate</p>
-                    <p className="font-black text-slate-900 text-sm text-emerald-600 mt-0.5">{viewingProfileAdvisor.successRate}%</p>
+                    <p className="text-[9px] font-black uppercase text-slate-400">Rating</p>
+                    <p className="font-black text-sm text-emerald-600 mt-0.5">
+                      {viewingProfileAdvisor.reviewCount > 0 ? viewingProfileAdvisor.rating.toFixed(1) : '—'}
+                    </p>
                   </div>
                   <div>
-                    <p className="text-[9px] font-black uppercase text-slate-400">Response Time</p>
-                    <p className="font-black text-slate-900 text-sm mt-0.5">{viewingProfileAdvisor.responseTime}</p>
+                    <p className="text-[9px] font-black uppercase text-slate-400">Availability</p>
+                    <p className="font-black text-slate-900 text-sm mt-0.5">
+                      {viewingProfileAdvisor.availability ? 'Accepting' : 'Closed'}
+                    </p>
                   </div>
                   <div>
                     <p className="text-[9px] font-black uppercase text-slate-400">Rate</p>
-                    <p className="font-black text-indigo-600 text-sm mt-0.5">₹{viewingProfileAdvisor.hourlyRate}/hr</p>
+                    <p className="font-black text-indigo-600 text-sm mt-0.5">
+                      {viewingProfileAdvisor.hourlyRate !== null ? `₹${viewingProfileAdvisor.hourlyRate}/hr` : 'On request'}
+                    </p>
                   </div>
                 </div>
 
-                <div>
-                  <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1.5">Languages Spoken</h4>
-                  <div className="flex flex-wrap gap-1.5">
-                    {viewingProfileAdvisor.languages.map(lang => (
-                      <span key={lang} className="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-xl text-[10px] font-black">
-                        {lang}
-                      </span>
-                    ))}
+                {viewingProfileAdvisor.expertise.length > 0 && (
+                  <div>
+                    <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1.5">Specializations</h4>
+                    <div className="flex flex-wrap gap-1.5">
+                      {viewingProfileAdvisor.expertise.map(area => (
+                        <span key={area} className="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-xl text-[10px] font-black">
+                          {area}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
 
               <div className="p-5 border-t border-slate-100 bg-slate-50/50 flex gap-2">
@@ -1135,7 +1185,14 @@ export const BookAdvisor: React.FC = () => {
                 </button>
                 <button
                   onClick={() => {
-                    setActiveChatAdvisorId(viewingProfileAdvisor.id);
+                    // Messaging runs through the session created when a booking
+                    // is accepted, so there is nothing to open before that.
+                    const thread = chatThreads.find((t) => t.advisorId === viewingProfileAdvisor.id);
+                    if (!thread?.sessionId) {
+                      toast.info('Book a consultation first — chat opens once the advisor accepts.');
+                      return;
+                    }
+                    setActiveSessionId(thread.sessionId);
                     setViewingProfileAdvisor(null);
                     setActiveTab('messages');
                   }}
@@ -1250,11 +1307,15 @@ export const BookAdvisor: React.FC = () => {
 
                 <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-slate-900 font-extrabold text-xs">
                   <span>Consultation Fee:</span>
-                  <span className="text-indigo-600 font-black text-sm">₹{bookingAdvisor.hourlyRate}</span>
+                  <span className="text-indigo-600 font-black text-sm">
+                    {bookingAdvisor.hourlyRate !== null
+                      ? `₹${bookingAdvisor.hourlyRate}`
+                      : 'Agreed with advisor'}
+                  </span>
                 </div>
 
                 <button
-                  onClick={handleSubmitBooking}
+                  onClick={() => void handleSubmitBooking()}
                   disabled={isSubmittingBooking}
                   className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black text-xs uppercase tracking-wider shadow-lg shadow-indigo-200 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                 >

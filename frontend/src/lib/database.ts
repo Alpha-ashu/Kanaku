@@ -604,6 +604,24 @@ export interface RecurringTransaction {
   deletedAt?: Date;
 }
 
+export interface Budget {
+  /** Local primary key. Never overwritten with the server id — Dexie cannot
+   *  change a primary key in place, and doing so silently desynced the row from
+   *  its own key, which then made every update and delete miss. */
+  id: string;
+  /** Server id, present once the budget has been pushed. Deletes and updates
+   *  address the backend by this, never by the local id. */
+  cloudId?: string;
+  category: string;
+  amount: number;
+  period: string;
+  spent: number;
+  threshold?: number;
+  createdAt: Date;
+  updatedAt?: Date;
+  syncStatus?: 'pending' | 'synced';
+}
+
 export interface BudgetAlert {
   id?: number;
   budgetId: string;
@@ -669,7 +687,7 @@ export class ProductionDB extends KANAKUDB {
   settings!: Table<{ key: string; value: any; timestamp: Date }>;
   categories!: Table<AppCategory>;
   importHistories!: Table<ImportHistory>;
-  budgets!: Table<{ id: string; category: string; amount: number; period: string; spent: number; createdAt: Date }>;
+  budgets!: Table<Budget>;
   groups!: Table<{ id: string; name: string; members: string[]; createdAt: Date }>;
   financeAdvisors!: Table<FinanceAdvisor>;
   advisorSessions!: Table<AdvisorSession>;
@@ -1157,6 +1175,15 @@ export class OfflineSyncDB extends ProductionDB {
       investmentSubcategories: 'id, categoryId, code, categoryCode, status, displayOrder',
       investmentDocuments: 'id, investmentId, documentType, uploadedAt',
       investmentLinks: 'id, investmentId, linkedModule, linkedRecordId, relationshipType',
+    });
+
+    // Version 17: index budgets.cloudId. Budgets were pushed to the backend but
+    // the returned id was written over the local primary key, which Dexie does
+    // not allow — the server id was lost, so every later update and delete was
+    // addressed with a local UUID the backend had never seen, and the server-side
+    // budget kept firing alerts after the user deleted it.
+    this.version(17).stores({
+      budgets: 'id, cloudId, category, period, syncStatus',
     });
   }
 }

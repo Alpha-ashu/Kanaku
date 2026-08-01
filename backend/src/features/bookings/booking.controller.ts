@@ -123,6 +123,13 @@ export const getBookings = async (req: AuthRequest, res: Response) => {
           advisor: {
             select: { id: true, name: true, email: true },
           },
+          // Accepting a booking creates the session that carries the chat
+          // thread. Without it the client has no way to reach its own
+          // conversation — /sessions/:id/messages is keyed by session id and
+          // there is no "list my sessions" route for the client role.
+          session: {
+            select: { id: true, status: true, startTime: true },
+          },
         },
         orderBy: { createdAt: 'desc' },
       });

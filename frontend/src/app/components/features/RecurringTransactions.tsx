@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { PageHeader } from '@/app/components/ui/PageHeader';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { Card } from '@/app/components/ui/card';
@@ -9,6 +9,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useApp } from '@/contexts/AppContext';
 import { formatCurrencyAmount } from '@/lib/currencyUtils';
 import { backendService } from '@/lib/backend-api';
+import { syncRecurringTransactions } from '@/services/featureSyncService';
 
 type Frequency = 'weekly' | 'monthly' | 'yearly';
 type TxType = 'expense' | 'income' | 'transfer';
@@ -46,6 +47,13 @@ export const RecurringTransactions: React.FC = () => {
     () => db.recurringTransactions.filter((r) => !r.deletedAt).reverse().sortBy('nextDueDate'),
     []
   ) ?? [];
+
+  // Pull the server's rules and retry anything that never made it up. The
+  // backend worker executes from its own copy, so a rule that only exists in
+  // this browser never actually runs.
+  useEffect(() => {
+    void syncRecurringTransactions();
+  }, []);
 
   const totalMonthlyCommitment = useMemo(() => {
     return items
@@ -122,21 +130,44 @@ export const RecurringTransactions: React.FC = () => {
   const handleToggleStatus = async (item: RecurringTransaction) => {
     if (!item.id) return;
     const newStatus = item.status === 'active' ? 'paused' : 'active';
-    await db.recurringTransactions.update(item.id, { status: newStatus, updatedAt: new Date() });
+    await db.recurringTransactions.update(item.id, {
+      status: newStatus,
+      updatedAt: new Date(),
+      // Marked pending when the rule has never reached the server, so the next
+      // sync pushes it instead of leaving the worker running the old state.
+      syncStatus: item.cloudId ? item.syncStatus : 'pending',
+    });
     toast.info(`"${item.name}" ${newStatus === 'active' ? 'resumed' : 'paused'}`);
 
     if (item.cloudId) {
-      try { await backendService.toggleRecurringStatus(item.cloudId); } catch { /* offline */ }
+      try {
+        await backendService.toggleRecurringStatus(item.cloudId);
+      } catch {
+        await db.recurringTransactions.update(item.id, { syncStatus: 'pending' });
+      }
     }
   };
 
   const handleDelete = async (item: RecurringTransaction) => {
     if (!item.id) return;
-    await db.recurringTransactions.update(item.id, { deletedAt: new Date(), syncStatus: 'pending' });
-    toast.success(`"${item.name}" deleted`);
 
-    if (item.cloudId) {
-      try { await backendService.deleteRecurringTransaction(item.cloudId); } catch { /* offline */ }
+    if (!item.cloudId) {
+      // Never pushed — nothing on the server to delete, and keeping a
+      // tombstone would make the next sync re-push it as a new rule.
+      await db.recurringTransactions.delete(item.id);
+      toast.success(`"${item.name}" deleted`);
+      return;
+    }
+
+    try {
+      await backendService.deleteRecurringTransaction(item.cloudId);
+      await db.recurringTransactions.delete(item.id);
+      toast.success(`"${item.name}" deleted`);
+    } catch {
+      // The rule still exists on the server and its worker will keep firing, so
+      // say so rather than showing a success the backend never agreed to.
+      await db.recurringTransactions.update(item.id, { deletedAt: new Date(), syncStatus: 'pending' });
+      toast.warning(`"${item.name}" removed here — it will stop running once you are back online`);
     }
   };
 

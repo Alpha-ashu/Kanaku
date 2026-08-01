@@ -145,14 +145,40 @@ const normalizeOcrResponse = (raw: JsonMap) => {
       ? (raw.taxes as Array<{ name: string; rate?: number; amount: number }>)
       : undefined;
 
-  const derivedTaxTotal = taxBreakdown && taxBreakdown.length > 0
-    ? Number(taxBreakdown.reduce((s, t) => s + (t.amount || 0), 0).toFixed(2))
-    : undefined;
-  let resolvedTaxAmount = taxAmountRaw ?? derivedTaxTotal;
+  // A tax component larger than a quarter of the bill cannot be real — 28% is
+  // the top GST slab and it is split across CGST/SGST. Components that big come
+  // from a misparsed identifier (a GSTIN tail read as an amount), and letting
+  // one through inflates the tax total and the "verified" grand total with it.
+  const grandTotalForTaxCheck = Math.max(
+    parseNumber(raw.netAmount) ?? 0,
+    parseNumber(raw.grand_total) ?? 0,
+    parseNumber(raw.total) ?? 0,
+  );
+  const plausibleTaxBreakdown = taxBreakdown && grandTotalForTaxCheck > 0
+    ? taxBreakdown.filter((t) => (t.amount || 0) <= grandTotalForTaxCheck * 0.25)
+    : taxBreakdown;
 
-  //  INDIAN TAX HEURISTICS 
-  if (taxBreakdown && taxBreakdown.length > 0 && resolvedTaxAmount) {
-    const upperNames = taxBreakdown.map(t => t.name.toUpperCase());
+  if (taxBreakdown && plausibleTaxBreakdown && plausibleTaxBreakdown.length !== taxBreakdown.length) {
+    logger.warn('Dropped implausible tax components from OCR result', {
+      dropped: taxBreakdown.length - plausibleTaxBreakdown.length,
+      total: grandTotalForTaxCheck,
+    });
+  }
+
+  const droppedTaxComponent = Boolean(
+    taxBreakdown && plausibleTaxBreakdown && plausibleTaxBreakdown.length !== taxBreakdown.length,
+  );
+
+  const derivedTaxTotal = plausibleTaxBreakdown && plausibleTaxBreakdown.length > 0
+    ? Number(plausibleTaxBreakdown.reduce((s, t) => s + (t.amount || 0), 0).toFixed(2))
+    : undefined;
+  // A reported tax total that includes a component we just rejected is itself
+  // wrong, so recompute from what survived.
+  let resolvedTaxAmount = droppedTaxComponent ? derivedTaxTotal : (taxAmountRaw ?? derivedTaxTotal);
+
+  //  INDIAN TAX HEURISTICS
+  if (plausibleTaxBreakdown && plausibleTaxBreakdown.length > 0 && resolvedTaxAmount) {
+    const upperNames = plausibleTaxBreakdown.map(t => t.name.toUpperCase());
     const hasCGST = upperNames.some(n => n.includes('CGST'));
     const hasSGST = upperNames.some(n => n.includes('SGST'));
     const hasIGST = upperNames.some(n => n.includes('IGST'));
@@ -160,12 +186,12 @@ const normalizeOcrResponse = (raw: JsonMap) => {
     // Case 1: Only CGST found (SGST missing  OCR missed the mirror line)
     // SGST always mirrors CGST, so double the tax.
     // But NOT if IGST is present (IGST = CGST+SGST combined, used for inter-state).
-    if (hasCGST && !hasSGST && !hasIGST && taxBreakdown.length === 1) {
+    if (hasCGST && !hasSGST && !hasIGST && plausibleTaxBreakdown.length === 1) {
       resolvedTaxAmount = Number((resolvedTaxAmount * 2).toFixed(2));
     }
 
     // Case 2: Only SGST found (CGST missing  OCR missed the mirror line)
-    if (hasSGST && !hasCGST && !hasIGST && taxBreakdown.length === 1) {
+    if (hasSGST && !hasCGST && !hasIGST && plausibleTaxBreakdown.length === 1) {
       resolvedTaxAmount = Number((resolvedTaxAmount * 2).toFixed(2));
     }
 
@@ -248,12 +274,17 @@ const normalizeOcrResponse = (raw: JsonMap) => {
     invoiceNumber: firstString(raw.invoiceNumber),
     gstin: firstString(raw.gstin, raw.gstNo, raw.gst_no, raw.tin),
     items: Array.isArray(raw.items) ? raw.items : undefined,
-    taxBreakdown,
+    taxBreakdown: plausibleTaxBreakdown,
     paymentMethod: firstString(raw.paymentMethod),
     category: firstString(raw.category),
     subcategory: firstString(raw.subcategory),
     description: firstString(raw.description),
     validationResult,
+    // The extractor's own confidence, forwarded rather than dropped. Clients
+    // that receive no score have to invent one, and an invented score is always
+    // wrong in the dangerous direction.
+    confidence: parseNumber(raw.confidence),
+    engine: firstString(raw._source),
     rawFields: raw,
   };
 };
@@ -575,9 +606,20 @@ const executeFullOcrPipeline = async (userId: string, file: any, validated: any)
   }
 
   const normalized = normalizeOcrResponse(raw);
-  const confidence = typeof raw.confidence === 'number' ? raw.confidence : 0.85;
 
-  return { normalized, source, confidence };
+  // The engine that actually produced the data. scanReceiptWithGemini answers
+  // with a heuristic result when the LLM call fails, so trusting the branch we
+  // took here reports "gemini" for scans Gemini never structured.
+  const engine = typeof raw._source === 'string' ? raw._source : undefined;
+  const resolvedSource = engine && engine !== source ? `${source}:${engine}` : source;
+
+  // No fabricated score: an extractor that reported nothing is not a confident
+  // one, and the heuristic fallback is never as good as a clean LLM pass.
+  const confidence = typeof raw.confidence === 'number'
+    ? raw.confidence
+    : engine === 'gemini' ? 0.85 : 0.4;
+
+  return { normalized, source: resolvedSource, confidence };
 };
 
 export const startReceiptScan = async (req: AuthRequest, res: Response) => {
@@ -604,9 +646,15 @@ export const startReceiptScan = async (req: AuthRequest, res: Response) => {
           ? await convertPdfToImageForOcr(validated)
           : validated;
 
-        const { normalized } = await executeFullOcrPipeline(userId, file, ocrValidated);
-        OCR_JOBS.set(jobId, { status: 'completed', data: normalized });
-        audit({ event: 'ai.ocr_success', userId, meta: { jobId } });
+        const { normalized, source, confidence } = await executeFullOcrPipeline(userId, file, ocrValidated);
+        // confidence and source travel with the payload: the polling client
+        // renders the confidence banner from them, and without them it fell back
+        // to a hardcoded 85% that read "high confidence" on every scan.
+        OCR_JOBS.set(jobId, {
+          status: 'completed',
+          data: { ...normalized, source, confidence, requiresConfirmation: true },
+        });
+        audit({ event: 'ai.ocr_success', userId, meta: { jobId, source, confidence } });
       } catch (err: any) {
         logger.error('Background OCR failed', { jobId, error: err.message, stack: err.stack });
         OCR_JOBS.set(jobId, { status: 'failed', error: err.message });

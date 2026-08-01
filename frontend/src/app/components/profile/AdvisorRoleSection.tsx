@@ -64,6 +64,7 @@ export const AdvisorRoleSection: React.FC<Props> = ({ userRole, userName, userEm
     experienceYears: '',
     expertise: '',
     organizationName: '',
+    hourlyRate: '',
     bio: '',
     confirmed: false,
   });
@@ -120,6 +121,9 @@ export const AdvisorRoleSection: React.FC<Props> = ({ userRole, userName, userEm
     data.append('experienceYears', formData.experienceYears);
     data.append('expertise', formData.expertise);
     data.append('organizationName', formData.organizationName);
+    // Sent even when blank: the backend reads an empty value as "no rate set"
+    // and stores null, which resubmission must be able to clear.
+    data.append('hourlyRate', formData.hourlyRate);
     data.append('bio', formData.bio);
     data.append('panDocument', panFile);
     data.append('aadhaarDocument', aadhaarFile);
@@ -477,16 +481,32 @@ export const AdvisorRoleSection: React.FC<Props> = ({ userRole, userName, userEm
                         </select>
                       </div>
                     </div>
-                    <div>
-                      <label htmlFor="adv-org" className="block text-sm font-semibold text-gray-700 mb-1">Organization Name <span className="text-gray-400 font-normal">(Optional)</span></label>
-                      <input data-testid="advisor-role-section-company-or-firm-name"
-                        id="adv-org"
-                        type="text"
-                        placeholder="Company or firm name"
-                        value={formData.organizationName}
-                        onChange={(e) => setFormData((p) => ({ ...p, organizationName: e.target.value }))}
-                        className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
-                      />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label htmlFor="adv-org" className="block text-sm font-semibold text-gray-700 mb-1">Organization Name <span className="text-gray-400 font-normal">(Optional)</span></label>
+                        <input data-testid="advisor-role-section-company-or-firm-name"
+                          id="adv-org"
+                          type="text"
+                          placeholder="Company or firm name"
+                          value={formData.organizationName}
+                          onChange={(e) => setFormData((p) => ({ ...p, organizationName: e.target.value }))}
+                          className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="adv-rate" className="block text-sm font-semibold text-gray-700 mb-1">Consultation Fee / hour <span className="text-gray-400 font-normal">(Optional)</span></label>
+                        <input data-testid="advisor-role-section-hourly-rate"
+                          id="adv-rate"
+                          type="number"
+                          min={0}
+                          step={50}
+                          placeholder="e.g. 1500"
+                          value={formData.hourlyRate}
+                          onChange={(e) => setFormData((p) => ({ ...p, hourlyRate: e.target.value }))}
+                          className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                        />
+                        <p className="text-[11px] text-gray-400 mt-1">Shown on your public profile. Leave blank to display "Fee on request".</p>
+                      </div>
                     </div>
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-1">Professional Bio <span className="text-red-500">*</span></label>

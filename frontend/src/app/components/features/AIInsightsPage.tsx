@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { PageHeader } from '@/app/components/ui/PageHeader';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { Card } from '@/app/components/ui/card';
@@ -8,6 +8,7 @@ import { db } from '@/lib/database';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useApp } from '@/contexts/AppContext';
 import { formatCurrencyAmount } from '@/lib/currencyUtils';
+import { backendService } from '@/lib/backend-api';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -26,12 +27,63 @@ interface Insight {
   description: string;
   impact: string;
   impactColor: string;
+  /** Where the insight came from — the server agents, or on-device analysis. */
+  source: 'server' | 'local';
 }
+
+interface ServerRecommendation {
+  type: string;
+  title: string;
+  message: string;
+  priority: number;
+}
+
+interface ServerInsightsPayload {
+  healthScore?: number;
+  recommendations?: ServerRecommendation[];
+  fraudAlerts?: Array<{ reason: string; severity: string; amount: number }>;
+  upcomingBills?: Array<{ merchant: string; predictedAmount: number; predictedDate: string }>;
+}
+
+const SERVER_RECOMMENDATION_STYLES: Record<string, { icon: React.ElementType; color: string; impactColor: string }> = {
+  budget_alert: { icon: AlertTriangle, color: 'text-rose-500 bg-rose-500/10', impactColor: 'text-rose-600 bg-rose-50 border-rose-200' },
+  goal_suggestion: { icon: Target, color: 'text-purple-500 bg-purple-500/10', impactColor: 'text-purple-600 bg-purple-50 border-purple-200' },
+  investment_tip: { icon: TrendingUp, color: 'text-teal-500 bg-teal-500/10', impactColor: 'text-teal-600 bg-teal-50 border-teal-200' },
+};
+const DEFAULT_SERVER_STYLE = {
+  icon: Sparkles,
+  color: 'text-indigo-500 bg-indigo-500/10',
+  impactColor: 'text-indigo-600 bg-indigo-50 border-indigo-200',
+};
 
 export const AIInsightsPage: React.FC = () => {
   const { currency } = useApp();
   const [lastRefreshed, setLastRefreshed] = useState(new Date());
+  const [serverData, setServerData] = useState<ServerInsightsPayload | null>(null);
+  const [serverUnavailable, setServerUnavailable] = useState(false);
   const fc = (n: number) => formatCurrencyAmount(Math.abs(n), currency, { maximumFractionDigits: 0 });
+
+  // The dashboard card already reads /ai/insights; this page was computing its
+  // own numbers and ignoring the agents entirely, so the two surfaces disagreed
+  // about the same finances. Server insights lead, on-device analysis fills in
+  // (and carries the page alone when the AI backend is unreachable or disabled).
+  useEffect(() => {
+    let cancelled = false;
+
+    backendService.get<ServerInsightsPayload>('/ai/insights')
+      .then((payload) => {
+        if (cancelled) return;
+        setServerData(payload ?? null);
+        setServerUnavailable(false);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setServerData(null);
+        setServerUnavailable(true);
+      });
+
+    return () => { cancelled = true; };
+  }, [lastRefreshed]);
 
   const analysisData = useLiveQuery(async () => {
     const now = new Date(lastRefreshed);
@@ -153,6 +205,7 @@ export const AIInsightsPage: React.FC = () => {
         impactColor: increased
           ? 'text-rose-600 bg-rose-50 border-rose-200'
           : 'text-emerald-600 bg-emerald-50 border-emerald-200',
+        source: 'local',
       });
     }
 
@@ -166,6 +219,7 @@ export const AIInsightsPage: React.FC = () => {
         description: `Your highest expense category this month is "${topCategory[0]}" at ${fc(topCategory[1])}. ${topCategory[1] > (lastMonthExpense * 0.4) ? 'This single category accounts for a large share of your monthly budget — consider setting a specific limit.' : 'Track this category closely to keep it within budget.'}`,
         impact: topCategory[1] > (lastMonthExpense * 0.4) ? 'High Share' : 'Track it',
         impactColor: 'text-amber-600 bg-amber-50 border-amber-200',
+        source: 'local',
       });
     }
 
@@ -182,6 +236,7 @@ export const AIInsightsPage: React.FC = () => {
       impactColor: savingsRate >= 20
         ? 'text-emerald-600 bg-emerald-50 border-emerald-200'
         : 'text-indigo-600 bg-indigo-50 border-indigo-200',
+      source: 'local',
     });
 
     // Insight 4: Budget breaches
@@ -194,6 +249,7 @@ export const AIInsightsPage: React.FC = () => {
         description: `The following categories are approaching or have breached their limits this month: ${breachedBudgets.map((b: any) => `${b.category} (${fc(b.spent)}/${fc(b.amount)})`).join(', ')}. Review and adjust your spending to stay on track.`,
         impact: 'Action Required',
         impactColor: 'text-rose-600 bg-rose-50 border-rose-200',
+        source: 'local',
       });
     }
 
@@ -217,11 +273,69 @@ export const AIInsightsPage: React.FC = () => {
         description: `You have ${count} transactions in "${label}" this month, totalling ${fc(analysisData.categorySpendByKey[key] ?? 0)}. Converting the repeating ones to Recurring Transactions gives you automatic tracking and reminders.`,
         impact: 'Optimize',
         impactColor: 'text-purple-600 bg-purple-50 border-purple-200',
+        source: 'local',
       });
     }
 
     return list.slice(0, 6);
   }, [analysisData, currency]);
+
+  // Server agent output, shaped into the same card as the on-device insights.
+  const serverInsights = useMemo<Insight[]>(() => {
+    const list: Insight[] = [];
+
+    for (const alert of serverData?.fraudAlerts ?? []) {
+      list.push({
+        id: `fraud-${list.length}`,
+        title: 'Unusual Transaction Detected',
+        icon: AlertTriangle,
+        color: 'text-rose-500 bg-rose-500/10',
+        description: `${alert.reason} (${fc(alert.amount)}). Confirm this was you — flag it with your bank if not.`,
+        impact: alert.severity === 'high' ? 'Urgent' : 'Review',
+        impactColor: 'text-rose-600 bg-rose-50 border-rose-200',
+        source: 'server',
+      });
+    }
+
+    for (const recommendation of serverData?.recommendations ?? []) {
+      const style = SERVER_RECOMMENDATION_STYLES[recommendation.type] ?? DEFAULT_SERVER_STYLE;
+      list.push({
+        id: `srv-${recommendation.type}-${list.length}`,
+        title: recommendation.title,
+        icon: style.icon,
+        color: style.color,
+        description: recommendation.message,
+        impact: recommendation.priority >= 4 ? 'High Priority' : 'Suggested',
+        impactColor: style.impactColor,
+        source: 'server',
+      });
+    }
+
+    const bills = serverData?.upcomingBills ?? [];
+    if (bills.length > 0) {
+      list.push({
+        id: 'upcoming-bills',
+        title: `${bills.length} Bill${bills.length > 1 ? 's' : ''} Due Soon`,
+        icon: Zap,
+        color: 'text-amber-500 bg-amber-500/10',
+        description: bills
+          .map((bill) => `${bill.merchant} ~${fc(bill.predictedAmount)} on ${new Date(bill.predictedDate).toLocaleDateString()}`)
+          .join(' · '),
+        impact: 'Plan Ahead',
+        impactColor: 'text-amber-600 bg-amber-50 border-amber-200',
+        source: 'server',
+      });
+    }
+
+    return list;
+  }, [serverData, currency]);
+
+  // Server first — those come from the agents that also drive the dashboard
+  // card and the notification engine.
+  const combinedInsights = useMemo(
+    () => [...serverInsights, ...insights].slice(0, 9),
+    [serverInsights, insights],
+  );
 
   if (!analysisData) {
     return (
@@ -260,11 +374,22 @@ export const AIInsightsPage: React.FC = () => {
                 <Sparkles size={10} /> Live Transaction Analysis
               </span>
               <h3 className="text-2xl font-black text-white tracking-tight mb-2">
-                {insights.length > 0 ? `${insights.length} Insights from Your Data` : 'Add Transactions to Get Insights'}
+                {combinedInsights.length > 0
+                  ? `${combinedInsights.length} Insights from Your Data`
+                  : 'Add Transactions to Get Insights'}
               </h3>
               <p className="text-purple-100 text-sm leading-relaxed font-medium">
-                Insights are computed from your actual transactions, budgets, and goals — updated in real time as you add data.
+                {serverUnavailable
+                  ? 'Showing on-device analysis of your transactions, budgets, and goals. AI insights will appear when the service is reachable.'
+                  : 'Insights combine the AI engine’s analysis with on-device analysis of your transactions, budgets, and goals.'}
               </p>
+              {typeof serverData?.healthScore === 'number' && (
+                <div className="mt-4 inline-flex items-center gap-2 bg-white/15 rounded-2xl px-4 py-2">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-purple-100">Financial Health</span>
+                  <span className="text-lg font-black text-white">{Math.round(serverData.healthScore)}</span>
+                  <span className="text-xs font-bold text-purple-200">/ 100</span>
+                </div>
+              )}
             </div>
             <button data-testid="aiinsights-page-refresh-analysis"
               onClick={() => setLastRefreshed(new Date())}
@@ -276,7 +401,7 @@ export const AIInsightsPage: React.FC = () => {
         </div>
 
         {/* Insights Grid */}
-        {insights.length === 0 ? (
+        {combinedInsights.length === 0 ? (
           <div className="rounded-3xl border border-dashed border-gray-300 bg-white px-4 py-16 text-center mb-8">
             <Brain className="mx-auto mb-3 text-slate-300" size={36} />
             <p className="text-sm font-semibold text-slate-500">No insights yet.</p>
@@ -289,7 +414,7 @@ export const AIInsightsPage: React.FC = () => {
             animate="show"
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8"
           >
-            {insights.map((insight) => {
+            {combinedInsights.map((insight) => {
               const Icon = insight.icon;
               return (
                 <motion.div key={insight.id} variants={itemVariants}>
@@ -306,6 +431,9 @@ export const AIInsightsPage: React.FC = () => {
                     <p className="text-gray-500 text-sm font-medium leading-relaxed flex-1">
                       {insight.description}
                     </p>
+                    <span className="mt-4 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                      {insight.source === 'server' ? 'AI engine' : 'On-device analysis'}
+                    </span>
                   </Card>
                 </motion.div>
               );

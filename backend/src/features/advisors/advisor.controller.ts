@@ -16,9 +16,12 @@ export const listAdvisors = async (req: AuthRequest, res: Response) => {
         id: true,
         name: true,
         email: true,
+        avatarId: true,
         advisorStatus: true,
         advisorAvailability: true,
-        advisorApplication: { select: { expertise: true, experienceYears: true, bio: true, organizationName: true } },
+        advisorApplication: {
+          select: { expertise: true, experienceYears: true, bio: true, organizationName: true, hourlyRate: true },
+        },
         sessionsAsAdvisor: { where: { status: 'completed' }, select: { rating: true } },
       },
     });
@@ -27,7 +30,17 @@ export const listAdvisors = async (req: AuthRequest, res: Response) => {
       const ratings = sessionsAsAdvisor.map((s: any) => s.rating).filter(Boolean);
       const averageRating = ratings.length > 0 ? ratings.reduce((x: number, y: number) => x + y, 0) / ratings.length : 0;
       const availability = rest.advisorAvailability.some((slot: any) => slot.isActive);
-      return { ...rest, averageRating, reviewCount: ratings.length, availability };
+      return {
+        ...rest,
+        averageRating,
+        reviewCount: ratings.length,
+        availability,
+        // Decimal serialises as a string over JSON; the booking screen needs a
+        // number to compute the session amount.
+        hourlyRate: rest.advisorApplication?.hourlyRate != null
+          ? Number(rest.advisorApplication.hourlyRate)
+          : null,
+      };
     });
     res.json(enriched);
   } catch (error: any) {
@@ -45,9 +58,12 @@ export const getAdvisor = async (req: AuthRequest, res: Response) => {
       where: { id },
       select: {
         id: true, name: true, email: true, role: true, isApproved: true,
+        avatarId: true,
         advisorStatus: true,
         advisorAvailability: true,
-        advisorApplication: { select: { expertise: true, experienceYears: true, bio: true, organizationName: true } },
+        advisorApplication: {
+          select: { expertise: true, experienceYears: true, bio: true, organizationName: true, hourlyRate: true },
+        },
         sessionsAsAdvisor: { where: { status: 'completed' }, select: { rating: true } },
       },
     });
@@ -57,7 +73,15 @@ export const getAdvisor = async (req: AuthRequest, res: Response) => {
     const ratings = advisor.sessionsAsAdvisor.map((s: any) => s.rating).filter(Boolean);
     const averageRating = ratings.length > 0 ? ratings.reduce((a: number, b: number) => a + b) / ratings.length : 0;
     const availability = advisor.advisorAvailability.some((slot: any) => slot.isActive);
-    res.json({ ...advisor, averageRating, reviewCount: ratings.length, availability });
+    res.json({
+      ...advisor,
+      averageRating,
+      reviewCount: ratings.length,
+      availability,
+      hourlyRate: advisor.advisorApplication?.hourlyRate != null
+        ? Number(advisor.advisorApplication.hourlyRate)
+        : null,
+    });
   } catch {
     res.status(500).json({ error: 'Failed to fetch advisor' });
   }
@@ -245,9 +269,19 @@ export const applyAsAdvisor = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ error: 'You already have a pending application' });
     }
 
-    const { fullName, phone, experienceYears, expertise, organizationName, bio } = req.body;
+    const { fullName, phone, experienceYears, expertise, organizationName, bio, hourlyRate } = req.body;
     if (!fullName || !phone || !experienceYears || !expertise || !bio) {
       return res.status(400).json({ error: 'Missing required fields: fullName, phone, experienceYears, expertise, bio' });
+    }
+
+    // Optional: multipart sends everything as a string, and an empty field must
+    // stay null rather than becoming 0 — a free consultation and an unstated
+    // rate are different things on the booking screen.
+    const parsedHourlyRate = hourlyRate === undefined || hourlyRate === null || `${hourlyRate}`.trim() === ''
+      ? null
+      : Number(hourlyRate);
+    if (parsedHourlyRate !== null && (!Number.isFinite(parsedHourlyRate) || parsedHourlyRate < 0 || parsedHourlyRate > 1_000_000)) {
+      return res.status(400).json({ error: 'hourlyRate must be a positive amount' });
     }
 
     const files = (req as any).files as Record<string, Express.Multer.File[]> | undefined;
@@ -284,12 +318,14 @@ export const applyAsAdvisor = async (req: AuthRequest, res: Response) => {
         userId, fullName, email: user.email, phone,
         experienceYears: Number(experienceYears), expertise,
         organizationName: organizationName || null, bio,
+        hourlyRate: parsedHourlyRate,
         panDocumentPath: panPath, aadhaarDocumentPath: aadhaarPath,
         certDocumentPath: certPath, status: 'PENDING',
       },
       update: {
         fullName, phone, experienceYears: Number(experienceYears), expertise,
         organizationName: organizationName || null, bio,
+        hourlyRate: parsedHourlyRate,
         panDocumentPath: panPath, aadhaarDocumentPath: aadhaarPath,
         certDocumentPath: certPath, status: 'PENDING',
         rejectionReason: null, reviewedBy: null, reviewedAt: null,

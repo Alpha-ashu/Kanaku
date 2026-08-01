@@ -51,6 +51,10 @@ model AdvisorApplication {
   expertise           String
   organizationName    String?
   bio                 String
+  /// Consultation fee per hour, in the platform currency. Nullable: advisors
+  /// approved before the field existed have no rate until they set one, and the
+  /// booking screen shows "fee on request" rather than inventing a number.
+  hourlyRate          Decimal?  @db.Decimal(10, 2)
   panDocumentPath     String?
   aadhaarDocumentPath String?
   certDocumentPath    String?

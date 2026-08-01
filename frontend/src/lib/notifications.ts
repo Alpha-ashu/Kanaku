@@ -313,9 +313,26 @@ export const markNotificationAsRead = async (id: number) => {
 
 export const markAllNotificationsAsRead = async () => {
   const notifications = await db.notifications.toArray();
-  await Promise.all(
-    notifications.map((notification) => notification.id ? markNotificationAsRead(notification.id) : Promise.resolve()),
-  );
+  const unread = notifications.filter((notification) => notification.id && !notification.isRead);
+  if (unread.length === 0) return;
+
+  const readAt = new Date();
+  await db.transaction('rw', db.notifications, async () => {
+    for (const notification of unread) {
+      await db.notifications.update(notification.id!, { isRead: true, readAt });
+    }
+  });
+
+  // One bulk call instead of one request per notification. Fanning out N PUTs
+  // tripped the API rate limiter on a full inbox, which left the tail of the
+  // list marked read locally and unread on the server.
+  if (unread.some((notification) => notification.remoteId)) {
+    try {
+      await apiClient.post('/notifications/mark-all-read', undefined, { showErrorToast: false });
+    } catch (error) {
+      console.info(' Failed to mark backend notifications as read:', error instanceof Error ? error.message : String(error));
+    }
+  }
 };
 
 export const deleteNotificationRecord = async (id: number) => {
