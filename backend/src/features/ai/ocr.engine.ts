@@ -113,6 +113,33 @@ const RATE_LIMITED = /429|rate limit|quota|RESOURCE_EXHAUSTED/i;
 const RETRY_BUDGET_MS = Number(process.env.OCR_RETRY_BUDGET_MS || 25_000);
 
 /**
+ * Quota cooldown.
+ *
+ * An exhausted API quota is not a per-request accident — it stays exhausted for
+ * minutes or until the daily window rolls over. Without this, every scan pays
+ * the full retry ladder (two 8s waits on the vision pass, two more on the text
+ * pass) before reaching the offline parser: roughly 50 seconds of waiting to
+ * rediscover a fact we already knew. Remembering it turns those scans into fast
+ * ones that degrade immediately instead.
+ */
+const QUOTA_COOLDOWN_MS = Number(process.env.OCR_QUOTA_COOLDOWN_MS || 90_000);
+let quotaBlockedUntil = 0;
+
+const isQuotaBlocked = () => Date.now() < quotaBlockedUntil;
+
+const noteQuotaExhausted = () => {
+  quotaBlockedUntil = Date.now() + QUOTA_COOLDOWN_MS;
+  logger.warn(
+    `AI quota exhausted — skipping the model for ${Math.round(QUOTA_COOLDOWN_MS / 1000)}s and reading bills `
+    + 'with the offline parser. Accuracy is reduced until quota frees up; enable billing on the Google API key to avoid this.',
+  );
+};
+
+/** Exposed for tests and for the admin health surface. */
+export const getQuotaCooldownRemainingMs = () => Math.max(0, quotaBlockedUntil - Date.now());
+export const resetQuotaCooldown = () => { quotaBlockedUntil = 0; };
+
+/**
  * How long to wait before retrying.
  *
  * A rate limit is not a blip: Gemini's per-minute quota needs seconds, not
@@ -145,17 +172,18 @@ const callGeminiWithRetry = async (
       const message = error?.message ?? String(error);
       attempt += 1;
 
+      if (RATE_LIMITED.test(message) && attempt >= 2) {
+        // Two rate limits in a row is quota exhaustion, not a burst.
+        noteQuotaExhausted();
+        throw error;
+      }
+
       if (!TRANSIENT_ERROR.test(message) || attempt > 2) throw error;
 
       const delay = retryDelayFor(message);
       if (Date.now() + delay > deadline) {
         // Waiting would eat the budget the fallback engine needs.
-        if (RATE_LIMITED.test(message)) {
-          logger.warn(
-            `${label} is rate limited and the retry budget is spent — using the fallback engine. `
-            + 'Enable billing on the Google API key to stop this happening under load.',
-          );
-        }
+        if (RATE_LIMITED.test(message)) noteQuotaExhausted();
         throw error;
       }
 
@@ -228,9 +256,19 @@ export const scanReceiptWithGemini = async (
   const failures: string[] = [];
 
   const usable = (result: OcrEngineResult) => result.total !== null && result.total > 0;
+  // During a quota cooldown the model calls are guaranteed to fail; skipping
+  // them takes the scan straight to the offline parser in seconds instead of
+  // making the user wait out a retry ladder that cannot succeed.
+  const modelAvailable = Boolean(GOOGLE_API_KEY) && provider !== 'tesseract' && !isQuotaBlocked();
+
+  if (!modelAvailable && isQuotaBlocked()) {
+    logger.info('OCR: skipping model passes, quota cooldown active', {
+      remainingMs: getQuotaCooldownRemainingMs(),
+    });
+  }
 
   // 1. Vision — unless the admin pinned the provider to text-only OCR.
-  if (GOOGLE_API_KEY && provider !== 'tesseract') {
+  if (modelAvailable) {
     try {
       const started = Date.now();
       const result = await extractWithVision(imageBuffer, mimeType, model);
@@ -256,7 +294,7 @@ export const scanReceiptWithGemini = async (
     failures.push(`ocr: ${error?.message ?? error}`);
   }
 
-  if (GOOGLE_API_KEY && provider !== 'tesseract' && rawText.trim().length > 20) {
+  if (modelAvailable && !isQuotaBlocked() && rawText.trim().length > 20) {
     try {
       const result = await extractWithTextModel(rawText, model);
       logger.info('OCR: text-model pass complete', { total: result.total, confidence: result.confidence });

@@ -539,39 +539,67 @@ export const parseReceiptFromText = (rawText: string): ParsedReceipt => {
   const roundOff = extractRoundOff(lines);
 
   let subtotal: number | undefined;
-  let netTotal: number | undefined;
   let discount: number | undefined;
   let discountPercent: number | undefined;
   let grandTotal: number | undefined;
-  let plainTotal: number | undefined;
 
-  for (const line of lines) {
+  // "Net Amount" and a bare "Total" mean different things depending on where
+  // they sit. On one bill "Net Total" is the post-discount, pre-tax base; on
+  // another "Net Amount" is the final payable printed below the taxes. Position
+  // relative to the tax block is what distinguishes them, so ambiguous labels
+  // are collected with their line index and resolved afterwards.
+  const lastTaxLine = lines.reduce(
+    (last, line, index) => (TAX_LABEL.test(line) && !IDENTIFIER_LINE.test(line) ? index : last),
+    -1,
+  );
+  const ambiguousTotals: Array<{ index: number; amount: number }> = [];
+
+  lines.forEach((line, index) => {
     const amount = extractLineAmount(line);
-    if (amount === undefined) continue;
+    if (amount === undefined) return;
 
     // Order matters: the most specific label on the line wins, and a line can
     // hold two labels ("Total Qty: 5   Sub Total 452.30").
     if (ROUND_OFF_LABEL.test(line)) {
-      continue; // handled by extractRoundOff, which keeps the sign
-    } else if (GRAND_TOTAL_LABEL.test(line) || INCLUSIVE_TOTAL_LABEL.test(line)) {
+      return; // handled by extractRoundOff, which keeps the sign
+    }
+    if (GRAND_TOTAL_LABEL.test(line) || INCLUSIVE_TOTAL_LABEL.test(line)) {
       grandTotal = amount;
-    } else if (SUBTOTAL_LABEL.test(line)) {
+      return;
+    }
+    if (SUBTOTAL_LABEL.test(line)) {
       subtotal = amount;
-    } else if (NET_TOTAL_LABEL.test(line)) {
-      netTotal = amount;
-    } else if (DISCOUNT_LABEL.test(line) && !TAX_LABEL.test(line)) {
+      return;
+    }
+    if (DISCOUNT_LABEL.test(line) && !TAX_LABEL.test(line)) {
       discount = Math.abs(amount);
       const pct = line.match(PERCENT_RATE);
       if (pct) {
         const parsed = Number.parseFloat(pct[1]);
         if (parsed > 0 && parsed <= 100) discountPercent = parsed;
       }
-    } else if (/^total\b/i.test(line) && !COUNT_LABEL.test(line) && !TAX_LABEL.test(line)) {
-      plainTotal = amount;
+      return;
     }
-  }
+    if (NET_TOTAL_LABEL.test(line)
+      || (/^total\b/i.test(line) && !COUNT_LABEL.test(line) && !TAX_LABEL.test(line))) {
+      ambiguousTotals.push({ index, amount });
+    }
+  });
 
-  if (grandTotal === undefined) grandTotal = plainTotal;
+  // Below the taxes it is the payable total; above them it is the base the
+  // taxes were computed on.
+  const belowTaxes = ambiguousTotals.filter((entry) => lastTaxLine >= 0 && entry.index > lastTaxLine);
+  const aboveTaxes = ambiguousTotals.filter((entry) => lastTaxLine < 0 || entry.index < lastTaxLine);
+
+  if (grandTotal === undefined && belowTaxes.length > 0) {
+    grandTotal = belowTaxes[belowTaxes.length - 1].amount;
+  }
+  if (subtotal === undefined && aboveTaxes.length > 0) {
+    subtotal = aboveTaxes[aboveTaxes.length - 1].amount;
+  }
+  if (grandTotal === undefined && ambiguousTotals.length > 0) {
+    grandTotal = ambiguousTotals[ambiguousTotals.length - 1].amount;
+  }
 
   const taxBreakdown = dropImplausibleTaxes(taxes, grandTotal);
   const taxTotal = taxBreakdown.length > 0
@@ -583,7 +611,6 @@ export const parseReceiptFromText = (rawText: string): ParsedReceipt => {
     : undefined;
 
   const itemsTotal = items.length > 0 ? round2(items.reduce((sum, item) => sum + item.amount, 0)) : undefined;
-  if (subtotal === undefined && netTotal !== undefined) subtotal = netTotal;
   if (subtotal === undefined && itemsTotal !== undefined) subtotal = itemsTotal;
 
   if (grandTotal === undefined && subtotal !== undefined) {

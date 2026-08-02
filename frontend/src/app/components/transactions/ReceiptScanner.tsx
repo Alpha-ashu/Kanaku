@@ -302,27 +302,6 @@ export const ReceiptScanner: React.FC<ReceiptScannerProps> = ({
  onScan={handleScanReceipt}
  onChange={() => { clearFile(); setStep('source-scan'); }}
  />
- {/* On-device OCR toggle compact strip */}
- <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100">
- <div className="flex items-center gap-2">
- <div className="w-7 h-7 rounded-full bg-white flex items-center justify-center text-slate-400">
- <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
- </div>
- <div>
- <p className="text-[10px] font-black text-slate-900 uppercase tracking-widest leading-none">On-Device OCR</p>
- <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tight">Privacy Mode</p>
- </div>
- </div>
- <label className="relative inline-flex items-center cursor-pointer">
- <input data-testid="receipt-scanner-checkbox"
- type="checkbox"
- checked={onDeviceOnly}
- onChange={(e) => setOnDeviceOnly(e.target.checked)}
- className="sr-only peer"
- />
- <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
- </label>
- </div>
  </div>
  )}
 

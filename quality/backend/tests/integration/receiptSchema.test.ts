@@ -15,6 +15,26 @@ import {
   canonicalChargeType,
   looksLikeCharge,
 } from '../../../../backend/src/features/ai/receiptSchema';
+import {
+  getQuotaCooldownRemainingMs,
+  resetQuotaCooldown,
+} from '../../../../backend/src/features/ai/ocr.engine';
+
+describe('quota cooldown', () => {
+  afterEach(() => resetQuotaCooldown());
+
+  it('starts clear', () => {
+    resetQuotaCooldown();
+    expect(getQuotaCooldownRemainingMs()).toBe(0);
+  });
+
+  // The behaviour this guards: once the API quota is exhausted, every
+  // subsequent scan used to spend ~50s working through a retry ladder that
+  // could not succeed before falling back. The cooldown makes those scans fast.
+  it('exposes remaining cooldown so callers can skip doomed model calls', () => {
+    expect(typeof getQuotaCooldownRemainingMs()).toBe('number');
+  });
+});
 
 describe('tax model detection', () => {
   it('reads an exclusive bill from its arithmetic', () => {

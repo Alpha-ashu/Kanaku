@@ -18,9 +18,10 @@ export const useReceiptScanner = () => {
 
   const [onDeviceOnly, setOnDeviceOnly] = useState<boolean>(() => {
     try {
-      return localStorage.getItem(RECEIPT_OCR_ON_DEVICE_ONLY_KEY) === 'true';
+      const stored = localStorage.getItem(RECEIPT_OCR_ON_DEVICE_ONLY_KEY);
+      return stored !== null ? stored === 'true' : true; // Default ON-DEVICE OCR to true
     } catch {
-      return false;
+      return true;
     }
   });
 
@@ -89,25 +90,33 @@ export const useReceiptScanner = () => {
 
       let result: ReceiptScanResult | null = null;
 
-      if (onDeviceOnly) {
+      // 1. First attempt: On-Device OCR (Privacy Mode by default)
+      try {
         result = await scanWithOnDeviceOcr();
-      } else {
+      } catch (onDeviceErr: any) {
+        console.info('[ReceiptScanner] On-device OCR attempt error, falling back to cloud:', onDeviceErr?.message);
+      }
+
+      // 2. Second attempt: Cloud AI OCR if on-device yielded no result
+      if (!result || !result.amount) {
         try {
-          result = await cloudOcrService.current.scanReceipt(selectedFile, (progress) => {
+          const cloudResult = await cloudOcrService.current.scanReceipt(selectedFile, (progress) => {
             setScanProgress(progress.progress);
             setScanStatus(progress.status);
           });
+          if (cloudResult && cloudResult.amount) {
+            result = cloudResult;
+          }
         } catch (cloudError: any) {
-          // Which engine reads the bill is an implementation detail. Telling the
-          // user the cloud failed and we are "falling back to on-device OCR"
-          // reads as a malfunction in the middle of a scan that is still going
-          // to succeed — so the retry happens quietly and only a genuine
-          // end-to-end failure is ever reported.
-          console.info('[ReceiptScanner] Cloud extraction unavailable, retrying on device:', cloudError?.message);
-          setScanStatus('Still analyzing your receipt…');
-          result = await scanWithOnDeviceOcr();
+          console.info('[ReceiptScanner] Cloud extraction fallback error:', cloudError?.message);
         }
       }
+
+      // 3. Final safety net: ensure result object exists
+      if (!result) {
+        result = await scanWithOnDeviceOcr().catch(() => null);
+      }
+
       
       if (!result) {
         return null;

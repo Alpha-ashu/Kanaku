@@ -138,7 +138,7 @@ export const FileSelectionView: React.FC<{
  onCameraClick: () => void;
  onDeviceOnly: boolean;
  onDeviceOnlyChange: (value: boolean) => void;
-}> = ({ onUploadClick, onCameraClick, onDeviceOnly, onDeviceOnlyChange }) => (
+}> = ({ onUploadClick, onCameraClick }) => (
  <div className="space-y-6 pt-2">
  <div className="grid grid-cols-2 gap-4">
  <SelectionCard testId="receipt-scanner-views-card-3"
@@ -155,27 +155,6 @@ export const FileSelectionView: React.FC<{
  sublabel="Take Photo"
  className="bg-slate-900 text-white hover:bg-slate-800 shadow-xl shadow-slate-200"
  />
- </div>
-
- <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
- <div className="flex items-center gap-3">
- <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-slate-400">
- <Globe size={14} />
- </div>
- <div>
- <p className="text-[10px] font-black text-slate-900 uppercase tracking-widest leading-none mb-1">On-Device OCR</p>
- <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tight">Privacy Mode</p>
- </div>
- </div>
- <label className="relative inline-flex items-center cursor-pointer">
- <input data-testid="receipt-scanner-views-checkbox"
- type="checkbox"
- checked={onDeviceOnly}
- onChange={(e) => onDeviceOnlyChange(e.target.checked)}
- className="sr-only peer"
- />
- <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
- </label>
  </div>
  </div>
 );
