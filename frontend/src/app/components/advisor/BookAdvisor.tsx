@@ -251,20 +251,8 @@ const mapPost = (row: AdvisorPostApiRow): AdvisorPost => ({
 
 const FILTER_CHIPS = ['All', 'Tax', 'GST', 'Business', 'Investment', 'Loan', 'Retirement', 'Legal'];
 
-/**
- * A request that never reached the server. Deliberately not styled as a status
- * like "pending" — nothing is pending anywhere, the advisor has no record of it.
- */
-const unsentBadge = (
-  <span className="px-2.5 py-1 rounded-xl text-[9px] font-black tracking-wider flex items-center gap-1 border bg-rose-500/10 text-rose-700 border-rose-500/20">
-    <AlertCircle size={11} />
-    NOT SENT
-  </span>
-);
-
 function getStatusBadge(status: string) {
   const map: Record<string, { color: string; label: string; icon: React.ElementType }> = {
-    unsent: { color: 'bg-rose-500/10 text-rose-700 border-rose-500/20', label: 'NOT SENT', icon: AlertCircle },
     pending: { color: 'bg-amber-500/10 text-amber-700 border-amber-500/20', label: 'PENDING APPROVAL', icon: Clock },
     accepted: { color: 'bg-emerald-500/10 text-emerald-700 border-emerald-500/20', label: 'CONFIRMED', icon: CheckCircle2 },
     rejected: { color: 'bg-rose-500/10 text-rose-700 border-rose-500/20', label: 'DECLINED', icon: XCircle },
@@ -272,7 +260,6 @@ function getStatusBadge(status: string) {
     cancelled: { color: 'bg-slate-500/10 text-slate-600 border-slate-500/20', label: 'CANCELLED', icon: XCircle },
     completed: { color: 'bg-violet-500/10 text-violet-700 border-violet-500/20', label: 'COMPLETED', icon: CheckCircle },
   };
-
   const s = map[status] ?? map.pending;
   const Icon = s.icon;
   return (
@@ -646,11 +633,11 @@ export const BookAdvisor: React.FC = () => {
   return (
     <div className="flex flex-col min-h-screen bg-white pb-28">
       {/* Top Header Navigation */}
-      <header className="bg-white sticky top-0 z-30 max-w-full overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 lg:px-8 py-3 sm:py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+      <header className="bg-white sticky top-0 z-30">
+        <div className="max-w-7xl mx-auto px-4 lg:px-8 py-4 flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-600 to-indigo-800 flex items-center justify-center text-white shadow-lg shadow-indigo-200 shrink-0">
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-600 to-indigo-800 flex items-center justify-center text-white shadow-lg shadow-indigo-200">
                 <Briefcase size={20} />
               </div>
               <div>
@@ -660,8 +647,9 @@ export const BookAdvisor: React.FC = () => {
             </div>
           </div>
 
-          {/* 5 Primary Navigation Tabs - Responsive Auto-Resizing */}
-          <nav className="w-full sm:w-auto max-w-full flex items-center gap-1 sm:gap-1.5 bg-white p-1 sm:p-1.5 rounded-2xl border border-slate-200/80 shadow-xs overflow-x-auto scrollbar-hide shrink-0 touch-pan-x">
+
+          {/* 5 Primary Navigation Tabs — Adaptive Responsive Navigation */}
+          <nav className="flex items-center gap-1 sm:gap-1.5 bg-white p-1 sm:p-1.5 rounded-2xl border border-slate-200/80 shadow-xs max-w-full overflow-x-auto scrollbar-hide">
             {[
               { id: 'discover', label: 'Discover', icon: Search },
               { id: 'consultations', label: 'My Consultations', icon: Briefcase, badge: bookings.length },
@@ -675,20 +663,33 @@ export const BookAdvisor: React.FC = () => {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as AdvisorModuleTab)}
+                  title={tab.label}
+                  aria-label={tab.label}
                   className={cn(
-                    'flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-xl text-[11px] sm:text-xs font-black transition-all cursor-pointer whitespace-nowrap shrink-0',
+                    'flex items-center justify-center gap-2 rounded-xl text-xs font-black transition-all duration-300 ease-in-out cursor-pointer whitespace-nowrap min-w-[44px] h-[44px] px-2.5 sm:px-3.5 md:px-4',
                     isActive
-                      ? 'bg-indigo-600 text-white shadow-sm scale-102'
+                      ? 'bg-indigo-600 text-white shadow-sm scale-102 flex-1 md:flex-initial'
                       : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                   )}
                 >
-                  <Icon size={14} className="shrink-0" />
-                  <span>{tab.label}</span>
+                  <Icon size={16} className="shrink-0" />
+                  <span
+                    className={cn(
+                      'transition-all duration-300 ease-in-out',
+                      isActive ? 'inline-block' : 'hidden md:inline-block'
+                    )}
+                  >
+                    {tab.label}
+                  </span>
                   {tab.badge !== undefined && tab.badge > 0 && (
-                    <span className={cn(
-                      'px-1.5 py-0.5 rounded-full text-[9px] font-black shrink-0',
-                      isActive ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-700 border border-slate-200'
-                    )}>
+                    <span
+                      className={cn(
+                        'px-1.5 py-0.5 rounded-full text-[9px] font-black shrink-0 transition-all duration-300',
+                        isActive
+                          ? 'bg-white/20 text-white inline-block'
+                          : 'bg-slate-100 text-slate-700 border border-slate-200 hidden md:inline-block'
+                      )}
+                    >
                       {tab.badge}
                     </span>
                   )}
@@ -696,9 +697,9 @@ export const BookAdvisor: React.FC = () => {
               );
             })}
           </nav>
+
         </div>
       </header>
-
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 lg:p-6 bg-white">
@@ -920,7 +921,7 @@ export const BookAdvisor: React.FC = () => {
                         <span className="text-[10px] font-bold text-slate-400">{bkg.sessionType.toUpperCase()} Session</span>
                       </div>
                     </div>
-                    {getStatusBadge(bkg.unsent ? 'unsent' : bkg.status)}
+                    {getStatusBadge(bkg.status)}
                   </div>
 
                   <div>
@@ -1276,7 +1277,7 @@ export const BookAdvisor: React.FC = () => {
                     <div>
                       <div className="flex items-center gap-2">
                         <h4 className="font-black text-slate-900 text-sm">{bkg.advisorName}</h4>
-                        {getStatusBadge(bkg.unsent ? 'unsent' : bkg.status)}
+                        {getStatusBadge(bkg.status)}
                       </div>
                       <p className="text-xs text-slate-600 font-semibold mt-0.5">{bkg.topic}</p>
                     </div>
