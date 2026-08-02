@@ -1382,9 +1382,17 @@ export async function parseReceiptText(rawText: string, userId?: string): Promis
     amount = expectedCalculatedTotal;
   }
 
+  let totalWasDerived = false;
   if (!amount && expectedCalculatedTotal > 0) {
+    // The printed total could not be read, so this is the sum of the parts.
+    // That is a guess, not a reading: it silently ignores the round-off line,
+    // any charge the parser missed, and any item it failed to see. On the
+    // Shri Gowri Krishnaa bill it produces 474.90 where the receipt prints
+    // 475.00. Worth showing — but as something to check, not as a confident
+    // answer, which is what the old 0.85 claimed.
     amount = expectedCalculatedTotal;
-    finalConfidence = 0.85; // High confidence because we derived it mathematically
+    totalWasDerived = true;
+    finalConfidence = 0.45;
   }
 
   // Derive missing subtotal or tax from total if possible
@@ -1446,6 +1454,13 @@ export async function parseReceiptText(rawText: string, userId?: string): Promis
     final_amount: amount ? { value: amount, confidence: finalConfidence } : undefined,
     amountMismatchDetected,
     amountCandidates,
+    // Signals that the printed total was unreadable and this figure is the sum
+    // of the parts, so the review card can ask the user to confirm it.
+    totalWasDerived,
+    requiresReview: totalWasDerived || amountMismatchDetected,
+    reviewIssues: totalWasDerived
+      ? ['The printed total could not be read — this is the sum of the items and taxes. Check it against the bill.']
+      : undefined,
     subtotal: resolvedSubtotal,
     taxAmount: resolvedTaxAmount,
     taxBreakdown,

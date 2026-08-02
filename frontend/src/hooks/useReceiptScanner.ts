@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import { DocumentManagementService } from '@/services/documentManagementService';
 import { EnhancedReceiptScannerService } from '@/services/enhancedReceiptScannerService';
 import { cloudReceiptScanService } from '@/services/cloudReceiptScanService';
+import { assessScanQuality, looksGarbled } from '@/lib/ocrTextQuality';
 import type { ReceiptScanResult } from '@/types/receipt.types';
 
 const RECEIPT_OCR_ON_DEVICE_ONLY_KEY = 'receipt_scanner_on_device_only';
@@ -90,31 +91,40 @@ export const useReceiptScanner = () => {
 
       let result: ReceiptScanResult | null = null;
 
-      // 1. First attempt: On-Device OCR (Privacy Mode by default)
+      // 1. On-device OCR first — it is private and fast, and on a clean bill it
+      //    is all we need.
       try {
         result = await scanWithOnDeviceOcr();
       } catch (onDeviceErr: any) {
-        console.info('[ReceiptScanner] On-device OCR attempt error, falling back to cloud:', onDeviceErr?.message);
+        console.info('[ReceiptScanner] On-device OCR attempt error:', onDeviceErr?.message);
       }
 
-      // 2. Second attempt: Cloud AI OCR if on-device yielded no result
-      if (!result || !result.amount) {
+      // 2. Escalate on QUALITY, not on emptiness.
+      //
+      //    On-device OCR of a thermal receipt nearly always yields *an* amount,
+      //    so gating on `!result.amount` meant the cloud engine effectively
+      //    never ran: a bill whose merchant read as "SHREGQWRICKI" and whose
+      //    unreadable printed total was silently replaced by the sum of its
+      //    parts still counted as success. Escalating when the reading is
+      //    visibly degraded is what makes the better engine reachable.
+      const quality = assessScanQuality(result);
+      if (!onDeviceOnly && quality.shouldEscalate) {
+        console.info('[ReceiptScanner] Local read is weak, asking the cloud engine:', quality.reasons.join(', '));
         try {
           const cloudResult = await cloudOcrService.current.scanReceipt(selectedFile, (progress) => {
             setScanProgress(progress.progress);
             setScanStatus(progress.status);
           });
-          if (cloudResult && cloudResult.amount) {
+
+          // Only take the cloud reading if it is actually better — a rate-limited
+          // backend can fall back to the same heuristics we just ran.
+          const cloudQuality = assessScanQuality(cloudResult);
+          if (cloudResult?.amount && cloudQuality.score >= quality.score) {
             result = cloudResult;
           }
         } catch (cloudError: any) {
-          console.info('[ReceiptScanner] Cloud extraction fallback error:', cloudError?.message);
+          console.info('[ReceiptScanner] Cloud extraction unavailable:', cloudError?.message);
         }
-      }
-
-      // 3. Final safety net: ensure result object exists
-      if (!result) {
-        result = await scanWithOnDeviceOcr().catch(() => null);
       }
 
       
@@ -122,16 +132,28 @@ export const useReceiptScanner = () => {
         return null;
       }
 
+      // A garbled merchant is worse than an empty one: the user cannot tell
+      // "SHREGQWRICKI" is a misread until they compare it against the bill,
+      // whereas an empty field visibly asks to be filled in.
+      if (looksGarbled(result.merchantName)) {
+        result = { ...result, merchantName: undefined };
+      }
+
       await documentService.current.updateDocumentStatus(documentId, 'preview', {
         extractedCurrency: result.currency,
+        extractedAmount: result.amount,
         metadata: {
           merchantName: result.merchantName || '',
+          amount: result.amount ? String(result.amount) : '',
+          totalAmount: result.amount ? String(result.amount) : '',
           invoiceNumber: result.invoiceNumber || '',
           paymentMethod: result.paymentMethod || '',
           taxAmount: result.taxAmount?.toFixed(2) || '',
           subtotal: result.subtotal?.toFixed(2) || '',
+          category: result.category || '',
         },
       });
+
 
       setScanResult(result);
 

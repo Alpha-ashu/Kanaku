@@ -50,8 +50,12 @@ function BillCard({
     return () => URL.revokeObjectURL(url);
   }, [doc.fileData]);
 
-  const merchant = doc.metadata?.merchantName || doc.metadata?.merchant || doc.fileName.replace(/\.[^.]+$/, '');
-  const amount = tx ? Math.abs(Number(tx.amount)) : Number(doc.metadata?.amount ?? 0);
+  const rawMerchant = doc.metadata?.merchantName || doc.metadata?.merchant || doc.fileName.replace(/\.[^.]+$/, '').replace(/_/g, ' ');
+  const merchant = rawMerchant.length > 22 ? `${rawMerchant.slice(0, 20)}…` : rawMerchant;
+  const rawAmount = tx
+    ? Math.abs(Number(tx.amount))
+    : Number((doc as any).extractedAmount ?? doc.metadata?.amount ?? doc.metadata?.totalAmount ?? doc.metadata?.total ?? 0);
+
   const type = tx?.type ?? 'expense';
   const category = tx?.category ?? doc.metadata?.category ?? 'Uncategorized';
   const dateVal = tx ? new Date(tx.date) : new Date(doc.uploadDate);
@@ -77,7 +81,7 @@ function BillCard({
         ) : (
           <div className="flex flex-col items-center gap-1 text-gray-300">
             <Receipt size={40} />
-            <span className="text-xs font-medium text-gray-400">{doc.fileType.split('/')[1]?.toUpperCase() ?? 'FILE'}</span>
+            <span className="text-xs font-medium text-gray-400">{doc.fileType?.split('/')[1]?.toUpperCase() ?? 'FILE'}</span>
           </div>
         )}
         {/* Status badge */}
@@ -89,14 +93,14 @@ function BillCard({
         <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
           <button data-testid="receipt-scanner-page-view-receipt"
             onClick={onView}
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-gray-800 shadow hover:bg-white"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-gray-800 shadow hover:bg-white cursor-pointer"
             title="View receipt"
           >
             <Eye size={16} />
           </button>
           <button data-testid="receipt-scanner-page-delete"
             onClick={onDelete}
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-red-50 text-red-600 shadow hover:bg-red-100"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-red-50 text-red-600 shadow hover:bg-red-100 cursor-pointer"
             title="Delete"
           >
             <Trash2 size={16} />
@@ -106,15 +110,15 @@ function BillCard({
 
       {/* Details */}
       <div className="flex flex-col gap-1 p-3">
-        <p className="truncate text-sm font-bold text-gray-900">{merchant}</p>
+        <p className="truncate text-sm font-bold text-gray-900" title={rawMerchant}>{merchant}</p>
         <p className="truncate text-xs text-gray-400">{category}</p>
         <div className="mt-1 flex items-center justify-between">
-          {amount > 0 ? (
+          {rawAmount > 0 ? (
             <span className={cn('text-sm font-bold', amountColor)}>
-              {amountPrefix}{formatCurrencyAmount(amount, currency)}
+              {amountPrefix}{formatCurrencyAmount(rawAmount, currency)}
             </span>
           ) : (
-            <span className="text-sm text-gray-400">—</span>
+            <span className="text-xs font-semibold text-slate-400 italic">Processing</span>
           )}
           <span className="text-[11px] text-gray-400">
             {dateVal.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: '2-digit' })}
@@ -146,7 +150,9 @@ function BillDetailModal({ doc, tx, currency, onClose }: { doc: DocumentRecord; 
 
   const rawName = doc.fileName.replace(/\.[^/.]+$/, '').replace(/_/g, ' ');
   const merchantName = doc.metadata?.merchantName || doc.metadata?.merchant || rawName || 'Store Receipt';
-  const amount = tx ? Math.abs(Number(tx.amount)) : Number(doc.metadata?.totalAmount ?? doc.metadata?.amount ?? 0);
+  const amount = tx 
+    ? Math.abs(Number(tx.amount)) 
+    : Number((doc as any).extractedAmount ?? doc.metadata?.amount ?? doc.metadata?.totalAmount ?? doc.metadata?.total ?? 0);
   const category = tx?.category || doc.metadata?.category || 'Expense';
   const dateVal = tx ? new Date(tx.date) : new Date(doc.uploadDate);
   const dateStr = dateVal.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
@@ -155,38 +161,38 @@ function BillDetailModal({ doc, tx, currency, onClose }: { doc: DocumentRecord; 
     <div data-testid="receipt-scanner-page-div" className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4" onClick={onClose}>
       <div
         data-testid="receipt-scanner-page-div-2"
-        className="relative w-full max-w-sm overflow-hidden rounded-3xl bg-white shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95 duration-200"
+        className="relative w-full max-w-md overflow-hidden rounded-3xl bg-white shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95 duration-200"
         onClick={e => e.stopPropagation()}
       >
         {/* Header Bar */}
-        <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-100 bg-slate-50/50">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold shadow-xs">
               <Receipt size={18} />
             </div>
             <div>
-              <h2 className="text-sm font-black text-slate-900">Receipt Details</h2>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Scanned Document</p>
+              <h2 className="text-sm font-black text-slate-900 leading-none">Receipt Details</h2>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">Scanned Document</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition-colors cursor-pointer"
           >
-            <X size={14} />
+            <X size={15} />
           </button>
         </div>
 
         {/* Bill / Receipt Visual Container */}
-        <div className="relative min-h-[200px] w-full bg-slate-50/70 p-5 flex flex-col items-center justify-center border-b border-slate-100">
+        <div className="relative min-h-[220px] max-h-[320px] w-full bg-slate-900/5 p-4 flex flex-col items-center justify-center border-b border-slate-100">
           {imgSrc ? (
-            <img src={imgSrc} alt={merchantName} className="max-h-60 w-full object-contain rounded-xl shadow-xs" />
+            <img src={imgSrc} alt={merchantName} className="max-h-72 w-full object-contain rounded-2xl shadow-sm border border-slate-200/60" />
           ) : (
             /* Digital Styled Receipt Card */
-            <div className="w-full bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs space-y-3">
+            <div className="w-full bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs space-y-3">
               <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
                 <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-full bg-indigo-600 text-white flex items-center justify-center font-black text-xs">
+                  <div className="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-black text-xs">
                     {merchantName.charAt(0).toUpperCase()}
                   </div>
                   <div>
@@ -195,18 +201,16 @@ function BillDetailModal({ doc, tx, currency, onClose }: { doc: DocumentRecord; 
                   </div>
                 </div>
                 <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[9px] font-black border border-emerald-200/60">
-                  Done
+                  Verified
                 </span>
               </div>
 
-              {amount > 0 && (
-                <div className="text-center py-2 bg-slate-50 rounded-xl border border-slate-100">
-                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-0.5">Amount</span>
-                  <span className="text-lg font-black text-slate-900">
-                    -{formatCurrencyAmount(amount, currency)}
-                  </span>
-                </div>
-              )}
+              <div className="text-center py-2 bg-slate-50 rounded-xl border border-slate-100">
+                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-0.5">Amount</span>
+                <span className="text-xl font-black text-slate-900">
+                  {amount > 0 ? formatCurrencyAmount(amount, currency) : '₹0.00'}
+                </span>
+              </div>
 
               <div className="flex items-center justify-between text-[10px] text-slate-500 font-medium pt-1">
                 <span>Date: {dateStr}</span>
@@ -218,40 +222,38 @@ function BillDetailModal({ doc, tx, currency, onClose }: { doc: DocumentRecord; 
           )}
         </div>
 
-        {/* Clean Info Summary (NO File/Type/Size/Uploaded metadata) */}
-        <div className="p-5 space-y-3 bg-white">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Merchant</span>
-              <p className="text-xs font-black text-slate-900 truncate">{merchantName}</p>
+        {/* Clean 2x2 Info Grid (Always includes Merchant, Category, Amount, Date) */}
+        <div className="p-6 space-y-4 bg-white">
+          <div className="grid grid-cols-2 gap-3.5">
+            <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Merchant</span>
+              <p className="text-xs font-black text-slate-900 leading-snug break-words">{merchantName}</p>
             </div>
-            <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Category</span>
+            <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Category</span>
               <p className="text-xs font-black text-slate-900 truncate">{category}</p>
             </div>
-            {amount > 0 && (
-              <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Amount</span>
-                <p className="text-xs font-black text-emerald-600">
-                  {formatCurrencyAmount(amount, currency)}
-                </p>
-              </div>
-            )}
-            <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Date</span>
+            <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Total Amount</span>
+              <p className="text-xs font-black text-emerald-600">
+                {amount > 0 ? formatCurrencyAmount(amount, currency) : '₹0.00'}
+              </p>
+            </div>
+            <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Date</span>
               <p className="text-xs font-black text-slate-900 truncate">{dateStr}</p>
             </div>
           </div>
 
           {doc.notes && (
-            <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Notes</span>
+            <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Notes</span>
               <p className="text-xs font-medium text-slate-700">{doc.notes}</p>
             </div>
           )}
         </div>
 
-        <div className="border-t border-slate-100 p-3.5 bg-slate-50/50">
+        <div className="border-t border-slate-100 p-4 bg-slate-50/50">
           <Button data-testid="receipt-scanner-page-close" variant="secondary" className="w-full rounded-2xl font-bold text-xs" onClick={onClose}>
             Close
           </Button>

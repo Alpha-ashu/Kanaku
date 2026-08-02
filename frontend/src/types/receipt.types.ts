@@ -107,6 +107,8 @@ export interface ReceiptScanResult {
   gstin?: string;
   billNumber?: string;
 
+  /** True when the printed total was unreadable and this is the sum of the parts. */
+  totalWasDerived?: boolean;
   /** Human-readable reasons the reading did not reconcile. */
   reviewIssues?: string[];
   /** True when the arithmetic did not add up and a person should check. */

@@ -36,49 +36,54 @@ export type ScanFieldUpdater = <K extends keyof ReceiptScanResult>(
 // 
 
 export const ModeSelectionView: React.FC<{
- onSelectMode: (mode: 'scan' | 'attachment') => void;
- isOcrEnabled?: boolean;
+  onSelectMode: (mode: 'scan' | 'attachment') => void;
+  isOcrEnabled?: boolean;
 }> = ({ onSelectMode, isOcrEnabled = true }) => (
- <div className="space-y-4 pt-2">
-  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Choose an action</p>
-  <div className="grid grid-cols-2 gap-3">
-    <button
-      data-testid="receipt-scanner-views-button"
-      onClick={() => onSelectMode('scan')}
-      disabled={!isOcrEnabled}
-      className={cn(
-        "flex flex-col items-center justify-center gap-3 p-5 rounded-[24px] active:scale-[0.97] transition-all shadow-xl min-h-[140px]",
-        isOcrEnabled 
-          ? "bg-slate-900 text-white hover:bg-slate-800 shadow-slate-200" 
-          : "bg-slate-100 text-slate-400 border border-slate-200 shadow-none cursor-not-allowed"
-      )}
-    >
-      <div className={cn(
-        "w-12 h-12 rounded-2xl flex items-center justify-center",
-        isOcrEnabled ? "bg-white/10" : "bg-slate-200"
-      )}>
-        <ScanLine size={22} />
-      </div>
-      <div className="text-center">
-        <p className="text-xs font-black uppercase tracking-wide leading-none">Scan Receipt</p>
-        <p className={cn("text-[9px] font-semibold mt-1 leading-none", isOcrEnabled ? "text-white/40" : "text-slate-400/60")}>OCR auto-fill</p>
-      </div>
-    </button>
+  <div className="space-y-4 pt-1">
+    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Choose an action</p>
+    <div className="grid grid-cols-2 gap-4">
+      <button
+        data-testid="receipt-scanner-views-button"
+        onClick={() => onSelectMode('scan')}
+        disabled={!isOcrEnabled}
+        className={cn(
+          "flex flex-col items-center justify-center gap-3.5 p-6 rounded-3xl transition-all duration-200 cursor-pointer min-h-[160px]",
+          isOcrEnabled 
+            ? "bg-slate-900 text-white hover:bg-slate-800 border border-slate-800 shadow-xl shadow-slate-900/10 hover:scale-[1.02] active:scale-[0.98]" 
+            : "bg-slate-100 text-slate-400 border border-slate-200 shadow-none cursor-not-allowed"
+        )}
+      >
+        <div className={cn(
+          "w-12 h-12 rounded-2xl flex items-center justify-center transition-colors",
+          isOcrEnabled ? "bg-indigo-500/20 text-indigo-400" : "bg-slate-200 text-slate-400"
+        )}>
+          <ScanLine size={22} />
+        </div>
+        <div className="text-center space-y-1">
+          <p className="text-xs font-black uppercase tracking-wider leading-tight">Scan Receipt</p>
+          <p className={cn("text-[10px] font-semibold leading-none", isOcrEnabled ? "text-slate-400" : "text-slate-400/60")}>
+            OCR auto-fill
+          </p>
+        </div>
+      </button>
 
-    <button
-      data-testid="receipt-scanner-views-button-2"
-      onClick={() => onSelectMode('attachment')}
-      className="flex flex-col items-center justify-center gap-3 p-5 rounded-[24px] bg-slate-50 text-slate-900 hover:bg-slate-100 active:scale-[0.97] transition-all border border-slate-100 min-h-[140px]"
-    >
-      <div className="w-12 h-12 rounded-2xl bg-slate-200 flex items-center justify-center">
-        <Paperclip size={22} className="text-slate-600" />
-      </div>
-      <div className="text-center">
-        <p className="text-xs font-black uppercase tracking-wide leading-none">Add Attachment</p>
-      </div>
-    </button>
+      <button
+        data-testid="receipt-scanner-views-button-2"
+        onClick={() => onSelectMode('attachment')}
+        className="flex flex-col items-center justify-center gap-3.5 p-6 rounded-3xl bg-slate-50 text-slate-900 hover:bg-slate-100/90 border border-slate-200/80 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer min-h-[160px] shadow-xs"
+      >
+        <div className="w-12 h-12 rounded-2xl bg-slate-200/80 text-slate-700 flex items-center justify-center">
+          <Paperclip size={22} />
+        </div>
+        <div className="text-center space-y-1">
+          <p className="text-xs font-black uppercase tracking-wider leading-tight">Add Attachment</p>
+          <p className="text-[10px] font-semibold text-slate-400 leading-none">
+            Save file as-is
+          </p>
+        </div>
+      </button>
+    </div>
   </div>
- </div>
 );
 
 // 
