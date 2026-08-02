@@ -98,19 +98,13 @@ export const useReceiptScanner = () => {
             setScanStatus(progress.status);
           });
         } catch (cloudError: any) {
-          const errMsg = cloudError?.message || 'Cloud OCR unavailable';
-          const isPdf = selectedFile.type === 'application/pdf';
-          if (errMsg.includes('GOOGLE_API_KEY')) {
-            toast.error('AI Engine requires a GOOGLE_API_KEY. Falling back to basic on-device OCR.', {
-              description: 'Please add GOOGLE_API_KEY to your backend .env file for professional extraction.',
-              duration: 8000
-            });
-          } else if (isPdf) {
-            toast.warning('Cloud OCR service unavailable. Rendering PDF to image and using on-device OCR...', { duration: 5000 });
-          } else {
-            toast.warning(`${errMsg}. Falling back to on-device OCR.`, { duration: 5000 });
-          }
-          setScanStatus('Cloud OCR unavailable. Trying on-device scan...');
+          // Which engine reads the bill is an implementation detail. Telling the
+          // user the cloud failed and we are "falling back to on-device OCR"
+          // reads as a malfunction in the middle of a scan that is still going
+          // to succeed — so the retry happens quietly and only a genuine
+          // end-to-end failure is ever reported.
+          console.info('[ReceiptScanner] Cloud extraction unavailable, retrying on device:', cloudError?.message);
+          setScanStatus('Still analyzing your receipt…');
           result = await scanWithOnDeviceOcr();
         }
       }
@@ -133,9 +127,19 @@ export const useReceiptScanner = () => {
       setScanResult(result);
 
       if (result.amount && result.amount > 0) {
-        toast.success(`Found total: ${result.currency || 'USD'} ${result.amount.toFixed(2)}`);
+        if (result.requiresReview) {
+          // The components did not reconcile with the printed total. Saying
+          // "found ₹X" here would present a number the engine itself does not
+          // trust as a clean read.
+          toast.warning(`Read ${result.currency || 'INR'} ${result.amount.toFixed(2)} — please check the figures before saving.`, {
+            description: result.reviewIssues?.[0],
+            duration: 7000,
+          });
+        } else {
+          toast.success(`Found total: ${result.currency || 'INR'} ${result.amount.toFixed(2)}`);
+        }
       } else {
-        toast.warning('Could not detect total amount. Please review before saving.');
+        toast.warning('Could not detect the total. Please enter it before saving.');
       }
 
       return result;

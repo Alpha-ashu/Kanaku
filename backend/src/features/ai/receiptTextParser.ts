@@ -41,7 +41,11 @@ export interface ParsedReceipt extends Record<string, unknown> {
   preTaxSubtotal?: number;
   totalTaxAmount?: number;
   discountAmount?: number;
+  discountPercent?: number;
   taxBreakdown?: ParsedReceiptTax[];
+  additionalCharges?: ParsedReceiptCharge[];
+  /** Signed: a bill that rounds down carries a negative value here. */
+  roundOff?: number;
   gstin: string | null;
   items?: ParsedReceiptItem[];
   date: string | null;
@@ -70,8 +74,25 @@ const IDENTIFIER_LINE =
 const SUMMARY_BOUNDARY =
   /(sub\s*total|grand\s*total|net\s*total|food\s*total|item\s*total|total\s*qty|taxable\s*value|amount\s*payable|net\s*payable|round\s*off|\bcgst\b|\bsgst\b|\bigst\b|\butgst\b|\bvat\b|service\s*(?:tax|charge)|thank\s*you|visit\s*again|fssai)/i;
 
+/**
+ * Statutory tax lines only. Service *charge* is deliberately absent — it is a
+ * merchant fee, not a tax, and folding it into the tax total misstates both the
+ * tax paid and the taxable base.
+ */
 const TAX_LABEL =
-  /^\s*(CGST|SGST|IGST|UTGST|GST|VAT|CESS|Service\s*Tax|Service\s*Charge|Swachh\s*Bharat|Krishi\s*Kalyan)\b/i;
+  /^\s*(?:add\s+|\(\+\)\s*)?(CGST|SGST|IGST|UTGST|State\s*G\.?S\.?T|Central\s*G\.?S\.?T|[SC]\s+GST|GST|VAT|CESS|Sales\s*Tax|Govt\s*Service\s*Tax|Service\s*Tax|Swachh?\s*Bharat|Krishi\s*Kalyan|Local\s*Body\s*Tax|Municipal\s*Tax|\bLBT\b|Octroi)\b/i;
+
+/** Non-tax additions. Order matters: the first match names the charge. */
+const CHARGE_LABELS: Array<{ type: string; pattern: RegExp }> = [
+  { type: 'SERVICE', pattern: /^\s*(?:add\s*)?(?:service\s*(?:charge|chrg|chg)|serc|svc\s*chg)\b/i },
+  { type: 'PACKAGING', pattern: /^\s*(?:packag|packing|pkg|container|carry\s*bag)/i },
+  { type: 'DELIVERY', pattern: /^\s*(?:deliver|shipping|freight|courier)/i },
+  { type: 'CONVENIENCE', pattern: /^\s*convenien/i },
+  { type: 'HANDLING', pattern: /^\s*handling/i },
+  { type: 'TIP', pattern: /^\s*(?:tip\b|gratuity)/i },
+];
+
+const ROUND_OFF_LABEL = /round(?:ing)?[\s._-]*off|round\b/i;
 
 const GRAND_TOTAL_LABEL =
   /(grand\s*total|amount\s*payable|net\s*payable|total\s*payable|bill\s*total|total\s*amount\s*due|total\s*due)/i;
@@ -79,6 +100,12 @@ const GRAND_TOTAL_LABEL =
 const SUBTOTAL_LABEL = /(sub\s*total|subtotal|item\s*total|food\s*total)/i;
 
 const NET_TOTAL_LABEL = /(net\s*total|taxable\s*value|net\s*amt|net\s*amount)/i;
+
+/**
+ * A total that states the tax is already inside it. Treated as the grand total,
+ * and its wording is what tells the tax-model detector this bill is inclusive.
+ */
+const INCLUSIVE_TOTAL_LABEL = /amount\s*incl|incl(?:usive)?\.?\s*of\s*(?:all\s*)?tax|total\s*incl/i;
 
 /** "Total Qty: 5" is a count, not money. */
 const COUNT_LABEL = /total\s*(?:qty|quantity|items?|nos?|pcs?)\b/i;
@@ -327,7 +354,18 @@ const extractItems = (lines: string[]): ParsedReceiptItem[] => {
 
 //  Taxes
 
-const normalizeTaxName = (label: string) => label.toUpperCase().replace(/\s+/g, '_');
+/**
+ * Fold the spellings bills actually use onto one name per tax. "State Gst",
+ * "S GST" and "SGST" are the same line item, and leaving them distinct meant
+ * the CGST/SGST pairing check below never fired on half the corpus.
+ */
+const normalizeTaxName = (label: string) => {
+  const compact = label.toUpperCase().replace(/[.\s]+/g, '');
+  if (/^(SGST|STATEGST|SGST)$/.test(compact) || /^S?GST$/.test(compact) && /^S/.test(compact)) return 'SGST';
+  if (/^(CGST|CENTRALGST)$/.test(compact)) return 'CGST';
+  if (/^(IGST|INTEGRATEDGST)$/.test(compact)) return 'IGST';
+  return label.toUpperCase().replace(/\s+/g, '_');
+};
 
 /**
  * Tax component lines. Only a line that *starts* with a tax label counts, and
@@ -367,6 +405,70 @@ const extractTaxes = (lines: string[]): ParsedReceiptTax[] => {
   }
 
   return taxes;
+};
+
+export interface ParsedReceiptCharge {
+  type: string;
+  label: string;
+  amount: number;
+  rate: number | null;
+}
+
+/**
+ * Non-tax additions: service charge, packaging, delivery, convenience/handling
+ * fees, tips.
+ *
+ * These were previously either ignored or swept into the tax total. Both are
+ * wrong in ways the user notices — a 10% service charge counted as tax
+ * overstates GST paid and understates what the meal cost, and the reconciliation
+ * then fails on a bill that adds up perfectly.
+ */
+const extractCharges = (lines: string[]): ParsedReceiptCharge[] => {
+  const charges: ParsedReceiptCharge[] = [];
+
+  for (const line of lines) {
+    if (IDENTIFIER_LINE.test(line)) continue;
+    // A tax line wins: "Service Tax" must never be read as "Service charge".
+    if (TAX_LABEL.test(line)) continue;
+
+    const match = CHARGE_LABELS.find((candidate) => candidate.pattern.test(line));
+    if (!match) continue;
+
+    const amount = extractLineAmount(line);
+    if (amount === undefined) continue;
+
+    const rateMatch = line.match(PERCENT_RATE);
+    const rate = rateMatch ? Number.parseFloat(rateMatch[1]) : null;
+
+    charges.push({
+      type: match.type,
+      label: cleanName(line.replace(/[\d.,%@]+\s*$/, '')) || match.type,
+      amount: round2(amount),
+      rate: rate !== null && rate > 0 && rate <= 100 ? rate : null,
+    });
+  }
+
+  return charges;
+};
+
+/**
+ * The signed rounding adjustment. Sign matters: "Round Off -0.48" reduces the
+ * bill, and dropping the minus makes reconciliation miss by twice the amount.
+ */
+const extractRoundOff = (lines: string[]): number | undefined => {
+  for (const line of lines) {
+    if (!ROUND_OFF_LABEL.test(line)) continue;
+    const match = line.match(/(-?\d+(?:\.\d{1,2})?)\s*$/);
+    if (!match) continue;
+    const value = Number.parseFloat(match[1]);
+    // Real round-off is sub-rupee; anything larger is a different line.
+    if (Number.isFinite(value) && Math.abs(value) <= 5) {
+      // A leading "(-)" or a dash before the number also means negative.
+      const negated = /[-(]\s*\d/.test(line.slice(0, line.lastIndexOf(match[1]) + 1));
+      return value === 0 ? undefined : (negated && value > 0 ? -value : value);
+    }
+  }
+  return undefined;
 };
 
 /**
@@ -433,10 +535,13 @@ export const parseReceiptFromText = (rawText: string): ParsedReceipt => {
 
   const items = extractItems(lines);
   const taxes = extractTaxes(lines);
+  const charges = extractCharges(lines);
+  const roundOff = extractRoundOff(lines);
 
   let subtotal: number | undefined;
   let netTotal: number | undefined;
   let discount: number | undefined;
+  let discountPercent: number | undefined;
   let grandTotal: number | undefined;
   let plainTotal: number | undefined;
 
@@ -446,7 +551,9 @@ export const parseReceiptFromText = (rawText: string): ParsedReceipt => {
 
     // Order matters: the most specific label on the line wins, and a line can
     // hold two labels ("Total Qty: 5   Sub Total 452.30").
-    if (GRAND_TOTAL_LABEL.test(line)) {
+    if (ROUND_OFF_LABEL.test(line)) {
+      continue; // handled by extractRoundOff, which keeps the sign
+    } else if (GRAND_TOTAL_LABEL.test(line) || INCLUSIVE_TOTAL_LABEL.test(line)) {
       grandTotal = amount;
     } else if (SUBTOTAL_LABEL.test(line)) {
       subtotal = amount;
@@ -454,6 +561,11 @@ export const parseReceiptFromText = (rawText: string): ParsedReceipt => {
       netTotal = amount;
     } else if (DISCOUNT_LABEL.test(line) && !TAX_LABEL.test(line)) {
       discount = Math.abs(amount);
+      const pct = line.match(PERCENT_RATE);
+      if (pct) {
+        const parsed = Number.parseFloat(pct[1]);
+        if (parsed > 0 && parsed <= 100) discountPercent = parsed;
+      }
     } else if (/^total\b/i.test(line) && !COUNT_LABEL.test(line) && !TAX_LABEL.test(line)) {
       plainTotal = amount;
     }
@@ -466,19 +578,27 @@ export const parseReceiptFromText = (rawText: string): ParsedReceipt => {
     ? round2(taxBreakdown.reduce((sum, tax) => sum + tax.amount, 0))
     : undefined;
 
+  const chargeTotal = charges.length > 0
+    ? round2(charges.reduce((sum, charge) => sum + charge.amount, 0))
+    : undefined;
+
   const itemsTotal = items.length > 0 ? round2(items.reduce((sum, item) => sum + item.amount, 0)) : undefined;
   if (subtotal === undefined && netTotal !== undefined) subtotal = netTotal;
   if (subtotal === undefined && itemsTotal !== undefined) subtotal = itemsTotal;
 
   if (grandTotal === undefined && subtotal !== undefined) {
-    grandTotal = round2(subtotal - (discount || 0) + (taxTotal || 0));
+    grandTotal = round2(subtotal - (discount || 0) + (chargeTotal || 0) + (taxTotal || 0) + (roundOff || 0));
   }
 
   // Math check against the printed subtotal. A failure here is the strongest
   // signal we have that a number was misread, so it drives the confidence score.
+  // Charges and the signed round-off belong in this sum: leaving them out made a
+  // bill with a service charge fail reconciliation even when read perfectly.
   let validationResult: ParsedReceipt['validationResult'];
   if (grandTotal !== undefined && subtotal !== undefined) {
-    const calculated = round2(subtotal - (discount || 0) + (taxTotal || 0));
+    const calculated = round2(
+      subtotal - (discount || 0) + (chargeTotal || 0) + (taxTotal || 0) + (roundOff || 0),
+    );
     validationResult = {
       isValid: Math.abs(calculated - grandTotal) <= Math.max(2, grandTotal * 0.02),
       calculated,
@@ -510,7 +630,10 @@ export const parseReceiptFromText = (rawText: string): ParsedReceipt => {
     preTaxSubtotal: subtotal,
     totalTaxAmount: taxTotal,
     discountAmount: discount,
+    discountPercent,
     taxBreakdown: taxBreakdown.length > 0 ? taxBreakdown : undefined,
+    additionalCharges: charges.length > 0 ? charges : undefined,
+    roundOff,
     gstin,
     items: items.length > 0 ? items : undefined,
     date,

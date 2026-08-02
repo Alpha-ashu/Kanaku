@@ -9,6 +9,22 @@ export interface TaxComponent {
 }
 
 // -----------------------------------------------------------------------
+// A non-tax addition to the bill: service charge, packaging, delivery,
+// convenience/handling fee, tip. Kept separate from TaxComponent because
+// folding a 10% service charge into "tax" overstates GST paid and breaks the
+// bill's own arithmetic.
+// -----------------------------------------------------------------------
+export interface ReceiptCharge {
+  type: string;    // SERVICE | PACKAGING | DELIVERY | CONVENIENCE | HANDLING | TIP | OTHER
+  label: string;   // as printed on the bill
+  amount: number;
+  rate?: number;
+}
+
+/** Whether the printed total already contains the tax. */
+export type ReceiptTaxModel = 'exclusive' | 'inclusive';
+
+// -----------------------------------------------------------------------
 // Individual line item with optional qty + rate
 // -----------------------------------------------------------------------
 export interface ReceiptLineItem {
@@ -76,6 +92,27 @@ export interface ReceiptScanResult {
   };
   amountMismatchDetected?: boolean;
   amountCandidates?: number[];
+
+  // --- Structured extraction -------------------------------------------
+  /** Service / packaging / delivery / convenience / handling / tip. */
+  additionalCharges?: ReceiptCharge[];
+  totalCharges?: number;
+  /** Signed rounding adjustment as printed (-0.48 stays negative). */
+  roundOff?: number;
+  /** Whether tax is already inside the printed total. */
+  taxModel?: ReceiptTaxModel;
+
+  merchantBrand?: string;
+  merchantAddress?: string;
+  gstin?: string;
+  billNumber?: string;
+
+  /** Human-readable reasons the reading did not reconcile. */
+  reviewIssues?: string[];
+  /** True when the arithmetic did not add up and a person should check. */
+  requiresReview?: boolean;
+  /** Which extractor produced this: gemini-vision | gemini-text | ocr-heuristic. */
+  engine?: string;
 }
 
 export interface ReceiptScanPayload extends ReceiptScanResult {

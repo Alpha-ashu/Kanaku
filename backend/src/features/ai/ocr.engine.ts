@@ -1,312 +1,302 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { logger } from '../../config/logger';
 import { extractRawText } from '../../utils/paddleOcr';
-import { sanitizeAIInput, sanitizeAIOutput, validateOcrResult } from '../../utils/sanitize';
-import { withCircuitBreaker } from '../../utils/circuitBreaker';
+import { sanitizeAIInput, sanitizeAIOutput } from '../../utils/sanitize';
 import { audit } from '../../utils/auditLogger';
 import { getAIConfigurations } from '../../utils/aiConfig';
 import { parseReceiptFromText } from './receiptTextParser';
+import { RECEIPT_SYSTEM_INSTRUCTION, buildVisionPrompt, buildTextPrompt } from './receiptPrompt';
+import { normalizeExtractedReceipt, type ExtractedReceipt } from './receiptSchema';
 
 const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY || '';
 const genAI = new GoogleGenerativeAI(GOOGLE_API_KEY);
 
 /**
- * Hybrid OCR Pipeline using Open-Source Tesseract + Gemini:
- * 1. Tesseract OCR: Scans the image to extract all raw text exactly as printed.
- *    (This fulfills the request to use the specific open-source OCR engine).
- * 2. Gemini LLM: Takes the raw Tesseract text and structures it into the required JSON shape.
+ * Bill extraction pipeline, in descending order of how well it reads a receipt:
+ *
+ *   1. **Gemini vision on the image.** The model sees the layout — column
+ *      alignment, which text is the header, where the total sits — and reads
+ *      the pixels directly. On the benchmark bills, OCR-then-parse loses
+ *      digits that vision recovers ("Net Amount 5226.00" comes back from
+ *      Tesseract as 6226.00), so anything that depends on an OCR transcript is
+ *      strictly worse and is only a fallback.
+ *   2. **Gemini over OCR text.** Used when vision is unavailable or refuses.
+ *   3. **Offline heuristic parser.** No network, no key, no LLM. Deliberately
+ *      capped at a lower confidence: it can be internally consistent and still
+ *      be reading corrupted characters.
+ *
+ * Every path returns the same normalised shape (see receiptSchema), so callers
+ * never branch on which engine answered.
  */
 
-const SYSTEM_INSTRUCTION = `You are a specialist financial data extractor.
-Your job is to read raw, messy OCR text (extracted by Tesseract) and map it into structured JSON.
-You NEVER hallucinate or invent data. If a field isn't present in the raw text, return null for it.
-Fix obvious OCR typos (like O vs 0, or \`?\` instead of \`\`), but do not invent items or amounts.`;
+/** A single model call may not exceed this; the caller's budget is larger. */
+const MODEL_CALL_TIMEOUT_MS = Number(process.env.OCR_MODEL_TIMEOUT_MS || 45_000);
+/** Thinking models spend output tokens before emitting JSON — leave headroom. */
+const MAX_OUTPUT_TOKENS = 8192;
 
-const buildPrompt = (rawText: string) => `
-Here is the raw text extracted from a receipt using Tesseract OCR.
-Translate it into structured JSON with professional-grade accuracy.
-
---- RAW OCR TEXT ---
-${rawText}
---- END RAW OCR TEXT ---
-
- CRITICAL EXTRACTION RULES:
-
-1. MERCHANT BLOCK: Look at the top 5-10 lines. Find the legal name, address (e.g., "Nana Chowk, Mumbai"), and Phone numbers ("Ph:", "Tel:").
-2. DATE & BILL NO: Identify "Date", "Bill No", "Invoice No", "Token". If date is "01/07/17", year is 2017.
-3. TABLE EXTRACTION (QTY/RATE/AMOUNT): 
-   - Receipts often have columns: Particulars | Qty | Rate | Amount.
-   - If an item line says "MEDU WADA 1 65 65", the quantity is 1, rate is 65, and amount is 65.
-   - Verify: Qty * Rate should equal Amount.
-4. TOTALS & TAXES (INDIA SPECIFIC):
-   - "Sub Total": The raw sum of items.
-   - "Dis" or "Discount": The amount subtracted. You MUST find this.
-   - "Net Total" or "Taxable Value": Subtotal minus Discount.
-   - "CGST" & "SGST": Usually 9% or 2.5% each. They MUST both be extracted.
-   - "Grand Total": The final payable amount (e.g. 70). This is your netAmount.
-5. CURRENCY: Always "INR" for Indian receipts.
-6. GSTIN: The 15-character ID (e.g. 27AADFH5037M1Z6).
-
- MATH VALIDATION:
-- Ensure (Subtotal - Discount + Taxes) roughly equals Grand Total.
-- If they differ slightly (e.g. 69.62 vs 70), the "Grand Total" is the source of truth for the transaction amount.
-
-Return ONLY the JSON. No explanation.
-
-{
-  "merchantName": "string",
-  "netAmount": number (Grand Total / Final Payable),
-  "preTaxSubtotal": number | null,
-  "totalTaxAmount": number | null,
-  "discountAmount": number | null,
-  "taxBreakdown": [ { "name": "string", "rate": number | null, "amount": number } ],
-  "gstin": "string | null",
-  "items": [ { "name": "string", "quantity": number | null, "rate": number | null, "amount": number } ],
-  "date": "YYYY-MM-DD | null",
-  "time": "HH:MM | null",
-  "currency": "ISO 4217 code — default INR; use the foreign currency ONLY when the receipt clearly shows a foreign country, city, or currency symbol (e.g. VND for Vietnam/Hanoi/₫, USD for a US receipt)",
-  "location": "city/country as printed on the receipt — default INDIA",
-  "invoiceNumber": "string | null",
-  "paymentMethod": "Cash | Card | UPI | Online | null",
-  "category": "expense category",
-  "subcategory": "specific type",
-  "description": "Short summary of main items",
-  "confidence": number (0.0 to 1.0)
+export interface OcrEngineResult extends ExtractedReceipt {
+  /** Raw OCR transcript when one was produced, for debugging and audit. */
+  rawText?: string;
 }
-`;
+
+const withTimeout = async <T>(promise: Promise<T>, ms: number, label: string): Promise<T> => {
+  let timer: NodeJS.Timeout | undefined;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<never>((_, reject) => {
+        timer = setTimeout(() => reject(new Error(`${label} exceeded ${ms}ms`)), ms);
+      }),
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+};
+
+const stripJsonFence = (text: string) =>
+  text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
 
 /**
- * Raw-OCR fallback: extracts text (PaddleOCR when configured, else Tesseract)
- * and builds structured JSON from it using heuristics — item table extraction,
- * GST/tax breakdown, GSTIN detection, and math validation. Used when Gemini is
- * unavailable. PaddleOCR's row-reconstructed text makes the heuristic parser
- * markedly better on table-layout receipts.
+ * Run one Gemini call and return parsed JSON.
+ *
+ * Empty candidates are a real outcome (token budget consumed by thinking, a
+ * safety stop, recitation) and used to surface as an anonymous
+ * "Unexpected end of JSON input" from the parse. They now fail with the reason
+ * attached, so an outage is diagnosable from the logs alone.
  */
-const scanReceiptRawTextOnly = async (imageBuffer: Buffer): Promise<Record<string, unknown>> => {
-  logger.info('Raw-OCR pass (Gemini unavailable)...');
-  const { text: rawText, engine } = await extractRawText(imageBuffer);
-  logger.info(`Raw-OCR pass complete (${engine})`, { extractedLength: rawText.length });
-  return extractStructuredDataFromText(rawText);
+const callGemini = async (
+  model: string,
+  parts: Array<Record<string, unknown>>,
+): Promise<Record<string, unknown>> => {
+  const generativeModel = genAI.getGenerativeModel({
+    model,
+    systemInstruction: RECEIPT_SYSTEM_INSTRUCTION,
+    generationConfig: {
+      temperature: 0.1,
+      topP: 0.95,
+      maxOutputTokens: MAX_OUTPUT_TOKENS,
+      responseMimeType: 'application/json',
+    },
+  });
+
+  const result = await withTimeout(
+    generativeModel.generateContent(parts as never),
+    MODEL_CALL_TIMEOUT_MS,
+    `Gemini ${model}`,
+  );
+
+  const text = stripJsonFence(result.response.text().trim());
+  if (!text) {
+    const candidate = result.response.candidates?.[0];
+    throw new Error(
+      `Gemini returned an empty response (finishReason=${candidate?.finishReason ?? 'unknown'}, `
+      + `blockReason=${result.response.promptFeedback?.blockReason ?? 'none'})`,
+    );
+  }
+
+  const parsed = JSON.parse(sanitizeAIOutput(text));
+  if (!parsed || typeof parsed !== 'object') {
+    throw new Error('Gemini returned JSON that is not an object');
+  }
+  return parsed as Record<string, unknown>;
 };
 
 /**
- * Pure-text structured extraction. Used by:
- * 1. The raw-OCR fallback (from image OCR text)
- * 2. PDF text extraction (from pdf-parse text)
- *
- * The rules live in receiptTextParser so they can be unit-tested against real
- * OCR dumps without pulling in Gemini, Prisma or the audit log.
+ * Failures worth a second attempt: a timeout, a rate limit, a 5xx, or an empty
+ * candidate. A malformed request or a safety block fails identically the second
+ * time, and retrying it only delays the fallback engine.
  */
-const extractStructuredDataFromText = (rawText: string): Record<string, unknown> =>
-  parseReceiptFromText(rawText);
+const TRANSIENT_ERROR = /timeout|exceeded \d+ms|429|rate limit|quota|5\d\d|unavailable|empty response|ECONNRESET|ETIMEDOUT|fetch failed/i;
+const RATE_LIMITED = /429|rate limit|quota|RESOURCE_EXHAUSTED/i;
 
-export const scanReceiptWithGemini = async (imageBuffer: Buffer, mimeType: string) => {
-  const config = await getAIConfigurations();
+/** Total time the retry ladder may spend before giving the fallback its turn. */
+const RETRY_BUDGET_MS = Number(process.env.OCR_RETRY_BUDGET_MS || 25_000);
 
-  if (config.ocr.provider === 'tesseract') {
-    logger.info('OCR Provider is set to Tesseract-only. Bypassing Gemini...');
-    return scanReceiptRawTextOnly(imageBuffer);
+/**
+ * How long to wait before retrying.
+ *
+ * A rate limit is not a blip: Gemini's per-minute quota needs seconds, not
+ * milliseconds, to free up, and the API often says exactly how long via
+ * RetryInfo. Retrying a 429 after 1.2s just burns another request against the
+ * same exhausted quota, so its delay is read from the response when offered and
+ * otherwise defaults to something that can plausibly work.
+ */
+const retryDelayFor = (message: string): number => {
+  if (!RATE_LIMITED.test(message)) return 1_200;
+  const advertised = message.match(/retryDelay"?\s*:\s*"?(\d+(?:\.\d+)?)s/i);
+  if (advertised) {
+    return Math.min(20_000, Math.ceil(Number(advertised[1]) * 1000) + 500);
   }
+  return 8_000;
+};
 
-  if (!GOOGLE_API_KEY) {
-    logger.warn('GOOGLE_API_KEY not configured - falling back to Tesseract-only OCR');
-    return scanReceiptRawTextOnly(imageBuffer);
-  }
+const callGeminiWithRetry = async (
+  model: string,
+  parts: Array<Record<string, unknown>>,
+  label: string,
+): Promise<Record<string, unknown>> => {
+  const deadline = Date.now() + RETRY_BUDGET_MS;
+  let attempt = 0;
 
-  try {
-    let rawOcrText = '';
+  for (;;) {
+    try {
+      return await callGemini(model, parts);
+    } catch (error: any) {
+      const message = error?.message ?? String(error);
+      attempt += 1;
 
-    // Hybrid mode: extract raw text first (PaddleOCR when configured, else
-    // Tesseract), then hand it to Gemini for structuring. PaddleOCR's
-    // layout-reconstructed rows give Gemini cleaner input on table receipts.
-    if (config.ocr.provider === 'hybrid') {
-      logger.info('Starting raw-OCR pass (hybrid mode)...');
-      const { text, engine } = await extractRawText(imageBuffer, mimeType);
-      rawOcrText = text;
-      logger.info(`Raw-OCR pass complete (${engine})`, { extractedLength: rawOcrText.length });
-    }
+      if (!TRANSIENT_ERROR.test(message) || attempt > 2) throw error;
 
-    // Prepare content for Gemini
-    const { sanitized: cleanText, flagged } = sanitizeAIInput(rawOcrText || '(Direct image input)');
-    if (flagged) {
-      audit({
-        event: 'ai.prompt_injection',
-        resource: 'ocr',
-        meta: { inputLength: rawOcrText.length, preview: rawOcrText.slice(0, 200) },
-      });
-      logger.warn('Prompt-injection pattern detected in OCR text - proceeding with sanitised input');
-    }
-
-    // Execute Gemini Mapping via circuit breaker
-    logger.info('Starting Gemini JSON Mapping pass...', { model: config.ocr.model, provider: config.ocr.provider });
-
-    const jsonString = await withCircuitBreaker(
-      { 
-        name: 'gemini-ocr', 
-        failureThreshold: config.ocr.maxRetries || 5, 
-        resetTimeoutMs: config.ocr.timeoutMs || 60_000 
-      },
-      async () => {
-        const model = genAI.getGenerativeModel({
-          model: config.ocr.model || 'gemini-flash-latest',
-          systemInstruction: SYSTEM_INSTRUCTION,
-          generationConfig: {
-            temperature: 0.1,
-            topP: 0.95,
-            // The flash aliases point at reasoning models that spend output
-            // tokens on internal thinking before emitting anything. At 2048 the
-            // budget was exhausted before the JSON started, so every scan came
-            // back with an empty candidate and silently fell through to the
-            // heuristic parser. Leave headroom for thinking + the payload.
-            maxOutputTokens: 8192,
-            // Ask for JSON directly instead of hoping the model skips the
-            // ```json fence.
-            responseMimeType: 'application/json',
-          },
-        });
-
-        let result;
-        if (config.ocr.provider === 'gemini') {
-          // Direct image to Gemini
-          result = await model.generateContent([
-            {
-              inlineData: {
-                data: imageBuffer.toString('base64'),
-                mimeType: mimeType || 'image/jpeg'
-              }
-            },
-            { text: buildPrompt('(Image scanned directly)') }
-          ]);
-        } else {
-          // Hybrid: raw text to Gemini
-          result = await model.generateContent([{ text: buildPrompt(cleanText) }]);
-        }
-
-        let text = result.response.text().trim();
-        text = text
-          .replace(/^```(?:json)?\s*/i, '')
-          .replace(/\s*```\s*$/i, '')
-          .trim();
-
-        // An empty candidate is a real API outcome (token budget spent on
-        // thinking, safety block, recitation stop). Report why, so this fails
-        // as "Gemini returned no content (MAX_TOKENS)" rather than as an
-        // anonymous "Unexpected end of JSON input" from the parse below.
-        if (!text) {
-          const candidate = result.response.candidates?.[0];
-          throw new Error(
-            `Gemini returned an empty response (finishReason=${candidate?.finishReason ?? 'unknown'}, `
-            + `promptFeedback=${result.response.promptFeedback?.blockReason ?? 'none'})`,
+      const delay = retryDelayFor(message);
+      if (Date.now() + delay > deadline) {
+        // Waiting would eat the budget the fallback engine needs.
+        if (RATE_LIMITED.test(message)) {
+          logger.warn(
+            `${label} is rate limited and the retry budget is spent — using the fallback engine. `
+            + 'Enable billing on the Google API key to stop this happening under load.',
           );
         }
+        throw error;
+      }
 
-        return sanitizeAIOutput(text);
-      },
-    );
-
-    const parsed = JSON.parse(jsonString);
-
-    // Validate parsed result
-    const validation = validateOcrResult(parsed);
-    if (!validation.valid) {
-      logger.warn('OCR result failed validation', { reason: validation.reason });
-      throw new Error(`OCR result validation failed: ${validation.reason}`);
-    }
-    
-    // Safety fallback for Tesseract hallucinated artifacts
-    if (parsed.items) {
-      parsed.items = parsed.items.filter((item: { name?: string }) => item.name && item.name.length > 2);
-    }
-
-    // If confidence score is below the threshold, log warning or flag it
-    const itemConfidence = parsed.confidence ?? (parsed.items && parsed.items.length > 0 ? 0.9 : 0.7);
-    if (itemConfidence < config.ocr.confidenceThreshold) {
-      logger.warn('OCR processing confidence below threshold', { confidence: itemConfidence, threshold: config.ocr.confidenceThreshold });
-    }
-
-    logger.info('OCR success', {
-      merchantName: parsed.merchantName,
-      netAmount: parsed.netAmount,
-      invoiceNumber: parsed.invoiceNumber,
-      provider: config.ocr.provider,
-    });
-
-    // Callers report the engine that produced the data. Without this marker a
-    // heuristic result returned from the catch below is still logged and
-    // surfaced as "gemini", which hides every LLM outage.
-    parsed._source = 'gemini';
-    return parsed;
-  } catch (error: any) {
-    logger.error('OCR pipeline failed, attempting Tesseract-only fallback', { error: error.message || error });
-    try {
-      return await scanReceiptRawTextOnly(imageBuffer);
-    } catch (fallbackErr: any) {
-      logger.error('Tesseract-only fallback also failed', { error: fallbackErr.message });
-      throw error;
+      logger.warn(`${label} failed transiently, retrying in ${delay}ms`, { attempt, error: message.slice(0, 200) });
+      await new Promise((resolve) => setTimeout(resolve, delay));
     }
   }
+};
+
+// ─── Extraction paths ────────────────────────────────────────────────────────
+
+const extractWithVision = async (
+  imageBuffer: Buffer,
+  mimeType: string,
+  model: string,
+): Promise<OcrEngineResult> => {
+  const raw = await callGeminiWithRetry(
+    model,
+    [
+      { inlineData: { data: imageBuffer.toString('base64'), mimeType: mimeType || 'image/jpeg' } },
+      { text: buildVisionPrompt() },
+    ],
+    'Gemini vision',
+  );
+  return normalizeExtractedReceipt(raw, { engine: 'gemini-vision' });
+};
+
+const extractWithTextModel = async (rawText: string, model: string): Promise<OcrEngineResult> => {
+  const { sanitized, flagged } = sanitizeAIInput(rawText);
+  if (flagged) {
+    audit({
+      event: 'ai.prompt_injection',
+      resource: 'ocr',
+      meta: { inputLength: rawText.length, preview: rawText.slice(0, 200) },
+    });
+    logger.warn('Prompt-injection pattern detected in OCR text - proceeding with sanitised input');
+  }
+
+  const raw = await callGeminiWithRetry(model, [{ text: buildTextPrompt(sanitized) }], 'Gemini text');
+  return { ...normalizeExtractedReceipt(raw, { engine: 'gemini-text', rawText }), rawText };
+};
+
+const extractWithHeuristics = (rawText: string): OcrEngineResult => ({
+  ...normalizeExtractedReceipt(parseReceiptFromText(rawText), { engine: 'ocr-heuristic', rawText }),
+  rawText,
+});
+
+/** OCR transcript, cached per call so vision and text paths don't both pay. */
+const readRawText = async (imageBuffer: Buffer, mimeType?: string): Promise<string> => {
+  const { text, engine } = await extractRawText(imageBuffer, mimeType);
+  logger.info(`OCR transcript ready (${engine})`, { chars: text.length });
+  return text;
 };
 
 /**
- * Process pre-extracted text (from digital PDFs) through the Gemini structuring
- * pipeline, or fall back to the heuristic text parser.
+ * Extract a bill from an image.
+ *
+ * Tries each engine in order and returns the first that produces a usable
+ * reading — one with a total on it. A structurally valid response with no total
+ * is not usable, so the next engine still gets its turn rather than the caller
+ * receiving an empty shell.
  */
-export const scanReceiptFromText = async (text: string): Promise<Record<string, unknown>> => {
+export const scanReceiptWithGemini = async (
+  imageBuffer: Buffer,
+  mimeType: string,
+): Promise<OcrEngineResult> => {
   const config = await getAIConfigurations();
+  const model = config.ocr.model || 'gemini-flash-latest';
+  const provider = config.ocr.provider;
+  const failures: string[] = [];
 
-  if (!GOOGLE_API_KEY) {
-    logger.info('No GOOGLE_API_KEY - using heuristic text parser for PDF text');
-    return extractStructuredDataFromText(text);
-  }
+  const usable = (result: OcrEngineResult) => result.total !== null && result.total > 0;
 
-  try {
-    const { sanitized: cleanText } = sanitizeAIInput(text);
-
-    const jsonString = await withCircuitBreaker(
-      { 
-        name: 'gemini-ocr', 
-        failureThreshold: config.ocr.maxRetries || 5, 
-        resetTimeoutMs: config.ocr.timeoutMs || 60_000 
-      },
-      async () => {
-        const model = genAI.getGenerativeModel({
-          model: config.ocr.model || 'gemini-flash-latest',
-          systemInstruction: SYSTEM_INSTRUCTION,
-          // Same token budget as the image path: a thinking model needs room for
-          // the reasoning pass before it can emit the JSON.
-          generationConfig: {
-            temperature: 0.1,
-            topP: 0.95,
-            maxOutputTokens: 8192,
-            responseMimeType: 'application/json',
-          },
-        });
-        const result = await model.generateContent([{ text: buildPrompt(cleanText) }]);
-        let output = result.response.text().trim();
-        output = output.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
-        if (!output) {
-          const candidate = result.response.candidates?.[0];
-          throw new Error(`Gemini returned an empty response (finishReason=${candidate?.finishReason ?? 'unknown'})`);
-        }
-        return sanitizeAIOutput(output);
-      },
-    );
-
-    const parsed = JSON.parse(jsonString);
-    const validation = validateOcrResult(parsed);
-    if (!validation.valid) throw new Error(`Validation failed: ${validation.reason}`);
-    parsed._source = 'gemini';
-    
-    // Check confidence threshold
-    const confidence = parsed.confidence ?? 0.8;
-    if (confidence < config.ocr.confidenceThreshold) {
-      logger.warn('Text OCR processing confidence below threshold', { confidence, threshold: config.ocr.confidenceThreshold });
+  // 1. Vision — unless the admin pinned the provider to text-only OCR.
+  if (GOOGLE_API_KEY && provider !== 'tesseract') {
+    try {
+      const started = Date.now();
+      const result = await extractWithVision(imageBuffer, mimeType, model);
+      logger.info('OCR: vision pass complete', {
+        ms: Date.now() - started,
+        total: result.total,
+        confidence: result.confidence,
+        merchant: result.merchant.name,
+      });
+      if (usable(result)) return result;
+      failures.push('vision returned no total');
+    } catch (error: any) {
+      failures.push(`vision: ${error?.message ?? error}`);
+      logger.warn('OCR: vision pass failed', { error: error?.message ?? String(error) });
     }
-
-    return parsed;
-  } catch (err: any) {
-    logger.warn('Gemini text structuring failed, falling back to heuristic parser', { error: err.message });
-    return extractStructuredDataFromText(text);
   }
+
+  // 2 & 3 both need the OCR transcript.
+  let rawText = '';
+  try {
+    rawText = await readRawText(imageBuffer, mimeType);
+  } catch (error: any) {
+    failures.push(`ocr: ${error?.message ?? error}`);
+  }
+
+  if (GOOGLE_API_KEY && provider !== 'tesseract' && rawText.trim().length > 20) {
+    try {
+      const result = await extractWithTextModel(rawText, model);
+      logger.info('OCR: text-model pass complete', { total: result.total, confidence: result.confidence });
+      if (usable(result)) return result;
+      failures.push('text model returned no total');
+    } catch (error: any) {
+      failures.push(`text model: ${error?.message ?? error}`);
+      logger.warn('OCR: text-model pass failed', { error: error?.message ?? String(error) });
+    }
+  }
+
+  if (rawText.trim().length > 0) {
+    const result = extractWithHeuristics(rawText);
+    logger.info('OCR: heuristic pass complete', {
+      total: result.total,
+      confidence: result.confidence,
+      priorFailures: failures,
+    });
+    return result;
+  }
+
+  throw new Error(`Could not read this bill (${failures.join('; ') || 'no text extracted'})`);
 };
 
+/**
+ * Structure text that was already extracted (a digital PDF's text layer, or a
+ * transcript from elsewhere). Same engine ladder minus the vision step.
+ */
+export const scanReceiptFromText = async (text: string): Promise<OcrEngineResult> => {
+  const config = await getAIConfigurations();
+  const model = config.ocr.model || 'gemini-flash-latest';
+
+  if (GOOGLE_API_KEY && config.ocr.provider !== 'tesseract') {
+    try {
+      const result = await extractWithTextModel(text, model);
+      if (result.total !== null && result.total > 0) return result;
+    } catch (error: any) {
+      logger.warn('Text structuring failed, using the offline parser', { error: error?.message ?? String(error) });
+    }
+  }
+
+  return extractWithHeuristics(text);
+};

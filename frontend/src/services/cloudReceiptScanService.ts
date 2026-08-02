@@ -1,10 +1,56 @@
 import { TokenManager } from '@/lib/api';
 import supabase from '@/utils/supabase/client';
-import type { OCRProgress, ReceiptLineItem, ReceiptScanResult, TaxComponent, TotalValidationResult } from '@/types/receipt.types';
+import type { OCRProgress, ReceiptCharge, ReceiptLineItem, ReceiptScanResult, TaxComponent, TotalValidationResult } from '@/types/receipt.types';
 
 const API_BASE = (import.meta.env.VITE_API_URL || '/api/v1').replace(/\/+$/, '');
-const MAX_LONG_EDGE = 1920;
-const JPEG_QUALITY = 0.86;
+
+/**
+ * Upload sizing. A bill is text on paper: 1600px on the long edge keeps small
+ * print legible to the model while cutting a 12MP phone photo to a few hundred
+ * KB. The previous 1920px/0.86 combination produced uploads large enough that
+ * slow connections spent most of the scan budget on the POST alone.
+ */
+const MAX_LONG_EDGE = 1600;
+const JPEG_QUALITY = 0.82;
+/** Below this, the image is already small enough that re-encoding only costs quality. */
+const RECOMPRESS_THRESHOLD_BYTES = 400 * 1024;
+
+/**
+ * Total time the client will wait for a reading, comfortably above the server's
+ * own job budget so that a genuine server-side failure surfaces as its real
+ * reason rather than as a client timeout.
+ */
+const SCAN_BUDGET_MS = 150_000;
+
+/**
+ * Poll pacing. Early polls are cheap and catch fast scans quickly; later ones
+ * back off so a slow bill does not generate 75 requests. The old fixed 2s/30
+ * attempts capped the wait at 60s — under the time a vision pass on a large
+ * bill legitimately takes, which is exactly why users saw "OCR extraction
+ * timed out" on bills that were about to succeed.
+ */
+const pollDelayMs = (elapsedMs: number): number => {
+  if (elapsedMs < 6_000) return 700;
+  if (elapsedMs < 20_000) return 1_500;
+  if (elapsedMs < 60_000) return 2_500;
+  return 4_000;
+};
+
+/**
+ * What the user is told while waiting. Deliberately about their receipt, not
+ * about our pipeline: "falling back to on-device OCR" is an implementation
+ * detail that reads as a malfunction.
+ */
+const progressMessage = (elapsedMs: number): string => {
+  if (elapsedMs < 8_000) return "We're analyzing your receipt. This may take a few seconds.";
+  if (elapsedMs < 25_000) return 'Reading the line items and totals…';
+  if (elapsedMs < 60_000) return 'Checking the tax breakdown and totals…';
+  return 'Still working on this one — detailed bills take a little longer.';
+};
+
+/** Progress bar position from elapsed time, easing toward but never reaching 95%. */
+const progressPercent = (elapsedMs: number): number =>
+  Math.min(95, 40 + Math.round(55 * (1 - Math.exp(-elapsedMs / 30_000))));
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -71,6 +117,12 @@ const loadImage = (file: File) => new Promise<HTMLImageElement>(async (resolve, 
 });
 
 const compressImageForUpload = async (file: File) => {
+  // An already-small image is left alone: re-encoding a 200KB photo only
+  // discards detail the model could have used on faint thermal print.
+  if (file.size <= RECOMPRESS_THRESHOLD_BYTES && file.type === 'image/jpeg') {
+    return file;
+  }
+
   const image = await loadImage(file);
   const scale = Math.min(1, MAX_LONG_EDGE / Math.max(image.width, image.height));
 
@@ -83,6 +135,10 @@ const compressImageForUpload = async (file: File) => {
     throw new Error('Canvas is unavailable for image compression');
   }
 
+  // High-quality downscale: the browser default is a box filter that turns
+  // small print into mush at these ratios.
+  context.imageSmoothingEnabled = true;
+  context.imageSmoothingQuality = 'high';
   context.fillStyle = '#ffffff';
   context.fillRect(0, 0, canvas.width, canvas.height);
   context.drawImage(image, 0, 0, canvas.width, canvas.height);
@@ -134,6 +190,39 @@ const parseItems = (raw: unknown): ReceiptLineItem[] | undefined => {
   return items.length > 0 ? items : undefined;
 };
 
+const parseCharges = (raw: unknown): ReceiptCharge[] | undefined => {
+  if (!Array.isArray(raw)) return undefined;
+  const charges = raw
+    .filter((c): c is Record<string, unknown> => c !== null && typeof c === 'object')
+    .map((c) => ({
+      type: typeof c.type === 'string' ? c.type : 'OTHER',
+      label: typeof c.label === 'string' ? c.label : 'Other charge',
+      amount: typeof c.amount === 'number' ? c.amount : 0,
+      rate: typeof c.rate === 'number' ? c.rate : undefined,
+    }))
+    .filter((c) => c.amount !== 0);
+  return charges.length > 0 ? charges : undefined;
+};
+
+/**
+ * Turn an engine-level failure into something a user can act on. The raw
+ * message names models and pipeline stages — accurate for the log, meaningless
+ * (and alarming) in a toast.
+ */
+const friendlyFailure = (error: unknown): string => {
+  const message = typeof error === 'string' ? error : '';
+  if (/too long|timeout|exceeded/i.test(message)) {
+    return 'This receipt took too long to read. Please try again, or enter the amount manually.';
+  }
+  if (/unsupported file|not an image|file type/i.test(message)) {
+    return 'That file type is not supported. Use a photo or PDF of the bill.';
+  }
+  if (/could not read|no text/i.test(message)) {
+    return 'We could not read this image. Try a sharper, well-lit photo of the whole bill.';
+  }
+  return 'We could not read this receipt. Please try again, or enter the amount manually.';
+};
+
 const parseValidationResult = (raw: unknown): TotalValidationResult | undefined => {
   if (!raw || typeof raw !== 'object') return undefined;
   const v = raw as Record<string, unknown>;
@@ -154,7 +243,7 @@ export class CloudReceiptScanService {
       throw new Error('Cloud receipt scan currently supports image files only');
     }
 
-    onProgress?.({ status: 'Compressing image for upload...', progress: 15 });
+    onProgress?.({ status: 'Preparing your receipt…', progress: 10 });
     const compressedBlob = await compressImageForUpload(file);
 
     const formData = new FormData();
@@ -167,8 +256,8 @@ export class CloudReceiptScanService {
     }
 
     const startUrl = `${API_BASE}/receipts/start`;
-    onProgress?.({ status: 'Uploading and starting AI extraction job...', progress: 35 });
-    
+    onProgress?.({ status: "We're analyzing your receipt. This may take a few seconds.", progress: 30 });
+
     const startResponse = await fetchWithRetries(startUrl, {
       method: 'POST',
       headers,
@@ -177,33 +266,39 @@ export class CloudReceiptScanService {
 
     if (!startResponse.ok) {
       const errorBody = await startResponse.json().catch(() => ({}));
-      throw new Error(errorBody.error || 'Failed to start OCR job');
+      throw new Error(errorBody.error || 'We could not start reading this receipt. Please try again.');
     }
 
     const { job_id } = await startResponse.json();
-    
-    // Polling for completion
-    let attempts = 0;
-    const maxAttempts = 30; // 30 * 2s = 60s max
-    const statusUrl = `${API_BASE}/receipts/status/${job_id}`;
 
-    while (attempts < maxAttempts) {
-      onProgress?.({ status: `AI extracting details (Attempt ${attempts + 1})...`, progress: 40 + (attempts * 2) });
-      
+    // Poll until the job resolves or the budget runs out. Paced by elapsed
+    // wall-clock time rather than an attempt counter, so slow networks and slow
+    // bills are both handled by waiting rather than by giving up early.
+    const statusUrl = `${API_BASE}/receipts/status/${job_id}`;
+    const startedAt = Date.now();
+    let consecutiveStatusErrors = 0;
+
+    while (Date.now() - startedAt < SCAN_BUDGET_MS) {
+      const elapsed = Date.now() - startedAt;
+      onProgress?.({ status: progressMessage(elapsed), progress: progressPercent(elapsed) });
+
       const statusResponse = await fetchWithRetries(statusUrl, { headers });
       if (!statusResponse.ok) {
-        if (statusResponse.status >= 500 && attempts < maxAttempts - 1) {
-          await sleep(2000);
-          attempts += 1;
-          continue;
+        // A transient blip while the job is still running is not a failure —
+        // only give up if the status endpoint keeps failing.
+        consecutiveStatusErrors += 1;
+        if (consecutiveStatusErrors >= 4 || statusResponse.status === 404) {
+          throw new Error('We lost track of this scan. Please try again.');
         }
-        throw new Error('Failed to check OCR status');
+        await sleep(pollDelayMs(elapsed));
+        continue;
       }
-      
+      consecutiveStatusErrors = 0;
+
       const job = await statusResponse.json();
       if (job.status === 'completed') {
         const payload = job.data;
-        onProgress?.({ status: 'Applying global intelligence & tax extraction...', progress: 95 });
+        onProgress?.({ status: 'Almost done…', progress: 96 });
 
         const merchantName = typeof payload.merchantName === 'string' ? payload.merchantName : undefined;
         const amount = typeof payload.amount === 'number' && Number.isFinite(payload.amount) ? payload.amount : undefined;
@@ -255,18 +350,39 @@ export class CloudReceiptScanService {
           confidence: Math.max(0, Math.min(1, confidence)),
           rawText: JSON.stringify(payload || {}),
           notes: typeof payload.category === 'string' ? `${payload.category.toLowerCase()} receipt` : 'cloud ocr receipt',
+
+          // Structured extraction: charges, tax model and the reconciliation
+          // report, carried through so the review card can show what the
+          // engine actually concluded rather than re-deriving it.
+          discountAmount: typeof payload.discount === 'number' ? payload.discount : undefined,
+          discountPercent: typeof payload.discountPercent === 'number' ? payload.discountPercent : undefined,
+          additionalCharges: parseCharges(payload.additionalCharges),
+          totalCharges: typeof payload.totalCharges === 'number' ? payload.totalCharges : undefined,
+          roundOff: typeof payload.roundOff === 'number' ? payload.roundOff : undefined,
+          taxModel: payload.taxModel === 'inclusive' || payload.taxModel === 'exclusive' ? payload.taxModel : undefined,
+          merchantAddress: typeof payload.merchant?.address === 'string' ? payload.merchant.address : undefined,
+          merchantBrand: typeof payload.merchant?.brand === 'string' ? payload.merchant.brand : undefined,
+          gstin: typeof payload.gstin === 'string' ? payload.gstin : undefined,
+          billNumber: typeof payload.billNumber === 'string' ? payload.billNumber : undefined,
+          reviewIssues: Array.isArray(payload.validation?.issues) ? payload.validation.issues : undefined,
+          requiresReview: Boolean(payload.validation?.requiresReview),
+          engine: typeof payload.engine === 'string' ? payload.engine : undefined,
         };
       }
-      
+
       if (job.status === 'failed') {
-        throw new Error(job.error || 'AI extraction failed');
+        // The server's message names the real cause; anything internal-sounding
+        // is replaced rather than shown to the user.
+        throw new Error(friendlyFailure(job.error));
       }
 
-      attempts++;
-      await new Promise(r => setTimeout(r, 2000));
+      await sleep(pollDelayMs(Date.now() - startedAt));
     }
 
-    throw new Error('OCR extraction timed out. Please try again.');
+    throw new Error(
+      "This receipt is taking longer than expected to read. Check your connection and try again, "
+      + 'or enter the amount manually.',
+    );
   }
 }
 

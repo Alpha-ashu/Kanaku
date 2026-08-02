@@ -108,6 +108,63 @@ describe('receipt text parser — amount extraction guards', () => {
   });
 });
 
+/**
+ * Real OCR transcripts from quality/smaple_files/bills. These are the exact
+ * strings Tesseract produces, corruption included — the parser has to cope with
+ * what it actually receives, not with a tidied-up version.
+ */
+describe('receipt text parser — charges and round-off', () => {
+  // Plan B, Bengaluru: a service charge sits between the subtotal and the taxes.
+  const PLAN_B = [
+    'V&RO HOSPITALITY PVT LTD',
+    'PLAN B',
+    'GSTIN:29AAGCVA390M1ZL',
+    'Bill No: 2314PBSK/23-24',
+    '1 GINGER ALE 3 130.00 390.00',
+    'Total Amount 4525.00',
+    'SERC @ 10% 452.50',
+    'State Gst @ 2.5% 124.49',
+    'Central Gst @ 2.5% 124.49',
+    'Round Off -0.48',
+    'Net Amount 5226.00',
+  ].join('\n');
+
+  const parsed = parseReceiptFromText(PLAN_B);
+
+  it('reads a service charge as a charge, not as tax', () => {
+    expect(parsed.additionalCharges).toEqual([
+      expect.objectContaining({ type: 'SERVICE', amount: 452.5, rate: 10 }),
+    ]);
+    // The tax total is GST only — the 452.50 service charge is not in it.
+    expect(parsed.totalTaxAmount).toBe(248.98);
+  });
+
+  it('keeps the sign on a negative round-off', () => {
+    expect(parsed.roundOff).toBe(-0.48);
+  });
+
+  it('reconciles a bill that has both a charge and a round-off', () => {
+    // 4525 + 452.50 + 248.98 - 0.48 = 5226.00, exactly as printed. Before
+    // charges and round-off were part of the sum this bill failed validation
+    // despite being read correctly.
+    expect(parsed.netAmount).toBe(5226);
+    expect(parsed.validationResult).toMatchObject({ isValid: true, calculated: 5226 });
+  });
+
+  it('treats an "Amount Incl of All Taxes" line as the grand total', () => {
+    const sukhdev = parseReceiptFromText([
+      'SUKHDEV VAISHNO DHABA',
+      'SUB TOTAL 635.10',
+      'Add S GST(9.000%) on 635.10 57.16',
+      'Add C GST(9.000%) on 635.10 57.16',
+      'Amount Incl of All Taxes 749.00',
+    ].join('\n'));
+
+    expect(sukhdev.netAmount).toBe(749);
+    expect(sukhdev.preTaxSubtotal).toBe(635.1);
+  });
+});
+
 describe('receipt text parser — degraded input', () => {
   it('does not invent a merchant from OCR noise', () => {
     const parsed = parseReceiptFromText(['VRS ta tn amo', 'Total  100.00'].join('\n'));

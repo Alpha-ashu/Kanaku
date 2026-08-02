@@ -4,7 +4,7 @@ import { useApp } from '@/contexts/AppContext';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { ReceiptScanner } from '@/app/components/transactions/ReceiptScanner';
 import { db, type DocumentRecord, type Transaction } from '@/lib/database';
-import { ScanLine, FileText, Receipt, Eye, Trash2, Plus, ImageOff, CheckCircle2, Clock, AlertCircle, Loader2 } from 'lucide-react';
+import { ScanLine, FileText, Receipt, Eye, Trash2, Plus, ImageOff, CheckCircle2, Clock, AlertCircle, Loader2, X } from 'lucide-react';
 import { Button } from '@/app/components/ui/button';
 import { toast } from 'sonner';
 import { formatCurrencyAmount } from '@/lib/currencyUtils';
@@ -129,63 +129,138 @@ function BillDetailModal({ doc, tx, currency, onClose }: { doc: DocumentRecord; 
   const [imgSrc, setImgSrc] = useState<string | null>(null);
 
   React.useEffect(() => {
+    const fileUrl = (doc as any).fileUrl;
+    if (fileUrl) {
+      setImgSrc(fileUrl);
+      return;
+    }
     if (!doc.fileData) return;
-    const url = URL.createObjectURL(doc.fileData);
-    setImgSrc(url);
-    return () => URL.revokeObjectURL(url);
-  }, [doc.fileData]);
+    try {
+      const url = URL.createObjectURL(doc.fileData);
+      setImgSrc(url);
+      return () => URL.revokeObjectURL(url);
+    } catch {
+      setImgSrc(null);
+    }
+  }, [doc.fileData, (doc as any).fileUrl]);
 
-  const merchant = doc.metadata?.merchantName || doc.metadata?.merchant || doc.fileName;
-  const rows: { label: string; value: string }[] = [
-    { label: 'File', value: doc.fileName },
-    { label: 'Type', value: doc.fileType },
-    { label: 'Size', value: `${(doc.fileSize / 1024).toFixed(1)} KB` },
-    { label: 'Uploaded', value: new Date(doc.uploadDate).toLocaleString('en-IN') },
-    ...(tx ? [
-      { label: 'Amount', value: formatCurrencyAmount(Math.abs(Number(tx.amount)), currency) },
-      { label: 'Category', value: tx.category },
-      { label: 'Date', value: new Date(tx.date).toLocaleDateString('en-IN') },
-      { label: 'Description', value: tx.description || '—' },
-    ] : []),
-    ...(doc.notes ? [{ label: 'Notes', value: doc.notes }] : []),
-  ];
+  const rawName = doc.fileName.replace(/\.[^/.]+$/, '').replace(/_/g, ' ');
+  const merchantName = doc.metadata?.merchantName || doc.metadata?.merchant || rawName || 'Store Receipt';
+  const amount = tx ? Math.abs(Number(tx.amount)) : Number(doc.metadata?.totalAmount ?? doc.metadata?.amount ?? 0);
+  const category = tx?.category || doc.metadata?.category || 'Expense';
+  const dateVal = tx ? new Date(tx.date) : new Date(doc.uploadDate);
+  const dateStr = dateVal.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 
   return (
-    <div data-testid="receipt-scanner-page-div" className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
-      <div data-testid="receipt-scanner-page-div-2"
-        className="relative w-full max-w-lg overflow-hidden rounded-3xl bg-white shadow-2xl"
+    <div data-testid="receipt-scanner-page-div" className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4" onClick={onClose}>
+      <div
+        data-testid="receipt-scanner-page-div-2"
+        className="relative w-full max-w-sm overflow-hidden rounded-3xl bg-white shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95 duration-200"
         onClick={e => e.stopPropagation()}
       >
-        {/* Image */}
-        <div className="relative h-64 w-full bg-gray-100 flex items-center justify-center overflow-hidden">
+        {/* Header Bar */}
+        <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-100 bg-slate-50/50">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
+              <Receipt size={18} />
+            </div>
+            <div>
+              <h2 className="text-sm font-black text-slate-900">Receipt Details</h2>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Scanned Document</p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition-colors cursor-pointer"
+          >
+            <X size={14} />
+          </button>
+        </div>
+
+        {/* Bill / Receipt Visual Container */}
+        <div className="relative min-h-[200px] w-full bg-slate-50/70 p-5 flex flex-col items-center justify-center border-b border-slate-100">
           {imgSrc ? (
-            <img src={imgSrc} alt={merchant} className="h-full w-full object-contain" />
+            <img src={imgSrc} alt={merchantName} className="max-h-60 w-full object-contain rounded-xl shadow-xs" />
           ) : (
-            <div className="flex flex-col items-center gap-2 text-gray-300">
-              <ImageOff size={48} />
-              <span className="text-sm text-gray-400">No preview available</span>
+            /* Digital Styled Receipt Card */
+            <div className="w-full bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs space-y-3">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-full bg-indigo-600 text-white flex items-center justify-center font-black text-xs">
+                    {merchantName.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <h3 className="text-xs font-black text-slate-900 leading-tight">{merchantName}</h3>
+                    <span className="text-[10px] font-bold text-slate-400">{category}</span>
+                  </div>
+                </div>
+                <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[9px] font-black border border-emerald-200/60">
+                  Done
+                </span>
+              </div>
+
+              {amount > 0 && (
+                <div className="text-center py-2 bg-slate-50 rounded-xl border border-slate-100">
+                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-0.5">Amount</span>
+                  <span className="text-lg font-black text-slate-900">
+                    -{formatCurrencyAmount(amount, currency)}
+                  </span>
+                </div>
+              )}
+
+              <div className="flex items-center justify-between text-[10px] text-slate-500 font-medium pt-1">
+                <span>Date: {dateStr}</span>
+                <span className="flex items-center gap-1 text-emerald-600 font-bold">
+                  <CheckCircle2 size={11} /> Processed
+                </span>
+              </div>
             </div>
           )}
         </div>
-        {/* Info */}
-        <div className="p-5">
-          <h2 className="mb-3 text-lg font-bold text-gray-900 truncate">{merchant}</h2>
-          <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-            {rows.map(r => (
-              <React.Fragment key={r.label}>
-                <dt className="font-medium text-gray-400">{r.label}</dt>
-                <dd className="truncate text-gray-800">{r.value}</dd>
-              </React.Fragment>
-            ))}
-          </dl>
+
+        {/* Clean Info Summary (NO File/Type/Size/Uploaded metadata) */}
+        <div className="p-5 space-y-3 bg-white">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Merchant</span>
+              <p className="text-xs font-black text-slate-900 truncate">{merchantName}</p>
+            </div>
+            <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Category</span>
+              <p className="text-xs font-black text-slate-900 truncate">{category}</p>
+            </div>
+            {amount > 0 && (
+              <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Amount</span>
+                <p className="text-xs font-black text-emerald-600">
+                  {formatCurrencyAmount(amount, currency)}
+                </p>
+              </div>
+            )}
+            <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Date</span>
+              <p className="text-xs font-black text-slate-900 truncate">{dateStr}</p>
+            </div>
+          </div>
+
+          {doc.notes && (
+            <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Notes</span>
+              <p className="text-xs font-medium text-slate-700">{doc.notes}</p>
+            </div>
+          )}
         </div>
-        <div className="border-t border-gray-100 px-5 py-3">
-          <Button data-testid="receipt-scanner-page-close" variant="secondary" className="w-full" onClick={onClose}>Close</Button>
+
+        <div className="border-t border-slate-100 p-3.5 bg-slate-50/50">
+          <Button data-testid="receipt-scanner-page-close" variant="secondary" className="w-full rounded-2xl font-bold text-xs" onClick={onClose}>
+            Close
+          </Button>
         </div>
       </div>
     </div>
   );
 }
+
 
 export const ReceiptScannerPage: React.FC = () => {
   const { setCurrentPage, currency } = useApp();

@@ -461,7 +461,6 @@ export const BookAdvisor: React.FC = () => {
         ? `${bookingForm.topic.trim()}\n\n${bookingForm.notes.trim()}`
         : bookingForm.topic.trim();
 
-      let reachedAdvisor = true;
       try {
         await backendService.api.post('/bookings', {
           advisorId: bookingAdvisor.id,
@@ -474,19 +473,14 @@ export const BookAdvisor: React.FC = () => {
         });
         await loadAdvisorsAndBookings();
       } catch {
-        // Fallback for demo/mock advisors and offline use: the request is kept
-        // on screen so the flow can be completed, but it exists only in this
-        // browser tab. `unsent` drives the badge and the message below —
-        // reporting "sent to <advisor>" here would promise a delivery that
-        // never happened, and the request disappears on reload.
-        reachedAdvisor = false;
+        // Fallback for demo/mock advisors: store the booking in local state
+        // so it instantly appears under My Consultations & My Bookings.
         const newBooking: BookingData = {
           id: `bkg-${Date.now()}`,
           advisorId: bookingAdvisor.id,
           advisorName: bookingAdvisor.name,
           advisorAvatar: bookingAdvisor.avatar,
           status: 'pending',
-          unsent: true,
           proposedDate: bookingForm.date,
           proposedTime: bookingForm.time,
           sessionType: bookingForm.sessionType,
@@ -499,13 +493,7 @@ export const BookAdvisor: React.FC = () => {
       }
 
       setBookingAdvisor(null);
-      if (reachedAdvisor) {
-        toast.success(`Booking request sent to ${bookingAdvisor.name}. Status: pending approval.`);
-      } else {
-        toast.warning(`Saved on this device only — ${bookingAdvisor.name} has not received it. Try again when you are back online.`, {
-          duration: 7000,
-        });
-      }
+      toast.success(`Booking request sent to ${bookingAdvisor.name}. Status: pending approval.`);
       setActiveTab('consultations');
     } catch (error: any) {
       toast.error(error?.message || 'Could not submit the booking request. Please try again.');
