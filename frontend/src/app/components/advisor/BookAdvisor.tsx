@@ -649,7 +649,7 @@ export const BookAdvisor: React.FC = () => {
 
 
           {/* 5 Primary Navigation Tabs — Adaptive Responsive Navigation */}
-          <nav className="flex items-center gap-1 sm:gap-1.5 bg-white p-1 sm:p-1.5 rounded-2xl border border-slate-200/80 shadow-xs max-w-full overflow-x-auto scrollbar-hide">
+          <nav className="flex items-center justify-center gap-1 sm:gap-1.5 bg-white p-1 sm:p-1.5 rounded-2xl border border-slate-200/80 shadow-xs max-w-full mx-auto overflow-x-auto scrollbar-hide">
             {[
               { id: 'discover', label: 'Discover', icon: Search },
               { id: 'consultations', label: 'My Consultations', icon: Briefcase, badge: bookings.length },
