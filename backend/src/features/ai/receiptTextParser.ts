@@ -42,6 +42,8 @@ export interface ParsedReceipt extends Record<string, unknown> {
   totalTaxAmount?: number;
   discountAmount?: number;
   discountPercent?: number;
+  /** True when the printed total was unreadable and netAmount is the sum of the parts. */
+  totalWasDerived?: boolean;
   taxBreakdown?: ParsedReceiptTax[];
   additionalCharges?: ParsedReceiptCharge[];
   /** Signed: a bill that rounds down carries a negative value here. */
@@ -613,8 +615,15 @@ export const parseReceiptFromText = (rawText: string): ParsedReceipt => {
   const itemsTotal = items.length > 0 ? round2(items.reduce((sum, item) => sum + item.amount, 0)) : undefined;
   if (subtotal === undefined && itemsTotal !== undefined) subtotal = itemsTotal;
 
+  // When the printed total is unreadable we fall back to the sum of the parts.
+  // That figure is a reconstruction, not a reading: it cannot see a round-off
+  // line the OCR dropped, a charge the parser missed, or an item it never saw.
+  // On the Shri Gowri Krishnaa bill it yields 474.90 where the receipt prints
+  // 475.00. It must not then be "validated" against itself.
+  let totalWasDerived = false;
   if (grandTotal === undefined && subtotal !== undefined) {
     grandTotal = round2(subtotal - (discount || 0) + (chargeTotal || 0) + (taxTotal || 0) + (roundOff || 0));
+    totalWasDerived = true;
   }
 
   // Math check against the printed subtotal. A failure here is the strongest
@@ -667,6 +676,7 @@ export const parseReceiptFromText = (rawText: string): ParsedReceipt => {
     time,
     invoiceNumber,
     paymentMethod,
+    totalWasDerived,
     currency: 'INR',
     category: deriveCategory(rawText),
     description,

@@ -243,11 +243,27 @@ export const validateReceiptMath = (receipt: {
   total: number | null;
   taxModel: TaxModel;
   items: ExtractedLineItem[];
+  /** Set when `total` is the sum of the parts because the printed one was unreadable. */
+  totalWasDerived?: boolean;
 }): ReceiptValidation | null => {
   const { total } = receipt;
   if (total === null || total <= 0) return null;
 
   const issues: string[] = [];
+
+  // A derived total cannot be checked against the components it was built
+  // from — that comparison always passes and means nothing. Say so, and send
+  // it for review rather than reporting a reconciliation that never happened.
+  if (receipt.totalWasDerived) {
+    return {
+      isValid: false,
+      calculated: round2(total),
+      detected: round2(total),
+      difference: 0,
+      requiresReview: true,
+      issues: ['The printed total could not be read. This figure is the sum of the items, charges and taxes — check it against the bill.'],
+    };
+  }
   const subtotal = receipt.subtotal;
   const discount = receipt.discount ?? 0;
   const tax = receipt.totalTax ?? 0;
@@ -321,8 +337,17 @@ const ENGINE_CEILING: Record<string, number> = {
  * can be internally consistent and still be wrong, so it never presents as
  * "trust this without looking".
  */
-export const scoreConfidence = (receipt: ExtractedReceipt, modelConfidence?: number | null): number => {
+export const scoreConfidence = (
+  receipt: ExtractedReceipt,
+  modelConfidence?: number | null,
+  flags?: { merchantRejected?: boolean },
+): number => {
   let score = 35;
+
+  // A header the OCR mangled badly enough to be unusable is evidence about the
+  // whole transcript, not just the name — the amounts were read off the same
+  // pixels. This is separate from a bill that simply has no merchant line.
+  if (flags?.merchantRejected) score -= 20;
 
   if (receipt.total !== null && receipt.total > 0) score += 20;
   if (receipt.merchant.name) score += 10;
@@ -359,6 +384,71 @@ const cleanString = (value: unknown, maxLength = 200): string | null => {
 };
 
 const GSTIN_PATTERN = /\b[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]\b/;
+
+// ─── Garbled-text rejection ──────────────────────────────────────────────────
+
+const VOWEL = /[aeiouy]/i;
+/** Measured per word: concatenating "PVT LTD" would look like a consonant run. */
+const CONSONANT_RUN = /[bcdfghjklmnpqrstvwxz]{5,}/i;
+/** Q without a following U — a reliable fingerprint of OCR scrambling. */
+const ORPHAN_Q = /q(?![u])/i;
+
+const KNOWN_ABBREVIATIONS = new Set([
+  'PVT', 'LTD', 'LLP', 'INC', 'CO', 'CORP', 'MFG', 'DIST', 'MKT', 'BLDG',
+  'GST', 'CGST', 'SGST', 'IGST', 'VAT', 'TIN', 'PAN', 'HSN', 'SAC',
+  'NO', 'SL', 'SR', 'PH', 'MRP', 'QTY', 'AMT', 'RS', 'INR', 'KG', 'ML', 'PC', 'PCS',
+]);
+
+const caseSwitches = (word: string): number => {
+  let switches = 0;
+  for (let i = 2; i < word.length; i += 1) {
+    const wasUpper = word[i - 1] === word[i - 1].toUpperCase();
+    const isUpper = word[i] === word[i].toUpperCase();
+    if (wasUpper !== isUpper) switches += 1;
+  }
+  return switches;
+};
+
+/**
+ * True when a name is OCR noise rather than language.
+ *
+ * A degraded scan does not return nothing — it returns "SHRLEGQWRIKRISHNAA" for
+ * "SHRI GOWRI KRISHNAA". Showing that is worse than showing an empty field: the
+ * user cannot tell it is wrong without re-reading the bill, whereas a blank
+ * visibly asks to be filled in. Calibrated against the transcripts in
+ * quality/smaple_files/bills, so it must accept "V&RO HOSPITALITY PVT LTD".
+ */
+export const looksGarbledName = (value: string): boolean => {
+  const tokens = value.trim().split(/\s+/).filter((token) => /[a-z]/i.test(token));
+  if (tokens.length === 0) return true;
+  if (value.replace(/[^a-z]/gi, '').length < 3) return true;
+  // A four-digit run in a "merchant name" is a pincode or a phone fragment that
+  // bled in from the address block ("CHEANAT-600016"), not part of the name.
+  if (/\d{4,}/.test(value)) return true;
+
+  let vowelless = 0;
+  let tiny = 0;
+
+  for (const token of tokens) {
+    const word = token.replace(/[^a-z]/gi, '');
+    if (!word) continue;
+
+    if (ORPHAN_Q.test(word)) return true;
+    if (CONSONANT_RUN.test(word)) return true;
+    if (word.length >= 5 && caseSwitches(word) >= 3) return true;
+
+    const isAbbreviation = word.length > 1
+      && (KNOWN_ABBREVIATIONS.has(word.toUpperCase())
+        || (word.length <= 4 && word === word.toUpperCase()));
+    if (!VOWEL.test(word) && !isAbbreviation) vowelless += 1;
+    if (word.length <= 2 && !isAbbreviation) tiny += 1;
+  }
+
+  if (vowelless / tokens.length >= 0.5) return true;
+  if (tokens.length >= 3 && tiny / tokens.length >= 0.5) return true;
+
+  return false;
+};
 
 const normalizeTaxes = (raw: unknown): ExtractedTax[] => {
   if (!Array.isArray(raw)) return [];
@@ -462,10 +552,14 @@ export const normalizeExtractedReceipt = (
   options: { engine: string; rawText?: string },
 ): ExtractedReceipt => {
   const merchantRaw = (raw.merchant ?? {}) as Record<string, unknown>;
-  const merchantName = cleanString(
+  const merchantCandidate = cleanString(
     typeof raw.merchant === 'string' ? raw.merchant : merchantRaw.name ?? raw.merchantName ?? raw.vendor,
     120,
   );
+  // A name the OCR scrambled is dropped rather than displayed. Confidence falls
+  // with it, because a transcript bad enough to mangle the header is a
+  // transcript whose numbers deserve suspicion too.
+  const merchantName = merchantCandidate && !looksGarbledName(merchantCandidate) ? merchantCandidate : null;
 
   const gstinCandidate = cleanString(merchantRaw.gstin ?? raw.gstin ?? raw.gstNo, 20);
   const gstin = gstinCandidate && GSTIN_PATTERN.test(gstinCandidate.toUpperCase())
@@ -538,8 +632,10 @@ export const normalizeExtractedReceipt = (
     engine: options.engine,
   };
 
-  receipt.validation = validateReceiptMath(receipt);
-  receipt.confidence = scoreConfidence(receipt, toFiniteNumber(raw.confidence));
+  receipt.validation = validateReceiptMath({ ...receipt, totalWasDerived: raw.totalWasDerived === true });
+  receipt.confidence = scoreConfidence(receipt, toFiniteNumber(raw.confidence), {
+    merchantRejected: Boolean(merchantCandidate) && merchantName === null,
+  });
 
   return receipt;
 };
