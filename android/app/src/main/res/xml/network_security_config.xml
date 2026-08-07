@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+  <!-- Allow cleartext traffic to localhost for development/testing -->
+  <domain-config cleartextTrafficPermitted="true">
+    <domain includeSubdomains="true">localhost</domain>
+    <domain includeSubdomains="true">127.0.0.1</domain>
+    <domain includeSubdomains="true">capacitor.localhost</domain>
+  </domain-config>
+
+  <!-- Trust system certificates for production API -->
+  <domain-config>
+    <domain includeSubdomains="true">kanaku-api.onrender.com</domain>
+    <trust-anchors>
+      <certificates src="system" />
+    </trust-anchors>
+  </domain-config>
+
+  <!-- Default configuration for all other domains -->
+  <trust-anchors>
+    <certificates src="system" />
+  </trust-anchors>
+</network-security-config>

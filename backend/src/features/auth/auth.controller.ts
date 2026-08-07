@@ -440,6 +440,14 @@ export const loginChallenge = async (req: Request, res: Response, next: NextFunc
     }
 
     const normalizedEmail = email.toLowerCase().trim();
+    // Log the login attempt with client platform info for debugging
+    logger.info(`[AuthController] Login challenge attempt`, {
+      email: normalizedEmail,
+      clientPlatform: req.headers['x-client-platform'],
+      contentType: req.headers['content-type'],
+      userAgent: req.headers['user-agent'],
+    });
+
     // Password is sent plain over the HTTPS-encrypted wire; bcrypt is the security gate.
     const { valid, status } = await authService.verifyPasswordOnly(normalizedEmail, password);
     if (!valid) {
