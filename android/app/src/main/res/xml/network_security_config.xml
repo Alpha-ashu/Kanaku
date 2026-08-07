@@ -16,7 +16,9 @@
   </domain-config>
 
   <!-- Default configuration for all other domains -->
-  <trust-anchors>
-    <certificates src="system" />
-  </trust-anchors>
+  <domain-config>
+    <trust-anchors>
+      <certificates src="system" />
+    </trust-anchors>
+  </domain-config>
 </network-security-config>
