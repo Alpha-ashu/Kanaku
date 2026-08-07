@@ -1,8 +1,24 @@
+// Capacitor native webview origins — always permitted regardless of CORS_ORIGIN.
+// On Android the webview origin is `capacitor://localhost`; on iOS it is
+// `ionic://localhost` (Capacitor <5) or `https://localhost` (Capacitor ≥5,
+// androidScheme:"https"). These origins are safe to allow unconditionally:
+// every API call already carries a short-lived JWT in the Authorization header,
+// and the android/ios apps are our own code — not third-party web pages.
+const CAPACITOR_ORIGINS = [
+  'capacitor://localhost',
+  'ionic://localhost',
+  'https://localhost',
+  'http://localhost',
+];
+
 export const buildAllowedOrigins = (): string[] => {
   const origins = (process.env.CORS_ORIGIN || process.env.FRONTEND_URL || '')
     .split(',')
     .map(origin => origin.trim())
     .filter(Boolean);
+
+  // Always allow Capacitor native webview origins (Android & iOS).
+  origins.push(...CAPACITOR_ORIGINS);
 
   if (process.env.NODE_ENV !== 'production') {
     origins.push(

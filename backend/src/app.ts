@@ -164,8 +164,13 @@ app.use((req, res, next) => {
 // itself introduce vulnerabilities, so the current guidance is to omit it (or
 // send `0`). CSP above is the real XSS defence. helmet already emits
 // `X-XSS-Protection: 0` by default.
+// Cross-Origin-Resource-Policy: set to cross-origin so the response can be
+// read by our Capacitor Android/iOS webview (origin: capacitor://localhost /
+// https://localhost), which is cross-origin relative to the API server.
+// The JWT bearer token in every request is the real security gate; CORP is
+// redundant for a JSON API that is not loaded as a subresource in untrusted pages.
 app.use((req, res, next) => {
-  res.setHeader('Cross-Origin-Resource-Policy', 'same-origin');
+  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
   next();
 });
 
