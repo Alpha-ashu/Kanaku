@@ -23,15 +23,23 @@
 # Some plugins still use the Cordova bridge under the hood.
 -keep class org.apache.cordova.** { *; }
 
-# ── Capacitor plugin classes ──────────────────────────────────────────────────
+# ── Capacitor plugin classes and reflection methods ───────────────────────────
 # Each @capacitor/* plugin registers a Java/Kotlin class via reflection.
 # Stripping them causes "Plugin not found" errors on device.
 -keep class * extends com.getcapacitor.Plugin { *; }
+-keepclassmembers class * extends com.getcapacitor.Plugin {
+    @com.getcapacitor.PluginMethod public *;
+    @com.getcapacitor.annotation.ActivityCallback public *;
+    @com.getcapacitor.annotation.PermissionCallback public *;
+}
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# ── Native Biometric & AndroidX Biometric ─────────────────────────────────────
+-keep class ee.forgr.biometric.** { *; }
+-keep class androidx.biometric.** { *; }
+-keep class com.capacitorjs.plugins.** { *; }
+-keep class com.getcapacitor.community.** { *; }
+-keep class androidx.security.crypto.** { *; }
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# Keep line numbers and annotations for runtime reflection and debugging
+-keepattributes SourceFile,LineNumberTable,*Annotation*
+

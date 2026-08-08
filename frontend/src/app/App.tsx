@@ -298,6 +298,7 @@ const AppContent: React.FC = () => {
   // Live-state refs for the native hardware-back handler (registered once, so it
   // must read current values via refs rather than a stale closure).
   const lastBackPressRef = useRef(0);
+  const isAuthenticatedRef = useRef(isAuthenticated);
   const currentPageRef = useRef<string>('dashboard');
   const goBackRef = useRef<(() => void) | undefined>(undefined);
   const closeOverlaysRef = useRef<() => boolean>(() => false);
@@ -561,6 +562,10 @@ const AppContent: React.FC = () => {
   // on the next unlock/re-login. Clearing it here lets the next authenticated
   // session run a fresh sync, matching handlePinLocked's contract in AuthContext.
   useEffect(() => {
+    isAuthenticatedRef.current = isAuthenticated;
+    // Always reset the back-press timer when auth state changes (e.g., unlocking after PIN)
+    // so keyboard dismiss / entry back events never bleed into the dashboard exit timer.
+    lastBackPressRef.current = 0;
     if (!isAuthenticated) {
       hasTriggeredSyncRef.current = null;
       hasSyncedFeatureTablesRef.current = null;
@@ -775,7 +780,29 @@ const AppContent: React.FC = () => {
       // driven by react-router state, so we use the app's own navigation instead.
       const ROOT_PAGES = new Set(['dashboard', 'landing']);
       CapacitorApp.addListener('backButton', () => {
-        if (closeOverlaysRef.current?.()) return;
+        // 1. If an input/textarea is currently focused, blur it to dismiss the keyboard and consume the back event
+        if (
+          document.activeElement &&
+          (document.activeElement.tagName === 'INPUT' ||
+            document.activeElement.tagName === 'TEXTAREA' ||
+            (document.activeElement as HTMLElement).isContentEditable)
+        ) {
+          (document.activeElement as HTMLElement).blur();
+          lastBackPressRef.current = 0;
+          return;
+        }
+
+        // 2. Close any open overlays/modals
+        if (closeOverlaysRef.current?.()) {
+          lastBackPressRef.current = 0;
+          return;
+        }
+
+        // 3. If unauthenticated or on the PIN/security screen, ignore back to prevent quitting the app
+        if (!isAuthenticatedRef.current) {
+          lastBackPressRef.current = 0;
+          return;
+        }
 
         const page = currentPageRef.current;
         if (!ROOT_PAGES.has(page)) {
@@ -784,7 +811,8 @@ const AppContent: React.FC = () => {
         }
 
         const now = Date.now();
-        if (now - lastBackPressRef.current < 2000) {
+        if (lastBackPressRef.current > 0 && now - lastBackPressRef.current < 2000) {
+          lastBackPressRef.current = 0;
           CapacitorApp.exitApp();
         } else {
           lastBackPressRef.current = now;
