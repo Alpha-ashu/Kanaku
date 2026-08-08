@@ -299,6 +299,7 @@ const AppContent: React.FC = () => {
   // must read current values via refs rather than a stale closure).
   const lastBackPressRef = useRef(0);
   const isAuthenticatedRef = useRef(isAuthenticated);
+  const authUnlockTimeRef = useRef(0);
   const currentPageRef = useRef<string>('dashboard');
   const goBackRef = useRef<(() => void) | undefined>(undefined);
   const closeOverlaysRef = useRef<() => boolean>(() => false);
@@ -566,6 +567,9 @@ const AppContent: React.FC = () => {
     // Always reset the back-press timer when auth state changes (e.g., unlocking after PIN)
     // so keyboard dismiss / entry back events never bleed into the dashboard exit timer.
     lastBackPressRef.current = 0;
+    if (isAuthenticated) {
+      authUnlockTimeRef.current = Date.now();
+    }
     if (!isAuthenticated) {
       hasTriggeredSyncRef.current = null;
       hasSyncedFeatureTablesRef.current = null;
@@ -798,8 +802,8 @@ const AppContent: React.FC = () => {
           return;
         }
 
-        // 3. If unauthenticated or on the PIN/security screen, ignore back to prevent quitting the app
-        if (!isAuthenticatedRef.current) {
+        // 3. If unauthenticated or recently unlocked within 5 seconds, ignore back events completely
+        if (!isAuthenticatedRef.current || (Date.now() - authUnlockTimeRef.current < 5000)) {
           lastBackPressRef.current = 0;
           return;
         }
