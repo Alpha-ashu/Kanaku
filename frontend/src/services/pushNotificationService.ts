@@ -176,7 +176,11 @@ export const initializePushNotifications = async (navigate: NavigateToPage): Pro
       }),
     );
 
-    await PushNotifications.register();
+    try {
+      await PushNotifications.register();
+    } catch (regError) {
+      console.warn('[Push] PushNotifications.register skipped:', regError);
+    }
   } catch (error) {
     initialised = false;
     console.info(
