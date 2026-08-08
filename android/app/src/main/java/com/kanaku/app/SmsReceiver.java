@@ -83,6 +83,6 @@ public class SmsReceiver extends BroadcastReceiver {
 
     private String buildSourceSmsId(String address, String body, long timestamp) {
         String normalized = (address + "|" + timestamp + "|" + body).toLowerCase(Locale.ENGLISH);
-        return "incoming_" + Math.abs(normalized.hashCode());
+        return "incoming_" + (normalized.hashCode() & 0x7fffffff);
     }
 }

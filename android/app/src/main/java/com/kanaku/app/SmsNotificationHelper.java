@@ -58,7 +58,7 @@ public final class SmsNotificationHelper {
 
         PendingIntent pendingIntent = PendingIntent.getActivity(
                 context,
-                Math.abs(transaction.optString("sourceSmsId", "").hashCode()),
+                transaction.optString("sourceSmsId", "").hashCode() & 0x7fffffff,
                 launchIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
         );
@@ -85,7 +85,7 @@ public final class SmsNotificationHelper {
                 .setContentIntent(pendingIntent);
 
         NotificationManagerCompat.from(context).notify(
-                Math.abs(transaction.optString("sourceSmsId", "").hashCode()),
+                transaction.optString("sourceSmsId", "").hashCode() & 0x7fffffff,
                 builder.build()
         );
     }

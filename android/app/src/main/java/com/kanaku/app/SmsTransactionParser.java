@@ -76,7 +76,7 @@ public final class SmsTransactionParser {
             result.put("sourceAddress", originAddress == null ? "" : originAddress);
             result.put("sourceChannel", extractChannel(lowered));
             result.put("messagePreview", compactBody.length() > 180 ? compactBody.substring(0, 180) + "..." : compactBody);
-            result.put("confidenceScore", calculateConfidence(lowered, compactBody, amount));
+            result.put("confidenceScore", calculateConfidence(lowered, compactBody, amount, originAddress));
             return result;
         } catch (JSONException exception) {
             return null;
@@ -265,7 +265,7 @@ public final class SmsTransactionParser {
     private static String extractCurrencyCode(String body) {
         String upper = body.toUpperCase(Locale.ENGLISH);
         if (upper.contains("USD") || upper.contains("$")) return "USD";
-        if (upper.contains("EUR") || upper.contains("")) return "EUR";
+        if (upper.contains("EUR") || upper.contains("€")) return "EUR";
         if (upper.contains("GBP") || upper.contains("£")) return "GBP";
         if (upper.contains("AED")) return "AED";
         return "INR";
@@ -351,11 +351,11 @@ public final class SmsTransactionParser {
         return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", Locale.ENGLISH).format(date);
     }
 
-    private static double calculateConfidence(String lowered, String body, Double amount) {
+    private static double calculateConfidence(String lowered, String body, Double amount, String originAddress) {
         double confidence = 0.55d;
         if (amount != null && amount > 0) confidence += 0.15d;
         if (lowered.contains("debited") || lowered.contains("credited")) confidence += 0.10d;
-        if (!extractBankName("", body).isEmpty()) confidence += 0.07d;
+        if (!extractBankName(originAddress, body).isEmpty()) confidence += 0.07d;
         if (!extractAccountLast4(body).isEmpty()) confidence += 0.05d;
         if (!extractMerchant(body, detectTransactionType(lowered)).isEmpty()) confidence += 0.08d;
         return Math.min(confidence, 0.98d);
@@ -365,14 +365,14 @@ public final class SmsTransactionParser {
         String seed = (originAddress == null ? "" : originAddress) + "|" + timestampMillis + "|" + body;
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(seed.getBytes());
+            byte[] hash = digest.digest(seed.getBytes(java.nio.charset.StandardCharsets.UTF_8));
             StringBuilder builder = new StringBuilder("sms_");
             for (int index = 0; index < Math.min(hash.length, 8); index++) {
-                builder.append(String.format(Locale.ENGLISH, "%02x", hash[index]));
+                builder.append(String.format(Locale.ENGLISH, "%02x", hash[index] & 0xFF));
             }
             return builder.toString();
         } catch (Exception exception) {
-            return "sms_" + Math.abs(seed.hashCode());
+            return "sms_" + (seed.hashCode() & 0x7fffffff);
         }
     }
 }
