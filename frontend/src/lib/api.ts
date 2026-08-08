@@ -564,6 +564,19 @@ class HTTPClient {
             }
           }
 
+          // Fallback: if the Authorization header was not readable (CORS
+          // cross-origin restriction, proxy stripping, etc.), capture the
+          // access token from the JSON response body. Auth endpoints
+          // (login/register/refresh) always include data.accessToken in the
+          // body for native clients, so this is a reliable defense-in-depth.
+          if (!responseAuthToken && data && typeof data === 'object') {
+            const bodyAccessToken =
+              (data.data?.accessToken ?? data.accessToken ?? null) as string | null;
+            if (bodyAccessToken && typeof bodyAccessToken === 'string' && bodyAccessToken.length > 10) {
+              TokenManager.setAccessToken(bodyAccessToken);
+            }
+          }
+
           // Refresh token: web never receives it in JS (HttpOnly cookie only).
           // Native receives it in the body and persists it to device storage —
           // setRefreshToken is a no-op on web, so this is safe to call always.

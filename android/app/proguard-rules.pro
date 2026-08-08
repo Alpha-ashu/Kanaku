@@ -5,12 +5,28 @@
 # For more details, see
 #   http://developer.android.com/guide/developing/tools/proguard.html
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# ── Capacitor WebView bridge ──────────────────────────────────────────────────
+# Capacitor's native Java/Kotlin bridge communicates with the WebView-hosted
+# JavaScript via reflection and @JavascriptInterface annotations. R8/ProGuard
+# must not strip, rename, or obfuscate these classes or the bridge breaks
+# silently in release builds (minifyEnabled=true).
+
+-keep class com.getcapacitor.** { *; }
+-keep class com.kanaku.app.** { *; }
+
+# Keep WebView JavaScript interface methods (used by Capacitor plugins)
+-keepclassmembers class * {
+    @android.webkit.JavascriptInterface <methods>;
+}
+
+# ── Capacitor Cordova compatibility layer ─────────────────────────────────────
+# Some plugins still use the Cordova bridge under the hood.
+-keep class org.apache.cordova.** { *; }
+
+# ── Capacitor plugin classes ──────────────────────────────────────────────────
+# Each @capacitor/* plugin registers a Java/Kotlin class via reflection.
+# Stripping them causes "Plugin not found" errors on device.
+-keep class * extends com.getcapacitor.Plugin { *; }
 
 # Uncomment this to preserve the line number information for
 # debugging stack traces.

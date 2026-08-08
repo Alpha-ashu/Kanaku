@@ -195,6 +195,18 @@ app.use(cors({
     'x-pw-encoding',   // password encoding negotiation (sha256 vs plain)
     'x-request-id',
   ],
+  // CRITICAL for native clients (Capacitor Android/iOS): CORS only exposes
+  // "simple" response headers (Cache-Control, Content-Language, Content-Type,
+  // Expires, Last-Modified, Pragma) by default. The `Authorization` header
+  // carrying the access token MUST be listed here so cross-origin JavaScript
+  // (WebView at https://localhost) can read it from the API response.
+  // Without this, login succeeds at the network level but the frontend cannot
+  // capture the token — breaking authentication on Android/iOS completely.
+  exposedHeaders: [
+    'Authorization',
+    'X-Request-Id',
+    'X-Correlation-Id',
+  ],
 }));
 app.use(express.json({
   limit: '1mb',
