@@ -1058,33 +1058,7 @@ const AppContent: React.FC = () => {
     return <PINAuth onAuthenticated={setAuthenticated} />;
   }
 
-  // Gate 3: safety net only.
-  //
-  // This used to be the login bottleneck — `dataReady` waited on permissions + a full
-  // cloud sync (12s budget, 30s retry), so the whole app sat behind this full-screen
-  // spinner on every login and re-login. triggerDataSync now flips `dataReady` before its
-  // first await and the trigger runs in a layout effect, so this should never paint.
-  // Kept for the genuine edge cases (sync trigger not yet mounted, unexpected reset).
-  if (user && !dataReady) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-pink-500 to-rose-600">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4" />
-          <p className="text-white text-base font-medium">
-            {dataSyncing ? 'Syncing your account...' : 'Loading your account...'}
-          </p>
-          {dataSyncError && (
-            <p className="text-white/80 text-xs mt-2 max-w-xs">
-              Having trouble refreshing cloud data. Using the last saved state when available.
-            </p>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-
-
+  // Gate 3: Initial loading screen before user or public pages load
   if (authLoading || !isInitialized) {
     return (
       <div className="flex items-center justify-center h-screen bg-gradient-to-br from-pink-500 to-rose-600">
