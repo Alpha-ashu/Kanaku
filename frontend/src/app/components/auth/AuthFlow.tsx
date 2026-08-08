@@ -284,6 +284,7 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
       return;
     } catch (error: any) {
       internalLog.error('handleSignIn', error);
+
       const isNetworkError =
         error?.name === 'AuthRetryableFetchError' ||
         error?.message?.includes('aborted') ||
@@ -311,6 +312,8 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
       if (isNetworkError) userMessage = 'Unable to connect. Please check your internet connection and try again.';
       else if (isInvalidCredentials) userMessage = 'Incorrect email or password. Please check your details and try again.';
       toast.error(userMessage);
+
+
     } finally {
       setIsLoading(false);
     }

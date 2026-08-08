@@ -26,6 +26,10 @@ import { isAllowedOrigin } from './config/cors';
 
 const app = express();
 
+// Trust the reverse proxy (Render / Cloudflare) to correctly identify client IPs
+// for rate limiting and logging.
+app.set('trust proxy', 1);
+
 
 //  Request ID + Correlation ID stamping (Phase 9.5 Observability)
 // requestId   — per-request UUID (unchanged; may be supplied by caller via X-Request-Id)
@@ -194,6 +198,8 @@ app.use(cors({
                          // can't use the cross-site HttpOnly refresh cookie.
     'x-pw-encoding',   // password encoding negotiation (sha256 vs plain)
     'x-request-id',
+    'x-correlation-id',
+    'Idempotency-Key',
   ],
   // CRITICAL for native clients (Capacitor Android/iOS): CORS only exposes
   // "simple" response headers (Cache-Control, Content-Language, Content-Type,
