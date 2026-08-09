@@ -346,10 +346,10 @@ export const TopBar: React.FC = () => {
  setCurrentPage('notifications');
  };
 
- const handleMenuItemClick = (itemId: string) => {
- handleNavigate(itemId);
- setMobileMenuOpen(false);
- };
+  const handleMenuItemClick = (itemId: string) => {
+    setCurrentPage(itemId);
+    setMobileMenuOpen(false);
+  };
 
  return (
  <header className="fixed top-3 left-3 right-3 lg:top-4 lg:left-[112px] lg:right-6 z-[60] bg-white/80 backdrop-blur-2xl border border-slate-100 rounded-3xl shadow-lg shadow-slate-100/40 transition-all duration-300">

@@ -434,9 +434,11 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
         await completeUnlock(key, 'PIN created! Welcome to KANAKU', pin);
 
       } else {
+        // Fast path: verify against local encryption key first
+        const localResult = await verifyPIN(pin);
+
         // Guest mode: verify locally only, no server call.
         if (isGuestMode()) {
-          const localResult = await verifyPIN(pin);
           if (localResult.isValid && localResult.key) {
             await finalizeAuth(localResult.key, 'Welcome back!');
           } else {
@@ -446,46 +448,38 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
           return;
         }
 
-        // Non-guest mode: Must call server-side verification first to prevent PIN bypasses.
-        const serverResult = await pinService.verifyPin({ pin });
+        // If local PIN is valid, unlock immediately so returning from inactivity never blocks the user.
+        // Also trigger server PIN verification in the background to sync server state if possible.
+        if (localResult.isValid && localResult.key) {
+          pinService.verifyPin({ pin }).catch(() => {});
+          await completeUnlock(localResult.key, 'Welcome back!', pin);
+          return;
+        }
 
-        if (serverResult.success) {
-          // Server verified the PIN successfully!
-          let localResult = await verifyPIN(pin);
-          if (!localResult.isValid || !localResult.key) {
-            // Local keys are missing/mismatched (e.g., storage cleared) -> restore from server backup
+        // If local keys are missing or mismatched, check with server
+        try {
+          const serverResult = await pinService.verifyPin({ pin });
+          if (serverResult.success) {
             const kbr = await pinService.getKeyBackup();
             if (kbr.success && kbr.backup) {
               const [hash, salt] = kbr.backup.split('|');
               if (hash && salt) restorePINKeys({ hash, salt });
             }
-            localResult = await verifyPIN(pin);
+            const key = await storeMasterKey(pin);
+            await completeUnlock(key, 'Welcome back!', pin);
+            return;
           }
 
-          // If we still don't have local keys, re-derive them using the validated PIN
-          const key = localResult.key || await storeMasterKey(pin);
-          await completeUnlock(key, 'Welcome back!', pin);
-        } else {
-          // Server verification failed
-          if (isPinServiceUnavailable(serverResult)) {
-            // Server is unreachable -> fall back to checking local hash to support offline access
-            const localResult = await verifyPIN(pin);
-            if (localResult.isValid && localResult.key) {
-              await completeUnlock(localResult.key, 'Welcome back! (Offline Mode)', pin);
-              return;
-            }
-            triggerShake('Unable to verify PIN right now. Please try again.');
-          } else if (isSessionExpired(serverResult)) {
-            // The session is too old to refresh — a valid PIN can't recover it.
-            // Surface a re-login action rather than a misleading "wrong PIN".
+          if (isSessionExpired(serverResult)) {
             setSessionExpired(true);
-            triggerShake(serverResult.message || 'Invalid or expired session');
+            triggerShake(serverResult.message || 'Session expired. Please sign in again.');
           } else {
-            // Server explicitly rejected the PIN (incorrect PIN, locked, or expired)
             triggerShake(serverResult.message || 'Incorrect PIN. Please try again.');
           }
-          setIsSubmitting(false);
+        } catch {
+          triggerShake('Incorrect PIN. Please try again.');
         }
+        setIsSubmitting(false);
       }
     } catch {
       triggerShake('Something went wrong. Please try again.');

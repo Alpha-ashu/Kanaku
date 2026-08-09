@@ -71,8 +71,9 @@ const getCardStyle = (account: any) => {
  }
 };
 
-export function Dashboard({ setCurrentPage }: DashboardProps) {
- const { accounts, transactions, goals, loans, investments, groupExpenses, currency } = useApp();
+export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps) {
+ const { setCurrentPage: contextSetCurrentPage, accounts, transactions, goals, loans, investments, groupExpenses, currency } = useApp();
+ const setCurrentPage = propSetCurrentPage || contextSetCurrentPage;
 
  useEffect(() => {
    console.log('[KANAKU Startup] Dashboard Loaded: Reason = Valid Session');
