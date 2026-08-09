@@ -104,9 +104,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   // One-time migration: clear stale admin feature settings when schema changes.
   // This forces a re-fetch from the backend DB with correct role defaults.
-  const FEATURE_SCHEMA_VERSION = 'v2_role_access_fix';
+  const FEATURE_SCHEMA_VERSION = 'v3_role_access_fix_with_cache_clear';
   if (localStorage.getItem('feature_schema_version') !== FEATURE_SCHEMA_VERSION) {
     localStorage.removeItem('admin_global_feature_settings');
+    localStorage.removeItem('visibleFeatures');
+    localStorage.removeItem('admin_ai_feature_settings');
     localStorage.setItem('feature_schema_version', FEATURE_SCHEMA_VERSION);
   }
 
@@ -724,20 +726,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         // are NOT stored in the DB flags table — they must be seeded from code defaults
         // or the route guard will fire a redirect on the provisional-role frame (causing
         // the "[Access Denied] User role admin cannot access page: dashboard" loop).
-        const STRUCTURAL_SHELL_KEYS: Array<keyof typeof roleFeatures> = [
-          'dashboard', 'settings', 'notifications', 'userProfile',
-          'managerPanel', 'advisorPanel',
-        ];
-        const merged: Record<string, boolean> = role === 'admin'
-          ? { ...roleFeatures }
-          : Object.fromEntries(
-              STRUCTURAL_SHELL_KEYS.map(k => [k, (roleFeatures as unknown as Record<string, boolean>)[k] ?? false])
-            );
+        const merged: Record<string, boolean> = { ...roleFeatures };
 
         Object.entries(parsed).forEach(([key, value]: [string, any]) => {
           if (role !== 'admin') {
             // Backend has already pre-filtered flags for non-admin roles.
-            merged[key] = value?.enabled === true;
+            if (typeof value?.enabled === 'boolean') {
+              merged[key] = value.enabled;
+            }
             return;
           }
 

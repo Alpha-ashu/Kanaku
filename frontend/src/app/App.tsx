@@ -1108,7 +1108,7 @@ const AppContent: React.FC = () => {
     // reads as "my data is gone", so the shell (header + nav) paints instantly and only
     // the content area waits for the first rows — which arrive reactively via useLiveQuery.
     const awaitingFirstRows = hasNoLocalData && dataSyncing;
-    if (user && (!dataReady || awaitingFirstRows) && !bypassDataGatePages.has(currentPage)) {
+    if (user && (!dataReady || (currentPage === 'dashboard' && awaitingFirstRows)) && !bypassDataGatePages.has(currentPage)) {
       return (
         <div className="flex items-center justify-center h-[60vh] w-full">
           <div className="text-center">

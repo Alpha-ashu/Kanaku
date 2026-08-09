@@ -368,9 +368,9 @@ export const TopBar: React.FC = () => {
  {/* Mobile Menu Button */}
  <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
  <SheetTrigger asChild>
- <button data-testid="top-bar-open-navigation-menu" className="lg:hidden p-2 -ml-2 hover:bg-gray-200 rounded-lg transition-colors" aria-label="Open navigation menu">
- <Menu size={24} className="text-gray-900" />
- </button>
+  <button data-testid="top-bar-open-navigation-menu" onClick={() => setMobileMenuOpen(true)} className="lg:hidden p-2 -ml-2 hover:bg-gray-200 rounded-lg transition-colors cursor-pointer" aria-label="Open navigation menu">
+  <Menu size={24} className="text-gray-900" />
+  </button>
  </SheetTrigger>
 
   {/* Logo & Name */}
@@ -436,8 +436,11 @@ export const TopBar: React.FC = () => {
           <div className="flex items-center gap-3 p-3 bg-white border border-slate-100 rounded-2xl shadow-sm shadow-slate-100/50">
             {/* Avatar */}
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-bold text-sm shrink-0 flex items-center justify-center overflow-hidden shadow-sm shadow-indigo-100">
-              {avatarUrl ? (
-                <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover" />
+              {avatarUrl && avatarUrl.startsWith('http') ? (
+                <>
+                  <span className="absolute z-0">{displayName.charAt(0).toUpperCase()}</span>
+                  <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover relative z-10" onError={(e) => { (e.currentTarget as HTMLElement).style.display = 'none'; }} />
+                </>
               ) : (
                 <span>{displayName.charAt(0).toUpperCase()}</span>
               )}
@@ -594,32 +597,46 @@ export const TopBar: React.FC = () => {
  aria-label="User profile"
  className="w-10 h-10 rounded-xl bg-gray-200 overflow-hidden shadow-sm shrink-0 hover:shadow-md transition-shadow flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-bold text-sm"
  >
- {(() => {
- try {
- const profileStr = localStorage.getItem('user_profile');
- if (profileStr) {
- const profile = JSON.parse(profileStr);
- if (profile.avatarUrl) {
- return <img src={profile.avatarUrl} alt="Profile" className="w-full h-full object-cover" />;
- }
- if (profile.full_name) {
- const names = profile.full_name.split(' ').filter(Boolean);
- const firstPart = names[0]?.[0] || '';
- const secondPart = names.length > 1 ? names[names.length - 1][0] : '';
- return <span>{firstPart}{secondPart}</span>;
- }
- if (profile.displayName) {
- const names = profile.displayName.split(' ').filter(Boolean);
- const firstPart = names[0]?.[0] || '';
- const secondPart = names.length > 1 ? names[names.length - 1][0] : '';
- return <span>{firstPart}{secondPart}</span>;
- }
- }
- } catch (e) {
- console.error("Error reading profile for avatar");
- }
- return <span>U</span>;
- })()}
+              {(() => {
+                let initials = 'U';
+                try {
+                  const profileStr = localStorage.getItem('user_profile');
+                  if (profileStr) {
+                    const profile = JSON.parse(profileStr);
+                    const name = profile.full_name || profile.displayName || user?.email || 'U';
+                    const names = name.split(' ').filter(Boolean);
+                    initials = (names[0]?.[0] || 'U') + (names.length > 1 ? names[names.length - 1][0] : '');
+                  } else {
+                    initials = user?.email?.charAt(0).toUpperCase() || 'U';
+                  }
+                } catch (e) {
+                  initials = user?.email?.charAt(0).toUpperCase() || 'U';
+                }
+                return (
+                  <>
+                    <span className="absolute z-0">{initials.toUpperCase()}</span>
+                    {(() => {
+                      try {
+                        const profileStr = localStorage.getItem('user_profile');
+                        if (profileStr) {
+                          const profile = JSON.parse(profileStr);
+                          if (profile.avatarUrl?.startsWith('http')) {
+                            return (
+                              <img
+                                src={profile.avatarUrl}
+                                alt=""
+                                className="w-full h-full object-cover relative z-10"
+                                onError={(e) => { (e.currentTarget as HTMLElement).style.display = 'none'; }}
+                              />
+                            );
+                          }
+                        }
+                      } catch (e) {}
+                      return null;
+                    })()}
+                  </>
+                );
+              })()}
  </motion.button>
  )}
  </div>
