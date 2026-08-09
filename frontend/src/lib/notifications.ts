@@ -128,22 +128,23 @@ async function getActiveUserId() {
 
 async function showSystemNotification(title: string, body: string, deepLink?: string) {
   if (Capacitor.isNativePlatform()) {
-    const permission = await LocalNotifications.requestPermissions();
-    if (permission.display === 'granted') {
-      await LocalNotifications.schedule({
-        notifications: [
-          {
-            id: Number(`${Date.now()}`.slice(-8)),
-            title,
-            body,
-            schedule: { at: new Date(Date.now() + 250) },
-            // Read back by the localNotificationActionPerformed listener in
-            // lib/nativeDeepLinks.ts so a tap lands on the right screen instead
-            // of just raising the app.
-            extra: deepLink ? { deepLink } : undefined,
-          },
-        ],
-      });
+    try {
+      const permission = await LocalNotifications.requestPermissions();
+      if (permission.display === 'granted') {
+        await LocalNotifications.schedule({
+          notifications: [
+            {
+              id: Math.floor(Math.random() * 1000000) + 1,
+              title,
+              body,
+              // Deliver immediately without AlarmManager exact alarm requirements
+              extra: deepLink ? { deepLink } : undefined,
+            },
+          ],
+        });
+      }
+    } catch (error) {
+      console.warn('[Notifications] LocalNotifications.schedule skipped:', error);
     }
     return;
   }
