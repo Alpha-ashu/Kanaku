@@ -282,12 +282,28 @@ export const PAGE_TO_FEATURE_MAPPING: Record<string, FeatureKey> = {
   'receipt-scanner': 'transactions',
 };
 
-// DENY-BY-DEFAULT: unmapped pages are blocked, not silently allowed.
-// Every new page/route added to the app MUST have an entry in PAGE_TO_FEATURE_MAPPING.
-export function canAccessPage(page: string, features: FeatureVisibility): boolean {
+const RESTRICTED_ADMIN_FEATURES: FeatureKey[] = [
+  'adminPanel',
+  'managerPanel',
+  'advisorPanel',
+  'aiManagement',
+  'clientManagement',
+];
+
+export function canAccessPage(page: string, features?: FeatureVisibility): boolean {
+  if (!page || page === 'dashboard' || page === '/' || page === 'index.html') return true;
+
   const featureKey = PAGE_TO_FEATURE_MAPPING[page];
-  if (!featureKey) return false;
-  return features[featureKey] === true;
+  if (!featureKey) return true;
+
+  if (features) {
+    if (RESTRICTED_ADMIN_FEATURES.includes(featureKey)) {
+      return features[featureKey] === true;
+    }
+    return features[featureKey] !== false;
+  }
+
+  return !RESTRICTED_ADMIN_FEATURES.includes(featureKey);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

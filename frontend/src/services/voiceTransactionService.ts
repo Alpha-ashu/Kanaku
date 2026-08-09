@@ -1,5 +1,6 @@
 import type { ParsedTransaction, ParsedGroupExpense } from '@/services/voiceCommandParser';
 import { TokenManager } from '@/lib/api';
+import { buildApiUrl, getConfiguredApiBase } from '@/lib/apiBase';
 import supabase from '@/utils/supabase/client';
 
 interface Friend {
@@ -50,10 +51,11 @@ export class VoiceTransactionService {
   ): Promise<any[]> {
     const results: any[] = [];
     const token = await this.getAuthToken();
+    const apiBase = getConfiguredApiBase();
 
     for (const tx of transactions) {
       try {
-        const response = await fetch('/api/v1/transactions', {
+        const response = await fetch(buildApiUrl(apiBase, '/transactions'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -105,10 +107,11 @@ export class VoiceTransactionService {
     };
 
     const token = await this.getAuthToken();
+    const apiBase = getConfiguredApiBase();
 
     try {
       // Create group expense
-      const response = await fetch('/api/v1/group-expenses', {
+      const response = await fetch(buildApiUrl(apiBase, '/group-expenses'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -130,7 +133,7 @@ export class VoiceTransactionService {
       const amountPerPerson = expense.totalAmount / friends.length;
       for (const friend of friends) {
         try {
-          await fetch('/api/v1/transactions', {
+          await fetch(buildApiUrl(apiBase, '/transactions'), {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -165,11 +168,12 @@ export class VoiceTransactionService {
   private async ensureFriendsExist(friendNames: string[]): Promise<Friend[]> {
     const friends: Friend[] = [];
     const token = await this.getAuthToken();
+    const apiBase = getConfiguredApiBase();
 
     for (const name of friendNames) {
       try {
         // Try to get existing friend
-        const searchResponse = await fetch(`/api/v1/friends/search?name=${encodeURIComponent(name)}`, {
+        const searchResponse = await fetch(buildApiUrl(apiBase, `/friends/search?name=${encodeURIComponent(name)}`), {
           headers: token ? { 'Authorization': `Bearer ${token}` } : {},
         });
 
@@ -182,7 +186,7 @@ export class VoiceTransactionService {
         }
 
         // Create new friend if not found
-        const createResponse = await fetch('/api/v1/friends', {
+        const createResponse = await fetch(buildApiUrl(apiBase, '/friends'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -224,7 +228,8 @@ export class VoiceTransactionService {
   async getRecentFriends(limit: number = 5): Promise<Friend[]> {
     try {
       const token = await this.getAuthToken();
-      const response = await fetch(`/api/v1/friends/recent?limit=${limit}`, {
+      const apiBase = getConfiguredApiBase();
+      const response = await fetch(buildApiUrl(apiBase, `/friends/recent?limit=${limit}`), {
         headers: token ? { 'Authorization': `Bearer ${token}` } : {},
       });
       if (response.ok) {

@@ -730,9 +730,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
         Object.entries(parsed).forEach(([key, value]: [string, any]) => {
           if (role !== 'admin') {
-            // Backend has already pre-filtered flags for non-admin roles.
+            // Backend pre-filtered flags for non-admin roles.
             if (typeof value?.enabled === 'boolean') {
               merged[key] = value.enabled;
+            } else if (roleFeatures[key as keyof typeof roleFeatures] !== undefined) {
+              merged[key] = roleFeatures[key as keyof typeof roleFeatures];
             }
             return;
           }
