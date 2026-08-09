@@ -425,50 +425,51 @@ export function isSubFeatureEnabled(
   role: UserRole,
   savedSettings?: Record<string, any> | null,
 ): boolean {
-  // If role is not admin and we have settings, trust the backend's pre-filtered values
-  if (role !== 'admin' && savedSettings) {
-    const parent = savedSettings[moduleKey];
-    if (!parent) return false;
-    if (parent.enabled !== true) return false;
-    const child = parent.children?.[childKey];
-    if (child) return child.enabled === true;
-  }
-
-  // Step 1: check if parent module is enabled for this role
-  if (savedSettings) {
-    const mod = savedSettings[moduleKey];
-    if (mod) {
-      if (typeof mod.enabled === 'boolean' && !mod.enabled) return false;
-      const r = mod.readiness;
-      if (r === 'deprecated') return false;
-      if (r === 'unreleased' && role !== 'admin') return false;
-      if (mod.roleAccess && typeof mod.roleAccess[role] === 'boolean') {
-        if (!mod.roleAccess[role]) return false;
-      }
-    }
-  }
-
-  // Step 2: look up the child definition
-  // DENY-BY-DEFAULT: unknown sub-features are blocked, not silently allowed
   const moduleDefs = SUB_FEATURE_DEFINITIONS[moduleKey];
   if (!moduleDefs) return false;
   const childDef = moduleDefs[childKey];
   if (!childDef) return false;
 
-  // Step 3: overlay saved child settings
-  let childEnabled = childDef.enabled;
-  let childRoleAccess = { ...childDef.roleAccess };
+  // If no saved settings, use code defaults
+  if (!savedSettings) {
+    return childDef.enabled && (childDef.roleAccess[role] ?? false);
+  }
 
-  if (savedSettings) {
-    const saved = savedSettings[moduleKey]?.children?.[childKey];
-    if (saved) {
-      if (typeof saved.enabled === 'boolean') childEnabled = saved.enabled;
-      if (saved.roleAccess) childRoleAccess = { ...childRoleAccess, ...saved.roleAccess };
+  // Handle role-centric flat structure: { user: { accounts: true, accounts_createAccount: true } }
+  const roleMap = savedSettings[role] && typeof savedSettings[role] === 'object' && !('enabled' in savedSettings[role])
+    ? savedSettings[role]
+    : null;
+
+  if (roleMap) {
+    const parentEnabled = roleMap[moduleKey];
+    if (typeof parentEnabled === 'boolean' && !parentEnabled) return false;
+
+    const childDbKey = `${moduleKey}_${childKey}`;
+    if (typeof roleMap[childDbKey] === 'boolean') {
+      return roleMap[childDbKey];
+    }
+    return childDef.enabled && (childDef.roleAccess[role] ?? false);
+  }
+
+  // Handle feature-centric structure: { accounts: { enabled: true, roleAccess: {...}, children: {...} } }
+  const mod = savedSettings[moduleKey];
+  if (mod) {
+    if (typeof mod === 'boolean') {
+      if (!mod) return false;
+    } else {
+      if (typeof mod.enabled === 'boolean' && !mod.enabled) return false;
+      if (mod.roleAccess && typeof mod.roleAccess[role] === 'boolean' && !mod.roleAccess[role]) return false;
+
+      const child = mod.children?.[childKey];
+      if (child) {
+        if (typeof child === 'boolean') return child;
+        if (typeof child.enabled === 'boolean' && !child.enabled) return false;
+        if (child.roleAccess && typeof child.roleAccess[role] === 'boolean') return child.roleAccess[role];
+      }
     }
   }
 
-  // DENY-BY-DEFAULT: role not in access map means denied
-  return childEnabled && (childRoleAccess[role] ?? false);
+  return childDef.enabled && (childDef.roleAccess[role] ?? false);
 }
 
 /**

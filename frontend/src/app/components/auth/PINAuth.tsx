@@ -226,6 +226,12 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
    * biometric enrolment without asking them to type it again.
    */
   const completeUnlock = useCallback(async (key: string, msg: string, verifiedPin: string) => {
+    // If locked due to inactivity, bypass enrolment offer to avoid blocking the user
+    if (lockedForInactivity) {
+      await finalizeAuth(key, msg);
+      return;
+    }
+
     const canOffer =
       biometric?.available &&
       !isBiometricEnabled() &&
@@ -240,7 +246,7 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
     }
 
     await finalizeAuth(key, msg);
-  }, [biometric, finalizeAuth]);
+  }, [biometric, finalizeAuth, lockedForInactivity]);
 
  // Probe biometric capability once. Runs on every platform but resolves to
  // `available: false` off-device, which keeps the render path free of platform checks.
@@ -448,10 +454,13 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
           return;
         }
 
-        // If local PIN is valid, unlock immediately so returning from inactivity never blocks the user.
-        // Also trigger server PIN verification in the background to sync server state if possible.
+        // If local PIN is valid, unlock immediately and sync with server
         if (localResult.isValid && localResult.key) {
-          pinService.verifyPin({ pin }).catch(() => {});
+          try {
+            await pinService.verifyPin({ pin });
+          } catch {
+            // Non-blocking offline fallback
+          }
           await completeUnlock(localResult.key, 'Welcome back!', pin);
           return;
         }

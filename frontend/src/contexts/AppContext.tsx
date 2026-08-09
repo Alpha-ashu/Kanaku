@@ -106,7 +106,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   // One-time migration: clear stale admin feature settings when schema changes.
   // This forces a re-fetch from the backend DB with correct role defaults.
-  const FEATURE_SCHEMA_VERSION = 'v3_role_access_fix_with_cache_clear';
+  const FEATURE_SCHEMA_VERSION = 'v6_android_nav_fix';
   if (localStorage.getItem('feature_schema_version') !== FEATURE_SCHEMA_VERSION) {
     localStorage.removeItem('admin_global_feature_settings');
     localStorage.removeItem('visibleFeatures');
@@ -691,7 +691,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   // Debounce ref to prevent computeVisibleFeatures firing multiple times per tick
   const computeScheduledRef = useRef(false);
 
-  // Single source of truth: role defaults + admin overrides (admin wins)
+  // Single source of truth: role defaults + admin overrides (admin can only restrict, not grant beyond role)
   const computeVisibleFeatures = useCallback(() => {
     // Deduplicate: if already scheduled for this tick, skip
     if (computeScheduledRef.current) return;
@@ -714,6 +714,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setAiCapabilities(computeAICapabilityMap(role, parsedAI));
 
       if (!adminSettings) {
+        console.info('[AppContext] No admin settings — using role defaults for:', role);
         setVisibleFeaturesState(roleFeatures);
         setSubFeatures(computeSubFeatureMap(role, null));
         return;
@@ -722,72 +723,103 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       try {
         const parsed = JSON.parse(adminSettings);
 
-        // DENY-BY-DEFAULT for business features: non-admin roles only receive access
-        // for feature keys explicitly saved in the admin DB settings.
-        // EXCEPTION: structural shell features (dashboard, settings, notifications, etc.)
-        // are NOT stored in the DB flags table — they must be seeded from code defaults
-        // or the route guard will fire a redirect on the provisional-role frame (causing
-        // the "[Access Denied] User role admin cannot access page: dashboard" loop).
+        // CRITICAL FIX: Always start from role defaults.
+        // Admin settings can only DISABLE features (restrict access),
+        // never enable features beyond what the role normally allows.
+        // This prevents stale/corrupt admin data from blocking all navigation.
         const merged: Record<string, boolean> = { ...roleFeatures };
 
+        // 1. Role-centric format ({ user: { accounts: true, ... }, admin: { ... } })
+        if (parsed && typeof parsed === 'object') {
+          const roleDict = parsed[role] || (role === 'user' && parsed.user ? parsed.user : null);
+          if (roleDict && typeof roleDict === 'object' && !('enabled' in roleDict)) {
+            Object.entries(roleDict).forEach(([key, value]) => {
+              // Admin can only restrict (set false), not grant beyond role defaults
+              if (typeof value === 'boolean') {
+                // Only apply if it restricts — if role default is false, keep false
+                // If admin says false, override to false (restriction wins)
+                if (!value && merged[key] === true) {
+                  merged[key] = false; // Admin disabled this feature
+                }
+                // If admin says true but role says false, keep role false (role is ceiling)
+              } else if (value && typeof (value as any).enabled === 'boolean' && !(value as any).enabled) {
+                merged[key] = false; // Admin disabled this feature
+              }
+            });
+          }
+        }
+
+        // 2. Feature-centric format ({ accounts: { enabled: true/false, roleAccess: {...} } })
         Object.entries(parsed).forEach(([key, value]: [string, any]) => {
-          if (role !== 'admin') {
-            // Backend pre-filtered flags for non-admin roles.
-            if (typeof value?.enabled === 'boolean') {
-              merged[key] = value.enabled;
-            } else if (roleFeatures[key as keyof typeof roleFeatures] !== undefined) {
-              merged[key] = roleFeatures[key as keyof typeof roleFeatures];
-            }
+          if (['admin', 'manager', 'advisor', 'user'].includes(key)) {
+            return; // Already handled in step 1
+          }
+
+          // Only apply restrictions — never expand beyond role defaults
+          const roleDefault = (merged as Record<string, boolean>)[key];
+
+          if (typeof value === 'boolean') {
+            // If admin explicitly set false and role allows it, respect the restriction
+            if (!value) merged[key] = false;
             return;
           }
 
-          const readiness = value?.readiness;
-          let isVisible: boolean;
-          switch (readiness) {
-            case 'unreleased':
-              isVisible = role === 'admin';
-              break;
-            case 'beta':
-              isVisible = role === 'admin' || role === 'advisor' || role === 'manager';
-              break;
-            case 'released':
-              isVisible = true;
-              break;
-            case 'deprecated':
-              isVisible = false;
-              break;
-            default:
-              // Non-admin: start denied; only grant if code defaults explicitly allow
-              isVisible = role === 'admin'
-                ? ((roleFeatures as unknown as Record<string, boolean>)[key] ?? false)
-                : false;
-          }
+          if (role === 'admin') {
+            // Admin role: apply full RBAC logic
+            const readiness = value?.readiness;
+            let isVisible: boolean;
+            switch (readiness) {
+              case 'unreleased':
+                isVisible = true; // admin sees everything
+                break;
+              case 'beta':
+                isVisible = true;
+                break;
+              case 'released':
+                isVisible = true;
+                break;
+              case 'deprecated':
+                isVisible = false;
+                break;
+              default:
+                isVisible = (roleFeatures as unknown as Record<string, boolean>)[key] ?? false;
+            }
+            if (value?.roleAccess && typeof value.roleAccess['admin'] === 'boolean') {
+              isVisible = value.roleAccess['admin'];
+            }
+            if (value && typeof value.enabled === 'boolean' && !value.enabled) {
+              isVisible = false; // globally disabled
+            }
+            merged[key] = isVisible;
+          } else {
+            // Non-admin: only restrict based on admin settings, never expand
+            let adminSaysEnabled: boolean | undefined;
 
-          // Explicit role-specific override always wins (this is the admin DB decision)
-          if (value?.roleAccess && typeof value.roleAccess[role] === 'boolean') {
-            isVisible = value.roleAccess[role];
-          } else if (value?.roleAccess) {
-            // roleAccess object exists but is missing this role key (old saved state).
-            // For admin keep code default; non-admin stays denied.
-            isVisible = role === 'admin'
-              ? ((roleFeatures as unknown as Record<string, boolean>)[key] ?? false)
-              : false;
-          }
+            if (typeof value?.enabled === 'boolean') {
+              adminSaysEnabled = value.enabled;
+            } else if (value?.roleAccess && typeof value.roleAccess[role] === 'boolean') {
+              adminSaysEnabled = value.roleAccess[role] && value?.enabled !== false;
+            }
 
-          // Global enabled flag overrides everything — disabled = no one can see it
-          if (value && typeof value.enabled === 'boolean') {
-            isVisible = value.enabled && isVisible;
+            // RESTRICT ONLY: if admin says false, apply restriction
+            // If admin says true or undefined, use the role default (safety)
+            if (adminSaysEnabled === false) {
+              merged[key] = false;
+            }
+            // else: keep role default (which may be true or false)
           }
-
-          merged[key] = isVisible;
         });
+
+        console.info('[AppContext] Feature visibility computed for role:', role,
+          '| accounts:', merged['accounts'],
+          '| transactions:', merged['transactions'],
+          '| dashboard:', merged['dashboard']);
 
         setVisibleFeaturesState(merged as unknown as FeatureVisibility);
         // CRITICAL: Also recompute sub-features whenever module visibility changes
-        // This ensures feature gate toggles in admin panel immediately reflect in app
         setSubFeatures(computeSubFeatureMap(role, parsed));
       } catch (e) {
-        console.error('[AppContext] Failed to apply admin feature settings:', e);
+        console.error('[AppContext] Failed to apply admin feature settings — falling back to role defaults:', e);
         setVisibleFeaturesState(roleFeatures);
         setSubFeatures(computeSubFeatureMap(role, null));
       }

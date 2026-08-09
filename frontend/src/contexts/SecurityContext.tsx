@@ -121,15 +121,21 @@ export const SecurityProvider: React.FC<{ children: ReactNode }> = ({ children }
     setIsAuthenticated(true);
 
     // Store in session
-    sessionStorage.setItem('session_active', 'true');
-    sessionStorage.setItem('session_encryption_key', key);
+    try {
+      sessionStorage.setItem('session_active', 'true');
+      sessionStorage.setItem('session_encryption_key', key);
+      localStorage.setItem('session_active', 'true');
+    } catch {}
   };
 
   const handleLock = () => {
     setIsAuthenticated(false);
     setEncryptionKey(null);
-    sessionStorage.removeItem('session_active');
-    sessionStorage.removeItem('session_encryption_key');
+    try {
+      sessionStorage.removeItem('session_active');
+      sessionStorage.removeItem('session_encryption_key');
+      localStorage.removeItem('session_active');
+    } catch {}
     // SECURITY: tell AuthContext to halt syncing and re-engage the data gate, so no
     // financial data is fetched while locked and a fresh sync runs on the next unlock.
     if (typeof window !== 'undefined') {
