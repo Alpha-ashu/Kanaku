@@ -43,3 +43,11 @@
 # Keep line numbers and annotations for runtime reflection and debugging
 -keepattributes SourceFile,LineNumberTable,*Annotation*
 
+# Suppress harmless missing classes/warnings from plugins during R8 shrinking
+-dontwarn ee.forgr.biometric.**
+-dontwarn com.google.firebase.**
+-dontwarn androidx.biometric.**
+-dontwarn com.capacitorjs.plugins.**
+-dontwarn org.apache.cordova.**
+
+

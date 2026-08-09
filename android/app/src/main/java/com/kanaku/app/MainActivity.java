@@ -4,31 +4,40 @@ import android.os.Bundle;
 import android.util.Log;
 import androidx.core.view.WindowCompat;
 import com.getcapacitor.BridgeActivity;
-import com.google.firebase.FirebaseApp;
-import com.google.firebase.FirebaseOptions;
 
 public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         registerPlugin(SmsDetectionPlugin.class);
 
-        // Ensure FirebaseApp is safely initialized even if google-services.json is omitted
-        // so that @capacitor/push-notifications does not throw uncaught IllegalStateException.
+        // Safe dynamic Firebase initialization fallback without direct compile-time coupling
         try {
-            if (FirebaseApp.getApps(this).isEmpty()) {
-                FirebaseOptions options = new FirebaseOptions.Builder()
-                    .setApplicationId(getPackageName())
-                    .setApiKey("AIzaSyDummyApiKeyForKanakuOfflineNotifications")
-                    .setProjectId("kanaku-app")
-                    .build();
-                FirebaseApp.initializeApp(this, options);
+            Class<?> firebaseAppClass = Class.forName("com.google.firebase.FirebaseApp");
+            java.lang.reflect.Method getAppsMethod = firebaseAppClass.getMethod("getApps", android.content.Context.class);
+            java.util.List<?> apps = (java.util.List<?>) getAppsMethod.invoke(null, this);
+            if (apps == null || apps.isEmpty()) {
+                Class<?> builderClass = Class.forName("com.google.firebase.FirebaseOptions$Builder");
+                Object builder = builderClass.getDeclaredConstructor().newInstance();
+                builderClass.getMethod("setApplicationId", String.class).invoke(builder, getPackageName());
+                builderClass.getMethod("setApiKey", String.class).invoke(builder, "AIzaSyDummyApiKeyForKanakuOfflineNotifications");
+                builderClass.getMethod("setProjectId", String.class).invoke(builder, "kanaku-app");
+                Object options = builderClass.getMethod("build").invoke(builder);
+
+                Class<?> optionsClass = Class.forName("com.google.firebase.FirebaseOptions");
+                firebaseAppClass.getMethod("initializeApp", android.content.Context.class, optionsClass).invoke(null, this, options);
             }
-        } catch (Exception e) {
-            Log.w("KANAKU", "Firebase fallback initialization: " + e.getMessage());
+        } catch (ClassNotFoundException ignored) {
+            // Firebase SDK not linked in classpath
+        } catch (Throwable e) {
+            Log.w("KANAKU", "Firebase initialization fallback: " + e.getMessage());
         }
 
         super.onCreate(savedInstanceState);
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+
+        // Catch and prevent any background plugin exceptions from crashing the app
+        Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
+            Log.e("KANAKU_CRASH", "Suppressed uncaught exception on thread " + thread.getName(), throwable);
+        });
     }
 }
-

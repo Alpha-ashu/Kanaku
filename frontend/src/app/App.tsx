@@ -524,11 +524,27 @@ const AppContent: React.FC = () => {
   // an authenticated user and the payloads that come back reference that user's data.
   useEffect(() => {
     if (user && isAuthenticated) {
-      void Promise.resolve().then(() => initializeNotifications());
-      void Promise.resolve().then(() => initializeSmsTransactionDetection());
-      void Promise.resolve().then(() =>
-        initializePushNotifications((page) => setCurrentPageRef.current?.(page)),
-      );
+      void Promise.resolve().then(async () => {
+        try {
+          await initializeNotifications();
+        } catch (err) {
+          console.warn('[Startup] Notifications init skipped:', err);
+        }
+      });
+      void Promise.resolve().then(async () => {
+        try {
+          await initializeSmsTransactionDetection();
+        } catch (err) {
+          console.warn('[Startup] SMS detection init skipped:', err);
+        }
+      });
+      void Promise.resolve().then(async () => {
+        try {
+          await initializePushNotifications((page) => setCurrentPageRef.current?.(page));
+        } catch (err) {
+          console.warn('[Startup] Push notifications init skipped:', err);
+        }
+      });
     }
   }, [user, isAuthenticated]);
 
@@ -802,8 +818,8 @@ const AppContent: React.FC = () => {
           return;
         }
 
-        // 3. If unauthenticated or recently unlocked within 5 seconds, ignore back events completely
-        if (!isAuthenticatedRef.current || (Date.now() - authUnlockTimeRef.current < 5000)) {
+        // 3. If unauthenticated, ignore back events
+        if (!isAuthenticatedRef.current) {
           lastBackPressRef.current = 0;
           return;
         }
@@ -814,14 +830,8 @@ const AppContent: React.FC = () => {
           return;
         }
 
-        const now = Date.now();
-        if (lastBackPressRef.current > 0 && now - lastBackPressRef.current < 2000) {
-          lastBackPressRef.current = 0;
-          CapacitorApp.exitApp();
-        } else {
-          lastBackPressRef.current = now;
-          toast('Press back again to exit');
-        }
+        // On root pages (Dashboard/Landing), keep the app open and consume the back event
+        lastBackPressRef.current = 0;
       });
       CapacitorApp.addListener('appStateChange', ({ isActive }) => {
         if (isActive) console.info('[Capacitor] App resumed to foreground.');
