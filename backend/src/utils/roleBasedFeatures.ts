@@ -30,7 +30,8 @@ export type FeatureKey =
   | 'dashboard'
   | 'aiInsights'
   | 'recurringTransactions'
-  | 'budgetAlerts';
+  | 'budgetAlerts'
+  | 'accountSetup';
 
 export interface FeatureVisibility extends Record<FeatureKey, boolean> {}
 
@@ -42,6 +43,7 @@ export interface FeatureVisibility extends Record<FeatureKey, boolean> {}
 export const ROLE_FEATURES: Record<UserRole, Partial<Record<FeatureKey, boolean>>> = {
   admin: {
     accounts: true,
+    accountSetup: true,
     transactions: true,
     loans: true,
     goals: true,
@@ -68,6 +70,7 @@ export const ROLE_FEATURES: Record<UserRole, Partial<Record<FeatureKey, boolean>
   },
   manager: {
     accounts: true,
+    accountSetup: true,
     transactions: true,
     loans: true,
     goals: true,
@@ -94,6 +97,7 @@ export const ROLE_FEATURES: Record<UserRole, Partial<Record<FeatureKey, boolean>
   },
   advisor: {
     accounts: true,
+    accountSetup: true,
     transactions: true,
     loans: true,
     goals: true,
@@ -120,6 +124,7 @@ export const ROLE_FEATURES: Record<UserRole, Partial<Record<FeatureKey, boolean>
   },
   user: {
     accounts: true,
+    accountSetup: true,
     transactions: true,
     loans: true,
     goals: true,
@@ -432,6 +437,7 @@ export function getVisibleFeaturesForRole(
     'aiInsights',
     'recurringTransactions',
     'budgetAlerts',
+    'accountSetup',
   ];
   
   allFeatures.forEach(feature => {

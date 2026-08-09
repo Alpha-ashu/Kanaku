@@ -2,12 +2,14 @@ import { Router } from 'express';
 import { authMiddleware } from '../../middleware/auth';
 import { requireRole } from '../../middleware/rbac';
 import { validateBody, validateParams } from '../../middleware/validate';
+import { requireFeature } from '../../middleware/featureGate';
 import * as GroupController from './group.controller';
 import { groupCreateSchema, groupIdParamSchema, groupUpdateSchema } from './group.validation';
 
 const router = Router();
 
 router.use(authMiddleware);
+router.use(requireFeature('groups'));
 
 router.get('/', GroupController.getGroups);
 router.get('/analytics', GroupController.getGroupAnalytics);

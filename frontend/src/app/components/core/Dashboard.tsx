@@ -72,7 +72,7 @@ const getCardStyle = (account: any) => {
 };
 
 export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps) {
- const { setCurrentPage: contextSetCurrentPage, accounts, transactions, goals, loans, investments, groupExpenses, currency } = useApp();
+ const { setCurrentPage: contextSetCurrentPage, accounts, transactions, goals, loans, investments, groupExpenses, currency, visibleFeatures, aiCapabilities } = useApp();
  const setCurrentPage = propSetCurrentPage || contextSetCurrentPage;
 
  useEffect(() => {
@@ -257,7 +257,9 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
  return { totalInvested, currentValue, totalReturns, returnsPercent, count: openInvestments.length };
  }, [getDashboardInvestmentMetrics, openInvestments]);
 
- const totalNetWorth = stats.totalBalance + investmentStats.currentValue + groupStats.lent - groupStats.borrowed;
+ const totalNetWorth = (visibleFeatures?.accounts !== false ? stats.totalBalance : 0) +
+   (visibleFeatures?.investments !== false ? investmentStats.currentValue : 0) +
+   (visibleFeatures?.loans !== false ? (groupStats.lent - groupStats.borrowed) : 0);
  const stockSetupHint = getStockDataSetupHint();
 
  const formatCurrency = (amount: number) => formatCurrencyAmount(amount, currency, {
@@ -338,40 +340,41 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
  )}
 
   {/* AI Insights Card */}
-  {showAiSummary && (
+  {visibleFeatures?.aiInsights !== false && aiCapabilities?.aiAutomation?.enabled !== false && showAiSummary && (
   <div className="mb-6">
   <AIInsightsCard compact />
   </div>
   )}
 
- {/*"EUR"EUR 1. Financial Health Hero"EUR"EUR */}
- <div className="flex justify-center mb-6 lg:mb-8">
- <Card data-testid="dashboard-networth-card" variant="mesh-pink" className="w-full max-w-md lg:max-w-lg p-6 lg:p-8 relative overflow-hidden">
- <div className="relative z-10">
- <p className="text-white/80 font-medium mb-1 text-sm text-center">Total Net Worth</p>
- <h2 className="text-3xl lg:text-4xl font-display font-bold text-white tracking-tight mb-6 text-center">
- {formatCurrency(totalNetWorth)}
- </h2>
- <div className="grid grid-cols-2 gap-3 lg:gap-4">
- <div className="bg-white/20 backdrop-blur-md rounded-2xl p-3">
- <div className="flex items-center gap-2 mb-1 opacity-80">
- <TrendingUp size={14} className="text-white" />
- <span className="text-xs font-bold text-white">Income</span>
- </div>
- <p className="text-white font-bold text-sm lg:text-base">{formatCurrency(stats.monthlyIncome)}</p>
- </div>
- <div className="bg-white/20 backdrop-blur-md rounded-2xl p-3">
- <div className="flex items-center gap-2 mb-1 opacity-80">
- <TrendingDown size={14} className="text-white" />
- <span className="text-xs font-bold text-white">Expense</span>
- </div>
- <p className="text-white font-bold text-sm lg:text-base">{formatCurrency(stats.monthlyExpense)}</p>
- </div>
- </div>
-  {(stats.monthlyIncome > 0 || groupStats.borrowed > 0) && (
+  {/* 1. Financial Health Hero */}
+  {(visibleFeatures?.accounts !== false || visibleFeatures?.transactions !== false || visibleFeatures?.loans !== false || visibleFeatures?.investments !== false) && (
+  <div className="flex justify-center mb-6 lg:mb-8">
+  <Card data-testid="dashboard-networth-card" variant="mesh-pink" className="w-full max-w-md lg:max-w-lg p-6 lg:p-8 relative overflow-hidden">
+  <div className="relative z-10">
+  <p className="text-white/80 font-medium mb-1 text-sm text-center">Total Net Worth</p>
+  <h2 className="text-3xl lg:text-4xl font-display font-bold text-white tracking-tight mb-6 text-center">
+  {formatCurrency(totalNetWorth)}
+  </h2>
+  <div className="grid grid-cols-2 gap-3 lg:gap-4">
+  <div className="bg-white/20 backdrop-blur-md rounded-2xl p-3">
+  <div className="flex items-center gap-2 mb-1 opacity-80">
+  <TrendingUp size={14} className="text-white" />
+  <span className="text-xs font-bold text-white">Income</span>
+  </div>
+  <p className="text-white font-bold text-sm lg:text-base">{formatCurrency(stats.monthlyIncome)}</p>
+  </div>
+  <div className="bg-white/20 backdrop-blur-md rounded-2xl p-3">
+  <div className="flex items-center gap-2 mb-1 opacity-80">
+  <TrendingDown size={14} className="text-white" />
+  <span className="text-xs font-bold text-white">Expense</span>
+  </div>
+  <p className="text-white font-bold text-sm lg:text-base">{formatCurrency(stats.monthlyExpense)}</p>
+  </div>
+  </div>
+   {(stats.monthlyIncome > 0 || (visibleFeatures?.loans !== false && groupStats.borrowed > 0)) && (
     <div className={cn(
       "mt-4 grid gap-3",
-      stats.monthlyIncome > 0 && groupStats.borrowed > 0 ? "grid-cols-2" : "grid-cols-1"
+      stats.monthlyIncome > 0 && visibleFeatures?.loans !== false && groupStats.borrowed > 0 ? "grid-cols-2" : "grid-cols-1"
     )}>
       {stats.monthlyIncome > 0 && (
         <div className="bg-white/20 backdrop-blur-md rounded-2xl p-3">
@@ -382,7 +385,7 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
           <p className="text-white font-bold text-sm lg:text-base">{stats.savingsRate.toFixed(1)}%</p>
         </div>
       )}
-      {groupStats.borrowed > 0 && (
+      {visibleFeatures?.loans !== false && groupStats.borrowed > 0 && (
         <div className="bg-white/20 backdrop-blur-md rounded-2xl p-3">
           <div className="flex items-center gap-2 mb-1 opacity-80">
             <AlertTriangle size={14} className="text-white" />
@@ -393,91 +396,94 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
       )}
     </div>
   )}
- </div>
+  </div>
 
- </Card>
- </div>
+  </Card>
+  </div>
+  )}
 
- {/* Asset Type Tabs */}
- <div className="w-full mb-6">
- <div className="flex w-full bg-gray-100/80 backdrop-blur-md p-1.5 rounded-2xl border border-white/40 shadow-sm">
- {tabs.map((tab) => {
- const Icon = tab.icon;
- const isActive = activeTab === tab.id;
- 
- // Smart label logic for responsive design
- const getLabel = (label: string) => {
- if (label === 'All Assets') return isActive ? 'All Assets' : 'All';
- return label;
- };
+  {/* Asset Type Tabs & Accounts */}
+  {visibleFeatures?.accounts !== false && (
+  <>
+  <div className="w-full mb-6">
+  <div className="flex w-full bg-gray-100/80 backdrop-blur-md p-1.5 rounded-2xl border border-white/40 shadow-sm">
+  {tabs.map((tab) => {
+  const Icon = tab.icon;
+  const isActive = activeTab === tab.id;
+  
+  // Smart label logic for responsive design
+  const getLabel = (label: string) => {
+  if (label === 'All Assets') return isActive ? 'All Assets' : 'All';
+  return label;
+  };
 
- return (
- <button
- key={tab.id}
- data-testid={`dashboard-tab-${tab.id}`}
- onClick={() => setActiveTab(tab.id as typeof activeTab)}
- className={cn(
- 'relative flex-1 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-1 py-2 sm:py-2.5 rounded-xl transition-all duration-300 font-bold',
- isActive 
- ? 'text-white shadow-md' 
- : 'bg-transparent text-slate-500 hover:text-slate-700'
- )}
- >
- {isActive && (
- <motion.div 
- layoutId="activeTabPill"
- className="absolute inset-0 bg-gradient-to-r from-slate-900 to-slate-800 rounded-xl z-0"
- transition={{ type:"spring", bounce: 0.2, duration: 0.6 }}
- />
- )}
- <span className="relative z-10 flex items-center justify-center gap-2">
- <Icon 
- size={14} 
- className={cn(
-"transition-all duration-300",
- isActive ?"text-white scale-110" :"text-slate-400"
- )} 
- />
- <AnimatePresence mode="wait">
- {isActive && (
- <motion.span
- initial={{ width: 0, opacity: 0 }}
- animate={{ width: 'auto', opacity: 1 }}
- exit={{ width: 0, opacity: 0 }}
- className="overflow-hidden whitespace-nowrap"
- >
- <span className="text-[10px] sm:text-xs font-bold ml-1">
- {tab.label}
- </span>
- </motion.span>
- )}
- </AnimatePresence>
- 
- {/* Keep labels visible on desktop even if not active for better UX */}
- {!isActive && (
- <span className="hidden sm:inline text-xs text-slate-500 ml-1">
- {tab.label}
- </span>
- )}
- </span>
- </button>
- );
- })}
- </div>
- </div>
+  return (
+  <button
+  key={tab.id}
+  data-testid={`dashboard-tab-${tab.id}`}
+  onClick={() => setActiveTab(tab.id as typeof activeTab)}
+  className={cn(
+  'relative flex-1 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-1 py-2 sm:py-2.5 rounded-xl transition-all duration-300 font-bold',
+  isActive 
+  ? 'text-white shadow-md' 
+  : 'bg-transparent text-slate-500 hover:text-slate-700'
+  )}
+  >
+  {isActive && (
+  <motion.div 
+  layoutId="activeTabPill"
+  className="absolute inset-0 bg-gradient-to-r from-slate-900 to-slate-800 rounded-xl z-0"
+  transition={{ type:"spring", bounce: 0.2, duration: 0.6 }}
+  />
+  )}
+  <span className="relative z-10 flex items-center justify-center gap-2">
+  <Icon 
+  size={14} 
+  className={cn(
+ "transition-all duration-300",
+  isActive ?"text-white scale-110" :"text-slate-400"
+  )} 
+  />
+  <AnimatePresence mode="wait">
+  {isActive && (
+  <motion.span
+  initial={{ width: 0, opacity: 0 }}
+  animate={{ width: 'auto', opacity: 1 }}
+  exit={{ width: 0, opacity: 0 }}
+  className="overflow-hidden whitespace-nowrap"
+  >
+  <span className="text-[10px] sm:text-xs font-bold ml-1">
+  {tab.label}
+  </span>
+  </motion.span>
+  )}
+  </AnimatePresence>
+  
+  {/* Keep labels visible on desktop even if not active for better UX */}
+  {!isActive && (
+  <span className="hidden sm:inline text-xs text-slate-500 ml-1">
+  {tab.label}
+  </span>
+  )}
+  </span>
+  </button>
+  );
+  })}
+  </div>
+  </div>
 
- {/*"EUR"EUR 2. Accounts"EUR"EUR */}
- <motion.div {...fadeUp} className="mb-6 lg:mb-8">
- <SectionHeader title="Accounts" onViewAll={() => setCurrentPage?.('accounts')} />
- <AnimatePresence mode="wait">
- {filteredAccounts.length > 0 ? (
- <motion.div key={activeTab} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.3 }}
- className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide scroll-smooth touch-scroll"
- >
- {filteredAccounts.map((account) => (
- <Card data-testid={`dashboard-card-${account.id}`} key={account.id} 
- className={cn(
-"p-5 w-[260px] xs:w-[280px] sm:w-[320px] shrink-0 snap-center hover:shadow-xl transition-all cursor-pointer relative overflow-hidden group border-none",
+  {/* 2. Accounts */}
+  <motion.div {...fadeUp} className="mb-6 lg:mb-8">
+  <SectionHeader title="Accounts" onViewAll={() => setCurrentPage?.('accounts')} />
+  <AnimatePresence mode="wait">
+  {filteredAccounts.length > 0 ? (
+  <motion.div key={activeTab} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.3 }}
+  className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide scroll-smooth touch-scroll"
+  >
+  {filteredAccounts.map((account) => (
+  <Card data-testid={`dashboard-card-${account.id}`} key={account.id} 
+  className={cn(
+ "p-5 w-[260px] xs:w-[280px] sm:w-[320px] shrink-0 snap-center hover:shadow-xl transition-all cursor-pointer relative overflow-hidden group border-none",
  getCardStyle(account).bgClass
  )} 
  style={getCardStyle(account).background ? { backgroundColor: getCardStyle(account).background } : {}}
@@ -542,15 +548,17 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
  ))}
  </motion.div>
  ) : (
- <Card data-testid="dashboard-card-2" className="p-8 text-center cursor-pointer hover:shadow-md transition-shadow" onClick={() => setCurrentPage?.('add-account')}>
- <EmptyWidget icon={Wallet} message="No accounts yet - tap to add your first" />
+ <Card data-testid="dashboard-card-2" className="p-8 text-center cursor-pointer hover:shadow-md transition-shadow" onClick={() => visibleFeatures?.accountSetup !== false && setCurrentPage?.('add-account')}>
+ <EmptyWidget icon={Wallet} message={visibleFeatures?.accountSetup !== false ? "No accounts yet - tap to add your first" : "No accounts created yet"} />
  </Card>
  )}
  </AnimatePresence>
  </motion.div>
+ </>
+ )}
 
  {/* 3. Recent Transactions */}
- {showRecentActivity && (
+ {visibleFeatures?.transactions !== false && showRecentActivity && (
  <motion.div {...fadeUp} className="mb-6 lg:mb-8">
  <SectionHeader title="Recent Transactions" onViewAll={() => setCurrentPage?.('transactions')} />
  {recentTransactions.length > 0 ? (
@@ -584,6 +592,7 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
  )}
 
  {/* 4. Loans & EMI */}
+ {visibleFeatures?.loans !== false && (
  <motion.div {...fadeUp} className="mb-6 lg:mb-8">
  <SectionHeader title="Loans & EMI" onViewAll={() => setCurrentPage?.('loans')} />
  {activeLoans.length > 0 ? (
@@ -642,8 +651,10 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
  </Card>
  )}
  </motion.div>
+ )}
 
  {/* 5. Calendar / Upcoming Events */}
+ {visibleFeatures?.calendar !== false && (
  <motion.div {...fadeUp} className="mb-6 lg:mb-8">
  <SectionHeader title="Upcoming Events" onViewAll={() => setCurrentPage?.('calendar')} viewLabel="View Calendar" />
  {upcomingEvents.length > 0 ? (
@@ -691,8 +702,10 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
  </Card>
  )}
  </motion.div>
+ )}
 
  {/* 6. Borrow, Lend & Groups */}
+ {(visibleFeatures?.groups !== false || visibleFeatures?.loans !== false) && (
  <motion.div {...fadeUp} className="mb-6 lg:mb-8">
  <SectionHeader title="Borrow, Lend & Groups" onViewAll={() => setCurrentPage?.('groups')} />
  <Card data-testid="dashboard-card-9" variant="glass" className="cursor-pointer hover:shadow-xl transition-all border-white/20" onClick={() => setCurrentPage?.('groups')}>
@@ -749,8 +762,10 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
  )}
  </Card>
  </motion.div>
+ )}
 
  {/* 7. Investments */}
+ {visibleFeatures?.investments !== false && (
  <motion.div {...fadeUp} className="mb-6 lg:mb-8">
  <SectionHeader title="Investments" onViewAll={() => setCurrentPage?.('investments')} />
  {investmentStats.count > 0 ? (
@@ -823,9 +838,10 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
  </Card>
  )}
  </motion.div>
+ )}
 
- {/*"EUR"EUR 8. Goals Progress"EUR"EUR */}
- {activeGoals.length > 0 && (
+ {/* 8. Goals Progress */}
+ {visibleFeatures?.goals !== false && activeGoals.length > 0 && (
  <motion.div {...fadeUp} className="mb-6 lg:mb-8">
  <SectionHeader title="Goals Progress" onViewAll={() => setCurrentPage?.('goals')} />
  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -861,5 +877,3 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
  </CenteredLayout>
  );
 }
-
-

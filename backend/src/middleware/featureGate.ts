@@ -99,14 +99,23 @@ const DEFAULT_SUB_FEATURES: Record<string, Record<string, { enabled: boolean; ro
 // Default module baseline role access
 const DEFAULT_MODULE_ACCESS: Record<string, Record<string, boolean>> = {
   accounts: { admin: true, manager: true, advisor: true, user: true },
+  accountSetup: { admin: true, manager: true, advisor: true, user: true },
   transactions: { admin: true, manager: true, advisor: true, user: true },
-  // goals/loans/investments mirror DEFAULT_SUB_FEATURES above: enabled for all
-  // roles on a fresh install (their absence here made the module-level check
-  // deny every non-admin before sub-feature defaults were even consulted).
   goals: { admin: true, manager: true, advisor: true, user: true },
   loans: { admin: true, manager: true, advisor: true, user: true },
   investments: { admin: true, manager: true, advisor: true, user: true },
   reports: { admin: true, manager: true, advisor: true, user: true },
+  groups: { admin: true, manager: true, advisor: true, user: true },
+  todoLists: { admin: true, manager: true, advisor: true, user: true },
+  calendar: { admin: true, manager: true, advisor: true, user: true },
+  recurringTransactions: { admin: true, manager: true, advisor: true, user: true },
+  budgetAlerts: { admin: true, manager: true, advisor: true, user: true },
+  dashboard: { admin: true, manager: true, advisor: true, user: true },
+  notifications: { admin: true, manager: true, advisor: true, user: true },
+  userProfile: { admin: true, manager: true, advisor: true, user: true },
+  settings: { admin: true, manager: true, advisor: true, user: true },
+  aiInsights: { admin: true, manager: false, advisor: true, user: true },
+  clientManagement: { admin: true, manager: true, advisor: true, user: false },
   // Deferred (Phase 4) — admin-only until the admin enables it for other roles.
   payments: { admin: true, manager: false, advisor: false, user: false },
   // Deferred (Phase 2) — advisor marketplace consumer surface (browse/book);

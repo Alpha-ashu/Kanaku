@@ -13,6 +13,7 @@ const router = Router();
 
 router.use(authMiddleware);
 router.use(pinGate); // financial data requires a live PIN unlock
+router.use(requireFeature('goals'));
 
 router.get('/', responseCache({ prefix: 'goals:list', ttlSeconds: CACHE_TTL_SECONDS.goals.list }), GoalController.getGoals);
 router.post('/', requireFeature('goals', 'createGoal'), idempotency({ scope: 'goals.create' }), validateBody(goalCreateSchema), GoalController.createGoal);

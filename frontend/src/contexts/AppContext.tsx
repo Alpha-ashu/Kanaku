@@ -15,6 +15,8 @@ import {
   readStoredAppPreferences,
 } from '@/lib/userPreferences';
 import socketClient from '@/lib/socket-client';
+import { Capacitor } from '@capacitor/core';
+import { App as CapacitorApp } from '@capacitor/app';
 
 interface AppContextType {
   currentPage: string;
@@ -894,15 +896,63 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   }, [role, computeVisibleFeatures]);
 
-  // Sync global feature flags from the backend on mount and every 30 s as a fallback.
-  // Real-time updates come from the WebSocket subscriber below.
+  // Multi-lifecycle feature flag sync:
+  // 1. Initial mount & auth resolution
+  // 2. Real-time WebSocket 'feature_flags_updated' broadcasts
+  // 3. Native Android foreground resume (appStateChange)
+  // 4. Tab visibility change (browser/PWA resume)
+  // 5. Network reconnect (online event)
+  // 6. Periodic 30s background fallback interval
   useEffect(() => {
     if (!user?.id || !dataReady || dataSyncing) return;
 
-    // Fetch immediately on mount/auth if active and sync is completed
+    // 1. Immediate fetch
     if (typeof document !== 'undefined' && !document.hidden) {
-      void fetchGlobalFlags();
+      void fetchGlobalFlags('all', true);
     }
+
+    // 2. Fallback polling interval (30 seconds)
+    const interval = setInterval(() => {
+      if (typeof document !== 'undefined' && !document.hidden) {
+        void fetchGlobalFlags('all', false);
+      }
+    }, 30000);
+
+    // 3. Tab visibility change handler
+    const handleVisibilityChange = () => {
+      if (typeof document !== 'undefined' && !document.hidden) {
+        void fetchGlobalFlags('all', true);
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // 4. Network reconnect handler
+    const handleOnline = () => {
+      void fetchGlobalFlags('all', true);
+    };
+    window.addEventListener('online', handleOnline);
+
+    // 5. Native Android / iOS resume handler
+    let nativeCleanup: (() => void) | undefined;
+    if (Capacitor.isNativePlatform()) {
+      CapacitorApp.addListener('appStateChange', ({ isActive }) => {
+        if (isActive) {
+          console.info('[AppContext] Native app resumed to foreground — syncing feature flags');
+          void fetchGlobalFlags('all', true);
+        }
+      }).then(handle => {
+        nativeCleanup = () => handle.remove();
+      }).catch(err => {
+        console.warn('[AppContext] Failed to attach native appStateChange listener:', err);
+      });
+    }
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('online', handleOnline);
+      nativeCleanup?.();
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, dataReady, dataSyncing, fetchGlobalFlags]);
 
@@ -913,10 +963,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     if (!user?.id) return;
 
     const unsubscribe = socketClient.on('feature_flags_updated', (payload: any) => {
-      // Refetch only the scope that actually changed: an `ai` broadcast pulls the
-      // AI flags, anything else pulls the app flags. force=true bypasses the throttle.
-      const scope = payload?.type === 'ai' ? 'ai' : 'app';
-      console.log(`[AppContext] feature_flags_updated (${scope}) — re-fetching ${scope} flags`);
+      const scope = payload?.type === 'ai' ? 'ai' : 'all';
+      console.log(`[AppContext] feature_flags_updated (${scope}) — re-fetching feature flags`);
       void fetchGlobalFlags(scope, true);
     });
 

@@ -10,6 +10,7 @@ const router = Router();
 
 router.use(authMiddleware);
 router.use(pinGate); // financial data requires a live PIN unlock
+router.use(requireFeature('investments'));
 
 // Core CRUD
 router.get('/', InvestmentController.getInvestments);

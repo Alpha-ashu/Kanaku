@@ -12,9 +12,10 @@ const router = Router();
 
 router.use(authMiddleware);
 router.use(pinGate); // financial data requires a live PIN unlock
+router.use(requireFeature('accounts'));
 
 router.get('/', responseCache({ prefix: 'accounts:list', ttlSeconds: CACHE_TTL_SECONDS.accounts.list }), AccountController.getAccounts);
-router.post('/', requireFeature('accounts', 'createAccount'), validateBody(accountCreateSchema), AccountController.createAccount);
+router.post('/', requireFeature('accountSetup'), requireFeature('accounts', 'createAccount'), validateBody(accountCreateSchema), AccountController.createAccount);
 router.get('/:id', validateParams(accountIdParamSchema), responseCache({ prefix: 'accounts:item', ttlSeconds: CACHE_TTL_SECONDS.accounts.item }), AccountController.getAccount);
 router.put('/:id', requireFeature('accounts', 'editAccount'), validateParams(accountIdParamSchema), validateBody(accountUpdateSchema), AccountController.updateAccount);
 router.delete('/:id', requireFeature('accounts', 'deleteAccount'), validateParams(accountIdParamSchema), AccountController.deleteAccount);

@@ -68,6 +68,7 @@ const FEATURE_DEFAULT_ROLE_ACCESS: Record<string, Record<UserRole, boolean>> = {
   aiManagement:           { admin: true, manager: false, advisor: false, user: false },
   // ── Application features — DENY-BY-DEFAULT for non-admin ──
   accounts:               { admin: true, manager: false, advisor: false, user: false },
+  accountSetup:           { admin: true, manager: false, advisor: false, user: false },
   transactions:           { admin: true, manager: false, advisor: false, user: false },
   loans:                  { admin: true, manager: false, advisor: false, user: false },
   goals:                  { admin: true, manager: false, advisor: false, user: false },
@@ -88,6 +89,7 @@ const FEATURE_DEFAULT_ROLE_ACCESS: Record<string, Record<UserRole, boolean>> = {
 const FEATURES_BASE: FeatureControlBase[] = [
   { name: 'Dashboard', key: 'dashboard', description: 'Main overview with financial summary and quick actions' },
   { name: 'Accounts', key: 'accounts', description: 'Bank accounts, wallets, and financial account management' },
+  { name: 'Account Setup', key: 'accountSetup', description: 'Permission to add, create, and configure new financial accounts' },
   { name: 'Transactions', key: 'transactions', description: 'Income and expense tracking with categorization' },
   { name: 'Loans & EMIs', key: 'loans', description: 'Loan tracking, EMI calculations, and payment schedules' },
   { name: 'Goals', key: 'goals', description: 'Financial goal setting and progress tracking' },

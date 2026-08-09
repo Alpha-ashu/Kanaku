@@ -4,6 +4,7 @@ export type UserRole = 'admin' | 'manager' | 'advisor' | 'user';
 
 export type FeatureKey =
   | 'accounts'
+  | 'accountSetup'
   | 'transactions'
   | 'loans'
   | 'goals'
@@ -30,6 +31,7 @@ export type FeatureKey =
 
 export interface FeatureVisibility extends Record<FeatureKey, boolean> {
   accounts: boolean;
+  accountSetup: boolean;
   transactions: boolean;
   loans: boolean;
   goals: boolean;
@@ -57,6 +59,7 @@ export interface FeatureVisibility extends Record<FeatureKey, boolean> {
 
 const DEFAULT_FEATURES: FeatureVisibility = {
   accounts: true,
+  accountSetup: true,
   transactions: true,
   loans: true,
   goals: true,
@@ -94,6 +97,7 @@ const DEFAULT_FEATURES: FeatureVisibility = {
 export const ROLE_FEATURES: Record<UserRole, FeatureVisibility> = {
   admin: {
     accounts: true,
+    accountSetup: true,
     transactions: true,
     loans: true,
     goals: true,
@@ -120,6 +124,7 @@ export const ROLE_FEATURES: Record<UserRole, FeatureVisibility> = {
   },
   manager: {
     accounts: true,
+    accountSetup: true,
     transactions: true,
     loans: true,
     goals: true,
@@ -146,6 +151,7 @@ export const ROLE_FEATURES: Record<UserRole, FeatureVisibility> = {
   },
   advisor: {
     accounts: true,
+    accountSetup: true,
     transactions: true,
     loans: true,
     goals: true,
@@ -172,6 +178,7 @@ export const ROLE_FEATURES: Record<UserRole, FeatureVisibility> = {
   },
   user: {
     accounts: true,
+    accountSetup: true,
     transactions: true,
     loans: true,
     goals: true,
@@ -236,7 +243,8 @@ export const PAGE_TO_FEATURE_MAPPING: Record<string, FeatureKey> = {
   'dashboard': 'dashboard',
   'auto-sizing-test': 'dashboard',
   'accounts': 'accounts',
-  'add-account': 'accounts',
+  'add-account': 'accountSetup',
+  'account-setup': 'accountSetup',
   'edit-account': 'accounts',
   'transactions': 'transactions',
   'add-transaction': 'transactions',

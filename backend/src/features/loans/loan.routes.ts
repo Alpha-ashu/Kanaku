@@ -13,6 +13,7 @@ const router = Router();
 
 router.use(authMiddleware);
 router.use(pinGate); // financial data requires a live PIN unlock
+router.use(requireFeature('loans'));
 
 // borrowMoney / lendMoney: the `type` field in the body distinguishes borrow vs. lend.
 // Both are gated by the same endpoint; the controller routes logic by type.

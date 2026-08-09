@@ -74,9 +74,9 @@ const getCardStyle = (account: any): any => {
 };
 
 export const Accounts: React.FC = () => {
-    const { accounts, transactions, currency, setCurrentPage, refreshData } = useApp();
+    const { accounts, transactions, currency, setCurrentPage, refreshData, visibleFeatures } = useApp();
     const canImport = useSubFeature('accounts', 'importStatement');
-    const canCreate = useSubFeature('accounts', 'createAccount');
+    const canCreate = useSubFeature('accounts', 'createAccount') && visibleFeatures?.accountSetup !== false;
     const canEdit = useSubFeature('accounts', 'editAccount');
     const canDelete = useSubFeature('accounts', 'deleteAccount');
     const [selectedAccountId, setSelectedAccountId] = useState<number | null>(

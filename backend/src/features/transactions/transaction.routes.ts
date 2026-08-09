@@ -21,6 +21,7 @@ const router = Router();
 // All transaction routes require authentication + a live PIN unlock
 router.use(authMiddleware);
 router.use(pinGate);
+router.use(requireFeature('transactions'));
 
 router.get(
 	'/',

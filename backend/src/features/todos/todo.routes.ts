@@ -1,12 +1,14 @@
 import { Router } from 'express';
 import { authMiddleware } from '../../middleware/auth';
 import { validateBody, validateParams } from '../../middleware/validate';
+import { requireFeature } from '../../middleware/featureGate';
 import * as TodoController from './todo.controller';
 import { todoCreateSchema, todoIdParamSchema, todoUpdateSchema } from './todo.validation';
 
 const router = Router();
 
 router.use(authMiddleware);
+router.use(requireFeature('todoLists'));
 
 // Legacy single todo routes
 router.get('/', TodoController.getTodos);

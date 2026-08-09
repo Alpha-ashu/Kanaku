@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { authMiddleware } from '../../middleware/auth';
 import { pinGate } from '../../middleware/pinGate';
 import { validateBody, validateParams, validateQuery } from '../../middleware/validate';
+import { requireFeature } from '../../middleware/featureGate';
 import * as BudgetController from './budget.controller';
 import {
   budgetCreateSchema,
@@ -14,6 +15,7 @@ const router = Router();
 
 router.use(authMiddleware);
 router.use(pinGate); // financial data requires a live PIN unlock
+router.use(requireFeature('budgetAlerts'));
 
 router.get('/', validateQuery(budgetQuerySchema), BudgetController.getBudgets);
 router.post('/', validateBody(budgetCreateSchema), BudgetController.createBudget);
