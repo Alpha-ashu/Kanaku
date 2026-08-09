@@ -66,6 +66,7 @@
     "qa:contract-finalize": "node scripts/finalize-contract-responses.mjs",
     "qa:admin-capture": "node scripts/qa-admin-capture.mjs",
     "qa:regression": "node scripts/qa-regression-diff.mjs",
+    "qa:evidence": "node scripts/qa-evidence-validation.mjs",
     "qa:reports": "npm run qa:ui-inventory && npm run qa:contract-audit",
     "clean": "rimraf frontend/dist backend/dist node_modules/.vite frontend/node_modules/.vite .turbo frontend/.turbo backend/.turbo",
     "clean:mobile": "rimraf android/build android/app/build android/.gradle android/capacitor-cordova-android-plugins/build ios/App/build ios/DerivedData",
