@@ -1,7 +1,8 @@
 # ─────────────────────────────────────────────────────────────────────────────
-# Kanaku — Full Android Release Build Script
+# Kanaku — Full Android Release Build Script (APK + AAB)
 # Usage:  .\build-android.ps1  (run from k:\Project\Kanaku)
 # Output: android\app\build\outputs\apk\nosms\release\app-nosms-release.apk
+#         android\app\build\outputs\bundle\nosmsRelease\app-nosms-release.aab
 # ─────────────────────────────────────────────────────────────────────────────
 
 $ErrorActionPreference = "Stop"
@@ -9,7 +10,7 @@ $root = "k:\Project\Kanaku"
 
 Write-Host ""
 Write-Host "======================================================" -ForegroundColor Cyan
-Write-Host "  KANAKU -- Android Release Build" -ForegroundColor Cyan
+Write-Host "  KANAKU -- Android Release Build (APK + AAB)" -ForegroundColor Cyan
 Write-Host "======================================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -28,13 +29,13 @@ npx cap sync android
 if ($LASTEXITCODE -ne 0) { Write-Host "FAILED: Cap sync" -ForegroundColor Red; exit 1 }
 Write-Host "OK: Synced" -ForegroundColor Green
 
-# Step 3: Gradle release build
+# Step 3: Gradle release build (APK + AAB Bundle)
 Write-Host ""
-Write-Host "[3/3] Building Android APK..." -ForegroundColor Yellow
+Write-Host "[3/3] Building Android APK & AAB Bundle..." -ForegroundColor Yellow
 $env:JAVA_HOME = "C:\Program Files\Java\jdk-21"
 $env:PATH = "$env:JAVA_HOME\bin;$env:PATH"
 Set-Location "$root\android"
-.\gradlew assembleRelease
+.\gradlew assembleRelease bundleRelease
 if ($LASTEXITCODE -ne 0) { Write-Host "FAILED: Gradle build" -ForegroundColor Red; exit 1 }
 
 # Done
@@ -44,12 +45,14 @@ Write-Host "  BUILD COMPLETE" -ForegroundColor Green
 Write-Host "======================================================" -ForegroundColor Green
 Write-Host ""
 
-$apkDir = "$root\android\app\build\outputs\apk"
-Get-ChildItem $apkDir -Recurse -Filter "*.apk" | Sort-Object LastWriteTime -Descending | ForEach-Object {
+$outputsDir = "$root\android\app\build\outputs"
+Get-ChildItem $outputsDir -Recurse -Include "*.apk","*.aab" | Sort-Object LastWriteTime -Descending | ForEach-Object {
     $size = [math]::Round($_.Length / 1MB, 1)
-    Write-Host "  APK: $($_.FullName)"
-    Write-Host "  Size: ${size} MB  |  Built: $($_.LastWriteTime)"
+    $ext = $_.Extension.ToUpper().Replace('.','')
+    Write-Host "  [$ext] $($_.FullName)"
+    Write-Host "        Size: ${size} MB  |  Built: $($_.LastWriteTime)"
     Write-Host ""
 }
-Write-Host "  Install: app-nosms-release.apk (recommended)" -ForegroundColor Cyan
+Write-Host "  Install APK: app-nosms-release.apk" -ForegroundColor Cyan
+Write-Host "  Google Play AAB: app-nosms-release.aab" -ForegroundColor Cyan
 Write-Host ""
