@@ -136,6 +136,22 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
     }
   };
 
+  // Pre-warm the backend as soon as the auth page loads.
+  // Render.com free tier sleeps after 15min of inactivity — this fires
+  // a lightweight ping immediately so the cold-start completes while
+  // the user is filling in their credentials (typically 10-30 seconds).
+  useEffect(() => {
+    const apiBase = (import.meta.env.VITE_API_URL || '/api/v1').replace(/\/api\/v1$/, '');
+    const warmUp = async () => {
+      try {
+        await fetch(`${apiBase}/health`, { method: 'GET', cache: 'no-store' });
+      } catch {
+        // Ignore — best-effort only, never blocks the UI
+      }
+    };
+    void warmUp();
+  }, []);
+
   // Check if user is already partially through the flow
   useEffect(() => {
     const checkFlowState = async () => {

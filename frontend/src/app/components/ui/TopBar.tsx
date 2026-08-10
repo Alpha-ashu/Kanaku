@@ -394,23 +394,27 @@ export const TopBar: React.FC = () => {
       </div>
     </div>
 
-    {/* Navigation List */}
-    <nav className="flex-1 px-4 py-2 overflow-y-auto scrollbar-hide">
-      <Reorder.Group
-        axis="y"
-        values={orderedItems}
-        onReorder={handleReorder}
-        className="space-y-1"
-      >
-        {orderedItems.map((item) => (
-          <DraggablePageMenuItem
+    {/* Navigation List — Direct touch buttons for instant mobile navigation */}
+    <nav className="flex-1 px-3 py-2 overflow-y-auto scrollbar-hide space-y-1">
+      {orderedItems.map((item) => {
+        const Icon = item.icon;
+        const isActive = currentPage === item.id;
+        return (
+          <button
             key={item.id}
-            item={item}
-            isActive={currentPage === item.id}
-            onNavigate={handleMenuItemClick}
-          />
-        ))}
-      </Reorder.Group>
+            onClick={() => handleMenuItemClick(item.id)}
+            data-testid={`drawer-nav-${item.id}-button`}
+            className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-colors duration-150 text-left font-medium text-sm select-none ${
+              isActive
+                ? 'bg-blue-600 text-white font-bold shadow-sm'
+                : 'text-slate-700 hover:bg-slate-100 active:bg-slate-200'
+            }`}
+          >
+            <Icon size={18} className={isActive ? 'text-white' : 'text-slate-500'} />
+            <span className="truncate">{item.label}</span>
+          </button>
+        );
+      })}
     </nav>
 
     {/* Profile & Action Footer */}

@@ -85,14 +85,10 @@ export const BottomNav: React.FC<BottomNavProps> = ({ onQuickAdd }) => {
     });
   }, [role, visibleFeatures]);
 
-  const handleNavigation = async (itemId: string) => {
-    // Haptic feedback on native platforms
+  const handleNavigation = (itemId: string) => {
+    // Non-blocking haptic feedback — never await native bridge on UI path
     if (Capacitor.isNativePlatform()) {
-      try {
-        await Haptics.impact({ style: ImpactStyle.Light });
-      } catch (error) {
-        // Haptics not available
-      }
+      Haptics.impact({ style: ImpactStyle.Light }).catch(() => {});
     }
 
     if (itemId === 'quick-add') {
@@ -102,16 +98,9 @@ export const BottomNav: React.FC<BottomNavProps> = ({ onQuickAdd }) => {
     }
   };
 
-  const isCompact = filteredNavigationItems.length <= 3;
-
   return (
-    <nav
-      className="fixed bottom-0 left-0 right-0 z-50 lg:hidden pointer-events-none safe-area-padding bottom-nav-container"
-    >
-      <div className={cn(
-        "mb-0 bg-white/95 backdrop-blur-lg border-0 rounded-[24px] shadow-lg pointer-events-auto flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-4 h-16 ring-1 ring-black/10 relative overflow-hidden transition-all duration-300",
-        isCompact ? "w-[280px]" : "mx-4 w-[calc(100%-32px)]"
-      )}>
+    <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden pointer-events-none bottom-nav-container">
+      <div className="mx-2 sm:mx-4 w-[calc(100%-16px)] sm:w-[calc(100%-32px)] bg-white/95 backdrop-blur-md border border-gray-200/80 rounded-2xl shadow-xl pointer-events-auto flex items-center justify-between px-1.5 sm:px-3 h-16 relative overflow-hidden">
         {filteredNavigationItems.map((item, index) => {
           const Icon = item.icon;
           const isActive = currentPage === item.id;
@@ -119,16 +108,15 @@ export const BottomNav: React.FC<BottomNavProps> = ({ onQuickAdd }) => {
 
           if (isAction) {
             return (
-              <motion.button
+              <button
                 key={`${item.id}-${index}`}
-                whileTap={{ scale: 0.9 }}
                 onClick={() => handleNavigation(item.id)}
-                className="flex items-center justify-center w-12 h-12 bg-black text-white rounded-full shadow-xl hover:shadow-2xl transition-all flex-shrink-0 mx-0 z-20"
+                className="flex items-center justify-center w-11 h-11 bg-blue-600 active:bg-blue-700 text-white rounded-full shadow-md active:scale-95 transition-transform shrink-0 mx-1 z-20 focus:outline-none"
                 title="Quick Add"
                 data-testid="nav-quick-add-button"
               >
                 <Icon className="w-5 h-5" strokeWidth={2.5} />
-              </motion.button>
+              </button>
             );
           }
 
@@ -138,23 +126,23 @@ export const BottomNav: React.FC<BottomNavProps> = ({ onQuickAdd }) => {
               onClick={() => handleNavigation(item.id)}
               data-testid={`nav-${item.id}-button`}
               className={cn(
-                "flex flex-col items-center justify-center h-full flex-1 min-w-0 transition-all duration-300 relative group px-1",
-                isActive ? "text-white" : "text-gray-500 hover:text-gray-700"
+                "flex flex-col items-center justify-center h-full flex-1 min-w-0 transition-colors duration-150 relative py-1 px-0.5 focus:outline-none select-none",
+                isActive ? "text-blue-600 font-bold" : "text-gray-500 hover:text-gray-800"
               )}
-              title={item.label}
             >
               {isActive && (
-                <motion.div
-                  layoutId="activeTabMobile"
-                  className="absolute w-10 h-10 bg-slate-900 rounded-full z-0 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
-                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                />
+                <div className="absolute top-1 w-6 h-1 bg-blue-600 rounded-full" />
               )}
               <Icon
-                className={cn("w-6 h-6 transition-all duration-300 z-10 relative", isActive && "scale-110")}
-                strokeWidth={isActive ? 2.5 : 2}
-                fill="none"
+                className={cn("w-5 h-5 transition-transform duration-150 mb-0.5", isActive ? "scale-110 text-blue-600" : "text-gray-500")}
+                strokeWidth={isActive ? 2.3 : 1.8}
               />
+              <span className={cn(
+                "text-[10px] tracking-tight truncate max-w-full leading-tight",
+                isActive ? "font-bold text-blue-600" : "font-medium text-gray-500"
+              )}>
+                {item.label}
+              </span>
             </button>
           );
         })}

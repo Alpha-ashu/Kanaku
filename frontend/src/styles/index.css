@@ -129,6 +129,21 @@ html {
   padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
 }
 
+/* Mobile safe area padding for main content area to prevent bottom nav overlap */
+.mobile-safe-bottom {
+  padding-bottom: calc(var(--bottom-nav-height) + max(1rem, env(safe-area-inset-bottom)) + 24px) !important;
+}
+
+.mobile-main {
+  padding-top: calc(var(--header-height) + max(0.5rem, env(safe-area-inset-top)) + 8px);
+}
+
+/* Touch optimization for mobile webview — eliminates 300ms tap delay & gray box highlights */
+button, a, [role="button"], input, select {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
 .safe-area-inset-left {
   padding-left: max(0.5rem, env(safe-area-inset-left));
 }

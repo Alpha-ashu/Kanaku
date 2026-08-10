@@ -454,13 +454,10 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
           return;
         }
 
-        // If local PIN is valid, unlock immediately and sync with server
+        // If local PIN is valid, unlock immediately — don't wait for server
         if (localResult.isValid && localResult.key) {
-          try {
-            await pinService.verifyPin({ pin });
-          } catch {
-            // Non-blocking offline fallback
-          }
+          // Fire-and-forget: sync with server in background, never block unlock
+          pinService.verifyPin({ pin }).catch(() => { /* non-blocking */ });
           await completeUnlock(localResult.key, 'Welcome back!', pin);
           return;
         }
