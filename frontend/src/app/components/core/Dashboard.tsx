@@ -18,6 +18,8 @@ import { formatCurrencyAmount } from '@/lib/currencyUtils';
 import { formatLocalDate } from '@/lib/dateUtils';
 import { buildTransactionAggregation } from '@/lib/transactionAggregation';
 import { getCategoryCartoonIcon } from '@/app/components/ui/CartoonCategoryIcons';
+import { db } from '@/lib/database';
+import { useLiveQuery } from 'dexie-react-hooks';
 import {
  getInvestmentDisplayName,
  getInvestmentMetrics,
@@ -72,81 +74,93 @@ const getCardStyle = (account: any) => {
 };
 
 export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps) {
- const { setCurrentPage: contextSetCurrentPage, accounts, transactions, goals, loans, investments, groupExpenses, currency, visibleFeatures, aiCapabilities } = useApp();
- const setCurrentPage = propSetCurrentPage || contextSetCurrentPage;
+  const { setCurrentPage: contextSetCurrentPage, accounts, transactions, goals: contextGoals, loans: contextLoans, investments: contextInvestments, groupExpenses: contextGroupExpenses, currency, visibleFeatures, aiCapabilities } = useApp();
+  const setCurrentPage = propSetCurrentPage || contextSetCurrentPage;
 
- useEffect(() => {
-   console.log('[KANAKU Startup] Dashboard Loaded: Reason = Valid Session');
- }, []);
+  // Direct reactive queries from IndexedDB (Dexie) so Dashboard updates instantly when records are created
+  const liveLoans = useLiveQuery(() => db.loans.filter(l => !l.deletedAt).toArray(), []) || [];
+  const liveInvestments = useLiveQuery(() => db.investments.filter(i => !i.deletedAt).toArray(), []) || [];
+  const liveGoals = useLiveQuery(() => db.goals.filter(g => !g.deletedAt).toArray(), []) || [];
+  const liveGroupExpenses = useLiveQuery(() => db.groupExpenses.filter(ge => !ge.deletedAt).toArray(), []) || [];
 
- const showAiSummary = useSubFeature('dashboard', 'aiSummary');
- const showQuickActions = useSubFeature('dashboard', 'quickActions');
- const showRecentActivity = useSubFeature('dashboard', 'recentActivity');
- const [activeTab, setActiveTab] = useState<'all' | 'bank' | 'card' | 'wallet' | 'cash'>('all');
- const [timePeriod, setTimePeriod] = useState<TimeFilterPeriod>('monthly');
- const [investmentQuotes, setInvestmentQuotes] = useState<Record<string, StockQuote | null>>({});
- const investmentPriceTimer = useRef<ReturnType<typeof setInterval> | null>(null);
- const openInvestments = useMemo(
- () => investments.filter((investment) => !isClosedInvestment(investment)),
- [investments],
- );
+  const loans = liveLoans.length > 0 ? liveLoans : (contextLoans || []);
+  const investments = liveInvestments.length > 0 ? liveInvestments : (contextInvestments || []);
+  const goals = liveGoals.length > 0 ? liveGoals : (contextGoals || []);
+  const groupExpenses = liveGroupExpenses.length > 0 ? liveGroupExpenses : (contextGroupExpenses || []);
 
- const filteredAccounts = useMemo(() => {
- if (activeTab === 'all') return accounts;
- return accounts.filter(a => a.type === activeTab);
- }, [accounts, activeTab]);
+  useEffect(() => {
+    console.log('[KANAKU Startup] Dashboard Loaded: Reason = Valid Session');
+  }, []);
 
- const filterReferenceDate = useMemo(() => {
- if (transactions.length === 0) return new Date();
- return transactions.reduce((latest, transaction) => {
- const txDate = new Date(transaction.date);
- if (Number.isNaN(txDate.getTime())) return latest;
- return txDate > latest ? txDate : latest;
- }, new Date(transactions[0].date));
- }, [transactions]);
+  const showAiSummary = useSubFeature('dashboard', 'aiSummary');
+  const showQuickActions = useSubFeature('dashboard', 'quickActions');
+  const showRecentActivity = useSubFeature('dashboard', 'recentActivity');
+  const [activeTab, setActiveTab] = useState<'all' | 'bank' | 'card' | 'wallet' | 'cash'>('all');
+  const [timePeriod, setTimePeriod] = useState<TimeFilterPeriod>('monthly');
+  const [investmentQuotes, setInvestmentQuotes] = useState<Record<string, StockQuote | null>>({});
+  const investmentPriceTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 
- const timeFilteredTransactions = useMemo(() =>
- filterByTimePeriod(transactions, timePeriod, filterReferenceDate),
- [transactions, timePeriod, filterReferenceDate],
- );
+  const openInvestments = useMemo(
+    () => investments.filter((investment) => !investment.deletedAt && !isClosedInvestment(investment)),
+    [investments],
+  );
 
- const filteredAccountIdSet = useMemo(
- () => new Set(filteredAccounts.map((account) => account.id)),
- [filteredAccounts],
- );
+  const filteredAccounts = useMemo(() => {
+    if (activeTab === 'all') return accounts;
+    return accounts.filter(a => a.type === activeTab);
+  }, [accounts, activeTab]);
 
- const filteredTransactions = useMemo(() => {
- if (activeTab === 'all') return timeFilteredTransactions;
- return timeFilteredTransactions.filter(t => filteredAccountIdSet.has(t.accountId));
- }, [timeFilteredTransactions, filteredAccountIdSet, activeTab]);
+  const filterReferenceDate = useMemo(() => {
+    if (transactions.length === 0) return new Date();
+    return transactions.reduce((latest, transaction) => {
+      const txDate = new Date(transaction.date);
+      if (Number.isNaN(txDate.getTime())) return latest;
+      return txDate > latest ? txDate : latest;
+    }, new Date(transactions[0].date));
+  }, [transactions]);
 
- const stats = useMemo(() => {
- const aggregation = buildTransactionAggregation(timeFilteredTransactions);
- const income = aggregation.totalIncome;
- const expense = aggregation.totalExpenses;
+  const timeFilteredTransactions = useMemo(() =>
+    filterByTimePeriod(transactions, timePeriod, filterReferenceDate),
+    [transactions, timePeriod, filterReferenceDate],
+  );
 
- const totalBalance = accounts.filter(a => a.isActive).reduce((sum, a) => sum + a.balance, 0);
- const savingsRate = income > 0 ? ((income - expense) / income) * 100 : 0;
+  const filteredAccountIdSet = useMemo(
+    () => new Set(filteredAccounts.map((account) => account.id)),
+    [filteredAccounts],
+  );
 
- return {
- totalBalance,
- monthlyIncome: income,
- monthlyExpense: expense,
- savingsRate,
- };
- }, [accounts, timeFilteredTransactions]);
+  const filteredTransactions = useMemo(() => {
+    if (activeTab === 'all') return timeFilteredTransactions;
+    return timeFilteredTransactions.filter(t => filteredAccountIdSet.has(t.accountId));
+  }, [timeFilteredTransactions, filteredAccountIdSet, activeTab]);
 
- const recentTransactions = useMemo(() => filteredTransactions.slice(0, 5), [filteredTransactions]);
+  const stats = useMemo(() => {
+    const aggregation = buildTransactionAggregation(timeFilteredTransactions);
+    const income = aggregation.totalIncome;
+    const expense = aggregation.totalExpenses;
 
- const activeGoals = useMemo(() => goals.filter(g => g.currentAmount < g.targetAmount).slice(0, 3), [goals]);
+    const totalBalance = accounts.filter(a => a.isActive).reduce((sum, a) => sum + a.balance, 0);
+    const savingsRate = income > 0 ? ((income - expense) / income) * 100 : 0;
 
- //"EUR"EUR Loans & EMI computed data"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR
- const now = new Date();
- const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+    return {
+      totalBalance,
+      monthlyIncome: income,
+      monthlyExpense: expense,
+      savingsRate,
+    };
+  }, [accounts, timeFilteredTransactions]);
 
- const activeLoans = useMemo(() =>
- loans.filter(l => l.status === 'active' || l.status === 'overdue').slice(0, 3),
- [loans]);
+  const recentTransactions = useMemo(() => filteredTransactions.slice(0, 5), [filteredTransactions]);
+
+  const activeGoals = useMemo(() => goals.filter(g => !g.deletedAt && g.currentAmount < g.targetAmount).slice(0, 3), [goals]);
+
+  // Loans & EMI computed data
+  const now = new Date();
+  const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+  const activeLoans = useMemo(() =>
+    loans.filter(l => !l.deletedAt && (l.status === 'active' || l.status === 'overdue' || !l.status || (l.outstandingBalance ?? 0) > 0)).slice(0, 3),
+    [loans]);
 
  const getLoanStatus = (loan: typeof loans[0]) => {
  if (loan.status === 'overdue') return 'overdue';

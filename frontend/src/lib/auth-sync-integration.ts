@@ -3634,7 +3634,7 @@ export async function saveToDoItemWithBackendSync(item: any) {
     list = await db.toDoLists.get(item.listId);
   }
 
-  if (isBackendFirstSyncMode() && list.cloudId) {
+  if (isBackendFirstSyncMode() && list?.cloudId) {
     try {
       const response = await apiClient.post<any>('/todos/items', {
         listId: list.cloudId,
