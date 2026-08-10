@@ -10,6 +10,12 @@
 /* Uncomment for debugging mobile issues: */
 /* @import './mobile-test-classes.css'; */
 
+/* Global spin animation — used by inline-styled loading spinners (Android WebView safe) */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
 /* Universal horizontal overflow prevention */
 html,
 body,

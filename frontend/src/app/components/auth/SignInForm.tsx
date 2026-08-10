@@ -47,13 +47,17 @@ export const SignInForm: React.FC<SignInFormProps> = ({ onSwitchToSignUp, onSubm
  setCurrentPage(onboardingCompleted ? 'dashboard' : 'onboarding');
  }
  } catch (error: any) {
- const codeMap: Record<string, string> = {
- INVALID_CREDENTIALS: 'Invalid email or password. Please try again.',
- MISSING_FIELDS: 'Please fill in all required fields.',
- INVALID_EMAIL: 'Please enter a valid email address.',
- DATABASE_ERROR: 'Database error occurred. Please try again later.',
- };
- setErrors({ general: codeMap[error.code] || error.message || 'Sign in failed. Please try again.' });
+  const isNetwork = !!(error?.message?.includes('fetch') || error?.message?.includes('network') || error?.message?.includes('Failed to fetch') || error?.name === 'TypeError');
+  const codeMap: Record<string, string> = {
+  INVALID_CREDENTIALS: 'Incorrect email or password. Please try again.',
+  MISSING_FIELDS: 'Please fill in all required fields.',
+  INVALID_EMAIL: 'Please enter a valid email address.',
+  DATABASE_ERROR: 'Server error. Please try again in a moment.',
+  };
+  const msg = isNetwork
+    ? 'Cannot reach server. Please check your internet and try again.'
+    : (codeMap[error.code] || error.message || 'Sign in failed. Please try again.');
+  setErrors({ general: msg });
  } finally {
  setIsLoading(false);
  }
@@ -163,16 +167,33 @@ export const SignInForm: React.FC<SignInFormProps> = ({ onSwitchToSignUp, onSubm
         </a>
       </div>
 
-      {/* Submit */}
+      {/* Submit — inline styles guarantee visibility on Android WebView */}
       <button
         type="submit"
         disabled={isLoading}
         data-testid="auth-signin-submit-button"
-        className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:scale-[0.98] text-white font-bold py-3.5 px-4 rounded-xl transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_4px_14px_rgba(37,99,235,0.25)] hover:shadow-[0_6px_20px_rgba(37,99,235,0.35)]"
+        style={{
+          width: '100%',
+          background: isLoading ? '#6366f1' : 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)',
+          color: '#ffffff',
+          fontWeight: '700',
+          fontSize: '15px',
+          padding: '14px 16px',
+          borderRadius: '12px',
+          border: 'none',
+          cursor: isLoading ? 'not-allowed' : 'pointer',
+          opacity: isLoading ? 0.7 : 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          boxShadow: '0 4px 14px rgba(37,99,235,0.35)',
+          letterSpacing: '0.3px',
+          transition: 'opacity 0.2s',
+        }}
       >
         {isLoading ? (
           <>
-            <div className="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white mr-2" />
+            <div style={{ width: 18, height: 18, border: '2px solid rgba(255,255,255,0.35)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite', marginRight: 8 }} />
             Signing in...
           </>
         ) : (
