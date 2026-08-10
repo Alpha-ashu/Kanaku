@@ -225,7 +225,7 @@ class PageErrorBoundary extends React.Component<
 }
 
 const PAGE_REQUIRED_TABLES: Record<string, SyncedTableName[]> = {
-  dashboard: ['accounts', 'transactions'],
+  dashboard: ['accounts', 'transactions', 'loans', 'investments', 'goals', 'group_expenses', 'friends'],
   accounts: ['accounts'],
   'add-account': ['accounts'],
   'edit-account': ['accounts'],
