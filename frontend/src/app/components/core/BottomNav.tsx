@@ -111,7 +111,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ onQuickAdd }) => {
               <button
                 key={`${item.id}-${index}`}
                 onClick={() => handleNavigation(item.id)}
-                className="flex items-center justify-center w-11 h-11 bg-blue-600 active:bg-blue-700 text-white rounded-full shadow-md active:scale-95 transition-transform shrink-0 mx-1 z-20 focus:outline-none"
+                className="flex items-center justify-center w-11 h-11 bg-slate-900 active:bg-black text-white rounded-full shadow-md active:scale-95 transition-transform shrink-0 mx-1 z-20 focus:outline-none"
                 title="Quick Add"
                 data-testid="nav-quick-add-button"
               >
@@ -127,19 +127,19 @@ export const BottomNav: React.FC<BottomNavProps> = ({ onQuickAdd }) => {
               data-testid={`nav-${item.id}-button`}
               className={cn(
                 "flex flex-col items-center justify-center h-full flex-1 min-w-0 transition-colors duration-150 relative py-1 px-0.5 focus:outline-none select-none",
-                isActive ? "text-blue-600 font-bold" : "text-gray-500 hover:text-gray-800"
+                isActive ? "text-slate-900 font-bold" : "text-gray-500 hover:text-gray-800"
               )}
             >
               {isActive && (
-                <div className="absolute top-1 w-6 h-1 bg-blue-600 rounded-full" />
+                <div className="absolute top-1 w-6 h-1 bg-slate-900 rounded-full" />
               )}
               <Icon
-                className={cn("w-5 h-5 transition-transform duration-150 mb-0.5", isActive ? "scale-110 text-blue-600" : "text-gray-500")}
+                className={cn("w-5 h-5 transition-transform duration-150 mb-0.5", isActive ? "scale-110 text-slate-900" : "text-gray-500")}
                 strokeWidth={isActive ? 2.3 : 1.8}
               />
               <span className={cn(
                 "text-[10px] tracking-tight truncate max-w-full leading-tight",
-                isActive ? "font-bold text-blue-600" : "font-medium text-gray-500"
+                isActive ? "font-black text-slate-900" : "font-medium text-gray-500"
               )}>
                 {item.label}
               </span>

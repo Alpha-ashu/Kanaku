@@ -22,27 +22,24 @@ const filterOptions: { id: TimeFilterPeriod; label: string }[] = [
 export const TimeFilter: React.FC<TimeFilterProps> = ({ value, onChange, className, testId }) => {
  return (
  <div data-testid={testId} className={cn('flex items-center justify-center gap-1 sm:gap-2 p-1.5 bg-gray-100/80 backdrop-blur-sm rounded-2xl w-full max-w-md mx-auto overflow-x-auto scrollbar-hide', className)}>
- {filterOptions.map((option) => (
- <button data-testid={`time-filter-button-${option.id}`}
- key={option.id}
- onClick={() => onChange(option.id)}
- className={cn(
- 'relative flex-1 sm:flex-initial flex items-center justify-center px-3 py-2 sm:px-6 sm:py-2.5 rounded-[12px] text-xs sm:text-sm font-semibold transition-all duration-300 whitespace-nowrap',
- value === option.id
- ? 'text-white'
- : 'text-gray-600 hover:bg-gray-200/50'
- )}
- >
- {value === option.id && (
- <motion.div
- layoutId="timeFilterPill"
- className="absolute inset-0 bg-gradient-to-r from-pink-500 to-rose-500 rounded-[12px] shadow-sm shadow-pink-200 z-0"
- transition={{ type: 'spring', bounce: 0.2, duration: 0.5 }}
- />
- )}
- <span className="relative z-10">{option.label}</span>
- </button>
- ))}
+  {filterOptions.map((option) => {
+    const isActive = value === option.id;
+    return (
+      <button
+        data-testid={`time-filter-button-${option.id}`}
+        key={option.id}
+        onClick={() => onChange(option.id)}
+        className={cn(
+          'flex-1 flex items-center justify-center px-3 py-2 sm:px-5 sm:py-2 rounded-xl text-xs sm:text-sm font-bold transition-all duration-150 whitespace-nowrap select-none',
+          isActive
+            ? 'bg-slate-900 text-white shadow-md'
+            : 'text-slate-600 hover:bg-slate-200/60 active:bg-slate-300/60'
+        )}
+      >
+        <span>{option.label}</span>
+      </button>
+    );
+  })}
  </div>
  );
 };

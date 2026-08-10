@@ -58,8 +58,10 @@ export const ToDoListDetail: React.FC = () => {
 
   useEffect(() => {
     const id = localStorage.getItem('viewingToDoListId');
-    if (id) setListId(parseInt(id));
-    return () => { localStorage.removeItem('viewingToDoListId'); };
+    if (id) {
+      const parsed = parseInt(id, 10);
+      if (Number.isFinite(parsed)) setListId(parsed);
+    }
   }, []);
 
   const items: ToDoItem[] = (useLiveQuery(

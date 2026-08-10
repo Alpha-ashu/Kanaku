@@ -411,66 +411,30 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
   const Icon = tab.icon;
   const isActive = activeTab === tab.id;
   
-  // Smart label logic for responsive design
-  const getLabel = (label: string) => {
-  if (label === 'All Assets') return isActive ? 'All Assets' : 'All';
-  return label;
-  };
-
-  return (
-  <button
-  key={tab.id}
-  data-testid={`dashboard-tab-${tab.id}`}
-  onClick={() => setActiveTab(tab.id as typeof activeTab)}
-  className={cn(
-  'relative flex-1 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-1 py-2 sm:py-2.5 rounded-xl transition-all duration-300 font-bold',
-  isActive 
-  ? 'text-white shadow-md' 
-  : 'bg-transparent text-slate-500 hover:text-slate-700'
-  )}
-  >
-  {isActive && (
-  <motion.div 
-  layoutId="activeTabPill"
-  className="absolute inset-0 bg-gradient-to-r from-slate-900 to-slate-800 rounded-xl z-0"
-  transition={{ type:"spring", bounce: 0.2, duration: 0.6 }}
-  />
-  )}
-  <span className="relative z-10 flex items-center justify-center gap-2">
-  <Icon 
-  size={14} 
-  className={cn(
- "transition-all duration-300",
-  isActive ?"text-white scale-110" :"text-slate-400"
-  )} 
-  />
-  <AnimatePresence mode="wait">
-  {isActive && (
-  <motion.span
-  initial={{ width: 0, opacity: 0 }}
-  animate={{ width: 'auto', opacity: 1 }}
-  exit={{ width: 0, opacity: 0 }}
-  className="overflow-hidden whitespace-nowrap"
-  >
-  <span className="text-[10px] sm:text-xs font-bold ml-1">
-  {tab.label}
-  </span>
-  </motion.span>
-  )}
-  </AnimatePresence>
-  
-  {/* Keep labels visible on desktop even if not active for better UX */}
-  {!isActive && (
-  <span className="hidden sm:inline text-xs text-slate-500 ml-1">
-  {tab.label}
-  </span>
-  )}
-  </span>
-  </button>
-  );
-  })}
-  </div>
-  </div>
+          return (
+            <button
+              key={tab.id}
+              data-testid={`dashboard-tab-${tab.id}`}
+              onClick={() => setActiveTab(tab.id as typeof activeTab)}
+              className={cn(
+                'flex-1 flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-xl transition-colors duration-150 font-bold select-none text-xs sm:text-sm',
+                isActive 
+                  ? 'bg-slate-900 text-white shadow-md' 
+                  : 'bg-transparent text-slate-600 hover:text-slate-900 hover:bg-gray-200/50'
+              )}
+            >
+              <Icon 
+                size={14} 
+                className={isActive ? "text-white" : "text-slate-500"} 
+              />
+              <span className={cn("font-bold text-xs sm:text-sm", isActive ? "text-white" : "text-slate-600")}>
+                {tab.label}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
 
   {/* 2. Accounts */}
   <motion.div {...fadeUp} className="mb-6 lg:mb-8">

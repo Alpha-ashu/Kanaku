@@ -2430,8 +2430,8 @@ export async function syncUserDataFromCloud(
   const targetTables = filterAvailableSupabaseTables(tablesToSync) as SyncedTableName[];
   let finalTablesToSync = targetTables;
   if (!force) {
-    // Reduced from 5 minutes to 90 seconds for faster data freshness.
-    const cooldownMs = 90 * 1000; // 90 seconds
+    // Fast 15-second cooldown for instant cross-page data consistency
+    const cooldownMs = 15 * 1000; // 15 seconds
     finalTablesToSync = targetTables.filter(table => {
       const lastSyncStr = localStorage.getItem(`KANAKU_last_sync_at_${table}`);
       if (!lastSyncStr) return true;
@@ -3628,9 +3628,10 @@ export async function deleteToDoListWithBackendSync(listId: number) {
 export async function saveToDoItemWithBackendSync(item: any) {
   initializeBackendSync();
 
-  const list = await db.toDoLists.get(item.listId);
-  if (!list) {
-    throw new Error('ToDo list not found');
+  const numListId = typeof item.listId === 'string' ? parseInt(item.listId, 10) : item.listId;
+  let list = Number.isFinite(numListId) ? await db.toDoLists.get(numListId) : null;
+  if (!list && item.listId) {
+    list = await db.toDoLists.get(item.listId);
   }
 
   if (isBackendFirstSyncMode() && list.cloudId) {

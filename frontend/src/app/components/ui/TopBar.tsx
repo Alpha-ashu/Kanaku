@@ -383,14 +383,10 @@ export const TopBar: React.FC = () => {
  <SheetDescription className="sr-only">Main navigation menu</SheetDescription>
   <div className="flex flex-col h-full bg-white text-slate-900">
     {/* Header Block */}
-    <div className="p-5 border-b border-slate-100 bg-gradient-to-b from-slate-50/50 to-white flex items-center justify-between gap-3 shrink-0">
+    <div className="p-5 border-b border-slate-100 bg-white flex items-center justify-between gap-3 shrink-0">
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-2xl bg-slate-900 p-2 flex items-center justify-center shadow-md shadow-slate-900/10">
-          <KANAKULogo className="w-full h-full text-white" />
-        </div>
-        <div className="flex flex-col">
-          <h1 className="text-base font-black font-display tracking-tight text-slate-900 leading-none">KANAKU</h1>
-        </div>
+        <KANAKULogo className="w-8 h-8" />
+        <h1 className="text-xl font-bold font-display tracking-tight text-slate-900">KANAKU</h1>
       </div>
     </div>
 
