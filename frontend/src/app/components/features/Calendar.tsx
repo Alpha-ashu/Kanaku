@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { useApp } from '@/contexts/AppContext';
-import { ChevronLeft, ChevronRight, Plus, X, Clock, CheckCircle2, AlertCircle, Calendar as CalendarIcon } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Plus, X, Clock, CheckCircle2, AlertCircle, Calendar as CalendarIcon, RotateCcw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { PageHeader } from '@/app/components/ui/PageHeader';
@@ -140,19 +140,27 @@ export const Calendar: React.FC = () => {
  return days;
  }, [startDate, monthStart, monthEnd]);
 
- const handlePrevMonth = () => {
- setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1));
- };
+  const handlePrevYear = () => {
+    setCurrentDate(new Date(currentDate.getFullYear() - 1, currentDate.getMonth(), 1));
+  };
 
- const handleNextMonth = () => {
- setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1));
- };
+  const handleNextYear = () => {
+    setCurrentDate(new Date(currentDate.getFullYear() + 1, currentDate.getMonth(), 1));
+  };
 
- const handleToday = () => {
- const today = new Date();
- setCurrentDate(today);
- setSelectedDate(today);
- };
+  const handlePrevMonth = () => {
+    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
+  };
+
+  const handleNextMonth = () => {
+    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
+  };
+
+  const handleToday = () => {
+    const today = new Date();
+    setCurrentDate(today);
+    setSelectedDate(today);
+  };
 
   const formatCurrency = (amount: number) => {
     return formatCurrencyAmount(Math.abs(amount), currency, {
@@ -381,29 +389,74 @@ export const Calendar: React.FC = () => {
 
  {/* Calendar Card */}
  <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden max-w-[980px] mx-auto">
- {/* Month Navigation */}
- <div className="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 px-3 sm:px-5 py-3 flex items-center justify-between">
- <button data-testid="calendar-previous-month"
- onClick={handlePrevMonth}
- className="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 transition-colors flex items-center justify-center"
- title="Previous month"
- >
- <ChevronLeft size={20} className="text-white" />
- </button>
- <div className="text-center">
- <h2 className="text-lg sm:text-xl font-bold text-white leading-tight">
- {MONTHS[currentDate.getMonth()]}
- </h2>
- <p className="text-[11px] text-gray-400 mt-0.5">{currentDate.getFullYear()}</p>
- </div>
- <button data-testid="calendar-next-month"
- onClick={handleNextMonth}
- className="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 transition-colors flex items-center justify-center"
- title="Next month"
- >
- <ChevronRight size={20} className="text-white" />
- </button>
- </div>
+ {/* Month & Year Navigation Header */}
+ <div className="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 px-3 sm:px-5 py-3.5 flex items-center justify-between gap-2">
+    {/* Left Controls: Previous Year & Previous Month */}
+    <div className="flex items-center gap-1 sm:gap-1.5">
+      <button data-testid="calendar-previous-year"
+        type="button"
+        onClick={handlePrevYear}
+        className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 transition-all flex items-center justify-center text-white/80 hover:text-white"
+        title="Previous year"
+        aria-label="Previous year"
+      >
+        <ChevronsLeft size={18} />
+      </button>
+      <button data-testid="calendar-previous-month"
+        type="button"
+        onClick={handlePrevMonth}
+        className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white/15 hover:bg-white/25 active:scale-95 transition-all flex items-center justify-center text-white"
+        title="Previous month"
+        aria-label="Previous month"
+      >
+        <ChevronLeft size={20} />
+      </button>
+    </div>
+
+    {/* Center Title: Month & Year with Today Indicator */}
+    <div className="text-center flex flex-col items-center">
+      <div className="flex items-center gap-2">
+        <h2 className="text-base sm:text-xl font-extrabold text-white leading-tight tracking-tight">
+          {MONTHS[currentDate.getMonth()]} {currentDate.getFullYear()}
+        </h2>
+        {!isCurrentMonth && (
+          <button
+            type="button"
+            onClick={handleToday}
+            className="px-2 py-0.5 rounded-full bg-pink-500/30 text-pink-300 hover:bg-pink-500/50 text-[10px] font-bold transition-colors flex items-center gap-1"
+            title="Jump to current month"
+          >
+            <RotateCcw size={10} /> Today
+          </button>
+        )}
+      </div>
+      <p className="text-[10px] sm:text-[11px] text-gray-400 mt-0.5">
+        {filteredTransactions.length} transaction{filteredTransactions.length === 1 ? '' : 's'} · {reminders.length} reminder{reminders.length === 1 ? '' : 's'}
+      </p>
+    </div>
+
+    {/* Right Controls: Next Month & Next Year */}
+    <div className="flex items-center gap-1 sm:gap-1.5">
+      <button data-testid="calendar-next-month"
+        type="button"
+        onClick={handleNextMonth}
+        className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white/15 hover:bg-white/25 active:scale-95 transition-all flex items-center justify-center text-white"
+        title="Next month"
+        aria-label="Next month"
+      >
+        <ChevronRight size={20} />
+      </button>
+      <button data-testid="calendar-next-year"
+        type="button"
+        onClick={handleNextYear}
+        className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 transition-all flex items-center justify-center text-white/80 hover:text-white"
+        title="Next year"
+        aria-label="Next year"
+      >
+        <ChevronsRight size={18} />
+      </button>
+    </div>
+  </div>
 
  {/* Calendar Grid */}
  <div className="p-2.5 sm:p-3.5 lg:p-4">

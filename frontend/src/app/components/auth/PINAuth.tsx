@@ -454,10 +454,20 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
           return;
         }
 
-        // If local PIN is valid, unlock immediately — don't wait for server
+        // If local PIN is valid, verify against server to establish live PIN-unlock session
         if (localResult.isValid && localResult.key) {
-          // Fire-and-forget: sync with server in background, never block unlock
-          pinService.verifyPin({ pin }).catch(() => { /* non-blocking */ });
+          try {
+            const serverResult = await pinService.verifyPin({ pin });
+            if (!serverResult.success && isSessionExpired(serverResult)) {
+              setSessionExpired(true);
+              triggerShake(serverResult.message || 'Session expired. Please sign in again.');
+              setIsSubmitting(false);
+              return;
+            }
+          } catch (serverErr) {
+            // If server is unreachable/offline, still proceed with local offline unlock
+            console.warn('[PINAuth] Server verify skipped/failed, proceeding with local unlock:', serverErr);
+          }
           await completeUnlock(localResult.key, 'Welcome back!', pin);
           return;
         }
@@ -493,39 +503,48 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
     }
   };
 
- const handleSignOut = async () => {
- setIsLoggingOut(true);
- try {
- setShowResetModal(false);
- pinService.clearPinData();
- clearSecurityData();
- await signOut();
- } catch {
- toast.error('Failed to sign out. Please try again.');
- } finally {
- setIsLoggingOut(false);
- }
- };
+  const handleSignOut = async () => {
+    setIsLoggingOut(true);
+    try {
+      setShowResetModal(false);
+      pinService.clearPinData();
+      clearSecurityData();
+      if (Capacitor.isNativePlatform()) {
+        await Preferences.remove({ key: 'user_authenticated' });
+      }
+      await signOut();
+    } catch {
+      toast.error('Failed to sign out. Please try again.');
+    } finally {
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('KANAKU_SESSION_EXPIRED', { detail: { reason: 'user_signout' } }));
+      }
+      setIsLoggingOut(false);
+    }
+  };
 
- // Session expired beyond recovery: clear the dead session and return to the
- // login page so the user gets a fresh sign-in instead of a stuck PIN screen.
- const handleReLogin = async () => {
- setIsReLoggingIn(true);
- try {
- pinService.clearPinData();
- clearSecurityData();
- await signOut();
- } catch {
- /* best-effort — proceed regardless so the user is never stranded */
- } finally {
- // Soft, coordinated logout (no page reload): signOut() above clears `user`
- // so the Login screen renders via state; the event re-locks the PIN.
- if (typeof window !== 'undefined') {
- window.dispatchEvent(new CustomEvent('KANAKU_SESSION_EXPIRED', { detail: { reason: 'pin_relogin' } }));
- }
- setIsReLoggingIn(false);
- }
- };
+  // Session expired beyond recovery: clear the dead session and return to the
+  // login page so the user gets a fresh sign-in instead of a stuck PIN screen.
+  const handleReLogin = async () => {
+    setIsReLoggingIn(true);
+    try {
+      pinService.clearPinData();
+      clearSecurityData();
+      if (Capacitor.isNativePlatform()) {
+        await Preferences.remove({ key: 'user_authenticated' });
+      }
+      await signOut();
+    } catch {
+      /* best-effort — proceed regardless so the user is never stranded */
+    } finally {
+      // Soft, coordinated logout (no page reload): signOut() above clears `user`
+      // so the Login screen renders via state; the event re-locks the PIN.
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('KANAKU_SESSION_EXPIRED', { detail: { reason: 'pin_relogin' } }));
+      }
+      setIsReLoggingIn(false);
+    }
+  };
 
  const handleForgotPin = () => {
  if (!user?.email) {
@@ -773,7 +792,7 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  </div>
 
  {/* Number pad */}
- <div className="hidden md:grid grid-cols-3 gap-3">
+ <div className="grid grid-cols-3 gap-3 w-full max-w-[320px] mx-auto">
  {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => (
  <button
  key={n}

@@ -560,30 +560,26 @@ export const Transactions: React.FC = () => {
  className="w-full pl-9 sm:pl-11 pr-3 sm:pr-4 py-2 sm:py-3 bg-white/80 backdrop-blur-md border border-white/40 shadow-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-black/5 text-xs sm:text-sm"
  />
  </div>
- <div className="flex bg-gray-100/80 backdrop-blur-md p-1.5 rounded-2xl border border-white/40 shadow-sm w-full">
- {(['all', 'income', 'expense'] as const).map((type) => (
- <button
- key={type}
- data-testid={`transactions-filter-${type}`}
- onClick={() => setFilterType(type)}
- className={cn(
-"relative flex-1 flex items-center justify-center py-2 sm:py-2.5 rounded-xl transition-all duration-300 font-bold capitalize text-[10px] sm:text-xs",
- filterType === type
- ?"text-white shadow-md"
- :"text-slate-500 hover:text-slate-700"
- )}
- >
- {filterType === type && (
- <motion.div 
- layoutId="activeFilterPill"
- className="absolute inset-0 bg-gradient-to-r from-slate-900 to-slate-800 rounded-xl z-0"
- transition={{ type:"spring", bounce: 0.2, duration: 0.6 }}
- />
- )}
- <span className="relative z-10">{type}</span>
- </button>
- ))}
- </div>
+  <div className="flex bg-slate-100 p-1.5 rounded-2xl border border-slate-200/80 shadow-inner w-full">
+    {(['all', 'income', 'expense'] as const).map((type) => {
+      const isActive = filterType === type;
+      return (
+        <button
+          key={type}
+          data-testid={`transactions-filter-${type}`}
+          onClick={() => setFilterType(type)}
+          className={cn(
+            'flex-1 flex items-center justify-center py-2.5 px-3 rounded-xl transition-all duration-150 font-bold capitalize text-xs select-none',
+            isActive
+              ? 'bg-slate-900 text-white shadow-md'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
+          )}
+        >
+          <span>{type === 'all' ? 'All' : type === 'income' ? 'Income' : 'Expense'}</span>
+        </button>
+      );
+    })}
+  </div>
  </div>
 
  {/* Transaction List */}

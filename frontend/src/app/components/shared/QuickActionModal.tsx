@@ -79,39 +79,39 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({
 
  {/* Bottom Sheet */}
  <motion.div
- initial={{ y: '100%', opacity: 0 }}
- animate={{ y: 0, opacity: 1 }}
- exit={{ y: '100%', opacity: 0 }}
- transition={{ type: 'spring', damping: 28, stiffness: 320 }}
- className="fixed inset-x-0 bottom-0 z-[61] bg-white/95 backdrop-blur-2xl rounded-t-[32px] shadow-2xl border-t border-white/50 overflow-visible"
+   initial={{ y: '100%', opacity: 0 }}
+   animate={{ y: 0, opacity: 1 }}
+   exit={{ y: '100%', opacity: 0 }}
+   transition={{ type: 'spring', damping: 28, stiffness: 320 }}
+   className="fixed inset-x-0 bottom-0 z-[61] bg-white/98 backdrop-blur-2xl rounded-t-[32px] shadow-2xl border-t border-slate-200 overflow-hidden max-h-[85vh] flex flex-col"
  >
- {/* Drag Handle */}
- <div className="flex justify-center pt-3 pb-1">
- <div className="w-10 h-1 bg-gray-300/60 rounded-full" />
- </div>
+   {/* Drag Handle */}
+   <div className="flex justify-center pt-3 pb-1">
+     <div className="w-10 h-1 bg-gray-300/60 rounded-full" />
+   </div>
 
- {/* Header */}
- <div className="flex items-center justify-between px-5 pt-3 pb-4">
- <div>
- <h3 className="text-xl font-bold text-gray-900 leading-tight">Quick Actions</h3>
- <p className="text-xs text-gray-400 font-medium mt-0.5">What would you like to do?</p>
- </div>
- <Button
- variant="ghost"
- size="icon"
- onClick={onClose}
- className="rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 w-9 h-9"
- aria-label="Close quick actions"
- title="Close quick actions"
- data-testid="quickaction-close-button"
- >
- <X size={18} />
- </Button>
- </div>
+   {/* Header */}
+   <div className="flex items-center justify-between px-5 pt-2 pb-3 shrink-0">
+     <div>
+       <h3 className="text-lg sm:text-xl font-bold text-gray-900 leading-tight">Quick Actions</h3>
+       <p className="text-xs text-gray-400 font-medium mt-0.5">What would you like to do?</p>
+     </div>
+     <Button
+       variant="ghost"
+       size="icon"
+       onClick={onClose}
+       className="rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 w-8 h-8 sm:w-9 sm:h-9"
+       aria-label="Close quick actions"
+       title="Close quick actions"
+       data-testid="quickaction-close-button"
+     >
+       <X size={18} />
+     </Button>
+   </div>
 
- {/* 4-col 2-row grid - NO scroll, all 8 fit */}
- <div className="px-4 pb-36 overflow-visible">
- <div className="grid grid-cols-4 gap-3">
+   {/* Grid - Scrollable if screen is small */}
+   <div className="px-4 pb-[max(env(safe-area-inset-bottom,0px)+1.5rem,2rem)] overflow-y-auto flex-1">
+     <div className="grid grid-cols-4 gap-2.5 sm:gap-3">
  {filteredActions.map((action, i) => {
  const Icon = action.icon;
  const isSelected = selectedAction === action.id;

@@ -288,11 +288,12 @@ const AppContent: React.FC = () => {
   // Auto scroll to top when page changes
   useScrollToTopOnPageChange(currentPage);
 
-  // Landing page: shown only to confirmed unauthenticated visitors (set via effect
-  // so we never show it during the async auth-loading window)
-  const [showLanding, setShowLanding] = useState(true);
+  // Landing page: shown only to confirmed unauthenticated visitors on web (native goes directly to signin)
+  const [showLanding, setShowLanding] = useState(() => !Capacitor.isNativePlatform());
   const [publicPage, setPublicPage] = useState<PublicPage>(getInitialPublicPage);
-  const [authInitialStep, setAuthInitialStep] = useState<'welcome' | 'signin' | 'signup'>('welcome');
+  const [authInitialStep, setAuthInitialStep] = useState<'welcome' | 'signin' | 'signup'>(() =>
+    Capacitor.isNativePlatform() ? 'signin' : 'welcome'
+  );
   const [criticalPagesPrefetched, setCriticalPagesPrefetched] = useState(false);
   const hasModuleReloaded = useRef(false);
   // Live-state refs for the native hardware-back handler (registered once, so it
@@ -346,6 +347,18 @@ const AppContent: React.FC = () => {
     };
   }, []);
 
+  // Handle soft logout / relogin from PIN lockscreen: route directly to signin screen
+  useEffect(() => {
+    const handleSessionExpired = () => {
+      setShowLanding(false);
+      setAuthInitialStep('signin');
+    };
+    window.addEventListener('KANAKU_SESSION_EXPIRED', handleSessionExpired);
+    return () => {
+      window.removeEventListener('KANAKU_SESSION_EXPIRED', handleSessionExpired);
+    };
+  }, []);
+
   if (!appContext) {
     return (
       <div className="flex items-center justify-center h-screen bg-gradient-to-br from-pink-500 to-rose-600">
@@ -370,11 +383,15 @@ const AppContent: React.FC = () => {
     return false;
   };
 
-
-  // Show landing page only once we KNOW the user is not signed in
+  // Show landing page only once we KNOW the user is not signed in (web only; native stays on signin)
   useEffect(() => {
     if (!authLoading && !user) {
-      setShowLanding((prev) => (prev ? prev : true));
+      if (Capacitor.isNativePlatform()) {
+        setShowLanding(false);
+        setAuthInitialStep('signin');
+      } else {
+        setShowLanding((prev) => (prev ? prev : true));
+      }
     }
   }, [authLoading, user]);
 
@@ -865,13 +882,7 @@ const AppContent: React.FC = () => {
         setCurrentPage('add-transaction');
         setQuickActionKey(k => k + 1);
         break;
-      case 'add-loan':
-        localStorage.setItem('quickFormType', 'expense');
-        localStorage.setItem('quickExpenseMode', 'loan');
-        localStorage.setItem('quickBackPage', 'loans');
-        setCurrentPage('add-transaction');
-        setQuickActionKey(k => k + 1);
-        break;
+      case 'add-loan': setCurrentPage('loans'); break;
       case 'add-account': setCurrentPage('add-account'); break;
       case 'add-goal': setCurrentPage('add-goal'); break;
       case 'transfer':

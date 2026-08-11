@@ -391,58 +391,23 @@ export const Accounts: React.FC = () => {
                             const Icon = tab.icon;
                             const isActive = activeTab === tab.id;
 
-                            const getLabel = (label: string) => {
-                                if (label === 'All Assets') return isActive ? 'All Assets' : 'All';
-                                return label;
-                            };
-
                             return (
                                 <button data-testid={`accounts-button-2-${tab.id}`}
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id as AssetType)}
                                     className={cn(
-                                        'relative flex-1 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-1 py-2 sm:py-2.5 rounded-xl transition-all duration-300 font-bold',
+                                        'flex-1 flex items-center justify-center gap-1.5 px-2 py-2 sm:py-2.5 rounded-xl transition-all duration-150 font-bold select-none text-xs sm:text-sm',
                                         isActive
-                                            ? 'text-white shadow-md'
-                                            : 'bg-transparent text-slate-500 hover:text-slate-700'
+                                            ? 'bg-slate-900 text-white shadow-md'
+                                            : 'bg-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
                                     )}
                                 >
-                                    {isActive && (
-                                        <motion.div
-                                            layoutId="activeTabPillAccounts"
-                                            className="absolute inset-0 bg-gradient-to-r from-slate-900 to-slate-800 rounded-xl z-0"
-                                            transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                                        />
-                                    )}
-                                    <span className="relative z-10 flex items-center justify-center gap-2">
-                                        <Icon
-                                            size={14}
-                                            className={cn(
-                                                "transition-all duration-300",
-                                                isActive ? "text-white scale-110" : "text-slate-400"
-                                            )}
-                                        />
-                                        <AnimatePresence mode="wait">
-                                            {isActive && (
-                                                <motion.span
-                                                    initial={{ width: 0, opacity: 0 }}
-                                                    animate={{ width: 'auto', opacity: 1 }}
-                                                    exit={{ width: 0, opacity: 0 }}
-                                                    className="overflow-hidden whitespace-nowrap"
-                                                >
-                                                    <span className="text-[10px] sm:text-xs font-bold ml-1">
-                                                        {tab.label}
-                                                    </span>
-                                                </motion.span>
-                                            )}
-                                        </AnimatePresence>
-
-                                        {/* Keep labels visible on desktop even if not active for better UX */}
-                                        {!isActive && (
-                                            <span className="hidden sm:inline text-xs text-slate-500 ml-1">
-                                                {tab.label}
-                                            </span>
-                                        )}
+                                    <Icon
+                                        size={14}
+                                        className={isActive ? "text-white shrink-0" : "text-slate-500 shrink-0"}
+                                    />
+                                    <span className={cn("font-bold text-[11px] sm:text-xs truncate", isActive ? "text-white" : "text-slate-600")}>
+                                        {tab.label}
                                     </span>
                                 </button>
                             );

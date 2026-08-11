@@ -168,45 +168,72 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
  return 'active';
  };
 
- //"EUR"EUR Calendar / Upcoming Events"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR
- const upcomingEvents = useMemo(() => {
- const events: { label: string; date: Date; type: 'emi' | 'bill' | 'transaction'; amount?: number; timeCategory: 'today' | 'week' | 'month' }[] = [];
- const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  // One-time check to ensure all loans have a valid calculated EMI amount
+  useEffect(() => {
+    void db.loans.toArray().then((allLoans) => {
+      allLoans.forEach((loan) => {
+        if (loan.id && (!loan.emiAmount || loan.emiAmount <= 0)) {
+          let calculatedEmi = 0;
+          if (loan.principalAmount && loan.tenureMonths && loan.tenureMonths > 0) {
+            calculatedEmi = Math.round(loan.principalAmount / loan.tenureMonths);
+          } else if (loan.outstandingBalance && loan.outstandingBalance > 0) {
+            calculatedEmi = Math.round(loan.outstandingBalance / 12);
+          }
+          if (calculatedEmi > 0) {
+            void db.loans.update(loan.id, { emiAmount: calculatedEmi });
+          }
+        }
+      });
+    });
+  }, []);
 
- // EMI due dates from loans
- loans.filter(l => l.status === 'active' && l.dueDate).forEach(loan => {
- const dueDate = new Date(loan.dueDate!);
- if (dueDate >= now && dueDate <= endOfMonth) {
- const isToday = dueDate.toDateString() === now.toDateString();
- const isThisWeek = dueDate <= sevenDaysFromNow;
- events.push({
- label: `${loan.name} EMI`,
- date: dueDate,
- type: 'emi',
- amount: loan.emiAmount,
- timeCategory: isToday ? 'today' : isThisWeek ? 'week' : 'month',
- });
- }
- });
+  // ─── Calendar / Upcoming Events ──────────────────────────────────────────
+  const upcomingEvents = useMemo(() => {
+    const events: { label: string; date: Date; type: 'emi' | 'bill' | 'transaction'; amount?: number; timeCategory: 'today' | 'week' | 'month' }[] = [];
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
 
- // Upcoming scheduled transactions
- transactions.filter(t =>
- t.type === 'expense' && t.date >= now && t.date <= endOfMonth &&
- (t.category === 'bills' || t.category === 'subscriptions' || t.description.toLowerCase().includes('emi'))
- ).forEach(t => {
- const isToday = new Date(t.date).toDateString() === now.toDateString();
- const isThisWeek = new Date(t.date) <= sevenDaysFromNow;
- events.push({
- label: t.description,
- date: new Date(t.date),
- type: 'bill',
- amount: t.amount,
- timeCategory: isToday ? 'today' : isThisWeek ? 'week' : 'month',
- });
- });
+    // EMI due dates from loans
+    loans.filter(l => (l.status === 'active' || !l.status || l.status === 'overdue') && l.dueDate).forEach(loan => {
+      const dueDate = new Date(loan.dueDate!);
+      if (dueDate >= now && dueDate <= endOfMonth) {
+        const isToday = dueDate.toDateString() === now.toDateString();
+        const isThisWeek = dueDate <= sevenDaysFromNow;
 
- return events.sort((a, b) => a.date.getTime() - b.date.getTime()).slice(0, 5);
- }, [loans, transactions]);
+        let emi = Number(loan.emiAmount || 0);
+        if (emi <= 0 && loan.principalAmount && loan.tenureMonths && loan.tenureMonths > 0) {
+          emi = Math.round(loan.principalAmount / loan.tenureMonths);
+        } else if (emi <= 0 && loan.outstandingBalance && loan.outstandingBalance > 0) {
+          emi = Math.round(loan.outstandingBalance / 12);
+        }
+
+        events.push({
+          label: `${loan.name} EMI`,
+          date: dueDate,
+          type: 'emi',
+          amount: emi > 0 ? emi : (loan.outstandingBalance || loan.principalAmount || 0),
+          timeCategory: isToday ? 'today' : isThisWeek ? 'week' : 'month',
+        });
+      }
+    });
+
+    // Upcoming scheduled transactions
+    transactions.filter(t =>
+      t.type === 'expense' && t.date >= now && t.date <= endOfMonth &&
+      (t.category === 'bills' || t.category === 'subscriptions' || t.description.toLowerCase().includes('emi'))
+    ).forEach(t => {
+      const isToday = new Date(t.date).toDateString() === now.toDateString();
+      const isThisWeek = new Date(t.date) <= sevenDaysFromNow;
+      events.push({
+        label: t.description,
+        date: new Date(t.date),
+        type: 'bill',
+        amount: t.amount,
+        timeCategory: isToday ? 'today' : isThisWeek ? 'week' : 'month',
+      });
+    });
+
+    return events.sort((a, b) => a.date.getTime() - b.date.getTime()).slice(0, 5);
+  }, [loans, transactions]);
 
  //"EUR"EUR Group Expenses / Borrow / Lend"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR
  const groupStats = useMemo(() => {

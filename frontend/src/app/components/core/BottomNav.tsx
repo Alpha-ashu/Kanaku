@@ -99,8 +99,8 @@ export const BottomNav: React.FC<BottomNavProps> = ({ onQuickAdd }) => {
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden pointer-events-none bottom-nav-container">
-      <div className="mx-2 sm:mx-4 w-[calc(100%-16px)] sm:w-[calc(100%-32px)] bg-white/95 backdrop-blur-md border border-gray-200/80 rounded-2xl shadow-xl pointer-events-auto flex items-center justify-between px-1.5 sm:px-3 h-16 relative overflow-hidden">
+    <nav className="fixed bottom-2 sm:bottom-3 left-0 right-0 z-50 lg:hidden pointer-events-none pb-[env(safe-area-inset-bottom,0px)]">
+      <div className="mx-2 sm:mx-4 w-[calc(100%-16px)] sm:w-[calc(100%-32px)] bg-white/95 backdrop-blur-md border border-gray-200/80 rounded-2xl shadow-2xl pointer-events-auto flex items-center justify-between px-1.5 sm:px-3 h-16 relative overflow-visible">
         {filteredNavigationItems.map((item, index) => {
           const Icon = item.icon;
           const isActive = currentPage === item.id;
@@ -110,12 +110,17 @@ export const BottomNav: React.FC<BottomNavProps> = ({ onQuickAdd }) => {
             return (
               <button
                 key={`${item.id}-${index}`}
-                onClick={() => handleNavigation(item.id)}
-                className="flex items-center justify-center w-11 h-11 bg-slate-900 active:bg-black text-white rounded-full shadow-md active:scale-95 transition-transform shrink-0 mx-1 z-20 focus:outline-none"
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleNavigation(item.id);
+                }}
+                className="flex items-center justify-center w-12 h-12 bg-slate-900 active:bg-black text-white rounded-full shadow-xl active:scale-90 transition-transform shrink-0 mx-1 z-30 focus:outline-none -mt-3 border-2 border-white cursor-pointer"
                 title="Quick Add"
+                aria-label="Quick Add"
                 data-testid="nav-quick-add-button"
               >
-                <Icon className="w-5 h-5" strokeWidth={2.5} />
+                <Icon className="w-6 h-6" strokeWidth={2.5} />
               </button>
             );
           }
@@ -123,10 +128,11 @@ export const BottomNav: React.FC<BottomNavProps> = ({ onQuickAdd }) => {
           return (
             <button
               key={`${item.id}-${index}`}
+              type="button"
               onClick={() => handleNavigation(item.id)}
               data-testid={`nav-${item.id}-button`}
               className={cn(
-                "flex flex-col items-center justify-center h-full flex-1 min-w-0 transition-colors duration-150 relative py-1 px-0.5 focus:outline-none select-none",
+                "flex flex-col items-center justify-center h-full flex-1 min-w-0 transition-colors duration-150 relative py-1 px-0.5 focus:outline-none select-none cursor-pointer",
                 isActive ? "text-slate-900 font-bold" : "text-gray-500 hover:text-gray-800"
               )}
             >

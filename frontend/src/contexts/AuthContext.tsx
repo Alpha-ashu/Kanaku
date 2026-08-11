@@ -22,6 +22,8 @@ import { pinService } from '@/services/pinService';
 import { disableBiometricUnlock } from '@/services/biometricAuthService';
 import { teardownPushNotifications } from '@/services/pushNotificationService';
 import socketClient from '@/lib/socket-client';
+import { Capacitor } from '@capacitor/core';
+import { Preferences } from '@capacitor/preferences';
 
 interface AuthContextType {
   user: User | null;
@@ -1126,6 +1128,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     TokenManager.clearTokens();
     await clearLocalUserData();
     clearLocalAuthPresentationState(true); // Preserve PIN keys
+    if (Capacitor.isNativePlatform()) {
+      await Preferences.remove({ key: 'user_authenticated' }).catch(() => undefined);
+    }
 
     socketClient.disconnect();
     setUser(null);
