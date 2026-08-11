@@ -90,31 +90,37 @@ const getAuthToken = async () => {
   return token || null;
 };
 
-const loadImage = (file: File) => new Promise<HTMLImageElement>(async (resolve, reject) => {
-  const readAsDataUrl = (f: File) => new Promise<string>((res, rej) => {
-    const fr = new FileReader();
-    fr.onerror = () => rej(new Error('Failed to read receipt file'));
-    fr.onload = () => res(String(fr.result));
-    fr.readAsDataURL(f);
-  });
+const readAsDataUrl = (f: File) => new Promise<string>((res, rej) => {
+  const fr = new FileReader();
+  fr.onerror = () => rej(new Error('Failed to read receipt file'));
+  fr.onload = () => res(String(fr.result));
+  fr.readAsDataURL(f);
+});
 
+/**
+ * Was `new Promise(async (resolve, reject) => …)`. An async executor is a trap:
+ * anything that throws before the hand-written try/catch is installed rejects a
+ * promise nobody holds, so the outer promise hangs forever instead of failing.
+ * Only the final image load genuinely needs the executor wrapper.
+ */
+const loadImage = async (file: File): Promise<HTMLImageElement> => {
+  let dataUrl: string;
   try {
-    let dataUrl: string;
-    try {
-      dataUrl = await readAsDataUrl(file);
-    } catch (err) {
-      await new Promise((r) => setTimeout(r, 150));
-      dataUrl = await readAsDataUrl(file);
-    }
+    dataUrl = await readAsDataUrl(file);
+  } catch {
+    // One retry: FileReader intermittently fails on a freshly-captured photo
+    // that the camera app has not finished flushing to disk.
+    await new Promise((r) => setTimeout(r, 150));
+    dataUrl = await readAsDataUrl(file);
+  }
 
+  return new Promise<HTMLImageElement>((resolve, reject) => {
     const image = new Image();
     image.onload = () => resolve(image);
     image.onerror = () => reject(new Error('Unable to load receipt image'));
     image.src = dataUrl;
-  } catch (err) {
-    reject(err);
-  }
-});
+  });
+};
 
 const compressImageForUpload = async (file: File) => {
   // An already-small image is left alone: re-encoding a 200KB photo only

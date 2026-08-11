@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import multer from 'multer';
 import { authMiddleware } from '../../middleware/auth';
+import { pinGate } from '../../middleware/pinGate';
 import { validateBody, validateParams } from '../../middleware/validate';
 import * as FriendController from './friend.controller';
 import {
@@ -14,6 +15,7 @@ const router = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 2 * 1024 * 1024 } });
 
 router.use(authMiddleware);
+router.use(pinGate); // friend balances and settlements are financial data — requires a live PIN unlock
 
 router.get('/', FriendController.getFriends);
 router.post('/', validateBody(friendCreateSchema), FriendController.createFriend);

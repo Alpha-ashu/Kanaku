@@ -73,12 +73,12 @@ export const reconstructFeatures = (roleCentric: any, targetRole?: UserRole): Re
   // Get all default features
   const defaultFeatures = getVisibleFeaturesForRole('admin');
 
-  Object.entries(defaultFeatures).forEach(([fKey, defaultHasAccess]) => {
+  Object.entries(defaultFeatures).forEach(([fKey, _defaultHasAccess]) => {
     const roleAccess: Record<string, boolean> = {};
     let lastUpdated = new Date(0).toISOString();
 
     rolesToProcess.forEach(r => {
-      if (roleCentric && roleCentric[r] && roleCentric[r].hasOwnProperty(fKey)) {
+      if (roleCentric && roleCentric[r] && Object.prototype.hasOwnProperty.call(roleCentric[r], fKey)) {
         roleAccess[r] = roleCentric[r][fKey] === true;
       } else {
         roleAccess[r] = getVisibleFeaturesForRole(r)[fKey] === true;
@@ -114,7 +114,7 @@ export const reconstructFeatures = (roleCentric: any, targetRole?: UserRole): Re
         const childRoleAccess: Record<string, boolean> = {};
         rolesToProcess.forEach(r => {
           const dbKey = `${fKey}_${cKey}`;
-          if (roleCentric && roleCentric[r] && roleCentric[r].hasOwnProperty(dbKey)) {
+          if (roleCentric && roleCentric[r] && Object.prototype.hasOwnProperty.call(roleCentric[r], dbKey)) {
             childRoleAccess[r] = roleCentric[r][dbKey] === true;
           } else {
             childRoleAccess[r] = isSubFeatureAccessible(r, fKey, cKey);
@@ -185,7 +185,7 @@ export const reconstructAIFeatures = (roleCentric: any, targetRole?: UserRole): 
     let lastUpdated = new Date(0).toISOString();
 
     rolesToProcess.forEach(r => {
-      if (roleCentric && roleCentric[r] && roleCentric[r].hasOwnProperty(fKey)) {
+      if (roleCentric && roleCentric[r] && Object.prototype.hasOwnProperty.call(roleCentric[r], fKey)) {
         roleAccess[r] = roleCentric[r][fKey] === true;
       } else {
         roleAccess[r] = defaultVal.roleAccess[r] === true;
@@ -219,7 +219,7 @@ export const reconstructAIFeatures = (roleCentric: any, targetRole?: UserRole): 
         const childRoleAccess: Record<string, boolean> = {};
         rolesToProcess.forEach(r => {
           const dbKey = `${fKey}_${cKey}`;
-          if (roleCentric && roleCentric[r] && roleCentric[r].hasOwnProperty(dbKey)) {
+          if (roleCentric && roleCentric[r] && Object.prototype.hasOwnProperty.call(roleCentric[r], dbKey)) {
             childRoleAccess[r] = roleCentric[r][dbKey] === true;
           } else {
             childRoleAccess[r] = cDefaultVal.roleAccess[r] === true;

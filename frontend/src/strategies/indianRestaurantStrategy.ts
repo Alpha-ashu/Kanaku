@@ -9,7 +9,7 @@ export class IndianRestaurantStrategy implements ParsingStrategy {
     if (/GSTIN|FSSAI|VAT\s*TIN|CGST|SGST|IGST/i.test(text)) score += 0.3;
     if (/Tax\s*Invoice|Bill\s*No|Invoice/i.test(text)) score += 0.2;
     if (/Qty|Quantity|Rate|Amount/i.test(text)) score += 0.2;
-    if (/\d{1,2}[\/ \-\.]\d{1,2}[\/ \-\.]\d{2,4}/.test(text)) score += 0.1;
+    if (/\d{1,2}[/ \-.]\d{1,2}[/ \-.]\d{2,4}/.test(text)) score += 0.1;
     if (/upi|phonepe|paytm|gpay|card|cash/i.test(text)) score += 0.1;
     return Math.min(score, 1);
   }
@@ -21,8 +21,8 @@ export class IndianRestaurantStrategy implements ParsingStrategy {
       const merchantName = this.extractMerchantName(lines);
       if (merchantName) result.merchantName = merchantName;
 
-      const dateMatch = text.match(/(?:date|dt)\.?\s*:?\s*(\d{1,2}\s*[\/\-\.]\s*\d{1,2}\s*[\/\-\.]\s*\d{2,4})/i)
-        || text.match(/\b(\d{1,2}\s*[\/\-\.]\s*\d{1,2}\s*[\/\-\.]\s*\d{2,4})\b/)
+      const dateMatch = text.match(/(?:date|dt)\.?\s*:?\s*(\d{1,2}\s*[/\-.]\s*\d{1,2}\s*[/\-.]\s*\d{2,4})/i)
+        || text.match(/\b(\d{1,2}\s*[/\-.]\s*\d{1,2}\s*[/\-.]\s*\d{2,4})\b/)
         || text.match(/(\d{1,2}\s*[|l]\s*\d{1,2}\s*[|l]\s*\d{2,4})/);
       if (dateMatch?.[1]) result.date = this.parseIndianDate(dateMatch[1].replace(/\s+/g, ''));
 
@@ -130,7 +130,7 @@ export class IndianRestaurantStrategy implements ParsingStrategy {
   }
 
   private parseIndianDate(dateStr: string): Date | undefined {
-    const parts = dateStr.split(/[\/\-\.|l]/);
+    const parts = dateStr.split(/[/\-.|l]/);
     if (parts.length !== 3) return undefined;
 
     const day = Number.parseInt(parts[0], 10);

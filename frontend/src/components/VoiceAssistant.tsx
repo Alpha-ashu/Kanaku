@@ -53,16 +53,11 @@ export const VoiceAssistant: React.FC<VoiceAssistantProps> = ({
 
   const [isProcessing, setIsProcessing] = useState(false);
 
-  if (!isSupported) {
-    return (
-      <Card data-testid="voice-assistant-card" className="p-4 border-yellow-200 bg-yellow-50">
-        <p className="text-sm text-yellow-800">
-          Voice assistant is not supported on your browser. Please use Chrome, Edge, or Safari.
-        </p>
-      </Card>
-    );
-  }
-
+  // The `isSupported` early return that used to sit here has moved below the
+  // useCallback declarations. `isSupported` comes from useVoiceAssistant() and is
+  // resolved asynchronously (capability probe), so it flips false→true after
+  // mount — which changed the hook count mid-life and crashed the component with
+  // "Rendered more hooks than during the previous render".
   const handleCreateTransactions = useCallback(async () => {
     if (!parsedCommand?.transactions || parsedCommand.transactions.length === 0) {
       return;
@@ -118,6 +113,17 @@ export const VoiceAssistant: React.FC<VoiceAssistantProps> = ({
       setIsProcessing(false);
     }
   }, [parsedCommand, userId, onTransactionCreated, clearText]);
+
+  // ── End of hooks — conditional returns are safe from here down ──
+  if (!isSupported) {
+    return (
+      <Card data-testid="voice-assistant-card" className="p-4 border-yellow-200 bg-yellow-50">
+        <p className="text-sm text-yellow-800">
+          Voice assistant is not supported on your browser. Please use Chrome, Edge, or Safari.
+        </p>
+      </Card>
+    );
+  }
 
   return (
     <div className="w-full space-y-4">

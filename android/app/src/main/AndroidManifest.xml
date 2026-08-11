@@ -1,9 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!--
+      android:enableOnBackInvokedCallback opts into the predictive back gesture
+      (Android 13+). @capacitor/app registers its handler through the AndroidX
+      OnBackPressedDispatcher and androidxActivityVersion is 1.11.0, so the
+      dispatcher bridges to OnBackInvokedCallback once this flag is set. Without
+      it the app stays on the legacy back path and users get no back-gesture
+      preview — and at targetSdk 36 predictive back is the platform default, so
+      it is worth declaring explicitly rather than inheriting.
+    -->
     <application
         android:allowBackup="false"
         android:fullBackupContent="false"
+        android:enableOnBackInvokedCallback="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:networkSecurityConfig="@xml/network_security_config"
         android:icon="@mipmap/ic_launcher"
@@ -64,7 +74,16 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+
+    <!-- SCHEDULE_EXACT_ALARM is deliberately NOT declared.
+         Apps targeting API 34+ are not auto-granted it, Play's Permissions
+         Declaration policy restricts it to alarm-clock/calendar apps (a finance
+         reminder does not qualify), and nothing here needs it: the only
+         LocalNotifications.schedule() call delivers immediately with no `schedule`
+         trigger, and LocalNotificationManager already falls back to
+         setAndAllowWhileIdle() when canScheduleExactAlarms() is false. Declaring
+         it bought nothing and created a store-review risk. -->
+
 
     <!-- Voice entry. Capacitor's BridgeWebChromeClient answers the WebView's
          AUDIO_CAPTURE request by asking for exactly these two at runtime; if they

@@ -6,14 +6,13 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.provider.Telephony;
 import android.telephony.SmsMessage;
+import android.util.Log;
 
 import org.json.JSONObject;
 
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-
 public class SmsReceiver extends BroadcastReceiver {
+    private static final String TAG = "KANAKU_SmsReceiver";
+
     @Override
     public void onReceive(Context context, Intent intent) {
         if (intent == null || !Telephony.Sms.Intents.SMS_RECEIVED_ACTION.equals(intent.getAction())) {
@@ -35,54 +34,81 @@ public class SmsReceiver extends BroadcastReceiver {
             return;
         }
 
-        Map<String, StringBuilder> bodiesByKey = new HashMap<>();
-        Map<String, Long> timestampsByKey = new HashMap<>();
-        Map<String, String> addressesByKey = new HashMap<>();
+        // Every PDU in a single SMS_RECEIVED broadcast belongs to ONE message —
+        // that is how Android delivers a concatenated (multipart) SMS. They must
+        // therefore be joined in array order.
+        //
+        // This used to group the parts into a map keyed by "address|timestamp".
+        // Each part of a multipart message carries its own SMSC timestamp, so a
+        // long bank alert split across two parts produced two different keys and
+        // two truncated bodies — the amount regex then matched the wrong number
+        // or nothing at all. Identity now comes from the first part only.
+        StringBuilder bodyBuilder = new StringBuilder();
+        String address = "";
+        long timestamp = 0L;
+        boolean haveHeader = false;
 
         for (Object pdu : pdus) {
             if (!(pdu instanceof byte[])) {
                 continue;
             }
 
-            SmsMessage smsMessage = SmsMessage.createFromPdu((byte[]) pdu, format);
+            SmsMessage smsMessage;
+            try {
+                smsMessage = SmsMessage.createFromPdu((byte[]) pdu, format);
+            } catch (Exception exception) {
+                Log.w(TAG, "Skipping undecodable SMS PDU", exception);
+                continue;
+            }
             if (smsMessage == null) {
                 continue;
             }
 
-            String address = smsMessage.getOriginatingAddress() == null ? "" : smsMessage.getOriginatingAddress();
-            long timestamp = smsMessage.getTimestampMillis();
-            String key = address + "|" + timestamp;
-
-            StringBuilder bodyBuilder = bodiesByKey.get(key);
-            if (bodyBuilder == null) {
-                bodyBuilder = new StringBuilder();
-                bodiesByKey.put(key, bodyBuilder);
-            }
-            bodyBuilder.append(smsMessage.getMessageBody());
-            timestampsByKey.put(key, timestamp);
-            addressesByKey.put(key, address);
-        }
-
-        for (Map.Entry<String, StringBuilder> entry : bodiesByKey.entrySet()) {
-            String key = entry.getKey();
-            String body = entry.getValue().toString();
-            String address = addressesByKey.getOrDefault(key, "");
-            long timestamp = timestampsByKey.getOrDefault(key, System.currentTimeMillis());
-            String sourceSmsId = buildSourceSmsId(address, body, timestamp);
-
-            JSONObject parsedTransaction = SmsTransactionParser.parse(sourceSmsId, address, body, timestamp);
-            if (parsedTransaction == null) {
-                continue;
+            if (!haveHeader) {
+                address = smsMessage.getOriginatingAddress() == null ? "" : smsMessage.getOriginatingAddress();
+                timestamp = smsMessage.getTimestampMillis();
+                haveHeader = true;
             }
 
-            SmsDetectionStore.upsertPendingTransaction(context, parsedTransaction);
-            SmsNotificationHelper.showDetectionNotification(context, parsedTransaction);
-            SmsDetectionPlugin.dispatchIncomingTransaction(parsedTransaction);
+            String part = smsMessage.getMessageBody();
+            if (part != null) {
+                bodyBuilder.append(part);
+            }
         }
-    }
 
-    private String buildSourceSmsId(String address, String body, long timestamp) {
-        String normalized = (address + "|" + timestamp + "|" + body).toLowerCase(Locale.ENGLISH);
-        return "incoming_" + (normalized.hashCode() & 0x7fffffff);
+        if (!haveHeader || bodyBuilder.length() == 0) {
+            return;
+        }
+
+        final String finalAddress = address;
+        final long finalTimestamp = timestamp > 0 ? timestamp : System.currentTimeMillis();
+        final String body = bodyBuilder.toString();
+
+        // Parsing, the SharedPreferences read-modify-write and the notification all
+        // used to run inline on the main thread inside onReceive, which has a hard
+        // ~10s budget before an ANR. goAsync() keeps the receiver alive while the
+        // work moves to a background thread.
+        // Application context, not the short-lived receiver context: the work below
+        // outlives onReceive().
+        final Context appContext = context.getApplicationContext();
+        final PendingResult pendingResult = goAsync();
+        new Thread(() -> {
+            try {
+                String sourceSmsId = SmsTransactionParser.buildStableSourceId(finalAddress, body);
+                JSONObject parsedTransaction =
+                    SmsTransactionParser.parse(sourceSmsId, finalAddress, body, finalTimestamp);
+                if (parsedTransaction == null) {
+                    return;
+                }
+
+                SmsDetectionStore.upsertPendingTransaction(appContext, parsedTransaction);
+                SmsNotificationHelper.showDetectionNotification(appContext, parsedTransaction);
+                SmsDetectionPlugin.dispatchIncomingTransaction(parsedTransaction);
+            } catch (Throwable throwable) {
+                Log.e(TAG, "Failed to process incoming SMS", throwable);
+            } finally {
+                pendingResult.finish();
+            }
+        }, "kanaku-sms-parse").start();
     }
 }

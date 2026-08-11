@@ -123,8 +123,8 @@ export class EnhancedReceiptScannerService {
     const allLines = [...dateLabelLines, ...lines];
 
     const patterns = [
-      /(\d{1,2})\s*[\/\-\.\|]\s*(\d{1,2})\s*[\/\-\.\|]\s*(\d{2,4})/,
-      /(\d{4})\s*[\/\-\.]\s*(\d{1,2})\s*[\/\-\.]\s*(\d{1,2})/,
+      /(\d{1,2})\s*[/\-.|]\s*(\d{1,2})\s*[/\-.|]\s*(\d{2,4})/,
+      /(\d{4})\s*[/\-.]\s*(\d{1,2})\s*[/\-.]\s*(\d{1,2})/,
       /(\d{1,2})\s+(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*[,.]?\s+(\d{2,4})/i,
     ];
 

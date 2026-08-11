@@ -58,7 +58,7 @@ const emit = (
   }
 
   const payload = args.map(redact);
-  // eslint-disable-next-line no-console
+   
   const sink = console[level] ?? console.log;
   if (payload.length === 0) {
     sink(message);

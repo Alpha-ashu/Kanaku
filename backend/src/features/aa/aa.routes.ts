@@ -1,5 +1,6 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { authMiddleware, AuthRequest } from '../../middleware/auth';
+import { pinGate } from '../../middleware/pinGate';
 import { validateBody, validateParams } from '../../middleware/validate';
 import { rateLimit } from '../../middleware/rateLimit';
 import {
@@ -80,6 +81,12 @@ router.post('/notification', validateBody(aaNotificationSchema), async (req: Req
 
 // All remaining AA routes require user authentication.
 router.use(authMiddleware);
+// Account Aggregator consent artefacts and fetched bank statements are the most
+// sensitive data in the product — they must sit behind a live PIN unlock like
+// every other financial surface. The provider notification webhook above is
+// deliberately outside this gate (it is unauthenticated by design and verified
+// by signature instead).
+router.use(pinGate);
 
 /**
  * POST /api/v1/aa/consent

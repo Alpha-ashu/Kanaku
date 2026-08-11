@@ -14,6 +14,7 @@ import { motion } from 'framer-motion';
 import { PageHeader } from '@/app/components/ui/PageHeader';
 import { cn } from '@/lib/utils';
 import { useLiveQuery } from 'dexie-react-hooks';
+import { backupPINKeys, restorePINKeys } from '@/lib/encryption';
 import {
  createBackup,
  listBackups
@@ -193,16 +194,13 @@ export const Settings: React.FC = () => {
 
  // Step 3: Clear all storage (PIN & admin settings preserved)
  try {
- const pinBackup = {
- hash: localStorage.getItem('KANAKU_encrypted_key'),
- salt: localStorage.getItem('KANAKU_salt'),
- adminSettings: localStorage.getItem('admin_global_feature_settings'),
- };
+ // Use the shared helpers rather than hand-listing storage keys: this block
+ // predated the v2 PIN verifier and would have dropped it on sign-out,
+ // silently un-setting the user's PIN.
+ const pinBackup = backupPINKeys();
  localStorage.clear();
  sessionStorage.clear();
- if (pinBackup.hash) localStorage.setItem('KANAKU_encrypted_key', pinBackup.hash);
- if (pinBackup.salt) localStorage.setItem('KANAKU_salt', pinBackup.salt);
- if (pinBackup.adminSettings) localStorage.setItem('admin_global_feature_settings', pinBackup.adminSettings);
+ restorePINKeys(pinBackup);
  } catch (e) {
  console.warn('Storage clear error (non-blocking):', e);
  }
@@ -245,16 +243,13 @@ export const Settings: React.FC = () => {
 
  // Force cleanup even on error (PIN & admin settings preserved)
  try {
- const pinBackup = {
- hash: localStorage.getItem('KANAKU_encrypted_key'),
- salt: localStorage.getItem('KANAKU_salt'),
- adminSettings: localStorage.getItem('admin_global_feature_settings'),
- };
+ // Use the shared helpers rather than hand-listing storage keys: this block
+ // predated the v2 PIN verifier and would have dropped it on sign-out,
+ // silently un-setting the user's PIN.
+ const pinBackup = backupPINKeys();
  localStorage.clear();
  sessionStorage.clear();
- if (pinBackup.hash) localStorage.setItem('KANAKU_encrypted_key', pinBackup.hash);
- if (pinBackup.salt) localStorage.setItem('KANAKU_salt', pinBackup.salt);
- if (pinBackup.adminSettings) localStorage.setItem('admin_global_feature_settings', pinBackup.adminSettings);
+ restorePINKeys(pinBackup);
  } catch (e) {
  // Ignore
  }

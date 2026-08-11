@@ -155,7 +155,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin,
  color: 'from-amber-400 to-yellow-500',
  shadow: 'shadow-amber-200',
  title: 'Secure & Offline',
- desc: 'Bank-grade encryption with offline-first sync. Your data is safe, always cached locally.',
+ desc: 'PIN-gated access and encrypted connections, with offline-first sync. Your data is safe, always cached locally.',
  },
  ];
 

@@ -46,7 +46,7 @@ export function initTracing(): boolean {
   // so surface it loudly rather than silently pretending traces are flowing.
   if (process.env.OTEL_TRACES_ENABLED !== 'true') return false;
 
-  // eslint-disable-next-line no-console
+   
   console.warn(
     '[tracing] OTEL_TRACES_ENABLED=true but the OpenTelemetry SDK is not installed. ' +
       'Tracing is a deliberate future step — see docs/04_App_Flow/OPENTELEMETRY_READINESS.md. ' +

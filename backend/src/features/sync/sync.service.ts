@@ -1,7 +1,5 @@
 import { prisma } from '../../db/prisma';
-import bcrypt from 'bcryptjs';
 import { createHash, randomUUID } from 'crypto';
-import { generateDeviceId } from '../../utils/device';
 import { audit } from '../../utils/auditLogger';
 import { eventBus } from '../../utils/eventBus';
 

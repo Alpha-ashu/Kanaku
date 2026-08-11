@@ -61,34 +61,59 @@ public final class SmsTransactionParser {
         try {
             JSONObject result = new JSONObject();
             result.put("sourceSmsId", sourceSmsId == null || sourceSmsId.isEmpty()
-                ? buildSyntheticSourceId(originAddress, compactBody, timestampMillis)
+                ? buildStableSourceId(originAddress, compactBody)
                 : sourceSmsId);
             result.put("amount", amount);
             result.put("transactionType", transactionType);
-            result.put("merchant", extractMerchant(compactBody, transactionType));
-            result.put("bankName", extractBankName(originAddress, compactBody));
-            result.put("accountLast4", extractAccountLast4(compactBody));
+            String merchant = extractMerchant(compactBody, transactionType);
+            String bankName = extractBankName(originAddress, compactBody);
+            String accountLast4 = extractAccountLast4(compactBody);
+            Double balance = extractBalance(compactBody);
+            result.put("merchant", merchant);
+            result.put("bankName", bankName);
+            result.put("accountLast4", accountLast4);
             result.put("currencyCode", extractCurrencyCode(compactBody));
             result.put("dateIso", extractDate(compactBody, timestampMillis));
-            if (extractBalance(compactBody) != null) {
-                result.put("balance", extractBalance(compactBody));
+            if (balance != null) {
+                result.put("balance", balance);
             }
             result.put("sourceAddress", originAddress == null ? "" : originAddress);
             result.put("sourceChannel", extractChannel(lowered));
             result.put("messagePreview", compactBody.length() > 180 ? compactBody.substring(0, 180) + "..." : compactBody);
-            result.put("confidenceScore", calculateConfidence(lowered, compactBody, amount, originAddress));
+            result.put("confidenceScore", calculateConfidence(lowered, amount, merchant, bankName, accountLast4));
             return result;
         } catch (JSONException exception) {
             return null;
         }
     }
 
+    /**
+     * Messages that are never transactions regardless of what else they contain.
+     * Kept deliberately narrow — see {@link #isPromotional} for the softer filters.
+     */
     private static boolean isIgnoredMessage(String lowered) {
-        return lowered.contains("otp")
+        boolean hardBlock = lowered.contains("otp")
             || lowered.contains("one time password")
             || lowered.contains("verification code")
             || lowered.contains("do not share")
-            || lowered.contains("promo")
+            || lowered.contains("click link")
+            || lowered.contains("lottery")
+            || lowered.contains("win cash");
+
+        if (hardBlock) {
+            return true;
+        }
+
+        // Promotional wording only disqualifies a message when it does NOT also
+        // carry an unambiguous bank verb. Real debit alerts routinely append
+        // marketing tails ("...Rs.500 debited... Get 10% off your next order")
+        // and, crucially, a fraud-reporting or e-statement URL — blanket-rejecting
+        // on "http"/"offer" silently dropped genuine transactions.
+        return isPromotional(lowered) && !hasStrongBankVerb(lowered);
+    }
+
+    private static boolean isPromotional(String lowered) {
+        return lowered.contains("promo")
             || lowered.contains("discount")
             || lowered.contains("offer")
             || lowered.contains("sale ends")
@@ -97,12 +122,14 @@ public final class SmsTransactionParser {
             || lowered.contains("shipment")
             || lowered.contains("tracking")
             || lowered.contains("subscribe")
-            || lowered.contains("unsubscribe")
-            || lowered.contains("click link")
-            || lowered.contains("http://")
-            || lowered.contains("https://")
-            || lowered.contains("lottery")
-            || lowered.contains("win cash");
+            || lowered.contains("unsubscribe");
+    }
+
+    /** Verbs that only ever appear in a real bank/wallet ledger notification. */
+    private static boolean hasStrongBankVerb(String lowered) {
+        return lowered.contains("debited")
+            || lowered.contains("credited")
+            || lowered.contains("withdrawn");
     }
 
     private static boolean looksTransactional(String lowered) {
@@ -168,19 +195,38 @@ public final class SmsTransactionParser {
         }
     }
 
+    /**
+     * Debit wins over credit when both appear.
+     *
+     * A transfer reads "Rs.5000 debited from a/c XX1234 and credited to
+     * <beneficiary>" — the credit lands in somebody else's account, so from the
+     * account holder's perspective this is money leaving. Checking "credited"
+     * first (as this did) inverted the sign on every outbound transfer.
+     *
+     * "salary" is likewise not an income signal on its own: "Rs.2000 debited from
+     * your Salary Account" is an expense. A real salary credit is already caught
+     * by the "credited"/"deposited" keywords.
+     */
     private static String detectTransactionType(String lowered) {
+        boolean debit = lowered.contains("debited")
+            || lowered.contains("spent")
+            || lowered.contains("withdrawn")
+            || lowered.contains("purchase")
+            || lowered.contains("paid to")
+            || lowered.contains("paid at");
+
+        if (debit) {
+            return "expense";
+        }
+
         if (lowered.contains("credited")
-            || lowered.contains("received")
             || lowered.contains("deposited")
-            || lowered.contains("salary")) {
+            || lowered.contains("received")) {
             return "income";
         }
 
-        if (lowered.contains("debited")
-            || lowered.contains("spent")
-            || lowered.contains("paid")
-            || lowered.contains("withdrawn")
-            || lowered.contains("purchase")) {
+        // Bare "paid" without a direction hint — treat as an outgoing payment.
+        if (lowered.contains("paid")) {
             return "expense";
         }
 
@@ -264,6 +310,9 @@ public final class SmsTransactionParser {
 
     private static String extractCurrencyCode(String body) {
         String upper = body.toUpperCase(Locale.ENGLISH);
+        // Rupee markers are checked first: an INR alert that happens to mention a
+        // "$" elsewhere in the text was being reported as USD.
+        if (upper.contains("INR") || upper.contains("₹") || upper.contains("RS.") || upper.contains("RS ")) return "INR";
         if (upper.contains("USD") || upper.contains("$")) return "USD";
         if (upper.contains("EUR") || upper.contains("€")) return "EUR";
         if (upper.contains("GBP") || upper.contains("£")) return "GBP";
@@ -351,23 +400,51 @@ public final class SmsTransactionParser {
         return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", Locale.ENGLISH).format(date);
     }
 
-    private static double calculateConfidence(String lowered, String body, Double amount, String originAddress) {
+    /** Takes the already-extracted fields rather than re-running every regex. */
+    private static double calculateConfidence(
+        String lowered,
+        Double amount,
+        String merchant,
+        String bankName,
+        String accountLast4
+    ) {
         double confidence = 0.55d;
         if (amount != null && amount > 0) confidence += 0.15d;
         if (lowered.contains("debited") || lowered.contains("credited")) confidence += 0.10d;
-        if (!extractBankName(originAddress, body).isEmpty()) confidence += 0.07d;
-        if (!extractAccountLast4(body).isEmpty()) confidence += 0.05d;
-        if (!extractMerchant(body, detectTransactionType(lowered)).isEmpty()) confidence += 0.08d;
+        if (!bankName.isEmpty()) confidence += 0.07d;
+        if (!accountLast4.isEmpty()) confidence += 0.05d;
+        if (!merchant.isEmpty()) confidence += 0.08d;
         return Math.min(confidence, 0.98d);
     }
 
-    private static String buildSyntheticSourceId(String originAddress, String body, long timestampMillis) {
-        String seed = (originAddress == null ? "" : originAddress) + "|" + timestampMillis + "|" + body;
+    /**
+     * Content-addressed identifier, shared by the live receiver and the historical
+     * inbox scan.
+     *
+     * The two paths previously minted incompatible ids ("incoming_<hashCode>" vs
+     * "historical_<providerId>"), so the same SMS seen both ways produced two
+     * pending suggestions and the "already handled" check never matched. Hashing
+     * sender + body makes the id a property of the message itself.
+     *
+     * Timestamp is deliberately excluded: the SMSC timestamp on a live PDU and the
+     * provider's received-time column for the same message routinely differ, which
+     * is exactly what broke deduplication. Bank alerts carry a unique ref/UTR, so
+     * body text alone separates genuinely distinct transactions.
+     */
+    public static String buildStableSourceId(String originAddress, String body) {
+        String normalizedAddress = originAddress == null
+            ? ""
+            : originAddress.toUpperCase(Locale.ENGLISH).replaceAll("[^A-Z0-9]", "");
+        String normalizedBody = body == null
+            ? ""
+            : body.trim().replaceAll("\\s+", " ").toLowerCase(Locale.ENGLISH);
+        String seed = normalizedAddress + "|" + normalizedBody;
+
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             byte[] hash = digest.digest(seed.getBytes(java.nio.charset.StandardCharsets.UTF_8));
             StringBuilder builder = new StringBuilder("sms_");
-            for (int index = 0; index < Math.min(hash.length, 8); index++) {
+            for (int index = 0; index < Math.min(hash.length, 12); index++) {
                 builder.append(String.format(Locale.ENGLISH, "%02x", hash[index] & 0xFF));
             }
             return builder.toString();

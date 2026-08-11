@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { authMiddleware } from '../../middleware/auth';
+import { pinGate } from '../../middleware/pinGate';
 import { authenticatedRateLimit } from '../../middleware/rateLimit';
 import { uploadSingle } from '../../middleware/upload';
 import { validateQuery } from '../../middleware/validate';
@@ -11,6 +12,7 @@ import { receiptScanQuerySchema } from './receipt.validation';
 const router = Router();
 
 router.use(authMiddleware);
+router.use(pinGate); // receipts carry amounts and merchant data — requires a live PIN unlock
 
 router.post(
   '/start',

@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
 import { AppError } from '../../utils/AppError';
-import { logger } from '../../config/logger';
 import { asString } from '../../utils/requestParams';
 
 // In-memory cache to reduce API calls and avoid Yahoo Finance rate limits
@@ -198,7 +197,7 @@ export const searchStocks = async (req: Request, res: Response, next: NextFuncti
 
 export const getStockQuote = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    let symbol = asString(req.query.symbol);
+    const symbol = asString(req.query.symbol);
     const market = asString(req.query.market);
     if (!symbol) throw AppError.badRequest('Symbol is required', 'SYMBOL_REQUIRED');
 

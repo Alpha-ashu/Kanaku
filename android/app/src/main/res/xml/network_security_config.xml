@@ -1,17 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<network-security-config>
-  <!-- Allow cleartext traffic to localhost for development/testing -->
-  <domain-config cleartextTrafficPermitted="true">
-    <domain includeSubdomains="true">localhost</domain>
-    <domain includeSubdomains="true">127.0.0.1</domain>
-    <domain includeSubdomains="true">capacitor.localhost</domain>
-  </domain-config>
+<!--
+  PRODUCTION network policy.
 
-  <!-- Trust system certificates for production API -->
-  <domain-config>
-    <domain includeSubdomains="true">kanaku-api.onrender.com</domain>
+  Cleartext is off everywhere. The localhost/127.0.0.1 exemption that used to live
+  here applied to release builds too; it now lives in
+  app/src/debug/res/xml/network_security_config.xml, which overrides this file for
+  debug builds only.
+-->
+<network-security-config>
+  <base-config cleartextTrafficPermitted="false">
     <trust-anchors>
       <certificates src="system" />
     </trust-anchors>
-  </domain-config>
+  </base-config>
 </network-security-config>

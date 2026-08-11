@@ -1,41 +1,22 @@
 import { Response, NextFunction } from 'express';
 import { AuthRequest, getUserId } from '../../middleware/auth';
 import { prisma } from '../../db/prisma';
-import { AppError } from '../../utils/AppError';
 
-// ── PDF Export (pdfExport sub-feature) ───────────────────────────────────────
-export const exportPDF = async (req: AuthRequest, res: Response, next: NextFunction) => {
-  try {
-    const userId = getUserId(req);
-    const transactions = await prisma.transaction.findMany({
-      where: { userId, deletedAt: null },
-      orderBy: { date: 'desc' },
-    });
+// NOTE: GET /reports/export/pdf and /reports/export/excel used to live here.
+//
+// They were stubs: each ran a full unbounded transaction query, threw the result
+// away, and returned a hard-coded literal — `Buffer.from('%PDF-1.4 ... PDF
+// content mock ...')` and `Buffer.from('Excel XML structure / Mock xlsx
+// content')`. Any caller received a corrupt file plus a table scan.
+//
+// Nothing in the app called them: Reports.tsx builds its own PDF (via
+// buildStatementReportPdf) and its own spreadsheet client-side. Rather than
+// implement server-side generation nobody asked for, the endpoints and their
+// unused api.ts wrappers were removed. The `pdfExport` / `excelExport`
+// sub-feature flags still gate the client-side buttons and are untouched.
 
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename=kanaku_report_${Date.now()}.pdf`);
-    res.status(200).send(Buffer.from('%PDF-1.4 ... PDF content mock ...'));
-  } catch (error) {
-    next(error);
-  }
-};
-
-// ── Excel Export (excelExport sub-feature) ───────────────────────────────────
-export const exportExcel = async (req: AuthRequest, res: Response, next: NextFunction) => {
-  try {
-    const userId = getUserId(req);
-    const transactions = await prisma.transaction.findMany({
-      where: { userId, deletedAt: null },
-      orderBy: { date: 'desc' },
-    });
-
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.setHeader('Content-Disposition', `attachment; filename=kanaku_report_${Date.now()}.xlsx`);
-    res.status(200).send(Buffer.from('Excel XML structure / Mock xlsx content'));
-  } catch (error) {
-    next(error);
-  }
-};
+/** Hard cap on an export. Prevents an unbounded scan of a large history. */
+const EXPORT_ROW_LIMIT = 10_000;
 
 // ── CSV Export (csvExport sub-feature) ───────────────────────────────────────
 export const exportCSV = async (req: AuthRequest, res: Response, next: NextFunction) => {
@@ -44,6 +25,7 @@ export const exportCSV = async (req: AuthRequest, res: Response, next: NextFunct
     const transactions = await prisma.transaction.findMany({
       where: { userId, deletedAt: null },
       orderBy: { date: 'desc' },
+      take: EXPORT_ROW_LIMIT,
     });
 
     const headers = ['ID', 'Date', 'Type', 'Category', 'Amount', 'Description'];

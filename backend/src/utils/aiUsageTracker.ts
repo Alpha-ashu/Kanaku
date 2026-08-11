@@ -8,7 +8,7 @@
  * Uses Redis when available; falls back to an in-memory Map.
  */
 
-import { cacheGetJson, cacheSetJson, getRedisClient } from '../cache/redis';
+import { cacheGetJson, getRedisClient } from '../cache/redis';
 import { logger } from '../config/logger';
 
 /** Max AI (Gemini / OCR) calls a single user can make per day. */

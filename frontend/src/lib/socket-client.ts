@@ -1,6 +1,15 @@
 import { io, Socket } from 'socket.io-client';
 import { TokenManager } from './api';
 
+/**
+ * Shape of a socket event handler. Replaces the unsafe `Function` type, which
+ * also accepts class declarations (they throw when called without `new`).
+ * Deliberately permissive in its parameters: registered handlers each declare
+ * their own payload shape, so a narrower signature would reject them all.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type SocketEventListener = (...args: any[]) => void;
+
 interface SocketEvents {
   // Sync events
   sync_response: (data: {
@@ -162,7 +171,9 @@ class SocketClient {
   private reconnectDelay = 1000; // Start with 1 second
   private connectingPromise: Promise<void> | null = null; // guard against concurrent connect() calls
 
-  private listeners: Map<string, Function[]> = new Map();
+  // `Function` accepts anything callable (including classes, which throw when
+  // invoked without `new`). These are socket event handlers — give them a shape.
+  private listeners: Map<string, SocketEventListener[]> = new Map();
 
   constructor() {
     this.setupReconnectionLogic();
@@ -215,7 +226,9 @@ class SocketClient {
       this.socket = null;
     }
 
-    try {
+    // No try/catch wrapper: it caught and rethrew unchanged, which only buried
+    // the original stack. Callers already treat a socket failure as non-fatal.
+    {
       const socketUrl = this.resolveSocketUrl();
       
       // Vercel hosts the static SPA only (no WebSocket support on the proxied
@@ -268,9 +281,6 @@ class SocketClient {
         this.socket!.on('connect_error', onConnectError);
       });
 
-    } catch (error) {
-      // Non-fatal — the app works without the socket; caller logs the warning
-      throw error;
     }
   }
 
@@ -659,7 +669,7 @@ class SocketClient {
     if (callbacks) {
       callbacks.forEach(callback => {
         try {
-          (callback as Function)(data);
+          (callback as SocketEventListener)(data);
         } catch (error) {
           console.error(`Error in socket event listener for ${event}:`, error);
         }

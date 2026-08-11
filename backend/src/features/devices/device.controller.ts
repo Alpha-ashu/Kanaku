@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
 import { DeviceService } from './device.service';
-import { validateRequest } from '../../middleware/validation';
 import { z } from 'zod';
 
 // Validation schemas

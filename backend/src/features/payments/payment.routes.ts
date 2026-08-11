@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { authMiddleware } from '../../middleware/auth';
+import { pinGate } from '../../middleware/pinGate';
 import { requireFeature } from '../../middleware/featureGate';
 import { validateBody } from '../../middleware/validate';
 import { rateLimit, authenticatedRateLimit } from '../../middleware/rateLimit';
@@ -33,6 +34,11 @@ router.use(authenticatedRateLimit({ windowMs: 60_000, max: 60, scope: 'payment' 
 // payment endpoint returns 403, not just the UI being hidden. The public webhook
 // above is intentionally exempt so providers can still post settlement events.
 router.use(requireFeature('payments'));
+
+// Payment history and initiation are financial operations — require a live PIN
+// unlock. Mounted after the public webhook above, which stays exempt so providers
+// can still post settlement events.
+router.use(pinGate);
 
 // Get payments
 router.get('/', PaymentController.getPayments);

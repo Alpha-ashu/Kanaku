@@ -48,7 +48,7 @@ if (!isVercel) {
     fileStream.on('error', () => { /* never let a log-file error crash the process */ });
     streams.push({ level: level as pino.Level, stream: fileStream });
   } catch (err) {
-    // eslint-disable-next-line no-console
+     
     console.warn('Failed to initialise rotating log file:', err);
   }
 }

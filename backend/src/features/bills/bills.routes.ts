@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { authMiddleware } from '../../middleware/auth';
+import { pinGate } from '../../middleware/pinGate';
 import { authenticatedRateLimit } from '../../middleware/rateLimit';
 import { uploadSingle } from '../../middleware/upload';
 import { validateParams } from '../../middleware/validate';
@@ -11,6 +12,7 @@ import { billIdParamSchema } from './bills.validation';
 const router = Router();
 
 router.use(authMiddleware);
+router.use(pinGate); // bills carry amounts and merchant data — requires a live PIN unlock
 
 router.get('/', BillsController.getBills);
 router.get('/:id', validateParams(billIdParamSchema), BillsController.getBill);

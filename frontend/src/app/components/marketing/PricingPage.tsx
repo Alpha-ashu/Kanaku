@@ -158,7 +158,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onBack, onGetStarted, 
  <Shield className="w-12 h-12 text-violet-600 mx-auto mb-6" />
  <h2 className="text-3xl font-bold mb-4">Security without compromise</h2>
  <p className="text-gray-500 mb-12">
- All plans include bank-grade encryption and regional data compliance.
+ All plans include encrypted connections, PIN-gated access and regional data compliance.
  Even on our free plan, your data is yours and remains private.
  </p>
  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

@@ -16,7 +16,7 @@ import { AppError } from '../../utils/AppError';
 import { generateTokens, verifyRefreshToken, REFRESH_TOKEN_TTL_SECONDS } from '../../utils/auth';
 import { setRefreshCookie, clearRefreshCookie, readRefreshCookie } from '../../security/refreshCookie';
 import { establishIdleSession, clearIdleSession } from '../../security/idleSession';
-import { clearPinUnlock, isPinUnlocked } from '../../security/pinUnlock';
+import { clearPinUnlock, isPinUnlocked, PIN_UNLOCK_HEADER } from '../../security/pinUnlock';
 import { sendWelcomeEmail, sendLoginAlertEmail } from '../../emails';
 import { auditFromRequest } from '../../utils/auditLogger';
 import { isProtectedAccount } from '../../utils/protectedAccounts';
@@ -772,7 +772,7 @@ export const getProfile = async (req: AuthRequest, res: Response, next: NextFunc
     const includePrivate = req.query.includePrivate === 'true' || req.query.includePrivate === '1';
     // PRIVACY: private profile fields require a live server-side PIN unlock, not
     // just a query param. Before unlock, a PII-stripped payload is returned.
-    const pinUnlocked = await isPinUnlocked(req.userId);
+    const pinUnlocked = await isPinUnlocked(req.userId, req.headers[PIN_UNLOCK_HEADER] as string | undefined);
     // Cache key varies by unlock state so a pre-PIN payload is never served after unlock.
     const lockSuffix = pinUnlocked ? '' : ':locked';
     const profileCacheKey = (includePrivate ? `profile:private:${req.userId}` : `profile:${req.userId}`) + lockSuffix;
@@ -863,7 +863,7 @@ export const getProfile = async (req: AuthRequest, res: Response, next: NextFunc
       userId: req.userId
     });
     const includePrivate = req.query.includePrivate === 'true' || req.query.includePrivate === '1';
-    const pinUnlocked = await isPinUnlocked(req.userId || '').catch(() => true);
+    const pinUnlocked = await isPinUnlocked(req.userId || '', req.headers[PIN_UNLOCK_HEADER] as string | undefined).catch(() => true);
     res.json({
       success: true,
       data: buildProfilePayload(req.userId || '', req.user, null, null, null, includePrivate, null, pinUnlocked),

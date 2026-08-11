@@ -4,6 +4,7 @@ import { pinService } from './pin.service';
 import { authMiddleware, AuthRequest } from '../../middleware/auth';
 import { securityGate, generateSecurityToken } from '../../middleware/securityGate';
 import { establishPinUnlock } from '../../security/pinUnlock';
+import { PIN_UNLOCK_RESPONSE_HEADER } from '../../middleware/pinGate';
 import { otpService } from '../otp/otp.service';
 import { validateBody } from '../../middleware/validate';
 import { AppError } from '../../utils/AppError';
@@ -81,8 +82,11 @@ router.post('/create', validateBody(createPinSchema), async (req: AuthRequest, r
     }
 
     // Creating a PIN implicitly unlocks the session (the user just proved it).
-    await establishPinUnlock(userId);
-    res.json(result);
+    // The token travels in both a header and the body: native clients read the
+    // header cross-origin, web reads whichever is convenient.
+    const unlockToken = await establishPinUnlock(userId);
+    if (unlockToken) res.setHeader(PIN_UNLOCK_RESPONSE_HEADER, unlockToken);
+    res.json(unlockToken ? { ...result, pinUnlockToken: unlockToken } : result);
   } catch (error) {
     next(error);
   }
@@ -104,8 +108,9 @@ router.post('/verify', validateBody(verifyPinSchema), async (req: AuthRequest, r
     }
     // Establish the server-side PIN-unlock so financial endpoints (behind pinGate)
     // become accessible for this user until the inactivity window elapses.
-    await establishPinUnlock(userId);
-    res.json(result);
+    const unlockToken = await establishPinUnlock(userId);
+    if (unlockToken) res.setHeader(PIN_UNLOCK_RESPONSE_HEADER, unlockToken);
+    res.json(unlockToken ? { ...result, pinUnlockToken: unlockToken } : result);
   } catch (error) {
     next(error);
   }
@@ -193,7 +198,7 @@ router.post('/update', securityGate, validateBody(updatePinSchema), async (req: 
 /**
  * GET /api/v1/pin/status
  */
-router.get('/status', async (req: AuthRequest, res: Response, next: NextFunction) => {
+router.get('/status', async (req: AuthRequest, res: Response, _next: NextFunction) => {
   try {
     const result = await pinService.getPinStatus(req.user?.id || '');
     res.json(result);

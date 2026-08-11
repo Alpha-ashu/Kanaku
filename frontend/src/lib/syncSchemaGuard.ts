@@ -42,7 +42,7 @@ export const isSyncHalted = (): boolean => syncHalted;
 const haltSync = (reason: string) => {
   if (syncHalted) return;
   syncHalted = true;
-  // eslint-disable-next-line no-console
+   
   console.warn('[syncSchemaGuard] sync halted —', reason);
   toast.error('App update required', {
     description: 'Please reload the app to keep your data safe.',
@@ -70,7 +70,7 @@ const checkOnce = async (): Promise<void> => {
     if (LOCAL_SCHEMA_VERSION < schemaVersion) {
       haltSync(`local v${LOCAL_SCHEMA_VERSION} < server v${schemaVersion}`);
     } else if (LOCAL_SCHEMA_VERSION > schemaVersion) {
-      // eslint-disable-next-line no-console
+       
       console.warn('[syncSchemaGuard] local schema is AHEAD of server — preview build on prod backend?');
     }
   } catch {

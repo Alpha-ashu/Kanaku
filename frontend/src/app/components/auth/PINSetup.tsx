@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Eye, EyeOff, ShieldCheck, ChevronLeft } from 'lucide-react';
 import { toast } from 'sonner';
-import { backupPINKeys, isPINSet, restorePINKeys, storeMasterKey, verifyPIN } from '@/lib/encryption';
+import { isPINSet, restorePINKeyBackup, serializePINKeyBackup, storeMasterKey, verifyPIN } from '@/lib/encryption';
 import { isPinMissing, isPinServiceUnavailable, pinService } from '@/services/pinService';
 import { KANAKULogo } from '@/app/components/ui/KANAKULogo';
 
@@ -135,10 +135,7 @@ export const PINSetup: React.FC<PINSetupProps> = ({
       if (step === 'enter' && !isPINSet()) {
         const keyBackupResult = await pinService.getKeyBackup();
         if (keyBackupResult.success && keyBackupResult.backup) {
-          const [hash, salt] = keyBackupResult.backup.split('|');
-          if (hash && salt) {
-            restorePINKeys({ hash, salt });
-          }
+          restorePINKeyBackup(keyBackupResult.backup);
         }
       }
 
@@ -153,8 +150,8 @@ export const PINSetup: React.FC<PINSetupProps> = ({
         pinService.markPendingServerSync();
       }
 
-      const backup = backupPINKeys();
-      if (backup.hash && backup.salt) {
+      const backupPayload = serializePINKeyBackup();
+      if (backupPayload) {
         if (result.success && step === 'enter' && localResult.isValid) {
           pinService.markPinVerifiedLocally();
         }
@@ -167,7 +164,7 @@ export const PINSetup: React.FC<PINSetupProps> = ({
           }
         }
 
-        const backupResult = await pinService.saveKeyBackup(`${backup.hash}|${backup.salt}`, securityToken);
+        const backupResult = await pinService.saveKeyBackup(backupPayload, securityToken);
         if (!backupResult.success && !isPinServiceUnavailable(backupResult) && !isPinMissing(backupResult)) {
           console.warn('PIN key backup refresh failed during setup:', backupResult.message);
         }
@@ -359,7 +356,7 @@ export const PINSetup: React.FC<PINSetupProps> = ({
             <div>
               <p className="text-gray-900 text-[11px] font-black uppercase tracking-wider mb-1">Secure Encryption</p>
               <p className="text-gray-500 text-[10px] leading-relaxed max-w-[220px]">
-                Your financial data stays encrypted on this device. Only PIN verification metadata is stored securely.
+                Your PIN never leaves this device — only a salted, slow-to-crack verifier is stored. Nothing financial loads or syncs until you unlock.
               </p>
             </div>
           </div>

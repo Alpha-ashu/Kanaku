@@ -9,8 +9,8 @@ const router = Router();
 router.use(authMiddleware);
 router.use(pinGate); // financial data requires a live PIN unlock
 
-router.get('/export/pdf', requireFeature('reports', 'pdfExport'), ReportsController.exportPDF);
-router.get('/export/excel', requireFeature('reports', 'excelExport'), ReportsController.exportExcel);
+// /export/pdf and /export/excel are gone — they returned mock file contents.
+// See the note at the top of reports.controller.ts.
 router.get('/export/csv', requireFeature('reports', 'csvExport'), ReportsController.exportCSV);
 router.get('/ai-insights', requireFeature('reports', 'aiInsightsReport'), ReportsController.getAIInsights);
 router.get('/forecast', requireFeature('reports', 'forecasting'), ReportsController.getForecast);

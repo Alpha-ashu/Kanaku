@@ -168,9 +168,9 @@ export const AppFeatureSlides: React.FC<AppFeatureSlidesProps> = ({ onComplete }
       )
     },
     {
-      title: "Bank-Grade Encryption",
+      title: "Bank-Grade Security",
       tagline: "YOUR DATA IS SECURE",
-      subtitle: "All your data is locally encrypted on your device. We use industry-standard security protocols to keep your information secure.",
+      subtitle: "Your data is protected by a PIN on this device and travels over encrypted connections. We use industry-standard security protocols to keep your information secure.",
       gradient: "from-rose-500 to-red-600",
       accentColor: "bg-rose-600",
       icon: <ShieldCheck className="w-8 h-8 text-rose-600" />,
@@ -182,7 +182,7 @@ export const AppFeatureSlides: React.FC<AppFeatureSlidesProps> = ({ onComplete }
           <div className="text-center space-y-1.5">
             <p className="text-xs font-black text-gray-900">Device-Level Encryption Active</p>
             <p className="text-[10px] text-gray-500 max-w-[200px] leading-relaxed">
-              Your financial records are secured using AES-256 local encryption key.
+              Your financial records are locked behind your PIN and sent over TLS.
             </p>
           </div>
           <div className="flex gap-1.5 items-center bg-gray-50 px-2 py-1 rounded-full border border-gray-100 text-[9px] font-bold text-gray-600">

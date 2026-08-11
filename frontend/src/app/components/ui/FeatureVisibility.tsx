@@ -21,11 +21,14 @@ export const FeatureVisibility: React.FC<FeatureVisibilityProps> = ({
  logAccess = false
 }) => {
  const hasAccess = useFeatureAccess(feature);
+ // Called unconditionally: this used to live inside the `if (role)` branch below,
+ // so a parent that toggled the `role` prop changed this component's hook count
+ // between renders and crashed it.
+ const { role: userRole } = usePermissions();
 
  // If role is specified, do additional role check
  if (role) {
- const { role: userRole } = usePermissions();
- 
+
  if (Array.isArray(role)) {
  if (!userRole || !role.includes(userRole)) {
  if (logAccess) {

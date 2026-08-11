@@ -190,8 +190,8 @@ class TesseractOCREngine {
 
   private extractDate(lines: string[]): string | undefined {
     const datePatterns = [
-      /(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/, // DD/MM/YYYY
-      /(\d{2,4})[\/\-](\d{1,2})[\/\-](\d{1,2})/, // YYYY/MM/DD
+      /(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})/, // DD/MM/YYYY
+      /(\d{2,4})[/-](\d{1,2})[/-](\d{1,2})/, // YYYY/MM/DD
       /(\d{1,2})\s+(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s+(\d{2,4})/i, // DD Month YYYY
     ];
 

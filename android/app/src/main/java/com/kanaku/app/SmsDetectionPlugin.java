@@ -76,6 +76,16 @@ public class SmsDetectionPlugin extends Plugin {
         call.resolve(buildStatusPayload());
     }
 
+    /**
+     * Hard ceiling on how many inbox rows a single scan will examine.
+     *
+     * The `limit` parameter caps *results*, and the loop only incremented its
+     * counter on a successful parse — so on a busy inbox this walked every
+     * message in the date window (thousands of rows, full regex battery each)
+     * before returning. That ran on the caller's thread and reliably ANR'd.
+     */
+    private static final int MAX_ROWS_SCANNED = 2000;
+
     @PluginMethod
     public void scanHistoricalMessages(PluginCall call) {
         if (getPermissionState("sms") != PermissionState.GRANTED) {
@@ -83,6 +93,11 @@ public class SmsDetectionPlugin extends Plugin {
             return;
         }
 
+        // Content-provider query + parsing must not run on the main thread.
+        getBridge().execute(() -> runHistoricalScan(call));
+    }
+
+    private void runHistoricalScan(PluginCall call) {
         int days = call.getInt("days", 30);
         int limit = call.getInt("limit", 300);
         long cutoffMillis = System.currentTimeMillis() - (Math.max(days, 1) * 24L * 60L * 60L * 1000L);
@@ -111,24 +126,31 @@ public class SmsDetectionPlugin extends Plugin {
                 return;
             }
 
-            int count = 0;
-            while (cursor.moveToNext() && count < limit) {
-                String smsId = cursor.getString(0);
+            int matched = 0;
+            int scanned = 0;
+            while (cursor.moveToNext() && matched < limit && scanned < MAX_ROWS_SCANNED) {
+                scanned += 1;
                 String address = cursor.getString(1);
                 String body = cursor.getString(2);
                 long timestamp = cursor.getLong(3);
-                JSONObject parsed = SmsTransactionParser.parse("historical_" + smsId, address, body, timestamp);
+
+                // Same content-addressed id the live receiver mints, so a message
+                // seen by both paths resolves to one pending entry instead of two.
+                String sourceSmsId = SmsTransactionParser.buildStableSourceId(address, body);
+                JSONObject parsed = SmsTransactionParser.parse(sourceSmsId, address, body, timestamp);
 
                 if (parsed == null) {
                     continue;
                 }
 
                 transactions.put(toJSObject(parsed));
-                count += 1;
+                matched += 1;
             }
 
             JSObject response = new JSObject();
             response.put("transactions", transactions);
+            response.put("scanned", scanned);
+            response.put("truncated", scanned >= MAX_ROWS_SCANNED);
             call.resolve(response);
         } catch (Exception exception) {
             call.reject("Historical SMS scan failed.", exception);
@@ -149,8 +171,10 @@ public class SmsDetectionPlugin extends Plugin {
 
     @PluginMethod
     public void markTransactionHandled(PluginCall call) {
+        // getString() returns the caller's value when the key is present, so an
+        // explicit `null` from JS comes back as null despite the default.
         String sourceSmsId = call.getString("sourceSmsId", "");
-        if (!sourceSmsId.isEmpty()) {
+        if (sourceSmsId != null && !sourceSmsId.isEmpty()) {
             SmsDetectionStore.removePendingTransaction(getContext(), sourceSmsId);
         }
         call.resolve();

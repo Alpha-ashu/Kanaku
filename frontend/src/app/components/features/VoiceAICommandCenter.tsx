@@ -450,7 +450,7 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
           } else {
             // Standard new loan flow
             // 1. Friend contact creation/lookup
-            let friend = await db.friends.filter(f => f.name.toLowerCase() === personName.toLowerCase() && !f.deletedAt).first();
+            const friend = await db.friends.filter(f => f.name.toLowerCase() === personName.toLowerCase() && !f.deletedAt).first();
             let friendId: number | undefined;
             if (friend) {
               friendId = friend.id;

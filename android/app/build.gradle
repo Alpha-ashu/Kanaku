@@ -8,6 +8,11 @@ if (hasSigningProperties) {
     keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 }
 
+// Single source of truth for the app's version. Bump VERSION_CODE_BASE when you
+// cut a release; CI adds its run number on top so no two builds collide.
+def VERSION_CODE_BASE = 10
+def VERSION_NAME = "1.0.2"
+
 android {
     namespace = "com.kanaku.app"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -39,8 +44,16 @@ android {
         applicationId "com.kanaku.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 10
-        versionName "1.0.2"
+        // versionCode was hardcoded, so CI produced a release AAB stamped `10` on
+        // every push to main — Play rejects a duplicate version code, meaning no
+        // artifact the pipeline built was actually uploadable without hand-editing
+        // this file first.
+        //
+        // ANDROID_VERSION_CODE (set by CI from the run number) now offsets the
+        // floor below. Local builds without the env var keep using the floor, so
+        // nothing changes for a developer building on their own machine.
+        versionCode VERSION_CODE_BASE + (System.getenv("ANDROID_VERSION_CODE") ?: "0").toInteger()
+        versionName VERSION_NAME
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -106,11 +119,40 @@ dependencies {
 
 apply from: 'capacitor.build.gradle'
 
-try {
-    def servicesJSON = file('google-services.json')
-    if (servicesJSON.text) {
-        apply plugin: 'com.google.gms.google-services'
+// ── Firebase Cloud Messaging config ──────────────────────────────────────────
+//
+// google-services.json is gitignored (it is per-project config, supplied by
+// whoever builds), so it is legitimately absent on a fresh clone. What is NOT
+// acceptable is shipping a RELEASE artifact without it: the google-services
+// plugin never runs, no Firebase resources are generated, PushNotifications
+// .register() fails on device, and the only trace was a logger.info() that
+// nobody sees — so a store build silently lost push notifications.
+//
+// Debug builds warn. Release builds fail, mirroring the existing key.properties
+// guard below/above. Override deliberately with:
+//     ./gradlew bundleNosmsRelease -PallowMissingGoogleServices=true
+def googleServicesFile = file('google-services.json')
+def hasGoogleServices = googleServicesFile.exists() && googleServicesFile.length() > 0
+
+if (hasGoogleServices) {
+    apply plugin: 'com.google.gms.google-services'
+} else {
+    logger.warn("WARNING: android/app/google-services.json is missing — Firebase is not configured and push notifications WILL NOT work in this build.")
+}
+
+gradle.taskGraph.whenReady { taskGraph ->
+    def releaseRequested = taskGraph.allTasks.any { task ->
+        task.name.toLowerCase().contains('release') &&
+            (task.name.toLowerCase().startsWith('bundle') || task.name.toLowerCase().startsWith('assemble'))
     }
-} catch(Exception ignored) {
-    logger.info("google-services.json not found, google-services plugin not applied. Push Notifications won't work")
+    def allowMissing = project.hasProperty('allowMissingGoogleServices') &&
+        project.property('allowMissingGoogleServices').toString().toBoolean()
+
+    if (releaseRequested && !hasGoogleServices && !allowMissing) {
+        throw new RuntimeException(
+            "Missing android/app/google-services.json — a release build would ship with push notifications " +
+            "silently broken. Download it from the Firebase console (Project settings → Your apps → Android), " +
+            "or pass -PallowMissingGoogleServices=true to build without push on purpose."
+        )
+    }
 }

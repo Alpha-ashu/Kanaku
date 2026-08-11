@@ -201,7 +201,6 @@ const parseAmountToken = (raw: string): number | undefined => {
   return Number.isFinite(val) && val >= 0 ? val : undefined;
 };
 
-const DATE_TOKEN = /^(\d{1,2})[\/-](\d{1,2}|[A-Za-z]{3})[\/-](\d{2,4})$|^(\d{4})-(\d{2})-(\d{2})$/;
 
 const MONTHS: Record<string, number> = {
   jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12,
@@ -210,7 +209,7 @@ const MONTHS: Record<string, number> = {
 const normaliseDateToken = (raw: string): string | undefined => {
   const iso = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
   if (iso) return raw;
-  const m = raw.match(/^(\d{1,2})[\/-](\d{1,2}|[A-Za-z]{3})[\/-](\d{2,4})$/);
+  const m = raw.match(/^(\d{1,2})[/-](\d{1,2}|[A-Za-z]{3})[/-](\d{2,4})$/);
   if (!m) return undefined;
   const day = Number(m[1]);
   const monthRaw = m[2];
@@ -237,7 +236,7 @@ export const heuristicParseStatement = (text: string): ParsedStatement => {
   let periodTo: string | undefined;
 
   const BANK_RE = /\b([A-Z][A-Za-z&\s]{2,30}Bank(?:\s+of\s+[A-Za-z]+)?|SBI|HDFC|ICICI|Axis|Kotak|PNB|Canara|IDFC|Yes Bank)\b/;
-  const ACC_RE = /(?:a\/?c|account)\s*(?:no\.?|number|#)?\s*[:\-]?\s*([Xx*\d]{6,20})/i;
+  const ACC_RE = /(?:a\/?c|account)\s*(?:no\.?|number|#)?\s*[:-]?\s*([Xx*\d]{6,20})/i;
 
   for (const line of lines.slice(0, 25)) {
     if (!bankName) { const m = line.match(BANK_RE); if (m) bankName = m[1].trim(); }

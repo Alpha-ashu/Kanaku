@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { authMiddleware } from '../../middleware/auth';
-import { requireRole } from '../../middleware/rbac';
+import { pinGate } from '../../middleware/pinGate';
 import { validateBody, validateParams } from '../../middleware/validate';
 import { requireFeature } from '../../middleware/featureGate';
 import * as GroupController from './group.controller';
@@ -9,6 +9,7 @@ import { groupCreateSchema, groupIdParamSchema, groupUpdateSchema } from './grou
 const router = Router();
 
 router.use(authMiddleware);
+router.use(pinGate); // group expenses are financial data — requires a live PIN unlock
 router.use(requireFeature('groups'));
 
 router.get('/', GroupController.getGroups);

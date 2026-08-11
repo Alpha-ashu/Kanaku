@@ -1,6 +1,6 @@
-// @ts-ignore
+// @ts-ignore pdfjs-dist ships no type declarations for the /build/*.mjs subpath
 import * as pdfjsLib from 'pdfjs-dist/build/pdf.mjs';
-// @ts-ignore
+// @ts-ignore Vite `?url` suffix import has no ambient type declaration
 import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import type {
   ReceiptLineItem,
@@ -186,7 +186,7 @@ const hasSummaryBoundary = (line: string) => {
 
 const isMetadataLine = (line: string) => {
   const normalizedLine = normalizeForMatching(line);
-  const hasDatePattern = /(\d{1,2})\s*[\/\-\.\|]\s*(\d{1,2})\s*[\/\-\.\|]\s*(\d{2,4})/.test(line)
+  const hasDatePattern = /(\d{1,2})\s*[/\-.|]\s*(\d{1,2})\s*[/\-.|]\s*(\d{2,4})/.test(line)
     || /(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+\d{1,2}/i.test(line)
     || /\d{1,2}\s+(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i.test(line);
   return (
@@ -198,7 +198,7 @@ const isMetadataLine = (line: string) => {
 
 const isHeaderOrDateLine = (line: string) => {
   const normalizedLine = normalizeForMatching(line);
-  const hasDatePattern = /(\d{1,2})\s*[\/\-\.\|]\s*(\d{1,2})\s*[\/\-\.\|]\s*(\d{2,4})/.test(line)
+  const hasDatePattern = /(\d{1,2})\s*[/\-.|]\s*(\d{1,2})\s*[/\-.|]\s*(\d{2,4})/.test(line)
     || /(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+\d{1,2}/i.test(line)
     || /\d{1,2}\s+(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i.test(line);
   
@@ -271,12 +271,12 @@ const normalizeYear = (yearToken: string) => {
 const extractDate = (lines: string[]) => {
   const datePatterns: Array<{ re: RegExp; order: 'dmy' | 'ymd' | 'named' }> = [
     // Standard separators: / - .
-    { re: /(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})/, order: 'dmy' },
-    { re: /(\d{4})[\/\-\.](\d{1,2})[\/\-\.](\d{1,2})/, order: 'ymd' },
+    { re: /(\d{1,2})[/\-.](\d{1,2})[/\-.](\d{2,4})/, order: 'dmy' },
+    { re: /(\d{4})[/\-.](\d{1,2})[/\-.](\d{1,2})/, order: 'ymd' },
     // OCR-garbled separators: | l (pipe/lowercase-L often misread from /)
     { re: /(\d{1,2})[|l](\d{1,2})[|l](\d{2,4})/, order: 'dmy' },
     // Spaced separators: "30 / 12 / 2024" or "30 - 12 - 2024"
-    { re: /(\d{1,2})\s*[\/\-\.]\s*(\d{1,2})\s*[\/\-\.]\s*(\d{2,4})/, order: 'dmy' },
+    { re: /(\d{1,2})\s*[/\-.]\s*(\d{1,2})\s*[/\-.]\s*(\d{2,4})/, order: 'dmy' },
     // Named months
     { re: /(\d{1,2})\s+(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*[,.]?\s+(\d{2,4})/i, order: 'named' },
     // Month-first US style: "Dec 30, 2024"
@@ -345,7 +345,7 @@ const extractTime = (lines: string[]) => {
 
 const extractInvoiceNumber = (lines: string[]) => {
   for (const line of lines) {
-    const match = line.match(/(?:invoice|bill|receipt|txn|ref|order)(?:\s*(?:number|num|no)\.?\s*:?|\s*#\s*:?|\s*:)?\s*([a-z0-9][a-z0-9\-\/]{2,})/i);
+    const match = line.match(/(?:invoice|bill|receipt|txn|ref|order)(?:\s*(?:number|num|no)\.?\s*:?|\s*#\s*:?|\s*:)?\s*([a-z0-9][a-z0-9\-/]{2,})/i);
     if (match) return match[1].toUpperCase();
   }
 
@@ -662,7 +662,7 @@ const normalizeItemName = (value: string) => normalizeWhitespace(
   value
     .replace(/^\d+\s+/, ' ')
     .replace(/^[^a-z0-9]+/i, ' ')
-    .replace(/[^a-z0-9&()\/+,._\-\s]/gi, ' ')
+    .replace(/[^a-z0-9&()/+,._\-\s]/gi, ' ')
     .replace(/\s*[|:]+\s*/g, ' '),
 );
 

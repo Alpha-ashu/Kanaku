@@ -1,6 +1,5 @@
 import { Router } from 'express';
 import * as stockController from './stock.controller';
-import { authMiddleware } from '../../middleware/auth';
 import { validateQuery, z } from '../../middleware/validate';
 
 const router = Router();

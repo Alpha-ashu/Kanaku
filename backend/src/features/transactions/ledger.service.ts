@@ -1,9 +1,8 @@
 import { Decimal } from '@prisma/client/runtime/library';
 import { PrismaTx, FinancialEventDispatcher, LedgerPostedEvent, LedgerSettledEvent, LedgerReversedEvent, LedgerTransferCompletedEvent } from './dispatcher';
-import { AppError } from '../../utils/AppError';
 import { LedgerStatus, LedgerReferenceType, SourceModule, LedgerDirection, FinancialEventType } from '../../db/prisma-client';
 import { randomUUID } from 'crypto';
-import { cacheDeleteByUserId, cacheInvalidationCount } from '../../cache/redis';
+import { cacheDeleteByUserId } from '../../cache/redis';
 import { logger } from '../../config/logger';
 import {
   ledgerPostTotal,
@@ -100,7 +99,34 @@ export class FinancialLedgerService {
     const opStart = Date.now();
     const actor = getRequestActor();
     // 1. Invariant Validation Rules (includes leg count, transfers, positive amounts, account ownership)
-    const accounts = await FinancialInvariantValidator.validateJournalLegs(tx, journal, legs);
+    //
+    // Failures here are counted, not just thrown. `ledgerPostFailedTotal` and
+    // `journalBalanceErrorsTotal` were imported but never incremented anywhere,
+    // so the ledger reported only its successes: a run of rejected postings —
+    // exactly the signal worth alerting on — was invisible on the dashboard while
+    // ledger_post_total kept climbing.
+    let accounts;
+    try {
+      accounts = await FinancialInvariantValidator.validateJournalLegs(tx, journal, legs);
+    } catch (validationError) {
+      ledgerPostFailedTotal.inc();
+      // Double-entry legs that don't balance are a distinct, louder failure than
+      // an ordinary rejection (bad account, negative amount): it means the books
+      // would not have reconciled.
+      const message = validationError instanceof Error ? validationError.message : String(validationError);
+      if (/balance|balanced|debit|credit/i.test(message)) {
+        journalBalanceErrorsTotal.inc();
+      }
+      logger.error('[Ledger] Journal validation failed', {
+        userId: journal.userId,
+        referenceType: journal.referenceType,
+        sourceModule: journal.sourceModule,
+        legCount: legs.length,
+        correlationId: actor.correlationId,
+        error: message,
+      });
+      throw validationError;
+    }
     const isTransfer = journal.referenceType === LedgerReferenceType.TRANSFER;
     const isDoubleEntry = legs.length > 1;
 

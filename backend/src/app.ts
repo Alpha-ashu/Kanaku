@@ -200,6 +200,13 @@ app.use(cors({
     'x-request-id',
     'x-correlation-id',
     'Idempotency-Key',
+    // Step-up proof for sensitive operations (PIN change, key backup, PIN reset).
+    // pinService has always SENT this header, but it was missing from this list —
+    // so on native, where the WebView origin (https://localhost) makes every call
+    // cross-origin, the preflight rejected it and those operations failed.
+    'x-security-token',
+    // Live PIN-unlock proof consumed by middleware/pinGate.
+    'x-pin-unlock',
   ],
   // CRITICAL for native clients (Capacitor Android/iOS): CORS only exposes
   // "simple" response headers (Cache-Control, Content-Language, Content-Type,
@@ -212,6 +219,10 @@ app.use(cors({
     'Authorization',
     'X-Request-Id',
     'X-Correlation-Id',
+    // The refreshed PIN-unlock token. Must be exposed or the client cannot read
+    // it cross-origin, the window never slides, and the user is re-prompted for
+    // their PIN every PIN_GATE_TIMEOUT_MINUTES regardless of activity.
+    'X-Pin-Unlock',
   ],
 }));
 app.use(express.json({

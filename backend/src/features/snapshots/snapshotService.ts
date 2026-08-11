@@ -36,6 +36,9 @@ export class FinancialSnapshotService {
     // Run safe async backfill check if database is empty of daily balances (bypassed in tests to avoid deadlocks)
     if (process.env.NODE_ENV !== 'test') {
       try {
+        // Lazy: snapshotService is imported by worker bootstrap paths that must
+        // not open a DB connection just by being loaded.
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
         const { prisma } = require('../../db/prisma');
         prisma.dailyAccountBalance.count()
           .then((count: number) => {

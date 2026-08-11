@@ -1,7 +1,7 @@
 import { randomUUID } from 'crypto';
 import { prisma } from '../../db/prisma';
 import { logger } from '../../config/logger';
-import { AIInsightRecord, AIInsightType, AIOverview, AIUserIntelligenceRow, UserFeatureSnapshot } from './ai.types';
+import { AIInsightRecord, AIOverview, AIUserIntelligenceRow, UserFeatureSnapshot } from './ai.types';
 
 const SIX_HOURS_MS = 6 * 60 * 60 * 1000;
 const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;

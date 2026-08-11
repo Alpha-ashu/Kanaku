@@ -16,6 +16,29 @@ import {
 import type { ApiResponse, ApiError } from '@/types';
 import { ErrorFactory, ErrorHandler } from './errorHandling';
 import { logger } from './logger';
+// Dependency-free module by design — pinService already imports this file, so the
+// shared unlock state has to live outside both to avoid a circular import.
+import {
+  awaitPinUnlock,
+  getPinUnlockToken,
+  resetPinUnlockTracking,
+  setPinUnlockToken,
+} from './pinUnlockCoordinator';
+
+/**
+ * Captures the refreshed PIN-unlock token the backend echoes on every accepted
+ * gated response. Missing this would leave the window anchored to the original
+ * issue time, so an actively-used app would still re-prompt for the PIN every
+ * PIN_GATE_TIMEOUT_MINUTES.
+ */
+const capturePinUnlockToken = (response: Response): void => {
+  try {
+    const refreshed = response.headers?.get?.('X-Pin-Unlock');
+    if (refreshed) setPinUnlockToken(refreshed);
+  } catch {
+    /* header unreadable (CORS/mocked response) — keep the existing token */
+  }
+};
 
 // Native (Capacitor Android/iOS) clients call the API cross-origin from a
 // https://localhost webview, where the HttpOnly refresh cookie is unreliable
@@ -527,6 +550,10 @@ class HTTPClient {
       // Marks native (Capacitor) clients so the backend returns the refresh
       // token in the body for device storage (cross-origin cookie is unreliable).
       ...(isNativePlatform() && { 'X-Client-Platform': 'native' }),
+      // Live PIN-unlock proof for the backend pinGate. Stateless and short-lived;
+      // the server re-issues it on every accepted response, which is what makes
+      // the re-lock window slide with activity.
+      ...(getPinUnlockToken() && { 'X-Pin-Unlock': getPinUnlockToken() as string }),
     };
     const baseCandidates = getApiBaseCandidates(this.baseURL);
 
@@ -545,6 +572,8 @@ class HTTPClient {
             credentials: fetchConfig.credentials ?? 'include',
             signal: controller.signal,
           });
+
+          capturePinUnlockToken(response);
 
           const data = (await this.parseResponseBody(response)) as any;
 
@@ -619,6 +648,13 @@ class HTTPClient {
                   const retryHeaders = { ...headers, Authorization: `Bearer ${newToken}` };
                   const retryController = new AbortController();
                   const retryTimeout = setTimeout(() => retryController.abort(), timeout);
+                  // The retry's OWN status/body — the failure below used to be
+                  // reported from the original `response`/`data`, which meant a
+                  // 403 PIN_VERIFICATION_REQUIRED arriving on the retry was
+                  // relabelled as a plain 401 and never reached the PIN-gate
+                  // handler further down, so the app silently failed to re-lock.
+                  let retryStatus: number | null = null;
+                  let retryBody: Record<string, unknown> = {};
                   try {
                     const retryResponse = await fetch(buildApiUrl(apiBase, endpoint), {
                       ...fetchConfig,
@@ -627,19 +663,45 @@ class HTTPClient {
                       signal: retryController.signal,
                     });
                     clearTimeout(retryTimeout);
+                    capturePinUnlockToken(retryResponse);
                     if (retryResponse.ok) {
                       // Silently recovered — no console error, no toast
                       clearOptionalBackendUnavailable();
                       const retryData = (await this.parseResponseBody(retryResponse)) as T;
                       return { success: true, data: retryData };
                     }
+                    retryStatus = retryResponse.status;
+                    // Always drain the body so the connection is released.
+                    retryBody = ((await this.parseResponseBody(retryResponse)) || {}) as Record<string, unknown>;
                   } catch {
                     clearTimeout(retryTimeout);
                   }
+
                   // We had a fresh, valid token but the call still failed — that is
                   // an endpoint-specific 401/403, NOT session death. Surface the
                   // error WITHOUT logging the user out.
-                  throw new APIError('UNAUTHORIZED', data.message || 'Request failed after refreshing the session.', response.status);
+                  const retryCode = typeof retryBody.code === 'string' ? retryBody.code : null;
+
+                  if (retryStatus === 403 && retryCode === 'PIN_VERIFICATION_REQUIRED') {
+                    if (typeof window !== 'undefined') {
+                      window.dispatchEvent(new CustomEvent('KANAKU_FORCE_PIN_LOCK'));
+                    }
+                    throw new APIError(
+                      'PIN_VERIFICATION_REQUIRED',
+                      typeof retryBody.message === 'string'
+                        ? retryBody.message
+                        : 'Please unlock the app with your PIN to continue.',
+                      403,
+                    );
+                  }
+
+                  throw new APIError(
+                    retryCode || 'UNAUTHORIZED',
+                    (typeof retryBody.message === 'string' ? retryBody.message : null)
+                      || data.message
+                      || 'Request failed after refreshing the session.',
+                    retryStatus ?? response.status,
+                  );
                 }
 
                 // No new token. Only sign the user out when the refresh token was
@@ -666,9 +728,42 @@ class HTTPClient {
 
             // ── 403 PIN gate ────────────────────────────────────────────────
             // The server requires a live PIN unlock to serve financial data.
-            // Re-lock the app so the PIN screen reappears; a fresh /pin/verify
-            // re-establishes the server-side unlock.
+            //
+            // The lock screen unlocks on local proof without waiting for
+            // POST /pin/verify to land, so there is a short window where the UI
+            // is open but the server has not yet recorded the unlock. Re-locking
+            // on a 403 in that window produces a loop (unlock → sync → 403 →
+            // lock → …), so first wait for any in-flight verify and retry once.
+            // Only a 403 with no verify pending is a genuine re-lock.
             if (response.status === 403 && data.code === 'PIN_VERIFICATION_REQUIRED') {
+              const unlockedNow = await awaitPinUnlock();
+
+              if (unlockedNow) {
+                const gateController = new AbortController();
+                const gateTimeout = setTimeout(() => gateController.abort(), timeout);
+                try {
+                  // Rebuild the header: the verify we just awaited is what
+                  // MINTED the unlock token, so replaying the original `headers`
+                  // would resend the stale/absent one and 403 again.
+                  const freshUnlock = getPinUnlockToken();
+                  const gateRetry = await fetch(buildApiUrl(apiBase, endpoint), {
+                    ...fetchConfig,
+                    headers: freshUnlock ? { ...headers, 'X-Pin-Unlock': freshUnlock } : headers,
+                    credentials: fetchConfig.credentials ?? 'include',
+                    signal: gateController.signal,
+                  });
+                  clearTimeout(gateTimeout);
+                  capturePinUnlockToken(gateRetry);
+                  if (gateRetry.ok) {
+                    clearOptionalBackendUnavailable();
+                    const gateData = (await this.parseResponseBody(gateRetry)) as T;
+                    return { success: true, data: gateData };
+                  }
+                } catch {
+                  clearTimeout(gateTimeout);
+                }
+              }
+
               if (typeof window !== 'undefined') {
                 window.dispatchEvent(new CustomEvent('KANAKU_FORCE_PIN_LOCK'));
               }
@@ -856,6 +951,9 @@ export const api = {
     // a fresh network request on the next call.
     inflightGetRequests.clear();
     clearGetResponseCache();
+    // A stale "verify in flight" from the previous session must not make the next
+    // one treat a real 403 as a transient not-yet-unlocked.
+    resetPinUnlockTracking();
   },
   // Authentication
   auth: {
@@ -1138,8 +1236,8 @@ export const api = {
     // Server-side export lives at GET /reports/export/{csv|excel|pdf}; the UI
     // currently generates statements client-side (lib/statementReportPdf.ts).
     exportCsv: () => apiClient.get('/reports/export/csv'),
-    exportExcel: () => apiClient.get('/reports/export/excel'),
-    exportPdf: () => apiClient.get('/reports/export/pdf'),
+    // exportExcel/exportPdf removed: those endpoints returned mock file bytes and
+    // no component ever called them. Reports.tsx builds both files client-side.
   },
 
   // Admin

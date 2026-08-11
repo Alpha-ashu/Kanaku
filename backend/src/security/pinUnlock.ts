@@ -6,144 +6,234 @@
  * (POST /pin/verify) recently. Without this, anyone holding a valid access token
  * could call /accounts, /transactions, etc. directly and bypass the PIN.
  *
- * Storage: a per-user "PIN unlocked" marker with a sliding TTL (the PIN re-lock
- * window). Established on a successful /pin/verify (or /pin/create), refreshed on
- * every accepted gated request, and dropped on logout. Redis when available
- * (multi-instance safe), in-memory fallback otherwise.
+ * ── Why this is token-based rather than a server-side marker ──
  *
- * Rollout: OFF by default (fail-open) so the mechanism can ship inert. Enable by
- * setting PIN_GATE_ENABLED=true once the client handles the 403 re-lock. The
- * window is PIN_GATE_TIMEOUT_MINUTES (default 5, matching the client auto-lock).
+ * The original implementation kept the unlock in Redis, falling back to a
+ * per-process Map. Redis was subsequently removed from this codebase for good
+ * (config/redis-connections.ts reports 'disabled' unconditionally), which left
+ * the in-memory Map as the only path — and that is not a viable place to keep an
+ * authorization decision:
+ *
+ *   • it evaporates on every restart, and the Render free plan sleeps after
+ *     15 min idle, so every cold start would silently re-lock every user;
+ *   • it is per-process, so it breaks the moment the service runs more than one
+ *     instance.
+ *
+ * Both failure modes push a 403 at a client that believes it is unlocked. So the
+ * unlock is now carried by a short-lived signed token instead:
+ *
+ *   1. POST /pin/verify (or /pin/create) issues a `pin_unlock` JWT whose lifetime
+ *      is the re-lock window.
+ *   2. The client sends it back as `X-Pin-Unlock` on every request.
+ *   3. pinGate verifies it and re-issues a refreshed one on the response, which
+ *      is what makes the window *slide* with activity.
+ *
+ * That is stateless: restart-proof, multi-instance-safe, and needs no Redis and
+ * no schema change. As a safety net, a request arriving without a usable token
+ * falls back to the durable `UserPin.lastVerifiedAt` column, so a client that
+ * lost its token (reload, storage cleared) recovers without re-prompting.
+ *
+ * Rollout: controlled by PIN_GATE_ENABLED. The window is PIN_GATE_TIMEOUT_MINUTES
+ * (default 5, matching the client auto-lock).
  */
-import { getPurposeClient, getPurposeStatus } from '../config/redis-connections';
+import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
+import { prisma } from '../db/prisma';
 import { logger } from '../config/logger';
-
-// PIN-unlock markers live on the dedicated SESSION logical DB (db2).
-const getRedisClient = () => getPurposeClient('session');
-const getRedisStatus = () => getPurposeStatus('session');
 
 const PIN_GATE_ENABLED = process.env.PIN_GATE_ENABLED === 'true';
 const PIN_GATE_TIMEOUT_MINUTES = Number(process.env.PIN_GATE_TIMEOUT_MINUTES || 5);
-const PIN_GATE_TIMEOUT_MS = PIN_GATE_TIMEOUT_MINUTES * 60 * 1000;
-const PIN_GATE_TIMEOUT_SECONDS = Math.max(1, Math.ceil(PIN_GATE_TIMEOUT_MS / 1000));
-const KEY_PREFIX = 'pinunlock:';
+const PIN_GATE_TIMEOUT_MS = Math.max(60_000, PIN_GATE_TIMEOUT_MINUTES * 60 * 1000);
+const PIN_GATE_TIMEOUT_SECONDS = Math.ceil(PIN_GATE_TIMEOUT_MS / 1000);
 
-// Throttle sliding writes (see idleSession.ts) — avoid a SET on every gated request.
-const SLIDE_INTERVAL_MS = Math.max(30_000, Math.min(PIN_GATE_TIMEOUT_MS / 2, 5 * 60_000));
+export const PIN_UNLOCK_HEADER = 'x-pin-unlock';
+const TOKEN_TYPE = 'pin_unlock';
 
-// In-memory fallback when Redis is not connected. Maps userId -> lastSeen (ms).
-const memoryStore = new Map<string, number>();
-const MEMORY_PRUNE_THRESHOLD = 5000;
+/**
+ * Signing key. Deliberately the same resolution order as the step-up security
+ * token (middleware/securityGate.ts) so a deployment that can issue one can
+ * issue the other — one fewer secret to get wrong.
+ */
+const getUnlockSecret = (): string => {
+  const envSecret =
+    process.env.SECURITY_JWT_SECRET ||
+    process.env.JWT_SECRET ||
+    process.env.SUPABASE_JWT_SECRET;
+
+  if (envSecret) return envSecret;
+
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error(
+      'CRITICAL CONFIGURATION ERROR: PIN gate requires SECURITY_JWT_SECRET (or JWT_SECRET) in production. ' +
+      'Startup aborted rather than issuing unlock tokens under a per-boot random key, which would ' +
+      're-lock every user on each container cycle.',
+    );
+  }
+
+  logger.warn('[pinUnlock] No JWT secret configured; using a per-boot random key (non-production only).');
+  return crypto.randomBytes(32).toString('hex');
+};
+
+let cachedSecret: string | null = null;
+const unlockSecret = (): string => {
+  if (!cachedSecret) cachedSecret = getUnlockSecret();
+  return cachedSecret;
+};
 
 export const isPinGateEnabled = (): boolean =>
   PIN_GATE_ENABLED && process.env.NODE_ENV !== 'test';
 
-const redisReady = (): boolean => getRedisStatus() === 'connected' && !!getRedisClient();
+/** Milliseconds a PIN unlock stays valid without further activity. */
+export const getPinGateWindowMs = (): number => PIN_GATE_TIMEOUT_MS;
 
-const pruneMemory = () => {
-  if (memoryStore.size < MEMORY_PRUNE_THRESHOLD) return;
-  const cutoff = Date.now() - PIN_GATE_TIMEOUT_MS;
-  for (const [k, v] of memoryStore) {
-    if (v < cutoff) memoryStore.delete(k);
-  }
-};
+// ── Token issue / verify ─────────────────────────────────────────────────────
 
-const readMarker = async (userId: string): Promise<number | null> => {
-  if (redisReady()) {
-    try {
-      const raw = await getRedisClient()!.get(KEY_PREFIX + userId);
-      return raw ? Number(raw) : null;
-    } catch {
-      // fall through to in-memory store
-    }
-  }
-  const v = memoryStore.get(userId);
-  if (v === undefined) return null;
-  if (Date.now() - v > PIN_GATE_TIMEOUT_MS) {
-    memoryStore.delete(userId);
+/**
+ * Mints an unlock token for `userId`. Returns null when the gate is disabled, so
+ * callers can pass the result straight through without branching.
+ */
+export const issuePinUnlockToken = (userId: string): string | null => {
+  if (!userId || !isPinGateEnabled()) return null;
+  try {
+    return jwt.sign({ sub: userId, type: TOKEN_TYPE }, unlockSecret(), {
+      expiresIn: PIN_GATE_TIMEOUT_SECONDS,
+    });
+  } catch (err) {
+    logger.warn('[pinUnlock] Failed to issue unlock token', {
+      userId,
+      error: err instanceof Error ? err.message : String(err),
+    });
     return null;
   }
-  return v;
 };
 
-const writeMarker = async (userId: string, ts: number): Promise<void> => {
-  if (redisReady()) {
-    try {
-      await getRedisClient()!.set(KEY_PREFIX + userId, String(ts), 'EX', PIN_GATE_TIMEOUT_SECONDS);
-      return;
-    } catch {
-      // fall through to in-memory store
-    }
-  }
-  pruneMemory();
-  memoryStore.set(userId, ts);
-};
-
-/** Mark the user as PIN-unlocked. Call on a successful /pin/verify or /pin/create. */
-export const establishPinUnlock = async (userId: string): Promise<void> => {
-  if (!userId) return;
+/** True when `token` is a live unlock token belonging to `userId`. */
+export const verifyPinUnlockToken = (token: string | undefined, userId: string): boolean => {
+  if (!token || !userId) return false;
   try {
-    await writeMarker(userId, Date.now());
+    const decoded = jwt.verify(token, unlockSecret()) as jwt.JwtPayload;
+    return decoded?.type === TOKEN_TYPE && decoded?.sub === userId;
+  } catch {
+    // Expired or tampered — treated as "no token", so the DB fallback still runs.
+    return false;
+  }
+};
+
+// ── Durable fallback ─────────────────────────────────────────────────────────
+
+/**
+ * Was this user's last successful /pin/verify inside the window?
+ *
+ * `lastVerifiedAt` is written by pin.service on every successful verify/create,
+ * so it survives restarts and is shared across instances. This is the recovery
+ * path for a client whose token was lost, and it never *extends* the window —
+ * only a real verify moves it.
+ */
+const hasRecentVerification = async (userId: string): Promise<boolean> => {
+  try {
+    const record = await prisma.userPin.findUnique({
+      where: { userId },
+      select: { lastVerifiedAt: true, isActive: true },
+    });
+
+    const lastVerifiedAt = record?.lastVerifiedAt;
+    if (!record?.isActive || !lastVerifiedAt) return false;
+
+    return Date.now() - new Date(lastVerifiedAt).getTime() <= PIN_GATE_TIMEOUT_MS;
   } catch (err) {
-    logger.warn('Failed to establish PIN-unlock marker', {
+    // Fail OPEN on storage failure — a DB hiccup must never lock real users out
+    // of their own money.
+    logger.warn('[pinUnlock] lastVerifiedAt lookup failed; allowing request', {
       userId,
       error: err instanceof Error ? err.message : String(err),
     });
+    return true;
   }
 };
 
-/** Drop the marker (e.g. on logout / explicit lock) so the next gated request re-locks. */
+// ── Public API ───────────────────────────────────────────────────────────────
+
+export interface PinUnlockEvaluation {
+  unlocked: boolean;
+  /** A refreshed token to hand back on the response, when one was established. */
+  refreshedToken: string | null;
+}
+
+/**
+ * Decides whether a gated request may proceed, and returns the token to echo
+ * back so the window slides with activity.
+ */
+export const evaluatePinUnlockRequest = async (
+  userId: string,
+  presentedToken: string | undefined,
+): Promise<PinUnlockEvaluation> => {
+  if (!isPinGateEnabled() || !userId) {
+    return { unlocked: true, refreshedToken: null };
+  }
+
+  if (verifyPinUnlockToken(presentedToken, userId)) {
+    // Slide: a fresh token on every accepted request keeps an active session
+    // alive without any server-side state.
+    return { unlocked: true, refreshedToken: issuePinUnlockToken(userId) };
+  }
+
+  if (await hasRecentVerification(userId)) {
+    return { unlocked: true, refreshedToken: issuePinUnlockToken(userId) };
+  }
+
+  return { unlocked: false, refreshedToken: null };
+};
+
+/**
+ * Read-only check — does NOT slide the window. Used by reads such as
+ * /auth/profile that decide how much PII to include without extending access.
+ * Returns true (fail-open) when the gate is disabled.
+ */
+export const isPinUnlocked = async (userId: string, presentedToken?: string): Promise<boolean> => {
+  if (!isPinGateEnabled() || !userId) return true;
+  if (verifyPinUnlockToken(presentedToken, userId)) return true;
+  return hasRecentVerification(userId);
+};
+
+/**
+ * Mark the user as PIN-unlocked after a successful /pin/verify or /pin/create,
+ * and return the token the client should carry.
+ *
+ * pin.service already stamps `lastVerifiedAt` as part of verification, so this
+ * only needs to mint the token.
+ */
+export const establishPinUnlock = async (userId: string): Promise<string | null> => {
+  if (!userId) return null;
+  return issuePinUnlockToken(userId);
+};
+
+/**
+ * Drop the unlock on logout / explicit lock.
+ *
+ * Unlock tokens are stateless and therefore not individually revocable; clearing
+ * `lastVerifiedAt` removes the durable fallback so the *next* request cannot
+ * recover an unlock from it. The token itself is bounded by its short expiry and
+ * is discarded client-side on logout, and it is not a credential on its own —
+ * every gated route still requires a valid access token.
+ */
 export const clearPinUnlock = async (userId: string): Promise<void> => {
   if (!userId) return;
-  if (redisReady()) {
-    try {
-      await getRedisClient()!.del(KEY_PREFIX + userId);
-    } catch {
-      // best-effort
-    }
-  }
-  memoryStore.delete(userId);
-};
-
-/**
- * Read-only check of whether the user holds a live PIN unlock — does NOT slide
- * the window (used by reads like /auth/profile that shouldn't extend the data
- * window). Returns true (fail-open) when the gate is disabled or on error.
- */
-export const isPinUnlocked = async (userId: string): Promise<boolean> => {
-  if (!isPinGateEnabled() || !userId) return true;
   try {
-    return (await readMarker(userId)) !== null;
-  } catch {
-    return true;
-  }
-};
-
-/**
- * Whether the user currently holds a live PIN-unlock, sliding the window forward
- * when they do. Returns true (fail-open) when the gate is disabled or on storage
- * failure — a backend hiccup must never lock real users out of their own data.
- */
-export const evaluatePinUnlock = async (userId: string): Promise<boolean> => {
-  if (!isPinGateEnabled() || !userId) return true;
-
-  let marker: number | null;
-  try {
-    marker = await readMarker(userId);
+    await prisma.userPin.updateMany({
+      where: { userId },
+      data: { lastVerifiedAt: null },
+    });
   } catch (err) {
-    logger.warn('PIN-unlock read failed; allowing request', {
+    logger.warn('[pinUnlock] Failed to clear PIN-unlock marker', {
       userId,
       error: err instanceof Error ? err.message : String(err),
     });
-    return true;
   }
-
-  if (marker !== null) {
-    // Slide forward, throttled — avoid a SET on every gated request.
-    if (Date.now() - marker >= SLIDE_INTERVAL_MS) {
-      await writeMarker(userId, Date.now());
-    }
-    return true;
-  }
-  return false;
 };
+
+/**
+ * @deprecated Superseded by evaluatePinUnlockRequest, which also returns the
+ * refreshed token. Retained for callers that only need the boolean.
+ */
+export const evaluatePinUnlock = async (userId: string): Promise<boolean> =>
+  (await evaluatePinUnlockRequest(userId, undefined)).unlocked;

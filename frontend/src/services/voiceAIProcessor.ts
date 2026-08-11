@@ -361,7 +361,7 @@ class VoiceAIProcessor {
   private extractDate(text: string): string | undefined {
     const datePatterns = [
       /(?:today|yesterday|tomorrow)/i,
-      /(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/,
+      /(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})/,
       /(\d{1,2})\s+(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s+(\d{2,4})/i,
     ];
 
@@ -405,7 +405,7 @@ class VoiceAIProcessor {
     };
 
     const lowerText = text.toLowerCase();
-    let total = 0;
+    const total = 0;
     let current = 0;
 
     for (const word of lowerText.split(/\s+/)) {

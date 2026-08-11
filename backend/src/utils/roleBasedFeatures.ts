@@ -33,7 +33,7 @@ export type FeatureKey =
   | 'budgetAlerts'
   | 'accountSetup';
 
-export interface FeatureVisibility extends Record<FeatureKey, boolean> {}
+export type FeatureVisibility = Record<FeatureKey, boolean>;
 
 /**
  * STRICT role-based feature access matrix.

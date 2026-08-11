@@ -76,7 +76,11 @@ public final class SmsNotificationHelper {
                 : amountLabel + " " + action + " at " + merchant + ". Review and add it to KANAKU.";
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
-                .setSmallIcon(R.mipmap.ic_launcher)
+                // Monochrome drawable, NOT the launcher mipmap. The system renders a
+                // small icon as an alpha mask, so a full-colour asset shows up as a
+                // blank white square in the status bar.
+                .setSmallIcon(R.drawable.ic_stat_kanaku)
+                .setColor(ContextCompat.getColor(context, R.color.colorPrimary))
                 .setContentTitle("New Transaction Detected")
                 .setContentText(body)
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(body))

@@ -36,7 +36,7 @@ export const Terms: React.FC<TermsProps> = ({
  {
  title:"3. Account Responsibility",
  icon: <Shield className="w-5 h-5 text-green-500" />,
- content:"You are responsible for maintaining the confidentiality of your account credentials and Security PIN. You are liable for all actions taken under your account. KANAKUuses bank-grade encryption, but the security of your device remains your responsibility."
+ content:"You are responsible for maintaining the confidentiality of your account credentials and Security PIN. You are liable for all actions taken under your account. KANAKU encrypts data in transit and gates access behind your PIN, but the security of your device remains your responsibility."
  },
  {
  title:"4. Financial Data Disclaimer",

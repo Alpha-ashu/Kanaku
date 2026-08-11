@@ -10,7 +10,6 @@ import { incrementAIUsage } from '../../utils/aiUsageTracker';
 import { withCircuitBreaker } from '../../utils/circuitBreaker';
 import { audit } from '../../utils/auditLogger';
 import { prisma } from '../../db/prisma';
-import { eventBus } from '../../utils/eventBus';
 
 type JsonMap = Record<string, unknown>;
 
@@ -70,54 +69,10 @@ const DEFAULT_OCR_ENDPOINT = 'http://127.0.0.1:8001/scan-receipt';
 const getReceiptOcrEndpoint = () =>
   (process.env.RECEIPT_OCR_ENDPOINT || DEFAULT_OCR_ENDPOINT).replace(/\/+$/, '');
 
-const parseNumber = (value: unknown): number | undefined => {
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    return value;
-  }
-
-  if (typeof value === 'string') {
-    const cleaned = value.replace(/[^\d.-]/g, '');
-    const parsed = Number.parseFloat(cleaned);
-    if (Number.isFinite(parsed)) return parsed;
-  }
-
-  return undefined;
-};
-
-const parseDate = (value: unknown): string | undefined => {
-  if (typeof value !== 'string' || !value.trim()) return undefined;
-  const normalized = value.trim();
-
-  const ddMmYyyy = normalized.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})$/);
-  if (ddMmYyyy) {
-    const day = Number(ddMmYyyy[1]);
-    const month = Number(ddMmYyyy[2]) - 1;
-    let year = Number(ddMmYyyy[3]);
-    if (year < 100) year += 2000;
-
-    const date = new Date(year, month, day);
-    if (!Number.isNaN(date.getTime())) {
-      return date.toISOString().slice(0, 10);
-    }
-  }
-
-  const parsed = new Date(normalized);
-  if (!Number.isNaN(parsed.getTime())) {
-    return parsed.toISOString().slice(0, 10);
-  }
-
-  return undefined;
-};
-
-const firstString = (...values: unknown[]) => {
-  for (const value of values) {
-    if (typeof value === 'string' && value.trim()) {
-      return value.trim();
-    }
-  }
-
-  return undefined;
-};
+// NOTE: parseNumber / parseDate / firstString lived here as OCR response
+// normalisers. The receipt pipeline moved to the shared extraction schema and
+// stopped calling them; they were dead for long enough that keeping them only
+// invited a second, divergent copy of date parsing. Removed.
 
 
 

@@ -894,7 +894,7 @@ export class SocketManager {
     this.io.to(`user:${userId}`).emit(event, data);
   }
 
-  private handleDisconnect(userId: string, socketId: string, deviceId: string) {
+  private handleDisconnect(userId: string, socketId: string, _deviceId: string) {
     const userSockets = this.connectedUsers.get(userId);
     if (userSockets) {
       userSockets.delete(socketId);

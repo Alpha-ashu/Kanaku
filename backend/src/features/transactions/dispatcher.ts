@@ -292,6 +292,7 @@ class EventDispatcher {
     if (events.length === 0) return;
     
     // We defer the loading of prisma client to avoid circular imports.
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { prisma } = require('../../db/prisma');
     for (const event of events) {
       const list = this.listeners.get(event.eventType);

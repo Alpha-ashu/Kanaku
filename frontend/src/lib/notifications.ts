@@ -113,17 +113,15 @@ const shouldUseSystemNotification = () =>
   typeof document !== 'undefined' && document.visibilityState !== 'visible';
 
 async function getActiveUserId() {
-  try {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session?.user?.id) {
-      return session.user.id;
-    }
-
-    const { data } = await supabase.auth.getUser();
-    return data.user?.id;
-  } catch (error) {
-    throw error;
+  // No try/catch here: it caught and immediately rethrew, which only obscured
+  // the original stack. Callers already handle a rejection.
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session?.user?.id) {
+    return session.user.id;
   }
+
+  const { data } = await supabase.auth.getUser();
+  return data.user?.id;
 }
 
 async function showSystemNotification(title: string, body: string, deepLink?: string) {

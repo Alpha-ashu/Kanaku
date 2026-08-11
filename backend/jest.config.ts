@@ -19,6 +19,10 @@ export default {
     '!src/server.ts',
   ],
   setupFiles: ['<rootDir>/../quality/backend/tests/setup.ts'],
+  // Disconnects Prisma when the run ends. Without it the pgBouncer session-mode
+  // pool leaked connections between runs until it was exhausted — see the file
+  // header and backend/.env.test.example.
+  globalTeardown: '<rootDir>/../quality/backend/tests/globalTeardown.ts',
   // Integration tests share a single Postgres test database, so they MUST run
   // serially — parallel workers race and contaminate each other's rows, which
   // shows up as different tests "flakily" failing on each run. Forcing one

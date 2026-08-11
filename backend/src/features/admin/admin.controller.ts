@@ -1,7 +1,6 @@
 import { Response } from 'express';
-import { AuthRequest, getUserId, invalidateUserSnapshotCache } from '../../middleware/auth';
+import { AuthRequest, invalidateUserSnapshotCache } from '../../middleware/auth';
 import { ASSIGNABLE_ACCOUNT_STATUSES } from '../../utils/accountStatus';
-import { requireRole } from '../../middleware/rbac';
 import { prisma } from '../../db/prisma';
 import { logger } from '../../config/logger';
 import { getCacheMetricsSnapshot, getRedisStatus, resetCacheMetrics } from '../../cache/redis';
@@ -14,8 +13,6 @@ import { getSocketManager } from '../../sockets';
 import { isProtectedAccount } from '../../utils/protectedAccounts';
 import { sendAdminChangeEmail } from '../../emails';
 import { 
-  getVisibleFeaturesForRole, 
-  getAccessibleSubFeatures,
   UserRole,
 } from '../../utils/roleBasedFeatures';
 import {
@@ -51,7 +48,7 @@ export const getAllUsers = async (req: AuthRequest, res: Response) => {
   try {
     const { role, approved } = req.query;
 
-    let query: any = {};
+    const query: any = {};
 
     if (role) {
       query.role = role;
@@ -95,7 +92,7 @@ export const getAllUsers = async (req: AuthRequest, res: Response) => {
 
     // Enrich with phone from profiles table
     const userIds = users.map(u => u.id);
-    let phoneMap: Map<string, string | null> = new Map();
+    const phoneMap: Map<string, string | null> = new Map();
     try {
       const profiles = await prisma.profiles.findMany({
         where: { id: { in: userIds } },
@@ -612,7 +609,7 @@ export const getUsersReport = async (req: AuthRequest, res: Response) => {
   try {
     const { startDate, endDate } = req.query;
 
-    let where: any = {};
+    const where: any = {};
 
     if (startDate || endDate) {
       where.createdAt = {};
@@ -648,7 +645,7 @@ export const getRevenueReport = async (req: AuthRequest, res: Response) => {
   try {
     const { startDate, endDate } = req.query;
 
-    let where: any = { status: 'completed' };
+    const where: any = { status: 'completed' };
 
     if (startDate || endDate) {
       where.createdAt = {};

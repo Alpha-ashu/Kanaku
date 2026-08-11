@@ -538,6 +538,10 @@ class PinService {
 
     return new Promise((resolve) => {
       try {
+        // Loaded on demand: the worker path is a fallback that most requests
+        // never reach, and importing worker_threads eagerly pulls it into every
+        // process that merely imports pin.service.
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
         const { Worker } = require('worker_threads');
         const worker = new Worker(workerCode, {
           eval: true,

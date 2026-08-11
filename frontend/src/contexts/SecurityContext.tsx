@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Preferences } from '@capacitor/preferences';
 import { Capacitor } from '@capacitor/core';
 import { clearSecurityData, backupPINKeys, restorePINKeys } from '@/lib/encryption';
+import { clearPinUnlockToken } from '@/lib/pinUnlockCoordinator';
 
 interface SecurityContextType {
   isAuthenticated: boolean;
@@ -131,6 +131,9 @@ export const SecurityProvider: React.FC<{ children: ReactNode }> = ({ children }
   const handleLock = () => {
     setIsAuthenticated(false);
     setEncryptionKey(null);
+    // Surrender the server-side unlock proof too — a locked client must not keep
+    // an open PIN gate on the backend.
+    clearPinUnlockToken();
     try {
       sessionStorage.removeItem('session_active');
       sessionStorage.removeItem('session_encryption_key');
@@ -151,6 +154,7 @@ export const SecurityProvider: React.FC<{ children: ReactNode }> = ({ children }
       try { sessionStorage.setItem('KANAKU_lock_reason', 'pin_required'); } catch { /* ignore */ }
       setIsAuthenticated(false);
       setEncryptionKey(null);
+      clearPinUnlockToken();
       sessionStorage.removeItem('session_active');
       sessionStorage.removeItem('session_encryption_key');
       if (typeof window !== 'undefined') {
@@ -169,6 +173,7 @@ export const SecurityProvider: React.FC<{ children: ReactNode }> = ({ children }
       try { sessionStorage.setItem('KANAKU_lock_reason', 'session_expired'); } catch { /* ignore */ }
       setIsAuthenticated(false);
       setEncryptionKey(null);
+      clearPinUnlockToken();
       sessionStorage.removeItem('session_active');
       sessionStorage.removeItem('session_encryption_key');
       if (typeof window !== 'undefined') {
@@ -186,10 +191,6 @@ export const SecurityProvider: React.FC<{ children: ReactNode }> = ({ children }
     const pinBackup = backupPINKeys();
 
     clearSecurityData();
-
-    if (isNativePlatform) {
-      await Preferences.remove({ key: 'user_authenticated' });
-    }
 
     // Clear all data
     localStorage.clear();

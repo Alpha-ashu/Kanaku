@@ -125,8 +125,8 @@ const parseAmountFromText = (value: string) => {
 
 const parseDateFromText = (value: string) => {
   const datePatterns = [
-    /\b(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})\b/,
-    /\b(\d{1,2})[-\/](\d{1,2})[-\/](\d{2,4})\b/,
+    /\b(\d{4})[-/](\d{1,2})[-/](\d{1,2})\b/,
+    /\b(\d{1,2})[-/](\d{1,2})[-/](\d{2,4})\b/,
   ];
 
   for (const pattern of datePatterns) {

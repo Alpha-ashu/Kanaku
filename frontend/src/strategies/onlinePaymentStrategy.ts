@@ -15,7 +15,7 @@ export class OnlinePaymentStrategy implements ParsingStrategy {
   parse(text: string, _context?: ParsingContext): Partial<ReceiptScanResult> | null {
     const result: Partial<ReceiptScanResult> = {};
 
-    const merchantMatch = text.match(/(?:paid\s*to|merchant\s*:?|to\s*:?)([A-Za-z0-9\s&._\-]{3,})/i);
+    const merchantMatch = text.match(/(?:paid\s*to|merchant\s*:?|to\s*:?)([A-Za-z0-9\s&._-]{3,})/i);
     if (merchantMatch?.[1]) {
       result.merchantName = merchantMatch[1].trim();
     }
@@ -26,9 +26,9 @@ export class OnlinePaymentStrategy implements ParsingStrategy {
       result.amount = Number.parseFloat(amountMatch[1]);
     }
 
-    const dateMatch = text.match(/(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})/);
+    const dateMatch = text.match(/(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})/);
     if (dateMatch?.[1]) {
-      const parts = dateMatch[1].split(/[\/\-]/);
+      const parts = dateMatch[1].split(/[/-]/);
       if (parts.length === 3) {
         let year = Number.parseInt(parts[2], 10);
         if (year < 100) year += 2000;

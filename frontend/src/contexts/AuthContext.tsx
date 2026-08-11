@@ -22,8 +22,6 @@ import { pinService } from '@/services/pinService';
 import { disableBiometricUnlock } from '@/services/biometricAuthService';
 import { teardownPushNotifications } from '@/services/pushNotificationService';
 import socketClient from '@/lib/socket-client';
-import { Capacitor } from '@capacitor/core';
-import { Preferences } from '@capacitor/preferences';
 
 interface AuthContextType {
   user: User | null;
@@ -1128,9 +1126,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     TokenManager.clearTokens();
     await clearLocalUserData();
     clearLocalAuthPresentationState(true); // Preserve PIN keys
-    if (Capacitor.isNativePlatform()) {
-      await Preferences.remove({ key: 'user_authenticated' }).catch(() => undefined);
-    }
+
+    // SECURITY: flush the in-memory API caches.
+    //
+    // The short-TTL GET cache is keyed by endpoint ONLY, with no user scoping, and
+    // the profile caches are plain module-level variables. Nothing cleared them on
+    // sign-out, so on a shared device a second user signing in inside the TTL
+    // window (/settings 15s, /notifications 10s) was served the previous user's
+    // cached response.
+    api.clearCache();
 
     socketClient.disconnect();
     setUser(null);

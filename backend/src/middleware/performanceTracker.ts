@@ -1,6 +1,9 @@
 import type { Request, Response, NextFunction } from 'express';
 
 declare global {
+  // `namespace` is the only way to augment Express's Request interface —
+  // @typescript-eslint/no-namespace does not apply to declaration merging.
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Express {
     interface Request {
       startTime?: bigint;

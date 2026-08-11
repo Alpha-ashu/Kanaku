@@ -518,7 +518,7 @@ export function AddTransaction() {
 
  await applyTransactionAccountImpact(result, now);
  } else {
- let payload: any = {
+ const payload: any = {
  ...formData,
  category: normalizeCategorySelection(formData.category, formData.type as 'expense' | 'income'),
  date: transactionDate,

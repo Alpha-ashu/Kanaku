@@ -238,6 +238,20 @@ const CONFIG_MANIFEST: readonly ConfigItem[] = [
     tier: (e) => (e === 'production' ? 'required' : 'recommended'),
     present: () => has('JWT_SECRET') || (process.env.NODE_ENV !== 'production' && has('SUPABASE_JWT_SECRET')),
   },
+  {
+    key: 'SECURITY_JWT_SECRET',
+    group: 'Auth',
+    purpose:
+      'Signs the step-up security token (PIN change / key backup / PIN reset) and the ' +
+      'PIN-unlock token consumed by the pinGate. Falls back to JWT_SECRET when unset.',
+    services: ALL,
+    // Not hard-required: both consumers fall back to JWT_SECRET. Surfaced so the
+    // startup report shows it, because when PIN_GATE_ENABLED=true an absent
+    // secret in production aborts startup rather than signing unlock tokens with
+    // a per-boot random key (which would re-lock every user on each restart).
+    tier: () => 'recommended',
+    present: () => has('SECURITY_JWT_SECRET') || has('JWT_SECRET'),
+  },
 
   // ── Email (SendGrid) ────────────────────────────────────────────────────────
   {
@@ -388,7 +402,7 @@ export function validateConfig(service: Service = serviceName()): ConfigValidati
   const result = checkConfig(service);
   if (!validated) {
     validated = true;
-    // eslint-disable-next-line no-console
+     
     console[result.ok ? 'info' : 'error'](result.report);
   }
   if (!result.ok && result.nodeEnv === 'production') {

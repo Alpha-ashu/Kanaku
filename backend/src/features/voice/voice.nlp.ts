@@ -323,7 +323,6 @@ const TRANSFER_KEYWORDS  = ['transferred','transfer','sent to','moved','shifted'
 const LOAN_BORROW_KEYWORDS = ['borrowed','borrow','took loan'];
 const LOAN_LEND_KEYWORDS   = ['lent','gave','give','gave loan'];
 const GOAL_KEYWORDS        = ['save','saving','goal','target','want to save','plan to save'];
-const INVESTMENT_KEYWORDS  = ['invest','invested','bought stocks','mutual fund','sip','fd','fixed deposit'];
 
 const CATEGORY_KEYWORDS: Record<string, string[]> = {
   'Food & Dining':    ['food','dinner','lunch','breakfast','restaurant','cafe','coffee','eat','meal','pani puri','pizza','burger','swiggy','zomato','chai','tea','dhaba'],

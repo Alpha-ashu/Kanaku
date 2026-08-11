@@ -20,7 +20,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onBack, onGetStarted, onNa
  {
  icon: <Shield className="w-6 h-6 text-violet-600" />,
  title:"Security First",
- desc:"We use bank-grade encryption and local-first data storage to ensure your financial life remains private and secure."
+ desc:"We use encrypted connections, PIN-gated access and local-first data storage to ensure your financial life remains private and secure."
  },
  {
  icon: <Zap className="w-6 h-6 text-pink-600" />,

@@ -128,7 +128,7 @@ export class InputValidator {
   }
 
   static sanitizeInput(input: string): string {
-    return input.replace(/[<>\"'&]/g, (match) => {
+    return input.replace(/[<>"'&]/g, (match) => {
       const map: Record<string, string> = {
         '<': '<',
         '>': '>',

@@ -1,11 +1,9 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { LogOut, KeyRound, AlertCircle, ChevronLeft, ShieldCheck, Eye, EyeOff, Lock, Loader2, Fingerprint, ScanFace } from 'lucide-react';
 import { KANAKULogo } from '@/app/components/ui/KANAKULogo';
-import { clearSecurityData, isPINSet, verifyPIN, storeMasterKey, backupPINKeys, restorePINKeys } from '@/lib/encryption';
+import { clearSecurityData, isPINSet, verifyPIN, storeMasterKey, serializePINKeyBackup, restorePINKeyBackup } from '@/lib/encryption';
 import { isPinMissing, isPinServiceUnavailable, isSessionExpired, pinService } from '@/services/pinService';
 import { toast } from 'sonner';
-import { Preferences } from '@capacitor/preferences';
-import { Capacitor } from '@capacitor/core';
 import { useAuth } from '@/contexts/AuthContext';
 import { isGuestMode } from '@/lib/guestMode';
 import supabase from '@/utils/supabase/client';
@@ -22,9 +20,25 @@ import {
   unlockWithBiometrics,
 } from '@/services/biometricAuthService';
 
+import {
+  formatLockCountdown,
+  getPinLockState,
+  recordPinFailure,
+  resetPinAttempts,
+} from '@/lib/pinAttemptGuard';
+import { trackPinVerify } from '@/lib/pinUnlockCoordinator';
+
 interface PINAuthProps {
  onAuthenticated: (encryptionKey: string) => void;
 }
+
+/**
+ * How long the unlock waits for the server before proceeding on local proof
+ * alone. Long enough that a healthy backend answers inline; short enough that a
+ * cold or unreachable one never holds the keypad hostage.
+ */
+const SERVER_VERIFY_BUDGET_MS = 1200;
+const SERVER_VERIFY_PENDING = Symbol('pin-server-verify-pending');
 
 
 export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
@@ -111,8 +125,35 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  // refresh — we then show a "Sign in again" button instead of a wrong-PIN hint.
  const [sessionExpired, setSessionExpired] = useState(false);
  const [isReLoggingIn, setIsReLoggingIn] = useState(false);
+ // Brute-force throttle. `lockRemainingMs` ticks down while a lockout is active.
+ const [lockRemainingMs, setLockRemainingMs] = useState(() => getPinLockState().remainingMs);
 
  const hiddenInputRef = useRef<HTMLInputElement>(null);
+ const isPinLocked = lockRemainingMs > 0;
+
+ // The on-screen numpad is now rendered on every viewport (it used to be
+ // `hidden md:grid`). On a touch device the offscreen input would raise the OS
+ // keyboard on top of it, leaving two competing keypads fighting for the same
+ // digits. `inputMode="none"` keeps the input focusable — so hardware keyboards
+ // and password managers still work — while telling the browser not to show the
+ // virtual keyboard, making the numpad the single touch input surface.
+ const isCoarsePointer = typeof window !== 'undefined'
+   && typeof window.matchMedia === 'function'
+   && window.matchMedia('(pointer: coarse)').matches;
+
+ // Count the active lockout down to zero, then re-enable the keypad.
+ useEffect(() => {
+   if (lockRemainingMs <= 0) return;
+   const timer = setInterval(() => {
+     const { remainingMs } = getPinLockState();
+     setLockRemainingMs(remainingMs);
+     if (remainingMs <= 0) {
+       setErrorMsg('');
+       clearInterval(timer);
+     }
+   }, 500);
+   return () => clearInterval(timer);
+ }, [isPinLocked]);
 
  // Read (and consume) the auto-lock reason flag set by SecurityContext.
  useEffect(() => {
@@ -172,8 +213,7 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  if (status.success && !isPINSet()) {
  const kbr = await pinService.getKeyBackup();
  if (kbr.success && kbr.backup) {
- const [hash, salt] = kbr.backup.split('|');
- if (hash && salt) restorePINKeys({ hash, salt });
+ restorePINKeyBackup(kbr.backup);
  }
  }
 
@@ -210,10 +250,25 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  setTimeout(() => setShake(false), 500);
  };
 
+ /**
+  * Single funnel for every rejected unlock: shake, and advance the brute-force
+  * throttle. Once the free attempts are spent this arms an increasing lockout.
+  */
+ const registerFailedAttempt = (msg: string) => {
+   const state = recordPinFailure();
+   if (state.locked) {
+     setLockRemainingMs(state.remainingMs);
+     triggerShake(`Too many attempts. Try again in ${formatLockCountdown(state.remainingMs)}.`);
+     return;
+   }
+   triggerShake(msg);
+ };
+
   const finalizeAuth = useCallback(async (key: string, msg: string) => {
-  if (Capacitor.isNativePlatform()) {
-  await Preferences.set({ key: 'user_authenticated', value: 'true' });
-  }
+  // NOTE: this used to also write a `user_authenticated` Capacitor Preference.
+  // Nothing ever read it — SecurityContext owns unlock state via sessionStorage
+  // `session_active` — so it was write-only state with four separate clear-up
+  // sites to keep in sync. Removed rather than kept limping.
   console.log('[KANAKU Startup] PIN Verified & Application Unlocked');
   toast.success(msg);
   onAuthenticated(key);
@@ -336,29 +391,29 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  // screen is in "enter your PIN" mode (never during PIN creation).
  useEffect(() => {
    if (autoPromptedRef.current) return;
-   if (isLoading || isCreating || sessionExpired) return;
+   if (isLoading || isCreating || sessionExpired || isPinLocked) return;
    if (!biometric?.available || !biometricEnrolled) return;
    if (isBiometricSuppressed()) return;
 
    autoPromptedRef.current = true;
    void handleBiometricUnlock();
- }, [isLoading, isCreating, sessionExpired, biometric, biometricEnrolled, handleBiometricUnlock]);
+ }, [isLoading, isCreating, sessionExpired, isPinLocked, biometric, biometricEnrolled, handleBiometricUnlock]);
 
  // PIN input handler (hidden input + numpad both write here) 
   const appendDigit = (d: string) => {
-    if (isSubmitting) return;
+    if (isSubmitting || isPinLocked) return;
     setErrorMsg('');
     setPin(prev => prev.length < 6 ? prev + d : prev);
   };
 
   const deleteDigit = () => {
-    if (isSubmitting) return;
+    if (isSubmitting || isPinLocked) return;
     setErrorMsg('');
     setPin(prev => prev.slice(0, -1));
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (isSubmitting) return;
+    if (isSubmitting || isPinLocked) return;
     setErrorMsg('');
     const val = e.target.value.replace(/\D/g, '').slice(0, 6);
     setPin(val);
@@ -378,16 +433,26 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  // the modal, so a stray keystroke would edit `pin`, re-fire this effect and run a
  // second verification over the top of the pending one.
  useEffect(() => {
- if (pin.length === 6 && !isSubmitting && !enrolOffer) {
+ if (pin.length === 6 && !isSubmitting && !enrolOffer && !isPinLocked) {
  const t = setTimeout(handleSubmit, 120);
  return () => clearTimeout(t);
  }
  // eslint-disable-next-line react-hooks/exhaustive-deps
- }, [pin, enrolOffer]);
+ }, [pin, enrolOffer, isPinLocked]);
 
-  // Submit logic 
+  // Submit logic
   const handleSubmit = async () => {
     if (pin.length !== 6 || isSubmitting) return;
+
+    // Re-read rather than trusting the ticking state: a reload during a lockout
+    // remounts with a fresh timer, and the persisted deadline is authoritative.
+    const lockState = getPinLockState();
+    if (lockState.locked) {
+      setLockRemainingMs(lockState.remainingMs);
+      triggerShake(`Too many attempts. Try again in ${formatLockCountdown(lockState.remainingMs)}.`);
+      return;
+    }
+
     setIsSubmitting(true);
     setSessionExpired(false);
 
@@ -419,24 +484,25 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
 
         // Server sync is best-effort - always proceed after PINs match.
         // Guest mode: skip server entirely.
+        // storeMasterKey writes the verifier, so the backup payload must be
+        // serialised AFTER it — not before.
+        const key = await storeMasterKey(pin);
+
         if (!isGuestMode()) {
+          const backupPayload = serializePINKeyBackup();
           pinService.createPin(pin)
             .then(result => {
-              if (result.success) {
-                const backup = backupPINKeys();
-                if (backup.hash && backup.salt) {
-                  pinService.verifySecurity().then(sec => {
-                    if (sec.success && sec.securityToken) {
-                      pinService.saveKeyBackup(`${backup.hash}|${backup.salt}`, sec.securityToken).catch(() => { });
-                    }
-                  }).catch(() => { });
-                }
+              if (result.success && backupPayload) {
+                pinService.verifySecurity().then(sec => {
+                  if (sec.success && sec.securityToken) {
+                    pinService.saveKeyBackup(backupPayload, sec.securityToken).catch(() => { });
+                  }
+                }).catch(() => { });
               }
             })
             .catch(() => { });
         }
 
-        const key = await storeMasterKey(pin);
         await completeUnlock(key, 'PIN created! Welcome to KANAKU', pin);
 
       } else {
@@ -446,28 +512,69 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
         // Guest mode: verify locally only, no server call.
         if (isGuestMode()) {
           if (localResult.isValid && localResult.key) {
+            resetPinAttempts();
             await finalizeAuth(localResult.key, 'Welcome back!');
           } else {
-            triggerShake('Incorrect PIN. Please try again.');
+            registerFailedAttempt('Incorrect PIN. Please try again.');
             setIsSubmitting(false);
           }
           return;
         }
 
-        // If local PIN is valid, verify against server to establish live PIN-unlock session
+        // Local PIN is valid — unlock without waiting on the network.
+        //
+        // The server call still matters (it establishes the server-side PIN-unlock
+        // that the backend pinGate consumes), but AWAITING it before unlocking was
+        // a real regression: pinService.post walks every API base candidate with a
+        // 25s deadline each and can add a token-refresh retry on top, so against a
+        // cold backend the keypad froze for the better part of a minute — and then
+        // unlocked anyway, because the only server verdict acted on was session
+        // expiry.
+        //
+        // Instead: give the server a short budget to answer. A fast answer is
+        // honoured inline; a slow one keeps running in the background and re-locks
+        // through the normal event path if it turns out to be fatal.
         if (localResult.isValid && localResult.key) {
-          try {
-            const serverResult = await pinService.verifyPin({ pin });
-            if (!serverResult.success && isSessionExpired(serverResult)) {
-              setSessionExpired(true);
-              triggerShake(serverResult.message || 'Session expired. Please sign in again.');
-              setIsSubmitting(false);
-              return;
-            }
-          } catch (serverErr) {
-            // If server is unreachable/offline, still proceed with local offline unlock
-            console.warn('[PINAuth] Server verify skipped/failed, proceeding with local unlock:', serverErr);
+          resetPinAttempts();
+
+          const verifyPromise = pinService
+            .verifyPin({ pin })
+            .catch((serverErr) => {
+              console.warn('[PINAuth] Server PIN verify failed:', serverErr);
+              return null;
+            });
+
+          // Publish it so the API layer can tell "server unlock not established
+          // YET" from "genuinely locked" when a gated endpoint answers 403 during
+          // the window between local unlock and this request landing.
+          trackPinVerify(verifyPromise.then((r) => r?.success === true));
+
+          const raced = await Promise.race([
+            verifyPromise,
+            new Promise<typeof SERVER_VERIFY_PENDING>((resolve) =>
+              setTimeout(() => resolve(SERVER_VERIFY_PENDING), SERVER_VERIFY_BUDGET_MS),
+            ),
+          ]);
+
+          if (raced !== SERVER_VERIFY_PENDING && raced && isSessionExpired(raced)) {
+            setSessionExpired(true);
+            triggerShake(raced.message || 'Session expired. Please sign in again.');
+            setIsSubmitting(false);
+            return;
           }
+
+          if (raced === SERVER_VERIFY_PENDING) {
+            // Still in flight — unlock now, but keep watching. A late "session
+            // expired" must still tear the session down rather than be dropped.
+            void verifyPromise.then((late) => {
+              if (late && isSessionExpired(late) && typeof window !== 'undefined') {
+                window.dispatchEvent(
+                  new CustomEvent('KANAKU_SESSION_EXPIRED', { detail: { reason: 'pin_verify_late' } }),
+                );
+              }
+            });
+          }
+
           await completeUnlock(localResult.key, 'Welcome back!', pin);
           return;
         }
@@ -478,10 +585,10 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
           if (serverResult.success) {
             const kbr = await pinService.getKeyBackup();
             if (kbr.success && kbr.backup) {
-              const [hash, salt] = kbr.backup.split('|');
-              if (hash && salt) restorePINKeys({ hash, salt });
+              restorePINKeyBackup(kbr.backup);
             }
             const key = await storeMasterKey(pin);
+            resetPinAttempts();
             await completeUnlock(key, 'Welcome back!', pin);
             return;
           }
@@ -490,10 +597,10 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
             setSessionExpired(true);
             triggerShake(serverResult.message || 'Session expired. Please sign in again.');
           } else {
-            triggerShake(serverResult.message || 'Incorrect PIN. Please try again.');
+            registerFailedAttempt(serverResult.message || 'Incorrect PIN. Please try again.');
           }
         } catch {
-          triggerShake('Incorrect PIN. Please try again.');
+          registerFailedAttempt('Incorrect PIN. Please try again.');
         }
         setIsSubmitting(false);
       }
@@ -509,9 +616,7 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
       setShowResetModal(false);
       pinService.clearPinData();
       clearSecurityData();
-      if (Capacitor.isNativePlatform()) {
-        await Preferences.remove({ key: 'user_authenticated' });
-      }
+      resetPinAttempts();
       await signOut();
     } catch {
       toast.error('Failed to sign out. Please try again.');
@@ -530,9 +635,7 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
     try {
       pinService.clearPinData();
       clearSecurityData();
-      if (Capacitor.isNativePlatform()) {
-        await Preferences.remove({ key: 'user_authenticated' });
-      }
+      resetPinAttempts();
       await signOut();
     } catch {
       /* best-effort — proceed regardless so the user is never stranded */
@@ -611,6 +714,10 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
 
       clearSecurityData();
       pinService.clearPinData();
+      // A verified OTP reset is a legitimate recovery — clear any active lockout
+      // so the user can immediately create a new PIN.
+      resetPinAttempts();
+      setLockRemainingMs(0);
 
       setShowResetModal(false);
       setPin('');
@@ -676,11 +783,12 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  ref={hiddenInputRef}
  type="password"
  name="pin"
- inputMode="numeric"
+ inputMode={isCoarsePointer ? 'none' : 'numeric'}
  autoComplete="one-time-code"
  value={pin}
  onChange={handleInputChange}
  onKeyDown={handleHiddenKeyDown}
+ readOnly={isPinLocked}
  tabIndex={0}
  aria-label="PIN entry"
  data-testid="pin-auth-hidden-input"
@@ -697,8 +805,23 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  <p className="text-sm text-gray-500 font-medium text-center max-w-[240px] leading-tight">{currentStepSub}</p>
  </div>
 
+ {/* Brute-force lockout notice */}
+ {isPinLocked && (
+ <div
+ data-testid="pinauth-throttle-banner"
+ role="alert"
+ className="mx-6 mb-4 flex items-center gap-2.5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-red-800"
+ >
+ <Lock size={16} className="flex-shrink-0 text-red-600" />
+ <p className="text-xs font-medium leading-snug">
+ Too many incorrect attempts. Try again in {formatLockCountdown(lockRemainingMs)}
+ {!isGuestMode() && ', or reset your PIN by email'}.
+ </p>
+ </div>
+ )}
+
  {/* Inactivity auto-lock notice */}
- {lockedForInactivity && !isCreating && (
+ {lockedForInactivity && !isCreating && !isPinLocked && (
  <div
  data-testid="pinauth-inactivity-banner"
  role="status"
@@ -798,7 +921,7 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  key={n}
  type="button"
  onClick={() => appendDigit(String(n))}
- disabled={isSubmitting}
+ disabled={isSubmitting || isPinLocked}
  data-testid={`pin-auth-digit-${n}`}
  className="h-14 rounded-2xl bg-white hover:bg-gray-100 active:bg-gray-200 active:scale-95 transition-all text-xl font-semibold text-gray-900 flex items-center justify-center disabled:opacity-50 disabled:pointer-events-none"
  >
@@ -823,7 +946,7 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  <button
  type="button"
  onClick={() => appendDigit('0')}
- disabled={isSubmitting}
+ disabled={isSubmitting || isPinLocked}
  data-testid="pin-auth-digit-0"
  className="h-14 rounded-2xl bg-white hover:bg-gray-100 active:bg-gray-200 active:scale-95 transition-all text-xl font-semibold text-gray-900 flex items-center justify-center disabled:opacity-50 disabled:pointer-events-none"
  >
@@ -832,7 +955,7 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  <button
  type="button"
  onClick={deleteDigit}
- disabled={isSubmitting}
+ disabled={isSubmitting || isPinLocked}
  data-testid="pin-auth-delete-button"
  className="h-14 rounded-2xl bg-transparent hover:bg-gray-50 active:bg-gray-100 transition-all text-gray-500 hover:text-gray-900 flex items-center justify-center disabled:opacity-50 disabled:pointer-events-none"
  >
@@ -851,7 +974,7 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  <button
  type="button"
  onClick={() => void handleBiometricUnlock()}
- disabled={isSubmitting || biometricBusy}
+ disabled={isSubmitting || biometricBusy || isPinLocked}
  data-testid="pin-auth-biometric-button"
  className="flex items-center justify-center gap-2 mx-auto rounded-full border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-gray-900 transition-all hover:bg-gray-50 active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
  >
@@ -886,7 +1009,7 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  <div>
  <p className="text-gray-900 text-[11px] font-black uppercase tracking-wider mb-1">Secure Encryption</p>
  <p className="text-gray-500 text-[10px] leading-relaxed max-w-[220px]">
- Your financial data stays encrypted on this device. Only PIN verification metadata is stored securely.
+ Your PIN never leaves this device — only a salted, slow-to-crack verifier is stored. Nothing financial loads or syncs until you unlock.
  </p>
  </div>
  </div>

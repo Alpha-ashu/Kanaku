@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Brand colours.
+
+  styles.xml referenced @color/colorPrimary, @color/colorPrimaryDark and
+  @color/colorAccent, but no colors.xml existed to define them — the theme was
+  resolving whatever a dependency happened to supply rather than the Kanaku
+  palette. Values match capacitor.config.json (splash + status bar #2563eb) so
+  the native chrome and the web view agree.
+-->
+<resources>
+    <color name="colorPrimary">#2563EB</color>
+    <color name="colorPrimaryDark">#1D4ED8</color>
+    <color name="colorAccent">#2563EB</color>
+
+    <!-- Tint applied to the monochrome notification small icon. -->
+    <color name="notificationAccent">#2563EB</color>
+</resources>

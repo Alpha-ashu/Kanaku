@@ -359,24 +359,23 @@ const AppContent: React.FC = () => {
     };
   }, []);
 
-  if (!appContext) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-pink-500 to-rose-600">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4" />
-          <p className="text-white text-base font-medium">Loading KANAKU...</p>
-        </div>
-      </div>
-    );
-  }
-
-  const { setCurrentPage, visibleFeatures, aiCapabilities } = appContext;
+  // NOTE: the `if (!appContext) return <loader/>` guard that used to sit here has
+  // moved BELOW the last hook call. Every useEffect from here down was previously
+  // unreachable on a render where appContext was undefined, so the component
+  // rendered 3 hooks in that case and 14 otherwise — a Rules-of-Hooks violation
+  // that would throw "Rendered more hooks than during the previous render" the
+  // moment the guard ever became reachable. (It never has been: AppProvider always
+  // renders its Provider with a value. The lint rule that catches this was also
+  // not installed — see .eslintrc.json.)
+  const setCurrentPage = appContext?.setCurrentPage;
+  const visibleFeatures = appContext?.visibleFeatures;
+  const aiCapabilities = appContext?.aiCapabilities;
 
   // Keep the native back handler's refs pointing at the latest values. Assigning
   // refs during render is safe and gives the once-registered listener current
   // state without re-registering it.
   currentPageRef.current = currentPage;
-  goBackRef.current = appContext.goBack;
+  goBackRef.current = appContext?.goBack;
   setCurrentPageRef.current = setCurrentPage;
   closeOverlaysRef.current = () => {
     if (showQuickAction) { setShowQuickAction(false); return true; }
@@ -484,7 +483,7 @@ const AppContent: React.FC = () => {
   // User-dependent initialization
   useEffect(() => {
     const hash = window.location.hash;
-    if (hash && hash.includes('access_token') && hash.includes('type=')) {
+    if (hash && hash.includes('access_token') && hash.includes('type=') && setCurrentPage) {
       setCurrentPage('auth-callback');
     }
 
@@ -657,6 +656,10 @@ const AppContent: React.FC = () => {
   // Ensure we land on the correct default page after login, and guard disabled features.
   useEffect(() => {
     if (!user || authLoading) return;
+    // AppContext may not be mounted yet on the very first render — the loader
+    // guard for that case lives below the final hook (Rules of Hooks), so each
+    // effect that needs the context bails out on its own.
+    if (!setCurrentPage || !visibleFeatures) return;
     const staleAuthPaths = new Set(['login', 'signin', 'auth-callback', '']);
 
     const normalizedRole = role?.toLowerCase();
@@ -746,6 +749,21 @@ const AppContent: React.FC = () => {
     }
   }, [user, authLoading, dataReady, currentPage, setCurrentPage, visibleFeatures, role, aiCapabilities]);
 
+  // ── End of hooks ──────────────────────────────────────────────────────────
+  // Every conditional early return MUST live below this line: React requires the
+  // same hooks in the same order on every render, and this guard used to sit
+  // above ~11 useEffects.
+  if (!appContext || !setCurrentPage || !visibleFeatures) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-pink-500 to-rose-600">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4" />
+          <p className="text-white text-base font-medium">Loading KANAKU...</p>
+        </div>
+      </div>
+    );
+  }
+
   const setupNativeFeatures = async () => {
     const platform = Capacitor.getPlatform();
 
@@ -816,6 +834,14 @@ const AppContent: React.FC = () => {
       // `canGoBack` (WebView history) is unreliable here because navigation is
       // driven by react-router state, so we use the app's own navigation instead.
       const ROOT_PAGES = new Set(['dashboard', 'landing']);
+      // Window in which a second back press counts as "yes, really exit".
+      const EXIT_CONFIRM_WINDOW_MS = 2000;
+      // Grace period after unlocking. Android dismisses the soft keyboard by
+      // dispatching a BACK event, so the keystroke that closes the PIN keypad can
+      // arrive just as the Dashboard mounts; without this it would register as the
+      // first half of an exit gesture.
+      const UNLOCK_GRACE_MS = 1000;
+
       CapacitorApp.addListener('backButton', () => {
         // 1. If an input/textarea is currently focused, blur it to dismiss the keyboard and consume the back event
         if (
@@ -847,8 +873,28 @@ const AppContent: React.FC = () => {
           return;
         }
 
-        // On root pages (Dashboard/Landing), keep the app open and consume the back event
-        lastBackPressRef.current = 0;
+        // 4. Root page: double-press to exit.
+        //
+        // This branch previously just consumed the event and reset the timer, so
+        // back did NOTHING on the Dashboard — the user could never leave the app
+        // with the system gesture, only with Home. `lastBackPressRef` was written
+        // in five places and read in none, and exitApp() appeared only in the
+        // comment above. This implements the behaviour that comment describes.
+        const now = Date.now();
+
+        if (now - authUnlockTimeRef.current < UNLOCK_GRACE_MS) {
+          lastBackPressRef.current = 0;
+          return;
+        }
+
+        if (now - lastBackPressRef.current < EXIT_CONFIRM_WINDOW_MS) {
+          lastBackPressRef.current = 0;
+          void CapacitorApp.exitApp();
+          return;
+        }
+
+        lastBackPressRef.current = now;
+        toast('Press back again to exit', { duration: EXIT_CONFIRM_WINDOW_MS });
       });
       CapacitorApp.addListener('appStateChange', ({ isActive }) => {
         if (isActive) console.info('[Capacitor] App resumed to foreground.');

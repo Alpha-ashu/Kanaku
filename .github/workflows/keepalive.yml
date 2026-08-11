@@ -1,0 +1,48 @@
+name: Keep API warm
+
+# Render's free plan sleeps a web service after 15 minutes idle, and the next
+# request then pays a ~50s cold start. That is felt hardest exactly where it
+# hurts: /pin/verify on app open.
+#
+# docs/runbooks/render-migration.md nominates UptimeRobot for this, which is the
+# better primary (1-minute resolution, alerting, no GitHub dependency). This
+# workflow is a zero-setup backstop so the behaviour exists in the repo rather
+# than only in someone's SaaS account.
+#
+# Honest limits: GitHub throttles scheduled runs under load, so the real interval
+# drifts (10 min is a floor, not a guarantee), and scheduled workflows are
+# disabled automatically after 60 days without repo activity. Treat this as
+# defence in depth, not as the monitoring system.
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: keepalive
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Ping /health
+        env:
+          # Override per-repo: Settings → Secrets and variables → Actions → Variables
+          API_URL: ${{ vars.API_HEALTH_URL || 'https://kanaku-api.onrender.com/health' }}
+        run: |
+          echo "Pinging $API_URL"
+          # --max-time 90 because a cold start legitimately takes ~50s; a shorter
+          # timeout would abort the very wake-up this job exists to trigger.
+          code=$(curl -sS -o /tmp/health.json -w '%{http_code}' --max-time 90 --retry 2 --retry-delay 15 "$API_URL" || echo "000")
+          echo "HTTP $code"
+          cat /tmp/health.json 2>/dev/null || true
+          echo
+          if [ "$code" != "200" ]; then
+            echo "::warning::Health check returned $code (service may be cold, down, or the URL is wrong)"
+          fi

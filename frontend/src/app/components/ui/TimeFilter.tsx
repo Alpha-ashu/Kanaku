@@ -94,12 +94,15 @@ export const getPeriodLabel = (period: TimeFilterPeriod): string => {
  switch (period) {
  case 'daily':
  return now.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
- case 'weekly':
+ // Braced: `const` in a bare case shares the switch's block scope, so these
+ // bindings were visible (in the temporal dead zone) to every other branch.
+ case 'weekly': {
  const startOfWeek = new Date(now);
  startOfWeek.setDate(now.getDate() - now.getDay());
  const endOfWeek = new Date(startOfWeek);
  endOfWeek.setDate(startOfWeek.getDate() + 6);
  return `${startOfWeek.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${endOfWeek.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+ }
  case 'monthly':
  return now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
  case 'yearly':

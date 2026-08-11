@@ -417,9 +417,9 @@ export const TopBar: React.FC = () => {
     {(() => {
       const profileStr = typeof window !== 'undefined' ? localStorage.getItem('user_profile') : null;
       let displayName = 'User';
-      let email = user?.email || 'user@KANAKU.com';
+      const email = user?.email || 'user@KANAKU.com';
       let avatarUrl = '';
-      let roleName = role ? role.toUpperCase() : 'USER';
+      const roleName = role ? role.toUpperCase() : 'USER';
       
       if (profileStr) {
         try {

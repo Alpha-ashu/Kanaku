@@ -96,7 +96,9 @@ router.use('/categorize', categorizationRoutes);
 router.use('/learn', learnRouter);
 router.use('/voice', voiceRoutes);
 router.use('/import', importRoutes);
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 router.use('/ai', lazyRoute(() => require('../features/ai/ai.routes'), 'aiRoutes'));
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 router.use('/receipts', lazyRoute(() => require('../features/receipts/receipt.routes'), 'receiptRoutes'));
 
 // Advisor & Booking routes
@@ -116,6 +118,7 @@ router.use('/notifications', notificationRoutes);
 router.use('/devices', deviceRoutes);
 
 // Secure bill uploads
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 router.use('/bills', lazyRoute(() => require('../features/bills/bills.routes'), 'billsRoutes'));
 
 // Dashboard aggregation

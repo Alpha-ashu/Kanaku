@@ -5,7 +5,6 @@
  */
 
 import { prisma } from '../../db/prisma';
-import { logger } from '../../config/logger';
 import { getFinancialBaseline } from './financial-baseline';
 
 //  Type Definitions 

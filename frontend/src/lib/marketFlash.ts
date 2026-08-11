@@ -239,7 +239,8 @@ function getCommodityDisplayOverrides(
   asset: FlashAsset,
   quote: StockQuote,
   quotes: Record<string, StockQuote | null>,
-  countryLabel: string,
+  // Retained for signature stability; commodity display is India-only (see below).
+  _countryLabel: string,
 ) {
   if (asset.symbol === 'PETROL') {
     return {
@@ -262,7 +263,15 @@ function getCommodityDisplayOverrides(
     };
   }
 
-  if (countryLabel === 'India' || true) {
+  // Commodity display is India-specific by design, matching the unconditional
+  // INR fuel prices above: gold/silver are converted to INR and carry the Indian
+  // import-duty factors.
+  //
+  // This was written `if (countryLabel === 'India' || true)`. The `|| true`
+  // forced the branch for everyone, so the country check had no effect and was
+  // pure noise — a reader could not tell whether non-India users were meant to
+  // be excluded. Behaviour is unchanged; the intent is now stated.
+  {
     const usdInr = getConversionRateFromQuotes('USD', 'INR', quotes) || 85.5;
     if (usdInr > 0) {
       if (asset.label === 'Gold') {

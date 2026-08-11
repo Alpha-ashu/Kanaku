@@ -173,8 +173,8 @@ class KANAKUIntelligenceEngine {
 
   private extractDate(text: string): string | undefined {
     const datePatterns = [
-      /(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/, // DD/MM/YYYY
-      /(\d{2,4})[\/\-](\d{1,2})[\/\-](\d{1,2})/, // YYYY/MM/DD
+      /(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})/, // DD/MM/YYYY
+      /(\d{2,4})[/-](\d{1,2})[/-](\d{1,2})/, // YYYY/MM/DD
       /(\d{1,2})\s+(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s+(\d{2,4})/i, // DD Month YYYY
     ];
 
@@ -256,7 +256,7 @@ class KANAKUIntelligenceEngine {
     feedback: 'positive' | 'negative' = 'positive'
   ): Promise<void> {
     const normalizedMerchant = merchant.toLowerCase().trim();
-    let patterns = this.merchantPatterns.get(userId) || [];
+    const patterns = this.merchantPatterns.get(userId) || [];
 
     const existingPattern = patterns.find(p =>
       p.merchant.toLowerCase() === normalizedMerchant

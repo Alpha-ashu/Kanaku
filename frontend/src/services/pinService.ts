@@ -7,6 +7,7 @@ import {
   shouldRetryWithLocalApiFallback,
 } from '@/lib/apiBase';
 import { TokenManager, api, refreshAccessToken } from '@/lib/api';
+import { setPinUnlockToken } from '@/lib/pinUnlockCoordinator';
 import supabase from '@/utils/supabase/client';
 import CryptoJS from 'crypto-js';
 
@@ -25,6 +26,12 @@ export interface PinStatus {
    * recover it, so the user must sign in again. Distinct from a wrong PIN.
    */
   sessionExpired?: boolean;
+  /**
+   * Short-lived proof of a live PIN unlock, issued by /pin/verify and /pin/create.
+   * Sent back as `X-Pin-Unlock` on every request so the backend pinGate opens;
+   * the server re-issues it on each accepted response to slide the window.
+   */
+  pinUnlockToken?: string;
 }
 
 export interface PinVerifyRequest {
@@ -511,6 +518,13 @@ class PinService {
     const result = await this.post('verify', { ...request, pin: hashedPin });
 
     if (result.success) {
+      // Capture the PIN-unlock token the backend issues here. This is the ONLY
+      // place it is minted; every subsequent request carries it as X-Pin-Unlock
+      // so the server-side pinGate opens. pinService uses its own fetch path, so
+      // the apiClient's response-header capture does not cover this call.
+      const unlockToken = (result as { pinUnlockToken?: string }).pinUnlockToken;
+      if (unlockToken) setPinUnlockToken(unlockToken);
+
       this.persistPinState(result, true);
       localStorage.setItem(this.PIN_VERIFIED_KEY, 'true');
       localStorage.setItem(this.PIN_VERIFIED_AT_KEY, new Date().toISOString());
@@ -732,6 +746,10 @@ class PinService {
   clearPinVerification(): void {
     localStorage.removeItem(this.PIN_VERIFIED_KEY);
     localStorage.removeItem(this.PIN_VERIFIED_AT_KEY);
+    // The server-side unlock proof must die with the client-side one, otherwise a
+    // locked app would keep presenting a valid X-Pin-Unlock and the gate would
+    // stay open behind the PIN screen.
+    setPinUnlockToken(null);
   }
 }
 

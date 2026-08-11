@@ -11,7 +11,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import supabase from '@/utils/supabase/client';
 import { db } from '@/lib/database';
 import { permissionService } from '@/services/permissionService';
-import { backupPINKeys, restorePINKeys, storeMasterKey } from '@/lib/encryption';
+import { backupPINKeys, restorePINKeys, serializePINKeyBackup, storeMasterKey } from '@/lib/encryption';
 import { calculateAge, getAgeGroup, getAgeGroupLabel } from '@/lib/avatar';
 import { AVATAR_OPTIONS, DEFAULT_AVATAR, resolveAvatarSelection } from '@/lib/avatar-gallery';
 import { api } from '@/lib/api';
@@ -717,7 +717,9 @@ export const UserProfile: React.FC = () => {
         return;
       }
 
-      storeMasterKey(newPin);
+      // Must complete before the key backup is serialised below — otherwise the
+      // payload carries the PREVIOUS PIN's verifier.
+      await storeMasterKey(newPin);
 
       // Re-bind biometric unlock to the new PIN. Without this the secure store keeps
       // handing back the old PIN, which then fails server verification on every
@@ -725,9 +727,9 @@ export const UserProfile: React.FC = () => {
       // No-op when biometrics are off or unavailable.
       await syncBiometricPin(newPin, user?.email || 'KANAKU account');
 
-      const pinBackup = backupPINKeys();
-      if (pinBackup.hash && pinBackup.salt) {
-        const backupResult = await pinService.saveKeyBackup(`${pinBackup.hash}|${pinBackup.salt}`, secResult.securityToken);
+      const backupPayload = serializePINKeyBackup();
+      if (backupPayload) {
+        const backupResult = await pinService.saveKeyBackup(backupPayload, secResult.securityToken);
         if (!backupResult.success) {
           console.warn('PIN key backup refresh failed after PIN change:', backupResult.message);
         }

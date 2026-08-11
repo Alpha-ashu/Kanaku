@@ -6,7 +6,29 @@
 # ─────────────────────────────────────────────────────────────────────────────
 
 $ErrorActionPreference = "Stop"
-$root = "k:\Project\Kanaku"
+
+# Derive the repo root from this script's own location instead of hardcoding
+# "k:\Project\Kanaku" — the old value meant the script only ran on one machine.
+$root = $PSScriptRoot
+
+# JAVA_HOME was hardcoded to "C:\Program Files\Java\jdk-21". Honour an existing
+# JDK 21 if the environment already has one, and only fall back to the common
+# install path. Capacitor 8 plugin modules declare kotlin { jvmToolchain(21) },
+# so 21 is a hard requirement, not a preference.
+if (-not $env:JAVA_HOME -or -not (Test-Path "$env:JAVA_HOME\bin\java.exe")) {
+    $candidates = @(
+        "C:\Program Files\Java\jdk-21",
+        "C:\Program Files\Eclipse Adoptium\jdk-21",
+        "C:\Program Files\Microsoft\jdk-21"
+    ) | Where-Object { Test-Path "$_\bin\java.exe" }
+
+    if (-not $candidates) {
+        Write-Host "FAILED: JDK 21 not found. Set JAVA_HOME to a JDK 21 install." -ForegroundColor Red
+        exit 1
+    }
+    $env:JAVA_HOME = $candidates[0]
+}
+Write-Host "Using JAVA_HOME: $env:JAVA_HOME" -ForegroundColor DarkGray
 
 Write-Host ""
 Write-Host "======================================================" -ForegroundColor Cyan
@@ -30,9 +52,13 @@ if ($LASTEXITCODE -ne 0) { Write-Host "FAILED: Cap sync" -ForegroundColor Red; e
 Write-Host "OK: Synced" -ForegroundColor Green
 
 # Step 3: Gradle release build (APK + AAB Bundle)
+#
+# assembleRelease/bundleRelease are aggregate tasks: they build BOTH flavors
+# (full + nosms), so this produces four artifacts, not the two the header used to
+# advertise. That is intentional — nosms goes to Play, full is the sideload
+# build — but it is worth stating.
 Write-Host ""
-Write-Host "[3/3] Building Android APK & AAB Bundle..." -ForegroundColor Yellow
-$env:JAVA_HOME = "C:\Program Files\Java\jdk-21"
+Write-Host "[3/3] Building Android APK & AAB (both flavors: nosms + full)..." -ForegroundColor Yellow
 $env:PATH = "$env:JAVA_HOME\bin;$env:PATH"
 Set-Location "$root\android"
 .\gradlew assembleRelease bundleRelease

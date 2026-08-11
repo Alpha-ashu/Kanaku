@@ -5,7 +5,11 @@ import { prisma } from '../../../../backend/src/db/prisma';
 import { LedgerStatus, LedgerReferenceType, SourceModule, LedgerDirection, FinancialEventType } from '../../../../backend/src/db/prisma-client';
 
 const API = '/api/v1';
-const TEST_USER_ID = 'da6d92bf-33ab-41c6-a675-ea285f524021';
+// Distinct from platformConsistency.test.ts, which used this exact same uuid.
+// Both suites create and then deleteMany() rows for their TEST_USER_ID, so
+// sharing one id meant each wiped the other's fixtures — they passed alone and
+// failed in a full run.
+const TEST_USER_ID = 'c1f4a8e2-77b5-4d16-9a03-5e6f2b8d41cc';
 
 // The integrity endpoint is admin-only (system-wide operational data), so the
 // suite signs an admin token; NODE_ENV=test lets the role claim be trusted.

@@ -123,7 +123,7 @@ const DISCOUNT_LABEL = /(^|\s)(dis\b|discount|less\b|promo|coupon|offer)/i;
  * mark — never a letter.
  */
 const TRAILING_MONEY =
-  /(?:^|[\s:;=|*()\[\]])(?:(?:rs|inr)\.?\s*)?[₹$€£]?\s*(-?\d[\d,]*(?:\.\d{1,2})?)\s*$/i;
+  /(?:^|[\s:;=|*()[\]])(?:(?:rs|inr)\.?\s*)?[₹$€£]?\s*(-?\d[\d,]*(?:\.\d{1,2})?)\s*$/i;
 
 const PERCENT_RATE = /@?\s*(\d{1,2}(?:\.\d{1,2})?)\s*%/;
 

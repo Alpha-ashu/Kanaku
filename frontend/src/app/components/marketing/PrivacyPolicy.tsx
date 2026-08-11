@@ -26,7 +26,7 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({
  {
  title:"1. Data Collection",
  icon: <Database className="w-5 h-5 text-blue-500" />,
- content:"We collect information you provide directly, such as your profile details and financial transactions. We also collect device information to ensure security and cross-device synchronization. Your financial data is encrypted and handled with the highest level of confidentiality."
+ content:"We collect information you provide directly, such as your profile details and financial transactions. We also collect device information to ensure security and cross-device synchronization. Your financial data is transmitted over encrypted connections and handled with the highest level of confidentiality."
  },
  {
  title:"2. How We Use Data",
@@ -36,7 +36,7 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({
  {
  title:"3. Data Storage & Security",
  icon: <Lock className="w-5 h-5 text-green-500" />,
- content:"We use bank-grade AES-256 encryption for all data storage. For local-first operations, data is stored securely on your device. Cloud synchronization uses encrypted channels to our protected Supabase infrastructure."
+ content:"All traffic between the app and our servers uses TLS (HTTPS). Data held in our cloud database is encrypted at rest by our infrastructure provider. On your device, app data lives in storage private to KANAKU and isolated from other apps and sites; on Android we additionally block screenshots, recents-screen previews and OS backups of that data. Access is gated by your PIN — we never store the PIN itself, only a salted, deliberately slow verifier that cannot be reversed into your PIN."
  },
  {
  title:"4. Your Privacy Rights",
@@ -127,7 +127,7 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({
  We believe privacy is a fundamental right. KANAKUis built from the ground up to be the most private financial tool you've ever used.
  </p>
  <div className="flex items-center justify-center gap-4">
- <div className="px-4 py-2 rounded-xl border border-gray-800 text-xs font-bold text-gray-500 uppercase tracking-widest">End-to-End Encrypted</div>
+ <div className="px-4 py-2 rounded-xl border border-gray-800 text-xs font-bold text-gray-500 uppercase tracking-widest">PIN Protected</div>
  <div className="px-4 py-2 rounded-xl border border-gray-800 text-xs font-bold text-gray-500 uppercase tracking-widest">Local First</div>
  </div>
  </motion.div>

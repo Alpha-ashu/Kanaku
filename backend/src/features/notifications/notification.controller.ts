@@ -1,6 +1,5 @@
 import { Response } from 'express';
 import { AuthRequest, getUserId } from '../../middleware/auth';
-import { requireRole } from '../../middleware/rbac';
 import { prisma } from '../../db/prisma';
 import { isDatabaseUnavailableError } from '../../utils/databaseAvailability';
 
@@ -10,7 +9,7 @@ export const getNotifications = async (req: AuthRequest, res: Response) => {
     const userId = getUserId(req);
     const { unread, limit = 20, page = 1 } = req.query;
 
-    let where: any = { userId };
+    const where: any = { userId };
 
     if (unread === 'true') {
       where.isRead = false;

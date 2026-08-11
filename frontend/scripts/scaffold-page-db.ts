@@ -202,12 +202,12 @@ async function main() {
       written++;
     }
   }
-  // eslint-disable-next-line no-console
+   
   console.log(`✓ scaffolded ${written} page data-slice files across ${PAGES.length} pages`);
 }
 
 main().catch((err) => {
-  // eslint-disable-next-line no-console
+   
   console.error(err);
   process.exit(1);
 });

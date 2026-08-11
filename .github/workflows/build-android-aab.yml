@@ -54,10 +54,24 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v4
 
+      # Every run recompiled all Capacitor plugin modules from scratch.
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('android/**/*.gradle', 'android/gradle/wrapper/gradle-wrapper.properties', 'package-lock.json') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
+
       - name: Install Android SDK packages
         run: |
-          yes | sdkmanager --licenses || true
-          sdkmanager "platforms;android-36" "build-tools;36.0.0" || true
+          # `|| true` used to hide a failed install here; the build then died much
+          # later inside Gradle with an unrelated-looking error. Licences may
+          # legitimately be pre-accepted, so only that line tolerates failure.
+          yes | sdkmanager --licenses > /dev/null 2>&1 || true
+          sdkmanager "platforms;android-36" "build-tools;36.0.0"
 
       - name: Make gradlew executable
         run: chmod +x gradlew
@@ -76,7 +90,15 @@ jobs:
         run: npx cap sync android
         working-directory: .
 
-      - name: Decode keystore (release builds)
+      # A release artifact is only meaningful if it carries the REAL upload key.
+      #
+      # This step used to generate a throwaway self-signed keystore when the
+      # secrets were absent, build a release AAB with it, and upload it under the
+      # same artifact name as a genuine one — a different random key on every run.
+      # Uploading such a build to Play fails the signature check, and on a first
+      # upload it would have permanently bound the wrong signing key to the
+      # package name. Missing production secrets now fail the job.
+      - name: Decode upload keystore
         if: |
           github.event_name == 'push' ||
           (github.event_name == 'workflow_dispatch' && github.event.inputs.build_variant == 'release')
@@ -84,11 +106,18 @@ jobs:
           ALL_SECRETS: ${{ toJSON(secrets) }}
         run: |
           KEYSTORE_BASE64="$(echo "$ALL_SECRETS" | jq -r '.ANDROID_KEYSTORE_BASE64 // ""')"
-          if [ -n "$KEYSTORE_BASE64" ]; then
-            echo "$KEYSTORE_BASE64" | base64 -d > android/finance-life-release.keystore
-          else
-            echo "WARNING: ANDROID_KEYSTORE_BASE64 not set, generating self-signed keystore for dummy release build"
-            keytool -genkey -v -keystore android/finance-life-release.keystore -alias finance-life -keyalg RSA -keysize 2048 -validity 10000 -storepass dummypass -keypass dummypass -dname "CN=Dummy, O=Dummy, C=US"
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "::error::ANDROID_KEYSTORE_BASE64 is not set. A release build cannot be signed with the upload key."
+            echo "::error::Add ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD and ANDROID_KEY_PASSWORD under Settings → Secrets and variables → Actions."
+            echo "::error::To produce an unsigned build for local testing, run the workflow manually with build_variant=debug."
+            exit 1
+          fi
+          echo "$KEYSTORE_BASE64" | base64 -d > android/finance-life-release.keystore
+          # Guard against a truncated or mis-encoded secret producing a file that
+          # only fails much later, inside Gradle.
+          if [ ! -s android/finance-life-release.keystore ]; then
+            echo "::error::Decoded keystore is empty — ANDROID_KEYSTORE_BASE64 is not valid base64."
+            exit 1
           fi
 
       # The app has a `smsSupport` flavor dimension (full | nosms), so Gradle emits
@@ -109,16 +138,21 @@ jobs:
           KEYSTORE_PATH: finance-life-release.keystore
           KEY_ALIAS: finance-life
           ALL_SECRETS: ${{ toJSON(secrets) }}
+          # Monotonic per-run offset added to VERSION_CODE_BASE in app/build.gradle.
+          # github.run_number only ever increases for a given workflow, so version
+          # codes stay strictly ascending across builds.
+          ANDROID_VERSION_CODE: ${{ github.run_number }}
         run: |
           cd android
           KEYSTORE_PASSWORD="$(echo "$ALL_SECRETS" | jq -r '.ANDROID_KEYSTORE_PASSWORD // ""')"
           KEY_PASSWORD="$(echo "$ALL_SECRETS" | jq -r '.ANDROID_KEY_PASSWORD // ""')"
-          if [ -n "$KEYSTORE_PASSWORD" ]; then
-               printf 'storeFile=../%s\nstorePassword=%s\nkeyAlias=%s\nkeyPassword=%s\n' "$KEYSTORE_PATH" "$KEYSTORE_PASSWORD" "$KEY_ALIAS" "$KEY_PASSWORD" > key.properties
-          else
-               echo "WARNING: ANDROID_KEYSTORE_PASSWORD not set, creating dummy key.properties for self-signed build"
-               printf 'storeFile=../%s\nstorePassword=dummypass\nkeyAlias=finance-life\nkeyPassword=dummypass\n' "$KEYSTORE_PATH" > key.properties
+          if [ -z "$KEYSTORE_PASSWORD" ] || [ -z "$KEY_PASSWORD" ]; then
+            echo "::error::ANDROID_KEYSTORE_PASSWORD / ANDROID_KEY_PASSWORD are not set — refusing to build an incorrectly signed release."
+            exit 1
           fi
+          printf 'storeFile=../%s\nstorePassword=%s\nkeyAlias=%s\nkeyPassword=%s\n' "$KEYSTORE_PATH" "$KEYSTORE_PASSWORD" "$KEY_ALIAS" "$KEY_PASSWORD" > key.properties
+          # ANDROID_VERSION_CODE is consumed by app/build.gradle so every CI build
+          # gets a unique, monotonically increasing code (Play rejects duplicates).
           ./gradlew bundleRelease --no-daemon
           rm -f key.properties
 
@@ -165,8 +199,11 @@ jobs:
         with:
           name: proguard-mappings
           path: android/app/build/outputs/mapping/*/mapping.txt
-          if-no-files-found: warn
-          retention-days: 30
+          # Play Console crash reports keep arriving long after release. At the
+          # previous 30 days the mapping expired with the AAB, leaving those stack
+          # traces permanently unsymbolicatable. 90 is the artifact maximum.
+          if-no-files-found: error
+          retention-days: 90
 
       - name: Clean up keystore
         if: always()

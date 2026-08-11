@@ -1,8 +1,10 @@
 import { Response, NextFunction } from 'express';
 import { AuthRequest, getUserId } from '../../middleware/auth';
 import { prisma, prismaRead } from '../../db/prisma';
-import { Prisma } from '../../db/prisma-client';
-import { AppError } from '../../utils/AppError';
+// Was an inline `require('../../cache/redis')` inside both handlers, re-resolved
+// on every dashboard request. cache/redis is a leaf module (it imports nothing
+// from features/), so there was no cycle to break — the laziness was accidental.
+import { cacheGetJson, cacheSetJson } from '../../cache/redis';
 import { asString } from '../../utils/requestParams';
 
 /**
@@ -16,7 +18,6 @@ export const getDashboardSummary = async (req: AuthRequest, res: Response, next:
     const monthParam = asString(req.query.month);
 
     const cacheKey = `dashboard:${userId}:summary:${monthParam || 'current'}`;
-    const { cacheGetJson, cacheSetJson } = require('../../cache/redis');
     const cached = process.env.NODE_ENV !== 'test' ? await cacheGetJson(cacheKey) : null;
     if (cached) {
       return res.json(cached);
@@ -156,7 +157,6 @@ export const getCashflow = async (req: AuthRequest, res: Response, next: NextFun
     const monthsBack = Math.min(24, Math.max(1, parseInt(req.query.months as string || '6', 10)));
 
     const cacheKey = `dashboard:${userId}:cashflow:${monthsBack}`;
-    const { cacheGetJson, cacheSetJson } = require('../../cache/redis');
     const cached = process.env.NODE_ENV !== 'test' ? await cacheGetJson(cacheKey) : null;
     if (cached) {
       return res.json(cached);

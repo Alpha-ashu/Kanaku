@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
 import { AuthRequest } from './auth';
 import { prisma } from '../db/prisma';
 import { logger } from '../config/logger';

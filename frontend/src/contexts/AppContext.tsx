@@ -985,7 +985,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       window.removeEventListener('online', handleOnline);
       nativeCleanup?.();
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, [user?.id, dataReady, dataSyncing, fetchGlobalFlags]);
 
   // Real-time feature flag sync via WebSocket.

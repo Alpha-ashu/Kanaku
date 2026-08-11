@@ -8,9 +8,7 @@ import { transactionRepository } from '../features/transactions/transaction.repo
 import { Prisma } from '../db/prisma-client';
 import {
   recurringExecutionTotal,
-  recurringJobsRunning,
   recurringJobsFailedTotal,
-  databaseTransactionDuration,
 } from '../config/metrics';
 
 let recurringJob: ScheduledTask | null = null;

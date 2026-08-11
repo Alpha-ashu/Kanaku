@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { AuthRequest, getUserId } from '../../middleware/auth';
 import { logger } from '../../config/logger';
 import { prisma } from '../../db/prisma';
@@ -77,7 +77,7 @@ function extractMerchant(text: string): string | undefined {
 }
 
 function extractDate(text: string): string | undefined {
-  const datePattern = /(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/;
+  const datePattern = /(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})/;
   const match = text.match(datePattern);
   if (match) {
     const [, day, month, year] = match;

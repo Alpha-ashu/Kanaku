@@ -1,7 +1,7 @@
 import path from 'path';
 import crypto from 'crypto';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 let cachedFileTypeFromBuffer: ((buffer: Buffer) => Promise<{ mime: string; ext: string } | undefined>) | null = null;
 
 const getFileTypeFromBuffer = async (): Promise<(buffer: Buffer) => Promise<{ mime: string; ext: string } | undefined>> => {

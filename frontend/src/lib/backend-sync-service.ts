@@ -97,7 +97,7 @@ class BackendSyncService {
 
     try {
       // Get user authentication
-      let accessToken = TokenManager.getAccessToken();
+      const accessToken = TokenManager.getAccessToken();
       let userObj: any = null;
 
       if (accessToken) {

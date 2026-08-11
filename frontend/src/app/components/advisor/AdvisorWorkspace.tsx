@@ -57,21 +57,11 @@ export const AdvisorWorkspace: React.FC = () => {
  const [postForm, setPostForm] = useState({ category: POST_CATEGORIES[0], title: '', content: '' });
  const [isPublishing, setIsPublishing] = useState(false);
 
- // Only advisors can access this
- if (role !== 'advisor') {
- return (
- <div className="flex items-center justify-center min-h-screen bg-white">
- <div className="text-center py-12 px-6">
- <Briefcase size={48} className="mx-auto text-gray-300 mb-4" />
- <h2 className="text-2xl font-bold text-gray-900 mb-2">Advisor Access Only</h2>
- <p className="text-gray-500 mb-6">This workspace is for approved financial advisors.</p>
- <button data-testid="advisor-workspace-apply-as-advisor" onClick={() => setCurrentPage('book-advisor')} className="px-5 py-2.5 bg-indigo-600 text-white rounded-xl font-bold text-sm">Apply as Advisor</button>
- </div>
- </div>
- );
- }
+ const isAdvisor = role === 'advisor';
 
  const fetchData = useCallback(async () => {
+ // Never fetch advisor-scoped data for a non-advisor.
+ if (!isAdvisor) return;
  setLoading(true);
  try {
  const [profileRes, bookingsRes, sessionsRes, availRes, postsRes] = await Promise.allSettled([
@@ -88,9 +78,29 @@ export const AdvisorWorkspace: React.FC = () => {
  if (postsRes.status === 'fulfilled') setPosts(Array.isArray(postsRes.value.data) ? postsRes.value.data : []);
  } catch { toast.error('Failed to load workspace data'); }
  finally { setLoading(false); }
- }, [user?.id]);
+ }, [user?.id, isAdvisor]);
 
  useEffect(() => { fetchData(); }, [fetchData]);
+
+ // Only advisors can access this.
+ //
+ // This guard used to sit ABOVE fetchData/useEffect. `role` is resolved
+ // asynchronously by AuthContext (a provisional value first, then the backend
+ // answer), so the moment it flipped to 'advisor' the component went from N to
+ // N+2 hooks and React threw "Rendered more hooks than during the previous
+ // render" — the workspace crashed for the very users it is built for.
+ if (!isAdvisor) {
+ return (
+ <div className="flex items-center justify-center min-h-screen bg-white">
+ <div className="text-center py-12 px-6">
+ <Briefcase size={48} className="mx-auto text-gray-300 mb-4" />
+ <h2 className="text-2xl font-bold text-gray-900 mb-2">Advisor Access Only</h2>
+ <p className="text-gray-500 mb-6">This workspace is for approved financial advisors.</p>
+ <button data-testid="advisor-workspace-apply-as-advisor" onClick={() => setCurrentPage('book-advisor')} className="px-5 py-2.5 bg-indigo-600 text-white rounded-xl font-bold text-sm">Apply as Advisor</button>
+ </div>
+ </div>
+ );
+ }
 
  const handlePublishPost = async () => {
  if (!postForm.title.trim() || !postForm.content.trim()) {

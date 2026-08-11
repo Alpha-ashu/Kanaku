@@ -9,7 +9,6 @@ import { sanitize } from '../../utils/sanitize';
 import { inviteParticipants } from '../collaboration/invitation.service';
 import { FinancialEventDispatcher, GroupExpenseCreatedEvent, GroupSettlementCompletedEvent } from '../transactions/dispatcher';
 import { FinancialLedgerService } from '../transactions/ledger.service';
-import { Decimal } from '@prisma/client/runtime/library';
 
 
 async function findUserByEmailOrPhone(email?: string | null, phone?: string | null, client: any = prisma): Promise<any> {

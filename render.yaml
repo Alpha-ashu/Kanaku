@@ -19,6 +19,18 @@ services:
     dockerContext: .             # workspace root (root lockfile), same as fly.toml
     healthCheckPath: /health
     autoDeploy: true             # every push to main deploys (Render builds, not Actions)
+    # Applies schema changes before the new version goes live.
+    #
+    # Previously nothing did: the Dockerfile copies prisma/ into the image but its
+    # CMD is just `node dist/server.js`, so a release whose code expected a new
+    # column failed at runtime on a user request instead of at deploy.
+    #
+    # scripts/deploy-migrate.mjs is safe in both states this project can be in —
+    # it applies pending migrations and aborts the deploy if they fail, but exits
+    # 0 with a loud warning on P3005 (a `db push`-managed database with no
+    # migration history, which is what CI provisions). So enabling it cannot brick
+    # a deploy; worst case it tells you migrations still aren't automated.
+    preDeployCommand: npm run db:deploy
     envVars:
       - key: NODE_ENV
         value: production
@@ -41,6 +53,28 @@ services:
         sync: false
       - key: SENDGRID_FROM_NAME
         sync: false
+      # ── Server-side PIN gate ─────────────────────────────────────────────────────
+      # Enforces the app PIN on the BACKEND: financial routers return
+      # 403 PIN_VERIFICATION_REQUIRED until a recent POST /pin/verify.
+      #
+      # This key was previously absent from every environment, so `isPinGateEnabled()`
+      # was false and the `pinGate` mounted across the financial routers evaluated to
+      # a no-op — the PIN protected the UI only, and any valid access token could read
+      # every financial endpoint directly. Coverage has since been extended to the
+      # routers that were missing it (groups, friends, bills, receipts, import,
+      # payments, aa) and the client now handles the unlock/gate timing window, so
+      # this is ready to switch on.
+      #
+      # The unlock is carried by a short-lived signed token (security/pinUnlock.ts),
+      # not a server-side marker, so it needs no Redis, survives this free plan's
+      # idle spin-down, and stays correct if the service ever runs >1 instance.
+      # Requires SECURITY_JWT_SECRET (or JWT_SECRET) to be set — startup aborts in
+      # production otherwise rather than signing with a per-boot random key that
+      # would re-lock everyone on each container cycle.
+      - key: PIN_GATE_ENABLED
+        value: "true"
+      - key: PIN_GATE_TIMEOUT_MINUTES
+        value: "5"
       # ── Observability (Grafana Cloud) ────────────────────────────────────────────
       # Generate tokens locally: openssl rand -hex 32
       # Then add them as secrets in this dashboard (sync: false = enter value here).

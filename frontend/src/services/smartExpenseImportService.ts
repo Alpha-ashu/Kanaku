@@ -384,7 +384,7 @@ const getFieldValueByFuzzyKey = (
 };
 
 const normalizeLocaleNumberString = (value: string) => {
-  let cleaned = value.replace(/[^\d.,()\-]/g, '').replace(/\s+/g, '');
+  let cleaned = value.replace(/[^\d.,()-]/g, '').replace(/\s+/g, '');
   if (!cleaned) return '';
 
   cleaned = cleaned.replace(/[()]/g, '');

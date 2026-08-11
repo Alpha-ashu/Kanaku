@@ -31,13 +31,13 @@ const AUTH_CANONICAL = (import.meta.env.VITE_AUTH_CANONICAL || 'backend') as str
 const internalLog = {
  warn: (context: string, err?: unknown) => {
  if (import.meta.env.DEV) {
- // eslint-disable-next-line no-console
+  
  console.warn(`[KANAKU/${context}]`, err instanceof Error ? err.message : err);
  }
  },
  error: (context: string, err?: unknown) => {
  if (import.meta.env.DEV) {
- // eslint-disable-next-line no-console
+  
  console.error(`[KANAKU/${context}]`, err instanceof Error ? err.message : err);
  }
  },

@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { authMiddleware } from '../../middleware/auth';
+import { pinGate } from '../../middleware/pinGate';
 import multer from 'multer';
 import { uploadImport, uploadStatement, confirmImport, getImportSession } from './import.controller';
 import { validateBody } from '../../middleware/validate';
@@ -31,17 +32,20 @@ const confirmImportSchema = z.object({
  * POST /api/v1/import/confirm   - Bulk-save the reviewed selection (single DB transaction)
  * GET  /api/v1/import/:sessionId - Get session preview
  */
-router.post('/upload', authMiddleware, requireFeature('accounts', 'importStatement'), upload.single('file'), uploadImport);
-router.post('/statement', authMiddleware, requireFeature('accounts', 'importStatement'), upload.single('file'), uploadStatement);
+// Bank statements in, transactions out — as financial as it gets, so every route
+// here sits behind a live PIN unlock alongside /transactions and /accounts.
+router.post('/upload', authMiddleware, pinGate, requireFeature('accounts', 'importStatement'), upload.single('file'), uploadImport);
+router.post('/statement', authMiddleware, pinGate, requireFeature('accounts', 'importStatement'), upload.single('file'), uploadStatement);
 router.post(
   '/confirm',
   authMiddleware,
+  pinGate,
   requireFeature('accounts', 'importStatement'),
   idempotency({ scope: 'import.confirm' }),
   validateBody(confirmImportSchema),
   confirmImport,
 );
-router.get('/:sessionId', authMiddleware, requireFeature('accounts', 'importStatement'), getImportSession);
+router.get('/:sessionId', authMiddleware, pinGate, requireFeature('accounts', 'importStatement'), getImportSession);
 
 export default router;
 

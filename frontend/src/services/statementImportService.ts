@@ -8,9 +8,9 @@ import { queueRecordUpsertSync } from '@/lib/auth-sync-integration';
 import { rebuildAccountBalances, setAccountTargetBalance } from '@/lib/transactionAggregation';
 import { documentIntelligenceService } from './documentIntelligenceService';
 import { createWorker } from 'tesseract.js';
-// @ts-ignore
+// @ts-ignore pdfjs-dist ships no type declarations for the /build/*.mjs subpath
 import * as pdfjsLib from 'pdfjs-dist/build/pdf.mjs';
-// @ts-ignore
+// @ts-ignore Vite `?url` suffix import has no ambient type declaration
 import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
@@ -151,8 +151,8 @@ const parseDate = (value: string | undefined) => {
   if (!trimmed) return null;
 
   const exactPatterns: Array<RegExp> = [
-    /^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})$/,
-    /^(\d{4})[\/\-\.](\d{1,2})[\/\-\.](\d{1,2})$/,
+    /^(\d{1,2})[/\-.](\d{1,2})[/\-.](\d{2,4})$/,
+    /^(\d{4})[/\-.](\d{1,2})[/\-.](\d{1,2})$/,
     /^(\d{1,2})\s+(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s+(\d{2,4})$/i,
   ];
 
@@ -621,6 +621,9 @@ class StatementImportService {
 
   private async extractTransactionsFromSpreadsheet(file: File, userId: string, errors: string[]) {
     const text = await file.text();
+    // Matching a control character is the intent: NUL bytes appear in
+    // spreadsheet exports and would otherwise corrupt downstream parsing.
+    // eslint-disable-next-line no-control-regex
     const rawText = text.replace(/\u0000/g, ' ');
 
     if (/^\s*PK/.test(rawText)) {
@@ -928,7 +931,7 @@ class StatementImportService {
 
     const transactions: ParsedTransaction[] = [];
 
-    const DATE_START_RE = /^\s*(?:\d+\s+)?(\d{1,2}[\s\/\-\.](?:\d{1,2}|(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*)[\s\/\-\.]\d{2,4})(?=\D|$)/i;
+    const DATE_START_RE = /^\s*(?:\d+\s+)?(\d{1,2}[\s/\-.](?:\d{1,2}|(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*)[\s/\-.]\d{2,4})(?=\D|$)/i;
     const DATE_INLINE_RE = /(?:^|[^\d])\d{2}-\d{2}-\d{4}(?=\D|$)/;
     let isDateFirst = false;
     for (const line of lines.slice(0, 15)) {
@@ -959,7 +962,7 @@ class StatementImportService {
     }
     if (acc.length > 0) blocks.push(acc);
 
-    const ANY_DATE_RE = /(?:^|[^\d])(\d{1,2}[\s\/\-\.](?:\d{1,2}|(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*)[\s\/\-\.]\d{2,4})(?=\D|$)/i;
+    const ANY_DATE_RE = /(?:^|[^\d])(\d{1,2}[\s/\-.](?:\d{1,2}|(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*)[\s/\-.]\d{2,4})(?=\D|$)/i;
 
     for (const block of blocks) {
       const fullText = block.join(' ');
@@ -1007,17 +1010,17 @@ class StatementImportService {
         .replace(/\s{2,}/g, ' ').trim();
 
       let merchantName: string | undefined;
-      const upiM = fullText.match(/UPI\/(?:DR|CR)\/\d+\/([^\/\s][^\/]{1,40}?)\//i);
+      const upiM = fullText.match(/UPI\/(?:DR|CR)\/\d+\/([^/\s][^/]{1,40}?)\//i);
       if (upiM) {
-        merchantName = upiM[1].replace(/[_\-]/g, ' ').trim();
+        merchantName = upiM[1].replace(/[_-]/g, ' ').trim();
       } else {
-        const ifscM = fullText.match(/[A-Z]{4}\d[A-Z0-9]{6}\/([A-Z][^\/\d][^\/]{2,30}?)\//i);
+        const ifscM = fullText.match(/[A-Z]{4}\d[A-Z0-9]{6}\/([A-Z][^/\d][^/]{2,30}?)\//i);
         merchantName = ifscM
-          ? ifscM[1].replace(/XXXXX\w*/g, '').replace(/[_\-]/g, ' ').trim()
+          ? ifscM[1].replace(/XXXXX\w*/g, '').replace(/[_-]/g, ' ').trim()
           : pickMerchantName(cleanedRaw);
       }
       if (merchantName) {
-        merchantName = merchantName.replace(/\s+/g, ' ').replace(/[^a-z0-9\s&'.,\-]/gi, '').trim();
+        merchantName = merchantName.replace(/\s+/g, ' ').replace(/[^a-z0-9\s&'.,-]/gi, '').trim();
         if (merchantName.length < 2) merchantName = undefined;
       }
 
@@ -1044,7 +1047,7 @@ class StatementImportService {
 
     if (transactions.length === 0) {
       // Step 3: Resilient Line-by-Line Fallback Parsing Loop
-      const FLEXIBLE_DATE_RE = /(\d{1,2}[\s\/\-\.]+(?:\d{1,2}|(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*)[\s\/\-\.]+\d{2,4})/i;
+      const FLEXIBLE_DATE_RE = /(\d{1,2}[\s/\-.]+(?:\d{1,2}|(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*)[\s/\-.]+\d{2,4})/i;
       const DECIMAL_AMT_RE = /\b\d[\d,]*\.\d{2}\b/g;
 
       for (const line of lines) {
