@@ -225,17 +225,22 @@ platform) and is chained into the npm scripts, so `npm run cap:sync`,
 If you call the Capacitor CLI directly (`npx cap sync ios`), run `npm run cap:fix:spm`
 afterwards before committing. Syncing on macOS produces correct paths either way.
 
-### 5.3 Building
+### 5.3 Building & Testing on Physical iPhone (from Windows)
 
 ```bash
-npm run mobile:build:ios     # vite build + cap sync ios
+npm run mobile:build:ios     # vite build + cap sync ios + normalize SPM paths
 npm run cap:open:ios         # opens Xcode (macOS only)
 ```
 
-CI (`.github/workflows/build-ios.yml`) builds for the simulator on `macos-15` with
-`CODE_SIGNING_ALLOWED=NO`, and asserts that plugins were actually linked into
-`Package.swift`. Producing a signed `.ipa` needs an Apple Developer team, a distribution
-certificate and a provisioning profile — none of which exist as repo secrets yet (§6).
+CI (`.github/workflows/build-ios.yml`) automatically builds the iOS project for **physical devices** (`-sdk iphoneos`, `-destination 'generic/platform=iOS'`) on `macos-15` using `CODE_SIGNING_ALLOWED=NO` and exports `Kanaku-unsigned.ipa` as a downloadable artifact.
+
+#### Sideloading onto iPhone from Windows:
+1. Trigger the workflow manually via **Actions > Build iOS (Capacitor) > Run workflow** (or push commits).
+2. Download `Kanaku-unsigned-ipa.zip` from GitHub Actions run artifacts and extract `Kanaku-unsigned.ipa`.
+3. Connect iPhone to Windows via USB.
+4. Open **Sideloadly** (or **AltStore**), drag and drop `Kanaku-unsigned.ipa`, enter your free Apple ID, and click **Start**.
+5. On iPhone, navigate to **Settings > General > VPN & Device Management**, tap your Apple ID under Developer App, and tap **Trust**.
+6. Launch Kanaku on your iPhone!
 
 ---
 

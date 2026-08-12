@@ -19,9 +19,13 @@ export default {
     '!src/server.ts',
   ],
   setupFiles: ['<rootDir>/../quality/backend/tests/setup.ts'],
-  // Disconnects Prisma when the run ends. Without it the pgBouncer session-mode
-  // pool leaked connections between runs until it was exhausted — see the file
-  // header and backend/.env.test.example.
+  // Closes each test FILE's database connections as that file finishes. Every
+  // file gets its own module registry and therefore its own PrismaClient; with
+  // maxWorkers=1 they all share one process, so without this they accumulate
+  // across the run and exhaust the pgBouncer pool mid-way. See the file header.
+  setupFilesAfterEnv: ['<rootDir>/../quality/backend/tests/afterEachFile.ts'],
+  // Belt and braces for the end of the whole run, and for connections opened
+  // outside any test file.
   globalTeardown: '<rootDir>/../quality/backend/tests/globalTeardown.ts',
   // Integration tests share a single Postgres test database, so they MUST run
   // serially — parallel workers race and contaminate each other's rows, which
@@ -29,8 +33,18 @@ export default {
   // worker here makes every `jest` invocation deterministic, regardless of which
   // npm script invoked it. (For parallel-safe tests, isolate a DB per worker.)
   maxWorkers: 1,
-  // Test groups for targeted runs
-  testTimeout: 30000,
+  // The integration suites run against a REMOTE Postgres (see backend/.env.test),
+  // so every query pays network latency. A multi-leg ledger posting is a dozen
+  // sequential round trips inside one transaction and legitimately takes several
+  // seconds there — against a co-located production database it is far quicker.
+  //
+  // 30s was tight enough that slow-network runs failed on the clock rather than
+  // on behaviour. Raising this does not hide a bug: Prisma still aborts a genuinely
+  // stuck transaction at PRISMA_TX_TIMEOUT_MS (20s default, see db/prisma.ts).
+  //
+  // The real fix is a local or co-located test database; this keeps the suite
+  // honest until then.
+  testTimeout: 60000,
   // Coverage thresholds
   coverageThreshold: {
     global: {

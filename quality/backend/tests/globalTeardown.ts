@@ -13,8 +13,8 @@ export default async function globalTeardown(): Promise<void> {
   try {
     // Imported lazily: a suite run that never touched the DB should not
     // instantiate a client here just to disconnect it.
-    const { prisma } = await import('../../../backend/src/db/prisma');
-    await prisma.$disconnect();
+    const { disconnectPrisma } = await import('../../../backend/src/db/prisma');
+    await disconnectPrisma();
   } catch {
     // Nothing to disconnect (or the client failed to load) — teardown must never
     // turn a green run red.

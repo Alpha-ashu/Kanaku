@@ -47,30 +47,38 @@ const SMS_TRANSACTION_TARGET_PAGE = 'add-transaction';
  * parameters are persisted. Anything else is dropped with a warning rather than
  * silently honoured.
  */
+/**
+ * Mirrors the `case` labels of App.tsx's renderPage() switch — the actual set of
+ * routable pages. Admin/manager surfaces are deliberately excluded: they are
+ * compiled out of the user build entirely, so a deep link must never aim at one.
+ */
 const ALLOWED_PAGES = new Set<string>([
-  'dashboard',
-  'accounts',
-  'transactions',
-  'add-transaction',
-  'add-account',
-  'loans',
-  'goals',
-  'groups',
-  'investments',
-  'reports',
-  'calendar',
-  'settings',
-  'notifications',
-  'user-profile',
-  'todo-lists',
-  'budget-alerts',
-  'recurring-transactions',
-  'ai-insights',
-  'receipt-scanner',
-  'voice-input',
-  'pay-emi',
-  'friends',
+  'dashboard', 'accounts', 'transactions', 'add-transaction', 'add-account',
+  'edit-account', 'loans', 'goals', 'goal-detail', 'add-goal', 'groups',
+  'add-group', 'add-friends', 'friends', 'friend-profile', 'investments',
+  'add-investment', 'add-gold', 'edit-investment', 'reports', 'calendar',
+  'settings', 'notifications', 'user-profile', 'todo-lists', 'todo-list-detail',
+  'todo-list-share', 'budget-alerts', 'recurring-transactions', 'ai-insights',
+  'receipt-scanner', 'voice-input', 'voice-review', 'pay-emi',
+  'client-management', 'diagnostics',
+  // Advisor marketplace surfaces — the backend emits notification deep links to
+  // these (/advisor-panel, /book-advisor).
+  'advisor', 'advisor-panel', 'book-advisor',
+  // Public/legal pages reachable from a notification or an emailed link.
+  'privacy', 'privacy-policy', 'terms', 'data-deletion', 'account-deletion',
+  'delete-account',
 ]);
+
+/**
+ * Backend deep links of the form `/sessions/<id>` and `/payments/<id>` carry the
+ * record id as a PATH segment. Map the collection to the page that renders it and
+ * surface the id as a normal parameter, rather than rejecting the whole link.
+ */
+const COLLECTION_ROUTES: Record<string, { page: string; idParam: string }> = {
+  sessions: { page: 'advisor-panel', idParam: 'sessionId' },
+  bookings: { page: 'advisor-panel', idParam: 'bookingId' },
+  payments: { page: 'settings', idParam: 'paymentId' },
+};
 
 /**
  * Parameters a deep link may persist for the destination screen. Values are
@@ -88,6 +96,13 @@ const ALLOWED_PARAMS = new Set<string>([
   'listId',
   'tab',
   'notificationId',
+  // Emitted by the backend: /sessions/<id>, /payments/<id>, /bookings/<id>.
+  'sessionId',
+  'bookingId',
+  'paymentId',
+  // Emitted by the sync notification: /sync?entity=<type>&id=<id>.
+  'entity',
+  'id',
 ]);
 
 const MAX_PARAM_LENGTH = 128;
@@ -185,6 +200,21 @@ export const openDeepLink = async (raw: string, navigate: NavigateToPage): Promi
     }
     params.delete('sourceSmsId');
     page = SMS_TRANSACTION_TARGET_PAGE;
+  }
+
+  // Collection routes put the record id in the path (`/sessions/42`, and
+  // `/sessions/42/rate`). Fold those into page + parameter before the allowlist
+  // check, or every server-sent booking/payment notification would be rejected.
+  if (page.includes('/')) {
+    const [collection, recordId] = page.split('/');
+    const mapped = COLLECTION_ROUTES[collection];
+    if (mapped && recordId && /^[A-Za-z0-9_-]{1,64}$/.test(recordId)) {
+      params.set(mapped.idParam, recordId);
+      page = mapped.page;
+    } else {
+      console.warn(`[DeepLink] Ignored link with unrecognised path: ${page}`);
+      return false;
+    }
   }
 
   // Refuse to navigate anywhere that is not a known destination. A hostile page

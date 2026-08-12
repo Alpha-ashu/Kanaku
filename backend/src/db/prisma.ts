@@ -44,6 +44,20 @@ function buildClient(datasourceUrl?: string, opts?: { audit?: boolean }): Prisma
       { emit: 'event', level: 'warn'  },
       { emit: 'event', level: 'error' },
     ],
+    // Prisma's default interactive-transaction timeout is 5s, which is too tight
+    // for the ledger: postJournalEntry runs a sequence-number lookup, a create and
+    // a balance update PER LEG inside one transaction, so a multi-leg posting is
+    // a dozen sequential round trips. On a remote database that legitimately
+    // exceeds 5s and Prisma aborts mid-flight with "Transaction already closed",
+    // rolling back a posting the user believed succeeded.
+    //
+    // Set centrally rather than at the 16 individual $transaction call sites —
+    // only transaction.repository.ts had thought to pass its own timeout, and the
+    // ledger path (the one that most needs it) had not.
+    transactionOptions: {
+      maxWait: Number(process.env.PRISMA_TX_MAX_WAIT_MS || 10_000),
+      timeout: Number(process.env.PRISMA_TX_TIMEOUT_MS || 20_000),
+    },
     ...(url ? { datasources: { db: { url } } } : {}),
   });
 
@@ -267,3 +281,25 @@ export const prismaRead = new Proxy({} as PrismaClient, {
     return typeof value === 'function' ? value.bind(client) : value;
   },
 });
+
+/**
+ * Closes every client this module has actually created.
+ *
+ * There are TWO clients — the writer and the reader — and `buildClient` is called
+ * for the reader even when READ_REPLICA_URL is unset, so it is a genuinely
+ * separate connection pool, not an alias. Disconnecting only `prisma` therefore
+ * left the reader's connections open, which is what kept exhausting the
+ * pgBouncer pool across a jest run.
+ *
+ * Deliberately reads the module-level handles rather than going through the
+ * Proxy exports: touching `prismaRead.$disconnect` would *instantiate* a reader
+ * just to close it. Only what exists is closed.
+ */
+export const disconnectPrisma = async (): Promise<void> => {
+  await Promise.allSettled([
+    _writer?.$disconnect(),
+    _reader?.$disconnect(),
+  ]);
+  _writer = null;
+  _reader = null;
+};
