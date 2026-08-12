@@ -38,6 +38,16 @@ or features that silently aren't persisting data.
   `seed:demo` — pick one canonical set of demo accounts to avoid the exact kind of
   duplicate-account confusion this caused before.
 
+## Test Cohort & Cleanup
+
+- `seed-test-users.cjs` (`npm run seed:test`): Provisions the **advisor testing cohort** (`testadvisor1@kanaku.com` … `testadvisor5@kanaku.com`) with full test data, availability, and applications.
+- `remove-non-advisor-mock-users.cjs` (`npm run clean:mock-users`): Removes all non-advisor mock testing users (`testuser1..5@kanaku.com`, legacy `*.test@kanaku.app`, etc.) and cascades their data while strictly preserving advisor testers and production roles.
+
+```bash
+npm run clean:mock-users
+npm run seed:test
+```
+
 ## Other scripts
 
 - `seed-admin-feature-data.cjs`: deterministic admin feature-flag QA fixture, used by `qa:seed-admin`
@@ -51,7 +61,4 @@ npm run qa:test-features
 ```
 
 Prefer the package scripts instead of calling PowerShell files directly.
-
-<!-- ci: touch to re-run the Backend Feature Matrix on current main after the
-     Actions-minutes outage; this file is build-irrelevant. -->
 

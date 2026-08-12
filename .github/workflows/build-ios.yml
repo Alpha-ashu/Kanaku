@@ -25,6 +25,13 @@ concurrency:
 env:
   NODE_VERSION: '22'
 
+
+# Least-privilege token. Without an explicit block a workflow inherits the
+# repository default, which can be read/write on every scope — far more than a
+# build job needs (CodeQL: "Workflow does not contain permissions").
+permissions:
+  contents: read
+
 jobs:
   build:
     # Capacitor 8 uses Swift Package Manager; Xcode compilation runs on macOS runner.

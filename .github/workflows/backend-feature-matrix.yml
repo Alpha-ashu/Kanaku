@@ -11,6 +11,13 @@ on:
       - '.github/workflows/backend-feature-matrix.yml'
   workflow_dispatch:
 
+
+# Least-privilege token. Without an explicit block a workflow inherits the
+# repository default, which can be read/write on every scope — far more than a
+# build job needs (CodeQL: "Workflow does not contain permissions").
+permissions:
+  contents: read
+
 jobs:
   feature-matrix:
     runs-on: ubuntu-latest

@@ -43,7 +43,8 @@
     "type-check": "tsc --noEmit",
     "db:deploy": "node ./scripts/deploy-migrate.mjs",
     "db:status": "prisma migrate status --schema ./prisma/schema.prisma",
-    "db:baseline": "node ./scripts/db-baseline.mjs"
+    "db:baseline": "node ./scripts/db-baseline.mjs",
+    "clean:mock-users": "node ./scripts/remove-non-advisor-mock-users.cjs"
   },
   "keywords": [
     "KANAKU",

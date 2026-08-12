@@ -1,6 +1,14 @@
 name: Build Android AAB (Release)
-# Optional signing secrets are read at runtime via `toJSON(secrets)` + jq rather than direct
-# `secrets.NAME` access, so the linter does not flag references to (possibly undefined) secrets.
+#
+# Signing secrets are referenced DIRECTLY (`secrets.NAME`), not via
+# `toJSON(secrets)`.
+#
+# The old indirection existed so the linter would not flag references to
+# possibly-undefined optional secrets — but the release build now REQUIRES them
+# and fails without them, so there is nothing optional left to work around.
+# Passing the whole secrets object into an env var handed every repository
+# secret to the build step regardless of what it needed (CodeQL: "Excessive
+# Secrets Exposure").
 
 on:
   push:
@@ -29,6 +37,13 @@ env:
   # Capacitor 8 plugin modules declare kotlin { jvmToolchain(21) }; building them
   # on JDK 17 fails to resolve a toolchain.
   JAVA_VERSION: '21'
+
+
+# Least-privilege token. Without an explicit block a workflow inherits the
+# repository default, which can be read/write on every scope — far more than a
+# build job needs (CodeQL: "Workflow does not contain permissions").
+permissions:
+  contents: read
 
 jobs:
   build:
@@ -103,9 +118,8 @@ jobs:
           github.event_name == 'push' ||
           (github.event_name == 'workflow_dispatch' && github.event.inputs.build_variant == 'release')
         env:
-          ALL_SECRETS: ${{ toJSON(secrets) }}
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         run: |
-          KEYSTORE_BASE64="$(echo "$ALL_SECRETS" | jq -r '.ANDROID_KEYSTORE_BASE64 // ""')"
           if [ -z "$KEYSTORE_BASE64" ]; then
             echo "::error::ANDROID_KEYSTORE_BASE64 is not set. A release build cannot be signed with the upload key."
             echo "::error::Add ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD and ANDROID_KEY_PASSWORD under Settings → Secrets and variables → Actions."
@@ -137,15 +151,14 @@ jobs:
         env:
           KEYSTORE_PATH: finance-life-release.keystore
           KEY_ALIAS: finance-life
-          ALL_SECRETS: ${{ toJSON(secrets) }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
           # Monotonic per-run offset added to VERSION_CODE_BASE in app/build.gradle.
           # github.run_number only ever increases for a given workflow, so version
           # codes stay strictly ascending across builds.
           ANDROID_VERSION_CODE: ${{ github.run_number }}
         run: |
           cd android
-          KEYSTORE_PASSWORD="$(echo "$ALL_SECRETS" | jq -r '.ANDROID_KEYSTORE_PASSWORD // ""')"
-          KEY_PASSWORD="$(echo "$ALL_SECRETS" | jq -r '.ANDROID_KEY_PASSWORD // ""')"
           if [ -z "$KEYSTORE_PASSWORD" ] || [ -z "$KEY_PASSWORD" ]; then
             echo "::error::ANDROID_KEYSTORE_PASSWORD / ANDROID_KEY_PASSWORD are not set — refusing to build an incorrectly signed release."
             exit 1

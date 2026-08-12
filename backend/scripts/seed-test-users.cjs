@@ -1,29 +1,26 @@
 /**
  * seed-test-users.cjs
  *
- * Creates a TESTING cohort: 5 user-role accounts + 5 advisor-role accounts,
+ * Creates a TESTING cohort: 5 advisor-role accounts (testadvisor1@kanaku.com … testadvisor5@kanaku.com),
  * each with comprehensive mock data (accounts, transactions, goals, loans,
  * investments, budgets, recurring transactions, friends, notifications; plus
- * advisor application + availability for advisor accounts).
+ * advisor application + availability).
  *
- * This complements the four CANONICAL accounts created by:
- *   seed-production-roles.cjs  → admin/manager/advisor/user @kanaku.com (identities)
- *   seed-mock-data.cjs         → their full mock data
+ * All non-advisor mock testing users (testuser1..5@kanaku.com) are removed.
  *
- * Test cohort emails (the ONLY test logins the project ships):
- *   testuser1@kanaku.com    … testuser5@kanaku.com     (role: user)
+ * Test cohort emails:
  *   testadvisor1@kanaku.com … testadvisor5@kanaku.com  (role: advisor)
  *
  * Shared password: SEED_TEST_PASSWORD (must be set via environment variable)
  *
- * Idempotent — re-running upserts the identity and rebuilds that user's mock
+ * Idempotent — re-running upserts the identity and rebuilds that advisor's mock
  * data from scratch (cleanup → reseed), so counts never balloon.
  *
  * Usage:
  *   # local (reads DATABASE_URL from backend/.env via your shell)
  *   DATABASE_URL="postgresql://..." node backend/scripts/seed-test-users.cjs
- *   # Fly.io
- *   fly ssh console --app kanaku -C "node scripts/seed-test-users.cjs"
+ *   # Fly.io / Render
+ *   node scripts/seed-test-users.cjs
  */
 
 'use strict';
@@ -425,16 +422,33 @@ async function seedOne(spec, hashedPassword) {
   console.log(`  ✓ ${spec.role.padEnd(7)} ${spec.email.padEnd(26)} → accts 4, tx ${tx}, goals ${goals}, loans ${loans}, inv ${inv}, budgets ${budgets}, recurring ${recurring}, friends ${friends}, notifs ${notifs}`);
 }
 
+async function removeNonAdvisorTestUsers() {
+  for (let i = 0; i < COHORT_SIZE; i++) {
+    const userEmail = `testuser${i + 1}@kanaku.com`;
+    const user = await prisma.user.findUnique({ where: { email: userEmail } });
+    if (user) {
+      await cleanupUser(user.id);
+      await prisma.userSettings.deleteMany({ where: { userId: user.id } }).catch(() => {});
+      await prisma.userPin.deleteMany({ where: { userId: user.id } }).catch(() => {});
+      await prisma.$executeRaw`DELETE FROM public.profiles WHERE id = ${user.id}::uuid`.catch(() => {});
+      await prisma.user.delete({ where: { id: user.id } }).catch(() => {});
+      console.log(`  🗑️  Removed non-advisor test user: ${userEmail}`);
+    }
+  }
+}
+
 async function main() {
   validatePassword(TEST_PASSWORD);
   const hashedPassword = await bcrypt.hash(TEST_PASSWORD, 12);
 
-  console.log(`[test-users] Seeding ${COHORT_SIZE} user + ${COHORT_SIZE} advisor test accounts (password from SEED_TEST_PASSWORD)…\n`);
+  console.log(`[test-users] Removing non-advisor mock testing users…`);
+  await removeNonAdvisorTestUsers();
 
-  for (let i = 0; i < COHORT_SIZE; i++) await seedOne(buildSpec('user', i), hashedPassword);
+  console.log(`\n[test-users] Seeding ${COHORT_SIZE} advisor test accounts (password from SEED_TEST_PASSWORD)…\n`);
+
   for (let i = 0; i < COHORT_SIZE; i++) await seedOne(buildSpec('advisor', i), hashedPassword);
 
-  console.log('\n[test-users] Done. Login with the SEED_TEST_PASSWORD value for every test account.');
+  console.log('\n[test-users] Done. Advisor test accounts (testadvisor1..5@kanaku.com) are ready.');
 }
 
 main()

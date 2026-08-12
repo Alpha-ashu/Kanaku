@@ -34,6 +34,7 @@
     "db:migrate": "cd backend && npx prisma migrate dev",
     "db:seed": "cd backend && npx prisma db seed",
     "db:studio": "cd backend && npx prisma studio",
+    "db:clean:mock-users": "npm --prefix backend run clean:mock-users",
     "predb:generate": "node -e \"require('fs').mkdirSync('backend/generated/prisma/runtime', { recursive: true })\"",
     "db:generate": "npx prisma generate --schema backend/prisma/schema.prisma",
     "cap:init": "npx cap init",
@@ -112,14 +113,14 @@
       "path-to-regexp": "^8.4.2"
     },
     "rollup": "^4.62.0",
-    "tar": "^7.5.16",
-    "socket.io-parser": "^4.2.6",
+    "tar": "^7.5.22",
+    "socket.io-parser": "^4.2.7",
     "form-data": "^4.0.6",
     "minimatch": "^10.2.4",
     "@typescript-eslint/typescript-estree": {
       "minimatch": "^10.2.4"
     },
-    "dompurify": "^3.4.11",
+    "dompurify": "^3.4.13",
     "flatted": "^3.4.2",
     "picomatch": "^2.3.2 || ^4.0.4",
     "defu": "^6.1.5",
@@ -151,7 +152,7 @@
     "smol-toml": "^1.6.1",
     "nodemailer": "^9.0.1",
     "axios": "^1.18.0",
-    "postcss": "^8.5.15",
+    "postcss": "^8.5.26",
     "uuid": "^14.0.0",
     "file-type": "^22.0.1",
     "vite": "8.0.16",
@@ -163,7 +164,10 @@
     "motion": "12.40.0",
     "framer-motion": "12.40.0",
     "motion-dom": "12.40.0",
-    "motion-utils": "12.39.0"
+    "motion-utils": "12.39.0",
+    "brace-expansion": "^5.0.9",
+    "fast-uri": "^3.1.5",
+    "fast-xml-parser": "^5.10.1"
   },
   "pnpm": {
     "overrides": {
