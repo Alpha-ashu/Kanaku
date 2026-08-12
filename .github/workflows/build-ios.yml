@@ -39,13 +39,13 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode_16.2.app || sudo xcode-select -s /Applications/Xcode_16.app || sudo xcode-select -s /Applications/Xcode.app
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
@@ -80,20 +80,43 @@ jobs:
             exit 1
           fi
 
+      # Records what the environment actually resolved to. `xcodebuild` exiting 65
+      # says only "a build error occurred"; without these there is no way to tell a
+      # toolchain mismatch from a source error.
+      - name: Environment diagnostics
+        run: |
+          echo "--- xcode ---";   xcodebuild -version
+          echo "--- ios sdks ---"; xcodebuild -showsdks | grep -i ios || true
+          echo "--- schemes ---"; xcodebuild -list -project App.xcodeproj || true
+        working-directory: ios/App
+
       - name: Build for physical iOS device (Unsigned Release)
         run: |
+          set -o pipefail
           xcodebuild \
             -project App.xcodeproj \
             -scheme App \
             -configuration Release \
-            -sdk iphoneos \
             -destination 'generic/platform=iOS' \
             -derivedDataPath build \
+            -skipPackagePluginValidation \
+            -skipMacroValidation \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
-            clean build
+            clean build 2>&1 | tee xcodebuild.log
         working-directory: ios/App
+
+      # An exit-65 run otherwise leaves nothing to inspect. The log is the only
+      # way to identify the actual compile error.
+      - name: Upload xcodebuild log on failure
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: xcodebuild-log
+          path: ios/App/xcodebuild.log
+          if-no-files-found: warn
+          retention-days: 14
 
       - name: Package into unsigned .ipa
         run: |
@@ -103,7 +126,7 @@ jobs:
         working-directory: ios/App
 
       - name: Upload iOS .ipa artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: Kanaku-unsigned-ipa
           path: ios/App/Kanaku-unsigned.ipa
