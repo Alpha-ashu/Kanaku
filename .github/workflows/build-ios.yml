@@ -39,13 +39,33 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
+      # Pick the newest installed Xcode that actually has an iOS SDK.
+      #
+      # Pinning a specific app bundle (Xcode_16.2.app) selected a toolchain whose
+      # iOS platform was not installed on the runner image, so xcodebuild failed
+      # with 'iOS 18.2 is not installed'. Runner images change what they ship;
+      # probing for a usable SDK is stable across those changes, and failing here
+      # with the available list beats a destination error later.
       - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode_16.2.app || sudo xcode-select -s /Applications/Xcode_16.app || sudo xcode-select -s /Applications/Xcode.app
+        run: |
+          set -euo pipefail
+          for app in $(ls -d /Applications/Xcode*.app 2>/dev/null | sort -Vr || true); do
+            if DEVELOPER_DIR="$app/Contents/Developer" xcodebuild -showsdks 2>/dev/null | grep -qi "iphoneos"; then
+              echo "Selected $app"
+              sudo xcode-select -s "$app"
+              xcodebuild -version
+              exit 0
+            fi
+            echo "Skipping $app (no iOS SDK)"
+          done
+          echo "::error::No installed Xcode provides an iOS SDK on this runner."
+          ls -d /Applications/Xcode*.app || true
+          exit 1
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
@@ -123,6 +143,14 @@ jobs:
           echo "--- schemes ---"; xcodebuild -list -project App.xcodeproj || true
         working-directory: ios/App
 
+      # `-sdk iphoneos`, NOT `-destination 'generic/platform=iOS'`.
+      #
+      # The destination form makes xcodebuild resolve a concrete device
+      # platform, which fails on a runner whose iOS platform bundle is absent:
+      #   error: Unable to find a destination matching the provided destination
+      #   specifier ... iOS 18.2 is not installed
+      # Selecting the SDK directly is what a generic unsigned device build
+      # actually needs and skips destination resolution entirely.
       - name: Build for physical iOS device (Unsigned Release)
         run: |
           set -o pipefail
@@ -130,7 +158,7 @@ jobs:
             -project App.xcodeproj \
             -scheme App \
             -configuration Release \
-            -destination 'generic/platform=iOS' \
+            -sdk iphoneos \
             -derivedDataPath build \
             -skipPackagePluginValidation \
             -skipMacroValidation \
@@ -144,7 +172,7 @@ jobs:
       # way to identify the actual compile error.
       - name: Upload xcodebuild log on failure
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: xcodebuild-log
           path: ios/App/xcodebuild.log
@@ -159,7 +187,7 @@ jobs:
         working-directory: ios/App
 
       - name: Upload iOS .ipa artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: Kanaku-unsigned-ipa
           path: ios/App/Kanaku-unsigned.ipa
@@ -184,6 +212,15 @@ jobs:
               echo "" >> $GITHUB_STEP_SUMMARY
               echo '```' >> $GITHUB_STEP_SUMMARY
               grep -E "error:|error CS|xcodebuild: error|Could not resolve|does not contain a scheme|fatal error" ios/App/xcodebuild.log | head -25 >> $GITHUB_STEP_SUMMARY || true
+              echo '```' >> $GITHUB_STEP_SUMMARY
+              echo "</details>" >> $GITHUB_STEP_SUMMARY
+              # A destination/SDK error is only actionable alongside what the
+              # toolchain actually offers, so record that too.
+              echo "<details><summary>Toolchain</summary>" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo '```' >> $GITHUB_STEP_SUMMARY
+              xcodebuild -version >> $GITHUB_STEP_SUMMARY 2>&1 || true
+              xcodebuild -showsdks 2>/dev/null | grep -i ios >> $GITHUB_STEP_SUMMARY || echo "(no iOS SDKs reported)" >> $GITHUB_STEP_SUMMARY
               echo '```' >> $GITHUB_STEP_SUMMARY
               echo "</details>" >> $GITHUB_STEP_SUMMARY
             fi
