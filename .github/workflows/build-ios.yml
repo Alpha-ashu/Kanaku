@@ -66,8 +66,29 @@ jobs:
         run: npm run build
         working-directory: frontend
 
+      # Use the project's own script, not bare `npx cap sync ios`: it chains
+      # cap:fix:spm (scripts/normalize-spm-paths.mjs), which rewrites the local
+      # package paths in CapApp-SPM/Package.swift to forward slashes.
+      #
+      # `cap sync` writes NATIVE path separators, so a developer who syncs on
+      # Windows produces paths joined with \ instead of /. Swift Package
+      # Manager cannot resolve those on macOS: xcodebuild fails during dependency
+      # resolution and surfaces a bare exit 70 rather than a readable error. CI
+      # syncs on macOS so it regenerates them correctly, but a committed
+      # Windows-synced manifest would poison the build.
       - name: Run Capacitor sync
-        run: npx cap sync ios
+        run: npm run cap:sync:ios
+
+      # Fail with a readable message rather than an opaque resolution error if a
+      # Windows-synced manifest ever reaches CI.
+      - name: Verify SPM paths are portable
+        run: |
+          if grep -qF '\' ios/App/CapApp-SPM/Package.swift; then
+            echo "::error::Package.swift contains Windows path separators. Run 'npm run cap:fix:spm' and commit the result."
+            grep -nF '\' ios/App/CapApp-SPM/Package.swift | head -5
+            exit 1
+          fi
+          echo "SPM paths OK (forward slashes)"
 
       # Fails loudly if a Capacitor plugin is declared in frontend/package.json but
       # not in the root package.json next to capacitor.config.json.
