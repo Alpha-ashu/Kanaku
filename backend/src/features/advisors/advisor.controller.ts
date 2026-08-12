@@ -309,7 +309,11 @@ export const applyAsAdvisor = async (req: AuthRequest, res: Response) => {
       if (!ALLOWED_DOC_TYPES.includes(file.mimetype)) {
         throw Object.assign(new Error(`${label}: only JPEG, PNG, WEBP, or PDF allowed`), { statusCode: 400 });
       }
-      const ext = file.originalname.split('.').pop() || 'bin';
+      // `originalname` is attacker-controlled. Taking the raw substring after the
+      // last dot let it carry path separators straight into the storage key, so
+      // it is reduced to a plain alphanumeric extension here.
+      const rawExt = file.originalname.split('.').pop() || '';
+      const ext = /^[A-Za-z0-9]{1,8}$/.test(rawExt) ? rawExt.toLowerCase() : 'bin';
       const path = `advisor-docs/${userId}/${label}-${Date.now()}.${ext}`;
       await uploadBuffer(path, file.buffer, file.mimetype);
       return path;

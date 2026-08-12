@@ -40,9 +40,21 @@ export const uploadBuffer = async (filePath: string, buffer: Buffer, contentType
     }
   } catch (err: any) {
     console.warn(`Supabase storage upload failed for ${filePath}: ${err?.message ?? err}. Falling back to local disk storage.`);
-    // Local directory fallback
+    // Local directory fallback.
+    //
+    // `filePath` is assembled by callers from user-influenced material (uploaded
+    // filenames, ids), so it is treated as untrusted here rather than trusting
+    // every call site to have sanitised it. path.join() happily resolves `..`
+    // segments, so without this check a crafted value would write outside
+    // uploads/ — arbitrary file write on the server.
     const localDir = pathLib.join(process.cwd(), 'uploads');
-    const fullPath = pathLib.join(localDir, filePath);
+    const fullPath = pathLib.resolve(localDir, filePath);
+    const containment = localDir.endsWith(pathLib.sep) ? localDir : localDir + pathLib.sep;
+
+    if (!fullPath.startsWith(containment)) {
+      throw new Error(`Refusing to write outside the uploads directory: ${filePath}`);
+    }
+
     fs.mkdirSync(pathLib.dirname(fullPath), { recursive: true });
     fs.writeFileSync(fullPath, buffer);
   }
