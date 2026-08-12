@@ -8,12 +8,7 @@ on:
   push:
     branches: [main]
     paths:
-      - "frontend/src/**"
-      - "frontend/public/**"
       - "ios/**"
-      - "frontend/package.json"
-      - "package.json"
-      - "package-lock.json"
       - "capacitor.config.*"
       - ".github/workflows/build-ios.yml"
   pull_request:
@@ -22,6 +17,10 @@ on:
       - "capacitor.config.*"
       - ".github/workflows/build-ios.yml"
   workflow_dispatch:
+
+concurrency:
+  group: ios-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   NODE_VERSION: '22'
@@ -35,12 +34,23 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_16.2.app || sudo xcode-select -s /Applications/Xcode_16.app || sudo xcode-select -s /Applications/Xcode.app
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
           cache-dependency-path: package-lock.json
+
+      - name: Cache Swift Package Manager
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Caches/org.swift.swiftpm
+          key: spm-${{ runner.os }}-${{ hashFiles('ios/App/CapApp-SPM/Package.swift') }}
+          restore-keys: |
+            spm-${{ runner.os }}-
 
       - name: Install dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
@@ -82,7 +92,7 @@ jobs:
         run: |
           mkdir -p Payload
           cp -r build/Build/Products/Release-iphoneos/App.app Payload/
-          zip -r Kanaku-unsigned.ipa Payload
+          zip -ry Kanaku-unsigned.ipa Payload
         working-directory: ios/App
 
       - name: Upload iOS .ipa artifact
@@ -100,6 +110,7 @@ jobs:
           if [ -f "ios/App/Kanaku-unsigned.ipa" ]; then
             echo "- Physical iOS Build (.ipa): ✅ succeeded" >> $GITHUB_STEP_SUMMARY
             echo "- Artifact: \`Kanaku-unsigned.ipa\` is ready for download & sideloading via Sideloadly / AltStore" >> $GITHUB_STEP_SUMMARY
+            echo "- ⚠️ Note on Push Notifications: Sideloaded free Apple ID builds cannot receive APNs pushes (\`aps-environment\` requires a paid Apple Developer Program account + TestFlight/App Store signing)." >> $GITHUB_STEP_SUMMARY
           else
             echo "- Physical iOS Build (.ipa): ❌ failed" >> $GITHUB_STEP_SUMMARY
           fi
