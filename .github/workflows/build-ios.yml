@@ -101,6 +101,18 @@ jobs:
             exit 1
           fi
 
+      # `xcodebuild -scheme App` needs a SHARED scheme. Xcode autocreates schemes
+      # into xcuserdata/ (gitignored), so a project can build on a developer Mac
+      # while a fresh CI checkout has no scheme at all — which xcodebuild reports
+      # as a bare exit 70. Fail here with something readable instead.
+      - name: Verify shared scheme exists
+        run: |
+          if [ ! -f ios/App/App.xcodeproj/xcshareddata/xcschemes/App.xcscheme ]; then
+            echo "::error::No shared App scheme. In Xcode: Product > Scheme > Manage Schemes, tick Shared, and commit App.xcodeproj/xcshareddata/."
+            exit 1
+          fi
+          echo "Shared scheme present"
+
       # Records what the environment actually resolved to. `xcodebuild` exiting 65
       # says only "a build error occurred"; without these there is no way to tell a
       # toolchain mismatch from a source error.
@@ -164,4 +176,15 @@ jobs:
             echo "- ⚠️ Note on Push Notifications: Sideloaded free Apple ID builds cannot receive APNs pushes (\`aps-environment\` requires a paid Apple Developer Program account + TestFlight/App Store signing)." >> $GITHUB_STEP_SUMMARY
           else
             echo "- Physical iOS Build (.ipa): ❌ failed" >> $GITHUB_STEP_SUMMARY
+            # Put the actual error in the summary. Previously the only signal was
+            # "exit code 70", and diagnosing it meant downloading an artifact.
+            if [ -f ios/App/xcodebuild.log ]; then
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "<details><summary>First errors from xcodebuild</summary>" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo '```' >> $GITHUB_STEP_SUMMARY
+              grep -E "error:|error CS|xcodebuild: error|Could not resolve|does not contain a scheme|fatal error" ios/App/xcodebuild.log | head -25 >> $GITHUB_STEP_SUMMARY || true
+              echo '```' >> $GITHUB_STEP_SUMMARY
+              echo "</details>" >> $GITHUB_STEP_SUMMARY
+            fi
           fi
