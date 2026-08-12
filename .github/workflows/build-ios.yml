@@ -82,8 +82,8 @@ jobs:
       - name: Install dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
 
-      - name: Build frontend for Capacitor
-        run: npm run build
+      - name: Build frontend for Capacitor (iOS Mode)
+        run: npm run build:ios
         working-directory: frontend
 
       # Use the project's own script, not bare `npx cap sync ios`: it chains
