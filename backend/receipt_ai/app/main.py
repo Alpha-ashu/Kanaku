@@ -15,6 +15,38 @@ API_KEY = os.getenv("RECEIPT_OCR_API_KEY")
 PADDLE_LANG = os.getenv("PADDLE_OCR_LANG", "en")
 TASK_PROMPT = "<s_cord-v2>"
 
+# ── Pillow attack-surface reduction ──────────────────────────────────────────
+#
+# Both endpoints call Image.open() on raw uploaded bytes. Pillow sniffs the
+# format and dispatches to whichever plugin claims it, so by default an upload
+# can reach EVERY codec Pillow ships — not just the photo formats this service
+# needs.
+#
+# That matters because Pillow currently carries a cluster of unfixed advisories
+# and 12.3.0 is the newest release, so there is no version to upgrade to. The
+# affected code paths are almost all in formats we never want:
+#   BDF / PCF / FontFile  — decompression-bomb check bypasses
+#   GD, McIdas AREA       — bomb bypass, out-of-bounds read via row stride
+#   EPS                   — infinite loop on a negative %%BeginBinary count
+#   JPEG2000              — unbounded scratch buffer growth
+#   TGA                   — heap disclosure in the RLE encoder
+#   PDF                   — decompression bomb via PdfStream.decode()
+#
+# Pruning the decoder registry to the three formats the app actually accepts
+# makes those unreachable rather than waiting on upstream. Keep this list in
+# sync with the client-side upload validation (JPEG/PNG/WEBP).
+_ALLOWED_IMAGE_FORMATS = {"JPEG", "PNG", "WEBP"}
+
+Image.init()  # populate Image.OPEN before pruning it
+for _fmt in list(Image.OPEN):
+    if _fmt not in _ALLOWED_IMAGE_FORMATS:
+        del Image.OPEN[_fmt]
+
+# Belt and braces against ordinary decompression bombs in the formats we DO
+# accept. Pillow's default is ~178M pixels; a receipt photo is orders of
+# magnitude smaller, so a tighter ceiling costs nothing and rejects earlier.
+Image.MAX_IMAGE_PIXELS = int(os.getenv("RECEIPT_MAX_IMAGE_PIXELS", 50_000_000))
+
 app = FastAPI(title="Receipt OCR Service", version="1.1.0")
 
 processor = DonutProcessor.from_pretrained(MODEL_ID)
