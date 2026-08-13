@@ -53,7 +53,7 @@ Write-Host ""
 Write-Host "[3/3] Building Android APK & AAB (both flavors: nosms + full)..." -ForegroundColor Yellow
 $env:PATH = "$env:JAVA_HOME\bin;$env:PATH"
 Set-Location "$root\android"
-.\gradlew.bat assembleRelease bundleRelease
+.\gradlew.bat assembleRelease bundleRelease -PallowMissingGoogleServices=true
 if ($LASTEXITCODE -ne 0) { Write-Host "FAILED: Gradle build" -ForegroundColor Red; exit 1 }
 
 # Copy artifacts to root for direct access
