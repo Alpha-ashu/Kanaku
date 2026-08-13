@@ -130,7 +130,7 @@ async function main() {
 
   await prisma.$executeRawUnsafe(`ALTER TABLE public."AdvisorFollow" ENABLE ROW LEVEL SECURITY;`);
   await prisma.$executeRawUnsafe(`DROP POLICY IF EXISTS "own_AdvisorFollow_all" ON public."AdvisorFollow";`);
-  await prisma.$executeRawUnsafe(`CREATE POLICY "own_AdvisorFollow_all" ON public."AdvisorFollow" FOR ALL TO authenticated USING ((select auth.uid())::text = "userId"::text OR (select auth.uid())::text = "advisorId"::text) WITH CHECK ((select auth.uid())::text = "userId"::text OR (select auth.uid())::text = "advisorId"::text);`);
+  await prisma.$executeRawUnsafe(`CREATE POLICY "own_AdvisorFollow_all" ON public."AdvisorFollow" FOR ALL TO authenticated USING ((select auth.uid())::text = "followerId"::text OR (select auth.uid())::text = "advisorId"::text) WITH CHECK ((select auth.uid())::text = "followerId"::text OR (select auth.uid())::text = "advisorId"::text);`);
   console.log('✓ Applied policies to public.AdvisorFollow');
 
   await prisma.$executeRawUnsafe(`ALTER TABLE public."AdvisorPost" ENABLE ROW LEVEL SECURITY;`);
