@@ -25,11 +25,23 @@
 
 import { toast } from 'sonner';
 import { apiClient } from './api';
+import { db } from './database';
 
-const LOCAL_SCHEMA_VERSION = 14;                  // bump whenever Dexie schema changes
+/**
+ * The local schema version, read from Dexie itself.
+ *
+ * This used to be a hand-maintained `const LOCAL_SCHEMA_VERSION = 14`, which had
+ * drifted three versions behind the actual schema (database.ts declares up to
+ * version 17). A guard whose whole job is comparing versions cannot be trusted
+ * to a number someone has to remember to bump — so it now reads db.verno and
+ * cannot go stale.
+ */
+const localSchemaVersion = (): number => db.verno;
+
 const META_ENDPOINT = '/sync/meta';
 const CHECK_INTERVAL_MS = 15 * 60 * 1000;         // recheck every 15 min
 let syncHalted = false;
+let warnedBehind = false;
 
 interface ServerMeta {
   schemaVersion: number;
@@ -62,16 +74,34 @@ const checkOnce = async (): Promise<void> => {
 
     if (typeof schemaVersion !== 'number') return;
 
-    if (typeof minSupportedClientVersion === 'number' && LOCAL_SCHEMA_VERSION < minSupportedClientVersion) {
-      haltSync(`local v${LOCAL_SCHEMA_VERSION} < min supported v${minSupportedClientVersion}`);
+    const local = localSchemaVersion();
+
+    // HARD stop: below the floor the backend still accepts, the shapes genuinely
+    // do not match and pushing would corrupt data.
+    if (typeof minSupportedClientVersion === 'number' && local < minSupportedClientVersion) {
+      haltSync(`local v${local} < min supported v${minSupportedClientVersion}`);
       return;
     }
 
-    if (LOCAL_SCHEMA_VERSION < schemaVersion) {
-      haltSync(`local v${LOCAL_SCHEMA_VERSION} < server v${schemaVersion}`);
-    } else if (LOCAL_SCHEMA_VERSION > schemaVersion) {
-       
-      console.warn('[syncSchemaGuard] local schema is AHEAD of server — preview build on prod backend?');
+    // SOFT nudge: merely trailing the server is normal and must NOT halt sync.
+    //
+    // Web auto-deploys on every push while Android and iOS are installed by hand,
+    // so mobile clients are routinely a version or two behind. Halting on any lag
+    // would strand every phone that had not been updated yet — the opposite of
+    // the stability this guard exists to provide. Only the floor above is fatal.
+    if (local < schemaVersion) {
+      if (!warnedBehind) {
+        warnedBehind = true;
+        console.warn(
+          `[syncSchemaGuard] local schema v${local} is behind server v${schemaVersion}. ` +
+          'Sync continues; update the app when convenient.',
+        );
+      }
+    } else if (local > schemaVersion) {
+      console.warn(
+        `[syncSchemaGuard] local schema v${local} is AHEAD of server v${schemaVersion} — ` +
+        'preview build against a prod backend, or the backend needs its SERVER_SCHEMA_VERSION bumped.',
+      );
     }
   } catch {
     // Backend offline / endpoint missing — fail open. The endpoint is

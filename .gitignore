@@ -37,7 +37,16 @@ backend/.env.*
 frontend/.env
 frontend/.env.*
 !frontend/.env.example
+# .env.android and .env.ios are committed on purpose. They hold no secrets --
+# only the public backend URL and the Supabase anon key, and every VITE_* value
+# is inlined into the JS bundle at build time, so both already ship inside the
+# APK and IPA regardless. Committing them is what makes CI builds work: the
+# runner checks out this tree and has no other source for the backend URL.
+# .env.ios was missing this exemption, so every CI-built IPA had VITE_API_URL
+# undefined, fell back to the relative /api/v1, and could not reach the backend
+# at all -- which is why sign-in failed on iOS while Android was fine.
 !frontend/.env.android
+!frontend/.env.ios
 
 # ----- Logs -----
 logs/

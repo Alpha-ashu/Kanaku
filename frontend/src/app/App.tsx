@@ -624,16 +624,54 @@ const AppContent: React.FC = () => {
 
   // SECURITY: re-sync the current page's tables when the network reconnects — only while
   // unlocked (replaces the eager re-sync removed from AuthContext.handleOnline).
+  //
+  // Also re-syncs when the app returns to the foreground, which is what makes this
+  // behave the same on all three platforms. The `online` event alone does not:
+  // WKWebView routinely keeps navigator.onLine pinned at true and never fires
+  // `online` after a wifi/cellular handoff or a foreground transition, so on iOS
+  // this effect used to be effectively dead and the page kept rendering whatever
+  // Dexie held from the last successful pull. Android's WebView is better but not
+  // reliable either once the process has been backgrounded for a while.
+  //
+  // `visibilitychange` is driven by the WebView lifecycle rather than the network
+  // stack, so it fires consistently everywhere — including on web, where returning
+  // to a long-open tab is exactly when the local copy is most likely to be stale.
   useEffect(() => {
     if (!user || !isAuthenticated || !dataReady) return;
-    const handleReconnect = () => {
+
+    // Foregrounding can fire in bursts (Control Centre, permission sheets, app
+    // switcher). Without a floor, each one would start another full page pull.
+    let lastRun = 0;
+    const MIN_INTERVAL_MS = 30_000;
+
+    const resyncCurrentPage = (force: boolean) => {
+      const now = Date.now();
+      if (!force && now - lastRun < MIN_INTERVAL_MS) return;
+      lastRun = now;
       const requiredTables = PAGE_REQUIRED_TABLES[currentPage] || [];
       if (requiredTables.length > 0) {
         void syncUserDataFromCloud(user.id, requiredTables);
       }
     };
+
+    // A real reconnect is worth bypassing the throttle for.
+    const handleReconnect = () => resyncCurrentPage(true);
+
+    const handleVisible = () => {
+      if (document.visibilityState !== 'visible') return;
+      // navigator.onLine is only trustworthy when it says false (no interface at
+      // all); a true reading on iOS means very little, so we attempt the pull and
+      // let syncUserDataFromCloud fail soft if the request does not land.
+      if (navigator.onLine === false) return;
+      resyncCurrentPage(false);
+    };
+
     window.addEventListener('online', handleReconnect);
-    return () => window.removeEventListener('online', handleReconnect);
+    document.addEventListener('visibilitychange', handleVisible);
+    return () => {
+      window.removeEventListener('online', handleReconnect);
+      document.removeEventListener('visibilitychange', handleVisible);
+    };
   }, [user, isAuthenticated, dataReady, currentPage]);
 
   // Handle background sync when page changes.
