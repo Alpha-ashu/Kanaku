@@ -246,7 +246,7 @@ export const AddGold: React.FC = () => {
    onDiscard={() => setCurrentPage('investments')}
    isSaving={isSubmitting}
    saveLabel="Add Gold Asset"
-   accentClass="from-amber-500 to-amber-600"
+   accentClass="bg-amber-500 hover:bg-amber-600 bg-gradient-to-r from-amber-500 to-amber-600"
  />
  </div>
  );
