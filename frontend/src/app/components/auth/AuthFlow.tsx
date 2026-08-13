@@ -301,10 +301,26 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
     } catch (error: any) {
       internalLog.error('handleSignIn', error);
 
+      // Classify by the error CODE the API client sets, not by substring-matching
+      // its human-readable message.
+      //
+      // The old check looked for 'aborted' or 'fetch' in the message. A timeout
+      // arrives as APIError('TIMEOUT_ERROR', 'The request took too long. Please
+      // try again.', 0) — no 'aborted', no 'fetch', status 0 rather than 400 — so
+      // it matched neither this nor the invalid-credentials branch and fell
+      // through to the generic "Sign in failed. Please try again.". The same was
+      // true of SERVICE_UNAVAILABLE and of WKWebView's own failure text
+      // ("Load failed"), which is exactly what a native build hitting an
+      // unreachable API base produces. Every connectivity failure therefore
+      // looked identical to a server rejection, and told the user nothing.
+      const connectivityCodes = ['TIMEOUT_ERROR', 'NETWORK_ERROR', 'SERVICE_UNAVAILABLE', 'DATABASE_UNAVAILABLE'];
+      const message = String(error?.message ?? '');
       const isNetworkError =
         error?.name === 'AuthRetryableFetchError' ||
-        error?.message?.includes('aborted') ||
-        error?.message?.includes('fetch');
+        error?.name === 'TypeError' ||           // fetch() rejects with TypeError when it cannot reach the host
+        connectivityCodes.includes(error?.code) ||
+        error?.status === 0 ||
+        /aborted|fetch|load failed|network|offline|timed? ?out/i.test(message);
       // Supabase returns code 'email_not_confirmed' (HTTP 400) when the account
       // exists but the confirmation link hasn't been clicked. Detect this BEFORE
       // the generic 400 → invalid-credentials mapping, and route the user to the
@@ -325,8 +341,24 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
         error?.status === 400 ||
         error?.code === 'INVALID_CREDENTIALS';
       let userMessage = 'Sign in failed. Please try again.';
-      if (isNetworkError) userMessage = 'Unable to connect. Please check your internet connection and try again.';
-      else if (isInvalidCredentials) userMessage = 'Incorrect email or password. Please check your details and try again.';
+      if (isNetworkError) {
+        // The backend sleeps when idle and takes up to ~50s to wake, so "check
+        // your connection" is usually wrong and sends the user hunting the wrong
+        // problem. Say what is actually happening.
+        userMessage = 'Could not reach the server. It may be waking up — wait a moment and try again.';
+      } else if (isInvalidCredentials) {
+        userMessage = 'Incorrect email or password. Please check your details and try again.';
+      }
+      // Keep the technical cause in the console. The toast stays friendly, but a
+      // generic message with nothing behind it is what made this failure
+      // undiagnosable from a device in the first place.
+      console.error('[SignIn] failed:', {
+        code: error?.code,
+        status: error?.status,
+        name: error?.name,
+        message: error?.message,
+        classifiedAs: isNetworkError ? 'connectivity' : isInvalidCredentials ? 'credentials' : 'unknown',
+      });
       toast.error(userMessage);
 
 
