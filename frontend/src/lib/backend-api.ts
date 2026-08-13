@@ -6,8 +6,9 @@ import { createNotificationRecord } from './notifications';
 import { categorizeText as localCategorizeText } from './smartCategorization';
 import { TokenManager } from './api';
 import supabase from '@/utils/supabase/client';
+import { getConfiguredApiBase } from '@/lib/apiBase';
 
-const API_BASE_URL = (import.meta.env.VITE_API_URL || '/api/v1').replace(/\/+$/, '');
+const API_BASE_URL = (getConfiguredApiBase()).replace(/\/+$/, '');
 const SHOULD_SKIP_OPTIONAL_BACKEND_REQUESTS = import.meta.env.DEV && !import.meta.env.VITE_API_URL;
 
 function shouldUseLocalFallback(error: unknown) {

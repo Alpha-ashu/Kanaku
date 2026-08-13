@@ -55,6 +55,7 @@ export interface ParsedTransaction {
 
 // Statement metadata is the shared wire contract (same shape the backend emits)
 import type { StatementMeta, ImportPreviewResponse } from '@kanaku/shared';
+import { getConfiguredApiBase } from '@/lib/apiBase';
 
 export type { StatementMeta };
 
@@ -369,7 +370,7 @@ class StatementImportService {
     const token = TokenManager.getAccessToken?.();
     if (!token) return null; // guest/limited mode — local parsing only
 
-    const API_BASE = (import.meta.env.VITE_API_URL || '/api/v1').replace(/\/+$/, '');
+    const API_BASE = (getConfiguredApiBase()).replace(/\/+$/, '');
     const formData = new FormData();
     formData.append('file', file, file.name);
 

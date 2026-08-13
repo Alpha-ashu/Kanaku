@@ -5,8 +5,9 @@
 
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import axios, { AxiosInstance } from 'axios';
+import { getConfiguredApiBase } from '@/lib/apiBase';
 
-const API_BASE_URL = (import.meta.env.VITE_API_URL || '/api/v1').replace(/\/+$/, '');
+const API_BASE_URL = (getConfiguredApiBase()).replace(/\/+$/, '');
 
 /**
  * Get auth token from localStorage

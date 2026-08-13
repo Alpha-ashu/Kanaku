@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { enhancedSyncService } from '@/lib/enhanced-sync';
 import { getDeviceInfo } from '@/utils/device';
+import { getConfiguredApiBase } from '@/lib/apiBase';
 
 interface OnboardingStep4Props {
  data: {
@@ -42,7 +43,7 @@ export const OnboardingStep4: React.FC<OnboardingStep4Props> = ({
  setSyncStatus('Creating your account...');
  setSyncProgress(20);
  
- const registerResponse = await fetch(`${import.meta.env.VITE_API_URL || '/api/v1'}/auth/register`, {
+ const registerResponse = await fetch(`${getConfiguredApiBase()}/auth/register`, {
  method: 'POST',
  headers: {
  'Content-Type': 'application/json',
@@ -71,7 +72,7 @@ export const OnboardingStep4: React.FC<OnboardingStep4Props> = ({
  setSyncStatus('Setting up your session...');
  setSyncProgress(40);
 
- const loginResponse = await fetch(`${import.meta.env.VITE_API_URL || '/api/v1'}/auth/login`, {
+ const loginResponse = await fetch(`${getConfiguredApiBase()}/auth/login`, {
  method: 'POST',
  headers: {
  'Content-Type': 'application/json',
@@ -94,7 +95,7 @@ export const OnboardingStep4: React.FC<OnboardingStep4Props> = ({
  setSyncStatus('Initializing sync service...');
  setSyncProgress(60);
 
- const userResponse = await fetch(`${import.meta.env.VITE_API_URL || '/api/v1'}/auth/user`, {
+ const userResponse = await fetch(`${getConfiguredApiBase()}/auth/user`, {
  headers: {
  'Authorization': `Bearer ${loginData.accessToken}`,
  },

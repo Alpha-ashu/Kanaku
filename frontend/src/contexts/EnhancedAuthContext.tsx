@@ -2,6 +2,7 @@ import React, { createContext, useContext, useReducer, useEffect, ReactNode } fr
 import { enhancedSyncService } from '../lib/enhanced-sync';
 import { pinService } from '../services/pinService';
 import { getDeviceInfo } from '../utils/device';
+import { getConfiguredApiBase } from '@/lib/apiBase';
 
 interface AuthState {
   user: any | null;
@@ -159,7 +160,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     dispatch({ type: 'AUTH_START' });
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || '/api/v1'}/auth/login`, {
+      const response = await fetch(`${getConfiguredApiBase()}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -189,7 +190,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       // Register device
       const deviceInfo = getDeviceInfo();
-      await fetch(`${import.meta.env.VITE_API_URL || '/api/v1'}/sync/register-device`, {
+      await fetch(`${getConfiguredApiBase()}/sync/register-device`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -216,7 +217,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     dispatch({ type: 'AUTH_START' });
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || '/api/v1'}/auth/register`, {
+      const response = await fetch(`${getConfiguredApiBase()}/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -246,7 +247,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       // Register device
       const deviceInfo = getDeviceInfo();
-      await fetch(`${import.meta.env.VITE_API_URL || '/api/v1'}/sync/register-device`, {
+      await fetch(`${getConfiguredApiBase()}/sync/register-device`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

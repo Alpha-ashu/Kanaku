@@ -1,6 +1,7 @@
 import { db } from './database';
 import { getDeviceInfo } from '../utils/device';
 import { TokenManager } from './api';
+import { getConfiguredApiBase } from '@/lib/apiBase';
 
 
 export interface SyncEntity {
@@ -86,7 +87,7 @@ class EnhancedSyncService {
     try {
       const deviceInfo = getDeviceInfo();
 
-      const response = await fetch(`${import.meta.env.VITE_API_URL || '/api/v1'}/sync/register-device`, {
+      const response = await fetch(`${getConfiguredApiBase()}/sync/register-device`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -116,7 +117,7 @@ class EnhancedSyncService {
     try {
       console.log(' Pulling data from backend...');
 
-      const response = await fetch(`${import.meta.env.VITE_API_URL || '/api/v1'}/sync/pull`, {
+      const response = await fetch(`${getConfiguredApiBase()}/sync/pull`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -160,7 +161,7 @@ class EnhancedSyncService {
 
       console.log(` Pushing ${this.syncQueue.length} changes to backend...`);
 
-      const response = await fetch(`${import.meta.env.VITE_API_URL || '/api/v1'}/sync/push`, {
+      const response = await fetch(`${getConfiguredApiBase()}/sync/push`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -6,8 +6,9 @@
 
 import axios, { AxiosInstance } from 'axios';
 import { v4 as uuidv4 } from 'uuid';
+import { getConfiguredApiBase } from '@/lib/apiBase';
 
-const API_BASE_URL = (import.meta.env.VITE_API_URL || '/api/v1').replace(/\/+$/, '');
+const API_BASE_URL = (getConfiguredApiBase()).replace(/\/+$/, '');
 
 interface DeviceRegistrationData {
   deviceId: string;

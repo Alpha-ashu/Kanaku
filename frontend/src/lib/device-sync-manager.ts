@@ -7,8 +7,9 @@
 import axios, { AxiosInstance } from 'axios';
 import { db } from '@/lib/database';
 import { deviceManager } from '@/lib/device-manager';
+import { getConfiguredApiBase } from '@/lib/apiBase';
 
-const API_BASE_URL = (import.meta.env.VITE_API_URL || '/api/v1').replace(/\/+$/, '');
+const API_BASE_URL = (getConfiguredApiBase()).replace(/\/+$/, '');
 
 export interface SyncEvent {
   id: string;

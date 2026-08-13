@@ -1,8 +1,9 @@
 import { TokenManager } from '@/lib/api';
 import supabase from '@/utils/supabase/client';
 import type { OCRProgress, ReceiptCharge, ReceiptLineItem, ReceiptScanResult, TaxComponent, TotalValidationResult } from '@/types/receipt.types';
+import { getConfiguredApiBase } from '@/lib/apiBase';
 
-const API_BASE = (import.meta.env.VITE_API_URL || '/api/v1').replace(/\/+$/, '');
+const API_BASE = (getConfiguredApiBase()).replace(/\/+$/, '');
 
 /**
  * Upload sizing. A bill is text on paper: 1600px on the long edge keeps small

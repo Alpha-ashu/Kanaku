@@ -1,5 +1,6 @@
 import { io, Socket } from 'socket.io-client';
 import { TokenManager } from './api';
+import { getConfiguredApiBase } from '@/lib/apiBase';
 
 /**
  * Shape of a socket event handler. Replaces the unsafe `Function` type, which
@@ -185,7 +186,13 @@ class SocketClient {
       return configuredSocketUrl;
     }
 
-    const apiBase = (import.meta.env.VITE_API_URL || '').trim();
+    // Derive the socket origin from the resolved API base rather than the raw
+    // env var. On web this still yields a relative base and we fall through to
+    // window.location.origin, which is correct there. On native it yields the
+    // absolute backend URL — where the old code returned window.location.origin,
+    // i.e. capacitor://localhost, so realtime silently never connected on
+    // Android or iOS whenever VITE_SOCKET_URL was unset.
+    const apiBase = getConfiguredApiBase().trim();
     if (!apiBase || apiBase.startsWith('/')) {
       return window.location.origin;
     }

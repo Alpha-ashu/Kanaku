@@ -1,7 +1,11 @@
-import { API_CONFIG } from '@/constants';
 import { getCurrencySymbol, normalizeCurrencyCode } from '@/lib/currencyUtils';
+import { getConfiguredApiBase } from '@/lib/apiBase';
 
-const API_BASE = (import.meta.env.VITE_API_URL || API_CONFIG.BASE_URL || '/api/v1').replace(/\/+$/, '');
+// API_CONFIG.BASE_URL now resolves through this same helper, so the old
+// three-way `VITE_API_URL || API_CONFIG.BASE_URL || '/api/v1'` chain collapsed
+// to one call. Quotes are proxied through the backend, so this base being wrong
+// is why market data went blank on iOS along with everything else.
+const API_BASE = getConfiguredApiBase();
 const TWELVE_DATA_BASE = (import.meta.env.VITE_TWELVEDATA_BASE_URL || 'https://api.twelvedata.com').replace(/\/+$/, '');
 const TWELVE_DATA_API_KEY = (import.meta.env.VITE_TWELVEDATA_API_KEY || '').trim();
 const ALLOW_DIRECT_BACKEND_FALLBACK = (import.meta.env.VITE_ALLOW_DIRECT_BACKEND_FALLBACK || 'false').toLowerCase() === 'true';

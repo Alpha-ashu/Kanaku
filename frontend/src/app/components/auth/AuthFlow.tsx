@@ -17,6 +17,7 @@ import { enableGuestMode, isGuestMode, disableGuestMode, migrateGuestDataToUser,
 import { pinService, isPinMissing } from '@/services/pinService';
 import { signIn as supabaseSignIn, signUp as supabaseSignUp, resendSignupConfirmation, DUPLICATE_ACCOUNT_MESSAGE } from '@/lib/supabase-helpers';
 import { MailCheck } from 'lucide-react';
+import { getConfiguredApiBase } from '@/lib/apiBase';
 
 // Auth source of truth for the login UI. 'custom' (default) keeps the backend-issued
 // JWT flow; 'supabase' (Option A) authenticates via Supabase Auth so the API client's
@@ -141,7 +142,7 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
   // a lightweight ping immediately so the cold-start completes while
   // the user is filling in their credentials (typically 10-30 seconds).
   useEffect(() => {
-    const apiBase = (import.meta.env.VITE_API_URL || '/api/v1').replace(/\/api\/v1$/, '');
+    const apiBase = (getConfiguredApiBase()).replace(/\/api\/v1$/, '');
     const warmUp = async () => {
       try {
         await fetch(`${apiBase}/health`, { method: 'GET', cache: 'no-store' });

@@ -3,6 +3,8 @@
  * Centralized configuration and constant values
  */
 
+import { getConfiguredApiBase } from '@/lib/apiBase';
+
 // ==================== Colors ====================
 
 export const COLORS = {
@@ -351,7 +353,11 @@ export const STORAGE_KEYS = {
 // ==================== API Configuration ====================
 
 export const API_CONFIG = {
-  BASE_URL: import.meta.env.VITE_API_URL || '/api/v1',
+  // Single source of truth — see lib/apiBase. Do not inline
+  // `import.meta.env.VITE_API_URL || '/api/v1'` here or anywhere else: that
+  // relative fallback is correct on web but unreachable inside a Capacitor
+  // WebView, and it was duplicated across 12 files before this was centralised.
+  BASE_URL: getConfiguredApiBase(),
   TIMEOUT: 30000,
   RETRY_ATTEMPTS: 3,
   RETRY_DELAY: 1000,
