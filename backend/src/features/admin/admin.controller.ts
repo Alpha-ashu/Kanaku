@@ -831,16 +831,16 @@ export const getUserStorageStats = async (req: AuthRequest, res: Response) => {
     }
 
     const [transactions, accounts, goals, investments, loans, todos, notifications, devices, aiScans, friends] = await Promise.all([
-      prisma.transaction.count({ where: { userId } }),
-      prisma.account.count({ where: { userId } }),
-      prisma.goal.count({ where: { userId } }),
-      prisma.investment.count({ where: { userId } }),
-      prisma.loan.count({ where: { userId } }),
-      prisma.todo.count({ where: { userId } }),
-      prisma.notification.count({ where: { userId } }),
-      prisma.device.count({ where: { userId } }),
-      prisma.aiScan.count({ where: { userId } }),
-      prisma.friend.count({ where: { userId } }),
+      prisma.transaction.count({ where: { userId } }).catch(() => 0),
+      prisma.account.count({ where: { userId } }).catch(() => 0),
+      prisma.goal.count({ where: { userId } }).catch(() => 0),
+      prisma.investment.count({ where: { userId } }).catch(() => 0),
+      prisma.loan.count({ where: { userId } }).catch(() => 0),
+      prisma.todo.count({ where: { userId } }).catch(() => 0),
+      prisma.notification.count({ where: { userId } }).catch(() => 0),
+      prisma.device.count({ where: { userId } }).catch(() => 0),
+      prisma.aiScan.count({ where: { userId } }).catch(() => 0),
+      prisma.friend.count({ where: { userId } }).catch(() => 0),
     ]);
 
     const totalRecords = transactions + accounts + goals + investments + loans + todos + notifications + devices + aiScans + friends;
