@@ -97,8 +97,19 @@ jobs:
         run: npm ci --ignore-scripts --no-audit --no-fund
         working-directory: .
 
+      # MUST be build:android (vite --mode android), not the default build.
+      #
+      # The default mode reads frontend/.env, where VITE_API_URL is the RELATIVE
+      # "/api/v1" used by the web app behind Vercel's proxy. In a Capacitor
+      # WebView the origin is https://localhost, so a relative path resolves to
+      # https://localhost/api/v1 — nothing is served there, every API call fails,
+      # and the app cannot sign in. .env.android carries the absolute backend URL.
+      #
+      # build-android.ps1 already used --mode android, so locally-built APKs
+      # worked while every CI-built artifact was broken. build-ios.yml was
+      # already correct (build:ios).
       - name: Build frontend for Capacitor
-        run: npm run build
+        run: npm run build:android
         working-directory: frontend
 
       - name: Run Capacitor sync
