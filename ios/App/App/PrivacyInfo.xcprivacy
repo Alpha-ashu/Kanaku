@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Apple privacy manifest — REQUIRED for App Store submission since May 2024.
+
+  Without this file App Store Connect rejects the upload with ITMS-91053
+  ("Missing API declaration") for every required-reason API the binary touches.
+
+  Neither Capacitor nor its plugins cover this for us:
+    @capacitor/ios ships a PrivacyInfo.xcprivacy with an EMPTY
+    NSPrivacyAccessedAPITypes array, and @capacitor/preferences — which is a
+    UserDefaults wrapper — ships none at all. The declaration therefore has to
+    live in the app target.
+
+  Reason codes are Apple's, from
+  developer.apple.com/documentation/bundleresources/privacy_manifest_files
+
+  NSPrivacyCollectedDataTypes is deliberately left empty: for a first-party app
+  Apple takes the collection disclosure from the App Store Connect privacy
+  questionnaire, not from this file. Fill that in there — the app does handle
+  financial and contact data.
+-->
+<plist version="1.0">
+<dict>
+    <key>NSPrivacyTracking</key>
+    <false/>
+
+    <key>NSPrivacyTrackingDomains</key>
+    <array/>
+
+    <key>NSPrivacyCollectedDataTypes</key>
+    <array/>
+
+    <key>NSPrivacyAccessedAPITypes</key>
+    <array>
+        <!--
+          UserDefaults — @capacitor/preferences, and Capacitor core's own bridge
+          state. CA92.1: access only to data written by this app itself.
+        -->
+        <dict>
+            <key>NSPrivacyAccessedAPIType</key>
+            <string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+            <key>NSPrivacyAccessedAPITypeReasons</key>
+            <array>
+                <string>CA92.1</string>
+            </array>
+        </dict>
+
+        <!--
+          File timestamps — @capacitor/filesystem, used by receipt/statement
+          attachment handling. C617.1: timestamps of files inside the app's own
+          container.
+        -->
+        <dict>
+            <key>NSPrivacyAccessedAPIType</key>
+            <string>NSPrivacyAccessedAPICategoryFileTimestamp</string>
+            <key>NSPrivacyAccessedAPITypeReasons</key>
+            <array>
+                <string>C617.1</string>
+            </array>
+        </dict>
+
+        <!--
+          Disk space — checked before writing an attachment or export.
+          E174.1: write or delete a file on the user's explicit request.
+        -->
+        <dict>
+            <key>NSPrivacyAccessedAPIType</key>
+            <string>NSPrivacyAccessedAPICategoryDiskSpace</string>
+            <key>NSPrivacyAccessedAPITypeReasons</key>
+            <array>
+                <string>E174.1</string>
+            </array>
+        </dict>
+    </array>
+</dict>
+</plist>

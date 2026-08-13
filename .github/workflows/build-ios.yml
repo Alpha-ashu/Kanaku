@@ -152,6 +152,11 @@ jobs:
       # Selecting the SDK directly is what a generic unsigned device build
       # actually needs and skips destination resolution entirely.
       - name: Build for physical iOS device (Unsigned Release)
+        env:
+          # CFBundleVersion must be unique per upload; App Store Connect
+          # rejects duplicates. Mirrors ANDROID_VERSION_CODE in
+          # build-android-aab.yml.
+          BUILD_NUMBER: ${{ github.run_number }}
         run: |
           set -o pipefail
           xcodebuild \
@@ -162,6 +167,7 @@ jobs:
             -derivedDataPath build \
             -skipPackagePluginValidation \
             -skipMacroValidation \
+            KANAKU_BUILD_NUMBER=$BUILD_NUMBER \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \

@@ -53,15 +53,24 @@
 	<string>KANAKU converts your speech to text on this device so you can add a transaction by speaking instead of typing.</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>KANAKU uses Face ID to unlock the app, so you do not have to type your PIN every time.</string>
+	<!-- Export compliance. The app uses only exempt cryptography: HTTPS/TLS and
+	     the platform's own PBKDF2/Keychain for authentication. Declaring it here
+	     stops App Store Connect blocking every upload on the manual question.
+	     Re-check this if non-exempt crypto is ever added. -->
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>UIStatusBarStyle</key>
 	<string>UIStatusBarStyleLightContent</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
+	<!-- arm64, not armv7. armv7 is 32-bit ARM, dropped after iOS 10; every device
+	     that can run this app's iOS 15 minimum is arm64. The armv7 value was a
+	     Capacitor template leftover and misdeclares the device requirement. -->
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
-		<string>armv7</string>
+		<string>arm64</string>
 	</array>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
