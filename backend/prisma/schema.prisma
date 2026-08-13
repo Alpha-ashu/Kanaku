@@ -70,6 +70,7 @@ model AdvisorApplication {
 
   @@index([status])
   @@index([userId])
+  @@index([reviewedBy])
   @@schema("public")
 }
 
@@ -980,6 +981,8 @@ model CollaborationParticipant {
   @@index([email])
   @@index([status])
   @@index([moduleType, moduleId])
+  @@index([userId])
+  @@index([invitedBy])
   @@schema("public")
 }
 
