@@ -66,7 +66,10 @@ const SYNC_FIELDS = {
     'purchaseDate', 'lastUpdated', 'metadata', 'broker', 'description', 'assetCurrency', 'baseCurrency', 'buyFxRate',
     'lastKnownFxRate', 'totalInvestedNative', 'currentValueNative', 'valuationVersion', 'positionStatus', 'closedAt',
     'closePrice', 'closeFxRate', 'grossSaleValue', 'netSaleValue', 'purchaseFees', 'closingFees', 'realizedProfitLoss',
-    'closeNotes', 'syncStatus',
+    // NOTE: no 'syncStatus' here — unlike every other synced model, Investment has
+    // no such column. Leaving it allow-listed let a client-supplied value through
+    // to Prisma, which rejected the whole write ("Unknown argument `syncStatus`").
+    'closeNotes',
   ] as const,
   recurringTransactions: [
     'title', 'amount', 'category', 'subcategory', 'interval', 'nextDueDate', 'autoProcess', 'status', 'accountId',
@@ -87,6 +90,37 @@ class SyncService {
     }
     return result;
   }
+
+  /**
+   * Assert that each supplied account id exists and is owned by `userId`.
+   *
+   * Null/undefined ids are skipped — those columns are genuinely optional
+   * (a plain expense has no transferToAccountId). Ownership is part of the
+   * query rather than a separate check so a foreign account reads as missing:
+   * the caller learns an id was unusable, not whether it exists for some
+   * other user.
+   */
+  private async assertOwnedAccounts(userId: string, accountIds: (string | null | undefined)[]) {
+    const ids = Array.from(
+      new Set(accountIds.filter((id): id is string => typeof id === 'string' && id.length > 0)),
+    );
+    if (ids.length === 0) return;
+
+    const found = await prisma.account.findMany({
+      where: { id: { in: ids }, userId },
+      select: { id: true },
+    });
+
+    if (found.length !== ids.length) {
+      const foundIds = new Set(found.map((a) => a.id));
+      const missing = ids.filter((id) => !foundIds.has(id));
+      throw new Error(
+        `unknown or unowned account(s): ${missing.join(', ')} — ` +
+        'push the parent account before the transactions that reference it',
+      );
+    }
+  }
+
   /**
    * Register or update a device for a user
    */
@@ -332,6 +366,24 @@ class SyncService {
   }
 
   /**
+   * Entity types whose Prisma model has no `syncStatus` column.
+   *
+   * Every other synced model carries one, so this handler used to set
+   * `syncStatus: 'synced'` unconditionally — which made Prisma reject every
+   * single investment write with "Unknown argument `syncStatus`". The per-entity
+   * catch in pushChanges swallowed it into the errors array, so pushes kept
+   * returning 200 and nothing surfaced: investments created on one device simply
+   * never reached the server, and therefore never appeared on any other device.
+   *
+   * Keyed by entityType rather than by inspecting the delegate because the
+   * mapping is a fact about the schema, and a wrong guess here silently drops
+   * data again. If Investment ever gains the column, delete this set.
+   */
+  private static readonly ENTITY_TYPES_WITHOUT_SYNC_STATUS: ReadonlySet<string> = new Set([
+    'investments',
+  ]);
+
+  /**
    * Generic create/update/delete handler with idempotent create, owner-scoped
    * delete, and latest-timestamp-wins conflict resolution. Used for the
    * self-contained record types (budgets, investments, recurring, gold, friends).
@@ -349,6 +401,12 @@ class SyncService {
   }) {
     const { delegate, entityType, userId, operation, entityId, data, localTimestamp, conflicts, allowed } = args;
     const sanitizedData = this.pickAllowedFields(data, allowed);
+
+    // Spread instead of assigned, so models lacking the column get nothing at all
+    // rather than an explicit undefined (which Prisma also rejects).
+    const syncStatusPatch = SyncService.ENTITY_TYPES_WITHOUT_SYNC_STATUS.has(entityType)
+      ? {}
+      : { syncStatus: 'synced' as const };
 
     if (operation === 'delete') {
       // Owner-scoped soft delete.
@@ -389,7 +447,7 @@ class SyncService {
       // Idempotent create — a retried create is a silent no-op.
       await delegate.upsert({
         where: { id: entityId },
-        create: { ...sanitizedData, id: entityId, userId, syncStatus: 'synced', createdAt: localTimestamp, updatedAt: localTimestamp },
+        create: { ...sanitizedData, id: entityId, userId, ...syncStatusPatch, createdAt: localTimestamp, updatedAt: localTimestamp },
         update: {},
       });
       return;
@@ -399,7 +457,7 @@ class SyncService {
     const existing = await delegate.findUnique({ where: { id: entityId } });
     if (!existing) {
       await delegate.create({
-        data: { ...sanitizedData, id: entityId, userId, syncStatus: 'synced', createdAt: localTimestamp, updatedAt: localTimestamp },
+        data: { ...sanitizedData, id: entityId, userId, ...syncStatusPatch, createdAt: localTimestamp, updatedAt: localTimestamp },
       });
       return;
     }
@@ -412,7 +470,7 @@ class SyncService {
     } else {
       await delegate.update({
         where: { id: entityId },
-        data: { ...sanitizedData, syncStatus: 'synced', updatedAt: localTimestamp },
+        data: { ...sanitizedData, ...syncStatusPatch, updatedAt: localTimestamp },
       });
     }
   }
@@ -509,11 +567,35 @@ class SyncService {
     conflicts: any[]
   ) {
     const allowed = [
-      'accountId', 'type', 'amount', 'category', 'subcategory', 
-      'description', 'merchant', 'date', 'tags', 'transferToAccountId', 
+      'accountId', 'type', 'amount', 'category', 'subcategory',
+      'description', 'merchant', 'date', 'tags', 'transferToAccountId',
       'transferType', 'version', 'syncStatus'
     ];
     const sanitizedData = this.pickAllowedFields(data, allowed);
+
+    // Verify every account this transaction points at exists AND belongs to the
+    // pusher, before we hand it to Prisma.
+    //
+    // Two problems this closes. First, an offline device can create an account
+    // and a transaction referencing it in the same session and push the
+    // transaction first; the insert then dies on Transaction_accountId_fkey
+    // (23503, visible in the Postgres logs). The per-entity catch upstream keeps
+    // the rest of the batch alive, but this row is dropped while the client has
+    // already marked it pushed — the transaction is simply gone, and which rows
+    // are lost depends on push ordering, so two devices end up disagreeing.
+    // Second, the foreign key only proves an account row exists, not that it is
+    // *this* user's, so a crafted accountId could attach a transaction to
+    // someone else's account.
+    //
+    // Throwing here routes it into the caller's error list with an explanatory
+    // message instead of a raw constraint violation, so the client can retry
+    // once the parent account has synced.
+    if (operation !== 'delete') {
+      await this.assertOwnedAccounts(userId, [
+        sanitizedData?.accountId,
+        sanitizedData?.transferToAccountId,
+      ]);
+    }
 
     if (operation === 'delete') {
       await prisma.transaction.update({
