@@ -105,11 +105,16 @@ jobs:
 
       - name: Lint
         working-directory: backend
-        run: npm run lint -- --max-warnings 0 || true
+        # Uses the ratchet baked into the package script (--max-warnings 577),
+        # not --max-warnings 0. The override demanded zero warnings against 577
+        # pre-existing ones, so the gate could only ever be satisfied by the
+        # `|| true` that made it meaningless. The ratchet fails on any NEW
+        # warning, which is a real gate today; lower the number as debt is paid.
+        run: npm run lint
 
       - name: Run unit tests
         working-directory: backend
-        run: npx jest --passWithNoTests --ci --forceExit --testPathIgnorePatterns="tests/integration"
+        run: npx jest --ci --forceExit --testPathIgnorePatterns="tests/integration"
         env:
           NODE_ENV: test
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/kanaku_test
@@ -123,7 +128,7 @@ jobs:
 
       - name: Run integration tests
         working-directory: backend
-        run: npx jest --passWithNoTests --ci --forceExit --runInBand "../quality/backend/tests/integration"
+        run: npx jest --ci --forceExit --runInBand "../quality/backend/tests/integration"
         env:
           NODE_ENV: test
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/kanaku_test
@@ -162,11 +167,15 @@ jobs:
 
       - name: Lint
         working-directory: frontend
-        run: npx eslint "src/**/*.{ts,tsx}" --max-warnings 0 || true
+        # Same ratchet reasoning as the backend job (--max-warnings 1250). Also
+        # drops the bespoke glob: ESLint resolves "src/**/*.{ts,tsx}" itself and
+        # the brace pattern fails outright on some platforms, so the package
+        # script's plain `eslint .` is the more portable invocation.
+        run: npm run lint
 
       - name: Run unit tests
         working-directory: frontend
-        run: npx vitest run --reporter=verbose --passWithNoTests
+        run: npx vitest run --reporter=verbose
         env:
           NODE_ENV: test
           VITE_SUPABASE_URL: http://localhost:54321

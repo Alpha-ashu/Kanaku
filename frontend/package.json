@@ -11,7 +11,7 @@
     "preview": "vite preview",
     "test:unit": "vitest run --config vitest.config.ts",
     "test:unit:watch": "vitest --config vitest.config.ts",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 1250",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 1203",
     "type-check": "tsc --noEmit --skipLibCheck",
     "format": "prettier --write \"**/*.{ts,tsx,json,md}\"",
     "test": "vitest run --config vitest.config.ts"
