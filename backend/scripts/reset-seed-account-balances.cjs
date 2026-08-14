@@ -126,12 +126,54 @@ function connectionString() {
     process.exit(1);
   }
 
+  // ── Phase 2: sign-inverted seed rows under a non-@kanaku.com address ──────────
+  //
+  // One account escapes the allowlist above: "Primary Checking" on
+  // shaik.job.details@gmail.com, at -51,020. It is seed data too, and the
+  // evidence is in its siblings — the same user's other three accounts, created
+  // in the same batch and likewise with no transactions, hold 48,010 / 50,640 /
+  // 53,270. The magnitude is right in that range; only the sign is wrong. So
+  // this is a sign error in the seed generator, not a debt, and the faithful
+  // repair is to negate it rather than overwrite it with a flat figure — that
+  // preserves the seed's intent.
+  //
+  // Guarded so it can only ever touch a row that is provably in this state:
+  // negative, non-credit, zero transactions, zero sessions (never signed in),
+  // and every sibling account already positive. A real account that someone has
+  // actually used fails at least one of those and is skipped.
+  const flipped = await c.query(
+    `UPDATE public."Account" acc
+        SET balance = -acc.balance, "openingBalance" = -acc.balance, "updatedAt" = NOW()
+       FROM public."User" u
+      WHERE u.id = acc."userId"
+        AND acc.balance < 0
+        AND lower(acc.type) <> ALL($1::text[])
+        AND u.email NOT LIKE $2
+        AND NOT EXISTS (
+          SELECT 1 FROM public."Transaction" t
+          WHERE t."accountId" = acc.id OR t."transferToAccountId" = acc.id)
+        AND NOT EXISTS (
+          SELECT 1 FROM public."Transaction" t WHERE t."userId" = u.id)
+        AND NOT EXISTS (
+          SELECT 1 FROM public."RefreshToken" r WHERE r."userId" = u.id)
+        AND NOT EXISTS (
+          SELECT 1 FROM public."Account" sib
+          WHERE sib."userId" = u.id AND sib.id <> acc.id AND sib.balance < 0)
+      RETURNING acc.name, acc.balance, u.email`,
+    [NEGATIVE_ALLOWED, SEED_EMAIL_PATTERN]);
+
+  if (flipped.rowCount) {
+    console.log('\nPhase 2 — sign corrected (magnitude preserved):');
+    console.table(flipped.rows);
+  }
+
   if (APPLY) {
     await c.query('COMMIT');
-    console.log(`\nCOMMITTED — ${res.rowCount} account(s) reset.`);
+    console.log(`\nCOMMITTED — ${res.rowCount} reset, ${flipped.rowCount} sign-corrected.`);
   } else {
     await c.query('ROLLBACK');
-    console.log(`\nROLLED BACK — ${res.rowCount} would change. Re-run with --apply to commit.`);
+    console.log(`\nROLLED BACK — ${res.rowCount} reset + ${flipped.rowCount} sign-corrected would change.`);
+    console.log('Re-run with --apply to commit.');
   }
 
   await c.end();
