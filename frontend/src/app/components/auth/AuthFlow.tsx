@@ -435,6 +435,20 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
         TokenManager.setAccessToken(accessToken);
       }
 
+      // Nothing below this point can make progress without a token: the success
+      // path just fires KANAKU_AUTH_CHANGE and returns, and AuthContext only
+      // promotes the user to signed-in if it finds one. Without this check a
+      // tokenless 201 left SignUpForm sitting on "Preparing your financial
+      // dashboard..." with no error, no timeout and no way back — the account
+      // existed, but the app never moved. apiClient may also have captured the
+      // token from the Authorization response header, so consult TokenManager
+      // rather than the response body alone before deciding it is missing.
+      if (!TokenManager.getAccessToken()) {
+        throw new Error(
+          'Your account was created, but signing you in failed. Please sign in with your new details.',
+        );
+      }
+
       setEmail(data.email);
       setUserProfile({
         firstName: data.firstName,

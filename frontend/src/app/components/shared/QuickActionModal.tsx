@@ -83,7 +83,7 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({
    animate={{ y: 0, opacity: 1 }}
    exit={{ y: '100%', opacity: 0 }}
    transition={{ type: 'spring', damping: 28, stiffness: 320 }}
-   className="fixed inset-x-0 bottom-0 z-[61] bg-white/98 backdrop-blur-2xl rounded-t-[32px] shadow-2xl border-t border-slate-200 overflow-hidden max-h-[85vh] flex flex-col"
+   className="fixed inset-x-0 bottom-0 z-[61] bg-white/98 backdrop-blur-2xl rounded-t-[32px] shadow-2xl border-t border-slate-200 overflow-hidden max-h-[85dvh] flex flex-col"
  >
    {/* Drag Handle */}
    <div className="flex justify-center pt-3 pb-1">

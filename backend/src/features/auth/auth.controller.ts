@@ -346,8 +346,18 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
       data: {
         user: tokens.user,
         expiresAt: tokens.expiresAt,
-        // Native clients can't read cross-origin headers, so deliver tokens here.
-        ...(native ? { accessToken: tokens.accessToken, refreshToken: tokens.refreshToken } : {}),
+        // The access token ships in the body for every client, exactly as login
+        // does. It used to be gated behind `native` alongside the refresh token,
+        // which left web with the Authorization response header as its only way
+        // to obtain a token — and the signup screen has no error path for
+        // failing to get one. Any proxy that dropped that header stranded the
+        // user on "Preparing your financial dashboard..." forever, on a request
+        // that had already succeeded and created their account.
+        //
+        // Only the refresh token is genuinely native-only: on web it lives
+        // solely in the HttpOnly cookie set above, unreadable by JS.
+        accessToken: tokens.accessToken,
+        ...(native ? { refreshToken: tokens.refreshToken } : {}),
       },
     });
   } catch (error: any) {

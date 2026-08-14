@@ -193,6 +193,7 @@
   .page-shell {
     width: 100%;
     min-height: 100vh;
+    min-height: 100dvh; /* mobile: track the visible viewport, not the retracted-chrome one */
     background-color: #ffffff;
     overflow-x: hidden;
   }

@@ -336,7 +336,10 @@ export const EditAccount: React.FC<{ accountId?: number }> = ({ accountId: propA
  </div>
 
  {/* Floating Action Bar (Bottom Fixed) */}
- <div className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-slate-100 p-4 sm:p-6 z-50">
+ {/* Bottom padding carries the safe-area inset: pinned to bottom-0 with a flat
+     p-4, Save and Cancel sat underneath the iOS home indicator and the Android
+     gesture bar, where they are awkward to hit and partly obscured. */}
+ <div className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-slate-100 p-4 sm:p-6 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] z-50">
  <div className="max-w-3xl mx-auto flex gap-3 sm:gap-4">
  <button data-testid="edit-account-button-4"
  type="button"

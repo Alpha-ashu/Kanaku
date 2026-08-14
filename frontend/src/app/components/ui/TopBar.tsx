@@ -351,8 +351,16 @@ export const TopBar: React.FC = () => {
     setMobileMenuOpen(false);
   };
 
+ // The header's top offset must clear the status bar, not just sit 12px below
+ // the viewport edge. `top-3` alone put it underneath the iOS Dynamic Island /
+ // notch and the Android status bar, so the logo and the menu button were
+ // partly unreadable and partly untappable on every notched device. The
+ // left/right insets matter too, for landscape on notched phones.
+ // `.mobile-main` already reserves header-height + safe-area-inset-top for the
+ // content below, so pushing the header down by the same inset keeps the two in
+ // agreement rather than opening a gap.
  return (
- <header className="fixed top-3 left-3 right-3 lg:top-4 lg:left-[112px] lg:right-6 z-[60] bg-white/80 backdrop-blur-2xl border border-slate-100 rounded-3xl shadow-lg shadow-slate-100/40 transition-all duration-300">
+ <header className="fixed top-[calc(env(safe-area-inset-top,0px)+0.75rem)] left-[calc(env(safe-area-inset-left,0px)+0.75rem)] right-[calc(env(safe-area-inset-right,0px)+0.75rem)] lg:top-4 lg:left-[112px] lg:right-6 z-[60] bg-white/80 backdrop-blur-2xl border border-slate-100 rounded-3xl shadow-lg shadow-slate-100/40 transition-all duration-300">
  {/* Notification Popup */}
  <NotificationPopup
  isOpen={notificationPopupOpen}
@@ -378,7 +386,13 @@ export const TopBar: React.FC = () => {
     <KANAKULogo className="w-7 h-7 sm:w-8 sm:h-8" />
     <span className="text-sm sm:text-xl font-bold font-display text-gray-900 tracking-tight">KANAKU</span>
   </div>
- <SheetContent side="left" className="w-[270px] h-[calc(100vh-24px)] my-3 ml-3 rounded-[32px] bg-white border border-slate-100 shadow-2xl text-slate-900 z-[100] p-0 overflow-hidden flex flex-col focus:outline-none">
+ {/* Sized with dvh, not vh: on mobile Safari `100vh` is the viewport with the
+     browser chrome *retracted*, so the panel was taller than the screen —
+     which pushed the first nav item under the panel header and cut the account
+     row off the bottom edge. dvh tracks the actually-visible viewport, and the
+     safe-area insets keep the rounded panel clear of the status bar, the home
+     indicator and (in landscape) the notch. */}
+ <SheetContent side="left" className="w-[270px] h-[calc(100dvh-1.5rem-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px))] mt-[calc(env(safe-area-inset-top,0px)+0.75rem)] mb-[calc(env(safe-area-inset-bottom,0px)+0.75rem)] ml-[calc(env(safe-area-inset-left,0px)+0.75rem)] rounded-[32px] bg-white border border-slate-100 shadow-2xl text-slate-900 z-[100] p-0 overflow-hidden flex flex-col focus:outline-none">
  <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
  <SheetDescription className="sr-only">Main navigation menu</SheetDescription>
   <div className="flex flex-col h-full bg-white text-slate-900">
@@ -644,7 +658,11 @@ export const TopBar: React.FC = () => {
 
  {/* Mobile Fullscreen Search Sheet */}
  {isMobileSearchOpen && (
- <div className="fixed inset-0 bg-white/95 backdrop-blur-xl z-[100] flex flex-col animate-in fade-in duration-200 text-slate-900">
+ <div className="fixed inset-0 bg-white/95 backdrop-blur-xl z-[100] flex flex-col animate-in fade-in duration-200 text-slate-900 pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)]">
+ {/* inset-0 starts this sheet at the true viewport top, which on a notched
+     device is behind the status bar — the search field and its Cancel button
+     ended up under the clock. Pad by the insets so the sheet's own content
+     starts below them. */}
  <div className="flex items-center gap-3 p-4 border-b border-slate-100">
  <Search className="text-slate-400 w-5 h-5" />
  <input data-testid="top-bar-search-transactions-assets-2"

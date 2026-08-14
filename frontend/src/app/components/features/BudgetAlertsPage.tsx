@@ -427,7 +427,7 @@ export const BudgetAlertsPage: React.FC = () => {
             className="absolute inset-0 bg-black/50" 
             onClick={() => setShowAddModal(false)} 
           />
-          <div className="relative bg-white rounded-2xl p-8 w-full max-w-md border border-gray-200 shadow-lg z-10 max-h-[calc(100vh-2rem)] overflow-y-auto">
+          <div className="relative bg-white rounded-2xl p-8 w-full max-w-md border border-gray-200 shadow-lg z-10 max-h-[calc(100dvh-2rem-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px))] overflow-y-auto">
             <h3 className="text-xl font-bold text-gray-900 mb-6">Set Category Budget</h3>
             <div className="space-y-4">
               <div>

@@ -43,11 +43,13 @@ export const isAllowedOrigin = (origin: string): boolean => {
   if (allowAllOrigins) return true;
   if (allowedOrigins.includes(origin)) return true;
 
-  const wildcard = allowedOrigins.find(value => value.startsWith('*.'));
-  if (wildcard) {
-    const suffix = wildcard.slice(1);
-    return origin.endsWith(suffix);
-  }
-
-  return false;
+  // Check *every* wildcard entry, not just the first one found. `find` returned
+  // the first `*.`-prefixed pattern and returned its verdict as final, so with
+  // CORS_ORIGIN="*.example.com,*.vercel.app" only the leading pattern could ever
+  // match and the rest were silently dead — a config that looks correct and
+  // half-works. `.slice(1)` keeps the leading dot, so "*.vercel.app" matches
+  // "https://app.vercel.app" but not "https://notvercel.app".
+  return allowedOrigins.some(
+    value => value.startsWith('*.') && origin.endsWith(value.slice(1)),
+  );
 };

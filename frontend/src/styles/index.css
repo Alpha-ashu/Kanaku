@@ -159,7 +159,11 @@ button, a, [role="button"], input, select {
 /* Main content container - allow full viewport usage */
 @media (max-width: 1024px) {
   main {
-    min-height: calc(100vh - var(--header-height) - var(--bottom-reserved-space));
+    /* dvh, not vh — this is the mobile branch, and on iOS Safari `100vh` is the
+       viewport measured with the browser chrome retracted. Using it here made
+       <main> taller than the screen actually is, so the page scrolled past its
+       own content and the last rows sat under the floating bottom nav. */
+    min-height: calc(100dvh - var(--header-height) - var(--bottom-reserved-space));
     overflow-x: hidden;
     overflow-y: auto;
   }

@@ -23,6 +23,10 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  // Set once the post-signup handover has visibly overrun, so the success
+  // screen can offer a way out instead of spinning forever. See the success
+  // branch below for why that screen would otherwise be a dead end.
+  const [handoverStalled, setHandoverStalled] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [emailFocused, setEmailFocused] = useState(false);
@@ -253,6 +257,14 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
     return <span className={`text-xs font-semibold ${colors[strengthScore]}`}>{labels[strengthScore]}</span>;
   };
 
+  // A successful handover unmounts this component within a tick or two, so this
+  // timer normally never fires. It only matters when it does.
+  useEffect(() => {
+    if (!isSuccess) return;
+    const timer = setTimeout(() => setHandoverStalled(true), 10_000);
+    return () => clearTimeout(timer);
+  }, [isSuccess]);
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     if (!isFirstNameValid) newErrors.firstName = 'Required';
@@ -353,6 +365,27 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
         </div>
         <h2 className="text-xl font-bold text-gray-900">Account Created Successfully!</h2>
         <p className="text-sm text-gray-500 animate-pulse">Preparing your financial dashboard...</p>
+
+        {/* This screen has no navigation of its own — in the AuthFlow path it
+            waits for the app to swap it out once the new session is live. That
+            makes it a dead end if the handover ever fails, which is precisely
+            how users ended up staring at "Preparing your financial dashboard..."
+            indefinitely. The account exists by this point, so signing in is
+            always a valid way out; offer it rather than leaving them stranded. */}
+        {handoverStalled && (
+          <div className="pt-2 space-y-2">
+            <p className="text-xs text-gray-500">
+              This is taking longer than expected.
+            </p>
+            <button
+              type="button"
+              onClick={onSwitchToSignIn}
+              className="text-sm font-semibold text-blue-600 hover:text-blue-700 underline underline-offset-2"
+            >
+              Continue to sign in
+            </button>
+          </div>
+        )}
       </div>
     );
   }

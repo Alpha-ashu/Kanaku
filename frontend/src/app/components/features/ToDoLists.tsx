@@ -173,8 +173,23 @@ export const ToDoLists: React.FC = () => {
         localStorage.setItem('viewingToDoListId', savedList.id.toString());
         setCurrentPage('todo-list-detail');
       }
-    } catch {
-      toast.error('Failed to create list');
+    } catch (error: any) {
+      // A bare `catch {}` here threw away the only evidence of why this failed.
+      // The server was rejecting every list with a 500, and all anyone could see
+      // was "Failed to create list" — no code, no request id, nothing to search
+      // the logs with. Keep the cause in the console and put the request id in
+      // front of the user, so a report of this is actually actionable.
+      console.error('[ToDoLists] create failed:', {
+        status: error?.status,
+        code: error?.code,
+        requestId: error?.requestId,
+        message: error?.message,
+      });
+      toast.error(
+        error?.requestId
+          ? `Failed to create list (ref: ${error.requestId})`
+          : error?.message || 'Failed to create list',
+      );
     } finally {
       setIsCreating(false);
     }
