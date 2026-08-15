@@ -1,12 +1,27 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import * as Sentry from '@sentry/react';
 import App from '@/app/App';
 import { BrowserRouter } from 'react-router-dom';
 import { financialDataCaptureService } from '@/services/financialDataCaptureService';
-import { setupGlobalErrorHandlers } from '@/lib/errorHandling';
+import { setupGlobalErrorHandlers, registerErrorReporter } from '@/lib/errorHandling';
 import { runGlobalMigration } from '@/lib/migration';
 import { initSchemaGuard } from '@/lib/syncSchemaGuard';
 import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
+
+// Initialize Sentry if VITE_SENTRY_DSN is configured
+const sentryDsn = import.meta.env.VITE_SENTRY_DSN;
+if (sentryDsn) {
+  Sentry.init({
+    dsn: sentryDsn,
+    environment: import.meta.env.MODE || 'production',
+    tracesSampleRate: 0.1,
+  });
+  registerErrorReporter((err, context) => {
+    Sentry.captureException(err, { extra: context });
+  });
+}
+
 // Perform global brand migration (KANAKU -> KANAKU) before anything else
 runGlobalMigration();
 

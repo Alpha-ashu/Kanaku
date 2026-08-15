@@ -160,6 +160,15 @@ export class ErrorHandler {
     // Log error (silent in production)
     logger.error('[Error]', { type: error.type, code: error.code });
 
+    // Forward server errors and unexpected crashes to external reporter (Sentry)
+    if (error.type === ErrorType.SERVER || error.type === ErrorType.UNKNOWN) {
+      reportError(error.details || new Error(error.message), {
+        type: error.type,
+        code: error.code,
+        message: error.message,
+      });
+    }
+
     // Show toast notification
     if (showToast) {
       this.showErrorToast(error);
