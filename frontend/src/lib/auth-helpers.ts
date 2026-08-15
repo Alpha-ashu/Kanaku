@@ -34,7 +34,11 @@ export async function unifiedSignOut(_navigate?: (path: string) => void): Promis
     restorePINKeys(pinBackup);
 
     // Step 6: Delete local IndexedDB (non-blocking)
-    try { window.indexedDB.deleteDatabase('KANAKUDB'); } catch { }
+    try {
+      window.indexedDB.deleteDatabase('KANAKUDB');
+    } catch (err) {
+      console.warn('[auth-helpers] Failed to delete IndexedDB during signout:', err);
+    }
 
     console.log(' Unified signout completed successfully');
 
@@ -49,7 +53,9 @@ export async function unifiedSignOut(_navigate?: (path: string) => void): Promis
       sessionStorage.clear();
       restorePINKeys(pinBackup);
       window.indexedDB.deleteDatabase('KANAKUDB');
-    } catch { }
+    } catch (cleanupErr) {
+      console.error('[auth-helpers] Fallback signout cleanup failed:', cleanupErr);
+    }
     window.location.replace(window.location.origin + '?logged_out=1');
   }
 }
@@ -88,7 +94,9 @@ export async function legacySignOut(): Promise<void> {
     try {
       localStorage.clear();
       restorePINKeys(pinBackup);
-    } catch { }
+    } catch (cleanupErr) {
+      console.error('[auth-helpers] Legacy signout PIN restore failed:', cleanupErr);
+    }
     window.location.href = window.location.origin;
   }
 }

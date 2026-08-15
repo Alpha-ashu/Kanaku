@@ -52,10 +52,11 @@ export async function ensureTodoTablesExist() {
 
 export class TodoRepository {
   // Legacy Single Todos
-  async findTodos(userId: string) {
+  async findTodos(userId: string, limit = 200) {
     return prisma.todo.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
+      take: limit,
     });
   }
 

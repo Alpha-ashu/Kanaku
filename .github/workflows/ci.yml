@@ -96,6 +96,13 @@ jobs:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/kanaku_test
           DIRECT_URL: postgresql://postgres:postgres@localhost:5432/kanaku_test
 
+      - name: Guard schema drift against migrations
+        working-directory: backend
+        run: npx prisma migrate diff --from-migrations ./prisma/migrations --to-schema-datamodel ./prisma/schema.prisma --shadow-database-url "postgresql://postgres:postgres@localhost:5432/kanaku_shadow" --exit-code
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/kanaku_test
+          DIRECT_URL: postgresql://postgres:postgres@localhost:5432/kanaku_test
+
       - name: Type-check
         working-directory: backend
         run: npx tsc --noEmit --skipLibCheck

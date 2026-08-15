@@ -42,7 +42,9 @@ export const VoiceContextStore = {
     try {
       const raw = localStorage.getItem(CONTEXT_KEY);
       if (raw) return JSON.parse(raw);
-    } catch {}
+    } catch (parseErr) {
+      console.warn('[VoiceContextStore] Failed to parse stored voice context:', parseErr);
+    }
     return {
       recentActions: [],
       knownGoals: [],

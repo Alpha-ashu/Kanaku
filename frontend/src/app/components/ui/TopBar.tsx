@@ -645,7 +645,9 @@ export const TopBar: React.FC = () => {
                             );
                           }
                         }
-                      } catch (e) {}
+                      } catch (avatarErr) {
+                        console.debug('[TopBar] Failed to parse avatar URL from profileStr:', avatarErr);
+                      }
                       return null;
                     })()}
                   </>

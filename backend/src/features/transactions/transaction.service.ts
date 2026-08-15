@@ -95,12 +95,12 @@ export class TransactionService {
     return transactionRepository.normalizeTransaction(transaction);
   }
 
-  async fetchAccountTransactions(accountId: string, userId: string) {
+  async fetchAccountTransactions(accountId: string, userId: string, limit = 500) {
     const account = await accountRepository.findFirst({ id: accountId, userId });
     if (!account) {
       throw AppError.forbidden('Unauthorized access to account', 'UNAUTHORIZED_ACCOUNT_ACCESS');
     }
-    return transactionRepository.findMany(userId, { accountId });
+    return transactionRepository.findMany(userId, { accountId }, limit);
   }
 
   async createTransaction(userId: string, body: any, options: { enforceBalance?: boolean } = {}) {

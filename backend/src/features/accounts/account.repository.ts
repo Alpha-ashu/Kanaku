@@ -1,10 +1,11 @@
 import { prisma } from '../../db/prisma';
 
 export class AccountRepository {
-  async findMany(userId: string) {
+  async findMany(userId: string, limit = 100) {
     return prisma.account.findMany({
       where: { userId, isActive: true },
       orderBy: { createdAt: 'desc' },
+      take: limit,
     });
   }
 

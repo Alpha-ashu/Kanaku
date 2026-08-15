@@ -125,7 +125,9 @@ export const SecurityProvider: React.FC<{ children: ReactNode }> = ({ children }
       sessionStorage.setItem('session_active', 'true');
       sessionStorage.setItem('session_encryption_key', key);
       localStorage.setItem('session_active', 'true');
-    } catch {}
+    } catch (storageErr) {
+      console.warn('[SecurityContext] Failed to persist session keys to storage:', storageErr);
+    }
   };
 
   const handleLock = () => {
@@ -138,7 +140,9 @@ export const SecurityProvider: React.FC<{ children: ReactNode }> = ({ children }
       sessionStorage.removeItem('session_active');
       sessionStorage.removeItem('session_encryption_key');
       localStorage.removeItem('session_active');
-    } catch {}
+    } catch (storageErr) {
+      console.warn('[SecurityContext] Failed to clear session keys from storage:', storageErr);
+    }
     // SECURITY: tell AuthContext to halt syncing and re-engage the data gate, so no
     // financial data is fetched while locked and a fresh sync runs on the next unlock.
     if (typeof window !== 'undefined') {
@@ -151,7 +155,11 @@ export const SecurityProvider: React.FC<{ children: ReactNode }> = ({ children }
   // screen reappears and a fresh /pin/verify re-establishes the server unlock.
   useEffect(() => {
     const onForceLock = () => {
-      try { sessionStorage.setItem('KANAKU_lock_reason', 'pin_required'); } catch { /* ignore */ }
+      try {
+        sessionStorage.setItem('KANAKU_lock_reason', 'pin_required');
+      } catch (storageErr) {
+        console.warn('[SecurityContext] Failed to record lock reason:', storageErr);
+      }
       setIsAuthenticated(false);
       setEncryptionKey(null);
       clearPinUnlockToken();

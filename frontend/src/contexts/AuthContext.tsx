@@ -463,7 +463,9 @@ const syncProfileFromBackend = async (user: User) => {
       let existingSettings = {};
       try {
         existingSettings = existingSettingsRaw ? JSON.parse(existingSettingsRaw) : {};
-      } catch {}
+      } catch (parseErr) {
+        console.warn('[AuthContext] Failed to parse cached user_settings JSON:', parseErr);
+      }
       localStorage.setItem('user_settings', JSON.stringify({
         ...existingSettings,
         currency: remoteProfile.currency,

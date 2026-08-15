@@ -11,6 +11,7 @@ import { inviteParticipants } from '../collaboration/invitation.service';
 export const getGoals = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userId = getUserId(req);
+    const limit = Math.min(200, Math.max(1, parseInt(req.query.limit as string) || 100));
 
     const goals = await prisma.goal.findMany({
       where: {
@@ -21,6 +22,7 @@ export const getGoals = async (req: AuthRequest, res: Response, next: NextFuncti
         ],
       },
       orderBy: { targetDate: 'asc' },
+      take: limit,
     });
 
     res.json({ success: true, data: goals });

@@ -118,12 +118,14 @@ export const AddAccount: React.FC = () => {
  { id: 'blue', bg: 'bg-[#1E3A8A]', glow: 'bg-blue-500/10', color: '#1E3A8A' },
  ];
 
- useEffect(() => {
- try {
- const profile = JSON.parse(localStorage.getItem('user_profile') || '{}');
- if (profile?.country) setUserCountry(profile.country);
- } catch { }
- }, []);
+  useEffect(() => {
+    try {
+      const profile = JSON.parse(localStorage.getItem('user_profile') || '{}');
+      if (profile?.country) setUserCountry(profile.country);
+    } catch (parseErr) {
+      console.warn('[AddAccount] Failed to parse cached user_profile:', parseErr);
+    }
+  }, []);
 
  const bankOptions = useMemo(() => {
  const list = BANKS_BY_COUNTRY[userCountry] || BANKS_BY_COUNTRY['India'] || [];

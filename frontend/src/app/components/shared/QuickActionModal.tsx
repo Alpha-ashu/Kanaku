@@ -53,9 +53,13 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({
  });
 
  const handleAction = async (actionId: string) => {
- if (Capacitor.isNativePlatform()) {
- try { await Haptics.impact({ style: ImpactStyle.Medium }); } catch {}
- }
+    if (Capacitor.isNativePlatform()) {
+      try {
+        await Haptics.impact({ style: ImpactStyle.Medium });
+      } catch (hapticErr) {
+        console.debug('[QuickActionModal] Haptics trigger ignored:', hapticErr);
+      }
+    }
  setSelectedAction(actionId);
  setTimeout(() => {
  onAction(actionId);

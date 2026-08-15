@@ -581,7 +581,9 @@ class PermissionService {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         targetUserId = user?.id;
-      } catch {}
+      } catch (err) {
+        console.debug('[permissionService] Supabase auth getUser fallback skipped:', err);
+      }
     }
     if (!targetUserId) {
       const token = await getAuthToken();
@@ -592,7 +594,9 @@ class PermissionService {
             const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
             targetUserId = payload.userId;
           }
-        } catch {}
+        } catch (tokenErr) {
+          console.warn('[permissionService] Failed to extract userId from JWT token payload:', tokenErr);
+        }
       }
     }
     if (targetUserId) {
