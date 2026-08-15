@@ -89,6 +89,10 @@ services:
         sync: false     # Numeric Loki user ID
       - key: LOKI_API_KEY
         sync: false     # Grafana Cloud API key (MetricsPublisher / logs:write role)
+      - key: CORS_ORIGIN
+        value: "https://kanaku-fawn.vercel.app,*.vercel.app"
+      - key: SENTRY_DSN
+        sync: false
       # Copy any remaining prod values from backend/.env (SECURITY_ALERT_EMAIL,
       # AA_ENCRYPTION_ROOT_KEY, FIREBASE_*, OPENAI/GOOGLE keys, …) in the
       # dashboard — the env.ts validator will fail fast on anything missing.
