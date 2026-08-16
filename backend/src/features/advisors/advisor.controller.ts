@@ -374,7 +374,7 @@ export const applyAsAdvisor = async (req: AuthRequest, res: Response) => {
           title: 'New Advisor Application',
           message: `${fullName} has applied to become an advisor. Review required.`,
           category: 'system',
-          deepLink: r.role === 'manager' ? '/manager-advisor-verification' : '/admin/advisor-verification',
+          deepLink: r.role === 'manager' ? '/manager-advisor-verification' : '/admin-advisor-verification',
         })),
       });
     }

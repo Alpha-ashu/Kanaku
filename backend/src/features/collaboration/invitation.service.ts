@@ -28,9 +28,17 @@ const MODULE_ACTION_LABELS: Record<ModuleType, string> = {
   goal: 'View Shared Goal',
 };
 
-function moduleDeepLink(moduleType: ModuleType, moduleId: string): string {
+function moduleDeepLink(moduleType: ModuleType, _moduleId: string): string {
+  // Deliberately the list page, not `/${path}/${moduleId}`: the in-app
+  // notification-click handlers (Header.tsx, Notifications.tsx) only strip
+  // the FIRST leading slash before matching against App.tsx's registered
+  // (flat, no-slash) page names, so a path with an id segment never matches
+  // and silently falls through to the Dashboard default. None of the detail
+  // pages ('goal-detail', 'todo-list-detail') currently read an id from the
+  // deepLink either — they're driven by separate selection state — so there
+  // is nothing gained by keeping moduleId in the path.
   const path = moduleType === 'group_expense' ? 'groups' : moduleType === 'todo_list' ? 'todo-lists' : 'goals';
-  return `/${path}/${moduleId}`;
+  return `/${path}`;
 }
 
 export interface InviteParticipantInput {
