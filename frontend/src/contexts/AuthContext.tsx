@@ -873,222 +873,232 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     let initialSyncDone = false;
 
-    // Listen for auth changes cleanly. This fires immediately with INITIAL_SESSION, 
-    // replacing the need to manually call getSession() and dodging React StrictMode lock races.
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event: any, session: any) => {
-        if (!isMounted) return;
+    const handleAuthEvent = async (event: any, session: any) => {
+      if (!isMounted) return;
 
-        let activeSession = session;
-        let nextUser = session?.user ?? null;
+      let activeSession = session;
+      let nextUser = session?.user ?? null;
 
-        // Custom JWT fallback session recovery:
-        if (!nextUser) {
-          const customToken = TokenManager.getAccessToken();
-          if (customToken) {
-            try {
-              const decoded = decodeJwt(customToken);
-              if (decoded && decoded.userId) {
-                const localProfile = readLocalProfile();
-                nextUser = {
-                  id: decoded.userId,
-                  email: decoded.email || localProfile?.email || '',
-                  user_metadata: {
-                    role: decoded.role || localProfile?.role || 'user',
-                    full_name: localProfile?.displayName || '',
-                    firstName: localProfile?.firstName || '',
-                    lastName: localProfile?.lastName || '',
-                  },
-                  app_metadata: {},
-                  aud: 'authenticated',
-                  created_at: new Date().toISOString(),
-                } as User;
+      // Custom JWT fallback session recovery:
+      if (!nextUser) {
+        const customToken = TokenManager.getAccessToken();
+        if (customToken) {
+          try {
+            const decoded = decodeJwt(customToken);
+            if (decoded && decoded.userId) {
+              const localProfile = readLocalProfile();
+              nextUser = {
+                id: decoded.userId,
+                email: decoded.email || localProfile?.email || '',
+                user_metadata: {
+                  role: decoded.role || localProfile?.role || 'user',
+                  full_name: localProfile?.displayName || '',
+                  firstName: localProfile?.firstName || '',
+                  lastName: localProfile?.lastName || '',
+                },
+                app_metadata: {},
+                aud: 'authenticated',
+                created_at: new Date().toISOString(),
+              } as User;
 
-                activeSession = {
-                  access_token: customToken,
-                  refresh_token: TokenManager.getRefreshToken() || '',
-                  expires_in: 3600,
-                  token_type: 'bearer',
-                  user: nextUser,
-                } as Session;
+              activeSession = {
+                access_token: customToken,
+                refresh_token: TokenManager.getRefreshToken() || '',
+                expires_in: 3600,
+                token_type: 'bearer',
+                user: nextUser,
+              } as Session;
 
-
-
-                // Validate the token against the backend in background
-                void (async () => {
-                  try {
-                    const profileResponse = await api.auth.getProfile({ includePrivate: true });
-                    if (!profileResponse.success) {
-                      console.warn('Backend custom JWT profile verification failed:', profileResponse.message);
-                    }
-                  } catch (err: any) {
-                    if (err?.status === 401) {
-                      console.warn('Custom token is unauthorized, performing clean signout.');
-                      TokenManager.clearTokens();
-                      if (isMounted) {
-                        setUser(null);
-                        setSession(null);
-                        setRole('user');
-                      }
-                    }
-                  }
-                })();
-              }
-            } catch (err) {
-              console.warn('Error during custom JWT session recovery:', err);
-            }
-          }
-        }
-
-        setSession(activeSession);
-        setUser(nextUser);
-        const provisionalRole = resolveUserRole(nextUser);
-        setRole(provisionalRole);
-
-        console.log('[KANAKU Startup] Authentication Loaded', {
-          hasUser: !!nextUser,
-          eventId: event,
-          hasAccessToken: !!TokenManager.getAccessToken(),
-          hasRefreshToken: !!TokenManager.getRefreshToken(),
-        });
-        if (nextUser) {
-          console.log('[KANAKU Startup] Access Token Loaded:', !!TokenManager.getAccessToken());
-          console.log('[KANAKU Startup] Refresh Token Loaded:', !!TokenManager.getRefreshToken());
-        }
-
-        // ── TOKEN_REFRESHED early-return ────────────────────────────────────────
-        // Supabase fires this every ~1 hour and on tab-focus restore.
-        // We must NOT re-run the full data sync — only rotate the token on
-        // active services. All data is already in Dexie; socket reconnects
-        // if needed via the connectingPromise guard.
-        if (event === 'TOKEN_REFRESHED') {
-          if (activeSession?.access_token) {
-            backendService.setToken(activeSession.access_token);
-            const deviceId = localStorage.getItem('device_id') || '';
-            if (deviceId) {
-              // Re-auth the existing socket with the new token (non-blocking)
-              socketClient.connect(activeSession.access_token, deviceId).catch(() => {});
-            }
-          }
-          if (isMounted) setLoading(false);
-          return; // ← skip ALL data sync, permission refetch, and re-renders
-        }
-        // ────────────────────────────────────────────────────────────────────────
-
-        // PERSISTENCE FIX: Sync token to backend service for authenticated requests
-        if (activeSession?.access_token) {
-          backendService.setToken(activeSession.access_token);
-
-          // Connect WebSocket so this client receives real-time broadcasts (e.g. feature flag updates)
-          const deviceId = localStorage.getItem('device_id') || (() => {
-            const id = crypto.randomUUID();
-            localStorage.setItem('device_id', id);
-            return id;
-          })();
-          socketClient.connect(activeSession.access_token, deviceId).catch((err) => {
-            // Non-blocking — app works fine without the socket
-            console.warn('[AuthContext] Socket connection failed (non-blocking):', err);
-          });
-        } else if (event === 'SIGNED_OUT') {
-          const customToken = TokenManager.getAccessToken();
-          if (!customToken) {
-            backendService.clearToken();
-            socketClient.disconnect();
-            TokenManager.clearTokens();
-          }
-        }
-
-        try {
-          if (nextUser?.id) {
-            if (!unsubscribeUserCloudSync || subscribedUserId !== nextUser.id) {
-              if (unsubscribeUserCloudSync) {
-                unsubscribeUserCloudSync();
-              }
-              unsubscribeUserCloudSync = subscribeToUserCloudSync(nextUser.id);
-              subscribedUserId = nextUser.id;
-            }
-
-            const _lastUserId = localStorage.getItem('auth_last_user_id');
-            const _isUserSwitch = _lastUserId !== null && _lastUserId !== nextUser.id;
-            const isFreshLogin = event === 'SIGNED_IN' && (!initialSyncDone || _isUserSwitch);
-            const isAppLoad = event === 'INITIAL_SESSION' && !initialSyncDone;
-
-            if (isFreshLogin || isAppLoad) {
-              activeSyncUserId.current = nextUser.id;
-              setDataReady(false);
-              setDataSyncing(true); // resolving role/permissions; data sync deferred to post-PIN
-              setDataSyncError(null);
-
-              const lastUserId = localStorage.getItem('auth_last_user_id');
-              const isUserSwitch = lastUserId && lastUserId !== nextUser.id;
-
-              if (isUserSwitch) {
-                // Different user logged in - clear previous user's local data
-                await clearLocalUserData();
-                clearLocalAuthPresentationState(false);
-              }
-
-              // Always record the current user so we can detect future switches
-              localStorage.setItem('auth_last_user_id', nextUser.id);
-
-              // UNBLOCK UI INSTANTLY: Set provisional role and loading to false immediately
-              if (isMounted) {
-                setRole(provisionalRole);
-                setLoading(false);
-              }
-              initialSyncDone = true;
-
-              // SECURITY (least-privilege): do NOT fetch financial data or profile PII
-              // before PIN unlock. Only resolve role/permissions here. App.tsx's post-PIN
-              // `triggerDataSync` effect loads each page's tables (and the profile) once
-              // SecurityContext.isAuthenticated becomes true — so `dataReady` stays false
-              // until the user has unlocked.
+              // Validate the token against the backend in background
               void (async () => {
                 try {
-                  const permissions = await permissionService.fetchUserPermissions(nextUser.id, provisionalRole);
-                  if (activeSyncUserId.current === nextUser.id) setRole(permissions.role);
-                } catch (err) {
-                  if (activeSyncUserId.current === nextUser.id) {
-                    setDataSyncError(formatSupabaseError(err));
+                  const profileResponse = await api.auth.getProfile({ includePrivate: true });
+                  if (!profileResponse.success) {
+                    console.warn('Backend custom JWT profile verification failed:', profileResponse.message);
                   }
-                } finally {
-                  if (activeSyncUserId.current === nextUser.id) setDataSyncing(false);
+                } catch (err: any) {
+                  if (err?.status === 401) {
+                    console.warn('Custom token is unauthorized, performing clean signout.');
+                    TokenManager.clearTokens();
+                    if (isMounted) {
+                      setUser(null);
+                      setSession(null);
+                      setRole('user');
+                    }
+                  }
                 }
               })();
-            } else {
-              if (isMounted) setLoading(false);
             }
-          } else if (event === 'SIGNED_OUT') {
-            if (unsubscribeUserCloudSync) {
-              unsubscribeUserCloudSync();
-              unsubscribeUserCloudSync = null;
-            }
-            subscribedUserId = null;
-            // On logout, we preserve auth_last_user_id so next login can check if it's the same user.
-            permissionService.clearPermissions();
-            await handleBackendLogout();
-            // Clear local DB on logout too
-            await clearLocalUserData();
-            clearLocalAuthPresentationState(true); // Preserve PIN keys
-            initialSyncDone = false; // Reset for next login
-            activeSyncUserId.current = null;
-            setDataReady(false);
-            setDataSyncing(false);
-            setDataSyncError(null);
-            if (isMounted) setLoading(false);
-          } else {
-            // No user session present (e.g. initial load without login)
-            if (isMounted) setLoading(false);
+          } catch (err) {
+            console.warn('Error during custom JWT session recovery:', err);
           }
-        } catch (error) {
-          console.error('Error in onAuthStateChange handler:', error);
-          if (isMounted) setLoading(false);
         }
       }
-    );
+
+      setSession(activeSession);
+      setUser(nextUser);
+      const provisionalRole = resolveUserRole(nextUser);
+      setRole(provisionalRole);
+
+      console.log('[KANAKU Startup] Authentication Loaded', {
+        hasUser: !!nextUser,
+        eventId: event,
+        hasAccessToken: !!TokenManager.getAccessToken(),
+        hasRefreshToken: !!TokenManager.getRefreshToken(),
+      });
+      if (nextUser) {
+        console.log('[KANAKU Startup] Access Token Loaded:', !!TokenManager.getAccessToken());
+        console.log('[KANAKU Startup] Refresh Token Loaded:', !!TokenManager.getRefreshToken());
+      }
+
+      // ── TOKEN_REFRESHED early-return ────────────────────────────────────────
+      if (event === 'TOKEN_REFRESHED') {
+        if (activeSession?.access_token) {
+          backendService.setToken(activeSession.access_token);
+          const deviceId = localStorage.getItem('device_id') || '';
+          if (deviceId) {
+            socketClient.connect(activeSession.access_token, deviceId).catch(() => {});
+          }
+        }
+        if (isMounted) setLoading(false);
+        return;
+      }
+      // ────────────────────────────────────────────────────────────────────────
+
+      // PERSISTENCE FIX: Sync token to backend service for authenticated requests
+      if (activeSession?.access_token) {
+        backendService.setToken(activeSession.access_token);
+
+        const deviceId = localStorage.getItem('device_id') || (() => {
+          const id = crypto.randomUUID();
+          localStorage.setItem('device_id', id);
+          return id;
+        })();
+        socketClient.connect(activeSession.access_token, deviceId).catch((err) => {
+          console.warn('[AuthContext] Socket connection failed (non-blocking):', err);
+        });
+      } else if (event === 'SIGNED_OUT') {
+        const customToken = TokenManager.getAccessToken();
+        if (!customToken) {
+          backendService.clearToken();
+          socketClient.disconnect();
+          TokenManager.clearTokens();
+        }
+      }
+
+      try {
+        if (nextUser?.id) {
+          if (!unsubscribeUserCloudSync || subscribedUserId !== nextUser.id) {
+            if (unsubscribeUserCloudSync) {
+              unsubscribeUserCloudSync();
+            }
+            unsubscribeUserCloudSync = subscribeToUserCloudSync(nextUser.id);
+            subscribedUserId = nextUser.id;
+          }
+
+          const _lastUserId = localStorage.getItem('auth_last_user_id');
+          const _isUserSwitch = _lastUserId !== null && _lastUserId !== nextUser.id;
+          const isFreshLogin = event === 'SIGNED_IN' && (!initialSyncDone || _isUserSwitch);
+          const isAppLoad = event === 'INITIAL_SESSION' && !initialSyncDone;
+
+          if (isFreshLogin || isAppLoad) {
+            activeSyncUserId.current = nextUser.id;
+            setDataReady(false);
+            setDataSyncing(true);
+            setDataSyncError(null);
+
+            const lastUserId = localStorage.getItem('auth_last_user_id');
+            const isUserSwitch = lastUserId && lastUserId !== nextUser.id;
+
+            if (isUserSwitch) {
+              await clearLocalUserData();
+              clearLocalAuthPresentationState(false);
+            }
+
+            localStorage.setItem('auth_last_user_id', nextUser.id);
+
+            // UNBLOCK UI INSTANTLY: Set provisional role and loading to false immediately
+            if (isMounted) {
+              setRole(provisionalRole);
+              setLoading(false);
+            }
+            initialSyncDone = true;
+
+            void (async () => {
+              try {
+                const permissions = await permissionService.fetchUserPermissions(nextUser.id, provisionalRole);
+                if (activeSyncUserId.current === nextUser.id) setRole(permissions.role);
+              } catch (err) {
+                if (activeSyncUserId.current === nextUser.id) {
+                  setDataSyncError(formatSupabaseError(err));
+                }
+              } finally {
+                if (activeSyncUserId.current === nextUser.id) setDataSyncing(false);
+              }
+            })();
+          } else {
+            if (isMounted) setLoading(false);
+          }
+        } else if (event === 'SIGNED_OUT') {
+          if (unsubscribeUserCloudSync) {
+            unsubscribeUserCloudSync();
+            unsubscribeUserCloudSync = null;
+          }
+          subscribedUserId = null;
+          permissionService.clearPermissions();
+          await handleBackendLogout();
+          await clearLocalUserData();
+          clearLocalAuthPresentationState(true);
+          initialSyncDone = false;
+          activeSyncUserId.current = null;
+          setDataReady(false);
+          setDataSyncing(false);
+          setDataSyncError(null);
+          if (isMounted) setLoading(false);
+        } else {
+          // No user session present (e.g. initial load without login)
+          if (isMounted) setLoading(false);
+        }
+      } catch (error) {
+        console.error('Error in handleAuthEvent:', error);
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    // 1. Listen for Supabase auth events
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(handleAuthEvent);
+
+    // 2. Proactively resolve current session immediately on mount
+    void (async () => {
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (isMounted && !initialSyncDone) {
+          await handleAuthEvent('INITIAL_SESSION', data?.session ?? null);
+        }
+      } catch (err) {
+        console.warn('[AuthContext] Proactive getSession error:', err);
+        if (isMounted && !initialSyncDone) {
+          await handleAuthEvent('INITIAL_SESSION', null);
+        }
+      }
+    })();
+
+    // 3. Safety fallback timer: ensure UI loading state is never permanently stuck
+    const safetyTimer = setTimeout(() => {
+      if (isMounted) {
+        setLoading((prev) => {
+          if (prev) {
+            console.warn('[AuthContext] Safety auth-resolution timeout fired — unlocking UI');
+            return false;
+          }
+          return false;
+        });
+      }
+    }, 1200);
 
     return () => {
       isMounted = false;
+      clearTimeout(safetyTimer);
       if (unsubscribeUserCloudSync) {
         unsubscribeUserCloudSync();
       }
