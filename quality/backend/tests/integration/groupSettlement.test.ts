@@ -2,8 +2,8 @@ import request from 'supertest';
 import jwt from 'jsonwebtoken';
 import { app } from '../../../../backend/src/app';
 import { prisma } from '../../../../backend/src/db/prisma';
-import { LedgerStatus, LedgerReferenceType, SourceModule, LedgerDirection, FinancialEventType } from '../../../../backend/src/db/prisma-client';
-import { Decimal } from '@prisma/client/runtime/library';
+import { Prisma, LedgerStatus, LedgerReferenceType, SourceModule, LedgerDirection, FinancialEventType } from '../../../../backend/src/db/prisma-client';
+const { Decimal } = Prisma;
 import { FinancialLedgerService } from '../../../../backend/src/features/transactions/ledger.service';
 import { initializeLedgerSubscriptions } from '../../../../backend/src/features/transactions/ledger.subscriber';
 

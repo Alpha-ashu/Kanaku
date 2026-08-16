@@ -2,7 +2,7 @@ import { z } from '../../middleware/validate';
 
 export const aiEventBodySchema = z.object({
   eventType: z.string().trim().min(3).max(80),
-  metadata: z.record(z.unknown()).default({}),
+  metadata: z.record(z.string(), z.unknown()).default({}),
 });
 
 export const aiLimitQuerySchema = z.object({

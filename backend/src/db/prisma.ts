@@ -3,6 +3,7 @@ import { config } from 'dotenv';
 // Load .env before PrismaClient instantiation — Prisma reads DATABASE_URL at import time.
 config();
 
+import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from './prisma-client';
 import { logger } from '../config/logger';
 import { getRequestActor, getRequestObject } from '../middleware/requestContext';
@@ -34,12 +35,25 @@ const SLOW_QUERY_MS    = 2_000;
 const READ_REPLICA_URL = process.env.READ_REPLICA_URL;
 
 function buildClient(datasourceUrl?: string, opts?: { audit?: boolean }): PrismaClient {
-  let url = datasourceUrl;
+  let url = datasourceUrl || process.env.DATABASE_URL;
   if (process.env.NODE_ENV === 'test') {
     url = process.env.DIRECT_URL || process.env.DATABASE_URL;
   }
+  if (!url) {
+    throw new Error('[Prisma] No database connection string resolved (DATABASE_URL unset).');
+  }
+
+  // Prisma 7 removed the `url`/`directUrl` fields from schema.prisma AND the
+  // `datasources: { db: { url } }` runtime override this used — the connection
+  // string can only be supplied via a driver adapter now. The per-call `url`
+  // parameter (writer vs read-replica vs test override) is exactly what makes
+  // that adapter's connection string, so behaviour here is unchanged: a fresh
+  // PrismaPg pool per resolved URL, same as the fresh PrismaClient this used to
+  // construct per URL.
+  const adapter = new PrismaPg(url);
 
   const base = new PrismaClient({
+    adapter,
     log: [
       { emit: 'event', level: 'warn'  },
       { emit: 'event', level: 'error' },
@@ -58,7 +72,6 @@ function buildClient(datasourceUrl?: string, opts?: { audit?: boolean }): Prisma
       maxWait: Number(process.env.PRISMA_TX_MAX_WAIT_MS || 10_000),
       timeout: Number(process.env.PRISMA_TX_TIMEOUT_MS || 20_000),
     },
-    ...(url ? { datasources: { db: { url } } } : {}),
   });
 
   (base as any).$on('warn',  (e: any) => logger.warn('[Prisma]',  e));

@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import type { ParamsFlatDictionary } from 'express-serve-static-core';
 import jwt from 'jsonwebtoken';
 import { logger } from '../config/logger';
 import { createClient } from '@supabase/supabase-js';
@@ -65,7 +66,16 @@ const ensureUserInDb = async (userId: string, userClaims: UserClaims) => {
   }
 };
 
-export interface AuthRequest extends Request {
+// Express 5's @types/express widened the default route-params type from
+// `{ [key: string]: string }` to `{ [key: string]: string | string[] }`
+// (ParamsDictionary), to correctly type array-capturing route patterns like
+// `:id+`/`:id*`. This app uses none of those — every `:param` here is
+// single-valued at runtime — so every controller destructuring `req.params`
+// hit a false-positive `string | string[]` type error (~50 call sites).
+// `ParamsFlatDictionary` is Express's own single-valued alternative; fixing
+// the type at its one source (AuthRequest, which nearly every route handler
+// uses) avoids scattering `as string` casts across every controller.
+export interface AuthRequest extends Request<ParamsFlatDictionary> {
   userId?: string;
   user?: {
     id: string;

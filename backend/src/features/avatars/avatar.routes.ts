@@ -43,7 +43,7 @@ router.get(
   validateParams(avatarParamsSchema),
   validateQuery(avatarQuerySchema),
   async (req, res) => {
-  const { style } = req.params;
+  const style = asString(req.params.style);
   const seed = asString(req.query.seed);
 
   if (!ALLOWED_STYLES_SET.has(style)) {

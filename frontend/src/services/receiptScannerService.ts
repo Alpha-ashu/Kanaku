@@ -12,7 +12,7 @@ import { documentIntelligenceService } from './documentIntelligenceService';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
-export interface ReceiptScannerResult extends ReceiptScanResult {}
+export type ReceiptScannerResult = ReceiptScanResult;
 
 export const SUPPORTED_RECEIPT_MIME_TYPES = [
   'image/jpeg',

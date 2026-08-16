@@ -17,7 +17,7 @@ const confirmImportSchema = z.object({
   // and moves its balance, exactly like a manually entered transaction.
   accountId: z.string().min(1),
   selectedRows: z.array(z.number().int().min(0)).max(1000).optional(),
-  overrides: z.record(z.object({
+  overrides: z.record(z.string(), z.object({
     category: z.string().optional(),
     subcategory: z.string().optional(),
     amount: z.number().positive().optional(),

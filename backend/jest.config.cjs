@@ -1,4 +1,12 @@
-export default {
+// Renamed from jest.config.ts (2026-08): Jest 30's TypeScript config loader
+// couldn't parse this file's `export default` syntax inside a `"type":
+// "commonjs"` package — neither its native Node type-stripping path (which
+// only strips type annotations, not ESM module syntax) nor its ts-node-backed
+// loader path (which errored internally against the new TypeScript major)
+// could load it. The config itself used no TypeScript-specific syntax, so
+// removing the .ts layer entirely — plain `module.exports` — sidesteps the
+// ambiguity rather than chasing a Jest/ts-node/TypeScript version alignment.
+module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
   // Test suites live in the central quality/ hub, not under backend/.

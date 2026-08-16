@@ -3,8 +3,9 @@ const dotenv = require('dotenv');
 const envFile = process.env.NODE_ENV === 'test' ? '.env.test' : '.env';
 dotenv.config({ path: path.resolve(__dirname, '..', envFile) });
 
-const { PrismaClient } = require('../generated/prisma');
-const { Decimal } = require('@prisma/client/runtime/library');
+const { PrismaClient, Prisma } = require('../generated/prisma');
+const { PrismaPg } = require('@prisma/adapter-pg');
+const { Decimal } = Prisma;
 
 async function main() {
   const url = process.env.DATABASE_URL;
@@ -14,7 +15,10 @@ async function main() {
     process.env.DATABASE_URL = cleanedUrl + separator + 'connection_limit=1';
   }
 
-  const prisma = new PrismaClient();
+  // Prisma 7 requires a driver adapter — schema.prisma no longer carries a url
+  // (see src/db/prisma.ts). Built from process.env.DATABASE_URL *after* the
+  // connection_limit=1 rewrite above, so the adapter actually gets the capped URL.
+  const prisma = new PrismaClient({ adapter: new PrismaPg(process.env.DATABASE_URL) });
   const apply = process.argv.includes('--apply');
 
   console.log(`[Backfill] Starting ledger backfill (Mode: ${apply ? 'APPLY' : 'DRY-RUN / AUDIT-ONLY'})`);

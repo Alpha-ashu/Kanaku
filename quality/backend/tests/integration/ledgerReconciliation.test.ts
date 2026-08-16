@@ -5,7 +5,8 @@ import { app } from '../../../../backend/src/app';
 import { prisma } from '../../../../backend/src/db/prisma';
 import { FinancialLedgerService, LedgerError } from '../../../../backend/src/features/transactions/ledger.service';
 import { FinancialEventDispatcher, GoalContributionEvent } from '../../../../backend/src/features/transactions/dispatcher';
-import { Decimal } from '@prisma/client/runtime/library';
+import { Prisma } from '../../../../backend/src/db/prisma-client';
+const { Decimal } = Prisma;
 
 const API = '/api/v1';
 

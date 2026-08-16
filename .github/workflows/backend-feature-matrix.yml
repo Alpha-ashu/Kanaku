@@ -63,7 +63,7 @@ jobs:
           DIRECT_URL: postgresql://postgres:postgres@localhost:5432/kanaku_test
 
       - name: Push schema to test DB
-        run: npx prisma db push --skip-generate
+        run: npx prisma db push --accept-data-loss
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/kanaku_test
           DIRECT_URL: postgresql://postgres:postgres@localhost:5432/kanaku_test

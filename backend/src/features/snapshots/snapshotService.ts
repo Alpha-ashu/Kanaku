@@ -9,7 +9,12 @@
  * Avoids expensive aggregation scans over millions of Transaction rows at
  * dashboard or reporting runtime.
  */
-import { Decimal } from '@prisma/client/runtime/library';
+// Decimal lives at Prisma.Decimal at runtime, not as a top-level export. Both
+// bindings needed — `const` for values, `type` for annotations (see
+// reconcile.controller.ts for the full explanation).
+import { Prisma } from '../../db/prisma-client';
+const Decimal = Prisma.Decimal;
+type Decimal = InstanceType<typeof Prisma.Decimal>;
 import { FinancialEventDispatcher, LedgerPostedEvent, PrismaTx } from '../transactions/dispatcher';
 import { logger } from '../../config/logger';
 

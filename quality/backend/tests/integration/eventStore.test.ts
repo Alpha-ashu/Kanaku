@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { prisma } from '../../../../backend/src/db/prisma';
-import { Decimal } from '@prisma/client/runtime/library';
+import { Prisma } from '../../../../backend/src/db/prisma-client';
+const { Decimal } = Prisma;
 import { FinancialLedgerService } from '../../../../backend/src/features/transactions/ledger.service';
 import { FinancialEventStore } from '../../../../backend/src/features/events/eventStore';
 

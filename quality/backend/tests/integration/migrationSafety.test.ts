@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { prisma } from '../../../../backend/src/db/prisma';
-import { Decimal } from '@prisma/client/runtime/library';
+import { Prisma } from '../../../../backend/src/db/prisma-client';
+const { Decimal } = Prisma;
 import { FinancialSnapshotService } from '../../../../backend/src/features/snapshots/snapshotService';
 
 describe('Phase 5 to Phase 9 Migration Safety & Backfill Verification Tests', () => {

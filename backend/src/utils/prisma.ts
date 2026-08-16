@@ -1,3 +1,4 @@
+import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../../generated/prisma';
 
 /**
@@ -5,13 +6,22 @@ import { PrismaClient } from '../../generated/prisma';
  * Prevents multiple PrismaClient instances during development hot-reloads.
  */
 declare global {
-  // eslint-disable-next-line no-var
   var __prisma: PrismaClient | undefined;
+}
+
+// Prisma 7 requires a driver adapter — schema.prisma no longer carries a url
+// (see db/prisma.ts for the full explanation).
+const connectionString = process.env.NODE_ENV === 'test'
+  ? process.env.DIRECT_URL || process.env.DATABASE_URL
+  : process.env.DATABASE_URL;
+if (!connectionString) {
+  throw new Error('[Prisma] No database connection string resolved (DATABASE_URL unset).');
 }
 
 export const prisma: PrismaClient =
   global.__prisma ??
   new PrismaClient({
+    adapter: new PrismaPg(connectionString),
     log: process.env.NODE_ENV === 'development' ? ['warn', 'error'] : ['error'],
   });
 

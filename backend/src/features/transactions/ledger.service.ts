@@ -1,6 +1,7 @@
-import { Decimal } from '@prisma/client/runtime/library';
 import { PrismaTx, FinancialEventDispatcher, LedgerPostedEvent, LedgerSettledEvent, LedgerReversedEvent, LedgerTransferCompletedEvent } from './dispatcher';
-import { LedgerStatus, LedgerReferenceType, SourceModule, LedgerDirection, FinancialEventType } from '../../db/prisma-client';
+// Decimal lives at Prisma.Decimal at runtime, not as a top-level export.
+import { Prisma, LedgerStatus, LedgerReferenceType, SourceModule, LedgerDirection, FinancialEventType } from '../../db/prisma-client';
+const { Decimal } = Prisma;
 import { randomUUID } from 'crypto';
 import { cacheDeleteByUserId } from '../../cache/redis';
 import { logger } from '../../config/logger';

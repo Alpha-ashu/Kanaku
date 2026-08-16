@@ -18,7 +18,12 @@
  *   FinancialInvariantValidator.assertPositiveAmount(amount);
  *   FinancialInvariantValidator.assertJournalBalances(legs);
  */
-import { Decimal } from '@prisma/client/runtime/library';
+// Decimal lives at Prisma.Decimal at runtime, not as a top-level export. Both
+// bindings needed — `const` for values, `type` for annotations (see
+// reconcile.controller.ts for the full explanation).
+import { Prisma } from '../db/prisma-client';
+const Decimal = Prisma.Decimal;
+type Decimal = InstanceType<typeof Prisma.Decimal>;
 import { LedgerError } from '../features/transactions/ledger.service';
 import type { PrismaTx } from '../features/transactions/dispatcher';
 import type { LedgerLeg } from '../features/transactions/ledger.service';

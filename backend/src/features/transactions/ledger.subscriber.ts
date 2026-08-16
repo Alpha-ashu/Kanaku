@@ -11,9 +11,10 @@ import {
   LoanPaymentCreatedEvent 
 } from './dispatcher';
 import { FinancialLedgerService } from './ledger.service';
-import { SourceModule, LedgerReferenceType, LedgerStatus, FinancialEventType } from '../../db/prisma-client';
+// Decimal lives at Prisma.Decimal at runtime, not as a top-level export.
+import { Prisma, SourceModule, LedgerReferenceType, LedgerStatus, FinancialEventType } from '../../db/prisma-client';
+const { Decimal } = Prisma;
 import { dispatchNotification } from '../notifications/notification.dispatcher';
-import { Decimal } from '@prisma/client/runtime/library';
 import { FinancialSnapshotService } from '../snapshots/snapshotService';
 
 

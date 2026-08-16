@@ -1,8 +1,8 @@
-import { Decimal } from '@prisma/client/runtime/library';
 import { prisma } from '../../../../backend/src/db/prisma';
 import { FinancialInvariantValidator } from '../../../../backend/src/utils/financialInvariantValidator';
 import { LedgerLeg, LedgerError } from '../../../../backend/src/features/transactions/ledger.service';
-import { LedgerStatus, LedgerReferenceType, SourceModule } from '../../../../backend/src/db/prisma-client';
+import { Prisma, LedgerStatus, LedgerReferenceType, SourceModule } from '../../../../backend/src/db/prisma-client';
+const { Decimal } = Prisma;
 
 describe('Financial Invariant Validator Integration Tests', () => {
   const USER_A = 'invariant-test-user-a';

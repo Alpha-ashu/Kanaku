@@ -1,7 +1,15 @@
 import { Response, NextFunction } from 'express';
 import { AuthRequest } from '../../middleware/auth';
 import { prisma } from '../../db/prisma';
-import { Decimal } from '@prisma/client/runtime/library';
+// Decimal lives at Prisma.Decimal at runtime (`Prisma.Decimal = Decimal` in the
+// generated client) — it is not a top-level export the barrel's `export *`
+// picks up. Needs both bindings: `const` for `new Decimal(...)` call sites,
+// `type` (a class instance's shape) for `: Decimal` annotations — TS keeps
+// type and value namespaces separate, so both can share the name exactly as
+// the original direct class import did.
+import { Prisma } from '../../db/prisma-client';
+const Decimal = Prisma.Decimal;
+type Decimal = InstanceType<typeof Prisma.Decimal>;
 import { getBudgetPeriodBounds } from '../budgets/budget.listener';
 
 export interface ReconciliationReport {

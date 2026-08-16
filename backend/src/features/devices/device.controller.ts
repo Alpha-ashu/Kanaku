@@ -1,13 +1,20 @@
 import { Request, Response, NextFunction } from 'express';
+import type { ParamsFlatDictionary } from 'express-serve-static-core';
 import { DeviceService } from './device.service';
 import { z } from 'zod';
+
+// See middleware/auth.ts's AuthRequest for why this override exists: Express 5
+// widened route params to `string | string[]` for array-capturing patterns
+// this app's routes never use. This file doesn't route through AuthRequest, so
+// it needs the same fix locally.
+type DeviceRequest = Request<ParamsFlatDictionary>;
 
 // Validation schemas
 const registerDeviceSchema = z.object({
   deviceId: z.string().min(1, 'Device ID is required'),
   deviceName: z.string().min(1, 'Device name is required'),
   deviceType: z.enum(['mobile', 'web', 'desktop', 'tablet'], {
-    errorMap: () => ({ message: 'Invalid device type' }),
+    error: 'Invalid device type',
   }),
   osType: z.string().min(1, 'OS type is required'),
   osVersion: z.string().optional(),
@@ -23,7 +30,7 @@ const updateTokensSchema = z.object({
 /**
  * Register or update a device
  */
-export const registerDevice = async (req: Request, res: Response, next: NextFunction) => {
+export const registerDevice = async (req: DeviceRequest, res: Response, next: NextFunction) => {
   try {
     const userId = (req as any).user?.id;
     if (!userId) {
@@ -47,7 +54,7 @@ export const registerDevice = async (req: Request, res: Response, next: NextFunc
 /**
  * Get all devices for current user
  */
-export const getDevices = async (req: Request, res: Response, next: NextFunction) => {
+export const getDevices = async (req: DeviceRequest, res: Response, next: NextFunction) => {
   try {
     const userId = (req as any).user?.id;
     if (!userId) {
@@ -69,7 +76,7 @@ export const getDevices = async (req: Request, res: Response, next: NextFunction
 /**
  * Get specific device
  */
-export const getDevice = async (req: Request, res: Response, next: NextFunction) => {
+export const getDevice = async (req: DeviceRequest, res: Response, next: NextFunction) => {
   try {
     const userId = (req as any).user?.id;
     const { deviceId } = req.params;
@@ -92,7 +99,7 @@ export const getDevice = async (req: Request, res: Response, next: NextFunction)
 /**
  * Update device sync timestamp
  */
-export const updateSync = async (req: Request, res: Response, next: NextFunction) => {
+export const updateSync = async (req: DeviceRequest, res: Response, next: NextFunction) => {
   try {
     const userId = (req as any).user?.id;
     const { deviceId } = req.params;
@@ -116,7 +123,7 @@ export const updateSync = async (req: Request, res: Response, next: NextFunction
 /**
  * Update notification tokens
  */
-export const updateNotificationTokens = async (req: Request, res: Response, next: NextFunction) => {
+export const updateNotificationTokens = async (req: DeviceRequest, res: Response, next: NextFunction) => {
   try {
     const userId = (req as any).user?.id;
     const { deviceId } = req.params;
@@ -142,7 +149,7 @@ export const updateNotificationTokens = async (req: Request, res: Response, next
 /**
  * Deactivate a device
  */
-export const deactivateDevice = async (req: Request, res: Response, next: NextFunction) => {
+export const deactivateDevice = async (req: DeviceRequest, res: Response, next: NextFunction) => {
   try {
     const userId = (req as any).user?.id;
     const { deviceId } = req.params;
@@ -166,7 +173,7 @@ export const deactivateDevice = async (req: Request, res: Response, next: NextFu
 /**
  * Delete a device
  */
-export const deleteDevice = async (req: Request, res: Response, next: NextFunction) => {
+export const deleteDevice = async (req: DeviceRequest, res: Response, next: NextFunction) => {
   try {
     const userId = (req as any).user?.id;
     const { deviceId } = req.params;
