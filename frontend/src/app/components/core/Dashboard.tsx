@@ -29,6 +29,7 @@ import {
 import { AIInsightsCard } from '@/app/components/shared/AIInsightsCard';
 import { CardNetworkLogo, getBankCardLogo } from '@/app/components/ui/AccountLogos';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
+import { backendSyncService } from '@/lib/backend-sync-service';
 
 interface DashboardProps {
  setCurrentPage?: (page: string) => void;
@@ -74,7 +75,7 @@ const getCardStyle = (account: any) => {
 };
 
 export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps) {
-  const { setCurrentPage: contextSetCurrentPage, accounts, transactions, goals: contextGoals, loans: contextLoans, investments: contextInvestments, groupExpenses: contextGroupExpenses, currency, visibleFeatures, aiCapabilities } = useApp();
+  const { setCurrentPage: contextSetCurrentPage, accounts, transactions, goals: contextGoals, loans: contextLoans, investments: contextInvestments, groupExpenses: contextGroupExpenses, currency, visibleFeatures, aiCapabilities, refreshData } = useApp();
   const setCurrentPage = propSetCurrentPage || contextSetCurrentPage;
 
   // Direct reactive queries from IndexedDB (Dexie) so Dashboard updates instantly when records are created
@@ -354,8 +355,14 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
 
  const fadeUp = { initial: { opacity: 0, y: 16 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.35 } };
 
- return (
- <CenteredLayout>
+  return (
+    <CenteredLayout
+      onRefresh={async () => {
+        await backendSyncService.syncWithBackend();
+        refreshData();
+        await fetchDashboardInvestmentQuotes();
+      }}
+    >
  <div className="w-full">
 
  {/* Header */}

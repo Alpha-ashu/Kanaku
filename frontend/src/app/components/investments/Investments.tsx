@@ -10,6 +10,7 @@ import { Card } from '@/app/components/ui/card';
 import { Button } from '@/app/components/ui/button';
 import { PageHeader } from '@/app/components/ui/PageHeader';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
+import { backendSyncService } from '@/lib/backend-sync-service';
 import { motion } from 'framer-motion';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { cn } from '@/lib/utils';
@@ -203,8 +204,14 @@ export const Investments: React.FC = () => {
  }
  };
 
- return (
- <CenteredLayout>
+  return (
+    <CenteredLayout
+      onRefresh={async () => {
+        await backendSyncService.syncWithBackend();
+        refreshData();
+        await fetchLivePrices(true);
+      }}
+    >
  <div className="space-y-6 sm:space-y-8 investments-container portfolio-container" aria-label="Investments Portfolio">
  {/* Header */}
  <PageHeader

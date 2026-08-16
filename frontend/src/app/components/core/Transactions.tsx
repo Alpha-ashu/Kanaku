@@ -14,6 +14,9 @@ import { motion } from 'framer-motion';
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES, getSubcategoriesForCategory } from '@/lib/expenseCategories';
 import { getCategoryCartoonIcon } from '@/app/components/ui/CartoonCategoryIcons';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
+import { InfiniteScrollFooter } from '@/app/components/ui/InfiniteScrollFooter';
+import { backendSyncService } from '@/lib/backend-sync-service';
 
 import { TimeFilter, TimeFilterPeriod, filterByTimePeriod, getPeriodLabel } from '@/app/components/ui/TimeFilter';
 import { formatLocalDate, parseDateInputValue, toLocalDateKey } from '@/lib/dateUtils';
@@ -77,7 +80,6 @@ export const Transactions: React.FC = () => {
  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
  const [transactionToDelete, setTransactionToDelete] = useState<{ id: number; description: string } | null>(null);
  const [isDeleting, setIsDeleting] = useState(false);
- const [visibleCount, setVisibleCount] = useState(200);
  const [previewDocument, setPreviewDocument] = useState<DocumentRecord | null>(null);
  const [previewUrl, setPreviewUrl] = useState('');
  const [selectedTransaction, setSelectedTransaction] = useState<(typeof transactions)[number] | null>(null);
@@ -180,10 +182,6 @@ export const Transactions: React.FC = () => {
  }, [accounts]);
 
  useEffect(() => {
- setVisibleCount(200);
- }, [filterType, timePeriod, normalizedSearch]);
-
- useEffect(() => {
  return () => {
  if (previewUrl) {
  URL.revokeObjectURL(previewUrl);
@@ -239,11 +237,24 @@ export const Transactions: React.FC = () => {
     };
   }, [selectedDate, timePeriod, dateRange]);
 
- const visibleTransactions = useMemo(() => filteredTransactions.slice(0, visibleCount), [filteredTransactions, visibleCount]);
+  const {
+    visibleItems: visibleTransactions,
+    hasMore: hasMoreTransactions,
+    isLoadingMore,
+    error: infiniteScrollError,
+    retry: retryLoadMore,
+    sentinelRef,
+    totalCount,
+  } = useInfiniteScroll({
+    items: filteredTransactions,
+    pageSize: 25,
+    initialPageSize: 25,
+    resetDeps: [normalizedSearch, filterType, timePeriod, selectedDate],
+    getItemKey: (item) => item.id ?? item.cloudId ?? `${item.date}-${item.amount}-${item.description}`,
+  });
 
- const hasMoreTransactions = filteredTransactions.length > visibleTransactions.length;
- const shouldAnimateRows = visibleTransactions.length <= 60;
- const RowComponent: React.ElementType = shouldAnimateRows ? motion.tr : 'tr';
+  const shouldAnimateRows = visibleTransactions.length <= 60;
+  const RowComponent: React.ElementType = shouldAnimateRows ? motion.tr : 'tr';
 
  const handleDeleteTransaction = (id: number, description: string) => {
  setTransactionToDelete({ id, description });
@@ -337,8 +348,13 @@ export const Transactions: React.FC = () => {
  }
  }, []);
 
- return (
- <CenteredLayout>
+  return (
+    <CenteredLayout
+      onRefresh={async () => {
+        await backendSyncService.syncWithBackend();
+        refreshData();
+      }}
+    >
  <div className="space-y-6 sm:space-y-8">
  
  <div className="flex flex-row flex-wrap items-center justify-between gap-4 w-full">
@@ -725,13 +741,18 @@ export const Transactions: React.FC = () => {
  <p className="text-gray-500 text-sm max-w-xs mt-1">Try adjusting your filters or search query to find what you're looking for.</p>
  </div>
  )}
- {hasMoreTransactions && (
- <div className="flex items-center justify-center py-4">
- <Button data-testid="transactions-load-more" variant="secondary" onClick={() => setVisibleCount((c) => c + 200)} className="text-xs h-9 px-4">
- Load more
- </Button>
- </div>
- )}
+  {filteredTransactions.length > 0 && (
+    <InfiniteScrollFooter
+      hasMore={hasMoreTransactions}
+      isLoadingMore={isLoadingMore}
+      error={infiniteScrollError}
+      onRetry={retryLoadMore}
+      sentinelRef={sentinelRef}
+      totalCount={totalCount}
+      loadingText="Loading more transactions..."
+      endOfListText="All transactions loaded"
+    />
+  )}
  </Card>
 
  {/* MOBILE TRANSACTION DETAIL SHEET */}
