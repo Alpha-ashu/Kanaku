@@ -20,14 +20,15 @@ android {
     productFlavors {
         full {
             dimension "smsSupport"
+            applicationIdSuffix ".full"
+            versionNameSuffix "-full"
             manifestPlaceholders = [
                 smsReceiverEnabled: "true"
             ]
         }
         nosms {
             dimension "smsSupport"
-            applicationIdSuffix ".nosms"
-            versionNameSuffix "-nosms"
+            // No applicationIdSuffix so package name is exactly com.kanaku.app for Google Play Store
             manifestPlaceholders = [
                 smsReceiverEnabled: "false"
             ]
