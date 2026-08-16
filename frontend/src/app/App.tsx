@@ -275,7 +275,7 @@ const AppContent: React.FC = () => {
 
   // All hooks must be called before any conditional early returns (React Rules of Hooks)
   const currentPage = appContext?.currentPage ?? 'dashboard';
-  const [isInitialized, setIsInitialized] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(true);
   const [showQuickAction, setShowQuickAction] = useState(false);
 
   // Is the local store still empty? Reactive, so it flips to false the moment the first
@@ -1189,7 +1189,7 @@ const AppContent: React.FC = () => {
   }
 
   // Gate 3: Initial loading screen before user or public pages load
-  if (authLoading || !isInitialized) {
+  if (authLoading) {
     return (
       <div className="flex items-center justify-center h-screen bg-gradient-to-br from-pink-500 to-rose-600">
         <div className="text-center">
