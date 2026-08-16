@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useApp } from '@/contexts/AppContext';
-import { Search, Bell, Menu, GripVertical, Wallet, Target, Users, CalendarClock, MessageSquare, CheckCircle2, AlertCircle, LogOut, Receipt, UserPlus, ListTodo } from 'lucide-react';
+import { Search, Bell, Menu, GripVertical, Wallet, LogOut, Receipt } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from '@/app/components/ui/sheet';
 import { NavigationItem, headerMenuItems } from '@/app/constants/navigation';
 import { NotificationPopup } from '@/app/components/ui/NotificationPopup';
@@ -8,7 +8,8 @@ import { useSharedMenu } from '@/hooks/useSharedMenu';
 import { useAuth } from '@/contexts/AuthContext';
 import { motion, Reorder, useDragControls } from 'framer-motion';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { db, type Notification as AppNotification } from '@/lib/database';
+import { db } from '@/lib/database';
+import { getNotificationPresentation } from '@/lib/notificationPresentation';
 import { SyncStatusBar } from '@/app/components/ui/SyncStatusBar';
 import { KANAKULogo } from '@/app/components/ui/KANAKULogo';
 
@@ -207,95 +208,21 @@ export const TopBar: React.FC = () => {
  [],
  ) ?? [];
 
- const supportedNotifications = useMemo(
- () => notifications.filter((notification) => (
- notification.type === 'emi'
- || notification.type === 'loan'
- || notification.type === 'goal'
- || notification.type === 'group'
- || notification.type === 'booking'
- || notification.type === 'message'
- || notification.type === 'session'
- || notification.type === 'friend_request'
- || notification.type === 'friend_accepted'
- || notification.type === 'todo_shared'
- )),
+ // `type` is free-text server-side (see Notification.type's doc comment in
+ // lib/database.ts) — this used to filter down to a stale 10-value allowlist,
+ // which silently hid loan_reminder/budget_alert/group_expense/new_booking
+ // (and more) notifications from the bell icon and its unread badge. Every
+ // notification is shown now; presentation for an unrecognised type falls
+ // back safely via getNotificationPresentation. See
+ // lib/notificationPresentation.tsx for the full incident writeup.
+ const unreadNotificationsCount = useMemo(
+ () => notifications.filter((notification) => !notification.isRead).length,
  [notifications],
  );
 
- const unreadNotificationsCount = useMemo(
- () => supportedNotifications.filter((notification) => !notification.isRead).length,
- [supportedNotifications],
- );
-
- const presentNotification = (notification: AppNotification) => {
- switch (notification.type) {
- case 'loan':
- return {
- icon: <Wallet size={18} className="text-red-600" />,
- color: 'text-red-600',
- bgColor: 'bg-red-50',
- };
- case 'goal':
- return {
- icon: <Target size={18} className="text-blue-600" />,
- color: 'text-blue-600',
- bgColor: 'bg-blue-50',
- };
- case 'group':
- return {
- icon: <Users size={18} className="text-violet-600" />,
- color: 'text-violet-600',
- bgColor: 'bg-violet-50',
- };
- case 'booking':
- return {
- icon: <CalendarClock size={18} className="text-emerald-600" />,
- color: 'text-emerald-600',
- bgColor: 'bg-emerald-50',
- };
- case 'message':
- return {
- icon: <MessageSquare size={18} className="text-sky-600" />,
- color: 'text-sky-600',
- bgColor: 'bg-sky-50',
- };
- case 'session':
- return {
- icon: <CheckCircle2 size={18} className="text-green-600" />,
- color: 'text-green-600',
- bgColor: 'bg-green-50',
- };
- case 'friend_request':
- return {
- icon: <UserPlus size={18} className="text-indigo-600" />,
- color: 'text-indigo-600',
- bgColor: 'bg-indigo-50',
- };
- case 'friend_accepted':
- return {
- icon: <Users size={18} className="text-teal-600" />,
- color: 'text-teal-600',
- bgColor: 'bg-teal-50',
- };
- case 'todo_shared':
- return {
- icon: <ListTodo size={18} className="text-purple-600" />,
- color: 'text-purple-600',
- bgColor: 'bg-purple-50',
- };
- default:
- return {
- icon: <AlertCircle size={18} className="text-orange-600" />,
- color: 'text-orange-600',
- bgColor: 'bg-orange-50',
- };
- }
- };
-
  const recentNotifications = useMemo(() => {
- return supportedNotifications.slice(0, 3).map((notification) => {
- const presentation = presentNotification(notification);
+ return notifications.slice(0, 3).map((notification) => {
+ const presentation = getNotificationPresentation(notification.type);
  return {
  id: String(notification.id ?? notification.remoteId ?? `${notification.title}-${notification.createdAt.toString()}`),
  type: notification.type,
@@ -307,7 +234,7 @@ export const TopBar: React.FC = () => {
  bgColor: presentation.bgColor,
  };
  });
- }, [supportedNotifications]);
+ }, [notifications]);
 
  const playNotificationSound = () => {
  try {

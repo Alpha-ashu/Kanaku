@@ -51,18 +51,6 @@ function isNotificationEnabled(type: Notification['type']): boolean {
     return true;
   }
 }
-const SUPPORTED_NOTIFICATION_TYPES = new Set<Notification['type']>([
-  'emi',
-  'loan',
-  'goal',
-  'group',
-  'booking',
-  'message',
-  'session',
-  'friend_request',
-  'friend_accepted',
-  'todo_shared',
-]);
 const LEGACY_MOCK_NOTIFICATION_TITLES = new Set([
   'Transaction Recorded',
   'EMI Due Reminder',
@@ -79,15 +67,19 @@ let nextBackendNotificationSyncAt = 0;
 const NOTIFICATION_SYNC_COOLDOWN_MS = 15_000;
 const NOTIFICATION_RATE_LIMIT_COOLDOWN_MS = 30_000;
 
-async function removeLegacyMockNotifications() {
+export async function removeLegacyMockNotifications() {
+  // Title-based cleanup only. This used to ALSO delete any notification whose
+  // `type` wasn't in a hardcoded allowlist — but `type` is free-text
+  // server-side (see the Notification.type doc comment in lib/database.ts),
+  // so that branch was deleting real, current notifications: loan_reminder,
+  // budget_alert, group_expense, new_booking, and more, on every app init.
+  // Runs on every startup, so it needs no back-fill migration for what it
+  // already destroyed — real notifications simply stop disappearing from
+  // here forward, and re-sync from the backend repopulates what a user still
+  // has unread there.
   const allNotifications = await db.notifications.toArray();
   const idsToDelete = allNotifications
-    .filter((notification) => {
-      const record = notification as Notification & { type?: string; title?: string };
-      const type = record.type ?? '';
-      const title = (record.title ?? '').trim();
-      return !SUPPORTED_NOTIFICATION_TYPES.has(type as Notification['type']) || LEGACY_MOCK_NOTIFICATION_TITLES.has(title);
-    })
+    .filter((notification) => LEGACY_MOCK_NOTIFICATION_TITLES.has((notification.title ?? '').trim()))
     .map((notification) => notification.id)
     .filter((id): id is number => typeof id === 'number');
 

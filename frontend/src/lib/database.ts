@@ -293,7 +293,19 @@ export interface Investment {
 
 export interface Notification {
   id?: number;
-  type: 'emi' | 'loan' | 'goal' | 'group' | 'booking' | 'message' | 'session' | 'friend_request' | 'friend_accepted' | 'todo_shared';
+  /**
+   * Free-text server-side (Prisma: `type String @default("info")`), NOT a
+   * closed set — the backend routinely emits values beyond the app's own
+   * "known" ones (loan_reminder, budget_alert, group_expense, new_booking,
+   * info, ai, global, sync, reminder, welcome_invitations, ...), and new
+   * ones get added as features ship. A closed union here previously made
+   * every consumer's "which types do I handle" filter silently drop, and in
+   * one case (lib/notifications.ts) delete, anything outside its list — see
+   * lib/notificationPresentation.tsx for the full incident writeup. Treat
+   * this as an open string and always resolve unknown values through a
+   * fallback, never as an allowlist to filter by.
+   */
+  type: string;
   title: string;
   message: string;
   dueDate?: Date;

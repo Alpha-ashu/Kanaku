@@ -3,19 +3,10 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Bell,
-  CheckCircle2,
-  AlertCircle,
-  Wallet,
-  Target,
-  Users,
-  MessageSquare,
-  CalendarClock,
   Trash2,
-  UserPlus,
-  ListTodo,
-  Sparkles,
   ExternalLink,
   Check,
+  Sparkles,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useApp } from '@/contexts/AppContext';
@@ -26,86 +17,26 @@ import {
   markAllNotificationsAsRead,
   markNotificationAsRead,
 } from '@/lib/notifications';
+import { getNotificationPresentation } from '@/lib/notificationPresentation';
 import { PageHeader } from '@/app/components/ui/PageHeader';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
+import { InfiniteScrollFooter } from '@/app/components/ui/InfiniteScrollFooter';
 
-const PRESENTATION: Record<Notification['type'], {
-  icon: React.ReactNode;
-  color: string;
-  badgeBg: string;
-  iconBg: string;
-  borderAccent: string;
-}> = {
-  emi: {
-    icon: <AlertCircle className="w-5 h-5" />,
-    color: 'text-amber-600',
-    badgeBg: 'bg-amber-50 text-amber-700 border-amber-200/60',
-    iconBg: 'bg-amber-50 text-amber-600 border border-amber-100',
-    borderAccent: 'border-l-4 border-l-amber-500',
-  },
-  loan: {
-    icon: <Wallet className="w-5 h-5" />,
-    color: 'text-rose-600',
-    badgeBg: 'bg-rose-50 text-rose-700 border-rose-200/60',
-    iconBg: 'bg-rose-50 text-rose-600 border border-rose-100',
-    borderAccent: 'border-l-4 border-l-rose-500',
-  },
-  goal: {
-    icon: <Target className="w-5 h-5" />,
-    color: 'text-indigo-600',
-    badgeBg: 'bg-indigo-50 text-indigo-700 border-indigo-200/60',
-    iconBg: 'bg-indigo-50 text-indigo-600 border border-indigo-100',
-    borderAccent: 'border-l-4 border-l-indigo-500',
-  },
-  group: {
-    icon: <Users className="w-5 h-5" />,
-    color: 'text-violet-600',
-    badgeBg: 'bg-violet-50 text-violet-700 border-violet-200/60',
-    iconBg: 'bg-violet-50 text-violet-600 border border-violet-100',
-    borderAccent: 'border-l-4 border-l-violet-500',
-  },
-  booking: {
-    icon: <CalendarClock className="w-5 h-5" />,
-    color: 'text-emerald-600',
-    badgeBg: 'bg-emerald-50 text-emerald-700 border-emerald-200/60',
-    iconBg: 'bg-emerald-50 text-emerald-600 border border-emerald-100',
-    borderAccent: 'border-l-4 border-l-emerald-500',
-  },
-  message: {
-    icon: <MessageSquare className="w-5 h-5" />,
-    color: 'text-sky-600',
-    badgeBg: 'bg-sky-50 text-sky-700 border-sky-200/60',
-    iconBg: 'bg-sky-50 text-sky-600 border border-sky-100',
-    borderAccent: 'border-l-4 border-l-sky-500',
-  },
-  session: {
-    icon: <CheckCircle2 className="w-5 h-5" />,
-    color: 'text-teal-600',
-    badgeBg: 'bg-teal-50 text-teal-700 border-teal-200/60',
-    iconBg: 'bg-teal-50 text-teal-600 border border-teal-100',
-    borderAccent: 'border-l-4 border-l-teal-500',
-  },
-  friend_request: {
-    icon: <UserPlus className="w-5 h-5" />,
-    color: 'text-blue-600',
-    badgeBg: 'bg-blue-50 text-blue-700 border-blue-200/60',
-    iconBg: 'bg-blue-50 text-blue-600 border border-blue-100',
-    borderAccent: 'border-l-4 border-l-blue-500',
-  },
-  friend_accepted: {
-    icon: <Users className="w-5 h-5" />,
-    color: 'text-cyan-600',
-    badgeBg: 'bg-cyan-50 text-cyan-700 border-cyan-200/60',
-    iconBg: 'bg-cyan-50 text-cyan-600 border border-cyan-100',
-    borderAccent: 'border-l-4 border-l-cyan-500',
-  },
-  todo_shared: {
-    icon: <ListTodo className="w-5 h-5" />,
-    color: 'text-purple-600',
-    badgeBg: 'bg-purple-50 text-purple-700 border-purple-200/60',
-    iconBg: 'bg-purple-50 text-purple-600 border border-purple-100',
-    borderAccent: 'border-l-4 border-l-purple-500',
-  },
+/**
+ * Curated filter tabs. Each maps to every real backend type string that
+ * means the same thing to a user (e.g. the backend emits both `loan` and
+ * `loan_reminder` for loan-related notices) — this is display grouping only,
+ * NOT the allowlist that used to hide/delete anything outside it. See
+ * lib/notificationPresentation.tsx for the full incident writeup.
+ */
+const FILTER_TYPE_GROUPS: Record<string, string[]> = {
+  loan: ['loan', 'emi', 'loan_reminder'],
+  goal: ['goal'],
+  group: ['group', 'group_expense'],
+  session: ['session'],
+  budget: ['budget_alert'],
+  booking: ['booking', 'new_booking'],
 };
 
 const getTimeAgo = (date: Date) => {
@@ -125,38 +56,40 @@ export const Notifications: React.FC = () => {
     [],
   ) ?? [];
 
-  const supportedNotifications = useMemo(
-    () => notifications.filter((notification) => (
-      notification.type === 'emi'
-      || notification.type === 'loan'
-      || notification.type === 'goal'
-      || notification.type === 'group'
-      || notification.type === 'booking'
-      || notification.type === 'message'
-      || notification.type === 'session'
-      || notification.type === 'friend_request'
-      || notification.type === 'friend_accepted'
-      || notification.type === 'todo_shared'
-    )),
+  const filteredNotifications = useMemo(() => {
+    if (filterType === 'all') return notifications;
+    const matchTypes = FILTER_TYPE_GROUPS[filterType] ?? [filterType];
+    return notifications.filter((notification) => matchTypes.includes(notification.type));
+  }, [filterType, notifications]);
+
+  const {
+    visibleItems: visibleNotifications,
+    hasMore,
+    isLoadingMore,
+    error: infiniteScrollError,
+    retry: retryLoadMore,
+    sentinelRef,
+    totalCount,
+  } = useInfiniteScroll({
+    items: filteredNotifications,
+    pageSize: 15,
+    initialPageSize: 15,
+    resetDeps: [filterType],
+    getItemKey: (item) => item.id ?? `${item.title}-${item.createdAt.toString()}`,
+  });
+
+  const unreadCount = useMemo(
+    () => notifications.filter((notification) => !notification.isRead).length,
     [notifications],
   );
 
-  const filteredNotifications = useMemo(() => {
-    if (filterType === 'all') return supportedNotifications;
-    return supportedNotifications.filter((notification) => notification.type === filterType);
-  }, [filterType, supportedNotifications]);
-
-  const unreadCount = useMemo(
-    () => supportedNotifications.filter((notification) => !notification.isRead).length,
-    [supportedNotifications],
-  );
-
-  const filters: Array<{ label: string; value: 'all' | Notification['type'] }> = [
+  const filters: Array<{ label: string; value: string }> = [
     { label: 'All', value: 'all' },
     { label: 'Loan', value: 'loan' },
-    { label: 'EMI', value: 'emi' },
     { label: 'Goal', value: 'goal' },
     { label: 'Group', value: 'group' },
+    { label: 'Budget', value: 'budget' },
+    { label: 'Booking', value: 'booking' },
     { label: 'Session', value: 'session' },
   ];
 
@@ -224,7 +157,7 @@ export const Notifications: React.FC = () => {
                 Mark All Read
               </button>
             )}
-            {supportedNotifications.length > 0 && (
+            {notifications.length > 0 && (
               <button
                 onClick={handleClearAll}
                 data-testid="notifications-clear-all-button"
@@ -260,10 +193,10 @@ export const Notifications: React.FC = () => {
 
         {/* Notification Cards List */}
         <div className="space-y-3">
-          {filteredNotifications.length > 0 ? (
+          {visibleNotifications.length > 0 ? (
             <AnimatePresence mode="popLayout">
-              {filteredNotifications.map((notification, index) => {
-                const presentation = PRESENTATION[notification.type] ?? PRESENTATION.group;
+              {visibleNotifications.map((notification, index) => {
+                const presentation = getNotificationPresentation(notification.type);
                 const isUnread = !notification.isRead;
 
                 return (
@@ -272,7 +205,7 @@ export const Notifications: React.FC = () => {
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.96 }}
-                    transition={{ duration: 0.2, delay: index * 0.03 }}
+                    transition={{ duration: 0.2, delay: Math.min(index, 10) * 0.02 }}
                     data-testid={`notifications-card-select-${notification.id}`}
                     className={`bg-white rounded-2xl p-5 shadow-sm border transition-all duration-200 hover:shadow-md relative overflow-hidden group ${
                       isUnread
@@ -376,6 +309,19 @@ export const Notifications: React.FC = () => {
                 Realtime alerts, EMI due dates, and goal milestones will appear here as they trigger.
               </p>
             </motion.div>
+          )}
+
+          {filteredNotifications.length > 0 && (
+            <InfiniteScrollFooter
+              hasMore={hasMore}
+              isLoadingMore={isLoadingMore}
+              error={infiniteScrollError}
+              onRetry={retryLoadMore}
+              sentinelRef={sentinelRef}
+              totalCount={totalCount}
+              loadingText="Loading more updates..."
+              endOfListText="All notifications caught up"
+            />
           )}
         </div>
       </div>
