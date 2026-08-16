@@ -12,6 +12,7 @@ import { advisorRoutes } from '../features/advisors/advisor.routes';
 import { sessionRoutes } from '../features/sessions/session.routes';
 import { paymentRoutes } from '../features/payments/payment.routes';
 import { adminRoutes } from '../features/admin/admin.routes';
+import { managerRoutes } from '../features/manager/manager.routes';
 import { notificationRoutes } from '../features/notifications/notification.routes';
 import { deviceRoutes } from '../features/devices/device.routes';
 import { stockRoutes } from '../features/stocks/stock.routes';
@@ -129,6 +130,9 @@ router.use('/system', systemRoutes);
 
 // Admin routes (requires admin role)
 router.use('/admin', adminRoutes);
+
+// Manager routes (requires manager or admin role)
+router.use('/manager', managerRoutes);
 
 // Public stock routes
 router.use('/stocks', stockRoutes);

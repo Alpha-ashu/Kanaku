@@ -27,7 +27,7 @@ const OTP_HMAC_SECRET = process.env.OTP_HMAC_SECRET || process.env.JWT_SECRET ||
  */
 
 const OTP_LENGTH = 6;
-const OTP_EXPIRY_SECONDS = 30;
+const OTP_EXPIRY_SECONDS = 120;
 const MAX_ATTEMPTS = 5;
 const COOLDOWN_SECONDS = 30;
 const BLOCK_THRESHOLD = 10; // Block after 10 total failed attempts in 1 hour

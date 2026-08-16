@@ -2,6 +2,8 @@ import { Router } from 'express';
 import { authMiddleware } from '../../middleware/auth';
 import {
   register,
+  verifyRegistrationOtp,
+  resendRegistrationOtp,
   login,
   loginChallenge,
   refreshToken,
@@ -92,6 +94,8 @@ router.post('/check-phone', authLimiter, checkPhoneAvailability);
 // (EMAIL_REGEX, password length, MISSING_FIELDS codes) which the test suite
 // asserts on — do not front them with a generic validateBody layer.
 router.post('/register', authLimiter, registerLimiter, register);
+router.post('/verify-registration-otp', authLimiter, verifyRegistrationOtp);
+router.post('/resend-registration-otp', otpLimiter, resendRegistrationOtp);
 router.post('/login/challenge', authLimiter, loginLimiter, loginChallenge);
 router.post('/login', authLimiter, login);
 // Token refresh — public (refresh token is the credential), rate-limited (10/min).

@@ -766,25 +766,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
           if (role === 'admin') {
             // Admin role: apply full RBAC logic
-            const readiness = value?.readiness;
-            let isVisible: boolean;
-            switch (readiness) {
-              case 'unreleased':
-                isVisible = true; // admin sees everything
-                break;
-              case 'beta':
-                isVisible = true;
-                break;
-              case 'released':
-                isVisible = true;
-                break;
-              case 'deprecated':
-                isVisible = false;
-                break;
-              default:
-                isVisible = (roleFeatures as unknown as Record<string, boolean>)[key] ?? false;
-            }
-            if (value?.roleAccess && typeof value.roleAccess['admin'] === 'boolean') {
+            let isVisible = true;
+            if (value?.readiness === 'deprecated') {
+              isVisible = false;
+            } else if (value?.roleAccess && typeof value.roleAccess['admin'] === 'boolean') {
               isVisible = value.roleAccess['admin'];
             }
             if (value && typeof value.enabled === 'boolean' && !value.enabled) {
@@ -792,21 +777,25 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             }
             merged[key] = isVisible;
           } else {
-            // Non-admin: only restrict based on admin settings, never expand
-            let adminSaysEnabled: boolean | undefined;
+            // Non-admin roles (user, advisor, manager):
+            // Check global toggle and role-specific access toggle
+            let isAllowed = (roleFeatures as unknown as Record<string, boolean>)[key] ?? false;
 
-            if (typeof value?.enabled === 'boolean') {
-              adminSaysEnabled = value.enabled;
-            } else if (value?.roleAccess && typeof value.roleAccess[role] === 'boolean') {
-              adminSaysEnabled = value.roleAccess[role] && value?.enabled !== false;
+            // 1. If globally disabled by admin, force to false
+            if (typeof value?.enabled === 'boolean' && !value.enabled) {
+              isAllowed = false;
             }
 
-            // RESTRICT ONLY: if admin says false, apply restriction
-            // If admin says true or undefined, use the role default (safety)
-            if (adminSaysEnabled === false) {
-              merged[key] = false;
+            // 2. If explicitly configured for this role in roleAccess, respect it
+            if (value?.roleAccess && typeof value.roleAccess[role] === 'boolean') {
+              if (!value.roleAccess[role]) {
+                isAllowed = false; // Admin disabled for this role
+              } else if (value.enabled !== false && (roleFeatures as unknown as Record<string, boolean>)[key]) {
+                isAllowed = true;
+              }
             }
-            // else: keep role default (which may be true or false)
+
+            merged[key] = isAllowed;
           }
         });
 
@@ -840,7 +829,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     // Throttle rapid render-triggered fetches so they don't hammer the backend —
     // but a real-time `feature_flags_updated` broadcast (force) is an authoritative
     // "flags changed now" signal and must bypass the throttle to apply immediately.
-    if (!force && Date.now() - lastFetchTimeRef.current < 5000) {
+    if (!force && Date.now() - lastFetchTimeRef.current < 4000) {
       return;
     }
     lastFetchTimeRef.current = Date.now();
@@ -884,10 +873,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         }
       }
 
-      // 2. Fetch AI feature flags — DEFERRED from app startup. Only pulled when
-      //    scope includes AI (a live `ai` broadcast), so opening the Admin Console
-      //    or the Application Features tab never calls /admin/ai-features. The
-      //    System Gating Control AI tab loads its own data via /ai-features/matrix.
+      // 2. Fetch AI feature flags
       const aiFlags = (scope === 'ai' || scope === 'all')
         ? await backendService.getAIFeatureFlags()
         : null;
@@ -931,24 +917,24 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   // Multi-lifecycle feature flag sync:
   // 1. Initial mount & auth resolution
   // 2. Real-time WebSocket 'feature_flags_updated' broadcasts
-  // 3. Native Android foreground resume (appStateChange)
+  // 3. Native Android / iOS foreground resume (appStateChange)
   // 4. Tab visibility change (browser/PWA resume)
   // 5. Network reconnect (online event)
-  // 6. Periodic 30s background fallback interval
+  // 6. Periodic 20s background fallback interval
   useEffect(() => {
-    if (!user?.id || !dataReady || dataSyncing) return;
+    if (!user?.id || !dataReady) return;
 
     // 1. Immediate fetch
     if (typeof document !== 'undefined' && !document.hidden) {
       void fetchGlobalFlags('all', true);
     }
 
-    // 2. Fallback polling interval (30 seconds)
+    // 2. Fallback polling interval (20 seconds)
     const interval = setInterval(() => {
       if (typeof document !== 'undefined' && !document.hidden) {
         void fetchGlobalFlags('all', false);
       }
-    }, 30000);
+    }, 20000);
 
     // 3. Tab visibility change handler
     const handleVisibilityChange = () => {
@@ -985,8 +971,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       window.removeEventListener('online', handleOnline);
       nativeCleanup?.();
     };
-   
-  }, [user?.id, dataReady, dataSyncing, fetchGlobalFlags]);
+  }, [user?.id, dataReady, fetchGlobalFlags]);
 
   // Real-time feature flag sync via WebSocket.
   // When the admin saves flags the backend broadcasts 'feature_flags_updated'

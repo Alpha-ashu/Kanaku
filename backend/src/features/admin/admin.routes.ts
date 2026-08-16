@@ -39,6 +39,7 @@ router.use(requireRole('admin'));
 
 // User management
 router.get('/users', AdminController.getAllUsers);
+router.get('/users/stats', AdminController.getUserStats);
 router.get('/users/pending', AdminController.getPendingAdvisors);
 router.post('/users/:advisorId/approve', AdminController.approveAdvisor);
 router.post('/users/:advisorId/reject', AdminController.rejectAdvisor);
@@ -47,6 +48,20 @@ router.post('/users/:userId/status', AdminController.toggleUserStatus);
 router.post('/users/:userId/role', AdminController.updateUserRole);
 router.delete('/users/:userId', AdminController.deleteUser);
 router.get('/users/:userId/storage', AdminController.getUserStorageStats);
+
+// Demo account management
+router.get('/demo-accounts', AdminController.getDemoAccounts);
+router.post('/demo-accounts/:userId/status', AdminController.toggleDemoAccountStatus);
+router.post('/demo-accounts/create', AdminController.createDemoAccount);
+router.post('/demo-accounts/:userId/reset', AdminController.resetDemoAccount);
+
+// Approval workflow (Manager -> Admin review)
+router.get('/approvals', AdminController.getApprovalRequests);
+router.post('/approvals/:requestId/approve', AdminController.approveApprovalRequest);
+router.post('/approvals/:requestId/reject', AdminController.rejectApprovalRequest);
+
+// Audit logs
+router.get('/audit-logs', AdminController.getAdminAuditLogs);
 
 // Statistics
 router.get('/stats', AdminController.getPlatformStats);

@@ -24,6 +24,10 @@ export interface RegisterInput {
   role?: 'user' | 'advisor'; // Default is 'user'
   phone?: string;
   mobile?: string;
+  accountType?: 'NORMAL' | 'DEMO';
+  demoStatus?: 'ENABLED' | 'DISABLED';
+  emailVerified?: boolean;
+  status?: string;
 }
 
 export interface LoginInput {

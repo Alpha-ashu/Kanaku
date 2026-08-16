@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Mail, ArrowLeft, RefreshCw, Shield, AlertCircle, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import supabase from '@/utils/supabase/client';
+import { api, TokenManager } from '@/lib/api';
 
 interface OTPVerificationProps {
  email: string;
@@ -86,111 +87,129 @@ export const OTPVerification: React.FC<OTPVerificationProps> = ({
  }
  };
 
- const handleVerifyOTP = async (otpCode: string) => {
- if (otpCode.length !== 6) return;
- setIsLoading(true);
- setError(null);
+  const handleVerifyOTP = async (otpCode: string) => {
+    if (otpCode.length !== 6) return;
+    setIsLoading(true);
+    setError(null);
 
- try {
- // For new users, Supabase sends a 'signup' type token when the account is
- // unconfirmed (even when triggered via signInWithOtp). Try 'signup' first,
- // then 'email' as fallback for already-confirmed returning users.
- let verifySuccess = false;
+    try {
+      // First try Backend API email OTP verification
+      try {
+        const res = await api.auth.verifyRegistrationOtp({
+          email,
+          code: otpCode,
+        });
 
- const { error: signupError } = await supabase.auth.verifyOtp({
- email,
- token: otpCode,
- type: 'signup',
- });
+        if (res.success && res.data) {
+          const resData = res.data as any;
+          if (resData.accessToken) {
+            TokenManager.setAccessToken(resData.accessToken);
+          }
+          if (resData.user) {
+            localStorage.setItem('user_email', resData.user.email);
+            localStorage.setItem('user_name', resData.user.name);
+          }
+          localStorage.setItem('email_verified', 'true');
+          localStorage.setItem('user_status', 'verified');
+          setVerified(true);
+          toast.success('Email verified successfully! Welcome to Kanaku.');
+          setTimeout(() => onVerified(), 800);
+          return;
+        }
+      } catch (backendErr: any) {
+        // Fall through to try Supabase if backend failed and Supabase is configured
+        if (backendErr?.code === 'INVALID_OTP' || backendErr?.code === 'INVALID_OTP_FORMAT') {
+          setError(backendErr.message || 'Invalid or expired verification code.');
+          setOtp(['', '', '', '', '', '']);
+          inputRefs.current[0]?.focus();
+          return;
+        }
+      }
 
- if (!signupError) {
- verifySuccess = true;
- } else {
- // Fallback: try 'email' type (for confirmed users doing signInWithOtp)
- const { error: emailError } = await supabase.auth.verifyOtp({
- email,
- token: otpCode,
- type: 'email',
- });
- if (!emailError) {
- verifySuccess = true;
- }
- }
+      // Supabase verification fallback
+      let verifySuccess = false;
+      const { error: signupError } = await supabase.auth.verifyOtp({
+        email,
+        token: otpCode,
+        type: 'signup',
+      });
 
- if (!verifySuccess) {
- setError('Invalid or expired code. Please request a new one.');
- setOtp(['', '', '', '', '', '']);
- inputRefs.current[0]?.focus();
- return;
- }
+      if (!signupError) {
+        verifySuccess = true;
+      } else {
+        const { error: emailError } = await supabase.auth.verifyOtp({
+          email,
+          token: otpCode,
+          type: 'email',
+        });
+        if (!emailError) {
+          verifySuccess = true;
+        }
+      }
 
- // Mark as verified in localStorage for sync-service
- localStorage.setItem('email_verified', 'true');
- localStorage.setItem('user_status', 'verified');
- setVerified(true);
- toast.success('Email verified successfully! Welcome to KANAKU ');
+      if (!verifySuccess) {
+        setError('Invalid or expired code. Please request a new one.');
+        setOtp(['', '', '', '', '', '']);
+        inputRefs.current[0]?.focus();
+        return;
+      }
 
- // Short delay to show success state before navigating
- setTimeout(() => onVerified(), 800);
- } catch (err: any) {
- setError('Verification failed. Please try again.');
- setOtp(['', '', '', '', '', '']);
- inputRefs.current[0]?.focus();
- } finally {
- setIsLoading(false);
- }
- };
+      localStorage.setItem('email_verified', 'true');
+      localStorage.setItem('user_status', 'verified');
+      setVerified(true);
+      toast.success('Email verified successfully! Welcome to Kanaku.');
+      setTimeout(() => onVerified(), 800);
+    } catch (err: any) {
+      setError(err?.message || 'Verification failed. Please try again.');
+      setOtp(['', '', '', '', '', '']);
+      inputRefs.current[0]?.focus();
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
- const handleResendOTP = async () => {
- if (resendAttempts >= maxResendAttempts) {
- setError('Maximum resend attempts reached. Please wait a few minutes before trying again.');
- return;
- }
- if (resendCooldown > 0) return;
+  const handleResendOTP = async () => {
+    if (resendAttempts >= maxResendAttempts) {
+      setError('Maximum resend attempts reached. Please wait a few minutes before trying again.');
+      return;
+    }
+    if (resendCooldown > 0) return;
 
- setIsResending(true);
- setError(null);
- try {
- // First try resend without creating user (standard case: user exists, just needs new code)
- const { error: resendError } = await supabase.auth.signInWithOtp({
- email,
- options: { shouldCreateUser: false },
- });
+    setIsResending(true);
+    setError(null);
+    try {
+      // Backend resend
+      const res = await api.auth.resendRegistrationOtp(email);
+      if (res.success) {
+        setResendAttempts(prev => prev + 1);
+        setResendCooldown(30);
+        setOtp(['', '', '', '', '', '']);
+        inputRefs.current[0]?.focus();
+        toast.success(`New verification code sent to ${email}`);
+        return;
+      }
 
- if (resendError) {
- // 422 = user account doesn't exist yet (signup may have failed server-side)
- // or the email hasn't been confirmed - try with shouldCreateUser: true
- if (resendError.status === 422 || resendError.message?.toLowerCase().includes('user')) {
- const { error: createError } = await supabase.auth.signInWithOtp({
- email,
- options: { shouldCreateUser: true },
- });
- if (createError) throw createError;
- } else {
- throw resendError;
- }
- }
+      // Fallback to Supabase
+      const { error: resendError } = await supabase.auth.signInWithOtp({
+        email,
+        options: { shouldCreateUser: false },
+      });
 
- setResendAttempts(prev => prev + 1);
- setResendCooldown(60);
- setOtp(['', '', '', '', '', '']);
- inputRefs.current[0]?.focus();
- toast.success(`New code sent to ${email}`);
- } catch (err: any) {
- const status = err?.status;
- // 429 = Supabase rate limit (max 3 emails/hour on free tier)
- if (status === 429 || err?.message?.toLowerCase().includes('rate limit')) {
- setError('Email rate limit reached - Supabase allows 3 emails/hour on the free plan. Please wait ~1 hour or configure a custom SMTP provider in your Supabase dashboard.');
- setResendCooldown(300); // 5 min cooldown to stop further attempts
- } else if (status === 500) {
- setError('Email sending is currently unavailable (Supabase server error). Please go back and try signing up again, or check your Supabase SMTP settings.');
- } else {
- toast.error(err?.message || 'Failed to resend code. Please try again in a minute.');
- }
- } finally {
- setIsResending(false);
- }
- };
+      if (resendError) {
+        throw resendError;
+      }
+
+      setResendAttempts(prev => prev + 1);
+      setResendCooldown(30);
+      setOtp(['', '', '', '', '', '']);
+      inputRefs.current[0]?.focus();
+      toast.success(`New verification code sent to ${email}`);
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to resend code. Please try again in a moment.');
+    } finally {
+      setIsResending(false);
+    }
+  };
 
  if (verified) {
  return (

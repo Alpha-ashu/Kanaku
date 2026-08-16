@@ -366,7 +366,12 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),
+        react: path.resolve(__dirname, './node_modules/react'),
+        'react-dom': path.resolve(__dirname, './node_modules/react-dom'),
+        'react/jsx-runtime': path.resolve(__dirname, './node_modules/react/jsx-runtime'),
+        'react/jsx-dev-runtime': path.resolve(__dirname, './node_modules/react/jsx-dev-runtime'),
       },
+      dedupe: ['react', 'react-dom'],
     },
 
     assetsInclude: ['**/*.svg', '**/*.csv'],
@@ -390,9 +395,9 @@ export default defineConfig(({ mode }) => {
       minify: 'esbuild',
       rollupOptions: {
         output: {
-          // Smart manual chunk splitting  vendors in separate cacheable chunks
+          // Smart manual chunk splitting — vendors in separate cacheable chunks
           manualChunks(id) {
-            //  Heavy UI libs
+            // 1. Heavy UI libs
             if (id.includes('node_modules/@mui')) return 'vendor-mui';
             if (id.includes('node_modules/recharts') || id.includes('node_modules/d3')) return 'vendor-charts';
             if (id.includes('node_modules/pdfjs-dist')) return 'vendor-pdf';
@@ -400,27 +405,28 @@ export default defineConfig(({ mode }) => {
             if (id.includes('node_modules/jspdf') || id.includes('node_modules/html2canvas')) return 'vendor-pdfgen';
             if (id.includes('node_modules/@capacitor')) return 'vendor-capacitor';
 
-            //  Core React ecosystem
+            // 2. Core React ecosystem
+            if (id.includes('node_modules/react-router') || id.includes('node_modules/react-router-dom')) return 'vendor-react';
             if (id.includes('node_modules/react-dom')) return 'vendor-react';
             if (id.includes('node_modules/react/')) return 'vendor-react';
             if (id.includes('node_modules/framer-motion') || id.includes('node_modules/motion')) return 'vendor-motion';
 
-            //  Supabase
+            // 3. Supabase
             if (id.includes('node_modules/@supabase')) return 'vendor-supabase';
 
-            //  Database / offline
+            // 4. Database / offline
             if (id.includes('node_modules/dexie')) return 'vendor-dexie';
 
-            //  Radix UI components
+            // 5. Radix UI components
             if (id.includes('node_modules/@radix-ui')) return 'vendor-radix';
 
-            //  Utilities
+            // 6. Utilities
             if (id.includes('node_modules/date-fns')) return 'vendor-utils';
             if (id.includes('node_modules/lucide-react')) return 'vendor-icons';
             if (id.includes('node_modules/sonner')) return 'vendor-utils';
             if (id.includes('node_modules/clsx') || id.includes('node_modules/tailwind-merge')) return 'vendor-utils';
 
-            //  Fonts
+            // 7. Fonts
             if (id.includes('node_modules/@fontsource')) return 'vendor-fonts';
           },
           chunkFileNames: 'assets/[name]-[hash].js',
@@ -434,6 +440,11 @@ export default defineConfig(({ mode }) => {
       include: [
         'react',
         'react-dom',
+        'react-dom/client',
+        'react/jsx-runtime',
+        'react/jsx-dev-runtime',
+        'react-router-dom',
+        'react-router',
         'framer-motion',
         '@supabase/supabase-js',
         'dexie',

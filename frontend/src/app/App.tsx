@@ -1361,7 +1361,13 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <div className="w-full min-h-screen flex overflow-x-hidden app-container">
+    <div className="w-full min-h-screen flex overflow-x-hidden app-container relative bg-slate-50/40 text-slate-900 selection:bg-indigo-500 selection:text-white">
+      {/* Subtle Ambient Background Mesh Lighting */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden" aria-hidden="true">
+        <div className="absolute -top-[20%] right-[5%] w-[600px] h-[600px] rounded-full bg-gradient-to-br from-indigo-200/20 via-sky-100/20 to-transparent blur-3xl" />
+        <div className="absolute top-[40%] -left-[10%] w-[550px] h-[550px] rounded-full bg-gradient-to-tr from-emerald-100/20 via-teal-50/15 to-transparent blur-3xl" />
+      </div>
+
       {/* OfflineBanner is fixed-position - stays outside document flow, never disrupts the flex row */}
       <OfflineBanner />
 
@@ -1374,30 +1380,26 @@ const AppContent: React.FC = () => {
       <TopBar />
 
       {/* Main Content Area - Center scaled for Desktop */}
-      <div className="flex-1 lg:ml-28 flex flex-col min-h-screen relative overflow-x-hidden">
-        <div className="w-full lg:max-w-[90%] xl:max-w-[85%] mx-auto flex flex-col flex-1 mobile-content relative">
+      <div className="flex-1 lg:ml-28 flex flex-col min-h-screen relative overflow-x-hidden z-10">
+        <div className="w-full max-w-[1600px] mx-auto flex flex-col flex-1 mobile-content relative px-2 sm:px-4 lg:px-8">
           <LimitedModeBanner />
           <OfflineBadge />
-          <main className="w-full pt-24 lg:pt-28 overflow-x-hidden mobile-safe-bottom mobile-main flex-1 bg-transparent">
+          <main className="w-full pt-24 lg:pt-28 overflow-x-hidden mobile-safe-bottom mobile-main flex-1 bg-transparent flex flex-col justify-start">
             {dataSyncError && (
-              <div className="px-4 sm:px-6 pt-4">
-                <div className="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 shadow-sm">
-                  <div className="mt-0.5 h-2.5 w-2.5 rounded-full bg-amber-500" />
-                  <div>
-                    <p className="font-semibold">Offline or Cloud Unreachable</p>
-                    <p className="text-amber-700">
-                      Showing last saved data. Changes will sync when the connection is restored.
+              <div className="px-3 sm:px-6 pt-3 pb-2">
+                <div className="flex items-start gap-3.5 rounded-2xl border border-amber-200/80 bg-amber-50/90 backdrop-blur-md px-4 py-3.5 text-xs sm:text-sm text-amber-900 shadow-sm transition-all">
+                  <div className="mt-1 h-2.5 w-2.5 rounded-full bg-amber-500 shrink-0 animate-pulse" />
+                  <div className="flex-1">
+                    <p className="font-bold text-amber-950">Offline or Cloud Unreachable</p>
+                    <p className="text-amber-800 text-xs mt-0.5 leading-relaxed">
+                      Showing cached data. Updates will automatically sync when your connection is restored.
                     </p>
-                    {/* Must pass the current page's tables: triggerDataSync() with no
-                        argument skips syncFromSupabase entirely (it only runs when
-                        requestedTables is non-empty), so the bare call refreshed
-                        permissions and nothing else — a "Re-sync now" button that did
-                        not re-sync any data. */}
-                    <button data-testid="app-button"
+                    <button
+                      data-testid="app-button"
                       type="button"
                       onClick={() => void triggerDataSync(PAGE_REQUIRED_TABLES[currentPage] || [])}
                       disabled={dataSyncing}
-                      className="mt-2 inline-flex items-center rounded-full border border-amber-300 bg-white px-3 py-1 text-xs font-semibold text-amber-800 hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-60"
+                      className="mt-2.5 inline-flex items-center gap-1.5 rounded-xl border border-amber-300 bg-white/90 px-3.5 py-1 text-xs font-bold text-amber-900 hover:bg-white transition-all shadow-xs disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       {dataSyncing ? 'Syncing...' : 'Re-sync now'}
                     </button>
@@ -1407,11 +1409,10 @@ const AppContent: React.FC = () => {
             )}
             <PageErrorBoundary>
               <Suspense fallback={<PageLoader />}>
-                {/* Keyed wrapper: gives every page a single, consistent, lightweight
-                    fade-in (see .page-view in index.css) instead of an abrupt swap,
-                    and reserves a min-height so the layout never collapses between
-                    pages — removing the blank-frame "blink" and layout-shift jump. */}
-                <div key={currentPage} className="page-view">
+                <div
+                  key={currentPage}
+                  className="page-view flex-1 flex flex-col w-full animate-in fade-in-50 duration-200 fill-mode-both"
+                >
                   {renderPage()}
                 </div>
               </Suspense>

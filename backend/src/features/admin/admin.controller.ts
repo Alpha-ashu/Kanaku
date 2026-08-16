@@ -12,6 +12,8 @@ import { getSupabaseAdminClient } from '../../db/supabase';
 import { getSocketManager } from '../../sockets';
 import { isProtectedAccount } from '../../utils/protectedAccounts';
 import { sendAdminChangeEmail } from '../../emails';
+import { demoService } from './demo.service';
+import { approvalService } from './approval.service';
 import { 
   UserRole,
 } from '../../utils/roleBasedFeatures';
@@ -46,12 +48,12 @@ function stripRoleAccessMatrix(features: Record<string, any>): Record<string, an
 
 export const getAllUsers = async (req: AuthRequest, res: Response) => {
   try {
-    const { role, approved } = req.query;
+    const { role, approved, status, accountType, demoStatus, search } = req.query;
 
     const query: any = {};
 
-    if (role) {
-      query.role = role;
+    if (role && role !== 'all') {
+      query.role = String(role).toLowerCase();
     }
 
     if (approved === 'true') {
@@ -60,11 +62,36 @@ export const getAllUsers = async (req: AuthRequest, res: Response) => {
       query.isApproved = false;
     }
 
-    // Bound the result set so the admin user list can't grow into an unbounded
-    // response. Defaults (page 1, 200 rows) preserve the previous behaviour for
-    // typical deployments; large tenants page via ?page/?limit. The response
-    // body stays a bare array (unchanged contract) — total is exposed via the
-    // X-Total-Count header for a future paginated UI.
+    if (accountType && accountType !== 'all') {
+      query.accountType = String(accountType).toUpperCase();
+    }
+
+    if (demoStatus && demoStatus !== 'all') {
+      query.demoStatus = String(demoStatus).toUpperCase();
+    }
+
+    if (status && status !== 'all') {
+      const s = String(status).toLowerCase();
+      if (s === 'pending_verification') {
+        query.OR = [{ status: 'pending_verification' }, { emailVerified: false }];
+      } else if (s === 'disabled') {
+        query.OR = [{ status: { in: ['blocked', 'suspended', 'disabled'] } }, { demoStatus: 'DISABLED' }];
+      } else if (s === 'active' || s === 'verified') {
+        query.status = { in: ['verified', 'active'] };
+        query.demoStatus = 'ENABLED';
+      } else {
+        query.status = s;
+      }
+    }
+
+    if (search && typeof search === 'string' && search.trim()) {
+      const q = search.trim();
+      query.OR = [
+        { name: { contains: q, mode: 'insensitive' } },
+        { email: { contains: q, mode: 'insensitive' } },
+      ];
+    }
+
     const page = Math.max(1, Number(req.query.page) || 1);
     const limit = Math.min(500, Math.max(1, Number(req.query.limit) || 200));
 
@@ -78,7 +105,11 @@ export const getAllUsers = async (req: AuthRequest, res: Response) => {
           role: true,
           isApproved: true,
           status: true,
+          accountType: true,
+          demoStatus: true,
+          emailVerified: true,
           createdAt: true,
+          lastSynced: true,
         },
         orderBy: { createdAt: 'desc' },
         skip: (page - 1) * limit,
@@ -107,6 +138,52 @@ export const getAllUsers = async (req: AuthRequest, res: Response) => {
     res.json(enriched);
   } catch (error: any) {
     res.status(500).json({ error: 'Failed to fetch users' });
+  }
+};
+
+export const getUserStats = async (_req: AuthRequest, res: Response) => {
+  try {
+    const [
+      totalUsers,
+      activeUsers,
+      disabledUsers,
+      pendingUsers,
+      demoUsers,
+      normalUsers,
+      advisors,
+      managers,
+      admins,
+      regularUsers,
+    ] = await Promise.all([
+      prisma.user.count(),
+      prisma.user.count({ where: { status: { in: ['verified', 'active'] }, demoStatus: 'ENABLED' } }),
+      prisma.user.count({ where: { OR: [{ status: { in: ['blocked', 'suspended', 'disabled'] } }, { demoStatus: 'DISABLED' }] } }),
+      prisma.user.count({ where: { OR: [{ status: 'pending_verification' }, { emailVerified: false }] } }),
+      prisma.user.count({ where: { accountType: 'DEMO' } }),
+      prisma.user.count({ where: { accountType: 'NORMAL' } }),
+      prisma.user.count({ where: { role: 'advisor' } }),
+      prisma.user.count({ where: { role: 'manager' } }),
+      prisma.user.count({ where: { role: 'admin' } }),
+      prisma.user.count({ where: { role: 'user' } }),
+    ]);
+
+    res.json({
+      success: true,
+      data: {
+        total: totalUsers,
+        active: activeUsers,
+        disabled: disabledUsers,
+        pending: pendingUsers,
+        demo: demoUsers,
+        normal: normalUsers,
+        advisors,
+        managers,
+        admins,
+        users: regularUsers,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch user metrics' });
   }
 };
 
@@ -960,3 +1037,141 @@ export const updateUserRole = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ error: 'Failed to update user role' });
   }
 };
+
+// ── Demo Accounts Endpoints ──────────────────────────────────────────────────
+
+export const getDemoAccounts = async (req: AuthRequest, res: Response) => {
+  try {
+    const result = await demoService.listDemoAccounts(req.query);
+    res.json({ success: true, ...result });
+  } catch (error: any) {
+    res.status(500).json({ error: error?.message || 'Failed to fetch demo accounts' });
+  }
+};
+
+export const toggleDemoAccountStatus = async (req: AuthRequest, res: Response) => {
+  try {
+    const { userId } = req.params;
+    const { status, reason } = req.body; // 'ENABLED' | 'DISABLED'
+
+    if (!['ENABLED', 'DISABLED'].includes(String(status).toUpperCase())) {
+      return res.status(400).json({ error: 'Status must be ENABLED or DISABLED' });
+    }
+
+    const result = await demoService.toggleDemoAccountStatus(
+      req.userId!,
+      req.user?.role || 'admin',
+      userId,
+      String(status).toUpperCase() as 'ENABLED' | 'DISABLED',
+      reason,
+    );
+
+    res.json(result);
+  } catch (error: any) {
+    res.status(error.statusCode || 500).json({ error: error?.message || 'Failed to toggle demo account status' });
+  }
+};
+
+export const createDemoAccount = async (req: AuthRequest, res: Response) => {
+  try {
+    const result = await demoService.createDemoAccount(
+      req.userId!,
+      req.user?.role || 'admin',
+      req.body,
+    );
+    res.status(201).json({ success: true, message: 'Demo account created successfully', user: result });
+  } catch (error: any) {
+    res.status(error.statusCode || 500).json({ error: error?.message || 'Failed to create demo account' });
+  }
+};
+
+export const resetDemoAccount = async (req: AuthRequest, res: Response) => {
+  try {
+    const { userId } = req.params;
+    const result = await demoService.resetDemoAccount(
+      req.userId!,
+      req.user?.role || 'admin',
+      userId,
+    );
+    res.json(result);
+  } catch (error: any) {
+    res.status(error.statusCode || 500).json({ error: error?.message || 'Failed to reset demo account' });
+  }
+};
+
+// ── Approval Workflow Endpoints ──────────────────────────────────────────────
+
+export const getApprovalRequests = async (req: AuthRequest, res: Response) => {
+  try {
+    const result = await approvalService.listApprovalRequests(req.query);
+    res.json({ success: true, ...result });
+  } catch (error: any) {
+    res.status(500).json({ error: error?.message || 'Failed to fetch approval requests' });
+  }
+};
+
+export const approveApprovalRequest = async (req: AuthRequest, res: Response) => {
+  try {
+    const { requestId } = req.params;
+    const result = await approvalService.approveRequest(req.userId!, requestId);
+    res.json(result);
+  } catch (error: any) {
+    res.status(error.statusCode || 500).json({ error: error?.message || 'Failed to approve request' });
+  }
+};
+
+export const rejectApprovalRequest = async (req: AuthRequest, res: Response) => {
+  try {
+    const { requestId } = req.params;
+    const { reason } = req.body;
+    const result = await approvalService.rejectRequest(req.userId!, requestId, reason);
+    res.json(result);
+  } catch (error: any) {
+    res.status(error.statusCode || 500).json({ error: error?.message || 'Failed to reject request' });
+  }
+};
+
+// ── Audit Logs Endpoint ──────────────────────────────────────────────────────
+
+export const getAdminAuditLogs = async (req: AuthRequest, res: Response) => {
+  try {
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 25));
+    const skip = (page - 1) * limit;
+
+    const where: any = {};
+    if (req.query.action) {
+      where.action = { contains: String(req.query.action), mode: 'insensitive' };
+    }
+    if (req.query.userId) {
+      where.userId = String(req.query.userId);
+    }
+    if (req.query.status) {
+      where.status = String(req.query.status);
+    }
+
+    const [logs, total] = await Promise.all([
+      prisma.auditLog.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      prisma.auditLog.count({ where }),
+    ]);
+
+    res.json({
+      success: true,
+      logs,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: 'Failed to fetch audit logs' });
+  }
+};
+

@@ -82,15 +82,25 @@ export type AuditEventType =
   | 'aa.data_fetched'
   | 'gdpr.data_export'
   | 'gdpr.account_delete_requested'
+  | 'auth.register_initiated'
+  | 'auth.register_verified'
+  | 'auth.otp_verify_failed'
+  | 'admin.demo_account_toggle'
+  | 'admin.demo_account_reset'
+  | 'admin.demo_account_create'
+  | 'admin.approval_requested'
+  | 'admin.approval_approved'
+  | 'admin.approval_rejected'
   | 'gdpr.account_delete_executed'
   | 'file.upload'
   | 'file.delete';
 
-interface AuditPayload {
+export interface AuditPayload {
   event: AuditEventType;
   userId?: string;
   ip?: string;
   userAgent?: string;
+  status?: string;
   /** Correlation ID — defaults to the active request's X-Request-Id when omitted. */
   requestId?: string;
   /** Entity being acted on (e.g. "transaction", "account") */

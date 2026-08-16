@@ -20,7 +20,7 @@ import { clearPinUnlock, isPinUnlocked, PIN_UNLOCK_HEADER } from '../../security
 import { sendWelcomeEmail, sendLoginAlertEmail } from '../../emails';
 import { auditFromRequest } from '../../utils/auditLogger';
 import { isProtectedAccount } from '../../utils/protectedAccounts';
-import { isAccountLocked } from '../../utils/accountStatus';
+import { isAccountLocked, isAccountPending, isDemoDisabled } from '../../utils/accountStatus';
 import { normalizePhone } from './registration.defaults';
 
 const authService = new AuthService();
@@ -306,79 +306,90 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
       );
     }
 
-    const sanitizedInput = {
-      ...input,
-      name: sanitize(input.name),
-      email: input.email.toLowerCase().trim(),
-    };
+    const sanitizedEmail = input.email.toLowerCase().trim();
+    const sanitizedName = sanitize(input.name);
 
-    const tokens = await authService.register(sanitizedInput);
-    logger.info(`[AuthController] User registered successfully in service: ${tokens.user?.id}`);
-
-    // Immutable audit record of the successful registration. requestId, IP and
-    // User-Agent are auto-extracted from the request.
-    auditFromRequest(req, 'auth.register', {
-      userId: tokens.user?.id,
-      resource: 'User',
-      resourceId: tokens.user?.id,
+    // Check if user already exists
+    const existingUser = await prisma.user.findUnique({
+      where: { email: sanitizedEmail },
     });
 
-    // Best-effort welcome email (no-op if SendGrid is unconfigured).
-    if (tokens.user?.email) {
-      void sendWelcomeEmail(tokens.user.email, tokens.user.name).catch(() => {});
+    let targetUserId: string;
+
+    if (existingUser) {
+      if (existingUser.emailVerified && existingUser.status !== 'pending_verification') {
+        throw AppError.conflict(
+          'An account with this email already exists. Please sign in or use a different email.',
+          'EMAIL_EXISTS',
+        );
+      }
+      // If user exists but is unverified, update credentials so they can proceed with OTP verification
+      const hashedPassword = await bcrypt.hash(input.password, 12);
+      await prisma.user.update({
+        where: { id: existingUser.id },
+        data: {
+          name: sanitizedName,
+          password: hashedPassword,
+          status: 'pending_verification',
+          emailVerified: false,
+        },
+      });
+      targetUserId = existingUser.id;
+    } else {
+      const sanitizedInput = {
+        ...input,
+        name: sanitizedName,
+        email: sanitizedEmail,
+        emailVerified: false,
+        status: 'pending_verification',
+      };
+      const tokens = await authService.register(sanitizedInput);
+      targetUserId = tokens.user.id;
     }
 
-    res.setHeader('Authorization', `Bearer ${tokens.accessToken}`);
+    // Send RBI-compliant secure 6-digit OTP
+    const otpResult = await otpService.sendOtp(
+      sanitizedEmail,
+      'signup',
+      'email',
+      targetUserId,
+      req.ip,
+      req.get('user-agent'),
+    );
 
-    // Web (same-origin): refresh token is delivered ONLY as the HttpOnly cookie,
-    // never exposed to browser JS (XSS-safe). Native (cross-origin Capacitor):
-    // the cookie is unreliable, so the token is returned in the body for device
-    // storage. Either way the cookie is set; only the body delivery is gated.
-    setRefreshCookie(res, tokens.refreshToken, REFRESH_TOKEN_TTL_SECONDS);
-    const native = isNativeClient(req);
+    if (!otpResult.success) {
+      throw AppError.badRequest(otpResult.message || 'Failed to send verification code.', 'OTP_SEND_FAILED');
+    }
 
-    // Start the server-side inactivity window for the new session.
-    if (tokens.user?.id) await establishIdleSession(tokens.user.id);
+    auditFromRequest(req, 'auth.register_initiated', {
+      userId: targetUserId,
+      resource: 'User',
+      resourceId: targetUserId,
+      meta: { email: sanitizedEmail },
+    });
 
     res.status(201).json({
       success: true,
-      message: 'Registration successful',
+      message: 'Verification code sent to your email. Please enter the OTP to complete registration.',
       data: {
-        user: tokens.user,
-        expiresAt: tokens.expiresAt,
-        // The access token ships in the body for every client, exactly as login
-        // does. It used to be gated behind `native` alongside the refresh token,
-        // which left web with the Authorization response header as its only way
-        // to obtain a token — and the signup screen has no error path for
-        // failing to get one. Any proxy that dropped that header stranded the
-        // user on "Preparing your financial dashboard..." forever, on a request
-        // that had already succeeded and created their account.
-        //
-        // Only the refresh token is genuinely native-only: on web it lives
-        // solely in the HttpOnly cookie set above, unreadable by JS.
-        accessToken: tokens.accessToken,
-        ...(native ? { refreshToken: tokens.refreshToken } : {}),
+        email: sanitizedEmail,
+        requireOtp: true,
+        expiresIn: otpResult.expiresIn || 120,
+        retryAfter: 30,
+        code: process.env.NODE_ENV !== 'production' ? otpResult.code : undefined,
       },
     });
   } catch (error: any) {
     logger.error(`[AuthController] Registration error for email ${req.body?.email}:`, { message: error?.message, stack: error?.stack });
 
-    // Immutable audit record of the FAILED registration (every attempt is recorded).
     auditFromRequest(req, 'auth.register_failed', {
       meta: { reason: error?.message, code: error?.code },
     });
 
-    // Map known service errors to AppError before passing to next()
-    if (
-      error instanceof AppError
-    ) {
+    if (error instanceof AppError) {
       return next(error);
     }
 
-    logger.error('Registration error', { message: error?.message, stack: error?.stack });
-
-    // Prisma unique-constraint race (P2002): the app-level pre-check passed but a
-    // concurrent insert won — the transaction rolled back cleanly; map to a 409.
     if (error?.code === 'P2002') {
       const target = Array.isArray(error?.meta?.target)
         ? error.meta.target.join(',')
@@ -437,6 +448,120 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
   }
 };
 
+export const verifyRegistrationOtp = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { email, code } = req.body;
+
+    if (!email || !code) {
+      throw AppError.badRequest('Email and 6-digit verification code are required.', 'MISSING_FIELDS');
+    }
+
+    const cleanEmail = email.toLowerCase().trim();
+    const cleanCode = String(code).trim();
+
+    if (cleanCode.length !== 6 || !/^\d{6}$/.test(cleanCode)) {
+      throw AppError.badRequest('Verification code must be exactly 6 digits.', 'INVALID_OTP_FORMAT');
+    }
+
+    // Verify OTP with OTP service (HMAC-SHA256, constant-time, attempt limits, expiration)
+    const verifyResult = await otpService.verifyOtp(cleanEmail, 'signup', cleanCode);
+    if (!verifyResult.success) {
+      auditFromRequest(req, 'auth.otp_verify_failed', { meta: { email: cleanEmail, reason: verifyResult.message } });
+      throw AppError.badRequest(verifyResult.message || 'Invalid or expired verification code.', 'INVALID_OTP');
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { email: cleanEmail },
+    });
+
+    if (!user) {
+      throw AppError.notFound('User account');
+    }
+
+    // Activate the user
+    const updatedUser = await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        status: user.role === 'advisor' && !user.isApproved ? 'active' : 'verified',
+        emailVerified: true,
+      },
+    });
+
+    invalidateUserSnapshotCache(user.id);
+
+    const tokens = generateTokens(updatedUser);
+
+    auditFromRequest(req, 'auth.register_verified', {
+      userId: user.id,
+      resource: 'User',
+      resourceId: user.id,
+    });
+
+    // Best-effort welcome email
+    void sendWelcomeEmail(updatedUser.email, updatedUser.name).catch(() => {});
+
+    res.setHeader('Authorization', `Bearer ${tokens.accessToken}`);
+    setRefreshCookie(res, tokens.refreshToken, REFRESH_TOKEN_TTL_SECONDS);
+    const native = isNativeClient(req);
+
+    if (updatedUser.id) await establishIdleSession(updatedUser.id);
+
+    res.status(200).json({
+      success: true,
+      message: 'Email verified and account activated successfully.',
+      data: {
+        user: tokens.user,
+        accessToken: tokens.accessToken,
+        expiresAt: tokens.expiresAt,
+        ...(native ? { refreshToken: tokens.refreshToken } : {}),
+      },
+    });
+  } catch (error: any) {
+    next(error);
+  }
+};
+
+export const resendRegistrationOtp = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { email } = req.body;
+    if (!email || !EMAIL_REGEX.test(email)) {
+      throw AppError.badRequest('Please enter a valid email address.', 'INVALID_EMAIL');
+    }
+
+    const cleanEmail = email.toLowerCase().trim();
+    const user = await prisma.user.findUnique({ where: { email: cleanEmail } });
+
+    const otpResult = await otpService.sendOtp(
+      cleanEmail,
+      'signup',
+      'email',
+      user?.id,
+      req.ip,
+      req.get('user-agent'),
+    );
+
+    if (!otpResult.success) {
+      return res.status(429).json({
+        success: false,
+        message: otpResult.message || 'Please wait before requesting another OTP.',
+        retryAfter: otpResult.retryAfter || 30,
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Verification code resent to your email.',
+      data: {
+        expiresIn: otpResult.expiresIn || 120,
+        retryAfter: 30,
+        code: process.env.NODE_ENV !== 'production' ? otpResult.code : undefined,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const loginChallenge = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { email, password } = req.body;
@@ -459,16 +584,22 @@ export const loginChallenge = async (req: Request, res: Response, next: NextFunc
     });
 
     // Password is sent plain over the HTTPS-encrypted wire; bcrypt is the security gate.
-    const { valid, status } = await authService.verifyPasswordOnly(normalizedEmail, password);
+    const { valid, status, accountType, demoStatus, emailVerified } = await authService.verifyPasswordOnly(normalizedEmail, password);
     if (!valid) {
       auditFromRequest(req, 'auth.login_failed', { meta: { email: normalizedEmail, reason: 'invalid_credentials' } });
       throw AppError.unauthorized('Incorrect email or password. Please check your credentials and try again.', 'INVALID_CREDENTIALS');
     }
 
-    // Reject suspended/blocked accounts immediately — before any challenge or token is issued.
-    if (isAccountLocked(status)) {
+    // Reject suspended/blocked accounts or disabled demo accounts immediately — before any challenge or token is issued.
+    if (isAccountLocked(status) || isDemoDisabled(accountType, demoStatus)) {
       auditFromRequest(req, 'auth.login_failed', { meta: { email: normalizedEmail, reason: 'account_suspended' } });
-      throw new AppError(403, 'ACCOUNT_SUSPENDED', 'Account suspended. Contact support.', true);
+      throw new AppError(403, 'ACCOUNT_SUSPENDED', 'Account suspended or disabled. Contact support.', true);
+    }
+
+    // Reject unverified accounts
+    if (isAccountPending(status, emailVerified)) {
+      auditFromRequest(req, 'auth.login_failed', { meta: { email: normalizedEmail, reason: 'email_not_verified' } });
+      throw new AppError(403, 'EMAIL_NOT_VERIFIED', 'Please verify your email address to access your account.', true);
     }
 
     const challengeCode = randomInt(100000, 1000000).toString();
@@ -492,36 +623,22 @@ export const loginChallenge = async (req: Request, res: Response, next: NextFunc
     if (!storedInRedis) {
       challengeMemoryCache.set(redisKey, {
         payload: challengeValue,
-        expiresAt: Date.now() + 60000,
+        expiresAt: Date.now() + 60_000,
       });
     }
+
+    logger.info(`[AuthController] Login challenge issued for: ${normalizedEmail}`);
 
     res.json({
       success: true,
       data: {
-        challengeId,
         code: challengeCode,
+        challengeId,
+        expiresIn: 60,
       },
     });
   } catch (error: any) {
-    if (error instanceof AppError) {
-      return next(error);
-    }
-
-    logger.error('Login challenge error', { message: error?.message, stack: error?.stack });
-
-    if (error?.message === 'Invalid credentials') {
-      return next(AppError.unauthorized(
-        'Incorrect email or password. Please check your credentials and try again.',
-        'INVALID_CREDENTIALS',
-      ));
-    }
-
-    if (isDatabaseUnavailableError(error)) {
-      return next(new AppError(503, 'DATABASE_UNAVAILABLE', 'Our servers are temporarily unavailable. Please try again in a moment.', false));
-    }
-
-    next(AppError.unauthorized('Incorrect email or password. Please check your credentials and try again.', 'LOGIN_FAILED'));
+    next(error);
   }
 };
 
@@ -580,20 +697,22 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
       }
 
       // Defense in depth: reject suspended/blocked accounts at token issuance too.
-      if (isAccountLocked((userRecord as any).status)) {
+      if (isAccountLocked((userRecord as any).status) || isDemoDisabled((userRecord as any).accountType, (userRecord as any).demoStatus)) {
         auditFromRequest(req, 'auth.login_failed', { meta: { email: input.email.toLowerCase().trim(), reason: 'account_suspended' } });
-        throw new AppError(403, 'ACCOUNT_SUSPENDED', 'Account suspended. Contact support.', true);
+        throw new AppError(403, 'ACCOUNT_SUSPENDED', 'Account suspended or disabled. Contact support.', true);
+      }
+
+      if (isAccountPending((userRecord as any).status, (userRecord as any).emailVerified)) {
+        auditFromRequest(req, 'auth.login_failed', { meta: { email: input.email.toLowerCase().trim(), reason: 'email_not_verified' } });
+        throw new AppError(403, 'EMAIL_NOT_VERIFIED', 'Please verify your email address to access your account.', true);
       }
 
       tokens = generateTokens(userRecord);
     } else {
       if (!input.password) {
-        throw AppError.badRequest('Please enter your password.', 'MISSING_FIELDS');
+        throw AppError.badRequest('Password is required when logging in without challenge', 'MISSING_PASSWORD');
       }
-      tokens = await authService.login({
-        email: input.email.toLowerCase().trim(),
-        password: input.password,
-      });
+      tokens = await authService.login(input);
       userRecord = tokens.user;
     }
 

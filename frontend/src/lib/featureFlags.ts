@@ -299,9 +299,10 @@ const RESTRICTED_ADMIN_FEATURES: FeatureKey[] = [
 ];
 
 export function canAccessPage(page: string, features?: FeatureVisibility): boolean {
-  if (!page || page === 'dashboard' || page === '/' || page === 'index.html') return true;
+  if (!page) return true;
 
-  const featureKey = PAGE_TO_FEATURE_MAPPING[page];
+  const normalizedPage = (page === '/' || page === 'index.html') ? 'dashboard' : page;
+  const featureKey = PAGE_TO_FEATURE_MAPPING[normalizedPage];
   if (!featureKey) return true;
 
   if (features) {

@@ -422,7 +422,11 @@ export const getApplicationDocument = async (req: AuthRequest, res: Response) =>
     const requestingUser = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } });
     const isAdmin = requestingUser && ['admin', 'manager'].includes(requestingUser.role);
 
-    const application = await prisma.advisorApplication.findUnique({ where: { id } });
+    const application = await prisma.advisorApplication.findFirst({
+      where: {
+        OR: [{ id }, { userId: id }],
+      },
+    });
     if (!application) return res.status(404).json({ error: 'Application not found' });
     if (!isAdmin && application.userId !== userId) return res.status(403).json({ error: 'Access denied' });
 
@@ -432,12 +436,27 @@ export const getApplicationDocument = async (req: AuthRequest, res: Response) =>
       cert: application.certDocumentPath,
     };
     const docPath = pathMap[docType];
-    if (!docPath) return res.status(404).json({ error: 'Document not found' });
 
-    const url = await createSignedUrl(docPath, 300);
-    res.json({ url });
-  } catch {
-    res.status(500).json({ error: 'Failed to generate document URL' });
+    let url: string | null = null;
+    if (docPath) {
+      try {
+        url = await createSignedUrl(docPath, 300);
+      } catch {
+        url = null;
+      }
+    }
+
+    res.json({
+      success: true,
+      url,
+      docType,
+      applicationId: application.id,
+      userId: application.userId,
+      fullName: application.fullName,
+      status: application.status,
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: error?.message || 'Failed to generate document URL' });
   }
 };
 

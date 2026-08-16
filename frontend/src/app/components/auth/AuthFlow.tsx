@@ -425,30 +425,6 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
         throw new Error(response.message || 'Registration failed');
       }
 
-      const resData = response.data as any;
-      const user = resData.user;
-      const accessToken = resData.accessToken;
-
-      // Refresh token is set as an HttpOnly cookie by the server — never in the
-      // body. Only the access token is stored by JS.
-      if (accessToken) {
-        TokenManager.setAccessToken(accessToken);
-      }
-
-      // Nothing below this point can make progress without a token: the success
-      // path just fires KANAKU_AUTH_CHANGE and returns, and AuthContext only
-      // promotes the user to signed-in if it finds one. Without this check a
-      // tokenless 201 left SignUpForm sitting on "Preparing your financial
-      // dashboard..." with no error, no timeout and no way back — the account
-      // existed, but the app never moved. apiClient may also have captured the
-      // token from the Authorization response header, so consult TokenManager
-      // rather than the response body alone before deciding it is missing.
-      if (!TokenManager.getAccessToken()) {
-        throw new Error(
-          'Your account was created, but signing you in failed. Please sign in with your new details.',
-        );
-      }
-
       setEmail(data.email);
       setUserProfile({
         firstName: data.firstName,
@@ -462,6 +438,24 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
       });
       setIsNewUser(true);
 
+      const resData = response.data as any;
+      // If registration requires OTP verification, transition to otp-verify step
+      if (resData?.requireOtp || !resData?.accessToken) {
+        saveFlowState('otp-verify');
+        setStep('otp-verify');
+        toast.success('Verification code sent to your email. Please enter the code to continue.');
+        const halt = new Error('OTP_VERIFICATION_REQUIRED') as Error & { code?: string };
+        halt.code = 'OTP_VERIFICATION_REQUIRED';
+        throw halt;
+      }
+
+      const user = resData.user;
+      const accessToken = resData.accessToken;
+
+      if (accessToken) {
+        TokenManager.setAccessToken(accessToken);
+      }
+
       if (user) {
         await runGuestMigrationIfNeeded(user.id);
       }
@@ -472,10 +466,7 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
       window.dispatchEvent(new CustomEvent('KANAKU_AUTH_CHANGE'));
       toast.success("Account created! Let's set up your profile.");
     } catch (error: any) {
-      // Not an error — signup succeeded but needs email confirmation. The step
-      // is already switched and a success toast shown; re-throw only to halt the
-      // SignUpForm (so it doesn't render its own success screen).
-      if (error?.code === 'EMAIL_CONFIRMATION_REQUIRED') {
+      if (error?.code === 'EMAIL_CONFIRMATION_REQUIRED' || error?.code === 'OTP_VERIFICATION_REQUIRED') {
         throw error;
       }
       const isNetworkError = error?.name === 'AuthRetryableFetchError' || error?.message?.includes('aborted');

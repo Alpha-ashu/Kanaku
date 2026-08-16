@@ -6,7 +6,7 @@ import { Prisma } from '../../db/prisma-client';
 import { logger } from '../../config/logger';
 import { getSupabaseAdminClient } from '../../db/supabase';
 import { authProvider } from './auth.provider';
-import { isAccountLocked } from '../../utils/accountStatus';
+import { isAccountLocked, isAccountPending, isDemoDisabled } from '../../utils/accountStatus';
 import {
   normalizePhone,
   deriveLocaleAndCurrency,
@@ -76,12 +76,26 @@ export class AuthService {
       const annualIncome = input.salary != null ? Number(input.salary) : null;
       const monthlyIncome = annualIncome != null ? Math.round(annualIncome / 12) : null;
 
+      const accountType = input.accountType === 'DEMO' ? 'DEMO' : 'NORMAL';
+      const emailVerified = Boolean(input.emailVerified);
+      const status = input.status || (emailVerified ? 'verified' : 'pending_verification');
+
       // ── Atomic registration ────────────────────────────────────────────────
       // User + profile + settings + default categories are ALL-OR-NOTHING. A
       // failure in any step rolls the whole transaction back — no partial users.
       const user = await prisma.$transaction(async (tx) => {
         const created = await tx.user.create({
-          data: { email: input.email, name: input.name, password: hashedPassword, role, isApproved },
+          data: {
+            email: input.email,
+            name: input.name,
+            password: hashedPassword,
+            role,
+            isApproved,
+            accountType,
+            demoStatus: 'ENABLED',
+            emailVerified,
+            status,
+          },
         });
 
         // Profile is MANDATORY now (previously best-effort/swallowed). The FK
@@ -374,10 +388,14 @@ export class AuthService {
       throw new Error('Invalid credentials');
     }
 
-    // Reject suspended/blocked accounts before issuing tokens (mirrors /refresh + the
+    // Reject suspended/blocked accounts or disabled demo accounts before issuing tokens (mirrors /refresh + the
     // auth middleware). The controller maps this message to 403 ACCOUNT_SUSPENDED.
-    if (isAccountLocked((user as any).status)) {
+    if (isAccountLocked((user as any).status) || isDemoDisabled((user as any).accountType, (user as any).demoStatus)) {
       throw new Error('Account suspended');
+    }
+
+    if (isAccountPending((user as any).status, (user as any).emailVerified)) {
+      throw new Error('Email not verified');
     }
 
     // Approval (e.g. advisors) is reflected in the token claims, not blocked here.
@@ -390,7 +408,13 @@ export class AuthService {
    * suspended accounts before issuing a challenge. Passwords are always plain
    * over the (HTTPS-encrypted) wire — bcrypt is the security gate.
    */
-  async verifyPasswordOnly(email: string, passwordStr: string): Promise<{ valid: boolean; status: string | null }> {
+  async verifyPasswordOnly(email: string, passwordStr: string): Promise<{
+    valid: boolean;
+    status: string | null;
+    accountType: string;
+    demoStatus: string;
+    emailVerified: boolean;
+  }> {
     const user = await getCachedUserByEmail(email);
 
     if (!user) {
@@ -398,7 +422,7 @@ export class AuthService {
       // (registered via the Supabase auth path before BFF was the default).
       const supabaseValid = await authProvider.verifyCredentials(email, passwordStr);
       if (!supabaseValid) {
-        return { valid: false, status: null };
+        return { valid: false, status: null, accountType: 'NORMAL', demoStatus: 'ENABLED', emailVerified: false };
       }
 
       // Supabase confirmed the credentials — auto-provision a local user record
@@ -412,7 +436,17 @@ export class AuthService {
 
         await prisma.$transaction(async (tx) => {
           const created = await tx.user.create({
-            data: { email, name, password: hashedPassword, role: 'user', isApproved: true },
+            data: {
+              email,
+              name,
+              password: hashedPassword,
+              role: 'user',
+              isApproved: true,
+              accountType: 'NORMAL',
+              demoStatus: 'ENABLED',
+              emailVerified: true,
+              status: 'verified',
+            },
           });
           await tx.$executeRaw`
             INSERT INTO public.profiles (id, email, full_name, created_at, updated_at)
@@ -441,7 +475,13 @@ export class AuthService {
 
       // Re-fetch to get the status field for the caller
       const provisioned = await prisma.user.findUnique({ where: { email } });
-      return { valid: true, status: (provisioned as any)?.status ?? null };
+      return {
+        valid: true,
+        status: (provisioned as any)?.status ?? null,
+        accountType: (provisioned as any)?.accountType ?? 'NORMAL',
+        demoStatus: (provisioned as any)?.demoStatus ?? 'ENABLED',
+        emailVerified: (provisioned as any)?.emailVerified ?? true,
+      };
     }
 
     let isPasswordValid = false;
@@ -467,7 +507,13 @@ export class AuthService {
       isPasswordValid = await bcrypt.compare(passwordStr, user.password);
     }
 
-    return { valid: isPasswordValid, status: (user as any).status ?? null };
+    return {
+      valid: isPasswordValid,
+      status: (user as any).status ?? null,
+      accountType: (user as any).accountType ?? 'NORMAL',
+      demoStatus: (user as any).demoStatus ?? 'ENABLED',
+      emailVerified: (user as any).emailVerified ?? true,
+    };
   }
 
   async getUser(userId: string): Promise<User> {

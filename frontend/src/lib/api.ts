@@ -1027,7 +1027,19 @@ export const api = {
     register: (data: { name: string; email: string; password: string; firstName?: string; lastName?: string; mobile?: string }) =>
       apiClient.post('/auth/register', data, {
         showSuccessToast: true,
-        successMessage: 'Registration successful',
+        successMessage: 'Verification code sent to your email',
+      }),
+
+    verifyRegistrationOtp: (data: { email: string; code: string; firstName?: string; lastName?: string; mobile?: string }) =>
+      apiClient.post('/auth/verify-registration-otp', data, {
+        showSuccessToast: true,
+        successMessage: 'Email verified and account activated!',
+      }),
+
+    resendRegistrationOtp: (email: string) =>
+      apiClient.post('/auth/resend-registration-otp', { email }, {
+        showSuccessToast: true,
+        successMessage: 'Verification code resent',
       }),
 
     getProfile: async (options?: { force?: boolean; includePrivate?: boolean }) => {

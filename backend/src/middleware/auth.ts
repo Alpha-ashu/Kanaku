@@ -6,7 +6,7 @@ import { createClient } from '@supabase/supabase-js';
 import { audit } from '../utils/auditLogger';
 import { prisma } from '../db/prisma';
 import { evaluateIdleSession } from '../security/idleSession';
-import { isAccountLocked } from '../utils/accountStatus';
+import { isAccountLocked, isAccountPending, isDemoDisabled } from '../utils/accountStatus';
 
 // ─── Typed JWT payload interfaces ─────────────────────────────────────────────
 
@@ -17,6 +17,9 @@ interface CustomJwtPayload extends jwt.JwtPayload {
   role?: string;
   isApproved?: boolean;
   name?: string;
+  accountType?: string;
+  demoStatus?: string;
+  emailVerified?: boolean;
   /** 'access' | 'refresh' — refresh tokens must not authorize API calls. */
   type?: string;
 }
@@ -27,6 +30,7 @@ interface SupabaseJwtPayload extends jwt.JwtPayload {
   user_metadata?: {
     role?: string;
     full_name?: string;
+    account_type?: string;
   };
   app_metadata?: {
     role?: string;
@@ -39,6 +43,9 @@ interface UserClaims {
   name?: string;
   role?: string;
   isApproved?: boolean;
+  accountType?: string;
+  demoStatus?: string;
+  emailVerified?: boolean;
 }
 
 const ensureUserInDb = async (userId: string, userClaims: UserClaims) => {
@@ -58,6 +65,9 @@ const ensureUserInDb = async (userId: string, userClaims: UserClaims) => {
         // through the admin/advisor server flows.
         role: 'user',
         isApproved: false,
+        accountType: 'NORMAL',
+        demoStatus: 'ENABLED',
+        emailVerified: true,
       }
     });
     logger.info(`[Auth] Ensured user ${userId} exists in database`);
@@ -83,6 +93,9 @@ export interface AuthRequest extends Request<ParamsFlatDictionary> {
     role: string;
     isApproved: boolean;
     name?: string;
+    accountType?: string;
+    demoStatus?: string;
+    emailVerified?: boolean;
   };
   file?: Express.Multer.File;
 }
@@ -127,6 +140,9 @@ interface UserAuthSnapshot {
   isApproved: boolean;
   name: string;
   status: string;
+  accountType?: string;
+  demoStatus?: string;
+  emailVerified?: boolean;
 }
 
 const normalizeAppRole = (value: unknown): string => {
@@ -178,6 +194,9 @@ const getUserAuthSnapshot = async (userId: string): Promise<SnapshotLookup> => {
           isApproved: true,
           name: true,
           status: true,
+          accountType: true,
+          demoStatus: true,
+          emailVerified: true,
         },
       }),
       new Promise<typeof STATUS_LOOKUP_TIMEOUT>((resolve) => {
@@ -291,8 +310,11 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
         if (authSnapshot === USER_NOT_FOUND) {
           return res.status(401).json({ error: 'Account no longer exists. Please sign in again.', code: 'USER_NOT_FOUND' });
         }
-        if (isAccountLocked(authSnapshot?.status)) {
-          return res.status(403).json({ error: 'Account suspended. Contact support.', code: 'ACCOUNT_SUSPENDED' });
+        if (isAccountLocked(authSnapshot?.status) || isDemoDisabled(authSnapshot?.accountType, authSnapshot?.demoStatus)) {
+          return res.status(403).json({ error: 'Account suspended or disabled. Contact support.', code: 'ACCOUNT_SUSPENDED' });
+        }
+        if (authSnapshot && isAccountPending(authSnapshot.status, authSnapshot.emailVerified)) {
+          return res.status(403).json({ error: 'Please verify your email address to access your account.', code: 'EMAIL_NOT_VERIFIED' });
         }
 
         req.userId = userId;
@@ -304,6 +326,9 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
             ? (typeof decoded.isApproved === 'boolean' ? decoded.isApproved : true)
             : false),
           name: authSnapshot?.name || (typeof decoded.name === 'string' ? decoded.name : undefined),
+          accountType: authSnapshot?.accountType || 'NORMAL',
+          demoStatus: authSnapshot?.demoStatus || 'ENABLED',
+          emailVerified: authSnapshot?.emailVerified ?? true,
         };
 
         if (!authSnapshot) {
@@ -333,8 +358,11 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
           // provision below (unlike our own JWT path, which rejects deletions).
           const lookup = await getUserAuthSnapshot(userId);
           const authSnapshot = lookup === USER_NOT_FOUND ? null : lookup;
-          if (isAccountLocked(authSnapshot?.status)) {
-            return res.status(403).json({ error: 'Account suspended. Contact support.', code: 'ACCOUNT_SUSPENDED' });
+          if (isAccountLocked(authSnapshot?.status) || isDemoDisabled(authSnapshot?.accountType, authSnapshot?.demoStatus)) {
+            return res.status(403).json({ error: 'Account suspended or disabled. Contact support.', code: 'ACCOUNT_SUSPENDED' });
+          }
+          if (authSnapshot && isAccountPending(authSnapshot.status, authSnapshot.emailVerified)) {
+            return res.status(403).json({ error: 'Please verify your email address to access your account.', code: 'EMAIL_NOT_VERIFIED' });
           }
 
           req.userId = userId;
@@ -347,6 +375,9 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
             role: authSnapshot?.role || 'user',
             isApproved: authSnapshot?.isApproved ?? false,
             name: authSnapshot?.name || supabaseDecoded.user_metadata?.full_name,
+            accountType: authSnapshot?.accountType || 'NORMAL',
+            demoStatus: authSnapshot?.demoStatus || 'ENABLED',
+            emailVerified: authSnapshot?.emailVerified ?? true,
           };
           if (!authSnapshot) {
             await ensureUserInDb(userId, req.user);
@@ -372,8 +403,11 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
           // user to provision, so treat USER_NOT_FOUND as null here.
           const lookup = await getUserAuthSnapshot(user.id);
           const authSnapshot = lookup === USER_NOT_FOUND ? null : lookup;
-          if (isAccountLocked(authSnapshot?.status)) {
-            return res.status(403).json({ error: 'Account suspended. Contact support.', code: 'ACCOUNT_SUSPENDED' });
+          if (isAccountLocked(authSnapshot?.status) || isDemoDisabled(authSnapshot?.accountType, authSnapshot?.demoStatus)) {
+            return res.status(403).json({ error: 'Account suspended or disabled. Contact support.', code: 'ACCOUNT_SUSPENDED' });
+          }
+          if (authSnapshot && isAccountPending(authSnapshot.status, authSnapshot.emailVerified)) {
+            return res.status(403).json({ error: 'Please verify your email address to access your account.', code: 'EMAIL_NOT_VERIFIED' });
           }
 
           req.userId = user.id;
@@ -385,6 +419,9 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
             role: authSnapshot?.role || 'user',
             isApproved: authSnapshot?.isApproved ?? false,
             name: authSnapshot?.name || user.user_metadata?.full_name,
+            accountType: authSnapshot?.accountType || 'NORMAL',
+            demoStatus: authSnapshot?.demoStatus || 'ENABLED',
+            emailVerified: authSnapshot?.emailVerified ?? true,
           };
           if (!authSnapshot) {
             await ensureUserInDb(user.id, req.user);

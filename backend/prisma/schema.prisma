@@ -681,6 +681,9 @@ model User {
   roleMode                    String                     @default("user")
   advisorStatus               String                     @default("NOT_AVAILABLE")
   status                      String                     @default("verified")
+  accountType                 String                     @default("NORMAL") // NORMAL | DEMO
+  demoStatus                  String                     @default("ENABLED") // ENABLED | DISABLED
+  emailVerified               Boolean                    @default(false)
   isApproved                  Boolean                    @default(false)
   // NOTE: the former DEPRECATED PII columns (firstName, lastName, salary,
   // dateOfBirth, jobType) were dropped in migration 20260708000000_drop_user_pii.
@@ -734,10 +737,42 @@ model User {
   advisorPostLikes            AdvisorPostLike[]          @relation("AdvisorPostLike_user")
   advisorFollowers            AdvisorFollow[]            @relation("AdvisorFollow_advisor")
   advisorFollowing            AdvisorFollow[]            @relation("AdvisorFollow_follower")
+  approvalRequestsSent        ApprovalRequest[]          @relation("ApprovalRequest_requester")
+  approvalRequestsTargeted    ApprovalRequest[]          @relation("ApprovalRequest_targetUser")
+  approvalRequestsReviewed    ApprovalRequest[]          @relation("ApprovalRequest_reviewer")
 
   @@index([isApproved])
   @@index([role])
   @@index([role, isApproved]) // advisor approval queue queries
+  @@index([accountType])
+  @@index([demoStatus])
+  @@index([status])
+  @@index([emailVerified])
+  @@schema("public")
+}
+
+model ApprovalRequest {
+  id              String    @id @default(uuid())
+  requesterId     String
+  targetUserId    String?
+  actionType      String    // ENABLE_DEMO_ACCOUNT | DISABLE_DEMO_ACCOUNT | APPROVE_ADVISOR | REJECT_ADVISOR | ROLE_CHANGE | STATUS_CHANGE | FEATURE_TOGGLE
+  status          String    @default("PENDING") // PENDING | APPROVED | REJECTED | CANCELLED
+  reason          String?
+  payload         Json?
+  reviewedBy      String?
+  reviewedAt      DateTime?
+  rejectionReason String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  requester       User      @relation("ApprovalRequest_requester", fields: [requesterId], references: [id], onDelete: Cascade)
+  targetUser      User?     @relation("ApprovalRequest_targetUser", fields: [targetUserId], references: [id], onDelete: SetNull)
+  reviewer        User?     @relation("ApprovalRequest_reviewer", fields: [reviewedBy], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([requesterId])
+  @@index([targetUserId])
+  @@index([actionType])
+  @@index([createdAt])
   @@schema("public")
 }
 

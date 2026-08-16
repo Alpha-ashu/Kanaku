@@ -147,6 +147,17 @@ class BackendSyncService {
       // the main sync.
       backendService.retrySyncAllPendingFriends().catch(() => {});
 
+      // Synchronize System Gating Control & Feature Flags
+      try {
+        const globalFlags = await backendService.getGlobalFeatureFlags();
+        if (globalFlags && Object.keys(globalFlags).length > 0) {
+          localStorage.setItem('admin_global_feature_settings', JSON.stringify(globalFlags));
+          window.dispatchEvent(new CustomEvent('adminFeatureUpdate', { detail: { features: globalFlags } }));
+        }
+      } catch (err) {
+        // Non-blocking
+      }
+
       this.lastSyncTime = new Date();
       this.pendingOperations.clear();
 
