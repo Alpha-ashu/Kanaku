@@ -422,7 +422,13 @@ export class SocketManager {
                 ? 'Your advisor has accepted your booking request'
                 : `Your advisor rejected your booking request${updatedBooking.rejectionReason ? `: ${updatedBooking.rejectionReason}` : ''}`,
               category: 'booking',
-              deepLink: sessionId ? `/sessions/${sessionId}` : '/bookings',
+              // '/sessions/:id' and '/bookings' are not registered frontend
+              // routes (see App.tsx's page switch) — "Open" silently fell
+              // through to the Dashboard default case. The recipient here is
+              // the CLIENT, whose bookings live under book-advisor's "My
+              // Bookings" tab (BookAdvisor.tsx) — advisor-panel is advisor-only
+              // and would 404 a client via its own role guard.
+              deepLink: '/book-advisor',
             },
           });
 
@@ -529,7 +535,12 @@ export class SocketManager {
                 title: 'Payment Received',
                 message: `You received a payment of ${updatedPayment.amount} ${updatedPayment.currency}`,
                 category: 'payment',
-                deepLink: `/payments/${updatedPayment.id}`,
+                // '/payments/:id' and '/sessions/:id' are not registered
+                // frontend routes (see App.tsx's page switch) — "Open" fell
+                // through to the Dashboard default case. Recipient here is
+                // the ADVISOR; earnings/payments live under advisor-panel's
+                // "Earnings" tab (AdvisorWorkspace.tsx, advisor-only).
+                deepLink: '/advisor-panel',
               },
             });
           } else if (status === 'failed') {
@@ -539,7 +550,9 @@ export class SocketManager {
                 title: 'Payment Failed',
                 message: `Your payment of ${updatedPayment.amount} ${updatedPayment.currency} failed. Please try again.`,
                 category: 'payment',
-                deepLink: `/sessions/${updatedPayment.sessionId}`,
+                // Recipient is the CLIENT; their bookings/payments live under
+                // book-advisor's "My Bookings" tab. See the note above.
+                deepLink: '/book-advisor',
               },
             });
           } else if (status === 'refunded') {

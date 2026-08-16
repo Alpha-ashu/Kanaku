@@ -129,13 +129,17 @@ const markPaymentCompleted = async (paymentId: string, transactionId?: string) =
     },
   });
 
+  // '/payments/:id' is not a registered frontend route (see App.tsx's page
+  // switch) — falls through to the Dashboard default case. Recipient is the
+  // ADVISOR; earnings/payments live under advisor-panel's "Earnings" tab
+  // (AdvisorWorkspace.tsx, advisor-only).
   await prisma.notification.create({
     data: {
       userId: payment.advisorId,
       title: 'Payment Received',
       message: `You received a payment of ${payment.amount} ${payment.currency}`,
       category: 'payment',
-      deepLink: `/payments/${paymentId}`,
+      deepLink: '/advisor-panel',
     },
   });
 
@@ -161,13 +165,15 @@ const markPaymentFailed = async (paymentId: string, reason?: string) => {
     data: { status: 'failed' },
   });
 
+  // '/sessions/:id' is not a registered frontend route — recipient is the
+  // CLIENT; payments live under book-advisor's "My Bookings" tab.
   await prisma.notification.create({
     data: {
       userId: payment.clientId,
       title: 'Payment Failed',
       message: `Your payment of ${payment.amount} ${payment.currency} failed${reason ? `: ${reason}` : ''}. Please try again.`,
       category: 'payment',
-      deepLink: `/sessions/${payment.sessionId}`,
+      deepLink: '/book-advisor',
     },
   });
 

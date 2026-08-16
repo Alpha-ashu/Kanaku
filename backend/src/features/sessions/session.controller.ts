@@ -119,13 +119,18 @@ export const sendMessage = async (req: AuthRequest, res: Response) => {
     }
 
     // Durable fallback notification (covers offline recipients).
+    // '/sessions/:id' is not a registered frontend route (see App.tsx's page
+    // switch) — falls through to the Dashboard default case. `otherUserId` can
+    // be either party depending on who sent the message, so the destination
+    // has to follow: sessions live under advisor-panel for the advisor
+    // (advisor-only) and under book-advisor's "My Bookings" for the client.
     await prisma.notification.create({
       data: {
         userId: otherUserId,
         title: 'New Message',
         message: `${senderName}: ${message.substring(0, 50)}${message.length > 50 ? '...' : ''}`,
         category: 'session',
-        deepLink: `/sessions/${sessionId}`,
+        deepLink: otherUserId === session.advisorId ? '/advisor-panel' : '/book-advisor',
       },
     });
 
@@ -208,13 +213,15 @@ export const uploadMessageAttachment = async (req: AuthRequest, res: Response) =
       });
     }
 
+    // See the New Message notification above for why this deepLink is
+    // conditional rather than the (unregistered) '/sessions/:id' route.
     await prisma.notification.create({
       data: {
         userId: otherUserId,
         title: 'New Document',
         message: `${senderName} shared ${validated.originalName}`,
         category: 'session',
-        deepLink: `/sessions/${sessionId}`,
+        deepLink: otherUserId === session.advisorId ? '/advisor-panel' : '/book-advisor',
       },
     });
 
@@ -338,14 +345,15 @@ export const startSession = async (req: AuthRequest, res: Response) => {
       },
     });
 
-    // Notify client
+    // Notify client. '/sessions/:id' is not a registered frontend route —
+    // client sessions live under book-advisor's "My Bookings" tab.
     await prisma.notification.create({
       data: {
         userId: session.clientId,
         title: 'Session Started',
         message: 'Your advisor has started the session',
         category: 'session',
-        deepLink: `/sessions/${id}`,
+        deepLink: '/book-advisor',
       },
     });
 
@@ -408,14 +416,16 @@ export const completeSession = async (req: AuthRequest, res: Response) => {
       }
     }
 
-    // Notify client to rate the session
+    // Notify client to rate the session. '/sessions/:id/rate' is not a
+    // registered frontend route — client sessions live under book-advisor's
+    // "My Bookings" tab.
     await prisma.notification.create({
       data: {
         userId: session.clientId,
         title: 'Session Completed',
         message: 'The session has been completed. Please rate your experience.',
         category: 'session',
-        deepLink: `/sessions/${id}/rate`,
+        deepLink: '/book-advisor',
       },
     });
 

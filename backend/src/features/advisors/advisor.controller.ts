@@ -255,7 +255,11 @@ export const rateSession = async (req: AuthRequest, res: Response) => {
     if (session.status !== 'completed') return res.status(400).json({ error: 'Can only rate completed sessions' });
     const updated = await prisma.advisorSession.update({ where: { id }, data: { rating, feedback: feedback || '' } });
     await prisma.notification.create({
-      data: { userId: session.advisorId, title: 'New Session Rating', message: `You received a ${rating} star rating`, category: 'session', deepLink: `/sessions/${id}` },
+      // '/sessions/:id' is not a registered frontend route (see App.tsx's page
+      // switch) — falls through to the Dashboard default case. Recipient is
+      // the ADVISOR; sessions live under advisor-panel (AdvisorWorkspace.tsx,
+      // advisor-only).
+      data: { userId: session.advisorId, title: 'New Session Rating', message: `You received a ${rating} star rating`, category: 'session', deepLink: '/advisor-panel' },
     });
     res.json(updated);
   } catch {

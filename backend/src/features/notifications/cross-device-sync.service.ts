@@ -2,6 +2,25 @@ import { prisma } from '../../utils/prisma';
 import { DeviceService } from '../devices/device.service';
 
 /**
+ * Maps a (singular) sync entity type to its (plural) registered frontend page
+ * name — see App.tsx's page switch for the full registered list. Deliberately
+ * only the entity types this service is documented to emit
+ * ('transaction' | 'account' | 'goal' | 'loan' | 'group', plus the other
+ * locally-synced tables); an entity type outside this map gets no deepLink
+ * at all rather than a guessed page that may not exist.
+ */
+const SYNC_ENTITY_DEEP_LINKS: Record<string, string> = {
+  transaction: '/transactions',
+  account: '/accounts',
+  goal: '/goals',
+  loan: '/loans',
+  group: '/groups',
+  investment: '/investments',
+  friend: '/friends',
+  todo: '/todo-lists',
+};
+
+/**
  * Cross-Device Sync Notification Service
  * Handles broadcasting notifications and sync events across user devices.
  * Async channels (email/push) are delivered by the notification outbox drainer
@@ -114,6 +133,17 @@ export class CrossDeviceSyncService {
       );
 
       // Notify each device about pending sync
+      // '/sync' is not a registered frontend route (see App.tsx's page
+      // switch), and entityType is singular ('transaction') where registered
+      // page names are plural ('transactions') — falls through to the
+      // Dashboard default case either way. No page currently reads an
+      // `id` query param to scroll to or highlight a specific record, so
+      // there is nothing gained by preserving entityId here; route straight
+      // to the entity's own list page (falling back to no deep link — a
+      // plain notification with no "Open" button — for an entity type this
+      // doesn't recognise, rather than guessing a page that doesn't exist).
+      const entityDeepLink = SYNC_ENTITY_DEEP_LINKS[syncData.entityType];
+
       for (const device of targetDevices) {
         await this.broadcastToUserDevices(
           userId,
@@ -121,7 +151,7 @@ export class CrossDeviceSyncService {
             title: `${syncData.action.charAt(0).toUpperCase() + syncData.action.slice(1)} Sync Available`,
             message: `A ${syncData.entityType} was ${syncData.action}d on another device`,
             type: 'sync',
-            deepLink: `/sync?entity=${syncData.entityType}&id=${syncData.entityId}`,
+            ...(entityDeepLink ? { deepLink: entityDeepLink } : {}),
             priority: 'high',
             channels: ['app', 'push'],
           },

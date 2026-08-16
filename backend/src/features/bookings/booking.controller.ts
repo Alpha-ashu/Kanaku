@@ -92,7 +92,10 @@ export const createBooking = async (req: AuthRequest, res: Response) => {
         title: 'New Booking Request',
         message: `${clientName} has requested a ${sessionType} session`,
         category: 'booking',
-        deepLink: '/bookings',
+        // '/bookings' is not a registered frontend route (see App.tsx's page
+        // switch) — falls through to the Dashboard default case. Recipient is
+        // the ADVISOR; requests live under advisor-panel (advisor-only).
+        deepLink: '/advisor-panel',
       },
     });
 
@@ -230,7 +233,10 @@ export const acceptBooking = async (req: AuthRequest, res: Response) => {
         title: 'Booking Accepted',
         message: 'Your advisor has accepted your booking request',
         category: 'booking',
-        deepLink: `/sessions/${session.id}`,
+        // '/sessions/:id' is not a registered frontend route — falls through
+        // to the Dashboard default case. Recipient is the CLIENT; bookings
+        // live under book-advisor's "My Bookings" tab.
+        deepLink: '/book-advisor',
       },
     });
 
@@ -312,13 +318,15 @@ export const rescheduleBooking = async (req: AuthRequest, res: Response) => {
       },
     });
 
+    // '/bookings/:id' is not a registered frontend route — recipient is the
+    // CLIENT; bookings live under book-advisor's "My Bookings" tab.
     await prisma.notification.create({
       data: {
         userId: booking.clientId,
         title: 'Booking Reschedule Requested',
         message: `Your advisor proposed a new time: ${proposedDate} ${proposedTime}${reason ? ` (${reason})` : ''}`,
         category: 'booking',
-        deepLink: `/bookings/${id}`,
+        deepLink: '/book-advisor',
       },
     });
 
