@@ -38,6 +38,12 @@ export function usePullToRefresh({
   const isDraggingRef = useRef(false);
   const isRefreshingRef = useRef(false);
   const hapticTriggeredRef = useRef(false);
+  // Mirrors `pullDistance` for handleTouchEnd to read without depending on the
+  // state itself — pullDistance changes on every touchmove tick, and having
+  // handleTouchEnd depend on it would recreate the callback (and therefore
+  // tear down and re-attach the native touch listeners below) dozens of
+  // times per second during a single pull gesture.
+  const pullDistanceRef = useRef(0);
 
   const triggerHaptic = useCallback(() => {
     if (typeof window !== 'undefined' && 'vibrate' in navigator && typeof navigator.vibrate === 'function') {
@@ -54,6 +60,7 @@ export function usePullToRefresh({
     
     isRefreshingRef.current = true;
     setIsRefreshing(true);
+    pullDistanceRef.current = pullThreshold;
     setPullDistance(pullThreshold);
 
     try {
@@ -67,6 +74,7 @@ export function usePullToRefresh({
       setTimeout(() => {
         isRefreshingRef.current = false;
         setIsRefreshing(false);
+        pullDistanceRef.current = 0;
         setPullDistance(0);
         setIsReady(false);
         setIsPulling(false);
@@ -120,6 +128,7 @@ export function usePullToRefresh({
       // Only pull down when deltaY is positive and user is at top
       if (deltaY > 0 && isAtTop()) {
         const calculatedDistance = Math.min(deltaY * resistance, maxPullDistance);
+        pullDistanceRef.current = calculatedDistance;
         setPullDistance(calculatedDistance);
         setIsPulling(true);
 
@@ -138,6 +147,7 @@ export function usePullToRefresh({
           e.preventDefault();
         }
       } else {
+        pullDistanceRef.current = 0;
         setPullDistance(0);
         setIsPulling(false);
         setIsReady(false);
@@ -151,14 +161,15 @@ export function usePullToRefresh({
     isDraggingRef.current = false;
     setIsPulling(false);
 
-    if (pullDistance >= pullThreshold && !isRefreshingRef.current) {
+    if (pullDistanceRef.current >= pullThreshold && !isRefreshingRef.current) {
       void triggerRefresh();
     } else if (!isRefreshingRef.current) {
+      pullDistanceRef.current = 0;
       setPullDistance(0);
       setIsReady(false);
       hapticTriggeredRef.current = false;
     }
-  }, [pullDistance, pullThreshold, triggerRefresh]);
+  }, [pullThreshold, triggerRefresh]);
 
   // Attach non-passive native listeners to container if mounted
   useEffect(() => {
