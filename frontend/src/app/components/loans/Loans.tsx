@@ -301,18 +301,6 @@ export const Loans: React.FC = () => {
  <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">Loans & EMIs</h1>
  </div>
   <div className="flex items-center gap-3">
-    <Button
-      onClick={async () => {
-        await db.loans.bulkAdd(SEED_MOCK_LOANS);
-        toast.success('Added 6 realistic sample loans & EMIs!');
-      }}
-      variant="outline"
-      data-testid="loans-populate-sample-button"
-      className="h-12 px-4 rounded-2xl font-bold flex items-center gap-2 border-slate-200 hover:bg-slate-50 text-slate-700 text-xs"
-    >
-      <Plus size={16} className="text-indigo-600" />
-      <span>Populate Sample Data</span>
-    </Button>
     {canAddLoan && (
       <Button
         onClick={() => {

@@ -23,6 +23,7 @@ import {
  INCOME_CATEGORIES,
  normalizeCategorySelection,
 } from '@/lib/expenseCategories';
+import { useCategoryNames } from '@/hooks/useCategoryOptions';
 import { ReceiptScanner, type ReceiptScanPayload } from '@/app/components/transactions/ReceiptScanner';
 import { getCategoryCartoonIcon } from '@/app/components/ui/CartoonCategoryIcons';
 import { SearchableDropdown } from '@/app/components/ui/SearchableDropdown';
@@ -46,6 +47,8 @@ interface GroupParticipantDraft {
 }
 
 // --- Constants & Helpers ---
+// Built-ins only; the picker below reads through useCategoryNames so the user's
+// own categories (including ones the importer created) appear here too.
 const BUILTIN_CATEGORIES = {
  expense: Object.values(EXPENSE_CATEGORIES as Record<string, any>).map(cat => cat.name as string),
  income: Object.values(INCOME_CATEGORIES as Record<string, any>).map(cat => cat.name as string),
@@ -129,7 +132,9 @@ const CategoryGrid = ({
   onSelect: (cat: string) => void,
   aiSuggested?: string
 }) => {
-  const categories = type === 'expense' ? BUILTIN_CATEGORIES.expense : BUILTIN_CATEGORIES.income;
+  // Built-ins plus everything in db.categories, live — a category created in
+  // Settings or by an import is selectable here the moment it is written.
+  const categories = useCategoryNames(type);
   const [activePage, setActivePage] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
 

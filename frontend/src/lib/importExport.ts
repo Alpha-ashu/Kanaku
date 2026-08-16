@@ -119,26 +119,46 @@ export const uploadDataFromFile = async (file: File): Promise<void> => {
   }
 };
 
-// Create automatic backup
-export const createBackup = async (): Promise<string> => {
+export interface BackupSummary {
+  id: string;
+  filename: string;
+  size: number;
+  timestamp: string;
+}
+
+/** Newest-first; older backups beyond this are pruned on each new backup. */
+const MAX_STORED_BACKUPS = 10;
+
+const backupFilename = (timestamp: string) =>
+  `kanaku-backup-${timestamp.replace(/[:.]/g, '-')}.json`;
+
+/**
+ * Snapshot every local table into `db.backups`.
+ *
+ * The previous version serialized the whole database and then THREW THE JSON
+ * AWAY — it wrote only `{filename, size, timestamp}` into `db.settings`, so the
+ * UI listed backups that contained nothing and could never be restored. The
+ * payload now lands in `db.backups`, the table that already exists for it
+ * (`{ id, data, timestamp, size }`), which is also what `restoreBackup` reads.
+ */
+export const createBackup = async (): Promise<BackupSummary> => {
   try {
     const data = await exportDataToJSON();
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const filename = `finance-life-backup-${timestamp}.json`;
+    const createdAt = new Date();
+    const timestamp = createdAt.toISOString();
+    const id = `${createdAt.getTime()}`;
 
-    // Store backup info in settings
-    await db.settings.put({
-      key: `backup-${timestamp}`,
-      value: {
-        filename,
-        size: data.length,
-        timestamp: new Date().toISOString()
-      },
-      timestamp: new Date()
-    });
+    await db.backups.put({ id, data, timestamp: createdAt, size: data.length });
 
-    toast.success('Backup created successfully');
-    return data;
+    // Keep the newest MAX_STORED_BACKUPS. Unbounded snapshots of the entire
+    // database would grow IndexedDB without limit.
+    const stored = await db.backups.orderBy('timestamp').reverse().toArray();
+    if (stored.length > MAX_STORED_BACKUPS) {
+      await db.backups.bulkDelete(stored.slice(MAX_STORED_BACKUPS).map((entry) => entry.id));
+    }
+
+    toast.success('Backup created');
+    return { id, filename: backupFilename(timestamp), size: data.length, timestamp };
   } catch (error) {
     console.error('Backup creation failed:', error);
     toast.error('Failed to create backup');
@@ -146,19 +166,69 @@ export const createBackup = async (): Promise<string> => {
   }
 };
 
-// List available backups
-export const listBackups = async (): Promise<Array<{ filename: string; size: number; timestamp: string }>> => {
+/** List stored backups, newest first. */
+export const listBackups = async (): Promise<BackupSummary[]> => {
   try {
-    const backups = await db.settings
-      .where('key')
-      .startsWith('backup-')
-      .toArray();
-
-    return backups.map(b => b.value).sort((a, b) => 
-      new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-    );
+    const stored = await db.backups.orderBy('timestamp').reverse().toArray();
+    return stored.map((entry) => {
+      const timestamp = new Date(entry.timestamp).toISOString();
+      return { id: entry.id, filename: backupFilename(timestamp), size: entry.size, timestamp };
+    });
   } catch (error) {
     console.error('Failed to list backups:', error);
     return [];
+  }
+};
+
+/**
+ * Save a stored backup to the user's device. A backup that only ever lives in
+ * this browser's IndexedDB does not survive the thing a backup exists for —
+ * clearing site data, losing the device, reinstalling.
+ */
+export const downloadBackup = async (backupId: string): Promise<void> => {
+  const entry = await db.backups.get(backupId);
+  if (!entry) {
+    toast.error('Backup not found');
+    return;
+  }
+
+  const timestamp = new Date(entry.timestamp).toISOString();
+  const url = URL.createObjectURL(new Blob([entry.data], { type: 'application/json' }));
+  try {
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = backupFilename(timestamp);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  } finally {
+    // Revoke after the click has been dispatched, or the download aborts.
+    setTimeout(() => URL.revokeObjectURL(url), 10_000);
+  }
+};
+
+/** Replace all local data with a stored backup's contents. */
+export const restoreBackup = async (backupId: string): Promise<void> => {
+  const entry = await db.backups.get(backupId);
+  if (!entry) {
+    throw new Error('Backup not found');
+  }
+  await importDataFromJSON(entry.data);
+};
+
+/**
+ * One-time cleanup of the metadata-only rows the old createBackup() left in
+ * `db.settings`. They hold no data, so they can only mislead — a user seeing
+ * them listed would believe they had restorable backups.
+ */
+export const purgeLegacyBackupRecords = async (): Promise<number> => {
+  try {
+    const legacy = await db.settings.where('key').startsWith('backup-').toArray();
+    if (legacy.length === 0) return 0;
+    await db.settings.bulkDelete(legacy.map((row) => row.key));
+    return legacy.length;
+  } catch (error) {
+    console.error('Failed to purge legacy backup records:', error);
+    return 0;
   }
 };

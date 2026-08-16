@@ -17,10 +17,13 @@ import { type Account, db } from '@/lib/database';
 import { INCOME_CATEGORIES, getExpenseCategoryNames } from '@/lib/expenseCategories';
 import {
  smartExpenseImportService,
+ IMPORT_COLUMN_FIELDS,
+ type ImportColumnMapping,
  type ImportPreviewRow,
  type SmartImportPreview,
  type ThirdPartyImportResult,
 } from '@/services/smartExpenseImportService';
+import { syncCategories } from '@/services/featureSyncService';
 
 interface ImportDataModalProps {
  accounts: Account[];
@@ -57,6 +60,13 @@ export const ImportDataModal: React.FC<ImportDataModalProps> = ({
  const [preview, setPreview] = useState<SmartImportPreview | null>(null);
  const [rows, setRows] = useState<ImportPreviewRow[]>([]);
 
+ // Manual column mapping — the fallback when auto-detection guesses wrong or
+ // finds nothing. Genuinely generic files (an app this importer has never seen)
+ // rely on this rather than a hardcoded list of known export formats.
+ const [columnMapping, setColumnMapping] = useState<ImportColumnMapping>({});
+ const [showMapping, setShowMapping] = useState(false);
+ const [isRemapping, setIsRemapping] = useState(false);
+
  // Merge built-in categories with any user-created custom categories from prior imports
  const dbCustomCategories = useLiveQuery(
  () => db.categories.filter((c) => !c.deletedAt).toArray(),
@@ -74,6 +84,14 @@ export const ImportDataModal: React.FC<ImportDataModalProps> = ({
  .filter((c) => c.type === 'income' && !BUILTIN_INCOME_CATEGORIES.includes(c.name))
  .map((c) => c.name),
  ], [dbCustomCategories]);
+ // A transfer moves money between the user's own accounts, so it has no
+ // spending or earning category. Offering the income list (the old `expense ?
+ // … : income` fallthrough did) invited the user to label it as real income.
+ const categoryOptionsForRow = (row: ImportPreviewRow): string[] => {
+   if (row.transactionType === 'transfer') return [row.category];
+   return row.transactionType === 'expense' ? expenseCategoryOptions : incomeCategoryOptions;
+ };
+
  const [fallbackAccountId, setFallbackAccountId] = useState<number>(accounts[0]?.id ?? 0);
  const [skipDuplicates, setSkipDuplicates] = useState(true);
  const [isParsing, setIsParsing] = useState(false);
@@ -106,6 +124,8 @@ export const ImportDataModal: React.FC<ImportDataModalProps> = ({
  setPreview(null);
  setRows([]);
  setImportReport(null);
+ setColumnMapping({});
+ setShowMapping(false);
  setIsParsing(true);
 
  try {
@@ -115,12 +135,43 @@ export const ImportDataModal: React.FC<ImportDataModalProps> = ({
  setPreview(nextPreview);
  if (nextPreview.kind === 'third-party') {
  setRows(nextPreview.rows);
+ // Auto-detection found nothing for a required field (Date or Amount) —
+ // that is why rows are about to show as invalid. Open the mapping step
+ // immediately instead of leaving the user to guess why the preview looks
+ // empty or broken.
+ if (nextPreview.unmappedRequiredFields.length > 0) {
+ setShowMapping(true);
+ }
  }
  } catch (error) {
  console.error('Import preview failed:', error);
  toast.error('Could not read this file');
  } finally {
  setIsParsing(false);
+ }
+ };
+
+ // Re-run analysis with the user's column choices. Kept separate from selection
+ // so choosing a column doesn't re-parse on every click — the user confirms with
+ // "Apply mapping" once they've set every field they care about.
+ const handleApplyMapping = async () => {
+ if (!selectedFile) return;
+ setIsRemapping(true);
+ try {
+ const nextPreview = await smartExpenseImportService.analyzeFile(selectedFile, {
+ defaultAccountId: fallbackAccountId,
+ columnMapping,
+ });
+ setPreview(nextPreview);
+ if (nextPreview.kind === 'third-party') {
+ setRows(nextPreview.rows);
+ }
+ toast.success('Mapping applied');
+ } catch (error) {
+ console.error('Re-mapping failed:', error);
+ toast.error('Could not apply this mapping');
+ } finally {
+ setIsRemapping(false);
  }
  };
 
@@ -187,6 +238,10 @@ export const ImportDataModal: React.FC<ImportDataModalProps> = ({
 
  setImportReport(result);
  toast.success(`Imported ${result.importedCount} record${result.importedCount === 1 ? '' : 's'}`);
+        // An import routinely creates categories for labels the app had never
+        // seen. Push them now so they reach the user's other devices instead of
+        // waiting for the next cold start.
+        void syncCategories();
  onImported?.();
  } catch (error) {
  console.error('Import failed:', error);
@@ -523,6 +578,71 @@ export const ImportDataModal: React.FC<ImportDataModalProps> = ({
 
  {!importReport && selectedFile && preview?.kind === 'third-party' && !isParsing && (
  <div className="space-y-5">
+ {preview.unmappedRequiredFields.length > 0 && (
+ <div className="rounded-[24px] border border-red-200 bg-red-50 px-4 py-4 text-sm text-red-900">
+ Couldn't automatically find a column for{' '}
+ {preview.unmappedRequiredFields
+ .map((field) => IMPORT_COLUMN_FIELDS.find((entry) => entry.field === field)?.label ?? field)
+ .join(' and ')}
+ . Use "Map columns" below to point it at the right one.
+ </div>
+ )}
+
+ <div className="rounded-[28px] border border-gray-200 bg-white/80 p-4">
+ <button
+ type="button"
+ onClick={() => setShowMapping((value) => !value)}
+ className="flex w-full items-center justify-between text-left"
+ data-testid="import-data-modal-toggle-mapping"
+ >
+ <div>
+ <p className="text-sm font-semibold text-gray-900">Map columns</p>
+ <p className="text-xs text-gray-500">
+ {Object.keys(preview.columnMapping).length > 0
+ ? `${Object.keys(preview.columnMapping).length} column${Object.keys(preview.columnMapping).length === 1 ? '' : 's'} mapped manually.`
+ : 'Auto-detected. Open this if a column looks wrong or a field wasn\'t found.'}
+ </p>
+ </div>
+ <span className="text-sm font-medium text-gray-600">{showMapping ? 'Hide' : 'Show'}</span>
+ </button>
+
+ {showMapping && (
+ <div className="mt-4 space-y-3">
+ <div className="grid gap-3 sm:grid-cols-2">
+ {IMPORT_COLUMN_FIELDS.map(({ field, label, required }) => (
+ <div key={field}>
+ <label className="text-xs font-semibold uppercase tracking-[0.1em] text-gray-500">
+ {label}{required && ' *'}
+ </label>
+ <select
+ value={columnMapping[field] ?? ''}
+ onChange={(event) =>
+ setColumnMapping((prev) => ({ ...prev, [field]: event.target.value || undefined }))
+ }
+ className="mt-1 h-11 w-full rounded-xl border border-gray-200 bg-white px-3 text-sm text-gray-900 outline-none transition focus:border-black/20 focus:ring-4 focus:ring-black/10"
+ data-testid={`import-data-modal-mapping-${field}`}
+ >
+ <option value="">Auto-detect</option>
+ {preview.sourceHeaders.map((header) => (
+ <option key={header} value={header}>{header}</option>
+ ))}
+ </select>
+ </div>
+ ))}
+ </div>
+ <button
+ type="button"
+ onClick={handleApplyMapping}
+ disabled={isRemapping}
+ className="rounded-full bg-black px-4 py-2 text-sm font-medium text-white transition active:scale-95 disabled:opacity-50"
+ data-testid="import-data-modal-apply-mapping"
+ >
+ {isRemapping ? 'Applying…' : 'Apply mapping'}
+ </button>
+ </div>
+ )}
+ </div>
+
  {accounts.length === 0 && (
  <div className="rounded-[24px] border border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-900">
  No accounts exist yet. The importer will create accounts automatically from the file or use a generic imported account when needed.
@@ -634,6 +754,9 @@ export const ImportDataModal: React.FC<ImportDataModalProps> = ({
 
  <p className="mt-2 text-sm font-medium text-gray-900">{row.description}</p>
  <p className="mt-1 text-xs text-gray-600">Account: {row.resolvedAccountName}</p>
+ {row.transactionType === 'transfer' && row.transferToAccountName && (
+ <p className="mt-1 text-xs text-gray-600">To: {row.transferToAccountName}</p>
+ )}
  {row.merchant && <p className="mt-1 text-xs text-gray-600">Merchant: {row.merchant}</p>}
 
  <div className="mt-3">
@@ -646,7 +769,7 @@ export const ImportDataModal: React.FC<ImportDataModalProps> = ({
  className="mt-1 h-11 w-full rounded-xl border border-gray-200 bg-white px-3 text-sm text-gray-900 outline-none transition focus:border-black/20 focus:ring-4 focus:ring-black/10"
  aria-label={`Category for row ${row.rowNumber}`}
  >
- {(row.transactionType === 'expense' ? expenseCategoryOptions : incomeCategoryOptions)
+ {categoryOptionsForRow(row)
  .concat(row.category)
  .filter((value, index, array) => array.indexOf(value) === index)
  .map((value) => (
@@ -690,6 +813,9 @@ export const ImportDataModal: React.FC<ImportDataModalProps> = ({
  <td className="px-4 py-3 font-semibold text-gray-900">{formatAmount(row.amount)}</td>
  <td className="px-4 py-3 text-gray-600">
  <div className="font-medium text-gray-900">{row.resolvedAccountName}</div>
+ {row.transactionType === 'transfer' && row.transferToAccountName && (
+ <p className="mt-1 text-xs text-gray-500">To: {row.transferToAccountName}</p>
+ )}
  {(row.sourceAccountName || row.sourcePaymentMethod) && (
  <p className="mt-1 text-xs text-gray-500">
  Source: {row.sourceAccountName || row.sourcePaymentMethod}
@@ -703,7 +829,7 @@ export const ImportDataModal: React.FC<ImportDataModalProps> = ({
  className="h-11 min-w-[200px] rounded-2xl border border-gray-200 bg-white px-3 text-sm font-medium text-gray-900 outline-none transition focus:border-black/20 focus:ring-4 focus:ring-black/10"
  aria-label={`Category for row ${row.rowNumber}`}
  >
- {(row.transactionType === 'expense' ? expenseCategoryOptions : incomeCategoryOptions)
+ {categoryOptionsForRow(row)
  .concat(row.category)
  .filter((value, index, array) => array.indexOf(value) === index)
  .map((value) => (

@@ -237,4 +237,142 @@ describe('SmartExpenseImportService Integration Test', () => {
             expect(preview.rows[2]?.resolvedAccountName).toBe('Google Pay Wallet');
         }
     });
+
+    // A transfer moves money between two of the user's OWN accounts. Recording
+    // it as income or expense double-counts it — the source account correctly
+    // falls, but the same rupee also gets counted as spent or earned, corrupting
+    // both the period's totals and net worth. This is the failure mode the
+    // 'transfer' transactionType and TRANSFER_TO_KEYS detection exist to prevent.
+    describe('transfers', () => {
+        it('classifies a row with an explicit "transfer" type and applies both legs', async () => {
+            const payload = JSON.stringify([
+                {
+                    date: '2026-03-10',
+                    amount: 2000,
+                    type: 'transfer',
+                    account: 'ICICI Savings',
+                    toAccount: 'Cash Wallet',
+                    description: 'Move to wallet',
+                },
+            ]);
+            const file = new File([payload], 'transfer.json', { type: 'application/json' });
+
+            // @ts-ignore
+            const preview = await smartExpenseImportService.analyzeFile(file, { defaultAccountId: 1 });
+
+            expect(preview.kind).toBe('third-party');
+            if (preview.kind !== 'third-party') return;
+            expect(preview.rows).toHaveLength(1);
+            const row = preview.rows[0];
+            expect(row.transactionType).toBe('transfer');
+            expect(row.resolvedAccountName).toBe('ICICI Savings');
+            expect(row.transferToAccountName).toBe('Cash Wallet');
+            expect(row.transferToAccountId).toBe(2); // Cash Wallet, from the mocked accounts
+            // A transfer is not a spending/earning category — it must not land in
+            // the expense or income taxonomy.
+            expect(row.category).not.toBe('');
+        });
+
+        it('infers a transfer from a destination-account column even with no type field', async () => {
+            const payload = JSON.stringify([
+                {
+                    date: '2026-03-11',
+                    amount: 500,
+                    account: 'ICICI Savings',
+                    toAccount: 'Cash Wallet',
+                    description: 'Weekly cash top-up',
+                },
+            ]);
+            const file = new File([payload], 'transfer-inferred.json', { type: 'application/json' });
+
+            // @ts-ignore
+            const preview = await smartExpenseImportService.analyzeFile(file, { defaultAccountId: 1 });
+
+            expect(preview.kind).toBe('third-party');
+            if (preview.kind !== 'third-party') return;
+            expect(preview.rows[0]?.transactionType).toBe('transfer');
+        });
+
+        it('does not let income-sounding narrative override an explicit transfer', async () => {
+            // "credited" is a hard income signal elsewhere in this service — a
+            // transfer description routinely uses exactly this wording ("credited
+            // to savings"), so the transfer classification must win.
+            const payload = JSON.stringify([
+                {
+                    date: '2026-03-12',
+                    amount: 1000,
+                    type: 'transfer',
+                    account: 'ICICI Savings',
+                    toAccount: 'Cash Wallet',
+                    description: 'Amount credited to savings account',
+                },
+            ]);
+            const file = new File([payload], 'transfer-narrative.json', { type: 'application/json' });
+
+            // @ts-ignore
+            const preview = await smartExpenseImportService.analyzeFile(file, { defaultAccountId: 1 });
+
+            expect(preview.kind).toBe('third-party');
+            if (preview.kind !== 'third-party') return;
+            expect(preview.rows[0]?.transactionType).toBe('transfer');
+        });
+    });
+
+    // Manual column mapping is the fallback for a file auto-detection cannot
+    // read at all — a genuinely unseen third-party app, or ambiguous headers.
+    describe('manual column mapping', () => {
+        it('reports unmappedRequiredFields when neither date nor amount can be found', async () => {
+            const payload = JSON.stringify([
+                { txn_when: '2026-03-01', money: 100, note: 'Coffee' },
+            ]);
+            const file = new File([payload], 'unrecognised.json', { type: 'application/json' });
+
+            // @ts-ignore
+            const preview = await smartExpenseImportService.analyzeFile(file, { defaultAccountId: 1 });
+
+            expect(preview.kind).toBe('third-party');
+            if (preview.kind !== 'third-party') return;
+            expect(preview.unmappedRequiredFields).toEqual(expect.arrayContaining(['date', 'amount']));
+            expect(preview.sourceHeaders).toEqual(expect.arrayContaining(['txn_when', 'money', 'note']));
+        });
+
+        it('recovers a row once the user maps date/amount to the real columns', async () => {
+            const payload = JSON.stringify([
+                { txn_when: '2026-03-01', money: 100, note: 'Coffee' },
+            ]);
+            const file = new File([payload], 'unrecognised.json', { type: 'application/json' });
+
+            // @ts-ignore
+            const preview = await smartExpenseImportService.analyzeFile(file, {
+                defaultAccountId: 1,
+                columnMapping: { date: 'txn_when', amount: 'money' },
+            });
+
+            expect(preview.kind).toBe('third-party');
+            if (preview.kind !== 'third-party') return;
+            expect(preview.unmappedRequiredFields).toHaveLength(0);
+            expect(preview.rows[0]?.errors).toHaveLength(0);
+            expect(preview.rows[0]?.amount).toBe(100);
+            expect(preview.rows[0]?.date).toBeInstanceOf(Date);
+        });
+
+        it('a manual mapping overrides a column auto-detection would otherwise pick', async () => {
+            // Two candidate amount-like columns; auto-detection would take
+            // `amount`, but the user knows `total` is the real figure here.
+            const payload = JSON.stringify([
+                { date: '2026-03-01', amount: 1, total: 999, note: 'Adjustment row' },
+            ]);
+            const file = new File([payload], 'ambiguous.json', { type: 'application/json' });
+
+            // @ts-ignore
+            const preview = await smartExpenseImportService.analyzeFile(file, {
+                defaultAccountId: 1,
+                columnMapping: { amount: 'total' },
+            });
+
+            expect(preview.kind).toBe('third-party');
+            if (preview.kind !== 'third-party') return;
+            expect(preview.rows[0]?.amount).toBe(999);
+        });
+    });
 });

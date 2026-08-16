@@ -5,15 +5,16 @@ Three files, one job each:
 
 | File | Job |
 |------|-----|
-| `alert-rules.yaml` | The 5 alert rules (what fires and when). |
-| `notification-policy.yaml` | Routing + how often alerts repeat. |
+| `alert-rules.yaml` | The alert rules (what fires and when). |
+| `notification-policy.yaml` | Routing, grouping + how often alerts repeat. |
 | `contactpoints.yaml` | Where alerts go (webhook + email). |
+| `templates.yaml` | What the email says (`kanaku.email.body`). |
 
 ## The 5 rules
 
 | Rule | Severity | Fires when | On no data |
 |------|----------|-----------|-----------|
-| `kanaku-worker-stopped` | critical | outbox not drained in 5m | **OK** (silent) |
+| `kanaku-worker-stopped` | critical | app is `up` **and** outbox not drained in 5m | **OK** (silent) |
 | `kanaku-outbox-backlog` | warning | queue depth > 100 for 10m | **OK** (silent) |
 | `kanaku-notification-failures` | warning | failed deliveries > 0.1/s for 10m | **OK** (silent) |
 | `kanaku-api-error-rate` | critical | 5xx > 5% for 5m | **OK** (silent) |
@@ -33,12 +34,33 @@ app produces exactly **one** meaningful alert, not five.
 
 ## Routing & cadence (`notification-policy.yaml`)
 
-- **critical** → notify fast, repeat every **6h** until resolved.
-- **warning** (default route) → repeat every **4h**.
+- Everything in the **KANAKU folder groups into ONE notification** (`group_by:
+  grafana_folder`), so an incident that trips several rules sends a single email
+  listing all of them instead of one email per rule.
+- **critical** → first notification after 30s; **warning** after 60s.
+- A still-firing alert is re-sent every **24h**, not every few hours.
 - Resolved notifications are on, so you get an "all clear" too.
+- The email receiver uses `singleEmail: true`, so multiple instances of the same
+  alert arrive in one mail rather than one mail each.
 
-Tune `repeat_interval` here if alerts feel too frequent/rare. Do **not** lower the
-critical repeat below a few hours unless you have a pager rotation.
+Together these mean a normal incident costs **one email**, and an alert nobody
+has fixed yet costs **one reminder a day**. If you ever need per-rule threads
+back, set `group_by: ['grafana_folder', 'alertname']` (Grafana's default).
+
+Do **not** lower `repeat_interval` below a few hours unless you have a pager
+rotation — frequent repeats train you to filter the folder, which is how a real
+alert gets missed.
+
+## Email contents (`templates.yaml`)
+
+`kanaku.email.body` renders, for every firing alert: name, severity, service,
+the rule's `summary`, how long it has been firing, the **evaluated value** (the
+`A=0 B=0 C=1` line), the rule's `description` (its diagnostic steps), plus a
+one-click **Silence** link and a link to the rule in Grafana. Resolved alerts get
+a one-line entry with fired/cleared timestamps.
+
+If you add an alert rule, write a good `summary` and `description` — that is what
+lands in the email. Nothing else needs changing.
 
 ## Channels (`contactpoints.yaml`)
 

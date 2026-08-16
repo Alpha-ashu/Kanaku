@@ -62,6 +62,13 @@ interface SyncQueueItem {
 
 const MAX_SYNC_RETRIES = 10;
 
+// How long to wait before re-running the queue after it was deferred wholesale
+// because the backend was unreachable. Such a deferral leaves `retryCount`
+// untouched (nothing is wrong with the records), so the per-item exponential
+// ladder has nothing to climb off — without this the queue respun every 500ms
+// against a backend already known to be down.
+const SERVER_OUTAGE_RETRY_MS = 15_000;
+
 const SYNC_QUEUE_STORAGE_KEY = 'KANAKU_sync_queue_v3';
 const CORE_SYNC_TABLES: SyncedTableName[] = [
   'accounts',
@@ -253,6 +260,23 @@ const isConnectivityError = (error: any) => {
     message.includes('timeout') ||
     message.includes('timed out')
   );
+};
+
+/**
+ * A failure that is the SERVER's fault and is expected to clear on its own: 5xx
+ * (including the 502 the Vite dev proxy returns while the backend is still
+ * booting, and any gateway blip in prod) and 429.
+ *
+ * These must be classed with connectivity errors, not with generic per-item
+ * failures. Falling through to the generic branch incremented `retryCount` on
+ * every queued record for every attempt, so a backend that was merely down for
+ * a while burned all MAX_SYNC_RETRIES and the queue then *dropped* the records —
+ * discarding writes the user had already made locally. Nothing about the payload
+ * was wrong, so the retry budget should not move at all.
+ */
+export const isTransientServerError = (error: any) => {
+  const status = Number(error?.status ?? error?.statusCode ?? error?.response?.status ?? 0);
+  return status === 429 || (status >= 500 && status <= 599);
 };
 
 const isMissingRemoteRow = (error: any) =>
@@ -1161,6 +1185,7 @@ async function processPendingSyncQueueBackend(userId: string, pendingItems: Sync
 
   const completedKeys: string[] = [];
   const deferredItems: SyncQueueItem[] = [];
+  let outageDeferral = false;
 
   for (let index = 0; index < queue.length; index += 1) {
     const item = queue[index];
@@ -1191,7 +1216,11 @@ async function processPendingSyncQueueBackend(userId: string, pendingItems: Sync
         deferredItems.push({ ...item, retryCount: retryCount + 1 });
       }
     } catch (error) {
-      if (isConnectivityError(error)) {
+      if (isConnectivityError(error) || isTransientServerError(error)) {
+        // Defer the WHOLE remainder: every following record would only hit the
+        // same unreachable backend. retryCount is deliberately not incremented,
+        // so an outage can never exhaust the budget and drop pending writes.
+        outageDeferral = true;
         deferredItems.push(...queue.slice(index));
         break;
       }
@@ -1230,7 +1259,9 @@ async function processPendingSyncQueueBackend(userId: string, pendingItems: Sync
     );
 
     const maxRetry = Math.max(...deferredItems.map((i) => i.retryCount ?? 0), 1);
-    const backoff = Math.min(500 * 2 ** (maxRetry - 1), 30_000);
+    const backoff = outageDeferral
+      ? SERVER_OUTAGE_RETRY_MS
+      : Math.min(500 * 2 ** (maxRetry - 1), 30_000);
     scheduleQueueProcessing(backoff);
   }
 }
@@ -1279,6 +1310,7 @@ export async function processPendingSyncQueue() {
 
     const completedKeys: string[] = [];
     const deferredItems: SyncQueueItem[] = [];
+    let outageDeferral = false;
 
     for (let index = 0; index < queue.length; index += 1) {
       const item = queue[index];
@@ -1301,7 +1333,9 @@ export async function processPendingSyncQueue() {
           deferredItems.push({ ...item, retryCount: retryCount + 1 });
         }
       } catch (error) {
-        if (isConnectivityError(error)) {
+        if (isConnectivityError(error) || isTransientServerError(error)) {
+          // See the backend-path loop: whole-queue defer, retryCount untouched.
+          outageDeferral = true;
           deferredItems.push(...queue.slice(index));
           break;
         }
@@ -1339,7 +1373,9 @@ export async function processPendingSyncQueue() {
       );
 
       const maxRetry = Math.max(...deferredItems.map((i) => i.retryCount ?? 0), 1);
-      const backoff = Math.min(500 * 2 ** (maxRetry - 1), 30_000);
+      const backoff = outageDeferral
+        ? SERVER_OUTAGE_RETRY_MS
+        : Math.min(500 * 2 ** (maxRetry - 1), 30_000);
       scheduleQueueProcessing(backoff);
     }
   } finally {

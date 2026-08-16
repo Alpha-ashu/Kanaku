@@ -176,20 +176,21 @@ export const RecurringTransactions: React.FC = () => {
   return (
     <CenteredLayout>
       <div className="w-full">
-        <div className="pb-4 lg:pb-6 flex items-center justify-between flex-wrap gap-4">
+        <div className="pb-4 lg:pb-6">
           <PageHeader
             title="Recurring Transactions"
             subtitle="Manage and forecast repeating income, bills, and subscription profiles"
             icon={<RefreshCw className="text-indigo-600" size={20} />}
-          />
-          <button
-            onClick={() => setShowAddForm((v) => !v)}
-            className="bg-indigo-600 text-white px-5 py-3.5 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-indigo-700 active:scale-95 transition-all shadow-lg shadow-indigo-100 flex items-center gap-2"
-            data-testid="recurring-toggle-form-button"
           >
-            <Plus size={16} />
-            {showAddForm ? 'Close' : 'Create Recurring'}
-          </button>
+            <button
+              onClick={() => setShowAddForm((v) => !v)}
+              className="bg-indigo-600 text-white px-5 py-3.5 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-indigo-700 active:scale-95 transition-all shadow-lg shadow-indigo-100 flex items-center gap-2"
+              data-testid="recurring-toggle-form-button"
+            >
+              <Plus size={16} />
+              {showAddForm ? 'Close' : 'Create Recurring'}
+            </button>
+          </PageHeader>
         </div>
 
         {/* Forecast Card */}

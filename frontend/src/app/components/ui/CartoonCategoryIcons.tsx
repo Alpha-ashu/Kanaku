@@ -402,80 +402,317 @@ export const ChecklistIcon: React.FC<IconProps> = ({ size = 48, className = '' }
  </svg>
 );
 
+export const DashboardIcon: React.FC<IconProps> = ({ size = 48, className = '' }) => (
+  <svg width={size} height={size} viewBox="0 0 64 64" className={className}>
+    <defs>
+      <linearGradient id="dashboardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#3B82F6" />
+        <stop offset="100%" stopColor="#1D4ED8" />
+      </linearGradient>
+    </defs>
+    <circle cx="32" cy="32" r="30" fill="url(#dashboardGrad)" />
+    <g>
+      <rect x="16" y="16" width="13" height="13" rx="3" fill="white" />
+      <rect x="35" y="16" width="13" height="13" rx="3" fill="white" />
+      <rect x="16" y="35" width="13" height="13" rx="3" fill="white" />
+      <rect x="35" y="35" width="13" height="13" rx="3" fill="#93C5FD" />
+      <circle cx="22.5" cy="22.5" r="2" fill="#3B82F6" />
+      <circle cx="41.5" cy="22.5" r="2" fill="#3B82F6" />
+      <circle cx="22.5" cy="41.5" r="2" fill="#3B82F6" />
+      <path d="M39 41.5 L44 41.5" stroke="#1D4ED8" strokeWidth="2" strokeLinecap="round" />
+    </g>
+    <circle cx="32" cy="32" r="28" fill="white" opacity="0.15" />
+  </svg>
+);
+
+export const TransactionsIcon: React.FC<IconProps> = ({ size = 48, className = '' }) => (
+  <svg width={size} height={size} viewBox="0 0 64 64" className={className}>
+    <defs>
+      <linearGradient id="transGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#10B981" />
+        <stop offset="100%" stopColor="#059669" />
+      </linearGradient>
+    </defs>
+    <circle cx="32" cy="32" r="30" fill="url(#transGrad)" />
+    <g>
+      <path d="M18 16 L46 16 L46 48 L42 45 L38 48 L34 45 L30 48 L26 45 L22 48 L18 45 Z" fill="white" />
+      <line x1="24" y1="24" x2="40" y2="24" stroke="#D1D5DB" strokeWidth="2" strokeLinecap="round" />
+      <line x1="24" y1="30" x2="36" y2="30" stroke="#D1D5DB" strokeWidth="2" strokeLinecap="round" />
+      <circle cx="32" cy="38" r="4.5" fill="#10B981" />
+      <text x="32" y="41.5" textAnchor="middle" fontSize="7" fontWeight="bold" fill="white">₹</text>
+    </g>
+    <circle cx="32" cy="32" r="28" fill="white" opacity="0.15" />
+  </svg>
+);
+
+export const ReportsIcon: React.FC<IconProps> = ({ size = 48, className = '' }) => (
+  <svg width={size} height={size} viewBox="0 0 64 64" className={className}>
+    <defs>
+      <linearGradient id="reportGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#8B5CF6" />
+        <stop offset="100%" stopColor="#6D28D9" />
+      </linearGradient>
+    </defs>
+    <circle cx="32" cy="32" r="30" fill="url(#reportGrad)" />
+    <g>
+      <rect x="18" y="34" width="6" height="14" rx="2" fill="white" />
+      <rect x="29" y="24" width="6" height="24" rx="2" fill="#FDE047" />
+      <rect x="40" y="16" width="6" height="32" rx="2" fill="white" />
+      <path d="M21 30 L32 20 L43 12" fill="none" stroke="#FDE047" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+    </g>
+    <circle cx="32" cy="32" r="28" fill="white" opacity="0.15" />
+  </svg>
+);
+
+export const AdvisorIcon: React.FC<IconProps> = ({ size = 48, className = '' }) => (
+  <svg width={size} height={size} viewBox="0 0 64 64" className={className}>
+    <defs>
+      <linearGradient id="advisorGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#0EA5E9" />
+        <stop offset="100%" stopColor="#0284C7" />
+      </linearGradient>
+    </defs>
+    <circle cx="32" cy="32" r="30" fill="url(#advisorGrad)" />
+    <g>
+      <circle cx="32" cy="22" r="7" fill="white" />
+      <path d="M20 44 C20 35 25 33 32 33 C39 33 44 35 44 44 Z" fill="white" />
+      <circle cx="42" cy="24" r="3" fill="#FDE047" />
+      <path d="M30 35 L32 40 L34 35" fill="#0284C7" />
+    </g>
+    <circle cx="32" cy="32" r="28" fill="white" opacity="0.15" />
+  </svg>
+);
+
+export const ScannerIcon: React.FC<IconProps> = ({ size = 48, className = '' }) => (
+  <svg width={size} height={size} viewBox="0 0 64 64" className={className}>
+    <defs>
+      <linearGradient id="scannerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#EC4899" />
+        <stop offset="100%" stopColor="#DB2777" />
+      </linearGradient>
+    </defs>
+    <circle cx="32" cy="32" r="30" fill="url(#scannerGrad)" />
+    <g>
+      <rect x="20" y="18" width="24" height="28" rx="2" fill="white" />
+      <line x1="24" y1="24" x2="36" y2="24" stroke="#F472B6" strokeWidth="2" strokeLinecap="round" />
+      <line x1="24" y1="30" x2="40" y2="30" stroke="#E5E7EB" strokeWidth="2" strokeLinecap="round" />
+      <line x1="24" y1="36" x2="34" y2="36" stroke="#E5E7EB" strokeWidth="2" strokeLinecap="round" />
+      <path d="M15 22 L15 17 L20 17" fill="none" stroke="#FDE047" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M49 22 L49 17 L44 17" fill="none" stroke="#FDE047" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M15 42 L15 47 L20 47" fill="none" stroke="#FDE047" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M49 42 L49 47 L44 47" fill="none" stroke="#FDE047" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+      <line x1="16" y1="32" x2="48" y2="32" stroke="#FDE047" strokeWidth="2" strokeLinecap="round" opacity="0.9" />
+    </g>
+    <circle cx="32" cy="32" r="28" fill="white" opacity="0.15" />
+  </svg>
+);
+
+export const NotificationBellIcon: React.FC<IconProps> = ({ size = 48, className = '' }) => (
+  <svg width={size} height={size} viewBox="0 0 64 64" className={className}>
+    <defs>
+      <linearGradient id="bellGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#F59E0B" />
+        <stop offset="100%" stopColor="#D97706" />
+      </linearGradient>
+    </defs>
+    <circle cx="32" cy="32" r="30" fill="url(#bellGrad)" />
+    <g>
+      <path d="M32 16 C30 16 28 17 28 19 L28 20 C24 23 22 27 22 34 L20 38 C19 40 21 42 23 42 L41 42 C43 42 45 40 44 38 L42 34 C42 27 40 23 36 20 L36 19 C36 17 34 16 32 16 Z" fill="white" />
+      <circle cx="32" cy="46" r="3" fill="white" />
+      <circle cx="44" cy="20" r="3.5" fill="#EF4444" stroke="white" strokeWidth="1" />
+    </g>
+    <circle cx="32" cy="32" r="28" fill="white" opacity="0.15" />
+  </svg>
+);
+
+export const RecurringIcon: React.FC<IconProps> = ({ size = 48, className = '' }) => (
+  <svg width={size} height={size} viewBox="0 0 64 64" className={className}>
+    <defs>
+      <linearGradient id="recurGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#06B6D4" />
+        <stop offset="100%" stopColor="#0891B2" />
+      </linearGradient>
+    </defs>
+    <circle cx="32" cy="32" r="30" fill="url(#recurGrad)" />
+    <g>
+      <path d="M22 28 C24 22 30 18 37 20 C42 21 45 25 46 29" fill="none" stroke="white" strokeWidth="3.5" strokeLinecap="round" />
+      <path d="M46 23 L46 29 L40 29" fill="none" stroke="white" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M42 36 C40 42 34 46 27 44 C22 43 19 39 18 35" fill="none" stroke="white" strokeWidth="3.5" strokeLinecap="round" />
+      <path d="M18 41 L18 35 L24 35" fill="none" stroke="white" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="32" cy="32" r="3" fill="#FDE047" />
+    </g>
+    <circle cx="32" cy="32" r="28" fill="white" opacity="0.15" />
+  </svg>
+);
+
+export const BudgetAlertIcon: React.FC<IconProps> = ({ size = 48, className = '' }) => (
+  <svg width={size} height={size} viewBox="0 0 64 64" className={className}>
+    <defs>
+      <linearGradient id="alertGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#F43F5E" />
+        <stop offset="100%" stopColor="#E11D48" />
+      </linearGradient>
+    </defs>
+    <circle cx="32" cy="32" r="30" fill="url(#alertGrad)" />
+    <g>
+      <path d="M32 16 C30 16 28 17 28 19 L28 20 C24 23 22 27 22 34 L20 38 C19 40 21 42 23 42 L41 42 C43 42 45 40 44 38 L42 34 C42 27 40 23 36 20 L36 19 C36 17 34 16 32 16 Z" fill="white" />
+      <circle cx="32" cy="46" r="3" fill="white" />
+      <line x1="32" y1="25" x2="32" y2="33" stroke="#E11D48" strokeWidth="2.5" strokeLinecap="round" />
+      <circle cx="32" cy="37" r="1.5" fill="#E11D48" />
+    </g>
+    <circle cx="32" cy="32" r="28" fill="white" opacity="0.15" />
+  </svg>
+);
+
+export const SettingsIcon: React.FC<IconProps> = ({ size = 48, className = '' }) => (
+  <svg width={size} height={size} viewBox="0 0 64 64" className={className}>
+    <defs>
+      <linearGradient id="settingsGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#64748B" />
+        <stop offset="100%" stopColor="#475569" />
+      </linearGradient>
+    </defs>
+    <circle cx="32" cy="32" r="30" fill="url(#settingsGrad)" />
+    <g>
+      <circle cx="32" cy="32" r="8" fill="white" />
+      <circle cx="32" cy="32" r="4.5" fill="#475569" />
+      <rect x="30" y="16" width="4" height="6" rx="1.5" fill="white" />
+      <rect x="30" y="42" width="4" height="6" rx="1.5" fill="white" />
+      <rect x="16" y="30" width="6" height="4" rx="1.5" fill="white" />
+      <rect x="42" y="30" width="6" height="4" rx="1.5" fill="white" />
+      <rect x="20" y="20" width="4" height="6" rx="1.5" fill="white" transform="rotate(45 22 23)" />
+      <rect x="38" y="38" width="4" height="6" rx="1.5" fill="white" transform="rotate(45 40 41)" />
+      <rect x="38" y="20" width="4" height="6" rx="1.5" fill="white" transform="rotate(-45 40 23)" />
+      <rect x="20" y="38" width="4" height="6" rx="1.5" fill="white" transform="rotate(-45 22 41)" />
+    </g>
+    <circle cx="32" cy="32" r="28" fill="white" opacity="0.15" />
+  </svg>
+);
+
+export const LoanIcon: React.FC<IconProps> = ({ size = 48, className = '' }) => (
+  <svg width={size} height={size} viewBox="0 0 64 64" className={className}>
+    <defs>
+      <linearGradient id="loanGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#EF4444" />
+        <stop offset="100%" stopColor="#DC2626" />
+      </linearGradient>
+    </defs>
+    <circle cx="32" cy="32" r="30" fill="url(#loanGrad)" />
+    <g>
+      <circle cx="32" cy="22" r="8" fill="#FDE047" />
+      <text x="32" y="26" textAnchor="middle" fontSize="11" fontWeight="black" fill="#B45309">₹</text>
+      <path d="M18 42 L28 35 C30 33 34 33 36 35 L46 42" fill="none" stroke="white" strokeWidth="3.5" strokeLinecap="round" />
+      <path d="M22 46 L30 40 L34 40 L42 46" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" />
+    </g>
+    <circle cx="32" cy="32" r="28" fill="white" opacity="0.15" />
+  </svg>
+);
+
 // --- MAPPING ---
 
 export const getCategoryCartoonIcon = (categoryName: string, size: number = 32): React.ReactNode => {
- const normalized = categoryName.toLowerCase();
- 
- // Create a hidden SVG container for gradients to work globally if needed
- // But here we'll just include Gradients once in the UI if possible.
- // For now, each icon has its own simple definition or we use Gradients component.
+  const normalized = categoryName.toLowerCase();
+  
+  // Create a hidden SVG container for gradients to work globally if needed
+  // But here we'll just include Gradients once in the UI if possible.
+  // For now, each icon has its own simple definition or we use Gradients component.
 
- const iconMap: Record<string, React.ReactNode> = {
- // Expense
- 'housing': <HousingIcon size={size} />,
- 'housing / rent': <HousingIcon size={size} />,
- 'home maintenance': <HousingIcon size={size} />,
- 'utilities': <UtilitiesIcon size={size} />,
- 'food & dining': <FoodIcon size={size} />,
- 'transportation': <TransportationIcon size={size} />,
- 'vehicle': <TransportationIcon size={size} />,
- 'vehicle maintenance': <TransportationIcon size={size} />,
- 'health & medical': <HealthIcon size={size} />,
- 'healthcare': <HealthIcon size={size} />,
- 'shopping': <ShoppingIcon size={size} />,
- 'electronics & gadgets': <ElectronicsIcon size={size} />,
- 'subscriptions': <EntertainmentIcon size={size} />,
- 'entertainment': <EntertainmentIcon size={size} />,
- 'travel': <TravelIcon size={size} />,
- 'travel & vacation': <TravelIcon size={size} />,
- 'education': <EducationIcon size={size} />,
- 'gifts & donations': <GiftsIcon size={size} />,
- 'donations & charity': <GiftsIcon size={size} />,
- 'family & kids': <FamilyIcon size={size} />,
- 'personal care': <PersonalCareIcon size={size} />,
- 'fitness & sports': <FitnessIcon size={size} />,
- 'pets': <PetsIcon size={size} />,
- 'investments': <InvestmentIcon size={size} />,
- 'taxes & government': <TaxesIcon size={size} />,
- 'loan / debt payments': <FinanceIcon size={size} />,
- 'financial': <FinanceIcon size={size} />,
- 'miscellaneous': <MiscIcon size={size} />,
- 'miscellaneous / other': <MiscIcon size={size} />,
- 
- // Income
- 'salary': <SalaryIcon size={size} />,
- 'freelance & side gigs': <FreelanceIcon size={size} />,
- 'investment returns': <InvestmentIcon size={size} />,
- 'business': <BusinessIcon size={size} />,
- 'gift & refund': <GiftsIcon size={size} />,
- 'other income': <MiscIcon size={size} />,
- 
- // Utils
- 'transfer': <TransferIcon size={size} />,
- 'wallet': <WalletIcon size={size} />,
- 'account': <WalletIcon size={size} />,
- 'goal': <GoalIcon size={size} />,
- 'checklist': <ChecklistIcon size={size} />,
- 'todo': <ChecklistIcon size={size} />,
- 'calendar': <CalendarIcon size={size} />,
- 'voice': <MicIcon size={size} />,
+  const iconMap: Record<string, React.ReactNode> = {
+    // Navigation / Core
+    'dashboard': <DashboardIcon size={size} />,
+    'transactions': <TransactionsIcon size={size} />,
+    'reports': <ReportsIcon size={size} />,
+    'book advisor': <AdvisorIcon size={size} />,
+    'book-advisor': <AdvisorIcon size={size} />,
+    'advisor': <AdvisorIcon size={size} />,
+    'voice logging': <MicIcon size={size} />,
+    'voice-logging': <MicIcon size={size} />,
+    'receipt scanner': <ScannerIcon size={size} />,
+    'receipt-scanner': <ScannerIcon size={size} />,
+    'scanner': <ScannerIcon size={size} />,
+    'notifications': <NotificationBellIcon size={size} />,
+    'recurring': <RecurringIcon size={size} />,
+    'recurring transactions': <RecurringIcon size={size} />,
+    'recurring-transactions': <RecurringIcon size={size} />,
+    'budget alerts': <BudgetAlertIcon size={size} />,
+    'budget-alerts': <BudgetAlertIcon size={size} />,
+    'settings': <SettingsIcon size={size} />,
+    'loans': <LoanIcon size={size} />,
+    'loan': <LoanIcon size={size} />,
+    'group expenses': <FamilyIcon size={size} />,
+    'group-expenses': <FamilyIcon size={size} />,
+    'groups': <FamilyIcon size={size} />,
+    'todo lists': <ChecklistIcon size={size} />,
+    'todo-lists': <ChecklistIcon size={size} />,
+    'todos': <ChecklistIcon size={size} />,
 
- // Goal categories
- 'emergency': <HealthIcon size={size} />,
- 'gadget': <ElectronicsIcon size={size} />,
- 'wedding': <GiftsIcon size={size} />,
- 'investment': <InvestmentIcon size={size} />,
- 'personal': <PersonalCareIcon size={size} />,
- 'custom': <MiscIcon size={size} />,
- };
- 
- // Case-insensitive lookup
- for (const [key, icon] of Object.entries(iconMap)) {
- if (key.toLowerCase() === normalized) return icon;
- }
+    // Expense
+    'housing': <HousingIcon size={size} />,
+    'housing / rent': <HousingIcon size={size} />,
+    'home maintenance': <HousingIcon size={size} />,
+    'utilities': <UtilitiesIcon size={size} />,
+    'food & dining': <FoodIcon size={size} />,
+    'food': <FoodIcon size={size} />,
+    'transportation': <TransportationIcon size={size} />,
+    'vehicle': <TransportationIcon size={size} />,
+    'vehicle maintenance': <TransportationIcon size={size} />,
+    'health & medical': <HealthIcon size={size} />,
+    'healthcare': <HealthIcon size={size} />,
+    'shopping': <ShoppingIcon size={size} />,
+    'electronics & gadgets': <ElectronicsIcon size={size} />,
+    'subscriptions': <EntertainmentIcon size={size} />,
+    'entertainment': <EntertainmentIcon size={size} />,
+    'travel': <TravelIcon size={size} />,
+    'travel & vacation': <TravelIcon size={size} />,
+    'education': <EducationIcon size={size} />,
+    'gifts & donations': <GiftsIcon size={size} />,
+    'donations & charity': <GiftsIcon size={size} />,
+    'family & kids': <FamilyIcon size={size} />,
+    'personal care': <PersonalCareIcon size={size} />,
+    'fitness & sports': <FitnessIcon size={size} />,
+    'pets': <PetsIcon size={size} />,
+    'investments': <InvestmentIcon size={size} />,
+    'investment': <InvestmentIcon size={size} />,
+    'taxes & government': <TaxesIcon size={size} />,
+    'loan / debt payments': <LoanIcon size={size} />,
+    'financial': <FinanceIcon size={size} />,
+    'miscellaneous': <MiscIcon size={size} />,
+    'miscellaneous / other': <MiscIcon size={size} />,
+    
+    // Income
+    'salary': <SalaryIcon size={size} />,
+    'freelance & side gigs': <FreelanceIcon size={size} />,
+    'investment returns': <InvestmentIcon size={size} />,
+    'business': <BusinessIcon size={size} />,
+    'gift & refund': <GiftsIcon size={size} />,
+    'other income': <MiscIcon size={size} />,
+    
+    // Utils
+    'transfer': <TransferIcon size={size} />,
+    'wallet': <WalletIcon size={size} />,
+    'account': <WalletIcon size={size} />,
+    'accounts': <WalletIcon size={size} />,
+    'goal': <GoalIcon size={size} />,
+    'goals': <GoalIcon size={size} />,
+    'checklist': <ChecklistIcon size={size} />,
+    'todo': <ChecklistIcon size={size} />,
+    'calendar': <CalendarIcon size={size} />,
+    'voice': <MicIcon size={size} />,
 
- return <MiscIcon size={size} />;
+    // Goal categories
+    'emergency': <HealthIcon size={size} />,
+    'gadget': <ElectronicsIcon size={size} />,
+    'wedding': <GiftsIcon size={size} />,
+    'personal': <PersonalCareIcon size={size} />,
+    'custom': <MiscIcon size={size} />,
+  };
+  
+  // Case-insensitive lookup
+  for (const [key, icon] of Object.entries(iconMap)) {
+    if (key.toLowerCase() === normalized) return icon;
+  }
+
+  return <MiscIcon size={size} />;
 };
 
 // Get background color for category

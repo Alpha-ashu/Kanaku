@@ -1,0 +1,51 @@
+apiVersion: 1
+
+# Notification body for the ops-email contact point.
+#
+# Why this exists: the default email carries little more than the alert name and
+# a link, so triage always meant opening Grafana. Every alert in alert-rules.yaml
+# already writes a `summary` (what broke) and a `description` (the diagnostic
+# steps) — this template actually delivers them, alongside the evaluated value,
+# how long it has been firing, and a one-click silence link. One email, everything
+# needed to decide whether to act.
+#
+# Rendered as HTML (Grafana's email channel is HTML), so line structure uses <br>.
+templates:
+  - orgId: 1
+    name: kanaku-email
+    template: |
+      {{ define "kanaku.email.alert" }}
+      <b>{{ .Labels.alertname }}</b>
+      &nbsp;[{{ .Labels.severity }}{{ if .Labels.service }} / {{ .Labels.service }}{{ end }}]<br>
+      {{ if .Annotations.summary }}{{ .Annotations.summary }}<br>{{ end }}
+      <small>
+      Since: {{ .StartsAt.Format "2006-01-02 15:04:05 MST" }}<br>
+      {{ if .ValueString }}Evaluated: {{ .ValueString }}<br>{{ end }}
+      {{ if .SilenceURL }}<a href="{{ .SilenceURL }}">Silence this</a>{{ end }}
+      {{ if .GeneratorURL }} &middot; <a href="{{ .GeneratorURL }}">View in Grafana</a>{{ end }}<br>
+      </small>
+      {{ if .Annotations.description }}<pre>{{ .Annotations.description }}</pre>{{ end }}
+      {{ end }}
+
+      {{ define "kanaku.email.body" }}
+      {{ len .Alerts.Firing }} firing, {{ len .Alerts.Resolved }} resolved.<br><br>
+
+      {{ if .Alerts.Firing }}
+      <b>&#9650; FIRING</b><hr>
+      {{ range .Alerts.Firing }}{{ template "kanaku.email.alert" . }}<hr>{{ end }}
+      {{ end }}
+
+      {{ if .Alerts.Resolved }}
+      <b>&#9660; RESOLVED</b><hr>
+      {{ range .Alerts.Resolved }}
+      <b>{{ .Labels.alertname }}</b> — cleared {{ .EndsAt.Format "2006-01-02 15:04:05 MST" }}
+      (fired {{ .StartsAt.Format "2006-01-02 15:04:05 MST" }})<br>
+      {{ end }}
+      <hr>
+      {{ end }}
+
+      <small>
+      Runbook: platform/observability/grafana/provisioning/alerting/README.md<br>
+      A still-unresolved alert is re-sent once every 24h, not per evaluation.
+      </small>
+      {{ end }}

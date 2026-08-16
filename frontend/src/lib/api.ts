@@ -388,8 +388,26 @@ let _refreshInFlight: Promise<string | null> | null = null;
 let _refreshFailureFatal = false;
 export const wasRefreshFailureFatal = (): boolean => _refreshFailureFatal;
 
+// Cooldown after a TRANSIENT refresh failure. Once the access token is expired,
+// resolveAuthToken() calls this before EVERY request, so an unreachable backend
+// (dev server still booting, 502 from the Vite proxy, a restart in prod) turned
+// each API call into two failed calls — and the sync queue's retry loop replayed
+// that pair per queued record, flooding the console and hammering a backend that
+// was already down. Skipping the attempt for a few seconds collapses the storm.
+// Only transient failures back off: a fatal 401/403 still signs the user out on
+// the spot, and a successful refresh clears the window immediately.
+const REFRESH_RETRY_COOLDOWN_MS = 5_000;
+let _refreshBlockedUntil = 0;
+
 export const refreshAccessToken = async (): Promise<string | null> => {
   if (_refreshInFlight) return _refreshInFlight;
+
+  if (Date.now() < _refreshBlockedUntil) {
+    // Declining to re-attempt is by definition not an observed session death —
+    // keep the session so the 401 handler doesn't sign the user out mid-outage.
+    _refreshFailureFatal = false;
+    return null;
+  }
 
   _refreshInFlight = (async () => {
     _refreshFailureFatal = false;
@@ -440,7 +458,13 @@ export const refreshAccessToken = async (): Promise<string | null> => {
   })();
 
   try {
-    return await _refreshInFlight;
+    const accessToken = await _refreshInFlight;
+    if (accessToken) {
+      _refreshBlockedUntil = 0;
+    } else if (!_refreshFailureFatal) {
+      _refreshBlockedUntil = Date.now() + REFRESH_RETRY_COOLDOWN_MS;
+    }
+    return accessToken;
   } finally {
     _refreshInFlight = null;
   }

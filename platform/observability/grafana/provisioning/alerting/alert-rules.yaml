@@ -21,6 +21,13 @@ apiVersion: 1
 #     → here the ABSENCE of data IS the alert — surface it as this rule's
 #       summary instead of a confusing generic DatasourceNoData.
 #
+# noDataState is NOT a substitute for gating. It only covers an absent series; a
+# series that is present and reporting 0 still evaluates, so any rule whose alert
+# condition is "this number is too LOW" (a liveness/rate floor) will fire on an
+# idle or cold-starting app that is in no trouble at all. Gate those on
+# `up{job="kanaku-render"} == 1` so "nothing to measure" can never read as
+# "something is broken" — see rule 4, which cost ~27 days of 6-hourly false pages.
+#
 # ── Render notes ───────────────────────────────────────────────────────────────
 # • The app runs as a single combined process (API + workers) on Render free tier.
 # • Metrics are scraped by Grafana Agent from https://<render-url>/metrics every 30s.
@@ -149,9 +156,30 @@ groups:
               refId: C
               conditions: [{ evaluator: { type: gt, params: [20] } }]
 
-      # 4) Worker / outbox stopped — no drains in 5m.
-      #    noDataState:OK — if the app is sleeping (Render free cold start) we don't
-      #    want a double-alert; target-down covers the "app is gone" case.
+      # 4) Worker / outbox stopped — app is UP but the drainer isn't ticking.
+      #
+      #    ── Why this query is gated on `up` (do not "simplify" it back) ──
+      #    This rule used to be the bare drain rate:
+      #        sum(increase(kanaku_outbox_drains_total{...}[5m]))  <  1
+      #    which asks "did the worker tick?" but *not* "is there a worker to tick?".
+      #    Those differ, because prom-client registers this counter at 0 the moment
+      #    the process starts and exports it whether or not the drainer ever ran —
+      #    so a scraped-but-not-draining process, a cold-starting container, and a
+      #    Render free-tier instance idling with zero traffic all report increase=0
+      #    and all looked identical to "the worker died".
+      #
+      #    noDataState:OK did not save us: it only covers an ABSENT series, and 0 is
+      #    a present value. So with zero app usage the rule sat in Alerting and the
+      #    critical route (repeat_interval 6h) re-mailed ops every 6 hours — it ran
+      #    ~27 days unbroken (fired 2026-07-19, still firing 2026-08-16, A=0 B=0 C=1)
+      #    with nothing whatsoever wrong. That is the alert-fatigue failure mode this
+      #    file's header convention exists to prevent.
+      #
+      #    The fix: only ask about drains when the target is actually up. When the
+      #    app is asleep/unscraped the `and on()` yields an empty vector → NoData →
+      #    noDataState:OK → silent, and rule 1 (target-down) remains the single
+      #    alert for "the app is gone". The expression returns 1 (from `up`) only
+      #    when the app is up AND the drainer has not ticked — a real stuck worker.
       - uid: kanaku-worker-stopped
         title: Worker stopped (no outbox drains)
         condition: C
@@ -160,9 +188,14 @@ groups:
         execErrState: OK
         labels: { severity: critical, service: worker }
         annotations:
-          summary: "Worker has not drained the outbox in 5 minutes — process stuck or outbox jobs disabled."
+          summary: "App is up but the worker has not drained the outbox in 5 minutes — drainer stuck."
           description: |
-            The notification outbox drainer should tick every ~15s. If it has not fired in 5m:
+            The notification outbox drainer should tick every ~15s, and it ticks even
+            when the outbox is empty — so this is a liveness signal, NOT a traffic
+            signal. It firing does not mean users are waiting on notifications; it
+            means the scrape says the process is up but its cron is not running.
+            (If the app itself is down or asleep this rule stays silent by design —
+            "Health check / target down" covers that case.)
               1. Check Render logs for crash/panic in the outbox drainer.
               2. Verify RUN_WORKERS_IN_API is unset (combined mode) or that worker.js is running.
               3. Check DB connectivity — the drainer reads from PostgreSQL.
@@ -171,7 +204,7 @@ groups:
             datasourceUid: prometheus
             relativeTimeRange: { from: 600, to: 0 }
             model:
-              expr: "sum(increase(kanaku_outbox_drains_total{job=\"kanaku-render\"}[5m]))"
+              expr: "(max(up{job=\"kanaku-render\"}) == 1) and on() (sum(increase(kanaku_outbox_drains_total{job=\"kanaku-render\"}[5m])) < 1)"
               instant: true
               refId: A
           - refId: B
@@ -183,7 +216,7 @@ groups:
               type: threshold
               expression: B
               refId: C
-              conditions: [{ evaluator: { type: lt, params: [1] } }]
+              conditions: [{ evaluator: { type: gt, params: [0] } }]
 
       # 5) Outbox backlog growing — pending/retrying depth high for 10m.
       - uid: kanaku-outbox-backlog

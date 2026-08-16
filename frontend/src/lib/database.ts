@@ -361,6 +361,12 @@ export interface ExpenseCategory {
 
 export interface AppCategory {
   id: string;
+  /**
+   * Server-side Category id. Not indexed, so no schema version bump: the sync
+   * matches on (type, name) — the server's own `@@unique([userId, name, type])`
+   * — and keeps this only as a direct link once established.
+   */
+  cloudId?: string;
   name: string;
   type: 'expense' | 'income';
   color: string;
@@ -370,6 +376,8 @@ export interface AppCategory {
   deletedAt?: Date;
   userId?: string;
   createdFromImport?: boolean;
+  /** User-created (or import-created) rather than one of the built-in seeds. */
+  isCustom?: boolean;
 }
 
 export interface ImportHistory {

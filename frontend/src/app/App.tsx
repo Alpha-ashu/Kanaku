@@ -19,7 +19,7 @@ import { ADMIN_UI_ENABLED } from '@/config/platform';
 // chunks from a user-surface (VITE_APP_SURFACE=user) build.
 declare const __ADMIN_UI_ENABLED__: boolean;
 import { syncUserDataFromCloud, SyncedTableName } from '@/lib/auth-sync-integration';
-import { syncBudgets, syncRecurringTransactions } from '@/services/featureSyncService';
+import { syncBudgets, syncCategories, syncRecurringTransactions } from '@/services/featureSyncService';
 
 
 //  Shell components (always visible - eager load) 
@@ -618,6 +618,9 @@ const AppContent: React.FC = () => {
     if (hasSyncedFeatureTablesRef.current === user.id) return;
     hasSyncedFeatureTablesRef.current = user.id;
 
+    // Categories first: transactions and the importer both resolve labels
+    // against this taxonomy, so it should be current before anything reads it.
+    void syncCategories();
     void syncBudgets();
     void syncRecurringTransactions();
   }, [user, isAuthenticated, dataReady]);
@@ -977,8 +980,26 @@ const AppContent: React.FC = () => {
         setQuickActionKey(k => k + 1);
         break;
       case 'todo-lists': setCurrentPage('todo-lists'); break;
-      case 'voice-entry': setCurrentPage('voice-input'); break;
+      case 'voice-entry':
+      case 'voice-input': setCurrentPage('voice-input'); break;
       case 'calendar': setCurrentPage('calendar'); break;
+      case 'dashboard': setCurrentPage('dashboard'); break;
+      case 'accounts': setCurrentPage('accounts'); break;
+      case 'transactions': setCurrentPage('transactions'); break;
+      case 'investments': setCurrentPage('investments'); break;
+      case 'loans': setCurrentPage('loans'); break;
+      case 'goals': setCurrentPage('goals'); break;
+      case 'groups': setCurrentPage('groups'); break;
+      case 'reports': setCurrentPage('reports'); break;
+      case 'book-advisor': setCurrentPage('book-advisor'); break;
+      case 'receipt-scanner': setCurrentPage('receipt-scanner'); break;
+      case 'notifications': setCurrentPage('notifications'); break;
+      case 'recurring-transactions': setCurrentPage('recurring-transactions'); break;
+      case 'budget-alerts': setCurrentPage('budget-alerts'); break;
+      case 'settings': setCurrentPage('settings'); break;
+      default:
+        setCurrentPage(action);
+        break;
     }
   };
 
@@ -1349,12 +1370,14 @@ const AppContent: React.FC = () => {
         <Sidebar />
       </div>
 
+      {/* TopBar - Viewport Fixed Header */}
+      <TopBar />
+
       {/* Main Content Area - Center scaled for Desktop */}
       <div className="flex-1 lg:ml-28 flex flex-col min-h-screen relative overflow-x-hidden">
         <div className="w-full lg:max-w-[90%] xl:max-w-[85%] mx-auto flex flex-col flex-1 mobile-content relative">
           <LimitedModeBanner />
           <OfflineBadge />
-          <TopBar />
           <main className="w-full pt-24 lg:pt-28 overflow-x-hidden mobile-safe-bottom mobile-main flex-1 bg-transparent">
             {dataSyncError && (
               <div className="px-4 sm:px-6 pt-4">

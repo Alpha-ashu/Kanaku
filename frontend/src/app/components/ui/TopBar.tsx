@@ -359,15 +359,23 @@ export const TopBar: React.FC = () => {
  // `.mobile-main` already reserves header-height + safe-area-inset-top for the
  // content below, so pushing the header down by the same inset keeps the two in
  // agreement rather than opening a gap.
- return (
- <header className="fixed top-[calc(env(safe-area-inset-top,0px)+0.75rem)] left-[calc(env(safe-area-inset-left,0px)+0.75rem)] right-[calc(env(safe-area-inset-right,0px)+0.75rem)] lg:top-4 lg:left-[112px] lg:right-6 z-[60] bg-white/80 backdrop-blur-2xl border border-slate-100 rounded-3xl shadow-lg shadow-slate-100/40 transition-all duration-300">
- {/* Notification Popup */}
- <NotificationPopup
- isOpen={notificationPopupOpen}
- onClose={() => setNotificationPopupOpen(false)}
- onViewAll={handleViewAllNotifications}
- notifications={recentNotifications}
- />
+  return (
+    <header
+      className="fixed top-[calc(env(safe-area-inset-top,0px)+0.75rem)] left-[calc(env(safe-area-inset-left,0px)+0.75rem)] right-[calc(env(safe-area-inset-right,0px)+0.75rem)] lg:top-4 lg:left-[112px] lg:right-6 z-[60] bg-white/80 backdrop-blur-2xl border border-slate-100 rounded-3xl shadow-lg shadow-slate-100/40 transition-shadow duration-150 transform-gpu will-change-transform mobile-topbar-stable"
+      style={{
+        WebkitTransform: 'translate3d(0, 0, 0)',
+        transform: 'translate3d(0, 0, 0)',
+        WebkitBackfaceVisibility: 'hidden',
+        backfaceVisibility: 'hidden',
+      }}
+    >
+      {/* Notification Popup */}
+      <NotificationPopup
+        isOpen={notificationPopupOpen}
+        onClose={() => setNotificationPopupOpen(false)}
+        onViewAll={handleViewAllNotifications}
+        notifications={recentNotifications}
+      />
 
  {/* Top Header Row - Menu, Search, Bell, Profile */}
  <div className="flex items-center justify-between px-4 lg:px-6 h-16 w-full">

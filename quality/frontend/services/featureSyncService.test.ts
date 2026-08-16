@@ -7,6 +7,15 @@
  *   - a POST that never happened (offline) must be retried, not forgotten;
  *   - a row deleted on the server must disappear locally;
  *   - an unreachable server must change nothing at all.
+ *
+ * RESPONSE SHAPE — these mocks must mirror apiClient, not the wire format.
+ * api.ts returns `{ success, data: body.data || body, message }`, so it has
+ * ALREADY unwrapped one envelope level: `response.data` is the payload and
+ * `response.data.data` does not exist. These mocks previously returned the raw
+ * wire envelope nested under `.data`, which made the buggy `response.data?.data`
+ * read look correct — the budget list silently resolved to [] against the real
+ * client, every local budget re-POSTed forever, and the suite stayed green.
+ * Mock what apiClient returns.
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -77,7 +86,8 @@ beforeEach(() => {
 describe('syncBudgets', () => {
   it('creates a local row for a server budget the device has never seen', async () => {
     mocks.get.mockResolvedValue({
-      data: { success: true, data: [{ id: 'srv-1', category: 'Food', amount: 5000, period: 'monthly', spent: 1200, threshold: 80 }] },
+      success: true,
+      data: [{ id: 'srv-1', category: 'Food', amount: 5000, period: 'monthly', spent: 1200, threshold: 80 }],
     });
 
     const result = await syncBudgets();
@@ -91,8 +101,8 @@ describe('syncBudgets', () => {
 
   it('retries a budget that was created offline and never pushed', async () => {
     mocks.state.budgets.push({ id: 'local-1', category: 'Travel', amount: 3000, period: 'monthly', spent: 0, threshold: 85 });
-    mocks.get.mockResolvedValue({ data: { success: true, data: [] } });
-    mocks.post.mockResolvedValue({ data: { success: true, data: { id: 'srv-9' } } });
+    mocks.get.mockResolvedValue({ success: true, data: [] });
+    mocks.post.mockResolvedValue({ success: true, data: { id: 'srv-9' } });
 
     const result = await syncBudgets();
 
@@ -104,7 +114,7 @@ describe('syncBudgets', () => {
 
   it('removes a local budget that no longer exists on the server', async () => {
     mocks.state.budgets.push({ id: 'local-1', cloudId: 'srv-gone', category: 'Fuel', amount: 2000, period: 'monthly', spent: 0 });
-    mocks.get.mockResolvedValue({ data: { success: true, data: [] } });
+    mocks.get.mockResolvedValue({ success: true, data: [] });
 
     const result = await syncBudgets();
 
@@ -121,6 +131,51 @@ describe('syncBudgets', () => {
     expect(result.offline).toBe(true);
     expect(mocks.state.budgets).toHaveLength(1);
     expect(mocks.post).not.toHaveBeenCalled();
+  });
+
+  // The server's unique key is (userId, category, period), so an unlinked local
+  // row whose twin already exists can never be POSTed — it 400s DUPLICATE_BUDGET
+  // every time. Before adoption existed this ran on every single sync.
+  it('adopts an existing server budget instead of re-POSTing a duplicate', async () => {
+    mocks.state.budgets.push({ id: 'local-1', category: 'Food', amount: 5000, period: 'monthly', spent: 0, threshold: 85 });
+    mocks.get.mockResolvedValue({
+      success: true,
+      data: [{ id: 'srv-1', category: 'Food', amount: 5000, period: 'monthly', spent: 1200, threshold: 80 }],
+    });
+
+    await syncBudgets();
+
+    expect(mocks.post).not.toHaveBeenCalled();
+    expect(mocks.state.budgets).toHaveLength(1);
+    expect(mocks.state.budgets[0].cloudId).toBe('srv-1');
+  });
+
+  it('matches the server twin regardless of category casing or blank period', async () => {
+    mocks.state.budgets.push({ id: 'local-1', category: '  food  ', amount: 5000, period: '', spent: 0 });
+    mocks.get.mockResolvedValue({
+      success: true,
+      data: [{ id: 'srv-1', category: 'Food', amount: 5000, period: 'monthly', spent: 0, threshold: 80 }],
+    });
+
+    await syncBudgets();
+
+    expect(mocks.post).not.toHaveBeenCalled();
+    expect(mocks.state.budgets[0].cloudId).toBe('srv-1');
+  });
+
+  it('links rather than loops when the server rejects a push as duplicate', async () => {
+    mocks.state.budgets.push({ id: 'local-1', category: 'Fuel', amount: 2000, period: 'monthly', spent: 0 });
+    // Server lists the twin only AFTER the push attempt races it in.
+    mocks.get.mockResolvedValue({
+      success: true,
+      data: [{ id: 'srv-7', category: 'Fuel', amount: 2000, period: 'monthly', spent: 0, threshold: 80 }],
+    });
+    mocks.post.mockRejectedValue(Object.assign(new Error('dup'), { status: 400, code: 'DUPLICATE_BUDGET' }));
+
+    await syncBudgets();
+
+    expect(mocks.state.budgets[0].cloudId).toBe('srv-7');
+    expect(mocks.state.budgets[0].syncStatus).toBe('synced');
   });
 });
 
@@ -167,13 +222,11 @@ describe('budget mutations', () => {
 describe('syncRecurringTransactions', () => {
   it('pulls server rules into the local table', async () => {
     mocks.get.mockResolvedValue({
-      data: {
-        success: true,
-        data: [{
-          id: 'rec-1', title: 'Rent', amount: 18000, type: 'expense',
-          category: 'housing', interval: 'monthly', nextDueDate: '2026-09-01T00:00:00.000Z', status: 'active',
-        }],
-      },
+      success: true,
+      data: [{
+        id: 'rec-1', title: 'Rent', amount: 18000, type: 'expense',
+        category: 'housing', interval: 'monthly', nextDueDate: '2026-09-01T00:00:00.000Z', status: 'active',
+      }],
     });
 
     const result = await syncRecurringTransactions();
@@ -187,8 +240,8 @@ describe('syncRecurringTransactions', () => {
       id: 1, name: 'Netflix', amount: 649, type: 'expense', category: 'entertainment',
       frequency: 'monthly', nextDueDate: new Date('2026-09-05'), status: 'active',
     });
-    mocks.get.mockResolvedValue({ data: { success: true, data: [] } });
-    mocks.post.mockResolvedValue({ data: { success: true, data: { id: 'rec-9' } } });
+    mocks.get.mockResolvedValue({ success: true, data: [] });
+    mocks.post.mockResolvedValue({ success: true, data: { id: 'rec-9' } });
 
     const result = await syncRecurringTransactions();
 
@@ -201,7 +254,7 @@ describe('syncRecurringTransactions', () => {
       id: 1, name: 'Metro pass', amount: 500, type: 'expense', category: 'transport',
       frequency: 'biweekly', nextDueDate: new Date('2026-09-05'), status: 'active',
     });
-    mocks.get.mockResolvedValue({ data: { success: true, data: [] } });
+    mocks.get.mockResolvedValue({ success: true, data: [] });
 
     const result = await syncRecurringTransactions();
 

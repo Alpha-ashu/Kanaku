@@ -24,7 +24,14 @@ import { normalizeCurrencyCode } from '@/lib/currencyUtils';
 import { importDataFromJSON } from '@/lib/importExport';
 
 type ImportFileType = 'csv' | 'json';
-type ImportTransactionType = 'expense' | 'income';
+/**
+ * A transfer moves money between two of the user's OWN accounts. It is neither
+ * income nor expense: counting it as either inflates the period's totals and
+ * corrupts net worth, because the same rupee is recorded as earned or spent when
+ * it only changed pocket. Most third-party trackers export it as its own type,
+ * so the importer must preserve that rather than flattening it to an expense.
+ */
+type ImportTransactionType = 'expense' | 'income' | 'transfer';
 type CategoryResolution = 'exact' | 'mapped' | 'detected' | 'created' | 'fallback' | 'manual';
 type AccountResolution = 'existing' | 'created' | 'payment-method' | 'fallback' | 'manual';
 
@@ -53,6 +60,11 @@ export interface ImportPreviewRow {
   originalData: Record<string, unknown>;
   externalId?: string;
   expenseMode?: 'individual' | 'group';
+  /** Transfers only: the raw "to account" label from the file. */
+  transferToAccountName?: string;
+  /** Transfers only: local account id the money moved into, once resolved. */
+  transferToAccountId?: number;
+  transferToAccountResolution?: AccountResolution;
 }
 
 export interface ThirdPartyImportPreview {
@@ -72,6 +84,15 @@ export interface ThirdPartyImportPreview {
     createdAccounts: string[];
     createdCategories: string[];
   };
+  /** Column headers found in the file, for the manual mapping selects. */
+  sourceHeaders: string[];
+  /** Mapping actually in force (auto-detected fields plus user overrides). */
+  columnMapping: ImportColumnMapping;
+  /**
+   * Fields auto-detection could not find a column for. A required field in here
+   * is why rows are failing, and is the cue to open the mapping step.
+   */
+  unmappedRequiredFields: ImportColumnField[];
 }
 
 export interface BackupImportPreview {
@@ -102,8 +123,59 @@ export interface ThirdPartyImportResult {
 
 export type SmartImportPreview = ThirdPartyImportPreview | BackupImportPreview;
 
+/**
+ * Fields the user can point at a column by hand when auto-detection guesses
+ * wrong or finds nothing. Deliberately the minimum that determines whether a
+ * row is importable and correctly classified — everything else stays automatic.
+ */
+export type ImportColumnField =
+  | 'date'
+  | 'amount'
+  | 'type'
+  | 'category'
+  | 'subcategory'
+  | 'description'
+  | 'merchant'
+  | 'account'
+  | 'transferTo';
+
+/** field → the source file's column header the user chose for it. */
+export type ImportColumnMapping = Partial<Record<ImportColumnField, string>>;
+
+export const IMPORT_COLUMN_FIELDS: Array<{ field: ImportColumnField; label: string; required: boolean }> = [
+  { field: 'date', label: 'Date', required: true },
+  { field: 'amount', label: 'Amount', required: true },
+  { field: 'type', label: 'Type (expense/income/transfer)', required: false },
+  { field: 'category', label: 'Category', required: false },
+  { field: 'subcategory', label: 'Subcategory', required: false },
+  { field: 'description', label: 'Description', required: false },
+  { field: 'merchant', label: 'Merchant / Payee', required: false },
+  { field: 'account', label: 'Account', required: false },
+  { field: 'transferTo', label: 'Transfer to account', required: false },
+];
+
+/**
+ * The canonical lookup key each field resolves through. These are the FIRST
+ * entry of the corresponding *_KEYS alias list, which `getFieldValue` checks
+ * before any fuzzy matching — so writing the user's chosen column under this key
+ * makes the existing row parser prefer it, with no change to the parser itself.
+ */
+const COLUMN_FIELD_LOOKUP_KEY: Record<ImportColumnField, string> = {
+  date: 'date',
+  amount: 'amount',
+  type: 'type',
+  category: 'category',
+  subcategory: 'subcategory',
+  description: 'description',
+  merchant: 'merchant',
+  account: 'account',
+  transferTo: 'toaccount',
+};
+
 interface AnalyzeOptions {
   defaultAccountId: number;
+  /** User-supplied column overrides; omitted fields stay auto-detected. */
+  columnMapping?: ImportColumnMapping;
 }
 
 interface ApplyPreviewOptions {
@@ -184,6 +256,14 @@ const ACCOUNT_KEYS = [
   'wallet_ref',
   'accountref',
   'account_ref',
+];
+// Destination account for a transfer. Money Manager writes "Account"/"To
+// Account"; Wallet and Monefy use "Transfer To"/"Target Account"; bank-style
+// exports use "Beneficiary".
+const TRANSFER_TO_KEYS = [
+  'toaccount', 'to_account', 'transferto', 'transfer_to', 'targetaccount', 'target_account',
+  'destinationaccount', 'destination_account', 'destination', 'toaccountname', 'to_account_name',
+  'creditaccount', 'credit_account', 'beneficiary', 'beneficiaryaccount', 'payeeaccount', 'toname',
 ];
 const PAYMENT_KEYS = ['paymentmethod', 'payment_method', 'paymentmode', 'payment_mode', 'paymentchannel', 'payment_channel', 'mode', 'method'];
 const CURRENCY_KEYS = ['currency', 'currencycode', 'currency_code'];
@@ -501,6 +581,12 @@ const parseDateValue = (value: unknown): Date | null => {
 const parseTypeValue = (value: unknown): ImportTransactionType | null => {
   const normalized = normalizeText(toDisplayValue(value));
   if (!normalized) return null;
+  // Checked FIRST: "transfer" contains no credit/debit token, but several apps
+  // label the pair "Transfer-Out"/"Transfer-In", which would otherwise match the
+  // outflow/inflow rules below and be recorded as a real expense or income.
+  if (['transfer', 'transfer in', 'transfer out', 'transferin', 'transferout', 'self transfer', 'move', 'movement'].some((item) => normalized === item || normalized.includes(item))) {
+    return 'transfer';
+  }
   if (['cr', 'credit', 'credited', 'deposit', 'received', 'inflow'].some((item) => normalized === item || normalized.includes(item))) {
     return 'income';
   }
@@ -754,6 +840,32 @@ const extractStructuredLedgerRecords = (payload: unknown): Array<Record<string, 
   });
 };
 
+/**
+ * Overlay the user's manual column choices onto a parsed row.
+ *
+ * Writing the chosen column's value under the field's canonical lookup key
+ * means `getFieldValue` finds it first, so an override wins over every alias and
+ * fuzzy rule without the row parser needing to know overrides exist.
+ */
+const applyColumnMapping = (
+  lookup: Record<string, unknown>,
+  record: Record<string, unknown>,
+  mapping: ImportColumnMapping | undefined,
+) => {
+  if (!mapping) return lookup;
+
+  for (const [field, header] of Object.entries(mapping) as Array<[ImportColumnField, string | undefined]>) {
+    if (!header) continue;
+    // The header may be addressed by its raw name or its normalized form,
+    // depending on whether the file came in as CSV or nested JSON.
+    const value = header in record ? record[header] : lookup[normalizeKey(header)];
+    if (value === undefined) continue;
+    lookup[COLUMN_FIELD_LOOKUP_KEY[field]] = value;
+  }
+
+  return lookup;
+};
+
 const buildLookup = (record: Record<string, unknown>) => {
   const lookup: Record<string, unknown> = {};
 
@@ -885,6 +997,9 @@ const resolveImportedAmount = (
 };
 
 const getIncomeCategoryNames = () => Object.values(INCOME_CATEGORIES).map((category) => category.name);
+
+/** Label carried by imported transfers so they are identifiable in history. */
+const TRANSFER_CATEGORY = 'Transfer';
 
 const GENERIC_PAYMENT_METHOD_NAMES = new Set(['cash', 'upi', 'wallet', 'credit card', 'debit card', 'card', 'net banking', 'bank transfer']);
 
@@ -1268,6 +1383,7 @@ class SmartExpenseImportService {
         fileType,
         records: extractStructuredLedgerRecords(payload),
         defaultAccountId: options.defaultAccountId,
+        columnMapping: options.columnMapping,
       });
     }
 
@@ -1277,6 +1393,7 @@ class SmartExpenseImportService {
       fileType,
       records: parseCsvRecords(text),
       defaultAccountId: options.defaultAccountId,
+      columnMapping: options.columnMapping,
     });
   }
 
@@ -1384,6 +1501,7 @@ class SmartExpenseImportService {
               merchant: row.merchant || undefined,
               date: row.date!,
               type: row.transactionType,
+              transferToAccountId: row.transactionType === 'transfer' ? row.transferToAccountId : undefined,
               expenseMode: row.expenseMode ?? 'individual',
               createdAt: importedAt,
               updatedAt: importedAt,
@@ -1399,13 +1517,29 @@ class SmartExpenseImportService {
             const accountChange = row.transactionType === 'income' ? resolvedAmount : -resolvedAmount;
             accountBalanceChanges.set(account.id, (accountBalanceChanges.get(account.id) ?? 0) + accountChange);
 
-            const currentFlow = accountFlows.get(account.id) ?? { inflow: 0, outflow: 0 };
-            if (row.transactionType === 'income') {
-              currentFlow.inflow += resolvedAmount;
-            } else {
-              currentFlow.outflow += resolvedAmount;
+            // A transfer debits the source AND credits the destination. Only the
+            // source leg is a Transaction row, so the matching credit is applied
+            // to the destination's balance here — otherwise importing a transfer
+            // would destroy money: the source falls, nothing rises.
+            if (row.transactionType === 'transfer' && row.transferToAccountId && row.transferToAccountId !== account.id) {
+              accountBalanceChanges.set(
+                row.transferToAccountId,
+                (accountBalanceChanges.get(row.transferToAccountId) ?? 0) + resolvedAmount,
+              );
             }
-            accountFlows.set(account.id, currentFlow);
+
+            // Transfers are deliberately kept out of inflow/outflow: those feed
+            // income-vs-spending reporting, and moving money between your own
+            // accounts is neither.
+            if (row.transactionType !== 'transfer') {
+              const currentFlow = accountFlows.get(account.id) ?? { inflow: 0, outflow: 0 };
+              if (row.transactionType === 'income') {
+                currentFlow.inflow += resolvedAmount;
+              } else {
+                currentFlow.outflow += resolvedAmount;
+              }
+              accountFlows.set(account.id, currentFlow);
+            }
 
             const importedBalance = parseAmountValue(row.metadata['Account Balance']);
             if (importedBalance != null && Number.isFinite(importedBalance) && row.date) {
@@ -1586,6 +1720,7 @@ class SmartExpenseImportService {
     fileType: ImportFileType;
     records: Array<Record<string, unknown>>;
     defaultAccountId: number;
+    columnMapping?: ImportColumnMapping;
   }): Promise<ThirdPartyImportPreview> {
     const categoryCatalog = await getCategoryCatalog();
     const accounts = await db.accounts.toArray();
@@ -1625,7 +1760,7 @@ class SmartExpenseImportService {
     const errors: string[] = [];
 
     const rows = options.records.map((record, index) => {
-      const lookup = buildLookup(record);
+      const lookup = applyColumnMapping(buildLookup(record), record, options.columnMapping);
       const rawTextBundle = collectStringLeaves(record).join(' ');
       const date = parseDateValue(
         getFieldValueByFuzzyKey(lookup, DATE_KEYS, ['date', 'time', 'created', 'txn', 'transaction'], ['targetdate', 'goaldate', 'deadline']),
@@ -1670,8 +1805,16 @@ class SmartExpenseImportService {
         rawText: rawTextBundle,
       });
 
+      const transferToAccountName = toDisplayValue(
+        getFieldValueByFuzzyKey(lookup, TRANSFER_TO_KEYS, ['toaccount', 'transferto', 'destination', 'beneficiary']),
+      );
+
       if (!transactionType) {
-        if (creditAmount != null && creditAmount > 0 && (debitAmount == null || debitAmount === 0)) {
+        if (transferToAccountName) {
+          // A destination-account column with a value is only meaningful for a
+          // transfer, so it identifies one even when the file has no type column.
+          transactionType = 'transfer';
+        } else if (creditAmount != null && creditAmount > 0 && (debitAmount == null || debitAmount === 0)) {
           transactionType = 'income';
         } else if (debitAmount != null && debitAmount > 0 && (creditAmount == null || creditAmount === 0)) {
           transactionType = 'expense';
@@ -1701,22 +1844,37 @@ class SmartExpenseImportService {
       // Final semantic pass after description/context is assembled.
       // This catches generic type fields from third-party apps that can mark every row as expense.
       const narrativeType = inferTransactionTypeFromNarrative(contextText);
-      if (narrativeType) {
+      // Never let narrative wording override a transfer. This pass only ever
+      // returns income/expense, and a transfer's description ("Paid into
+      // savings", "Card payment") reads exactly like one — applying it here
+      // would undo the classification and re-introduce the double-count.
+      if (narrativeType && transactionType !== 'transfer') {
         transactionType = narrativeType;
       }
 
-      let categoryResult = transactionType === 'income'
-        ? resolveIncomeCategory(rawCategory, contextText, categoryCatalog.incomeNames)
-        : resolveExpenseCategory(rawCategory, rawSubcategory, contextText, categoryCatalog.expenseNames);
+      // A transfer is not spending or earning, so it gets the fixed TRANSFER_CATEGORY
+      // rather than being forced into a spending taxonomy — categorising it would
+      // make it show up in category breakdowns as if money had left the user.
+      let categoryResult = transactionType === 'transfer'
+        ? { category: TRANSFER_CATEGORY, subcategory: '', resolution: 'exact' as CategoryResolution }
+        : transactionType === 'income'
+          ? resolveIncomeCategory(rawCategory, contextText, categoryCatalog.incomeNames)
+          : resolveExpenseCategory(rawCategory, rawSubcategory, contextText, categoryCatalog.expenseNames);
 
       // Absolute safety net for noisy third-party schemas.
       // If final narrative clearly indicates income, force type/category to income-side mapping.
       const finalNarrative = normalizeText([contextText, rawTypeCandidate].filter(Boolean).join(' '));
       const hasHardIncomeSignal = /\b(salary|payroll|stipend|refund|reimbursement|cashback|interest|dividend|bonus|credited|credit alert|credit from|received|payout)\b/.test(finalNarrative);
-      if (hasHardIncomeSignal) {
+      // Exempt transfers for the same reason as the narrative pass above: moving
+      // money into savings is routinely described with "credited"/"received".
+      if (hasHardIncomeSignal && transactionType !== 'transfer') {
         transactionType = 'income';
         categoryResult = resolveIncomeCategory(rawCategory || 'Salary', contextText, categoryCatalog.incomeNames);
       }
+
+      const transferTarget = transactionType === 'transfer' && transferToAccountName
+        ? resolveAccountTarget(accounts, fallbackAccountId, transferToAccountName, '')
+        : null;
 
       const rowErrors: string[] = [];
       if (!date) rowErrors.push('Invalid date');
@@ -1783,6 +1941,9 @@ class SmartExpenseImportService {
         originalData: record,
         externalId: externalId || undefined,
         expenseMode,
+        transferToAccountName: transferToAccountName || undefined,
+        transferToAccountId: transferTarget?.accountId,
+        transferToAccountResolution: transferTarget?.accountResolution,
       } satisfies ImportPreviewRow;
     });
 
@@ -1822,6 +1983,28 @@ class SmartExpenseImportService {
         .map((row) => row.category))),
     };
 
+    // Column headers for the manual-mapping selects. Sampled rather than scanned
+    // in full — real exports keep a fixed header set, and a sample avoids
+    // rebuilding a huge key set for a file with thousands of rows.
+    const headerSet = new Set<string>();
+    for (const record of options.records.slice(0, 50)) {
+      Object.keys(record).forEach((key) => headerSet.add(key));
+    }
+
+    // Which REQUIRED fields auto-detection found nowhere in the file. Checked
+    // pre-mapping and across every record (not just the first), since a sparse
+    // export can leave the field empty on early rows. A field showing up here is
+    // the concrete reason rows are failing, and the cue to open the mapping step
+    // rather than a vague "import failed".
+    const unmappedRequiredFields = IMPORT_COLUMN_FIELDS
+      .filter(({ required }) => required)
+      .filter(({ field }) => {
+        if (options.columnMapping?.[field]) return false; // user already mapped it
+        const keys = field === 'date' ? DATE_KEYS : AMOUNT_KEYS;
+        return !options.records.some((record) => getFieldValueByFuzzyKey(buildLookup(record), keys, [], []) != null);
+      })
+      .map(({ field }) => field);
+
     return {
       kind: 'third-party',
       fileName: options.fileName,
@@ -1829,6 +2012,9 @@ class SmartExpenseImportService {
       rows,
       errors,
       summary,
+      sourceHeaders: Array.from(headerSet),
+      columnMapping: options.columnMapping ?? {},
+      unmappedRequiredFields,
     };
   }
 
@@ -1845,6 +2031,11 @@ class SmartExpenseImportService {
     const timestamp = new Date();
 
     for (const row of rows) {
+      // Transfers carry the fixed TRANSFER_CATEGORY label and are neither a
+      // spending nor an earning category — creating one would put "Transfer"
+      // into the expense picker and into category breakdowns.
+      if (row.transactionType === 'transfer') continue;
+
       const categoryType = row.transactionType;
       const key = `${categoryType}::${normalizeText(row.category)}`;
       if (seenNames.has(key)) continue;
@@ -1866,6 +2057,10 @@ class SmartExpenseImportService {
         updatedAt: timestamp,
         userId,
         createdFromImport: true,
+        // Surfaces it in the Custom Categories screen and queues it for the next
+        // syncCategories() push, so an imported label reaches the user's other
+        // devices instead of living only where the file was opened.
+        isCustom: true,
       };
 
       await db.categories.put(category);

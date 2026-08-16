@@ -16,12 +16,106 @@
   to   { transform: rotate(360deg); }
 }
 
-/* Universal horizontal overflow prevention */
-html,
-body,
+html {
+  overflow-x: hidden;
+  max-width: 100%;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  overflow-x: hidden;
+  max-width: 100%;
+  min-height: 100vh;
+  -webkit-overflow-scrolling: touch;
+}
+
 #root {
   overflow-x: hidden;
   max-width: 100%;
+  min-height: 100vh;
+}
+
+/* Mobile TopBar Stabilization — ensures header is locked to viewport and never scrolls or jitters */
+.mobile-topbar-stable {
+  position: fixed !important;
+  transform: translate3d(0, 0, 0) !important;
+  -webkit-transform: translate3d(0, 0, 0) !important;
+  -webkit-backface-visibility: hidden !important;
+  backface-visibility: hidden !important;
+  will-change: transform !important;
+}
+
+/* ==========================================================================
+   Universal Modern Dropdown Styling
+   ========================================================================== */
+select,
+.app-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-color: #f8fafc;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b' stroke-width='2.5'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19.5 8.25l-7.5 7.5-7.5-7.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.65rem center;
+  background-size: 0.8rem 0.8rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  padding: 0.4rem 1.85rem 0.4rem 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #0f172a;
+  transition: all 0.15s ease-in-out;
+  cursor: pointer;
+  outline: none;
+  line-height: 1.25;
+}
+
+select:hover,
+.app-select:hover {
+  background-color: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+select:focus,
+.app-select:focus {
+  border-color: #6366f1;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+/* Sleek Compact Inline Dropdown Badge */
+.app-select-compact {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-color: #f8fafc;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b' stroke-width='2.5'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19.5 8.25l-7.5 7.5-7.5-7.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+  background-size: 0.7rem 0.7rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.625rem;
+  padding: 0.3rem 1.6rem 0.3rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #1e293b;
+  height: 2rem;
+  transition: all 0.15s ease-in-out;
+  cursor: pointer;
+  outline: none;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.app-select-compact:hover {
+  background-color: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.app-select-compact:focus {
+  border-color: #6366f1;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 2.5px rgba(99, 102, 241, 0.15);
 }
 
 /* Browser-compatibility base rules (Webhint P4). WebKit prefix is listed
@@ -159,13 +253,8 @@ button, a, [role="button"], input, select {
 /* Main content container - allow full viewport usage */
 @media (max-width: 1024px) {
   main {
-    /* dvh, not vh — this is the mobile branch, and on iOS Safari `100vh` is the
-       viewport measured with the browser chrome retracted. Using it here made
-       <main> taller than the screen actually is, so the page scrolled past its
-       own content and the last rows sat under the floating bottom nav. */
     min-height: calc(100dvh - var(--header-height) - var(--bottom-reserved-space));
     overflow-x: hidden;
-    overflow-y: auto;
   }
 }
 

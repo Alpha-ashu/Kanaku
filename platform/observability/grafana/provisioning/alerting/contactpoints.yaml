@@ -22,4 +22,13 @@ contactPoints:
         type: email
         settings:
           addresses: $__env{ALERT_EMAIL}
-          singleEmail: false
+          # ONE email per notification group, listing every firing instance.
+          # `false` sends a SEPARATE email per instance, so a single incident that
+          # trips several instances arrived as a burst of near-identical mails with
+          # no way to see the whole picture in any one of them.
+          singleEmail: true
+          # Subject carries the verdict at a glance; the body carries the detail.
+          # Counts rather than names, because the policy groups the whole KANAKU
+          # folder into one notification — the names are listed in the body.
+          subject: '[KANAKU] {{ .Status | toUpper }} — {{ len .Alerts.Firing }} firing / {{ len .Alerts.Resolved }} resolved'
+          message: '{{ template "kanaku.email.body" . }}'

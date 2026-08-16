@@ -1,21 +1,41 @@
 apiVersion: 1
 
-# Routing + escalation. Default → ops-email. `critical`-labelled alerts notify
-# faster and re-fire every 6h until resolved (escalation by repeat); `warning`
-# re-fires every 4h. Add a Slack/PagerDuty contact point + a matching route here
-# when a paging path is wanted.
+# Routing + escalation. Everything goes to ops-email (webhook + email).
+#
+# ── Volume policy: one email per incident, not per alert per evaluation ──
+# This file previously grouped by `alertname` and re-sent every 4h (warning) /
+# 6h (critical). Combined with `singleEmail: false` on the email receiver, one
+# bad afternoon produced an email per alert per instance per 6h — and a single
+# stuck alert produced 4 identical emails a day indefinitely (the worker-stopped
+# rule ran ~27 days that way). Three changes fix the volume at its source:
+#
+#   1. group_by: grafana_folder — every KANAKU alert firing at once lands in ONE
+#      notification instead of one per alert name. A deploy that trips three
+#      rules sends one email listing three problems, which is also how you see
+#      they share a cause.
+#   2. group_wait: 60s — waits for the rest of an incident to land before
+#      sending, so the first email is complete rather than the first symptom.
+#      (Alerts already carry `for:` delays of 5-10m; another minute costs
+#      nothing and prevents a straggler generating a second email.)
+#   3. repeat_interval: 24h — a still-firing alert is a reminder, not news.
+#      Re-sending 4x/day trains you to filter the folder, which is how a real
+#      alert gets missed. Once a day is enough to keep it visible.
+#
+# Nothing here suppresses a NEW alert: group_interval (5m) governs how quickly a
+# change within an existing group goes out, so an escalation still arrives fast.
 policies:
   - orgId: 1
     receiver: ops-email
-    group_by: ['alertname']
-    group_wait: 30s
+    group_by: ['grafana_folder']
+    group_wait: 60s
     group_interval: 5m
-    repeat_interval: 4h
+    repeat_interval: 24h
     routes:
       - receiver: ops-email
         object_matchers:
           - ['severity', '=', 'critical']
-        group_wait: 10s
+        # Critical still notifies fast — it just doesn't nag afterwards.
+        group_wait: 30s
         group_interval: 5m
-        repeat_interval: 6h
+        repeat_interval: 24h
         continue: false
