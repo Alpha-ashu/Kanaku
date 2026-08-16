@@ -29,5 +29,5 @@ accelerate>=1.14.0
 # `PaddleOCR(use_angle_cls=True, ..., show_log=False)` and
 # `ocr.ocr(np.array(image), cls=True)`), so taking it as-is breaks OCR
 # extraction at runtime. Bump only after app/main.py is migrated to the 3.x API.
-paddleocr>=2.9,<3.0
-paddlepaddle>=2.6.2
+paddleocr>=3.7.0,<4.0
+paddlepaddle>=3.3.1
