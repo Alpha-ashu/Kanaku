@@ -1,5 +1,6 @@
 import { db } from './database';
 import { toast } from 'sonner';
+import { downloadFile } from './download';
 
 // Export all data to JSON
 export const exportDataToJSON = async (): Promise<string> => {
@@ -193,18 +194,18 @@ export const downloadBackup = async (backupId: string): Promise<void> => {
   }
 
   const timestamp = new Date(entry.timestamp).toISOString();
-  const url = URL.createObjectURL(new Blob([entry.data], { type: 'application/json' }));
-  try {
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = backupFilename(timestamp);
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-  } finally {
-    // Revoke after the click has been dispatched, or the download aborts.
-    setTimeout(() => URL.revokeObjectURL(url), 10_000);
-  }
+  // downloadFile(), not a raw blob-URL <a download> click: Android's WebView
+  // ignores the download attribute on blob: URLs (no DownloadListener wired to
+  // the bridge) and WKWebView opens the blob in a tab that dies with the object
+  // URL — both platforms would report success and produce no file. See
+  // lib/nativeFiles.ts for the full explanation; it's the same trap Reports.tsx
+  // and BillUpload.tsx already route around.
+  await downloadFile({
+    filename: backupFilename(timestamp),
+    mimeType: 'application/json',
+    data: entry.data,
+    shareTitle: 'KANAKU backup',
+  });
 };
 
 /** Replace all local data with a stored backup's contents. */

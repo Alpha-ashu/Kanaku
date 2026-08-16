@@ -24,6 +24,7 @@ import {
  normalizeCategorySelection,
 } from '@/lib/expenseCategories';
 import { useCategoryNames } from '@/hooks/useCategoryOptions';
+import { createCategoryEverywhere } from '@/services/featureSyncService';
 import { ReceiptScanner, type ReceiptScanPayload } from '@/app/components/transactions/ReceiptScanner';
 import { getCategoryCartoonIcon } from '@/app/components/ui/CartoonCategoryIcons';
 import { SearchableDropdown } from '@/app/components/ui/SearchableDropdown';
@@ -125,12 +126,14 @@ const CategoryGrid = ({
   type,
   selectedCategory,
   onSelect,
-  aiSuggested
+  aiSuggested,
+  onAddCustom
 }: {
   type: 'expense' | 'income',
   selectedCategory: string,
   onSelect: (cat: string) => void,
-  aiSuggested?: string
+  aiSuggested?: string,
+  onAddCustom?: () => void
 }) => {
   // Built-ins plus everything in db.categories, live — a category created in
   // Settings or by an import is selectable here the moment it is written.
@@ -146,14 +149,18 @@ const CategoryGrid = ({
     }
   }, [type]);
 
+  const allItems = useMemo(() => {
+    return onAddCustom ? [...categories, '__ADD_CUSTOM__'] : categories;
+  }, [categories, onAddCustom]);
+
   const itemsPerPage = 8;
   const pages = useMemo(() => {
     const chunked: string[][] = [];
-    for (let i = 0; i < categories.length; i += itemsPerPage) {
-      chunked.push(categories.slice(i, i + itemsPerPage));
+    for (let i = 0; i < allItems.length; i += itemsPerPage) {
+      chunked.push(allItems.slice(i, i + itemsPerPage));
     }
     return chunked;
-  }, [categories]);
+  }, [allItems]);
 
   const handleScroll = () => {
     if (containerRef.current) {
@@ -177,24 +184,44 @@ const CategoryGrid = ({
             key={pageIdx} 
             className="w-full shrink-0 snap-align-start grid grid-cols-4 grid-rows-2 gap-2"
           >
-            {pageItems.map(cat => (
-              <div data-testid={`add-transaction-div-${cat}`}
-                key={cat}
-                onClick={() => onSelect(cat)}
-                className={cn(
-                  "flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all cursor-pointer group",
-                  selectedCategory === cat ? "bg-indigo-600 shadow-lg shadow-indigo-200" : "bg-slate-50 hover:bg-slate-100",
-                  aiSuggested === cat && !selectedCategory && "ring-2 ring-indigo-400 ring-offset-2 animate-pulse"
-                )}
-              >
-                <div className={cn("w-8 h-8 flex items-center justify-center rounded-lg transition-colors", selectedCategory === cat ? "bg-white/20" : "bg-white group-hover:bg-slate-50")}>
-                  {getCategoryCartoonIcon(cat, 20)}
+            {pageItems.map(cat => {
+              if (cat === '__ADD_CUSTOM__') {
+                return (
+                  <div
+                    data-testid="add-transaction-custom-category-tile"
+                    key="__ADD_CUSTOM__"
+                    onClick={onAddCustom}
+                    className="flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all cursor-pointer group bg-indigo-50/70 hover:bg-indigo-100/90 border-2 border-dashed border-indigo-300 active:scale-95 shadow-xs"
+                  >
+                    <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-indigo-600 text-white shadow-sm group-hover:scale-105 transition-transform">
+                      <Plus size={18} />
+                    </div>
+                    <span className="text-[9px] font-black uppercase tracking-tight text-center leading-none text-indigo-700 w-full px-0.5 truncate">
+                      + Custom
+                    </span>
+                  </div>
+                );
+              }
+
+              return (
+                <div data-testid={`add-transaction-div-${cat}`}
+                  key={cat}
+                  onClick={() => onSelect(cat)}
+                  className={cn(
+                    "flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all cursor-pointer group",
+                    selectedCategory === cat ? "bg-indigo-600 shadow-lg shadow-indigo-200" : "bg-slate-50 hover:bg-slate-100",
+                    aiSuggested === cat && !selectedCategory && "ring-2 ring-indigo-400 ring-offset-2 animate-pulse"
+                  )}
+                >
+                  <div className={cn("w-8 h-8 flex items-center justify-center rounded-lg transition-colors", selectedCategory === cat ? "bg-white/20" : "bg-white group-hover:bg-slate-50")}>
+                    {getCategoryCartoonIcon(cat, 20)}
+                  </div>
+                  <span className={cn("text-[9px] font-black uppercase tracking-tight text-center leading-none truncate w-full px-0.5", selectedCategory === cat ? "text-white" : "text-slate-500")}>
+                    {cat.split(' ')[0]}
+                  </span>
                 </div>
-                <span className={cn("text-[9px] font-black uppercase tracking-tight text-center leading-none truncate w-full px-0.5", selectedCategory === cat ? "text-white" : "text-slate-500")}>
-                  {cat.split(' ')[0]}
-                </span>
-              </div>
-            ))}
+              );
+            })}
             {/* Pad the last page if it doesn't have 8 items to preserve the grid structure and spacing */}
             {pageItems.length < itemsPerPage && 
               Array.from({ length: itemsPerPage - pageItems.length }).map((_, idx) => (
@@ -316,6 +343,39 @@ export function AddTransaction() {
  return [];
  }
  });
+
+  // Custom Category Creation State
+  const [showAddCategoryModal, setShowAddCategoryModal] = useState(false);
+  const [newCatName, setNewCatName] = useState('');
+  const [newCatColor, setNewCatColor] = useState('#6366F1');
+  const [isCreatingCategory, setIsCreatingCategory] = useState(false);
+
+  const handleCreateCustomCategory = async () => {
+    const name = newCatName.trim();
+    if (!name) {
+      toast.error('Please enter a category name');
+      return;
+    }
+    setIsCreatingCategory(true);
+    try {
+      await createCategoryEverywhere({
+        name,
+        type: formData.type === 'income' ? 'income' : 'expense',
+        color: newCatColor,
+        icon: 'tag'
+      });
+      setManualExpenseCategory(true);
+      setFormData(prev => ({ ...prev, category: name, subcategory: '' }));
+      toast.success(`Category "${name}" created!`);
+      setShowAddCategoryModal(false);
+      setNewCatName('');
+    } catch (err) {
+      console.error('Failed to create category:', err);
+      toast.error('Failed to create category');
+    } finally {
+      setIsCreatingCategory(false);
+    }
+  };
 
  const DEFAULT_BANKS = [
  { value: 'HDFC Bank', label: 'HDFC Bank' },
@@ -873,43 +933,63 @@ if (linkedDocId) {
  </div>
  </div>
  )}
- <div className="col-span-1 sm:col-span-2 space-y-1">
- <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Description / Reason</label>
- <div className="relative">
- <AlignLeft className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
- <input type="text" value={formData.description} onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))} aria-label="Description" data-testid="transaction-description-input" className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-300 text-xs focus:ring-2 focus:ring-indigo-500/20" placeholder=" Loan EMI / Friends / ATM Withdrawal" />
- </div>
- </div>
- </div>
+  <div className="col-span-1 sm:col-span-2 space-y-1">
+  <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Description / Reason</label>
+  <div className="relative">
+  <AlignLeft className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+  <input
+    type="text"
+    value={formData.description}
+    onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))}
+    aria-label="Description"
+    data-testid="transaction-description-input"
+    className="w-full bg-slate-50 hover:bg-slate-100/60 border border-slate-200/90 rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-900 placeholder:text-slate-400 text-xs focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-xs"
+    placeholder="e.g. Pani Puri & Pav Baji / Friends / Groceries"
+  />
+  </div>
+  </div>
+  </div>
 
- {/* AI Highlight / Detection Indicator */}
- {remoteCategorySuggestion && (
- <div className="flex items-center gap-3 p-3 bg-indigo-50 rounded-xl border border-indigo-100/50">
- <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white shrink-0">
- <Sparkles size={14} />
- </div>
- <div className="flex-1">
- <p className="text-[9px] font-black text-indigo-600 uppercase">AI Detected Category</p>
- <p className="text-xs font-bold text-slate-700">{remoteCategorySuggestion.category} ({(remoteCategorySuggestion.confidence * 100).toFixed(0)}% confident)</p>
- </div>
- </div>
- )}
+  {/* AI Highlight / Detection Indicator */}
+  {remoteCategorySuggestion && (
+  <div className="flex items-center gap-3 p-3 bg-indigo-50 rounded-xl border border-indigo-100/50">
+  <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white shrink-0">
+  <Sparkles size={14} />
+  </div>
+  <div className="flex-1">
+  <p className="text-[9px] font-black text-indigo-600 uppercase">AI Detected Category</p>
+  <p className="text-xs font-bold text-slate-700">{remoteCategorySuggestion.category} ({(remoteCategorySuggestion.confidence * 100).toFixed(0)}% confident)</p>
+  </div>
+  </div>
+  )}
 
- {/* Unified Category Selector */}
- {!isTransfer && expenseMode !== 'loan' && (
- <div className="space-y-3">
- <div className="flex items-center justify-between">
- <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Select Category</label>
- <span className="text-[9px] font-bold text-indigo-500">Auto-Categorization Active</span>
- </div>
- <CategoryGrid
- type={formData.type === 'income' ? 'income' : 'expense'}
- selectedCategory={formData.category}
- onSelect={cat => { setManualExpenseCategory(true); setFormData(prev => ({ ...prev, category: cat, subcategory: '' })); }}
- aiSuggested={remoteCategorySuggestion?.category}
- />
- </div>
- )}
+  {/* Unified Category Selector */}
+  {!isTransfer && expenseMode !== 'loan' && (
+  <div className="space-y-3">
+  <div className="flex items-center justify-between">
+  <div className="flex items-center gap-2">
+    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Select Category</label>
+    <button
+      type="button"
+      onClick={() => setShowAddCategoryModal(true)}
+      data-testid="add-custom-category-header-btn"
+      className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase text-indigo-600 bg-indigo-50 hover:bg-indigo-100 transition-all border border-indigo-200/60 shadow-xs cursor-pointer active:scale-95"
+    >
+      <Plus size={10} />
+      <span>+ Custom</span>
+    </button>
+  </div>
+  <span className="text-[9px] font-bold text-indigo-500">Auto-Categorization Active</span>
+  </div>
+  <CategoryGrid
+  type={formData.type === 'income' ? 'income' : 'expense'}
+  selectedCategory={formData.category}
+  onSelect={cat => { setManualExpenseCategory(true); setFormData(prev => ({ ...prev, category: cat, subcategory: '' })); }}
+  aiSuggested={remoteCategorySuggestion?.category}
+  onAddCustom={() => setShowAddCategoryModal(true)}
+  />
+  </div>
+  )}
  </div>
 
  {/* Person / Participants Section - NEW Dedicated Card */}
@@ -1581,124 +1661,215 @@ if (linkedDocId) {
       type="button"
       onClick={() => { setScannerMode('attachment'); setShowScanner(true); }}
       data-testid="transaction-add-attachment-button"
-      className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-slate-50 text-slate-900 hover:bg-slate-100 active:scale-[0.97] transition-all border border-slate-100"
+      className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-slate-50 text-slate-900 hover:bg-slate-100 active:scale-[0.97] transition-all border border-slate-100 cursor-pointer"
     >
       <div className="w-9 h-9 rounded-xl bg-slate-200 flex items-center justify-center">
         <Paperclip size={18} className="text-slate-600" />
       </div>
-       <div className="text-center">
-         <p className="text-[10px] font-black uppercase tracking-wide leading-none">Add Attachment</p>
-       </div>
+      <div className="text-center">
+        <p className="text-[10px] font-black uppercase tracking-wide leading-none">Add Attachment</p>
+      </div>
     </button>
   </div>
   )}
 
- {/* Receipt attached show summary + remove option */}
- {(scanDocumentId || attachmentDocumentId) && (
- <div className="flex items-center gap-3 p-3 bg-emerald-50 rounded-xl border border-emerald-100">
- {scanDocumentId ? (
- <ScanLine size={16} className="text-emerald-600 shrink-0" />
- ) : (
- <Paperclip size={16} className="text-emerald-600 shrink-0" />
- )}
- <div className="flex-1">
- <p className="text-[10px] font-black text-emerald-700 uppercase">
- {scanDocumentId ? 'Scanned Receipt' : 'Attachment'}
- </p>
- <p className="text-[9px] font-semibold text-emerald-500">
- {scanDocumentId ? 'Data was auto-extracted by OCR' : 'Saved as proof no OCR'}
- </p>
- </div>
- <button
- type="button"
- onClick={() => { setScanDocumentId(null); setAttachmentDocumentId(null); }}
- data-testid="transaction-remove-attachment-button"
- className="p-1.5 text-emerald-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
- title="Remove attachment"
- >
- <X size={13} strokeWidth={3} />
- </button>
- </div>
- )}
- </div>
- </div>
- </main>
+  {/* Receipt attached show summary + remove option */}
+  {(scanDocumentId || attachmentDocumentId) && (
+    <div className="flex items-center gap-3 p-3 bg-emerald-50 rounded-xl border border-emerald-100">
+      {scanDocumentId ? (
+        <ScanLine size={16} className="text-emerald-600 shrink-0" />
+      ) : (
+        <Paperclip size={16} className="text-emerald-600 shrink-0" />
+      )}
+      <div className="flex-1">
+        <p className="text-[10px] font-black text-emerald-700 uppercase">
+          {scanDocumentId ? 'Scanned Receipt' : 'Attachment'}
+        </p>
+        <p className="text-[9px] font-semibold text-emerald-500">
+          {scanDocumentId ? 'Data was auto-extracted by OCR' : 'Saved as proof no OCR'}
+        </p>
+      </div>
+      <button
+        type="button"
+        onClick={() => { setScanDocumentId(null); setAttachmentDocumentId(null); }}
+        data-testid="transaction-remove-attachment-button"
+        className="p-1.5 text-emerald-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all cursor-pointer"
+        title="Remove attachment"
+      >
+        <X size={13} strokeWidth={3} />
+      </button>
+    </div>
+  )}
+  </div>
+  </div>
+  </main>
 
- {/* Floating Scanner Overlay */}
- {balanceError && (
- <div
- className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
- onClick={() => setBalanceError(null)}
- data-testid="insufficient-balance-modal"
- >
- <div
- className="bg-white rounded-3xl shadow-2xl border border-slate-100 w-full max-w-sm p-6 animate-in fade-in zoom-in-95 duration-200"
- onClick={(e) => e.stopPropagation()}
- >
- <div className="flex items-center gap-3 mb-4">
- <div className="p-2.5 bg-rose-50 text-rose-600 rounded-2xl shrink-0"><AlertTriangle size={22} /></div>
- <h3 className="text-lg font-black text-slate-900 tracking-tight">Insufficient Balance</h3>
- </div>
- <p className="text-sm font-medium text-slate-600 mb-4 leading-relaxed">
- You don&apos;t have enough balance in <span className="font-bold text-slate-900">{balanceError.accountName}</span>.
- </p>
- <div className="space-y-2.5 mb-4 bg-slate-50 rounded-2xl p-4">
- <div className="flex items-center justify-between">
- <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Available Balance</span>
- <span className="text-sm font-black text-slate-900">{formatCurrencyAmount(balanceError.available, balanceError.currency)}</span>
- </div>
- <div className="flex items-center justify-between">
- <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Entered Amount</span>
- <span className="text-sm font-black text-rose-600">{formatCurrencyAmount(balanceError.entered, balanceError.currency)}</span>
- </div>
- </div>
- <p className="text-xs font-medium text-slate-400 mb-5 leading-relaxed">
- Please enter an amount less than or equal to your available balance.
- </p>
- <div className="flex gap-3">
- <button
- type="button"
- onClick={() => setBalanceError(null)}
- className="flex-1 py-3 rounded-2xl bg-slate-100 text-slate-700 font-black text-[11px] uppercase tracking-widest hover:bg-slate-200 transition-all"
- >
- Cancel
- </button>
- <button
- type="button"
- data-testid="insufficient-balance-edit-button"
- onClick={() => setBalanceError(null)}
- className="flex-1 py-3 rounded-2xl bg-slate-900 text-white font-black text-[11px] uppercase tracking-widest hover:bg-slate-800 transition-all"
- >
- Edit Amount
- </button>
- </div>
- </div>
- </div>
- )}
+  {/* Floating Balance Error Modal */}
+  {balanceError && (
+    <div
+      className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+      onClick={() => setBalanceError(null)}
+      data-testid="insufficient-balance-modal"
+    >
+      <div
+        className="bg-white rounded-3xl shadow-2xl border border-slate-100 w-full max-w-sm p-6 animate-in fade-in zoom-in-95 duration-200"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-2.5 bg-rose-50 text-rose-600 rounded-2xl shrink-0"><AlertTriangle size={22} /></div>
+          <h3 className="text-lg font-black text-slate-900 tracking-tight">Insufficient Balance</h3>
+        </div>
+        <p className="text-sm font-medium text-slate-600 mb-4 leading-relaxed">
+          You don&apos;t have enough balance in <span className="font-bold text-slate-900">{balanceError.accountName}</span>.
+        </p>
+        <div className="space-y-2.5 mb-4 bg-slate-50 rounded-2xl p-4">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Available Balance</span>
+            <span className="text-sm font-black text-slate-900">{formatCurrencyAmount(balanceError.available, balanceError.currency)}</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Entered Amount</span>
+            <span className="text-sm font-black text-rose-600">{formatCurrencyAmount(balanceError.entered, balanceError.currency)}</span>
+          </div>
+        </div>
+        <p className="text-xs font-medium text-slate-400 mb-5 leading-relaxed">
+          Please enter an amount less than or equal to your available balance.
+        </p>
+        <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={() => setBalanceError(null)}
+            className="flex-1 py-3 rounded-2xl bg-slate-100 text-slate-700 font-black text-[11px] uppercase tracking-widest hover:bg-slate-200 transition-all cursor-pointer"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            data-testid="insufficient-balance-edit-button"
+            onClick={() => setBalanceError(null)}
+            className="flex-1 py-3 rounded-2xl bg-slate-900 text-white font-black text-[11px] uppercase tracking-widest hover:bg-slate-800 transition-all cursor-pointer"
+          >
+            Edit Amount
+          </button>
+        </div>
+      </div>
+    </div>
+  )}
 
- {showScanner && (
- <ReceiptScanner
- isOpen={showScanner}
- onClose={() => { setShowScanner(false); setScannerMode(null); }}
- onApplyScan={(scan) => {
- handleScanApply(scan);
- setShowScanner(false);
- setScannerMode(null);
- }}
- onAttachmentSaved={(docId) => {
- setAttachmentDocumentId(docId);
- setShowScanner(false);
- setScannerMode(null);
- }}
- initialMode={scannerMode}
- />
- )}
- <FloatingSaveBar
-   onSave={handleSubmit}
-   onDiscard={() => { clearQuickStorage(); setCurrentPage(returnPage); }}
-   isSaving={isSubmitting}
-   saveLabel="Save Transaction"
- />
- </div>
- );
+  {/* Receipt Scanner */}
+  {showScanner && (
+    <ReceiptScanner
+      isOpen={showScanner}
+      onClose={() => { setShowScanner(false); setScannerMode(null); }}
+      onApplyScan={(scan) => {
+        handleScanApply(scan);
+        setShowScanner(false);
+        setScannerMode(null);
+      }}
+      onAttachmentSaved={(docId) => {
+        setAttachmentDocumentId(docId);
+        setShowScanner(false);
+        setScannerMode(null);
+      }}
+      initialMode={scannerMode}
+    />
+  )}
+
+  {/* Quick Add Custom Category Modal */}
+  {showAddCategoryModal && (
+    <div
+      className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200"
+      onClick={() => setShowAddCategoryModal(false)}
+      data-testid="add-custom-category-modal"
+    >
+      <div
+        className="w-full max-w-sm bg-white rounded-3xl p-6 shadow-2xl border border-slate-100 space-y-4 animate-in zoom-in-95 duration-200"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+              <Tag size={16} />
+            </div>
+            <div>
+              <h3 className="text-sm font-black text-slate-900">New Category</h3>
+              <p className="text-[10px] text-slate-400 font-medium">Add a custom {formData.type} category</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowAddCategoryModal(false)}
+            className="p-1 rounded-full text-slate-400 hover:bg-slate-100 transition-colors cursor-pointer"
+          >
+            <X size={16} />
+          </button>
+        </div>
+
+        <div className="space-y-3">
+          <div>
+            <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">Category Name</label>
+            <input
+              type="text"
+              autoFocus
+              value={newCatName}
+              onChange={(e) => setNewCatName(e.target.value)}
+              placeholder="e.g. Street Food, Pani Puri, Books..."
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  void handleCreateCustomCategory();
+                }
+              }}
+            />
+          </div>
+
+          <div>
+            <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">Color Tag</label>
+            <div className="flex items-center gap-2">
+              {['#6366F1', '#EC4899', '#F59E0B', '#10B981', '#3B82F6', '#EF4444', '#8B5CF6', '#14B8A6'].map((color) => (
+                <button
+                  key={color}
+                  type="button"
+                  onClick={() => setNewCatColor(color)}
+                  className={cn(
+                    "w-6 h-6 rounded-full transition-transform cursor-pointer",
+                    newCatColor === color ? "scale-125 ring-2 ring-slate-900 ring-offset-2 shadow-xs" : "hover:scale-110 opacity-80 hover:opacity-100"
+                  )}
+                  style={{ backgroundColor: color }}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 pt-2">
+          <button
+            type="button"
+            onClick={() => setShowAddCategoryModal(false)}
+            className="flex-1 py-2.5 text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-all cursor-pointer"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={() => void handleCreateCustomCategory()}
+            disabled={isCreatingCategory || !newCatName.trim()}
+            className="flex-1 py-2.5 text-xs font-black uppercase text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-all shadow-md shadow-indigo-200 disabled:opacity-50 cursor-pointer"
+          >
+            {isCreatingCategory ? 'Saving...' : 'Add Category'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )}
+
+  <FloatingSaveBar
+    onSave={handleSubmit}
+    onDiscard={() => { clearQuickStorage(); setCurrentPage(returnPage); }}
+    isSaving={isSubmitting}
+    saveLabel="Save Transaction"
+  />
+  </div>
+  );
 }
