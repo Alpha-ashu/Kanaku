@@ -36,7 +36,7 @@
     "db:seed": "cd backend && npx prisma db seed",
     "db:studio": "cd backend && npx prisma studio",
     "db:clean:mock-users": "npm --prefix backend run clean:mock-users",
-    "predb:generate": "node -e \"require('fs').mkdirSync('backend/generated/prisma/runtime', { recursive: true })\"",
+    "predb:generate": "node scripts/ensure-prisma-runtime.cjs",
     "db:generate": "npx prisma generate --schema backend/prisma/schema.prisma --config backend/prisma.config.ts",
     "cap:init": "npx cap init",
     "cap:add:android": "npx cap add android",
