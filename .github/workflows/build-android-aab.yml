@@ -223,12 +223,11 @@ jobs:
 
       - name: Build summary
         if: always()
-        # Branch/event names go through env, not direct ${{ }} interpolation in
-        # the shell (CodeQL: expression/script injection in GitHub Actions).
         env:
           BRANCH: ${{ github.ref_name }}
           EVENT: ${{ github.event_name }}
         run: |
+          shopt -s nullglob
           echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
           echo "- Branch: $BRANCH" >> $GITHUB_STEP_SUMMARY
           echo "- Triggered by: $EVENT" >> $GITHUB_STEP_SUMMARY
