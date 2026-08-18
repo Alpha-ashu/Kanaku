@@ -86,13 +86,13 @@
     "@capacitor/filesystem": "8.1.2",
     "@capacitor/haptics": "8.0.2",
     "@capacitor/keyboard": "8.0.5",
-    "@capacitor/local-notifications": "8.2.1",
+    "@capacitor/local-notifications": "8.3.0",
     "@capacitor/preferences": "8.0.1",
     "@capacitor/push-notifications": "8.1.2",
     "@capacitor/share": "8.0.1",
     "@capacitor/splash-screen": "8.0.2",
     "@capacitor/status-bar": "8.0.3",
-    "@capgo/capacitor-native-biometric": "8.6.4"
+    "@capgo/capacitor-native-biometric": "8.6.6"
   },
   "devDependencies": {
     "@capacitor/android": "^8.5.0",
@@ -100,11 +100,11 @@
     "@capacitor/ios": "^8.5.0",
     "@playwright/test": "^1.62.1",
     "@types/express": "^5.0.6",
-    "@vercel/node": "^5.9.9",
+    "@vercel/node": "^5.10.1",
     "ajv": "^6.14.0",
     "prisma": "7.9.1",
-    "turbo": "^2.10.9",
-    "typescript": "6.0.3"
+    "turbo": "^2.10.10",
+    "typescript": "7.0.2"
   },
   "overrides": {
     "@prisma/client": "6.19.2",
