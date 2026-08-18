@@ -23,7 +23,9 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  NODE_VERSION: '22'
+  # Node 24 ships npm 11, which matches the lockfileVersion generated locally.
+  # Node 22 (npm 10) cannot process npm-11-generated lockfiles with `npm ci`.
+  NODE_VERSION: '24'
 
 
 # Least-privilege token. Without an explicit block a workflow inherits the

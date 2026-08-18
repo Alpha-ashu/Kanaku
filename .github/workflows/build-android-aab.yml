@@ -33,7 +33,9 @@ on:
           - release
 
 env:
-  NODE_VERSION: '22'
+  # Node 24 ships npm 11, which matches the lockfileVersion generated locally.
+  # Node 22 (npm 10) cannot process npm-11-generated lockfiles with `npm ci`.
+  NODE_VERSION: '24'
   # Capacitor 8 plugin modules declare kotlin { jvmToolchain(21) }; building them
   # on JDK 17 fails to resolve a toolchain.
   JAVA_VERSION: '21'
