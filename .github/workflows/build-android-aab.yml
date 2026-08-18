@@ -14,10 +14,10 @@ on:
   push:
     branches: [main]
     paths:
-      - "frontend/src/**"
-      - "frontend/public/**"
+      - "frontend/**"
       - "android/**"
-      - "frontend/package.json"
+      - "packages/shared/**"
+      - "package.json"
       - "package-lock.json"
       - "capacitor.config.*"
       - ".github/workflows/build-android-aab.yml"
