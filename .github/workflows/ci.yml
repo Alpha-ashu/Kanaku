@@ -80,7 +80,7 @@ jobs:
 
       # Workspace-aware install at the repo root (single hoisted lockfile).
       - name: Install dependencies
-        run: npm install --include=dev --no-audit --no-fund
+        run: npm ci --ignore-scripts --no-audit --no-fund || npm install --ignore-scripts --no-audit --no-fund
 
       - name: Generate Prisma client
         working-directory: backend
