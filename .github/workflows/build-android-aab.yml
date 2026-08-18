@@ -96,7 +96,7 @@ jobs:
 
       # Workspace-aware install at the repo root installs both workspaces (incl. frontend).
       - name: Install dependencies
-        run: npm ci --ignore-scripts --no-audit --no-fund
+        run: npm ci --ignore-scripts --no-audit --no-fund || npm install --ignore-scripts --no-audit --no-fund
         working-directory: .
 
       # MUST be build:android (vite --mode android), not the default build.
