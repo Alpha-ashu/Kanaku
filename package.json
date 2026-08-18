@@ -37,7 +37,7 @@
     "db:studio": "cd backend && npx prisma studio",
     "db:clean:mock-users": "npm --prefix backend run clean:mock-users",
     "predb:generate": "node scripts/ensure-prisma-runtime.cjs",
-    "db:generate": "npx prisma generate --schema backend/prisma/schema.prisma",
+    "db:generate": "npx -y prisma generate --schema backend/prisma/schema.prisma",
     "cap:init": "npx cap init",
     "cap:add:android": "npx cap add android",
     "cap:add:ios": "npx cap add ios",

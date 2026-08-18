@@ -90,14 +90,14 @@ jobs:
 
       - name: Push schema to test DB
         working-directory: backend
-        run: npx prisma db push --accept-data-loss
+        run: npx -y prisma db push --accept-data-loss
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/kanaku_test
           DIRECT_URL: postgresql://postgres:postgres@localhost:5432/kanaku_test
 
       - name: Guard schema drift against migrations
         working-directory: backend
-        run: npx prisma migrate diff --from-migrations ./prisma/migrations --to-schema-datamodel ./prisma/schema.prisma --shadow-database-url "postgresql://postgres:postgres@localhost:5432/kanaku_shadow" --exit-code
+        run: npx -y prisma migrate diff --from-migrations ./prisma/migrations --to-schema-datamodel ./prisma/schema.prisma --shadow-database-url "postgresql://postgres:postgres@localhost:5432/kanaku_shadow" --exit-code
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/kanaku_test
           DIRECT_URL: postgresql://postgres:postgres@localhost:5432/kanaku_test
