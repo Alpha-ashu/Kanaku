@@ -83,9 +83,10 @@ jobs:
         run: npm ci --ignore-scripts --no-audit --no-fund || npm install --ignore-scripts --no-audit --no-fund
 
       - name: Generate Prisma client
+        working-directory: backend
         run: |
-          mkdir -p backend/generated/prisma/runtime
-          npx prisma generate --schema backend/prisma/schema.prisma --config backend/prisma.config.ts
+          mkdir -p generated/prisma/runtime
+          npx prisma generate
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/kanaku_test
           DIRECT_URL: postgresql://postgres:postgres@localhost:5432/kanaku_test
