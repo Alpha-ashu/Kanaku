@@ -53,7 +53,7 @@ jobs:
 
       # Workspace-aware install at the repo root (overrides the job's backend working-directory).
       - name: Install dependencies
-        run: npm install --ignore-scripts --no-audit --no-fund
+        run: npm install --include=dev --no-audit --no-fund
         working-directory: ${{ github.workspace }}
 
       - name: Generate Prisma client
