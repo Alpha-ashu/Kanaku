@@ -85,6 +85,7 @@ jobs:
       - name: Generate Prisma client
         working-directory: backend
         run: |
+          set -x
           mkdir -p generated/prisma/runtime
           node ../node_modules/prisma/build/index.js generate
         env:
