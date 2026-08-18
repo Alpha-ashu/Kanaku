@@ -9,16 +9,17 @@ COPY package.json package-lock.json ./
 COPY frontend/package.json ./frontend/
 COPY backend/package.json ./backend/
 COPY packages/shared/package.json ./packages/shared/
-RUN npm ci --ignore-scripts
+RUN npm ci --ignore-scripts || npm install --ignore-scripts --no-audit --no-fund
 
 # Copy source, generate prisma client, build backend workspace
 COPY . .
-RUN npx prisma generate --schema backend/prisma/schema.prisma
+RUN node scripts/ensure-prisma-runtime.cjs && npx -y prisma generate --schema backend/prisma/schema.prisma
 RUN npm run build:backend
 
 # ── Stage 2: Production image ────────────────────────────────────────────────
 FROM node:22-alpine AS runner
 
+RUN apk add --no-cache openssl
 RUN addgroup -S kanaku && adduser -S kanaku -G kanaku
 
 WORKDIR /app
@@ -28,7 +29,7 @@ COPY package.json package-lock.json ./
 COPY frontend/package.json ./frontend/
 COPY backend/package.json ./backend/
 COPY packages/shared ./packages/shared
-RUN npm ci --omit=dev --ignore-scripts --workspace=backend && npm cache clean --force
+RUN npm install --omit=dev --ignore-scripts --no-audit --no-fund --workspace=backend && npm cache clean --force
 
 # Overwrite root package.json with backend/package.json so Node runs dist/server.js as CommonJS
 COPY backend/package.json ./package.json
