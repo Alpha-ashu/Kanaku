@@ -57,10 +57,8 @@ jobs:
         working-directory: ${{ github.workspace }}
 
       - name: Generate Prisma client
-        working-directory: backend
-        run: |
-          mkdir -p generated/prisma/runtime
-          npx prisma generate
+        run: npm run db:generate
+        working-directory: ${{ github.workspace }}
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/kanaku_test
           DIRECT_URL: postgresql://postgres:postgres@localhost:5432/kanaku_test
