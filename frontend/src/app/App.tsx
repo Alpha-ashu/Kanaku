@@ -13,11 +13,6 @@ import { initializePushNotifications } from '@/services/pushNotificationService'
 import { canAccessPage } from '@/lib/featureFlags';
 import { ADMIN_UI_ENABLED } from '@/config/platform';
 
-// Build-time boolean injected by Vite `define` (vite.config.ts; vitest provides
-// it too). Referenced RAW at the lazy() sites below so esbuild folds
-// `false ? lazy(() => import(...)) : null` and physically drops the Admin/Manager
-// chunks from a user-surface (VITE_APP_SURFACE=user) build.
-declare const __ADMIN_UI_ENABLED__: boolean;
 import { syncUserDataFromCloud, SyncedTableName } from '@/lib/auth-sync-integration';
 import { syncBudgets, syncCategories, syncRecurringTransactions } from '@/services/featureSyncService';
 
@@ -62,17 +57,17 @@ const AuthCallback = lazy(() => import('@/app/components/auth/AuthCallback').the
 // Admin/Manager platform pages: on a VITE_APP_SURFACE=user build these resolve
 // to null so the chunks are dropped from the customer bundle entirely
 // (ADMIN_UI_ENABLED is a build-time constant — see src/config/platform.ts).
-const AdminDashboard = __ADMIN_UI_ENABLED__ ? lazy(() => import('@/app/components/admin/AdminDashboard').then(m => ({ default: m.AdminDashboard }))) : null;
-const AdminAIDashboard = __ADMIN_UI_ENABLED__ ? lazy(() => import('@/app/components/admin/AdminAIDashboard').then(m => ({ default: m.AdminAIDashboard }))) : null;
-const SyncMonitorDashboard = __ADMIN_UI_ENABLED__ ? lazy(() => import('@/app/components/admin/SyncMonitorDashboard').then(m => ({ default: m.SyncMonitorDashboard }))) : null;
+const AdminDashboard = ADMIN_UI_ENABLED ? lazy(() => import('@/app/components/admin/AdminDashboard').then(m => ({ default: m.AdminDashboard }))) : null;
+const AdminAIDashboard = ADMIN_UI_ENABLED ? lazy(() => import('@/app/components/admin/AdminAIDashboard').then(m => ({ default: m.AdminAIDashboard }))) : null;
+const SyncMonitorDashboard = ADMIN_UI_ENABLED ? lazy(() => import('@/app/components/admin/SyncMonitorDashboard').then(m => ({ default: m.SyncMonitorDashboard }))) : null;
 const AdvisorWorkspace = lazy(() => import('@/app/components/advisor/AdvisorWorkspace').then(m => ({ default: m.AdvisorWorkspace })));
-const AdminFeaturePanel = __ADMIN_UI_ENABLED__ ? lazy(() => import('@/app/components/admin/AdminFeaturePanel').then(m => ({ default: m.AdminFeaturePanel }))) : null;
+const AdminFeaturePanel = ADMIN_UI_ENABLED ? lazy(() => import('@/app/components/admin/AdminFeaturePanel').then(m => ({ default: m.AdminFeaturePanel }))) : null;
 const AdvisorPanel = lazy(() => import('@/app/components/advisor/AdvisorPanel').then(m => ({ default: m.AdvisorPanel })));
 const BookAdvisor = lazy(() => import('@/app/components/advisor/BookAdvisor').then(m => ({ default: m.BookAdvisor })));
-const AdminAdvisorVerification = __ADMIN_UI_ENABLED__ ? lazy(() => import('@/app/components/admin/AdminAdvisorVerification').then(m => ({ default: m.AdminAdvisorVerification }))) : null;
+const AdminAdvisorVerification = ADMIN_UI_ENABLED ? lazy(() => import('@/app/components/admin/AdminAdvisorVerification').then(m => ({ default: m.AdminAdvisorVerification }))) : null;
 const PayEMI = lazy(() => import('@/app/components/transactions/PayEMI').then(m => ({ default: m.PayEMI })));
 const Diagnostics = lazy(() => import('@/app/components/shared/Diagnostics').then(m => ({ default: m.Diagnostics })));
-const ManagerAdvisorVerification = __ADMIN_UI_ENABLED__ ? lazy(() => import('@/app/components/manager/ManagerAdvisorVerification').then(m => ({ default: m.ManagerAdvisorVerification }))) : null;
+const ManagerAdvisorVerification = ADMIN_UI_ENABLED ? lazy(() => import('@/app/components/manager/ManagerAdvisorVerification').then(m => ({ default: m.ManagerAdvisorVerification }))) : null;
 const ToDoLists = lazy(() => import('@/app/components/features/ToDoLists').then(m => ({ default: m.ToDoLists })));
 const ToDoListDetail = lazy(() => import('@/app/components/features/ToDoListDetail').then(m => ({ default: m.ToDoListDetail })));
 const ToDoListShare = lazy(() => import('@/app/components/features/ToDoListShare').then(m => ({ default: m.ToDoListShare })));

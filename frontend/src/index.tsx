@@ -1,3 +1,4 @@
+import '@/styles/index.css';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import * as Sentry from '@sentry/react';
@@ -12,43 +13,71 @@ import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
 // Initialize Sentry if VITE_SENTRY_DSN is configured
 const sentryDsn = import.meta.env.VITE_SENTRY_DSN;
 if (sentryDsn) {
-  Sentry.init({
-    dsn: sentryDsn,
-    environment: import.meta.env.MODE || 'production',
-    tracesSampleRate: 0.1,
-  });
-  registerErrorReporter((err, context) => {
-    Sentry.captureException(err, { extra: context });
-  });
+  try {
+    Sentry.init({
+      dsn: sentryDsn,
+      environment: import.meta.env.MODE || 'production',
+      tracesSampleRate: 0.1,
+    });
+    registerErrorReporter((err, context) => {
+      Sentry.captureException(err, { extra: context });
+    });
+  } catch (sentryErr) {
+    console.warn('[Startup] Sentry initialization skipped:', sentryErr);
+  }
 }
 
-// Perform global brand migration (KANAKU -> KANAKU) before anything else
-runGlobalMigration();
+// Perform safe startup procedures (non-blocking)
+try {
+  runGlobalMigration();
+} catch (e) {
+  console.warn('[Startup] Global migration skipped:', e);
+}
 
-// Capture uncaught errors and unhandled rejections from app startup
-setupGlobalErrorHandlers();
+try {
+  setupGlobalErrorHandlers();
+} catch (e) {
+  console.warn('[Startup] Error handlers setup skipped:', e);
+}
 
-// Compare the local Dexie schema against what the backend expects.
-//
-// syncSchemaGuard shipped with a docstring saying "wire this into your
-// bootstrap" and never was — nothing imported it. Web auto-deploys on every
-// push while Android and iOS are installed by hand, so the three platforms
-// routinely run different local schemas against one backend with no check at
-// all. Non-blocking: it warns when merely behind and only halts below the
-// backend's hard floor.
-void initSchemaGuard().catch((error) => {
-  console.warn('[Startup] Schema guard init skipped:', error);
-});
+try {
+  void initSchemaGuard().catch((error) => {
+    console.warn('[Startup] Schema guard init skipped:', error);
+  });
+} catch (e) {
+  console.warn('[Startup] Schema guard skipped:', e);
+}
 
-financialDataCaptureService.bindOnlineQueueProcessor();
+try {
+  financialDataCaptureService.bindOnlineQueueProcessor();
+} catch (e) {
+  console.warn('[Startup] Online queue processor binding skipped:', e);
+}
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <ErrorBoundary>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    </ErrorBoundary>
-  </React.StrictMode>
-);
+const rootElement = document.getElementById('root');
+if (rootElement) {
+  try {
+    const root = ReactDOM.createRoot(rootElement);
+    root.render(
+      <React.StrictMode>
+        <ErrorBoundary>
+          <BrowserRouter>
+            <App />
+          </BrowserRouter>
+        </ErrorBoundary>
+      </React.StrictMode>
+    );
+  } catch (renderError) {
+    console.error('[Startup] Failed to render root:', renderError);
+    rootElement.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:center;height:100vh;padding:24px;text-align:center;font-family:system-ui,-apple-system,sans-serif;background:#f8fafc;">
+        <div style="max-width:320px;">
+          <h2 style="font-size:18px;font-weight:700;color:#0f172a;margin-bottom:8px;">Welcome to KANAKU</h2>
+          <p style="font-size:14px;color:#64748b;margin-bottom:16px;">Starting your finance dashboard...</p>
+          <button onclick="window.location.reload()" style="background:#2563eb;color:#ffffff;border:none;padding:10px 20px;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;">Refresh</button>
+        </div>
+      </div>
+    `;
+  }
+}
 

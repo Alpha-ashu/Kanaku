@@ -15,52 +15,15 @@
   <!-- Responsive and PWA -->
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="manifest" href="/manifest.json" />
-  <link rel="stylesheet" href="/src/styles/index.css" />
+  <meta name="theme-color" content="#2563eb" />
 
   <title>KANAKU</title>
 
-  <!-- Prevent compatibility errors for dynamic styles (like Sonner) -->
+  <!-- Global error diagnostic handler for mobile startup -->
   <script>
-    (function() {
-      // Dynamic injection of theme-color to prevent compatibility static analysis warnings in Firefox (Webhint)
-      if (!/firefox/i.test(navigator.userAgent)) {
-        const meta = document.createElement('meta');
-        meta.name = 'theme-color';
-        meta.content = '#2563eb';
-        document.head.appendChild(meta);
-      }
-
-      // Prefix user-select rules injected via CSSStyleSheet.prototype.insertRule (like Sonner)
-      const origInsert = CSSStyleSheet.prototype.insertRule;
-      CSSStyleSheet.prototype.insertRule = function(rule, index) {
-        if (typeof rule === 'string' && rule.includes('user-select: none') && !rule.includes('-webkit-user-select')) {
-          rule = rule.replace(/user-select:\s*none/g, '-webkit-user-select: none; user-select: none;');
-        }
-        return origInsert.call(this, rule, index);
-      };
-
-      function patchStyle(el) {
-        if (!el || el.tagName !== 'STYLE') return;
-        const patch = () => {
-          if (el.textContent && el.textContent.includes('user-select: none') && !el.textContent.includes('-webkit-user-select')) {
-            el.textContent = el.textContent.replace(/user-select:\s*none/g, '-webkit-user-select: none; user-select: none;');
-          }
-        };
-        const observer = new MutationObserver(patch);
-        observer.observe(el, { childList: true, characterData: true });
-        patch();
-      }
-      const origAppend = document.head.appendChild;
-      document.head.appendChild = function(el) {
-        patchStyle(el);
-        return origAppend.apply(this, arguments);
-      };
-      const origInsertBefore = document.head.insertBefore;
-      document.head.insertBefore = function(el, ref) {
-        patchStyle(el);
-        return origInsertBefore.apply(this, arguments);
-      };
-    })();
+    window.addEventListener('error', function(event) {
+      console.error('[Startup Error]', event.message, event.filename, event.lineno, event.error);
+    });
   </script>
 
   <!-- Prevent FOUC (Flash of Unstyled Content) -->
