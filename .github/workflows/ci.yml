@@ -83,7 +83,10 @@ jobs:
         run: npm ci --ignore-scripts --no-audit --no-fund || npm install --ignore-scripts --no-audit --no-fund
 
       - name: Generate Prisma client
-        run: npm run db:generate
+        working-directory: backend
+        run: |
+          node -e "require('fs').mkdirSync('generated/prisma/runtime', { recursive: true })"
+          npx prisma generate
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/kanaku_test
           DIRECT_URL: postgresql://postgres:postgres@localhost:5432/kanaku_test
