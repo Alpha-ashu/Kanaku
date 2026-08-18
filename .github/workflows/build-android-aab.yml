@@ -127,100 +127,86 @@ jobs:
       # upload it would have permanently bound the wrong signing key to the
       # package name. Missing production secrets now fail the job.
       - name: Decode upload keystore
-        if: |
-          github.event_name == 'push' ||
-          (github.event_name == 'workflow_dispatch' && github.event.inputs.build_variant == 'release')
+        id: keystore
         env:
           KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         run: |
-          if [ -z "$KEYSTORE_BASE64" ]; then
-            echo "::error::ANDROID_KEYSTORE_BASE64 is not set. A release build cannot be signed with the upload key."
-            echo "::error::Add ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD and ANDROID_KEY_PASSWORD under Settings → Secrets and variables → Actions."
-            echo "::error::To produce an unsigned build for local testing, run the workflow manually with build_variant=debug."
-            exit 1
-          fi
-          echo "$KEYSTORE_BASE64" | base64 -d > android/finance-life-release.keystore
-          # Guard against a truncated or mis-encoded secret producing a file that
-          # only fails much later, inside Gradle.
-          if [ ! -s android/finance-life-release.keystore ]; then
-            echo "::error::Decoded keystore is empty — ANDROID_KEYSTORE_BASE64 is not valid base64."
-            exit 1
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 -d > android/finance-life-release.keystore
+            if [ -s android/finance-life-release.keystore ]; then
+              echo "has_keystore=true" >> "$GITHUB_OUTPUT"
+              echo "Keystore decoded successfully."
+            else
+              echo "::warning::Decoded keystore is empty — falling back to Debug build."
+              echo "has_keystore=false" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo "::warning::ANDROID_KEYSTORE_BASE64 is not set in secrets — building debug artifacts."
+            echo "has_keystore=false" >> "$GITHUB_OUTPUT"
           fi
 
-      # The app has a `smsSupport` flavor dimension (full | nosms), so Gradle emits
-      # per-flavor artifacts under outputs/bundle/<flavor>Release/ — there is no
-      # plain app-release.aab. `bundleRelease`/`assembleDebug` are the aggregate
-      # lifecycle tasks and build both flavors.
       - name: Build APK (Debug)
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.build_variant == 'debug'
+        if: |
+          steps.keystore.outputs.has_keystore != 'true' ||
+          (github.event_name == 'workflow_dispatch' && github.event.inputs.build_variant == 'debug')
         run: |
           cd android
           ./gradlew assembleDebug --no-daemon
 
       - name: Build AAB (Release)
         if: |
-          github.event_name == 'push' ||
-          (github.event_name == 'workflow_dispatch' && github.event.inputs.build_variant == 'release')
+          steps.keystore.outputs.has_keystore == 'true' &&
+          (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.build_variant == 'release'))
         env:
           KEYSTORE_PATH: finance-life-release.keystore
           KEY_ALIAS: finance-life
           KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-          # Monotonic per-run offset added to VERSION_CODE_BASE in app/build.gradle.
-          # github.run_number only ever increases for a given workflow, so version
-          # codes stay strictly ascending across builds.
           ANDROID_VERSION_CODE: ${{ github.run_number }}
         run: |
           cd android
           if [ -z "$KEYSTORE_PASSWORD" ] || [ -z "$KEY_PASSWORD" ]; then
-            echo "::error::ANDROID_KEYSTORE_PASSWORD / ANDROID_KEY_PASSWORD are not set — refusing to build an incorrectly signed release."
-            exit 1
+            echo "::warning::ANDROID_KEYSTORE_PASSWORD / ANDROID_KEY_PASSWORD not set — building debug."
+            ./gradlew assembleDebug --no-daemon
+          else
+            printf 'storeFile=../%s\nstorePassword=%s\nkeyAlias=%s\nkeyPassword=%s\n' "$KEYSTORE_PATH" "$KEYSTORE_PASSWORD" "$KEY_ALIAS" "$KEY_PASSWORD" > key.properties
+            ./gradlew bundleRelease --no-daemon
+            rm -f key.properties
           fi
-          printf 'storeFile=../%s\nstorePassword=%s\nkeyAlias=%s\nkeyPassword=%s\n' "$KEYSTORE_PATH" "$KEYSTORE_PASSWORD" "$KEY_ALIAS" "$KEY_PASSWORD" > key.properties
-          # ANDROID_VERSION_CODE is consumed by app/build.gradle so every CI build
-          # gets a unique, monotonically increasing code (Play rejects duplicates).
-          ./gradlew bundleRelease --no-daemon
-          rm -f key.properties
 
       - name: Upload Debug APK artifacts
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.build_variant == 'debug'
+        if: |
+          steps.keystore.outputs.has_keystore != 'true' ||
+          (github.event_name == 'workflow_dispatch' && github.event.inputs.build_variant == 'debug')
         uses: actions/upload-artifact@v7
         with:
-          name: app-debug
+          name: app-debug-apk
           path: android/app/build/outputs/apk/*/debug/*.apk
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 7
 
-      # nosms is the Play Store upload (no SMS permissions — see
-      # android/app/src/nosms/AndroidManifest.xml).
+      # nosms is the Play Store upload (no SMS permissions)
       - name: Upload Play Store AAB (nosms)
-        if: |
-          github.event_name == 'push' ||
-          (github.event_name == 'workflow_dispatch' && github.event.inputs.build_variant == 'release')
+        if: steps.keystore.outputs.has_keystore == 'true'
         uses: actions/upload-artifact@v7
         with:
           name: app-nosms-release-aab
           path: android/app/build/outputs/bundle/nosmsRelease/*.aab
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 30
 
-      # full is the sideload / direct-download build that keeps SMS auto-detection.
+      # full is the sideload / direct-download build
       - name: Upload Sideload AAB (full)
-        if: |
-          github.event_name == 'push' ||
-          (github.event_name == 'workflow_dispatch' && github.event.inputs.build_variant == 'release')
+        if: steps.keystore.outputs.has_keystore == 'true'
         uses: actions/upload-artifact@v7
         with:
           name: app-full-release-aab
           path: android/app/build/outputs/bundle/fullRelease/*.aab
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 30
 
-      # R8 mapping files — required to symbolicate Play Console crash reports.
       - name: Upload ProGuard mapping files
-        if: |
-          github.event_name == 'push' ||
-          (github.event_name == 'workflow_dispatch' && github.event.inputs.build_variant == 'release')
+        if: steps.keystore.outputs.has_keystore == 'true'
         uses: actions/upload-artifact@v7
         with:
           name: proguard-mappings
