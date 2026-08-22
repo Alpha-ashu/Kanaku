@@ -1,7 +1,7 @@
 fastapi==0.141.1
 # Pinned to patch starlette CVEs (multipart/path/DoS); fastapi 0.137 allows starlette 1.x.
 starlette==1.6.0
-uvicorn==0.52.1
+uvicorn==0.52.3
 websockets==17.0.1
 watchfiles==1.2.0
 httptools==0.8.0
@@ -29,5 +29,5 @@ accelerate>=1.14.0
 # `PaddleOCR(use_angle_cls=True, ..., show_log=False)` and
 # `ocr.ocr(np.array(image), cls=True)`), so taking it as-is breaks OCR
 # extraction at runtime. Bump only after app/main.py is migrated to the 3.x API.
-paddleocr>=2.9,<3.0
-paddlepaddle>=2.6.2
+paddleocr>=3.7.0,<4.0
+paddlepaddle>=3.3.1
