@@ -6,7 +6,7 @@ import { logger } from '../../config/logger';
 import { AppError } from '../../utils/AppError';
 import { isDatabaseUnavailableError } from '../../utils/databaseAvailability';
 import { getSocketManager } from '../../sockets';
-import { inviteParticipants } from '../collaboration/invitation.service';
+import { inviteParticipants, resolveContactDetailsForFriend } from '../collaboration/invitation.service';
 
 async function findUserByEmailOrPhone(email?: string | null, phone?: string | null): Promise<any> {
   if (email) {
@@ -477,33 +477,15 @@ export const updateFriend = async (req: AuthRequest, res: Response, next: NextFu
       });
     }
 
-    // Auto-link any existing GroupExpenseMember rows that were created local-only under the updated name
-    await linkStaleGroupMembersForFriend(updated, userId);
-
-    // If email is now set and it changed (or was newly added), send invitations/notifications
-    if (email !== undefined && email && email.toLowerCase() !== (existing.email || '').toLowerCase()) {
-      const membersToInvite = await prisma.groupExpenseMember.findMany({
-        where: { friendId: id, deletedAt: null },
-        include: { groupExpense: true },
-      });
-
-      for (const m of membersToInvite) {
-        if (m.groupExpense) {
-          try {
-            const detail = `Total: ₹${Number(m.groupExpense.totalAmount).toFixed(0)}, Your share: ₹${Number(m.shareAmount).toFixed(0)}.`;
-            await inviteParticipants({
-              moduleType: 'group_expense',
-              moduleId: m.groupExpenseId,
-              moduleName: m.groupExpense.name,
-              creatorId: userId,
-              participants: [{ email: email.trim().toLowerCase(), name: updated.name, detail }],
-            });
-          } catch (err) {
-            logger.warn('Failed to send invite on friend email update', err);
-          }
-        }
-      }
-    }
+    // Unified contact resolution: discovers and resolves all pending collaborative items
+    // (Group Expenses, Goals, Loans, To-Do Lists) associated with this friend.
+    await resolveContactDetailsForFriend({
+      friendId: id,
+      userId,
+      email: updated.email,
+      phone: updated.phone,
+      name: updated.name,
+    });
 
     res.json({ success: true, data: updated });
   } catch (error) {

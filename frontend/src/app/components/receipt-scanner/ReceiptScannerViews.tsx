@@ -311,6 +311,80 @@ export const ResultsView: React.FC<{
         />
       )}
 
+      {/* Missing critical fields alert */}
+      {(!scanResult.amount || scanResult.amount <= 0 || !scanResult.merchantName || scanResult.merchantName.trim() === '') && (
+        <div className="flex flex-col gap-2 rounded-2xl border border-amber-200 bg-amber-50/80 p-3.5 mb-2">
+          <div className="flex items-center gap-2">
+            <AlertCircle size={16} className="shrink-0 text-amber-600" />
+            <p className="text-xs font-bold text-amber-900">Please review missing details:</p>
+          </div>
+          <ul className="text-xs text-amber-800 space-y-1 pl-6 list-disc">
+            {(!scanResult.amount || scanResult.amount <= 0) && (
+              <li><strong>Total Amount:</strong> Could not be read. Please enter the bill total.</li>
+            )}
+            {(!scanResult.merchantName || scanResult.merchantName.trim() === '') && (
+              <li><strong>Merchant Name:</strong> Not detected. You can type the store name below.</li>
+            )}
+          </ul>
+        </div>
+      )}
+
+      {/* Arithmetic Reconciliation Breakdown */}
+      {scanResult.items && scanResult.items.length > 0 && (() => {
+        const itemSum = scanResult.items.reduce((acc, it) => acc + (Number(it.amount) || 0), 0);
+        const taxSum = Number(scanResult.taxAmount) || scanResult.taxBreakdown?.reduce((acc, t) => acc + (Number(t.amount) || 0), 0) || 0;
+        const calculatedTotal = itemSum + taxSum;
+        const detectedTotal = Number(scanResult.amount) || 0;
+        const diff = Math.abs(calculatedTotal - detectedTotal);
+        const isMatched = diff < 0.05;
+
+        return (
+          <div className={cn(
+            "rounded-2xl p-3.5 border mb-3 transition-all",
+            isMatched
+              ? "bg-emerald-50/60 border-emerald-200"
+              : "bg-blue-50/60 border-blue-200"
+          )}>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Bill Arithmetic Check</span>
+              <span className={cn(
+                "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider",
+                isMatched ? "bg-emerald-100 text-emerald-800" : "bg-blue-100 text-blue-800"
+              )}>
+                {isMatched ? <CheckCircle2 size={12} /> : <AlertCircle size={12} />}
+                {isMatched ? 'Balanced' : 'Review Sum'}
+              </span>
+            </div>
+            <div className="grid grid-cols-3 gap-2 text-center text-xs font-semibold py-1">
+              <div className="bg-white/80 rounded-xl p-2 border border-slate-100">
+                <p className="text-[9px] text-slate-400 uppercase font-black">Items ({scanResult.items.length})</p>
+                <p className="text-slate-900 font-bold mt-0.5">{effectiveCurrency} {itemSum.toFixed(2)}</p>
+              </div>
+              <div className="bg-white/80 rounded-xl p-2 border border-slate-100">
+                <p className="text-[9px] text-slate-400 uppercase font-black">Tax / GST</p>
+                <p className="text-slate-900 font-bold mt-0.5">{effectiveCurrency} {taxSum.toFixed(2)}</p>
+              </div>
+              <div className="bg-white/80 rounded-xl p-2 border border-slate-100">
+                <p className="text-[9px] text-slate-400 uppercase font-black">Calculated</p>
+                <p className="text-indigo-600 font-bold mt-0.5">{effectiveCurrency} {calculatedTotal.toFixed(2)}</p>
+              </div>
+            </div>
+            {!isMatched && calculatedTotal > 0 && (
+              <div className="mt-2.5 flex items-center justify-between pt-2 border-t border-blue-200/60">
+                <p className="text-[11px] text-blue-900 font-medium">Calculated total is <strong>{effectiveCurrency} {calculatedTotal.toFixed(2)}</strong></p>
+                <button
+                  type="button"
+                  onClick={() => onFieldChange('amount', Number(calculatedTotal.toFixed(2)))}
+                  className="px-2.5 py-1 bg-blue-600 text-white rounded-lg text-[10px] font-black uppercase tracking-wider hover:bg-blue-700 transition-colors cursor-pointer"
+                >
+                  Use Calculated
+                </button>
+              </div>
+            )}
+          </div>
+        );
+      })()}
+
       {/* AI description */}
       {scanResult.description && (
         <SmartDescriptionBadge description={scanResult.description} />
@@ -332,7 +406,7 @@ export const ResultsView: React.FC<{
           <AmountField
             amount={scanResult.amount}
             currency={effectiveCurrency}
-            hasError={scanResult.amountMismatchDetected}
+            hasError={scanResult.amountMismatchDetected || !scanResult.amount || scanResult.amount <= 0}
             onChange={(value) => onFieldChange('amount', value)}
           />
 
@@ -341,12 +415,12 @@ export const ResultsView: React.FC<{
             label="Merchant"
             value={scanResult.merchantName || ''}
             onChange={(value) => onFieldChange('merchantName', value)}
-            placeholder="Merchant name"
+            placeholder="Merchant name (e.g. Starbucks, Amazon)"
           />
 
           {/* Tax Amount */}
           <NumberField
-            label="Tax Amount"
+            label="Tax / GST Amount"
             value={scanResult.taxAmount}
             onChange={(value) => onFieldChange('taxAmount', value)}
           />

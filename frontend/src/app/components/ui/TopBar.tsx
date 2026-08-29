@@ -62,25 +62,44 @@ const DraggablePageMenuItem: React.FC<DraggablePageMenuItemProps> = ({
 };
 
 export const TopBar: React.FC = () => {
-  const { setCurrentPage, visibleFeatures, accounts, transactions } = useApp();
+  const { setCurrentPage, visibleFeatures, accounts, transactions, currency } = useApp();
   const { orderedItems, handleReorder, handleNavigate, currentPage } = useSharedMenu();
   const { role, user, signOut } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notificationPopupOpen, setNotificationPopupOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
-  const [isFocused, setIsFocused] = useState(false);
+  const [isSearchPending, setIsSearchPending] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [profileVersion, setProfileVersion] = useState(0);
+  const [activeResultIndex, setActiveResultIndex] = useState(-1);
 
   const searchInputRef = React.useRef<HTMLInputElement>(null);
+  const searchContainerRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearchQuery(searchQuery);
+      setIsSearchPending(false);
     }, 200);
+    if (searchQuery !== debouncedSearchQuery) setIsSearchPending(true);
     return () => clearTimeout(timer);
   }, [searchQuery]);
+
+  // Click-outside closes the search dropdown (replaces flaky onBlur+setTimeout)
+  React.useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target as Node)) {
+        setIsSearchOpen(false);
+        setActiveResultIndex(-1);
+      }
+    };
+    if (isSearchOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isSearchOpen]);
 
   React.useEffect(() => {
     const handleProfileUpdate = () => {
@@ -90,21 +109,31 @@ export const TopBar: React.FC = () => {
     return () => window.removeEventListener('PROFILE_UPDATED', handleProfileUpdate);
   }, []);
 
- React.useEffect(() => {
- const handleKeyDown = (e: KeyboardEvent) => {
- if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
- e.preventDefault();
- searchInputRef.current?.focus();
- }
- if (e.key === 'Escape') {
- setIsFocused(false);
- setIsMobileSearchOpen(false);
- setSearchQuery('');
- }
- };
- window.addEventListener('keydown', handleKeyDown);
- return () => window.removeEventListener('keydown', handleKeyDown);
- }, []);
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+        setIsSearchOpen(true);
+      }
+      if (e.key === 'Escape') {
+        setIsSearchOpen(false);
+        setIsMobileSearchOpen(false);
+        setSearchQuery('');
+        setActiveResultIndex(-1);
+      }
+      if (e.key === 'ArrowDown' && isSearchOpen) {
+        e.preventDefault();
+        setActiveResultIndex(prev => prev + 1);
+      }
+      if (e.key === 'ArrowUp' && isSearchOpen) {
+        e.preventDefault();
+        setActiveResultIndex(prev => Math.max(-1, prev - 1));
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isSearchOpen]);
 
   const searchablePages = useMemo(() => {
     const getPageIcon = (id: string) => {
@@ -138,13 +167,18 @@ export const TopBar: React.FC = () => {
     return pages;
   }, [role]);
 
+  const formatAmount = (amount: number, type: string) => {
+    const sign = type === 'income' ? '+' : '-';
+    return `${sign}${currency ?? 'INR'} ${Math.abs(amount).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
+  };
+
   const searchResults = useMemo(() => {
     const query = debouncedSearchQuery.trim().toLowerCase();
     if (!query) return [];
 
-    const matchedPages = searchablePages.filter(p => 
-      p.label.toLowerCase().includes(query) || 
-      p.description.toLowerCase().includes(query) || 
+    const matchedPages = searchablePages.filter(p =>
+      p.label.toLowerCase().includes(query) ||
+      p.description.toLowerCase().includes(query) ||
       p.category.toLowerCase().includes(query)
     ).map(p => ({
       id: p.id,
@@ -156,52 +190,56 @@ export const TopBar: React.FC = () => {
       action: () => {
         setCurrentPage(p.id);
         setSearchQuery('');
-        setIsFocused(false);
+        setIsSearchOpen(false);
         setIsMobileSearchOpen(false);
+        setActiveResultIndex(-1);
       }
     }));
 
-    const matchedAccounts = (accounts ?? []).filter(a => 
-      a.name.toLowerCase().includes(query) || 
-      a.type.toLowerCase().includes(query) || 
+    const matchedAccounts = (accounts ?? []).filter(a =>
+      a.name.toLowerCase().includes(query) ||
+      a.type.toLowerCase().includes(query) ||
       (a.subType && a.subType.toLowerCase().includes(query))
     ).slice(0, 4).map(a => ({
       id: String(a.id),
       type: 'account',
       title: a.name,
-      subtitle: `Account (${a.type.toUpperCase()})`,
-      description: `Current balance: ${a.currency} ${a.balance.toLocaleString()}`,
+      subtitle: `${a.type.toUpperCase()} Account`,
+      description: `Balance: ${a.currency ?? currency ?? 'INR'} ${Number(a.balance).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
       icon: headerMenuItems.find(item => item.id === 'accounts')?.icon || Wallet,
       action: () => {
         setCurrentPage('accounts');
         setSearchQuery('');
-        setIsFocused(false);
+        setIsSearchOpen(false);
         setIsMobileSearchOpen(false);
+        setActiveResultIndex(-1);
       }
     }));
 
-    const matchedTransactions = (transactions ?? []).filter(t => 
-      (t.description && t.description.toLowerCase().includes(query)) || 
-      (t.category && t.category.toLowerCase().includes(query)) || 
+    const matchedTransactions = (transactions ?? []).filter(t =>
+      (t.description && t.description.toLowerCase().includes(query)) ||
+      (t.merchant && t.merchant.toLowerCase().includes(query)) ||
+      (t.category && t.category.toLowerCase().includes(query)) ||
       t.type.toLowerCase().includes(query) ||
       String(t.amount).includes(query)
     ).slice(0, 6).map(t => ({
       id: String(t.id),
       type: 'transaction',
-      title: t.description || t.category,
-      subtitle: `Transaction (${t.category})`,
-      description: `${t.type === 'income' ? '+' : '-'}${t.amount.toLocaleString()} on ${new Date(t.date).toLocaleDateString()}`,
+      title: t.merchant || t.description || t.category,
+      subtitle: `${t.category}${t.merchant && t.description ? ` · ${t.description}` : ''}`,
+      description: `${formatAmount(Number(t.amount), t.type)} · ${new Date(t.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: '2-digit' })}`,
       icon: headerMenuItems.find(item => item.id === 'transactions')?.icon || Receipt,
       action: () => {
         setCurrentPage('transactions');
         setSearchQuery('');
-        setIsFocused(false);
+        setIsSearchOpen(false);
         setIsMobileSearchOpen(false);
+        setActiveResultIndex(-1);
       }
     }));
 
     return [...matchedPages, ...matchedAccounts, ...matchedTransactions];
-  }, [debouncedSearchQuery, searchablePages, accounts, transactions, setCurrentPage]);
+  }, [debouncedSearchQuery, searchablePages, accounts, transactions, setCurrentPage, currency]);
 
  const notifications = useLiveQuery(
  () => db.notifications.orderBy('createdAt').reverse().toArray(),
@@ -423,7 +461,7 @@ export const TopBar: React.FC = () => {
  </SheetContent>
  </Sheet>
 
- <div className="relative flex-1 max-w-md group hidden md:block">
+ <div ref={searchContainerRef} className="relative flex-1 max-w-md group hidden md:block">
  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4 group-hover:text-slate-600 transition-colors" />
  <input data-testid="top-bar-search-transactions-assets"
  ref={searchInputRef}
@@ -431,10 +469,21 @@ export const TopBar: React.FC = () => {
  id="topbar-search-desktop"
  name="topbar-search-desktop"
  value={searchQuery}
- onChange={(e) => setSearchQuery(e.target.value)}
- onFocus={() => setIsFocused(true)}
- onBlur={() => setTimeout(() => setIsFocused(false), 200)}
- placeholder="Search transactions, assets..."
+ onChange={(e) => {
+   setSearchQuery(e.target.value);
+   if (e.target.value.trim()) setIsSearchOpen(true);
+ }}
+ onFocus={() => {
+   setIsSearchOpen(true);
+   setActiveResultIndex(-1);
+ }}
+ onKeyDown={(e) => {
+   if (e.key === 'Enter' && activeResultIndex >= 0 && searchResults[activeResultIndex]) {
+     e.preventDefault();
+     searchResults[activeResultIndex].action();
+   }
+ }}
+ placeholder="Search transactions, accounts, pages..."
  className="KANAKU-search-bar"
  />
  {!searchQuery && (
@@ -442,35 +491,48 @@ export const TopBar: React.FC = () => {
  ⌘K
  </span>
  )}
+ {isSearchPending && searchQuery.trim() && (
+ <span className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4">
+ <span className="animate-spin block w-3.5 h-3.5 border-2 border-slate-200 border-t-indigo-500 rounded-full" />
+ </span>
+ )}
 
- {isFocused && searchQuery.trim() && (
- <div className="absolute top-[calc(100%+8px)] left-0 right-0 bg-white/95 backdrop-blur-md border border-slate-100 rounded-[24px] shadow-2xl overflow-hidden z-50 max-h-[400px] overflow-y-auto scrollbar-hide py-3 animate-in fade-in slide-in-from-top-2 duration-200">
+ {isSearchOpen && searchQuery.trim() && (
+ <div className="absolute top-[calc(100%+8px)] left-0 right-0 bg-white/95 backdrop-blur-md border border-slate-100 rounded-[24px] shadow-2xl overflow-hidden z-50 overflow-y-auto scrollbar-hide py-3 animate-in fade-in slide-in-from-top-2 duration-200" style={{ maxHeight: 'min(400px, 60vh)' }}>
  {searchResults.length > 0 ? (
  <div className="space-y-4">
- {['page', 'account', 'transaction'].map((type) => {
+ <div className="px-4 pb-1 flex items-center justify-between">
+ <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">{searchResults.length} result{searchResults.length !== 1 ? 's' : ''}</p>
+ </div>
+ {(['page', 'account', 'transaction'] as const).map((type) => {
  const matches = searchResults.filter(r => r.type === type);
  if (matches.length === 0) return null;
- 
+
  const groupLabel = {
  page: 'Navigation & Tools',
  account: 'Assets & Accounts',
  transaction: 'Recent Transactions'
- }[type as 'page' | 'account' | 'transaction'];
+ }[type];
 
  return (
  <div key={type} className="px-2">
  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-3 mb-2">{groupLabel}</p>
- <div className="space-y-1">
- {matches.map((result) => {
+ <div className="space-y-0.5">
+ {matches.map((result, localIdx) => {
+ const globalIdx = searchResults.indexOf(result);
  const Icon = result.icon;
+ const isActive = globalIdx === activeResultIndex;
  return (
  <button data-testid={`top-bar-button-2-${result.id}`}
  key={result.id}
+ onMouseEnter={() => setActiveResultIndex(globalIdx)}
  onMouseDown={(e) => {
  e.preventDefault();
  result.action();
  }}
- className="w-full flex items-start gap-3 px-3 py-2 hover:bg-slate-50 rounded-2xl transition-colors text-left"
+ className={`w-full flex items-start gap-3 px-3 py-2.5 rounded-2xl transition-colors text-left ${
+ isActive ? 'bg-slate-100' : 'hover:bg-slate-50'
+ }`}
  >
  <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
  type === 'page' ? 'bg-indigo-50 text-indigo-600' :
@@ -479,8 +541,8 @@ export const TopBar: React.FC = () => {
  <Icon size={16} />
  </div>
  <div className="min-w-0 flex-1">
- <p className="text-xs font-bold text-slate-900 truncate">{result.title}</p>
- <p className="text-[10px] text-slate-400 font-medium truncate mt-0.5">{result.description}</p>
+ <p className="text-xs font-bold text-slate-900 truncate leading-tight">{result.title}</p>
+ <p className="text-[10px] text-slate-400 font-medium truncate mt-0.5 leading-tight">{result.description}</p>
  </div>
  </button>
  );
@@ -493,8 +555,8 @@ export const TopBar: React.FC = () => {
  ) : (
  <div className="py-8 text-center text-slate-400">
  <Search size={24} className="mx-auto mb-2 opacity-30" />
- <p className="text-xs font-bold">No matches found</p>
- <p className="text-[10px] text-slate-400 font-medium mt-0.5">Try searching for other words</p>
+ <p className="text-xs font-bold text-slate-700">No results for "{debouncedSearchQuery}"</p>
+ <p className="text-[10px] text-slate-400 font-medium mt-0.5">Try a different search term</p>
  </div>
  )}
  </div>

@@ -304,6 +304,9 @@ export function AddTransaction() {
  const [attachmentDocumentId, setAttachmentDocumentId] = useState<number | null>(null);
  const [amountStr, setAmountStr] = useState('');
  const [balanceError, setBalanceError] = useState<{ available: number; entered: number; accountName: string; currency: string } | null>(null);
+ // pendingDuplicate holds a similar transaction found in the 24-hour window.
+ // When set, the UI shows a confirmation dialog before proceeding.
+ const [pendingDuplicate, setPendingDuplicate] = useState<{ existingTx: any; resolve: (confirm: boolean) => void } | null>(null);
  const [expenseMode, setExpenseMode] = useState<ExpenseMode>(() => {
  const mode = localStorage.getItem('quickExpenseMode') as ExpenseMode | null;
  return mode || 'individual';
@@ -522,27 +525,47 @@ export function AddTransaction() {
     }
 
     setIsSubmitting(true);
+    let intentionalDuplicate = false;
     try {
-      const tenSecondsAgo = new Date(Date.now() - 10000);
-      const duplicates = await db.transactions
-        .filter(t => 
+      // ── Duplicate detection: same amount + same category + same date (±0 days) ──
+      // This is a broader check than the 10-second window, catching the case where
+      // a user manually enters a transaction that matches a recurring or previous one.
+      // If found, we show a confirmation dialog before proceeding (not a silent block).
+      const transactionDate = parseDateInputValue(formData.date) || new Date();
+      const dayStart = new Date(transactionDate);
+      dayStart.setHours(0, 0, 0, 0);
+      const dayEnd = new Date(transactionDate);
+      dayEnd.setHours(23, 59, 59, 999);
+
+      const similarTransactions = await db.transactions
+        .filter(t =>
+          !t.deletedAt &&
           t.accountId === formData.accountId &&
           t.type === formData.type &&
           t.amount === formData.amount &&
-          t.description === formData.description &&
-          !!t.createdAt && new Date(t.createdAt).getTime() > tenSecondsAgo.getTime() &&
-          !t.deletedAt
+          t.category === normalizeCategorySelection(formData.category, formData.type as 'expense' | 'income') &&
+          !!t.date &&
+          new Date(t.date).getTime() >= dayStart.getTime() &&
+          new Date(t.date).getTime() <= dayEnd.getTime()
         )
+        .limit(1)
         .toArray();
 
-      if (duplicates.length > 0) {
-        toast.error('This transaction was recently saved. Duplicate prevented.');
-        setIsSubmitting(false);
-        return;
+      if (similarTransactions.length > 0) {
+        const existingTx = similarTransactions[0];
+        // Ask user if they want to create an intentional duplicate
+        const confirmed = await new Promise<boolean>((resolve) => {
+          setPendingDuplicate({ existingTx, resolve });
+        });
+        setPendingDuplicate(null);
+        if (!confirmed) {
+          setIsSubmitting(false);
+          return;
+        }
+        intentionalDuplicate = true;
       }
 
       const now = new Date();
-      const transactionDate = parseDateInputValue(formData.date) || new Date();
       let result: any;
 
  if (isTransfer || formData.type === 'withdrawal') {
@@ -579,17 +602,19 @@ export function AddTransaction() {
  transferType: isWithdrawal ? 'withdrawal' : (transferSubType === 'self' ? 'self-transfer' : 'external-payment'),
  notes: transferMethod === 'cash' ? 'Cash Transfer' : 'Bank Transfer',
  updatedAt: now,
+ intentionalDuplicate,
  });
 
  await applyTransactionAccountImpact(result, now);
  } else {
  const payload: any = {
- ...formData,
- category: normalizeCategorySelection(formData.category, formData.type as 'expense' | 'income'),
- date: transactionDate,
- expenseMode: isExpense ? expenseMode : undefined,
- updatedAt: now,
- };
+  ...formData,
+  category: normalizeCategorySelection(formData.category, formData.type as 'expense' | 'income'),
+  date: transactionDate,
+  expenseMode: isExpense ? expenseMode : undefined,
+  updatedAt: now,
+  intentionalDuplicate,
+  };
 
  if (isExpense && expenseMode === 'group') {
  payload.participants = groupParticipants.map(p => ({
@@ -1750,6 +1775,76 @@ if (linkedDocId) {
             className="flex-1 py-3 rounded-2xl bg-slate-900 text-white font-black text-[11px] uppercase tracking-widest hover:bg-slate-800 transition-all cursor-pointer"
           >
             Edit Amount
+          </button>
+        </div>
+      </div>
+    </div>
+  )}
+
+  {/* Possible Duplicate Transaction Confirmation Dialog */}
+  {pendingDuplicate && (
+    <div
+      className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+      onClick={() => pendingDuplicate.resolve(false)}
+      data-testid="duplicate-transaction-modal"
+    >
+      <div
+        className="bg-white rounded-3xl shadow-2xl border border-slate-100 w-full max-w-sm p-6 animate-in fade-in zoom-in-95 duration-200"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-2.5 bg-amber-50 text-amber-600 rounded-2xl shrink-0">
+            <AlertTriangle size={22} />
+          </div>
+          <div>
+            <h3 className="text-base font-black text-slate-900 tracking-tight">Possible Duplicate</h3>
+            <p className="text-[11px] text-slate-400 font-semibold mt-0.5">A similar transaction already exists</p>
+          </div>
+        </div>
+
+        {/* Existing transaction preview */}
+        <div className="bg-slate-50 rounded-2xl p-4 mb-4 space-y-2">
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Existing Transaction</p>
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-slate-600">Category</span>
+            <span className="text-xs font-black text-slate-900">{pendingDuplicate.existingTx.category}</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-slate-600">Amount</span>
+            <span className="text-xs font-black text-slate-900">{formatCurrencyAmount(pendingDuplicate.existingTx.amount, pendingDuplicate.existingTx.currency || currency || 'INR')}</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-slate-600">Date</span>
+            <span className="text-xs font-black text-slate-900">{new Date(pendingDuplicate.existingTx.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+          </div>
+          {pendingDuplicate.existingTx.description && (
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-xs font-semibold text-slate-600 shrink-0">Note</span>
+              <span className="text-xs font-black text-slate-900 text-right truncate max-w-[160px]">{pendingDuplicate.existingTx.description}</span>
+            </div>
+          )}
+        </div>
+
+        <p className="text-xs font-medium text-slate-500 mb-5 leading-relaxed">
+          Are you sure you want to create another transaction with the same amount and category on this date? This could be an accidental duplicate.
+        </p>
+
+        <div className="flex gap-3">
+          <button
+            data-testid="duplicate-modal-cancel"
+            type="button"
+            onClick={() => pendingDuplicate.resolve(false)}
+            className="flex-1 py-3 rounded-2xl bg-slate-100 text-slate-700 font-black text-[11px] uppercase tracking-widest hover:bg-slate-200 transition-all cursor-pointer"
+          >
+            Cancel
+          </button>
+          <button
+            data-testid="duplicate-modal-confirm"
+            type="button"
+            onClick={() => pendingDuplicate.resolve(true)}
+            className="flex-1 py-3 rounded-2xl bg-amber-500 text-white font-black text-[11px] uppercase tracking-widest hover:bg-amber-600 transition-all cursor-pointer"
+          >
+            Create Anyway
           </button>
         </div>
       </div>

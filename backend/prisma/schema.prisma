@@ -515,6 +515,12 @@ model Notification {
   errorMessage     String?
   sentAt           DateTime?
   updatedAt        DateTime  @default(now()) @updatedAt
+  // ── Dedup key for budget alerts ──────────────────────────────────────────
+  // Format: "<userId>:<type>:<category>:<periodKey>" e.g. "abc:budget_alert:Groceries:2026-08-monthly"
+  // A unique index on this field prevents the same threshold crossing from
+  // generating duplicate alert rows even when the listener fires concurrently.
+  // NULL means dedup is not applicable (all non-budget-alert notification types).
+  dedupKey         String?   @unique
   user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([createdAt])
@@ -997,22 +1003,26 @@ model GroupExpenseMember {
 // notifications, invitation emails, and deferred auto-linking on signup.
 model CollaborationParticipant {
   id            String    @id @default(uuid())
-  moduleType    String // 'group_expense' | 'todo_list' | 'goal'
+  moduleType    String // 'group_expense' | 'todo_list' | 'goal' | 'loan'
   moduleId      String
   moduleName    String? // snapshot of the title at invite time, for emails
-  email         String
+  email         String?
+  phone         String?
   name          String?
   userId        String? // set once resolved/linked to a registered user
-  status        String    @default("PENDING_REGISTRATION") // REGISTERED | PENDING_REGISTRATION
+  friendId      String? // links to the Friend record if available
+  status        String    @default("PENDING_REGISTRATION") // REGISTERED | PENDING_REGISTRATION | PENDING_CONTACT
   invitedBy     String
+  metadata      Json?     // snapshot details (share amount, due date, etc.)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   linkedAt      DateTime?
   user          User?     @relation("CollaborationParticipant_user", fields: [userId], references: [id], onDelete: SetNull)
   invitedByUser User      @relation("CollaborationParticipant_invitedBy", fields: [invitedBy], references: [id], onDelete: Cascade)
 
-  @@unique([moduleType, moduleId, email])
   @@index([email])
+  @@index([phone])
+  @@index([friendId])
   @@index([status])
   @@index([moduleType, moduleId])
   @@index([userId])
@@ -1313,6 +1323,10 @@ model RecurringExecution {
   scheduledDate DateTime
   executedDate  DateTime?
   journalId     String?
+  // transactionId links back to the Transaction row that this execution created.
+  // Allows financial reconciliation: every RecurringExecution.SUCCESS must have
+  // exactly one matching Transaction. NULL until the execution completes.
+  transactionId String?
   status        RecurringExecutionStatus @default(PENDING)
   failureReason String?
   retryCount    Int                      @default(0)
@@ -1321,10 +1335,14 @@ model RecurringExecution {
   updatedAt     DateTime                 @updatedAt
   rule          RecurringTransaction     @relation(fields: [ruleId], references: [id], onDelete: Cascade)
 
+  // The @@unique constraint on (ruleId, scheduledDate) is the PRIMARY idempotency
+  // gate for the recurring worker. If the scheduler fires twice for the same
+  // occurrence, the second upsert will hit this constraint and safely skip.
   @@unique([ruleId, scheduledDate])
   @@index([ruleId])
   @@index([status])
   @@index([scheduledDate])
+  @@index([transactionId])
   @@map("recurring_executions")
   @@schema("public")
 }

@@ -500,6 +500,14 @@ export const verifyRegistrationOtp = async (req: Request, res: Response, next: N
     // Best-effort welcome email
     void sendWelcomeEmail(updatedUser.email, updatedUser.name).catch(() => {});
 
+    // Resolve & deliver any pending collaborations (group expenses, goals, loans, todos)
+    try {
+      const { resolveAndDeliverPendingCollaborations } = await import('../collaboration/invitation.service');
+      await resolveAndDeliverPendingCollaborations(updatedUser.id, updatedUser.email);
+    } catch (collabErr) {
+      logger.warn('[auth] Failed to resolve pending collaborations on OTP verification', collabErr);
+    }
+
     res.setHeader('Authorization', `Bearer ${tokens.accessToken}`);
     setRefreshCookie(res, tokens.refreshToken, REFRESH_TOKEN_TTL_SECONDS);
     const native = isNativeClient(req);

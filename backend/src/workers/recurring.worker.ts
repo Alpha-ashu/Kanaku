@@ -52,6 +52,8 @@ export function calculateNextDueDate(currentDate: Date, interval: string): Date 
   const next = new Date(currentDate);
   if (interval === 'weekly') {
     next.setDate(next.getDate() + 7);
+  } else if (interval === 'daily') {
+    next.setDate(next.getDate() + 1);
   } else if (interval === 'yearly') {
     next.setFullYear(next.getFullYear() + 1);
   } else {
@@ -62,8 +64,77 @@ export function calculateNextDueDate(currentDate: Date, interval: string): Date 
 }
 
 /**
+ * Attempt to claim a RecurringExecution slot for the given (ruleId, scheduledDate).
+ *
+ * Uses the @@unique([ruleId, scheduledDate]) constraint as the idempotency gate.
+ * If the slot was already claimed (by a previous run or a concurrent runner), the
+ * function returns null — the caller must skip this occurrence.
+ *
+ * Returns the RecurringExecution row if the slot was freshly claimed (status=RUNNING).
+ *
+ * The two-step create→update is intentional: Prisma's upsert on a non-@id unique
+ * key requires the create and update payloads to be specified separately, and we
+ * want RUNNING status only if we were the ones who created the row.
+ */
+async function claimExecution(
+  ruleId: string,
+  scheduledDate: Date,
+): Promise<{ id: string } | null> {
+  try {
+    // Use createOrUpdate: if a row already exists (any status) we do NOT
+    // overwrite it — we only care that WE created it. The update path sets
+    // nothing meaningful, so we just bump updatedAt.
+    const execution = await prisma.recurringExecution.upsert({
+      where: { ruleId_scheduledDate: { ruleId, scheduledDate } },
+      create: {
+        ruleId,
+        scheduledDate,
+        status: 'RUNNING',
+        executedDate: new Date(),
+      },
+      update: {
+        // DO NOT change status — the row already existed, another runner
+        // owns it. We just touch updatedAt to signal a claim attempt was made.
+        updatedAt: new Date(),
+      },
+      select: { id: true, status: true, createdAt: true, updatedAt: true },
+    });
+
+    // Detect whether we were the creator: if createdAt ≈ updatedAt (within 2s)
+    // and status is RUNNING, we own the slot. Otherwise it pre-existed.
+    const ageMs = execution.updatedAt.getTime() - execution.createdAt.getTime();
+    const weCreatedIt = ageMs < 2000 && (execution as any).status === 'RUNNING';
+
+    if (!weCreatedIt) {
+      logger.info(
+        `[recurring-worker] Execution slot already claimed for rule=${ruleId} date=${scheduledDate.toISOString()} — skipping (idempotent)`,
+      );
+      return null;
+    }
+
+    return { id: execution.id };
+  } catch (err: any) {
+    // Unique constraint violation: another concurrent worker beat us to it.
+    if (err?.code === 'P2002') {
+      logger.info(
+        `[recurring-worker] Duplicate execution prevented by DB constraint for rule=${ruleId} date=${scheduledDate.toISOString()}`,
+      );
+      return null;
+    }
+    throw err;
+  }
+}
+
+/**
  * Sweeps the database for active recurring transaction templates that are due,
  * posts the transactions, updates account balances, and schedules the next occurrence.
+ *
+ * Idempotency is guaranteed at two levels:
+ *   1. RecurringExecution @@unique([ruleId, scheduledDate]) — prevents the same
+ *      occurrence from being processed twice even if the cron fires concurrently
+ *      or the process restarts mid-run.
+ *   2. Transaction.dedupHash — includes the recurringRuleId so it is namespaced
+ *      to the rule and cannot collide with manually-entered transactions.
  */
 export const processDueRecurringTransactions = async (): Promise<void> => {
   const now = new Date();
@@ -118,6 +189,19 @@ export const processDueRecurringTransactions = async (): Promise<void> => {
           break;
         }
 
+        // ── PRIMARY IDEMPOTENCY GATE ──────────────────────────────────────────
+        // Attempt to claim this (rule, date) occurrence. If another worker/run
+        // already claimed it, claimExecution returns null and we skip.
+        const execution = await claimExecution(item.id, currentDueDate);
+        if (!execution) {
+          // Slot already owned — advance the date and continue without creating
+          // another transaction. This is the idempotent skip path.
+          currentDueDate = calculateNextDueDate(currentDueDate, item.interval);
+          continue;
+        }
+
+        let createdTransactionId: string | null = null;
+
         try {
           if (item.autoProcess) {
             // Check for required fields for transaction creation
@@ -128,22 +212,42 @@ export const processDueRecurringTransactions = async (): Promise<void> => {
             const type = item.type || 'expense';
             const decimalAmount = roundMoney(item.amount);
 
-            // Resolve unique dedupHash for this occurrence
+            // ── SECONDARY IDEMPOTENCY: dedupHash includes recurringRuleId ────
+            // This ensures that a recurring transaction's hash cannot collide
+            // with a manually-entered transaction of the same amount/date.
             const dedupHash = transactionRepository.generateDedupHash(
               item.userId,
               Number(item.amount),
               currentDueDate,
-              item.notes || item.title
+              item.notes || item.title,
+              item.id, // recurringRuleId — prevents cross-rule hash collisions
             );
 
             await prisma.$transaction(async (tx) => {
-              // Idempotency check
+              // Secondary guard: check if this dedupHash already has a transaction
+              // (safety net in case the RecurringExecution slot was somehow
+              // bypassed — belt-and-suspenders approach).
               const existing = await tx.transaction.findFirst({
                 where: { dedupHash, userId: item.userId },
               });
 
               if (existing) {
-                logger.info(`[recurring-worker] Transaction already exists (dedupHash match) for user ${item.userId}, date ${currentDueDate.toISOString()}`);
+                logger.info(
+                  `[recurring-worker] Transaction already exists (dedupHash match) for user ${item.userId}, ` +
+                  `date ${currentDueDate.toISOString()}, rule ${item.id} — linking to execution record`,
+                  { existingTransactionId: existing.id, executionId: execution.id },
+                );
+                // Link the existing transaction to this execution record
+                await tx.recurringExecution.update({
+                  where: { id: execution.id },
+                  data: {
+                    status: 'SUCCESS',
+                    transactionId: existing.id,
+                    executedDate: new Date(),
+                    failureReason: null,
+                  },
+                });
+                createdTransactionId = existing.id;
                 return;
               }
 
@@ -177,6 +281,8 @@ export const processDueRecurringTransactions = async (): Promise<void> => {
                 },
               });
 
+              createdTransactionId = createdTx.id;
+
               // Apply balance updates to related accounts
               for (const [accountId, delta] of deltas.entries()) {
                 await tx.account.update({
@@ -185,13 +291,29 @@ export const processDueRecurringTransactions = async (): Promise<void> => {
                 });
               }
 
+              // Update the RecurringExecution record to SUCCESS, linking the transaction
+              await tx.recurringExecution.update({
+                where: { id: execution.id },
+                data: {
+                  status: 'SUCCESS',
+                  transactionId: createdTx.id,
+                  executedDate: new Date(),
+                  failureReason: null,
+                },
+              });
+
               // Audit log the automated execution
               audit({
                 event: 'data.create',
                 userId: item.userId,
                 resource: 'transaction',
                 resourceId: createdTx.id,
-                meta: { recurringTransactionId: item.id, dueDate: currentDueDate.toISOString(), subType: 'recurring' },
+                meta: {
+                  recurringTransactionId: item.id,
+                  executionId: execution.id,
+                  dueDate: currentDueDate.toISOString(),
+                  subType: 'recurring',
+                },
               });
 
               // Emit event to notify other sub-systems (e.g. budgets recalculation)
@@ -210,28 +332,59 @@ export const processDueRecurringTransactions = async (): Promise<void> => {
                 transactionId: createdTx.id,
                 userId: item.userId,
                 recurringRuleId: item.id,
+                executionId: execution.id,
                 dueDate: currentDueDate.toISOString(),
               });
               recurringExecutionTotal.labels({ status: 'success' }).inc();
             });
           } else {
-            // Dispatch a reminder notification for non-auto-processed items
-            await prisma.notification.create({
-              data: {
-                userId: item.userId,
-                title: 'Recurring Payment Reminder',
-                message: `Reminder: Your recurring item "${item.title}" of ${roundMoney(item.amount).toFixed(2)} is due on ${currentDueDate.toLocaleDateString()}.`,
-                type: 'loan_reminder', // reusing loan_reminder style for bills
-                status: 'pending', // outbox sweeper will deliver this
-                channels: JSON.stringify(['app', 'email']),
-              },
-            });
+            // Dispatch a reminder notification for non-auto-processed items.
+            // Use a dedupKey to prevent duplicate reminder notifications for the
+            // same recurring item and due date.
+            const reminderDedupKey = `reminder:${item.userId}:${item.id}:${currentDueDate.toISOString().slice(0, 10)}`;
 
-            logger.info(`[recurring-worker] Dispatched due reminder for recurring item ${item.id}`);
+            try {
+              await prisma.notification.create({
+                data: {
+                  userId: item.userId,
+                  title: 'Recurring Payment Reminder',
+                  message: `Reminder: Your recurring item "${item.title}" of ${roundMoney(item.amount).toFixed(2)} is due on ${currentDueDate.toLocaleDateString()}.`,
+                  type: 'loan_reminder', // reusing loan_reminder style for bills
+                  status: 'pending', // outbox sweeper will deliver this
+                  channels: JSON.stringify(['app', 'email']),
+                  dedupKey: reminderDedupKey,
+                },
+              });
+
+              logger.info(`[recurring-worker] Dispatched due reminder for recurring item ${item.id}`);
+            } catch (notifErr: any) {
+              // Unique constraint on dedupKey means a duplicate reminder was attempted
+              if (notifErr?.code === 'P2002') {
+                logger.info(`[recurring-worker] Reminder already dispatched for ${item.id} on ${currentDueDate.toISOString().slice(0, 10)} — skipping duplicate`);
+              } else {
+                throw notifErr;
+              }
+            }
+
+            // Mark the execution as SUCCESS (reminder dispatched)
+            await prisma.recurringExecution.update({
+              where: { id: execution.id },
+              data: { status: 'SUCCESS', executedDate: new Date() },
+            });
           }
         } catch (err) {
+          // Mark this execution as FAILED so it can be retried or investigated
+          await prisma.recurringExecution.update({
+            where: { id: execution.id },
+            data: {
+              status: 'FAILED',
+              failureReason: err instanceof Error ? err.message.slice(0, 500) : String(err),
+            },
+          }).catch(() => {/* best-effort — don't mask original error */});
+
           logger.error('[recurring-worker] Failed to process recurring transaction item', {
             recurringRuleId: item.id,
+            executionId: execution.id,
             dueDate: currentDueDate.toISOString(),
             error: err instanceof Error ? err.message : String(err),
           });

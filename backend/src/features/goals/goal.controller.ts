@@ -250,7 +250,10 @@ export const addGoalMember = async (req: AuthRequest, res: Response, next: NextF
   try {
     const userId = getUserId(req);
     const { id } = req.params;
-    const { email, name } = req.body as { email: string; name?: string };
+    const { email, phone, name } = req.body as { email?: string; phone?: string; name?: string };
+    if (!email && !name && !phone) {
+      throw AppError.badRequest('Participant name, email, or phone is required.', 'MEMBER_INFO_REQUIRED');
+    }
 
     // Only the goal owner can add participants
     const goal = await prisma.goal.findFirst({ where: { id, userId, deletedAt: null } });
@@ -258,22 +261,33 @@ export const addGoalMember = async (req: AuthRequest, res: Response, next: NextF
       throw AppError.notFound('Goal');
     }
 
-    const normalizedEmail = email.trim().toLowerCase();
-    const resolvedUser = await prisma.user.findFirst({ where: { email: normalizedEmail, status: 'verified' } });
-
-    const existingMember = await prisma.goalMember.findFirst({
-      where: { goalId: id, email: normalizedEmail, deletedAt: null },
+    const normalizedEmail = email ? email.trim().toLowerCase() : null;
+    const cleanPhone = phone ? phone.trim() : null;
+    const resolvedUser = await prisma.user.findFirst({
+      where: {
+        OR: [
+          normalizedEmail ? { email: normalizedEmail } : null,
+        ].filter(Boolean) as any,
+        status: 'verified',
+      },
     });
-    if (existingMember) {
-      throw AppError.badRequest('This person has already been added to the goal.', 'DUPLICATE_MEMBER');
+
+    if (normalizedEmail) {
+      const existingMember = await prisma.goalMember.findFirst({
+        where: { goalId: id, email: normalizedEmail, deletedAt: null },
+      });
+      if (existingMember) {
+        throw AppError.badRequest('This person has already been added to the goal.', 'DUPLICATE_MEMBER');
+      }
     }
 
     const member = await prisma.goalMember.create({
       data: {
         goalId: id,
         userId: resolvedUser?.id || null,
-        name: name || resolvedUser?.name || normalizedEmail,
+        name: name || resolvedUser?.name || normalizedEmail || 'Goal Participant',
         email: normalizedEmail,
+        phone: cleanPhone,
       },
     });
 
@@ -281,14 +295,19 @@ export const addGoalMember = async (req: AuthRequest, res: Response, next: NextF
       await prisma.goal.update({ where: { id }, data: { isGroupGoal: true } });
     }
 
-    // Resolves registered vs. pending, tracks the invite, and sends the
-    // matching in-app notification or "Join Kanaku" invitation email.
+    // Resolves registered vs. pending vs. pending_contact, tracks the invite,
+    // and sends the matching notification or invitation email.
     await inviteParticipants({
       moduleType: 'goal',
       moduleId: id,
       moduleName: goal.name,
       creatorId: userId,
-      participants: [{ email: normalizedEmail, name }],
+      participants: [{
+        email: normalizedEmail,
+        phone: cleanPhone,
+        name: member.name,
+        detail: `Target Amount: ₹${Number(goal.targetAmount).toFixed(0)} by ${new Date(goal.targetDate).toLocaleDateString()}.`,
+      }],
     });
 
     await cacheDeleteByPrefix('goals:');

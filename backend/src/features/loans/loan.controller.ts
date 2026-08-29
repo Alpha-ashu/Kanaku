@@ -92,6 +92,26 @@ export const createLoan = async (req: AuthRequest, res: Response, next: NextFunc
       include: { payments: true },
     });
 
+    // Track loan participant in unified collaboration engine
+    if (contactPerson) {
+      try {
+        const { inviteParticipants } = await import('../collaboration/invitation.service');
+        const detail = `Type: ${type === 'borrowed' ? 'Borrowed' : 'Lent'}, Principal: ₹${numericPrincipal.toFixed(0)}${dueDate ? `, Due: ${new Date(dueDate).toLocaleDateString()}` : ''}.`;
+        await inviteParticipants({
+          moduleType: 'loan',
+          moduleId: loan.id,
+          moduleName: loan.name,
+          creatorId: userId,
+          participants: [{
+            name: contactPerson,
+            detail,
+          }],
+        });
+      } catch (err) {
+        logger.warn('Failed to track loan participant', err);
+      }
+    }
+
     await cacheDeleteByPrefix('loans:');
 
     res.status(201).json({ success: true, data: loan });

@@ -120,18 +120,20 @@ export async function processEmail(job: { data: DeliveryJob }): Promise<unknown>
   await setProcessing(notificationId);
 
   const user = await prisma.user.findUnique({ where: { id: userId }, select: { email: true } });
-  if (!user?.email) {
+  const meta = parseJson<any>(metadata, {});
+  const targetEmail = user?.email || meta?.recipientEmail;
+
+  if (!targetEmail) {
     // No recipient — permanent failure, no point retrying.
     await markChannel(notificationId, 'email', 'failed');
     return { skipped: true, reason: 'no_email' };
   }
 
-  const meta = parseJson<any>(metadata, {});
   const emailTitle = meta?.emailTitle ?? title;
   const emailMessage = meta?.emailBody ?? message;
 
   const sent = await sendNotificationEmail({
-    to: user.email,
+    to: targetEmail,
     title: emailTitle,
     message: emailMessage,
     category,

@@ -257,7 +257,7 @@ export const createGroup = async (req: AuthRequest, res: Response) => {
       return res.status(200).json({ success: true, data });
     }
 
-    const invitationsToSend: { email: string; name: string; share: number }[] = [];
+    const invitationsToSend: { email: string | null; phone: string | null; name: string; friendId: string | null; share: number }[] = [];
     const socketNotificationsToSend: { targetUserId: string; notification?: any; groupExpenseId: string }[] = [];
 
     const result = await prisma.$transaction(async (tx) => {
@@ -327,15 +327,21 @@ export const createGroup = async (req: AuthRequest, res: Response) => {
 
         // Every participant added to a group expense must become a manageable
         // entity — auto-create a Friend record if one doesn't exist yet.
-        if (!friend && (memberEmail || memberPhone)) {
+        if (!friend) {
           friend = await tx.friend.create({
-            data: { userId, name: sanitize(m.name), email: memberEmail, phone: memberPhone, syncStatus: 'synced' },
+            data: {
+              userId,
+              name: sanitize(m.name),
+              email: memberEmail || null,
+              phone: memberPhone || null,
+              syncStatus: 'synced',
+            },
           });
         }
 
         const targetUser = await findUserByEmailOrPhone(friend?.email, friend?.phone, tx);
-
         const email = (memberEmail || friend?.email || '').trim().toLowerCase() || null;
+        const phone = friend?.phone || memberPhone || null;
 
         await tx.groupExpenseMember.create({
           data: {
@@ -344,39 +350,19 @@ export const createGroup = async (req: AuthRequest, res: Response) => {
             friendId: friend?.id || null,
             name: m.name,
             email,
-            phone: friend?.phone || memberPhone,
+            phone,
             shareAmount: m.share,
             hasPaid: m.paid,
           }
         });
 
-        if (email) {
-          invitationsToSend.push({ email, name: m.name, share: m.share });
-        } else if (targetUser) {
-          const notifTitle = 'New Group Expense';
-          const notifMsg = `${currentUser?.name || 'Someone'} added you to a split expense "${group.name}". Total: ₹${Number(group.totalAmount).toFixed(0)}, Your share: ₹${m.share.toFixed(0)}.`;
-          const notification = await tx.notification.create({
-            data: {
-              userId: targetUser.id,
-              sourceUserId: userId,
-              title: notifTitle,
-              message: notifMsg,
-              type: 'group_expense',
-              category: 'group_expense',
-              deepLink: '/groups',
-              priority: 'high',
-              channels: '["app","email"]',
-              deliveryStatus: '{"app":"sent","email":"queued"}',
-              status: 'pending',
-            }
-          });
-
-          socketNotificationsToSend.push({
-            targetUserId: targetUser.id,
-            notification,
-            groupExpenseId: group.id
-          });
-        }
+        invitationsToSend.push({
+          email,
+          phone,
+          name: m.name,
+          friendId: friend?.id || null,
+          share: m.share,
+        });
       }
 
       // Ledger V2 Integration
@@ -408,19 +394,24 @@ export const createGroup = async (req: AuthRequest, res: Response) => {
 
     await FinancialEventDispatcher.flushDeferred();
 
-    // Execute invitations outside of the transaction block
-    for (const inv of invitationsToSend) {
+    // Execute unified participant tracking and invitation outside the transaction block
+    if (invitationsToSend.length > 0) {
       try {
-        const detail = `Total: ₹${Number(result.totalAmount).toFixed(0)}, Your share: ₹${Number(inv.share).toFixed(0)}.`;
         await inviteParticipants({
           moduleType: 'group_expense',
           moduleId: result.id,
           moduleName: result.name,
           creatorId: userId,
-          participants: [{ email: inv.email, name: inv.name, detail }],
+          participants: invitationsToSend.map(inv => ({
+            email: inv.email,
+            phone: inv.phone,
+            name: inv.name,
+            friendId: inv.friendId,
+            detail: `Total: ₹${Number(result.totalAmount).toFixed(0)}, Your share: ₹${Number(inv.share).toFixed(0)}.`,
+          })),
         });
       } catch (err) {
-        logger.warn('Failed to invite group expense participant', err);
+        logger.warn('Failed to track/invite group expense participants', err);
       }
     }
 

@@ -123,6 +123,11 @@ export class TransactionService {
       importSource,
       importMetadata,
       dedupHash,
+      // intentionalDuplicate: when true, the user has explicitly confirmed they
+      // want to create a transaction that appears similar to an existing one.
+      // In this case we generate a unique hash so the DB constraint is not
+      // triggered, while still recording a hash for audit purposes.
+      intentionalDuplicate,
     } = body;
 
     if (!accountId || amount == null || !category || !date || !type) {
@@ -166,12 +171,36 @@ export class TransactionService {
       }
     }
 
-    const activeDedupHash = dedupHash || transactionRepository.generateDedupHash(userId, numAmount, txDate, description);
+    // ── Deduplification & Idempotency ─────────────────────────────────────────
+    //
+    // Two cases:
+    //
+    //   A. Normal request (intentionalDuplicate falsy):
+    //      Compute/use the provided hash and check if a transaction already exists
+    //      for it. If yes, return the existing transaction (idempotent replay).
+    //
+    //   B. Intentional duplicate (intentionalDuplicate = true):
+    //      The user has explicitly confirmed they want to create a transaction
+    //      that looks like an existing one (e.g., two ₹500 lunches on the same day).
+    //      Append a short random suffix to make the hash unique in the DB, bypassing
+    //      the dedup check while still recording a hash for audit traceability.
+    //
+    const { randomBytes } = await import('crypto');
+    let activeDedupHash: string;
 
-    // Idempotency check
-    const existing = await transactionRepository.findFirst({ dedupHash: activeDedupHash, userId });
-    if (existing) {
-      return transactionRepository.normalizeTransaction(existing);
+    if (intentionalDuplicate) {
+      // Intentional duplicate: generate a unique hash that won't match any existing row
+      const baseHash = dedupHash || transactionRepository.generateDedupHash(userId, numAmount, txDate, description);
+      const uniqueSuffix = randomBytes(8).toString('hex');
+      activeDedupHash = `${baseHash}-intentional-${uniqueSuffix}`;
+    } else {
+      activeDedupHash = dedupHash || transactionRepository.generateDedupHash(userId, numAmount, txDate, description);
+
+      // Idempotency check — return the existing transaction for retried requests
+      const existing = await transactionRepository.findFirst({ dedupHash: activeDedupHash, userId });
+      if (existing) {
+        return transactionRepository.normalizeTransaction(existing);
+      }
     }
 
     const serializedTags = transactionRepository.serializeTags(tags);
