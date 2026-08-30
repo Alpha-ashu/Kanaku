@@ -241,16 +241,15 @@ export default defineConfig(({ mode }) => {
     publicDir: 'public',
     define: {
       __ADMIN_UI_ENABLED__: JSON.stringify(adminUiEnabled),
+      // Vite 8 uses __BUNDLED_DEV__ in @vite/client to detect bundled-dev mode.
+      // In dev-server mode it must be false; without this define the browser throws
+      // "ReferenceError: __BUNDLED_DEV__ is not defined" on startup.
+      __BUNDLED_DEV__: JSON.stringify(false),
     },
     plugins: [
       react(),
       tailwindcss(),
       stockApiDevPlugin(),
-      // Fix webhint compatibility warnings:
-      // 1. `content-type` header media type value should be 'application/javascript', not 'text/javascript' (.mjs files)
-      // 2. `content-type` header media type value should be 'text/css', not 'application/javascript' (.css files)
-      // 3. Wrap unsupported CSS properties (scrollbar-width, scrollbar-color, text-wrap) in @supports blocks to satisfy compatibility audit
-      // 4. Inject standards-compliant `text-size-adjust` next to `-webkit-text-size-adjust` inside compiled preflight
       {
         name: 'correct-js-mime-type',
         configureServer(server) {
@@ -259,7 +258,7 @@ export default defineConfig(({ mode }) => {
             const parsedUrl = new URL(url, 'http://localhost');
             const cleanUrl = parsedUrl.pathname;
 
-            const isCss = cleanUrl.endsWith('.css') || url.includes('.css');
+            const isCss = cleanUrl.endsWith('.css');
             let isScriptImport = false;
 
             if (isCss) {
@@ -267,70 +266,53 @@ export default defineConfig(({ mode }) => {
               const dest = req.headers['sec-fetch-dest'] || '';
               isScriptImport = dest === 'script' || accept.includes('javascript') || accept.includes('application/x-esmodule');
 
-              // NOTE: Do NOT append ?direct here. Doing so bypasses the @tailwindcss/vite
-              // transform pipeline and serves raw, unprocessed CSS to the browser.
-              // Raw Tailwind v4 directives like @custom-variant are not valid plain CSS
-              // and cause "SyntaxError: Invalid or unexpected token" in the browser.
-              // The Tailwind plugin handles all CSS transformation automatically.
+              if (!isScriptImport) {
+                const origWrite = res.write;
+                const origEnd = res.end;
+                const chunks: Buffer[] = [];
 
-              // Intercept the response to perform compatibility replacements on the compiled CSS content
-              const origWrite = res.write;
-              const origEnd = res.end;
-              const chunks: Buffer[] = [];
-
-              res.write = function (chunk: any, ...args: any[]) {
-                if (chunk) chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
-                return true;
-              };
-
-              res.end = function (chunk: any, ...args: any[]) {
-                if (chunk) chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
-                let body = Buffer.concat(chunks).toString('utf8');
-
-                const wrapCssProperty = (css: string, property: string, supportsQuery: string): string => {
-                  const regex = new RegExp(`([^;{}\\r\\n]+)\\s*\\{([^}]*?)(${property}:\\s*[^;}\\r\\n]+;?)([^}]*?)\\}`, 'g');
-                  return css.replace(regex, (match, selector, before, propDecl, after) => {
-                    const cleanBefore = before.trim();
-                    const cleanAfter = after.trim();
-                    const baseBlock = (cleanBefore || cleanAfter) 
-                      ? `${selector} { ${cleanBefore} ${cleanAfter} }\n` 
-                      : '';
-                    const supportsBlock = `@supports (${supportsQuery}) { ${selector} { ${propDecl} } }`;
-                    return `${baseBlock}${supportsBlock}`;
-                  });
+                res.write = function (chunk: any, ...args: any[]) {
+                  if (chunk) chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+                  return true;
                 };
 
-                // A. Add standards-compliant text-size-adjust: 100% inside Tailwind's preflight html, :host block
-                body = body.replace(
-                  /-webkit-text-size-adjust:\s*100%/g,
-                  '-webkit-text-size-adjust: 100%; text-size-adjust: 100%'
-                );
+                res.end = function (chunk: any, ...args: any[]) {
+                  if (chunk) chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+                  let body = Buffer.concat(chunks).toString('utf8');
 
-                // B. Wrap scrollbar-width in @supports
-                body = wrapCssProperty(body, 'scrollbar-width', 'scrollbar-width: thin');
+                  const wrapCssProperty = (css: string, property: string, supportsQuery: string): string => {
+                    const regex = new RegExp(`([^;{}\\r\\n]+)\\s*\\{([^}]*?)(${property}:\\s*[^;}\\r\\n]+;?)([^}]*?)\\}`, 'g');
+                    return css.replace(regex, (match, selector, before, propDecl, after) => {
+                      const cleanBefore = before.trim();
+                      const cleanAfter = after.trim();
+                      const baseBlock = (cleanBefore || cleanAfter) 
+                        ? `${selector} { ${cleanBefore} ${cleanAfter} }\n` 
+                        : '';
+                      const supportsBlock = `@supports (${supportsQuery}) { ${selector} { ${propDecl} } }`;
+                      return `${baseBlock}${supportsBlock}`;
+                    });
+                  };
 
-                // C. Wrap scrollbar-color in @supports
-                body = wrapCssProperty(body, 'scrollbar-color', 'scrollbar-color: auto');
+                  body = body.replace(
+                    /-webkit-text-size-adjust:\s*100%/g,
+                    '-webkit-text-size-adjust: 100%; text-size-adjust: 100%'
+                  );
 
-                // D. Wrap text-wrap in @supports (e.g. .text-balance)
-                body = wrapCssProperty(body, 'text-wrap', 'text-wrap: balance');
+                  body = wrapCssProperty(body, 'scrollbar-width', 'scrollbar-width: thin');
+                  body = wrapCssProperty(body, 'scrollbar-color', 'scrollbar-color: auto');
+                  body = wrapCssProperty(body, 'text-wrap', 'text-wrap: balance');
+                  body = wrapCssProperty(body, 'text-size-adjust', 'text-size-adjust: none');
 
-                // E. Wrap text-size-adjust in @supports
-                body = wrapCssProperty(body, 'text-size-adjust', 'text-size-adjust: none');
-
-                const responseBuffer = Buffer.from(body, 'utf8');
-                res.setHeader('content-length', responseBuffer.length.toString());
-                
-                if (!isScriptImport) {
+                  const responseBuffer = Buffer.from(body, 'utf8');
+                  res.setHeader('content-length', responseBuffer.length.toString());
                   res.setHeader('content-type', 'text/css');
-                }
 
-                origWrite.call(this, responseBuffer);
-                return origEnd.apply(this, args as any);
-              };
+                  origWrite.call(this, responseBuffer);
+                  return origEnd.apply(this, args as any);
+                };
+              }
             }
 
-            // Fix general .mjs files served as text/javascript
             const origSetHeader = res.setHeader.bind(res);
             res.setHeader = (name: string, value: string | number | readonly string[]) => {
               if (
@@ -348,10 +330,8 @@ export default defineConfig(({ mode }) => {
             next();
           };
 
-          // Append to middleware stack
           server.middlewares.use(myMiddleware);
 
-          // Move our middleware to the absolute beginning of the stack to ensure we intercept first
           const stack = server.middlewares.stack;
           const index = stack.findIndex((layer: any) => layer.handle === myMiddleware);
           if (index > 0) {

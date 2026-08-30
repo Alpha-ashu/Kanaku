@@ -55,17 +55,31 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin,
  return () => obs.disconnect();
  }, []);
 
- // Parallax blob on mouse move
+ // Parallax blob on mouse move — throttled via rAF to avoid frame budget violations
  useEffect(() => {
- const handleMouseMove = (e: MouseEvent) => {
- if (!blobRef.current) return;
- const x = (e.clientX / window.innerWidth - 0.5) * 22;
- const y = (e.clientY / window.innerHeight - 0.5) * 22;
- blobRef.current.style.transform = `translate(${x}px, ${y}px)`;
- };
- window.addEventListener('mousemove', handleMouseMove);
- return () => window.removeEventListener('mousemove', handleMouseMove);
+  let rafId: number | null = null;
+  let latestX = 0;
+  let latestY = 0;
+
+  const handleMouseMove = (e: MouseEvent) => {
+   latestX = (e.clientX / window.innerWidth - 0.5) * 22;
+   latestY = (e.clientY / window.innerHeight - 0.5) * 22;
+   if (rafId !== null) return; // already have a frame queued
+   rafId = requestAnimationFrame(() => {
+    if (blobRef.current) {
+     blobRef.current.style.transform = `translate(${latestX}px, ${latestY}px)`;
+    }
+    rafId = null;
+   });
+  };
+
+  window.addEventListener('mousemove', handleMouseMove, { passive: true });
+  return () => {
+   window.removeEventListener('mousemove', handleMouseMove);
+   if (rafId !== null) cancelAnimationFrame(rafId);
+  };
  }, []);
+
 
  const scrollToSection = (id: string) => {
  const element = document.getElementById(id);
