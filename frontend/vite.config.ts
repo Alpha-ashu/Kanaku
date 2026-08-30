@@ -267,13 +267,11 @@ export default defineConfig(({ mode }) => {
               const dest = req.headers['sec-fetch-dest'] || '';
               isScriptImport = dest === 'script' || accept.includes('javascript') || accept.includes('application/x-esmodule');
 
-              if (!isScriptImport) {
-                // Force Vite to return raw CSS by appending ?direct parameter
-                if (!parsedUrl.searchParams.has('direct')) {
-                  parsedUrl.searchParams.set('direct', '');
-                  req.url = parsedUrl.pathname + parsedUrl.search;
-                }
-              }
+              // NOTE: Do NOT append ?direct here. Doing so bypasses the @tailwindcss/vite
+              // transform pipeline and serves raw, unprocessed CSS to the browser.
+              // Raw Tailwind v4 directives like @custom-variant are not valid plain CSS
+              // and cause "SyntaxError: Invalid or unexpected token" in the browser.
+              // The Tailwind plugin handles all CSS transformation automatically.
 
               // Intercept the response to perform compatibility replacements on the compiled CSS content
               const origWrite = res.write;
