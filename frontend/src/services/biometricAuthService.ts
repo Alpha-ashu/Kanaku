@@ -224,11 +224,17 @@ export const enableBiometricUnlock = async (
     // Storing with an accessControl level is itself biometric-gated on both
     // platforms, so this single call both proves identity and binds the credential.
     // No separate verifyIdentity() — that would prompt the user twice.
+    //
+    // title/negativeButtonText are Android-only. Without them the plugin falls back
+    // to "Protect Credentials" / "Cancel", which can confuse users or be cancelled
+    // more readily. iOS ignores these fields.
     await NativeBiometric.setCredentials({
       username: accountLabel,
       password: verifiedPin,
       server: CREDENTIAL_SERVER,
       accessControl: ACCESS_CONTROL,
+      title: 'Save biometric unlock',
+      negativeButtonText: 'Use PIN instead',
     });
 
     setEnabledFlag(true);
@@ -320,7 +326,18 @@ export const unlockWithBiometrics = async (): Promise<BiometricUnlockOutcome> =>
     // A biometric re-enrolment invalidates a BIOMETRY_CURRENT_SET credential by
     // design. That is not a failure to report as "did not match" — the stored PIN is
     // simply gone, so turn the feature off and let the user re-enable it.
-    if (/invalidat|key|permanently|not found|no credentials/i.test(message)) {
+    //
+    // Patterns that indicate credential invalidation (cross-platform):
+    //   Android: KeyPermanentlyInvalidatedException, UserNotAuthenticatedException,
+    //            KeyStoreException, "no protected credentials", error code "21"
+    //   iOS:     errSecItemNotFound, LAErrorBiometryChanged, LAErrorPasscodeNotSet
+    //   Common:  "not found", "invalidat", "permanently", "21"
+    if (
+      /invalidat|permanently|usernotauthenticated|keystoreexception/i.test(message) ||
+      /no credentials|no protected|not found|errSecItemNotFound/i.test(message) ||
+      /biometryChanged|LAErrorBiometryChanged|LAErrorPasscodeNotSet/i.test(message) ||
+      message === '21'
+    ) {
       console.info('[Biometric] Stored credential invalidated, disabling:', message);
       await disableBiometricUnlock();
       return {
@@ -350,6 +367,8 @@ export const syncBiometricPin = async (newPin: string, accountLabel: string): Pr
       password: newPin,
       server: CREDENTIAL_SERVER,
       accessControl: ACCESS_CONTROL,
+      title: 'Update biometric unlock',
+      negativeButtonText: 'Use PIN instead',
     });
   } catch (error) {
     // If we cannot re-bind, disable rather than leave a stale PIN behind.

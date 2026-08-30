@@ -8,6 +8,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { isGuestMode } from '@/lib/guestMode';
 import supabase from '@/utils/supabase/client';
 import { apiClient } from '@/lib/api';
+import { Capacitor } from '@capacitor/core';
+
 import {
   type BiometricAvailability,
   enableBiometricUnlock,
@@ -19,6 +21,7 @@ import {
   suppressBiometricForSession,
   unlockWithBiometrics,
 } from '@/services/biometricAuthService';
+import { App as CapacitorApp } from '@capacitor/app';
 
 import {
   formatLockCountdown,
@@ -317,9 +320,14 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  }, []);
 
  /**
-  * Unlocks via biometrics. The retrieved PIN is pushed into `pin` state rather than
-  * verified here, so it flows through exactly the same auto-submit → server verify →
-  * key derivation path as a typed PIN. Biometrics replace typing, not verification.
+  * Unlocks via biometrics. The retrieved PIN is submitted directly through the
+  * normal verify path — biometrics replace typing, not verification.
+  *
+  * IMPORTANT: We call handleSubmit(outcome.pin) directly rather than setPin(outcome.pin).
+  * Setting pin state and relying on the auto-submit useEffect introduces a React render
+  * cycle race: if isSubmitting is true from a prior cycle the auto-submit guard silently
+  * drops the submission, leaving the app hung on the PIN screen with no error shown.
+  * Calling handleSubmit directly with a pinOverride bypasses all state races.
   */
  const handleBiometricUnlock = useCallback(async () => {
    if (biometricBusy || isSubmitting) return;
@@ -331,8 +339,12 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
 
      switch (outcome.status) {
        case 'success':
-         setPin(outcome.pin);
-         break;
+         // Do NOT use setPin() here — it defers submission through a useEffect
+         // (120 ms setTimeout) which races with isSubmitting/biometricBusy state.
+         // Call handleSubmit directly with the PIN override instead.
+         setBiometricBusy(false); // clear busy BEFORE submit so handleSubmit guard passes
+         await handleSubmit(outcome.pin);
+         return; // handleSubmit clears isSubmitting; don't double-clear in finally
        case 'cancelled':
          // Deliberate dismissal — stop auto-prompting so the keypad is usable.
          suppressBiometricForSession();
@@ -352,29 +364,42 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
    }
  }, [biometricBusy, isSubmitting]);
 
+
  /** Accepts the enrolment offer, then hands off the unlock that was held pending. */
  const handleAcceptEnrolment = useCallback(async () => {
    if (!enrolOffer || !pendingUnlock || biometricBusy) return;
-   setBiometricBusy(true);
 
-   const label = user?.email || 'KANAKU account';
-   const result = await enableBiometricUnlock(enrolOffer.pin, label);
-
-   if (result.ok) {
-     setBiometricEnrolled(true);
-     toast.success(`${biometric?.label ?? 'Biometric'} unlock enabled`);
-   } else if (result.message) {
-     toast.error(result.message);
-   }
-
-   // Whether or not enrolment succeeded, the PIN was already verified — never
-   // strand the user on this screen.
+   // Snapshot pendingUnlock immediately. It MUST be consumed by finalizeAuth below
+   // regardless of what happens inside enableBiometricUnlock. Without try/finally,
+   // a plugin crash or OEM Keystore rejection leaves the user on the PIN screen
+   // with a verified PIN they can never use — the primary Android crash scenario.
    const unlock = pendingUnlock;
    setEnrolOffer(null);
    setPendingUnlock(null);
-   setBiometricBusy(false);
-   await finalizeAuth(unlock.key, unlock.msg);
+   setBiometricBusy(true);
+
+   try {
+     const label = user?.email || 'KANAKU account';
+     const result = await enableBiometricUnlock(enrolOffer.pin, label);
+
+     if (result.ok) {
+       setBiometricEnrolled(true);
+       toast.success(`${biometric?.label ?? 'Biometric'} unlock enabled`);
+     } else if (result.message) {
+       toast.error(result.message);
+     }
+   } catch (err) {
+     // Should not happen — enableBiometricUnlock always returns rather than throwing.
+     // But if the plugin itself throws an uncaught exception, we must still unlock.
+     console.warn('[PINAuth] enableBiometricUnlock threw unexpectedly:', err);
+   } finally {
+     // Whether or not enrolment succeeded, the PIN was already verified — NEVER
+     // strand the user on this screen. finalizeAuth must always be called.
+     setBiometricBusy(false);
+     await finalizeAuth(unlock.key, unlock.msg);
+   }
  }, [enrolOffer, pendingUnlock, biometricBusy, user, biometric, finalizeAuth]);
+
 
  /** Declines the offer. `permanent` stops us asking again until Settings re-arms it. */
  const handleDeclineEnrolment = useCallback(async (permanent: boolean) => {
@@ -398,6 +423,25 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
    autoPromptedRef.current = true;
    void handleBiometricUnlock();
  }, [isLoading, isCreating, sessionExpired, isPinLocked, biometric, biometricEnrolled, handleBiometricUnlock]);
+
+ // On native platforms, listen for the app returning to foreground after the
+ // biometric AuthActivity (Android) or FaceID/TouchID sheet (iOS) closes.
+ // If biometricBusy is stuck true when we come back — e.g. a timing edge where
+ // the OS resume fires before the JS promise chain settles — reset it so the
+ // user is not permanently locked out of the biometric button.
+ useEffect(() => {
+   if (!Capacitor.isNativePlatform()) return;
+   let listener: { remove: () => void } | null = null;
+   CapacitorApp.addListener('appStateChange', ({ isActive }) => {
+     if (isActive && biometricBusy) {
+       // Small delay to let the JS promise chain settle first.
+       // If biometricBusy is still true after 800 ms, it is genuinely stuck.
+       setTimeout(() => setBiometricBusy(prev => prev ? false : prev), 800);
+     }
+   }).then(h => { listener = h; });
+   return () => { listener?.remove(); };
+ }, [biometricBusy]);
+
 
  // PIN input handler (hidden input + numpad both write here) 
   const appendDigit = (d: string) => {
@@ -441,8 +485,14 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  }, [pin, enrolOffer, isPinLocked]);
 
   // Submit logic
-  const handleSubmit = async () => {
-    if (pin.length !== 6 || isSubmitting) return;
+  //
+  // `pinOverride` is used by the biometric success path to pass the PIN directly
+  // without going through setPin() state. This eliminates the React render-cycle
+  // race where the 120 ms auto-submit useEffect could fire while isSubmitting is
+  // still true from a prior cycle, silently dropping the submission.
+  const handleSubmit = async (pinOverride?: string) => {
+    const currentPin = pinOverride ?? pin;
+    if (currentPin.length !== 6 || isSubmitting) return;
 
     // Re-read rather than trusting the ticking state: a reload during a lockout
     // remounts with a fresh timer, and the persisted deadline is authoritative.
@@ -460,13 +510,13 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
       if (isCreating) {
         if (createStage === 'enter') {
           // Check if PIN is weak
-          if (pinService.isWeakPin(pin)) {
+          if (pinService.isWeakPin(currentPin)) {
             triggerShake('PIN is too weak. Avoid sequential, repeating, or common patterns.');
             setIsSubmitting(false);
             return;
           }
           // Move to confirm stage
-          setFirstPin(pin);
+          setFirstPin(currentPin);
           setPin('');
           setCreateStage('confirm');
           setIsSubmitting(false);
@@ -474,7 +524,7 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
         }
 
         // Confirm stage - check match
-        if (pin !== firstPin) {
+        if (currentPin !== firstPin) {
           triggerShake("PINs don't match. Try again.");
           setCreateStage('enter');
           setFirstPin('');
@@ -486,11 +536,11 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
         // Guest mode: skip server entirely.
         // storeMasterKey writes the verifier, so the backup payload must be
         // serialised AFTER it — not before.
-        const key = await storeMasterKey(pin);
+        const key = await storeMasterKey(currentPin);
 
         if (!isGuestMode()) {
           const backupPayload = serializePINKeyBackup();
-          pinService.createPin(pin)
+          pinService.createPin(currentPin)
             .then(result => {
               if (result.success && backupPayload) {
                 pinService.verifySecurity().then(sec => {
@@ -503,11 +553,11 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
             .catch(() => { });
         }
 
-        await completeUnlock(key, 'PIN created! Welcome to KANAKU', pin);
+        await completeUnlock(key, 'PIN created! Welcome to KANAKU', currentPin);
 
       } else {
         // Fast path: verify against local encryption key first
-        const localResult = await verifyPIN(pin);
+        const localResult = await verifyPIN(currentPin);
 
         // Guest mode: verify locally only, no server call.
         if (isGuestMode()) {
@@ -538,7 +588,7 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
           resetPinAttempts();
 
           const verifyPromise = pinService
-            .verifyPin({ pin })
+            .verifyPin({ pin: currentPin })
             .catch((serverErr) => {
               console.warn('[PINAuth] Server PIN verify failed:', serverErr);
               return null;
@@ -575,21 +625,21 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
             });
           }
 
-          await completeUnlock(localResult.key, 'Welcome back!', pin);
+          await completeUnlock(localResult.key, 'Welcome back!', currentPin);
           return;
         }
 
         // If local keys are missing or mismatched, check with server
         try {
-          const serverResult = await pinService.verifyPin({ pin });
+          const serverResult = await pinService.verifyPin({ pin: currentPin });
           if (serverResult.success) {
             const kbr = await pinService.getKeyBackup();
             if (kbr.success && kbr.backup) {
               restorePINKeyBackup(kbr.backup);
             }
-            const key = await storeMasterKey(pin);
+            const key = await storeMasterKey(currentPin);
             resetPinAttempts();
-            await completeUnlock(key, 'Welcome back!', pin);
+            await completeUnlock(key, 'Welcome back!', currentPin);
             return;
           }
 
