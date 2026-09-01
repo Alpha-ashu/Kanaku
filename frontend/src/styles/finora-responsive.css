@@ -240,7 +240,11 @@
 
 /* ─── Scrollbar Utilities ─── */
 .no-scrollbar::-webkit-scrollbar { display: none; }
-.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+/* scrollbar-width: WebKit browsers (Safari, older Chrome, Samsung Internet) already
+   hide the scrollbar via ::-webkit-scrollbar { display: none } on the line above.
+   The standard `scrollbar-width` property is the W3C equivalent for Firefox and
+   Chromium 121+. Both declarations together give full cross-browser coverage. */
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; /* stylelint-disable-line */ }
 
 /* ─── PIN Auth: offscreen hidden form (keeps mobile keyboard open) ─── */
 .pin-hidden-input-container {
