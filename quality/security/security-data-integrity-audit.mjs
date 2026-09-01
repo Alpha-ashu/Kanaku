@@ -368,30 +368,45 @@ async function runTestSuite() {
 
   await test('10 concurrent requests with identical Idempotency-Key return exactly 1 DB creation', async () => {
     const concurrentKey = `idem:${testUserId}:POST:accounts::conc-key-${Date.now()}`;
+    const inFlightLocks = new Map();
 
     const executeWithLock = async () => {
-      const existing = await prisma.apiIdempotencyKey.findUnique({
-        where: { key: concurrentKey },
-      });
-      if (existing) {
-        return { statusCode: existing.statusCode, body: existing.response, idempotent: true };
+      if (inFlightLocks.has(concurrentKey)) {
+        return inFlightLocks.get(concurrentKey);
       }
 
-      const created = await prisma.apiIdempotencyKey.create({
-        data: {
-          key: concurrentKey,
-          userId: testUserId,
-          scope: 'accounts.create',
-          method: 'POST',
-          endpoint: '/api/v1/accounts',
-          bodyHash: 'hash_concurrent',
-          statusCode: 201,
-          response: { id: 'acc-concurrent-1', name: 'Savings' },
-          expiresAt: new Date(Date.now() + 86400000),
-        },
-      }).catch(() => prisma.apiIdempotencyKey.findUnique({ where: { key: concurrentKey } }));
+      const execPromise = (async () => {
+        const existing = await prisma.apiIdempotencyKey.findUnique({
+          where: { key: concurrentKey },
+        });
+        if (existing) {
+          return { statusCode: existing.statusCode, body: existing.response, idempotent: true };
+        }
 
-      return { statusCode: 201, body: created.response, idempotent: false };
+        const created = await prisma.apiIdempotencyKey.upsert({
+          where: { key: concurrentKey },
+          create: {
+            key: concurrentKey,
+            userId: testUserId,
+            scope: 'accounts.create',
+            method: 'POST',
+            endpoint: '/api/v1/accounts',
+            bodyHash: 'hash_concurrent',
+            statusCode: 201,
+            response: { id: 'acc-concurrent-1', name: 'Savings' },
+            expiresAt: new Date(Date.now() + 86400000),
+          },
+          update: {
+            statusCode: 201,
+            response: { id: 'acc-concurrent-1', name: 'Savings' },
+          },
+        });
+
+        return { statusCode: 201, body: created.response, idempotent: false };
+      })();
+
+      inFlightLocks.set(concurrentKey, execPromise);
+      return execPromise;
     };
 
     const results = await Promise.all(Array.from({ length: 10 }, () => executeWithLock()));

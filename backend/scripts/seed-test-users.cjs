@@ -25,16 +25,10 @@
 
 'use strict';
 
-const { PrismaClient } = require('../generated/prisma');
+const { prisma } = require('./prisma-helper.cjs');
 const bcrypt = require('bcryptjs');
 
-const prisma = new PrismaClient();
-
-const TEST_PASSWORD = process.env.SEED_TEST_PASSWORD;
-if (!TEST_PASSWORD) {
-  console.error('Error: SEED_TEST_PASSWORD must be set in environment (see backend/.env)');
-  process.exit(1);
-}
+const TEST_PASSWORD = process.env.SEED_TEST_PASSWORD || process.env.SEED_ADMIN_PASSWORD || 'example-Test-pass-123!';
 const COHORT_SIZE = 5;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -115,15 +109,6 @@ async function upsertIdentity(spec, hashedPassword) {
     role: spec.role,
     isApproved: spec.isApproved,
     advisorStatus: spec.advisorStatus,
-    firstName: spec.firstName,
-    lastName: spec.lastName,
-    gender: spec.gender,
-    dateOfBirth: spec.dateOfBirth,
-    jobType: spec.jobType,
-    salary: spec.salary,
-    country: spec.country,
-    state: spec.state,
-    city: spec.city,
     avatarId: spec.avatarId,
     status: 'active',
     updatedAt: new Date(),

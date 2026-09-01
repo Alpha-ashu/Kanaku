@@ -1,7 +1,5 @@
-const { PrismaClient } = require('../generated/prisma');
+const { prisma } = require('./prisma-helper.cjs');
 const bcrypt = require('bcrypt');
-
-const prisma = new PrismaClient();
 
 const ADMIN_EMAIL = process.env.SEED_ADMIN_EMAIL || 'admin@kanaku.com';
 const ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD || 'example-Admin-password-123!';

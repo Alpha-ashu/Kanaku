@@ -27,10 +27,8 @@
 // Without this it reads an empty process.env and SILENTLY SKIPS every role.
 require('dotenv').config({ path: require('path').resolve(__dirname, '..', '.env') });
 
-const { PrismaClient } = require('../generated/prisma');
+const { prisma } = require('./prisma-helper.cjs');
 const bcrypt = require('bcryptjs');
-
-const prisma = new PrismaClient();
 
 /** Enforces password strength rules matching the registration controller */
 function validatePassword(password, label) {

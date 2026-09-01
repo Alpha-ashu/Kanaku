@@ -28,8 +28,7 @@
 // Load backend/.env when run locally (Fly already has env vars in scope).
 try { require('dotenv').config({ path: require('path').join(__dirname, '..', '.env') }); } catch { /* dotenv optional */ }
 
-const { PrismaClient } = require('../generated/prisma');
-const prisma = new PrismaClient();
+const { prisma } = require('./prisma-helper.cjs');
 
 const args = process.argv.slice(2);
 const emailFilter = (() => {

@@ -1,13 +1,9 @@
-const { PrismaClient } = require('./generated/prisma');
+require('dotenv').config({ path: 'backend/.env' });
+const { PrismaPg } = require('@prisma/adapter-pg');
+const { PrismaClient } = require('../generated/prisma');
 
-// Override DATABASE_URL with correct credentials from docker-compose
-const prisma = new PrismaClient({
-  datasources: {
-    db: {
-      url: 'postgresql://postgres:postgres@localhost:5432/expense_tracker'
-    }
-  }
-});
+const adapter = new PrismaPg(process.env.DATABASE_URL);
+const prisma = new PrismaClient({ adapter });
 
 const adminEmail = process.env.SEED_ADMIN_EMAIL || 'admin@kanaku.com';
 

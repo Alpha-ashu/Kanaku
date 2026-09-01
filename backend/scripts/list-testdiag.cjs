@@ -1,7 +1,8 @@
+require('dotenv').config({ path: 'backend/.env' });
 const { PrismaClient } = require('../generated/prisma');
 const prisma = new PrismaClient({
   datasources: {
-    db: { url: 'postgresql://postgres.mmwrckfqeqjfqciymemh:Kanku_2026_@aws-1-ap-southeast-2.pooler.supabase.com:5432/staging_kanakku' }
+    db: { url: process.env.DATABASE_URL }
   }
 });
 async function go() {
