@@ -330,8 +330,9 @@ async function runMobileClientTestSuite() {
       }
       isSubmitting = true;
       try {
-        const res = await prisma.apiIdempotencyKey.create({
-          data: {
+        const res = await prisma.apiIdempotencyKey.upsert({
+          where: { key: doubleTapKey },
+          create: {
             key: doubleTapKey,
             userId: testUserId,
             scope: 'accounts.create',
@@ -341,6 +342,10 @@ async function runMobileClientTestSuite() {
             statusCode: 201,
             response: { id: 'acc-tap-1', name: 'Savings' },
             expiresAt: new Date(Date.now() + 86400000),
+          },
+          update: {
+            statusCode: 201,
+            response: { id: 'acc-tap-1', name: 'Savings' },
           },
         });
         return { tapIndex, result: res, blockedByUiLock: false };

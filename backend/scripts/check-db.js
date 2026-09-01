@@ -1,4 +1,5 @@
 const { Client } = require('pg');
+require('dotenv').config({ path: 'backend/.env' });
 
 async function checkSchema() {
   const connectionString = process.env.DATABASE_URL;
@@ -52,14 +53,24 @@ async function checkSchema() {
     console.log("\n--- Does accounts_country_provider exist (from 009)? ---");
     console.log(acpRes.rows.length > 0 ? "Yes" : "No");
 
-    // Check supabase migrations
-    const migRes = await client.query(`
-      SELECT version 
-      FROM supabase_migrations.schema_migrations
-      ORDER BY version DESC LIMIT 5;
+    // Check supabase migrations if table exists
+    const tableCheck = await client.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'supabase_migrations' AND table_name = 'schema_migrations'
+      ) as exists;
     `);
-    console.log("\n--- Latest applied migrations ---");
-    migRes.rows.forEach(r => console.log(r.version));
+    if (tableCheck.rows[0]?.exists) {
+      const migRes = await client.query(`
+        SELECT version 
+        FROM supabase_migrations.schema_migrations
+        ORDER BY version DESC LIMIT 5;
+      `);
+      console.log("\n--- Latest applied migrations ---");
+      migRes.rows.forEach(r => console.log(r.version));
+    } else {
+      console.log("\n--- Supabase migrations table not present (Prisma schema in use) ---");
+    }
 
   } catch (e) {
     console.error("Error:", e.message);

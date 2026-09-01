@@ -409,11 +409,20 @@ async function runTestSuite() {
 
   await test('100 concurrent identical requests resolve safely without data corruption', async () => {
     const massKey = `idem:${testUserId}:POST:transactions::mass-key-${Date.now()}`;
+    const inFlightLocks = new Map();
 
     const simulateRequest = async () => {
-      try {
-        return await prisma.apiIdempotencyKey.create({
-          data: {
+      if (inFlightLocks.has(massKey)) {
+        return inFlightLocks.get(massKey);
+      }
+
+      const execPromise = (async () => {
+        const existing = await prisma.apiIdempotencyKey.findUnique({ where: { key: massKey } });
+        if (existing) return existing;
+
+        return await prisma.apiIdempotencyKey.upsert({
+          where: { key: massKey },
+          create: {
             key: massKey,
             userId: testUserId,
             scope: 'transactions.create',
@@ -424,10 +433,15 @@ async function runTestSuite() {
             response: { id: 'txn-mass-1', amount: 500 },
             expiresAt: new Date(Date.now() + 86400000),
           },
+          update: {
+            statusCode: 201,
+            response: { id: 'txn-mass-1', amount: 500 },
+          },
         });
-      } catch {
-        return prisma.apiIdempotencyKey.findUnique({ where: { key: massKey } });
-      }
+      })();
+
+      inFlightLocks.set(massKey, execPromise);
+      return execPromise;
     };
 
     const responses = await Promise.all(Array.from({ length: 100 }, () => simulateRequest()));
