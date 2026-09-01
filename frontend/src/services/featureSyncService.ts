@@ -478,15 +478,10 @@ export const syncRecurringTransactions = async (): Promise<FeatureSyncResult> =>
     // 1. Look up by cloud ID
     let existing = byCloudId.get(row.id);
 
-    // 2. If not found by cloud ID, look up by business signature among unlinked local records
-    if (!existing) {
+    // 2. If not found by cloud ID, look up by clientRequestId among unlinked local records
+    if (!existing && (row as any).clientRequestId) {
       existing = localRows.find(
-        (l) =>
-          !l.cloudId &&
-          l.name.trim().toLowerCase() === targetTitle &&
-          Math.abs(Number(l.amount) - targetAmount) < 0.01 &&
-          l.frequency === frequency &&
-          l.type === targetType
+        (l) => !l.cloudId && (l as any).clientRequestId === (row as any).clientRequestId
       );
     }
 

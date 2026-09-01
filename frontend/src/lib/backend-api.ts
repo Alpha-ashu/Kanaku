@@ -141,7 +141,11 @@ class BackendService {
 
       const method = (config.method || 'GET').toUpperCase();
       if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method) && !config.headers['Idempotency-Key']) {
-        config.headers['Idempotency-Key'] = generateUUID();
+        const payloadRequestId =
+          (config.data && typeof config.data === 'object' && config.data.clientRequestId)
+            ? String(config.data.clientRequestId)
+            : null;
+        config.headers['Idempotency-Key'] = payloadRequestId || generateUUID();
       }
 
       return config;

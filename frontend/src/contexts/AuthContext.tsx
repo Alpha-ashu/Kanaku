@@ -268,7 +268,7 @@ const resolveUserRole = (_user: User | null): UserRole => {
   return 'user';
 };
 
-/** Clear all user data from the local IndexedDB to ensure data isolation between accounts */
+/** Clear all user data from the local IndexedDB to ensure complete data isolation between accounts */
 const clearLocalUserData = async () => {
   try {
     await runWithCloudSyncSuppressed(async () => {
@@ -278,6 +278,9 @@ const clearLocalUserData = async () => {
         db.loans.clear(),
         db.goals.clear(),
         db.investments.clear(),
+        db.recurringTransactions.clear(),
+        db.budgets.clear(),
+        db.gold.clear(),
         db.notifications.clear(),
         db.groupExpenses.clear(),
         db.friends.clear(),
@@ -288,7 +291,7 @@ const clearLocalUserData = async () => {
       ]);
     });
   } catch (err) {
-    console.error('Failed to clear local DB on login:', err);
+    console.error('Failed to clear local DB on logout/login:', err);
   }
 };
 
