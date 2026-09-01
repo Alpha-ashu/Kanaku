@@ -685,7 +685,7 @@ export const TopBar: React.FC = () => {
  </button>
  </div>
  
- <div className="flex-1 overflow-y-auto p-4 space-y-6 scrollbar-hide pb-24">
+ <div className="flex-1 overflow-y-auto p-4 space-y-6 scrollbar-hide" style={{ paddingBottom: 'calc(var(--bottom-reserved-space) + 8px)' }}>
  {searchQuery.trim() ? (
  searchResults.length > 0 ? (
  <div className="space-y-6">

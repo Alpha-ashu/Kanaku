@@ -809,10 +809,13 @@ const AppContent: React.FC = () => {
     // setBackgroundColor throws (Android-only API), so the back-button and
     // lifecycle wiring below never ran at all.
     try {
-      await StatusBar.setStyle({ style: Style.Dark });
+      // Style.Light = dark icons on light/white background — matches the white
+      // pill header that floats over the status bar area on both iOS and Android.
+      await StatusBar.setStyle({ style: Style.Light });
       if (platform === 'android') {
         // Android-only; on iOS the status bar takes its colour from the web view.
-        await StatusBar.setBackgroundColor({ color: '#2563eb' });
+        // White background so it blends with the floating pill header.
+        await StatusBar.setBackgroundColor({ color: '#ffffff' });
       }
     } catch (error) {
       console.warn('[Capacitor] Status bar setup skipped:', error);
@@ -1379,7 +1382,7 @@ const AppContent: React.FC = () => {
         <div className="w-full max-w-[1600px] mx-auto flex flex-col flex-1 mobile-content relative px-2 sm:px-4 lg:px-8">
           <LimitedModeBanner />
           <OfflineBadge />
-          <main className="w-full pt-24 lg:pt-28 overflow-x-hidden mobile-safe-bottom mobile-main flex-1 bg-transparent flex flex-col justify-start">
+          <main className="w-full overflow-x-hidden mobile-safe-bottom mobile-main flex-1 bg-transparent flex flex-col justify-start">
             {dataSyncError && (
               <div className="px-3 sm:px-6 pt-3 pb-2">
                 <div className="flex items-start gap-3.5 rounded-2xl border border-amber-200/80 bg-amber-50/90 backdrop-blur-md px-4 py-3.5 text-xs sm:text-sm text-amber-900 shadow-sm transition-all">

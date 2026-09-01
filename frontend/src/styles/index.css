@@ -133,11 +133,33 @@ html {
 :root {
   /* Bottom navigation height (64px = h-16) */
   --bottom-nav-height: 64px;
-  /* Safe area inset for mobile devices */
-  --safe-area-bottom: max(0.5rem, env(safe-area-inset-bottom));
-  /* Total space needed for bottom nav + safe area */
-  --bottom-reserved-space: calc(var(--bottom-nav-height) + var(--safe-area-bottom));
-  --header-height: 64px;
+
+  /* BottomNav floats `bottom-2` (8px) above the real bottom edge.
+     The pill's visual bottom-edge is therefore 8px above the viewport bottom
+     plus whatever the home-indicator / gesture-pill safe area adds. We reserve
+     that full zone so page content is never hidden behind the nav. */
+  --bottom-nav-float-offset: 8px;
+
+  /* Total space reserved at the bottom: nav height + float gap + safe area */
+  --bottom-reserved-space: calc(
+    var(--bottom-nav-height)
+    + var(--bottom-nav-float-offset)
+    + max(0px, env(safe-area-inset-bottom, 0px))
+  );
+
+  /* The floating pill header sits at:
+       env(safe-area-inset-top) + 0.75rem (top-3 offset) from the top edge,
+       and is 64px (h-16) tall.
+     --header-height encodes the full distance from the viewport top to the
+     bottom edge of the pill so that mobile-main padding is always accurate
+     on notched, Dynamic-Island, punch-hole, and flat-screen devices alike.
+
+     On desktop (lg breakpoint) the header uses top-4 / top offset 1rem, so
+     override the variable there (see @media block below). */
+  --header-pill-offset: calc(env(safe-area-inset-top, 0px) + 0.75rem);
+  --header-bar-height: 64px;
+  --header-height: calc(var(--header-pill-offset) + var(--header-bar-height));
+
   /* Live soft-keyboard height, published by the @capacitor/keyboard listeners in
      app/App.tsx. Stays 0px on web and whenever the keyboard is down. */
   --keyboard-height: 0px;
@@ -196,6 +218,12 @@ html {
 @media (min-width: 1025px) {
   :root {
     --bottom-nav-height: 0px;
+    --bottom-nav-float-offset: 0px;
+    --bottom-reserved-space: 0px;
+    /* On desktop the header is pinned at top-4 (1rem) with no safe-area inset
+       needed (no notch), and a slightly taller bar area at lg:top-4. */
+    --header-pill-offset: 1rem;
+    --header-height: calc(var(--header-pill-offset) + var(--header-bar-height));
   }
 
   body {
@@ -224,13 +252,21 @@ html {
   padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
 }
 
-/* Mobile safe area padding for main content area to prevent bottom nav overlap */
+/* Mobile safe area padding for main content area to prevent bottom nav overlap.
+   Uses --bottom-reserved-space which already encodes nav height + float offset
+   + safe-area-inset-bottom. A small 8px grace is added so the last card never
+   sits flush against the nav pill. !important is kept so it beats Tailwind
+   pb-* utilities on the same element. */
 .mobile-safe-bottom {
-  padding-bottom: calc(var(--bottom-nav-height) + max(1rem, env(safe-area-inset-bottom)) + 24px) !important;
+  padding-bottom: calc(var(--bottom-reserved-space) + 8px) !important;
 }
 
+/* Top-clearance for the main content scroll region.
+   --header-height already encodes env(safe-area-inset-top) + pill-offset + bar,
+   so no additional safe-area term is needed here. A small 8px grace prevents
+   the first card from sitting flush against the pill header's shadow. */
 .mobile-main {
-  padding-top: calc(var(--header-height) + max(0.5rem, env(safe-area-inset-top)) + 8px);
+  padding-top: calc(var(--header-height) + 8px);
 }
 
 /* Touch optimization for mobile webview — eliminates 300ms tap delay & gray box highlights */

@@ -40,7 +40,7 @@ export const CenteredLayout: React.FC<CenteredLayoutProps> = ({
   }, [onRefresh, app]);
 
   const content = (
-    <div className={cn(maxWidth, 'w-full mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 pt-4 sm:pt-5 lg:pt-6 pb-24 lg:pb-10 flex flex-col flex-1', className)}>
+    <div className={cn(maxWidth, 'w-full mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 pt-4 sm:pt-5 lg:pt-6 lg:pb-10 flex flex-col flex-1', className)} style={{ paddingBottom: 'calc(var(--bottom-reserved-space) + 8px)' }}>
       {children}
     </div>
   );

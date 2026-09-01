@@ -99,8 +99,12 @@ export const BottomNav: React.FC<BottomNavProps> = ({ onQuickAdd }) => {
   };
 
   return (
-    <nav className="fixed bottom-2 sm:bottom-3 left-0 right-0 z-50 lg:hidden pointer-events-none pb-[env(safe-area-inset-bottom,0px)]">
-      <div className="mx-2 sm:mx-4 w-[calc(100%-16px)] sm:w-[calc(100%-32px)] bg-white/95 backdrop-blur-md border border-gray-200/80 rounded-2xl shadow-2xl pointer-events-auto flex items-center justify-between px-1.5 sm:px-3 h-16 relative overflow-visible">
+    <nav
+      className="fixed bottom-0 left-0 right-0 z-50 lg:hidden pointer-events-none"
+      style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+    >
+      {/* The pill floats 8px (0.5rem) above the safe-area zone */}
+      <div className="mx-2 sm:mx-4 mb-2 sm:mb-3 bg-white/95 backdrop-blur-md border border-gray-200/80 rounded-2xl shadow-2xl pointer-events-auto flex items-center justify-between px-1.5 sm:px-3 h-16 relative overflow-visible">
         {filteredNavigationItems.map((item, index) => {
           const Icon = item.icon;
           const isActive = currentPage === item.id;

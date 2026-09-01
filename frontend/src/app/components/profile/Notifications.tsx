@@ -129,7 +129,7 @@ export const Notifications: React.FC = () => {
 
   return (
     <CenteredLayout maxWidth="max-w-4xl">
-      <div className="space-y-6 pb-28">
+      <div className="space-y-6">
         {/* Modern Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-6 rounded-3xl text-white shadow-xl border border-indigo-500/20">
           <div>

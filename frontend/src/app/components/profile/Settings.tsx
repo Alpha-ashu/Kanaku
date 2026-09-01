@@ -508,7 +508,7 @@ export const Settings: React.FC = () => {
 
   return (
     <CenteredLayout>
-      <div className="space-y-4 sm:space-y-6 pb-28 max-w-4xl mx-auto w-full px-2 sm:px-4">
+      <div className="space-y-4 sm:space-y-6 max-w-4xl mx-auto w-full px-2 sm:px-4">
         {/* Header */}
         <PageHeader
           title="Settings"

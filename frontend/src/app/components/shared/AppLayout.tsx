@@ -53,7 +53,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
       )}
 
       {/* Scrollable Content Area */}
-      <main className="flex-1 overflow-y-auto pb-24">
+      <main className="flex-1 overflow-y-auto" style={{ paddingBottom: 'calc(var(--bottom-reserved-space) + 8px)' }}>
         {enablePullToRefresh ? (
           <PullToRefresh onRefresh={handleDefaultRefresh} className={className}>
             {children}
