@@ -36,9 +36,10 @@ Kanaku is built as a local-first, offline-capable personal finance application w
 - **Runtime:** Node.js 22 LTS
 - **Language:** TypeScript 6 (strict)
 - **Framework:** Express 4 (modular feature routers)
-- **ORM/DB:** Prisma 6.19.2 + PostgreSQL 16
-- **Cache:** Redis 7 (Upstash prod) — OTP, JWT denylist, feature-gate cache, idempotency, rate-limit
-- **Auth:** Supabase identity + custom JWT (HS256) — multi-strategy verify
+- **ORM/DB:** Prisma 7 + PostgreSQL 16 (via `@prisma/adapter-pg` driver adapter)
+- **Financial Engine:** Exact decimal-string parsing with integer minor units (`BigInt` Paise) in `financialMath.ts`
+- **Cache & Idempotency:** Multi-tier idempotency (L0 RAM Mutex → L1 Redis Cache → L2 PostgreSQL `ApiIdempotencyKey`) + Redis 7 distributed sliding-window rate limiting
+- **Auth:** Backend-managed custom JWT (HS256) with refresh token rotation + Argon2 / PBKDF2 password hashing
 - **Realtime:** Socket.IO 4 + Supabase Realtime
 - **Validation:** Zod 3 middleware (`validateBody/Query/Params`)
 - **Logging:** Winston (JSON) + Morgan

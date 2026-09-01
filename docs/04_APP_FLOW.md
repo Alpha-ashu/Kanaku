@@ -198,3 +198,12 @@ This workflow shows the lifecycle of how people interact on the platform:
 2. **Client Books a Session:** A **Client** schedules time with the newly approved advisor.
 3. **Collaboration Happens:** The **Client** securely shares view-only financial reports. The **Advisor** reviews it in real-time and advises them to adjust their budget.
 4. **Platform Audits:** The **Admin** monitors platform security logs to ensure compliance, keeping everyone's data safe.
+
+---
+
+## 6. Detailed Step-by-Step Feature Workflows
+
+For exhaustive technical flows, Mermaid sequence diagrams, and mathematical models covering every single application feature (Auth, Accounts, Transactions, Recurring SIPs, Budgets, Loans, Goals, Investments, Gold, Groups, OCR Receipt Scanner, Voice NLP, Advisor Marketplace, Payments, Multi-Channel Outbox, Offline Sync, and Distributed Security Gates), see:
+
+👉 **[`docs/TECH_STACK_AND_FEATURE_WORKFLOWS.md`](./TECH_STACK_AND_FEATURE_WORKFLOWS.md)**
+

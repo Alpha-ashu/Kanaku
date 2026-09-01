@@ -14,6 +14,7 @@ All documentation files have been consolidated into single, topic-specific files
 | 04 | [04_APP_FLOW.md](./04_APP_FLOW.md) | System Architecture & App Flows: Component diagrams, roles permission matrix, request lifecycles, and technical/non-technical visual flows (Login challenge, PIN gates, sync retry, Setu AA). |
 | 05 | [05_DATABASE_SCHEMA.md](./05_DATABASE_SCHEMA.md) | Database Schema & Tables Definition: cloud Postgres tables (Prisma) and client IndexedDB schemas (Dexie v15), Index history, local rules, and ERD diagrams. |
 | 06 | [06_IMPLEMENTATION_PLAN.md](./06_IMPLEMENTATION_PLAN.md) | Project Roadmap & Implementation Plan: sprint timelines, task breakdowns, dependency backlogs, and developer AI prompt guardrails. |
+| 07 | [TECH_STACK_AND_FEATURE_WORKFLOWS.md](./TECH_STACK_AND_FEATURE_WORKFLOWS.md) | **Complete Tech Stack & Detailed Step-by-Step Feature Workflows**: Full architecture diagrams, complete tech stack reference, and end-to-end working flows for all 17 features. |
 
 ## Release Audit (Beta)
 
