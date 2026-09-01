@@ -372,6 +372,7 @@ const AppContent: React.FC = () => {
   currentPageRef.current = currentPage;
   goBackRef.current = appContext?.goBack;
   setCurrentPageRef.current = setCurrentPage;
+  isAuthenticatedRef.current = isAuthenticated;
   closeOverlaysRef.current = () => {
     if (showQuickAction) { setShowQuickAction(false); return true; }
     return false;
@@ -873,10 +874,9 @@ const AppContent: React.FC = () => {
       // Window in which a second back press counts as "yes, really exit".
       const EXIT_CONFIRM_WINDOW_MS = 2000;
       // Grace period after unlocking. Android dismisses the soft keyboard by
-      // dispatching a BACK event, so the keystroke that closes the PIN keypad can
-      // arrive just as the Dashboard mounts; without this it would register as the
-      // first half of an exit gesture.
-      const UNLOCK_GRACE_MS = 1000;
+      // dispatching a BACK event, so any transient keystroke or transition event
+      // arriving as the Dashboard mounts is safely consumed without triggering exit.
+      const UNLOCK_GRACE_MS = 3000;
 
       CapacitorApp.addListener('backButton', () => {
         // 1. If an input/textarea is currently focused, blur it to dismiss the keyboard and consume the back event

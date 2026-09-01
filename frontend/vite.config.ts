@@ -354,19 +354,17 @@ export default defineConfig(({ mode }) => {
 
     assetsInclude: ['**/*.svg', '**/*.csv'],
 
-    // Strip noisy / PII-prone debug logging from PRODUCTION bundles only. `pure`
-    // marks these calls as side-effect-free, so esbuild drops them when their
-    // result is unused (console.* always is). console.warn / console.error are
-    // deliberately retained for production troubleshooting.
     esbuild: {
+      target: 'es2022',
+      legalComments: 'none',
       pure: mode === 'production'
         ? ['console.log', 'console.debug', 'console.info', 'console.trace']
         : [],
     },
 
     build: {
-      // Target modern browsers for smaller output
-      target: 'es2020',
+      // Target modern browsers and mobile WebViews (iOS 15+, Android Chrome 90+)
+      target: 'es2022',
       chunkSizeWarningLimit: 600,
       // Enable CSS code splitting per chunk
       cssCodeSplit: true,

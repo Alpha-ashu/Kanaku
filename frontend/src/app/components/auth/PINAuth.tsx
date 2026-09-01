@@ -240,17 +240,55 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  return () => { mounted = false; };
  }, []);
 
- // Always focus hidden input on mount & when pin changes
- useEffect(() => {
- if (!isLoading) hiddenInputRef.current?.focus();
- }, [isLoading, isCreating, createStage]);
+  const isMountedRef = useRef(true);
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  // Global physical keyboard handler (desktop / hardware keyboard support without invoking OS virtual keyboard on mobile)
+  useEffect(() => {
+    if (isLoading || isSubmitting || isPinLocked || showResetModal) return;
+
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      // Don't intercept if an interactive input (e.g. inside a modal) is currently active
+      if (
+        document.activeElement &&
+        document.activeElement.tagName === 'INPUT' &&
+        document.activeElement !== hiddenInputRef.current
+      ) {
+        return;
+      }
+
+      if (/^[0-9]$/.test(e.key)) {
+        e.preventDefault();
+        appendDigit(e.key);
+      } else if (e.key === 'Backspace') {
+        e.preventDefault();
+        deleteDigit();
+      } else if (e.key === 'Enter' && pin.length === 6) {
+        e.preventDefault();
+        handleSubmit();
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleGlobalKeyDown);
+    };
+  }, [isLoading, isSubmitting, isPinLocked, showResetModal, pin]);
 
  // Helpers 
  const triggerShake = (msg: string) => {
- setErrorMsg(msg);
- setShake(true);
- setPin('');
- setTimeout(() => setShake(false), 500);
+   if (!isMountedRef.current) return;
+   setErrorMsg(msg);
+   setShake(true);
+   setPin('');
+   setTimeout(() => {
+     if (isMountedRef.current) setShake(false);
+   }, 500);
  };
 
  /**
@@ -811,11 +849,10 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  return (
  <div data-testid="pinauth-div"
  className="fixed inset-0 z-50 overflow-y-auto bg-white flex items-center justify-center p-4"
- onClick={() => hiddenInputRef.current?.focus()}
  >
- {/* Hidden form - offscreen (not zero-size) so mobile browsers keep keyboard open after each digit */}
+ {/* Hidden form - non-focusable so mobile software keyboards never open */}
  <form data-testid="pinauth-form"
- className="pin-hidden-input-container"
+ style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', width: 0, height: 0, overflow: 'hidden' }}
  autoComplete="off"
  onSubmit={e => e.preventDefault()}
  >
@@ -833,14 +870,15 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  ref={hiddenInputRef}
  type="password"
  name="pin"
- inputMode={isCoarsePointer ? 'none' : 'numeric'}
- autoComplete="one-time-code"
+ inputMode="none"
+ autoComplete="off"
  value={pin}
  onChange={handleInputChange}
  onKeyDown={handleHiddenKeyDown}
- readOnly={isPinLocked}
- tabIndex={0}
+ readOnly={true}
+ tabIndex={-1}
  aria-label="PIN entry"
+ aria-hidden="true"
  data-testid="pin-auth-hidden-input"
  />
  </form>
@@ -905,7 +943,7 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  </div>
 
  {/* PIN digit boxes */}
- <div data-testid="pinauth-div-2" className="flex justify-center gap-3 cursor-pointer" onClick={() => hiddenInputRef.current?.focus()}>
+ <div data-testid="pinauth-div-2" className="flex justify-center gap-3">
  {Array.from({ length: 6 }, (_, i) => {
  const isActive = i === pin.length;
  const isFilled = i < pin.length;

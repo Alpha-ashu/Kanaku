@@ -32,11 +32,6 @@ export const PINSetup: React.FC<PINSetupProps> = ({
     }
   }, [existingPinRequired]);
 
-  // Keep hidden input focused
-  useEffect(() => {
-    hiddenInputRef.current?.focus();
-  }, [step]);
-
   const currentPinVal = step === 'confirm' ? confirmPin : pin;
 
   const appendDigit = (d: string) => {
@@ -98,6 +93,37 @@ export const PINSetup: React.FC<PINSetupProps> = ({
       handleSubmit(enteredPin);
     }
   };
+
+  // Global physical keyboard handler (desktop / hardware keyboard support without invoking OS virtual keyboard on mobile)
+  useEffect(() => {
+    if (isLoading) return;
+
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if (
+        document.activeElement &&
+        document.activeElement.tagName === 'INPUT' &&
+        document.activeElement !== hiddenInputRef.current
+      ) {
+        return;
+      }
+
+      if (/^[0-9]$/.test(e.key)) {
+        e.preventDefault();
+        appendDigit(e.key);
+      } else if (e.key === 'Backspace') {
+        e.preventDefault();
+        deleteDigit();
+      } else if (e.key === 'Enter' && currentPinVal.length === 6) {
+        e.preventDefault();
+        validateAndProceed(currentPinVal);
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleGlobalKeyDown);
+    };
+  }, [isLoading, currentPinVal, step]);
 
   useEffect(() => {
     if (currentPinVal.length === 6) {
@@ -203,7 +229,6 @@ export const PINSetup: React.FC<PINSetupProps> = ({
   return (
     <div data-testid="pinsetup-div" 
       className="fixed inset-0 z-50 overflow-y-auto bg-white flex items-center justify-center p-4"
-      onClick={() => hiddenInputRef.current?.focus()}
     >
       <form data-testid="pinsetup-form"
         style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', width: 0, height: 0, overflow: 'hidden' }}
@@ -214,11 +239,13 @@ export const PINSetup: React.FC<PINSetupProps> = ({
           ref={hiddenInputRef}
           type="password"
           name="pin"
-          inputMode="numeric"
-          autoComplete="new-password"
+          inputMode="none"
+          autoComplete="off"
           value={currentPinVal}
           onChange={handleInputChange}
-          tabIndex={0}
+          readOnly={true}
+          tabIndex={-1}
+          aria-hidden="true"
           data-testid="pin-setup-hidden-input"
         />
       </form>
@@ -255,7 +282,7 @@ export const PINSetup: React.FC<PINSetupProps> = ({
           </div>
 
           {/* PIN digit boxes */}
-          <div data-testid="pinsetup-div-2" className="flex justify-center gap-3 cursor-pointer" onClick={() => hiddenInputRef.current?.focus()}>
+          <div data-testid="pinsetup-div-2" className="flex justify-center gap-3">
             {Array.from({ length: 6 }, (_, i) => {
               const isActive = i === currentPinVal.length;
               const isFilled = i < currentPinVal.length;
