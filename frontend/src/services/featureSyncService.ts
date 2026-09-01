@@ -471,11 +471,29 @@ export const syncRecurringTransactions = async (): Promise<FeatureSyncResult> =>
 
   for (const row of serverRows) {
     const frequency = RECURRING_FREQUENCIES.has(row.interval) ? row.interval : 'monthly';
-    const existing = byCloudId.get(row.id);
+    const targetType = (row.type === 'income' ? 'income' : 'expense') as RecurringTransaction['type'];
+    const targetAmount = toNumber(row.amount);
+    const targetTitle = (row.title || row.description || 'Recurring').trim().toLowerCase();
+
+    // 1. Look up by cloud ID
+    let existing = byCloudId.get(row.id);
+
+    // 2. If not found by cloud ID, look up by business signature among unlinked local records
+    if (!existing) {
+      existing = localRows.find(
+        (l) =>
+          !l.cloudId &&
+          l.name.trim().toLowerCase() === targetTitle &&
+          Math.abs(Number(l.amount) - targetAmount) < 0.01 &&
+          l.frequency === frequency &&
+          l.type === targetType
+      );
+    }
+
     const fields = {
       name: row.title || row.description || 'Recurring',
-      type: (row.type === 'income' ? 'income' : 'expense') as RecurringTransaction['type'],
-      amount: toNumber(row.amount),
+      type: targetType,
+      amount: targetAmount,
       category: row.category || 'other',
       frequency: frequency as RecurringTransaction['frequency'],
       nextDueDate: new Date(row.nextDueDate),
@@ -486,38 +504,47 @@ export const syncRecurringTransactions = async (): Promise<FeatureSyncResult> =>
     };
 
     if (existing?.id !== undefined) {
-      await db.recurringTransactions.update(existing.id, fields);
+      await db.recurringTransactions.update(existing.id, {
+        ...fields,
+        cloudId: row.id,
+      });
+      byCloudId.set(row.id, { ...existing, ...fields, cloudId: row.id });
     } else {
-      await db.recurringTransactions.add({
+      const newId = await db.recurringTransactions.add({
         ...fields,
         cloudId: row.id,
         accountId: 0,
         startDate: row.startDate ? new Date(row.startDate) : new Date(),
         createdAt: new Date(),
       } as RecurringTransaction);
+      byCloudId.set(row.id, { ...fields, id: newId as number, cloudId: row.id } as RecurringTransaction);
     }
     result.pulled += 1;
   }
 
-  for (const local of localRows) {
+  // Refresh local rows after pull
+  const refreshedLocalRows = await db.recurringTransactions.toArray();
+
+  for (const local of refreshedLocalRows) {
     if (local.id === undefined) continue;
 
     if (!local.cloudId && !local.deletedAt) {
-      // A schedule the API cannot express would be rejected with a 400 on every
-      // sync. Leave it local rather than retrying forever or quietly rewriting
-      // the user's schedule to one the server happens to accept.
+      // A schedule the API cannot express would be rejected with a 400 on every sync.
       if (!PUSHABLE_INTERVALS.has(local.frequency)) continue;
 
       try {
+        const clientRequestId = (local as any).clientRequestId || `rec_local_${local.id}`;
         const response = await apiClient.post<any>('/recurring', {
           title: local.name,
-          amount: local.amount,
+          amount: Number(local.amount),
           type: local.type,
           category: local.category,
           interval: local.frequency,
           nextDueDate: new Date(local.nextDueDate).toISOString(),
           description: local.notes || undefined,
+          clientRequestId,
         }, { showErrorToast: false });
+
         const cloudId = unwrapId(response.data);
         if (cloudId) {
           await db.recurringTransactions.update(local.id, { cloudId: String(cloudId), syncStatus: 'synced' });

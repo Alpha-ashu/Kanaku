@@ -78,6 +78,8 @@ export const RecurringTransactions: React.FC = () => {
     const nextDue = new Date(form.nextDueDate);
     const accountId = parseInt(form.accountId) || (accounts[0]?.id ?? 0);
 
+    const clientRequestId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `rec_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+
     try {
       const localId = await db.recurringTransactions.add({
         name: form.name.trim(),
@@ -91,9 +93,10 @@ export const RecurringTransactions: React.FC = () => {
         status: 'active',
         notes: form.notes.trim() || undefined,
         syncStatus: 'pending',
+        clientRequestId,
         createdAt: now,
         updatedAt: now,
-      } as RecurringTransaction);
+      } as any);
 
       toast.success(`"${form.name.trim()}" created`);
       setForm({ name: '', amount: '', type: 'expense', category: 'utilities', frequency: 'monthly', nextDueDate: new Date().toISOString().slice(0, 10), accountId: '', notes: '' });
@@ -112,7 +115,8 @@ export const RecurringTransactions: React.FC = () => {
           accountId: account?.cloudId,
           description: form.notes.trim() || undefined,
           notes: form.notes.trim() || undefined,
-        });
+          clientRequestId,
+        } as any);
         if (resp?.id) {
           await db.recurringTransactions.update(localId as number, { cloudId: String(resp.id), syncStatus: 'synced' });
         }

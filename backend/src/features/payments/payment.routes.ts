@@ -4,6 +4,7 @@ import { pinGate } from '../../middleware/pinGate';
 import { requireFeature } from '../../middleware/featureGate';
 import { validateBody } from '../../middleware/validate';
 import { rateLimit, authenticatedRateLimit } from '../../middleware/rateLimit';
+import { idempotency } from '../../middleware/idempotency';
 import * as PaymentController from './payment.controller';
 import {
   initiatePaymentSchema,
@@ -47,15 +48,31 @@ router.get('/', PaymentController.getPayments);
 router.get('/:id', PaymentController.getPayment);
 
 // Initiate payment
-router.post('/initiate', validateBody(initiatePaymentSchema), PaymentController.initiatePayment);
+router.post(
+  '/initiate',
+  idempotency({ scope: 'payments.initiate' }),
+  validateBody(initiatePaymentSchema),
+  PaymentController.initiatePayment,
+);
 
 // Complete payment
-router.post('/complete', validateBody(completePaymentSchema), PaymentController.completePayment);
+router.post(
+  '/complete',
+  idempotency({ scope: 'payments.complete' }),
+  validateBody(completePaymentSchema),
+  PaymentController.completePayment,
+);
 
 // Handle payment failure
 router.post('/fail', validateBody(failPaymentSchema), PaymentController.failPayment);
 
 // Refund payment
-router.post('/refund', validateBody(refundPaymentSchema), PaymentController.refundPayment);
+router.post(
+  '/refund',
+  idempotency({ scope: 'payments.refund' }),
+  validateBody(refundPaymentSchema),
+  PaymentController.refundPayment,
+);
 
 export { router as paymentRoutes };
+

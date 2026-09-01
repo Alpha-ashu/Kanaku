@@ -58,7 +58,35 @@ const parseChannels = (value: unknown): string[] => {
   return Array.isArray(parsed) ? parsed.map(String) : [];
 };
 
-/** Idempotency guard: has this channel already been delivered? */
+/**
+ * Atomic idempotency guard: claims delivery slot for a channel so concurrent worker processes cannot race.
+ */
+async function claimChannelDelivery(notificationId: string, channel: Channel): Promise<boolean> {
+  const n = await prisma.notification.findUnique({
+    where: { id: notificationId },
+    select: { deliveryStatus: true, status: true },
+  });
+  if (!n) return false;
+  const ds = parseDeliveryStatus(n.deliveryStatus);
+  if (ds[channel] === 'sent' || ds[channel] === 'sending') {
+    return false;
+  }
+
+  ds[channel] = 'sending';
+  const updated = await prisma.notification.updateMany({
+    where: {
+      id: notificationId,
+      status: { in: ['pending', 'retrying'] },
+    },
+    data: {
+      status: 'processing',
+      deliveryStatus: JSON.stringify(ds),
+    },
+  });
+
+  return updated.count > 0;
+}
+
 async function isAlreadySent(notificationId: string, channel: Channel): Promise<boolean> {
   const n = await prisma.notification.findUnique({
     where: { id: notificationId },
@@ -114,10 +142,10 @@ export interface DeliveryJob {
 export async function processEmail(job: { data: DeliveryJob }): Promise<unknown> {
   const { notificationId, userId, title, message, category, deepLink, metadata } = job.data;
 
-  if (await isAlreadySent(notificationId, 'email')) {
-    return { skipped: true, reason: 'already_sent' };
+  const claimed = await claimChannelDelivery(notificationId, 'email');
+  if (!claimed) {
+    return { skipped: true, reason: 'already_sent_or_claimed' };
   }
-  await setProcessing(notificationId);
 
   const user = await prisma.user.findUnique({ where: { id: userId }, select: { email: true } });
   const meta = parseJson<any>(metadata, {});
@@ -150,10 +178,10 @@ export async function processPush(job: { data: DeliveryJob }): Promise<unknown> 
   const { notificationId, userId, deviceId, fcmToken, title, message, category, deepLink, priority, metadata } =
     job.data;
 
-  if (await isAlreadySent(notificationId, 'push')) {
-    return { skipped: true, reason: 'already_sent' };
+  const claimed = await claimChannelDelivery(notificationId, 'push');
+  if (!claimed) {
+    return { skipped: true, reason: 'already_sent_or_claimed' };
   }
-  await setProcessing(notificationId);
 
   if (!deviceId || !fcmToken) {
     await markChannel(notificationId, 'push', 'failed');

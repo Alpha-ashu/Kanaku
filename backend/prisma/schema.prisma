@@ -23,7 +23,7 @@ model Account {
   currency          String             @default("INR")
   isActive          Boolean            @default(true)
   syncStatus        String             @default("synced")
-  clientRequestId   String?            @unique
+  clientRequestId   String?
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
   deletedAt         DateTime?
@@ -32,6 +32,7 @@ model Account {
   transactions      Transaction[]
   groupExpenses     GroupExpense[]
 
+  @@unique([userId, clientRequestId])
   @@index([isActive])
   @@index([syncStatus])
   @@index([userId])
@@ -313,7 +314,7 @@ model Goal {
   category          String?
   isGroupGoal       Boolean            @default(false)
   syncStatus        String             @default("synced")
-  clientRequestId   String?            @unique
+  clientRequestId   String?
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
   deletedAt         DateTime?
@@ -321,6 +322,7 @@ model Goal {
   goalContributions GoalContribution[]
   goalMembers       GoalMember[]
 
+  @@unique([userId, clientRequestId])
   @@index([syncStatus])
   @@index([targetDate])
   @@index([userId])
@@ -392,7 +394,7 @@ model Investment {
   purchaseDate        DateTime
   lastUpdated         DateTime
   metadata            Json?
-  clientRequestId     String?   @unique
+  clientRequestId     String?
   // ─── Extended fields (schema alignment with Dexie client) ───
   broker              String?
   description         String?
@@ -418,6 +420,7 @@ model Investment {
   deletedAt           DateTime?
   user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@unique([userId, clientRequestId])
   @@index([assetType])
   @@index([userId])
   @@index([deletedAt])
@@ -440,7 +443,7 @@ model Loan {
   status             String        @default("active")
   contactPerson      String?
   syncStatus         String        @default("synced")
-  clientRequestId    String?       @unique
+  clientRequestId    String?
   // ─── Extended fields (schema alignment with Dexie client) ───
   totalPayable       Decimal?      @db.Decimal(12, 2)
   loanDate           DateTime?
@@ -457,6 +460,7 @@ model Loan {
   user               User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   payments           LoanPayment[]
 
+  @@unique([userId, clientRequestId])
   @@index([dueDate])
   @@index([status])
   @@index([syncStatus])
@@ -543,7 +547,7 @@ model Payment {
   currency      String         @default("INR")
   status        String         @default("pending")
   paymentMethod String?
-  transactionId String?
+  transactionId String?        @unique
   description   String?
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
@@ -1220,7 +1224,7 @@ model RecurringTransaction {
   description         String?
   merchant            String?
   lastProcessedAt     DateTime?
-  clientRequestId     String?              @unique
+  clientRequestId     String?
   syncStatus          String               @default("synced")
   // ─── Extended fields (schema alignment with Dexie client) ───
   type                String? // income | expense | transfer
@@ -1235,6 +1239,7 @@ model RecurringTransaction {
   user                User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
   executions          RecurringExecution[]
 
+  @@unique([userId, clientRequestId])
   @@index([userId])
   @@index([status])
   @@index([nextDueDate])
@@ -1552,5 +1557,24 @@ model UserVoiceLearning {
   @@unique([userId, originalText], map: "user_voice_learning_user_id_original_text_key")
   @@index([userId], map: "idx_user_voice_learning_user")
   @@map("user_voice_learning")
+  @@schema("public")
+}
+
+model ApiIdempotencyKey {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  userId      String   @map("user_id")
+  scope       String
+  method      String
+  endpoint    String
+  bodyHash    String   @map("body_hash")
+  statusCode  Int      @map("status_code")
+  response    Json
+  expiresAt   DateTime @map("expires_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("api_idempotency_keys")
   @@schema("public")
 }

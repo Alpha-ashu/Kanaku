@@ -497,9 +497,9 @@ export const TopBar: React.FC = () => {
  </span>
  )}
 
- {isSearchOpen && searchQuery.trim() && (
- <div className="absolute top-[calc(100%+8px)] left-0 right-0 bg-white/95 backdrop-blur-md border border-slate-100 rounded-[24px] shadow-2xl overflow-hidden z-50 overflow-y-auto scrollbar-hide py-3 animate-in fade-in slide-in-from-top-2 duration-200" style={{ maxHeight: 'min(400px, 60vh)' }}>
- {searchResults.length > 0 ? (
+  {isSearchOpen && searchQuery.trim() && (
+    <div className="absolute top-[calc(100%+8px)] left-0 right-0 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[24px] shadow-2xl overflow-hidden z-50 overflow-y-auto scrollbar-hide py-3 animate-in fade-in slide-in-from-top-2 duration-200" style={{ maxHeight: 'min(400px, 60vh)' }}>
+      {searchResults.length > 0 ? (
  <div className="space-y-4">
  <div className="px-4 pb-1 flex items-center justify-between">
  <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">{searchResults.length} result{searchResults.length !== 1 ? 's' : ''}</p>
@@ -657,7 +657,7 @@ export const TopBar: React.FC = () => {
 
  {/* Mobile Fullscreen Search Sheet */}
  {isMobileSearchOpen && (
- <div className="fixed inset-0 bg-white/95 backdrop-blur-xl z-[100] flex flex-col animate-in fade-in duration-200 text-slate-900 pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)]">
+    <div className="fixed inset-0 bg-white dark:bg-slate-900 z-[100] flex flex-col animate-in fade-in duration-200 text-slate-900 dark:text-slate-100 pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)]">
  {/* inset-0 starts this sheet at the true viewport top, which on a notched
      device is behind the status bar — the search field and its Cancel button
      ended up under the clock. Pad by the insets so the sheet's own content

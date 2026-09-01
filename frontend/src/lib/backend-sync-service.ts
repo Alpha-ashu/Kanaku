@@ -235,7 +235,14 @@ class BackendSyncService {
 
     for (const record of records) {
       try {
-        const existingRecord = await dexieTable.where('cloudId').equals(record.id).first();
+        let existingRecord = await dexieTable.where('cloudId').equals(record.id).first();
+
+        // If not matched by cloudId, check if unlinked local record has matching clientRequestId
+        if (!existingRecord && record.clientRequestId) {
+          existingRecord = await dexieTable
+            .filter((r: any) => !r.cloudId && r.clientRequestId === record.clientRequestId)
+            .first();
+        }
         
         if (!existingRecord) {
           // New record - add to local DB

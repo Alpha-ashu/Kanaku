@@ -1,11 +1,12 @@
 import { Router } from 'express';
 import { authMiddleware } from '../../middleware/auth';
+import { requireFeature } from '../../middleware/featureGate';
 import { pinGate } from '../../middleware/pinGate';
 import { authenticatedRateLimit } from '../../middleware/rateLimit';
 import { uploadSingle } from '../../middleware/upload';
 import { validateParams } from '../../middleware/validate';
 import { BILL_MAX_UPLOAD_BYTES } from '../../utils/uploadPolicy';
-import { requireFeature } from '../../middleware/featureGate';
+import { idempotency } from '../../middleware/idempotency';
 import * as BillsController from './bills.controller';
 import { billIdParamSchema } from './bills.validation';
 
@@ -18,6 +19,7 @@ router.get('/', BillsController.getBills);
 router.get('/:id', validateParams(billIdParamSchema), BillsController.getBill);
 router.post(
   '/',
+  idempotency({ scope: 'bills.upload' }),
   requireFeature('transactions', 'attachBill'),
   authenticatedRateLimit({
     windowMs: 60_000,

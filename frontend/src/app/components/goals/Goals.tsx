@@ -153,10 +153,10 @@ export const Goals: React.FC = () => {
  }
  };
 
- const totalGoalsAmount = goals.reduce((sum, goal) => sum + goal.targetAmount, 0);
- const totalSavedAmount = goals.reduce((sum, goal) => sum + goal.currentAmount, 0);
- const totalRemainingAmount = Math.max(0, totalGoalsAmount - totalSavedAmount);
- const overallProgress = totalGoalsAmount > 0 ? (totalSavedAmount / totalGoalsAmount) * 100 : 0;
+  const totalGoalsAmount = goals.reduce((sum, goal) => sum + Number(goal.targetAmount || 0), 0);
+  const totalSavedAmount = goals.reduce((sum, goal) => sum + Number(goal.currentAmount || 0), 0);
+  const totalRemainingAmount = Math.max(0, totalGoalsAmount - totalSavedAmount);
+  const overallProgress = totalGoalsAmount > 0 ? (totalSavedAmount / totalGoalsAmount) * 100 : 0;
  const completedGoals = goals.filter((goal) => goal.currentAmount >= goal.targetAmount).length;
 
  return (

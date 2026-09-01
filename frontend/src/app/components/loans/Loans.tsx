@@ -194,13 +194,13 @@ export const Loans: React.FC = () => {
  const lent = loans.filter(l => l.type === 'lent' && isOpenLoan(l));
  const emis = loans.filter(l => l.type === 'emi' && isOpenLoan(l));
 
- return {
- totalBorrowed: borrowed.reduce((sum, l) => sum + l.outstandingBalance, 0),
- totalLent: lent.reduce((sum, l) => sum + l.outstandingBalance, 0),
- totalEMI: emis.reduce((sum, l) => sum + (l.emiAmount || 0), 0),
- overdueCount: loans.filter(l => isOpenLoan(l) && getLoanStatusFromDueDate(l.dueDate, l.outstandingBalance) === 'overdue').length,
- };
- }, [loans]);
+    return {
+      totalBorrowed: borrowed.reduce((sum, l) => sum + Number(l.outstandingBalance || 0), 0),
+      totalLent: lent.reduce((sum, l) => sum + Number(l.outstandingBalance || 0), 0),
+      totalEMI: emis.reduce((sum, l) => sum + Number(l.emiAmount || 0), 0),
+      overdueCount: loans.filter(l => isOpenLoan(l) && getLoanStatusFromDueDate(l.dueDate, l.outstandingBalance) === 'overdue').length,
+    };
+  }, [loans]);
 
  const formatCurrency = (amount: number) => {
   return formatCurrencyAmount(amount, currency);

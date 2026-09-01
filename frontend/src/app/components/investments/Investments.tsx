@@ -93,10 +93,10 @@ export const Investments: React.FC = () => {
  );
 
  const portfolioStats = useMemo(() => {
- const totalInvested = openInvestments.reduce((sum, investment) => sum + getMetrics(investment).totalInvested, 0);
- const currentValue = openInvestments.reduce((sum, investment) => sum + getMetrics(investment).currentValue, 0);
- const profitLoss = currentValue - totalInvested;
- const profitLossPercent = totalInvested > 0 ? (profitLoss / totalInvested) * 100 : 0;
+  const totalInvested = openInvestments.reduce((sum, investment) => sum + Number(getMetrics(investment).totalInvested || 0), 0);
+  const currentValue = openInvestments.reduce((sum, investment) => sum + Number(getMetrics(investment).currentValue || 0), 0);
+  const profitLoss = currentValue - totalInvested;
+  const profitLossPercent = totalInvested > 0 ? (profitLoss / totalInvested) * 100 : 0;
 
  const assetAllocation = openInvestments.reduce((acc: any, investment) => {
  const metrics = getMetrics(investment);

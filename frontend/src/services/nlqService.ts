@@ -38,7 +38,7 @@ export const NLQService = {
           .and(t => t.type === 'expense' && t.date >= periodStart)
           .toArray();
 
-        const total = transactions.reduce((sum, t) => sum + t.amount, 0);
+        const total = transactions.reduce((sum, t) => sum + Number(t.amount || 0), 0);
         
         return {
           answer: `You've spent a total of ₹${total.toLocaleString()} on ${matchedCategory} ${periodName}.`,
@@ -50,7 +50,7 @@ export const NLQService = {
     // 2. "What's my balance?"
     if (q.includes('balance') || q.includes('total money')) {
       const accounts = await db.accounts.toArray();
-      const totalBalance = accounts.reduce((sum, acc) => sum + acc.balance, 0);
+      const totalBalance = accounts.reduce((sum, acc) => sum + Number(acc.balance || 0), 0);
       
       return {
         answer: `Your total balance across all ${accounts.length} accounts is ₹${totalBalance.toLocaleString()}.`,
@@ -67,7 +67,7 @@ export const NLQService = {
             .limit(count)
             .toArray();
 
-        const list = transactions.map(t => `- ${t.description}: ₹${t.amount}`).join('\n');
+        const list = transactions.map(t => `- ${t.description}: ₹${Number(t.amount || 0)}`).join('\n');
         return {
             answer: `Here are your last ${transactions.length} transactions:\n${list}`,
             data: transactions
@@ -77,12 +77,12 @@ export const NLQService = {
     // 4. "How much is my portfolio worth?" or "Investment performance"
     if (q.includes('portfolio') || q.includes('invested') || q.includes('investment')) {
         const investments = await db.investments.toArray();
-        const totalValue = investments.reduce((sum, inv) => sum + (inv.currentValue || inv.totalInvested), 0);
-        const totalProfit = investments.reduce((sum, inv) => sum + (inv.profitLoss || 0), 0);
+        const totalValue = investments.reduce((sum, inv) => sum + Number(inv.currentValue || inv.totalInvested || 0), 0);
+        const totalProfit = investments.reduce((sum, inv) => sum + Number(inv.profitLoss || 0), 0);
         
         const assetSummary = investments.reduce((acc: any, inv) => {
             const type = inv.assetType || 'Other';
-            acc[type] = (acc[type] || 0) + (inv.currentValue || inv.totalInvested);
+            acc[type] = (acc[type] || 0) + Number(inv.currentValue || inv.totalInvested || 0);
             return acc;
         }, {});
 
@@ -102,17 +102,19 @@ export const NLQService = {
         const matchedGoal = goals.find(g => q.includes(g.name.toLowerCase()));
         
         if (matchedGoal) {
-            const progress = (matchedGoal.currentAmount / matchedGoal.targetAmount) * 100;
-            const remaining = matchedGoal.targetAmount - matchedGoal.currentAmount;
+            const targetAmount = Number(matchedGoal.targetAmount || 0);
+            const currentAmount = Number(matchedGoal.currentAmount || 0);
+            const progress = targetAmount > 0 ? (currentAmount / targetAmount) * 100 : 0;
+            const remaining = Math.max(0, targetAmount - currentAmount);
             return {
-                answer: `You have reached ${progress.toFixed(1)}% of your "${matchedGoal.name}" goal. You need ₹${remaining.toLocaleString()} more to hit your target of ₹${matchedGoal.targetAmount.toLocaleString()}.`,
+                answer: `You have reached ${progress.toFixed(1)}% of your "${matchedGoal.name}" goal. You need ₹${remaining.toLocaleString()} more to hit your target of ₹${targetAmount.toLocaleString()}.`,
                 data: { progress, remaining, goal: matchedGoal }
             };
         }
         
-        const overallTarget = goals.reduce((sum, g) => sum + g.targetAmount, 0);
-        const overallSaved = goals.reduce((sum, g) => sum + g.currentAmount, 0);
-        const overallProgress = (overallSaved / overallTarget) * 100;
+        const overallTarget = goals.reduce((sum, g) => sum + Number(g.targetAmount || 0), 0);
+        const overallSaved = goals.reduce((sum, g) => sum + Number(g.currentAmount || 0), 0);
+        const overallProgress = overallTarget > 0 ? (overallSaved / overallTarget) * 100 : 0;
         
         return {
             answer: `Overall, you've saved ₹${overallSaved.toLocaleString()} towards your total goal targets of ₹${overallTarget.toLocaleString()} (${overallProgress.toFixed(1)}% progress).`,
@@ -127,15 +129,15 @@ export const NLQService = {
         const personMatch = q.match(/does (.*) owe/i)?.[1] || q.match(/owe (.*)/i)?.[1];
         if (personMatch) {
             const personLoans = loans.filter(l => l.contactPerson?.toLowerCase().includes(personMatch.toLowerCase()));
-            const total = personLoans.reduce((sum, l) => sum + (l.type === 'lent' ? l.outstandingBalance : -l.outstandingBalance), 0);
+            const total = personLoans.reduce((sum, l) => sum + (l.type === 'lent' ? Number(l.outstandingBalance || 0) : -Number(l.outstandingBalance || 0)), 0);
             
             if (total > 0) return { answer: `${personMatch} owes you ₹${total.toLocaleString()}.` };
             if (total < 0) return { answer: `You owe ${personMatch} ₹${Math.abs(total).toLocaleString()}.` };
             return { answer: `There are no active loans recorded for ${personMatch}.` };
         }
 
-        const lentTotal = loans.filter(l => l.type === 'lent').reduce((sum, l) => sum + l.outstandingBalance, 0);
-        const borrowedTotal = loans.filter(l => l.type === 'borrowed').reduce((sum, l) => sum + l.outstandingBalance, 0);
+        const lentTotal = loans.filter(l => l.type === 'lent').reduce((sum, l) => sum + Number(l.outstandingBalance || 0), 0);
+        const borrowedTotal = loans.filter(l => l.type === 'borrowed').reduce((sum, l) => sum + Number(l.outstandingBalance || 0), 0);
         
         return {
             answer: `People owe you ₹${lentTotal.toLocaleString()}, and you owe ₹${borrowedTotal.toLocaleString()} to others.`,

@@ -73,48 +73,60 @@ export const createLoan = async (req: AuthRequest, res: Response, next: NextFunc
         return res.status(200).json({ success: true, data: existing });
       }
     }
+    try {
+      const loan = await prisma.loan.create({
+        data: {
+          userId,
+          type,
+          name: sanitize(name),
+          principalAmount: numericPrincipal,
+          outstandingBalance: numericPrincipal,
+          interestRate,
+          emiAmount,
+          dueDate: dueDate ? new Date(dueDate) : null,
+          frequency,
+          contactPerson: contactPerson ? sanitize(contactPerson) : undefined,
+          status: 'active',
+          clientRequestId: clientRequestId || null,
+        },
+        include: { payments: true },
+      });
 
-    const loan = await prisma.loan.create({
-      data: {
-        userId,
-        type,
-        name: sanitize(name),
-        principalAmount: numericPrincipal,
-        outstandingBalance: numericPrincipal,
-        interestRate,
-        emiAmount,
-        dueDate: dueDate ? new Date(dueDate) : null,
-        frequency,
-        contactPerson: contactPerson ? sanitize(contactPerson) : undefined,
-        status: 'active',
-        clientRequestId: clientRequestId || null,
-      },
-      include: { payments: true },
-    });
-
-    // Track loan participant in unified collaboration engine
-    if (contactPerson) {
-      try {
-        const { inviteParticipants } = await import('../collaboration/invitation.service');
-        const detail = `Type: ${type === 'borrowed' ? 'Borrowed' : 'Lent'}, Principal: ₹${numericPrincipal.toFixed(0)}${dueDate ? `, Due: ${new Date(dueDate).toLocaleDateString()}` : ''}.`;
-        await inviteParticipants({
-          moduleType: 'loan',
-          moduleId: loan.id,
-          moduleName: loan.name,
-          creatorId: userId,
-          participants: [{
-            name: contactPerson,
-            detail,
-          }],
-        });
-      } catch (err) {
-        logger.warn('Failed to track loan participant', err);
+      // Track loan participant in unified collaboration engine
+      if (contactPerson) {
+        try {
+          const { inviteParticipants } = await import('../collaboration/invitation.service');
+          const detail = `Type: ${type === 'borrowed' ? 'Borrowed' : 'Lent'}, Principal: ₹${numericPrincipal.toFixed(0)}${dueDate ? `, Due: ${new Date(dueDate).toLocaleDateString()}` : ''}.`;
+          await inviteParticipants({
+            moduleType: 'loan',
+            moduleId: loan.id,
+            moduleName: loan.name,
+            creatorId: userId,
+            participants: [{
+              name: contactPerson,
+              detail,
+            }],
+          });
+        } catch (inviteErr) {
+          logger.warn('[Loans] Failed to auto-register collaboration invite for loan participant:', inviteErr);
+        }
       }
+
+      await cacheDeleteByPrefix('loans:');
+
+      return res.status(201).json({ success: true, data: loan });
+    } catch (createErr: any) {
+      if (createErr?.code === 'P2002' && clientRequestId) {
+        const raceExisting = await prisma.loan.findFirst({
+          where: { clientRequestId, userId },
+          include: { payments: true },
+        });
+        if (raceExisting) {
+          return res.status(200).json({ success: true, data: raceExisting });
+        }
+      }
+      throw createErr;
     }
-
-    await cacheDeleteByPrefix('loans:');
-
-    res.status(201).json({ success: true, data: loan });
   } catch (error) {
     next(error);
   }
@@ -257,22 +269,20 @@ export const addLoanPayment = async (req: AuthRequest, res: Response, next: Next
       throw AppError.badRequest('Amount must be a positive number', 'INVALID_AMOUNT');
     }
 
-    // Verify ownership
-    const loan = await prisma.loan.findFirst({
-      where: { id, userId },
-    });
-
-    if (!loan) {
-      throw AppError.notFound('Loan');
-    }
-
-    // Atomically create payment record and update outstanding balance
-    const newBalance = Math.max(0, Number(loan.outstandingBalance) - numericAmount);
-
-    // Interactive transaction (was the array form) so the Ledger V2 event can be
-    // published on the same connection, inside the same atomic unit — a journal
-    // entry must never be able to commit without its loan payment, or vice versa.
+    // Atomically create payment record and update outstanding balance inside transaction
     const payment = await prisma.$transaction(async (tx) => {
+      // Re-fetch loan inside transaction to obtain authoritative current balance and lock
+      const loan = await tx.loan.findFirst({
+        where: { id, userId, deletedAt: null },
+      });
+
+      if (!loan) {
+        throw AppError.notFound('Loan');
+      }
+
+      const currentOutstanding = Number(loan.outstandingBalance);
+      const newBalance = Math.max(0, currentOutstanding - numericAmount);
+
       const created = await tx.loanPayment.create({
         data: {
           loanId: id,

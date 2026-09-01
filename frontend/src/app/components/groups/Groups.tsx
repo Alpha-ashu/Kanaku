@@ -331,7 +331,7 @@ export const Groups: React.FC = () => {
  const yourShare = expense.yourShare ?? allMembersWithIndex.find((member) => member.isCurrentUser)?.share ?? 0;
  const pendingCollection = friendMembers
  .filter((member) => !(member.paymentStatus === 'paid' || member.paid))
- .reduce((sum, member) => sum + member.share, 0);
+        .reduce((sum, member) => sum + Number(member.share || 0), 0);
  const groupStatus = expense.status
  ?? (friendMembers.some((member) => !(member.paymentStatus === 'paid' || member.paid) && member.share > 0) ? 'pending' : 'settled');
  const coverColor = getCategoryColor(expense.category || 'Miscellaneous');

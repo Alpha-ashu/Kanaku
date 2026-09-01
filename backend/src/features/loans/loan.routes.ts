@@ -22,8 +22,13 @@ router.use(requireFeature('loans'));
 // client-side concern enforced via the admin panel sub-feature config.
 router.get('/', responseCache({ prefix: 'loans:list', ttlSeconds: CACHE_TTL_SECONDS.loans.list }), LoanController.getLoans);
 router.post('/', requireFeature('loans', 'borrowMoney'), idempotency({ scope: 'loans.create' }), validateBody(loanCreateSchema), LoanController.createLoan);
-router.get('/:id', validateParams(loanIdParamSchema), responseCache({ prefix: 'loans:item', ttlSeconds: CACHE_TTL_SECONDS.loans.item }), LoanController.getLoan);
-router.put('/:id', validateParams(loanIdParamSchema), validateBody(loanUpdateSchema), LoanController.updateLoan);
+router.put(
+  '/:id',
+  idempotency({ scope: 'loans.update' }),
+  validateParams(loanIdParamSchema),
+  validateBody(loanUpdateSchema),
+  LoanController.updateLoan,
+);
 router.delete('/:id', validateParams(loanIdParamSchema), LoanController.deleteLoan);
 
 // EMI payments mutate account balance — wrap in idempotency to prevent double-debit.

@@ -28,6 +28,7 @@ import {
 } from '@/lib/investmentUtils';
 import { AIInsightsCard } from '@/app/components/shared/AIInsightsCard';
 import { CardNetworkLogo, getBankCardLogo } from '@/app/components/ui/AccountLogos';
+import { calculateAccountTotalBalance, calculateNetWorth, parseMonetary, roundToMoney } from '@/lib/financialMath';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { backendSyncService } from '@/lib/backend-sync-service';
 
@@ -137,11 +138,11 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
 
   const stats = useMemo(() => {
     const aggregation = buildTransactionAggregation(timeFilteredTransactions);
-    const income = aggregation.totalIncome;
-    const expense = aggregation.totalExpenses;
+    const income = parseMonetary(aggregation.totalIncome, 'income');
+    const expense = parseMonetary(aggregation.totalExpenses, 'expense');
 
-    const totalBalance = accounts.filter(a => a.isActive).reduce((sum, a) => sum + a.balance, 0);
-    const savingsRate = income > 0 ? ((income - expense) / income) * 100 : 0;
+    const totalBalance = calculateAccountTotalBalance(accounts);
+    const savingsRate = income > 0 ? roundToMoney(((income - expense) / income) * 100) : 0;
 
     return {
       totalBalance,
@@ -236,78 +237,80 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
     return events.sort((a, b) => a.date.getTime() - b.date.getTime()).slice(0, 5);
   }, [loans, transactions]);
 
- //"EUR"EUR Group Expenses / Borrow / Lend"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR
- const groupStats = useMemo(() => {
- const borrowed = loans.filter(l => l.type === 'borrowed' && l.status === 'active').reduce((s, l) => s + l.outstandingBalance, 0);
- const lent = loans.filter(l => l.type === 'lent' && l.status === 'active').reduce((s, l) => s + l.outstandingBalance, 0);
- const pendingSettlements = groupExpenses.reduce((s, g) => {
- const unpaid = g.members.filter(m => !m.paid).reduce((ms, m) => ms + m.share, 0);
- return s + unpaid;
- }, 0);
- return { borrowed, lent, pendingSettlements, activeGroups: groupExpenses.length };
- }, [loans, groupExpenses]);
+  const groupStats = useMemo(() => {
+    const borrowed = loans.filter(l => l.type === 'borrowed' && l.status === 'active').reduce((s, l) => s + Number(l.outstandingBalance || 0), 0);
+    const lent = loans.filter(l => l.type === 'lent' && l.status === 'active').reduce((s, l) => s + Number(l.outstandingBalance || 0), 0);
+    const pendingSettlements = groupExpenses.reduce((s, g) => {
+      const unpaid = (g.members || []).filter(m => !m.paid).reduce((ms, m) => ms + Number(m.share || 0), 0);
+      return s + unpaid;
+    }, 0);
+    return { borrowed, lent, pendingSettlements, activeGroups: groupExpenses.length };
+  }, [loans, groupExpenses]);
 
- //"EUR"EUR Investments"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR"EUR
- const portfolioSymbols = useMemo(
- () => getRequiredInvestmentQuoteSymbols(openInvestments, currency),
- [currency, openInvestments],
- );
+  // ── Investments ─────────────────────────────────────────────────────────────
+  const portfolioSymbols = useMemo(
+    () => getRequiredInvestmentQuoteSymbols(openInvestments, currency),
+    [currency, openInvestments],
+  );
 
- const fetchDashboardInvestmentQuotes = useCallback(async () => {
- if (!portfolioSymbols.length || !navigator.onLine) {
- return;
- }
+  const fetchDashboardInvestmentQuotes = useCallback(async () => {
+    if (!portfolioSymbols.length || !navigator.onLine) {
+      return;
+    }
 
- const quotes = await fetchMultipleQuotes(portfolioSymbols);
- setInvestmentQuotes(quotes);
- }, [portfolioSymbols]);
+    const quotes = await fetchMultipleQuotes(portfolioSymbols);
+    setInvestmentQuotes(quotes);
+  }, [portfolioSymbols]);
 
- useEffect(() => {
- if (investmentPriceTimer.current) {
- clearInterval(investmentPriceTimer.current);
- investmentPriceTimer.current = null;
- }
+  useEffect(() => {
+    if (investmentPriceTimer.current) {
+      clearInterval(investmentPriceTimer.current);
+      investmentPriceTimer.current = null;
+    }
 
- if (!portfolioSymbols.length) {
- setInvestmentQuotes({});
- return;
- }
+    if (!portfolioSymbols.length) {
+      setInvestmentQuotes({});
+      return;
+    }
 
- void fetchDashboardInvestmentQuotes();
- investmentPriceTimer.current = setInterval(() => {
- void fetchDashboardInvestmentQuotes();
- }, 10_000);
+    void fetchDashboardInvestmentQuotes();
+    investmentPriceTimer.current = setInterval(() => {
+      void fetchDashboardInvestmentQuotes();
+    }, 10_000);
 
- return () => {
- if (investmentPriceTimer.current) {
- clearInterval(investmentPriceTimer.current);
- investmentPriceTimer.current = null;
- }
- };
- }, [portfolioSymbols, fetchDashboardInvestmentQuotes]);
+    return () => {
+      if (investmentPriceTimer.current) {
+        clearInterval(investmentPriceTimer.current);
+        investmentPriceTimer.current = null;
+      }
+    };
+  }, [portfolioSymbols, fetchDashboardInvestmentQuotes]);
 
- const getDashboardInvestmentMetrics = useCallback(
- (investment: typeof investments[number]) => getInvestmentMetrics(investment, currency, investmentQuotes),
- [currency, investmentQuotes],
- );
+  const getDashboardInvestmentMetrics = useCallback(
+    (investment: typeof investments[number]) => getInvestmentMetrics(investment, currency, investmentQuotes),
+    [currency, investmentQuotes],
+  );
 
- const investmentStats = useMemo(() => {
- const totalInvested = openInvestments.reduce((sum, investment) => sum + getDashboardInvestmentMetrics(investment).totalInvested, 0);
- const currentValue = openInvestments.reduce((sum, investment) => sum + getDashboardInvestmentMetrics(investment).currentValue, 0);
- const totalReturns = currentValue - totalInvested;
- const returnsPercent = totalInvested > 0 ? (totalReturns / totalInvested) * 100 : 0;
- return { totalInvested, currentValue, totalReturns, returnsPercent, count: openInvestments.length };
- }, [getDashboardInvestmentMetrics, openInvestments]);
+  const investmentStats = useMemo(() => {
+    const totalInvested = openInvestments.reduce((sum, investment) => sum + Number(getDashboardInvestmentMetrics(investment).totalInvested || 0), 0);
+    const currentValue = openInvestments.reduce((sum, investment) => sum + Number(getDashboardInvestmentMetrics(investment).currentValue || 0), 0);
+    const totalReturns = currentValue - totalInvested;
+    const returnsPercent = totalInvested > 0 ? (totalReturns / totalInvested) * 100 : 0;
+    return { totalInvested, currentValue, totalReturns, returnsPercent, count: openInvestments.length };
+  }, [getDashboardInvestmentMetrics, openInvestments]);
 
- const totalNetWorth = (visibleFeatures?.accounts !== false ? stats.totalBalance : 0) +
-   (visibleFeatures?.investments !== false ? investmentStats.currentValue : 0) +
-   (visibleFeatures?.loans !== false ? (groupStats.lent - groupStats.borrowed) : 0);
- const stockSetupHint = getStockDataSetupHint();
+  const totalNetWorth = calculateNetWorth({
+    accountBalance: visibleFeatures?.accounts !== false ? stats.totalBalance : 0,
+    investmentValue: visibleFeatures?.investments !== false ? investmentStats.currentValue : 0,
+    totalLent: visibleFeatures?.loans !== false ? groupStats.lent : 0,
+    totalBorrowed: visibleFeatures?.loans !== false ? groupStats.borrowed : 0,
+  });
+  const stockSetupHint = getStockDataSetupHint();
 
- const formatCurrency = (amount: number) => formatCurrencyAmount(amount, currency, {
- minimumFractionDigits: 0,
- maximumFractionDigits: 0,
- });
+  const formatCurrency = (amount: number) => formatCurrencyAmount(Number(amount) || 0, currency, {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  });
 
  const getProgressWidthClass = (value: number) => {
  const progressValue = Math.max(0, Math.min(100, value));

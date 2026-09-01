@@ -108,115 +108,121 @@ const loadPayment = async (paymentId: string) =>
   });
 
 const markPaymentCompleted = async (paymentId: string, transactionId?: string) => {
-  const payment = await loadPayment(paymentId);
-  if (!payment) {
-    throw new Error('PAYMENT_NOT_FOUND');
-  }
+  return prisma.$transaction(async (tx) => {
+    const payment = await tx.payment.findUnique({
+      where: { id: paymentId },
+    });
+    if (!payment) {
+      throw new Error('PAYMENT_NOT_FOUND');
+    }
 
-  if (payment.status === 'completed') {
-    return payment;
-  }
+    if (payment.status === 'completed') {
+      return payment;
+    }
 
-  if (!canTransitionPayment(payment.status, 'completed')) {
-    throw new Error('INVALID_PAYMENT_STATE');
-  }
+    if (!canTransitionPayment(payment.status, 'completed')) {
+      throw new Error('INVALID_PAYMENT_STATE');
+    }
 
-  const updated = await prisma.payment.update({
-    where: { id: paymentId },
-    data: {
-      status: 'completed',
-      transactionId: transactionId || payment.transactionId,
-    },
+    const updated = await tx.payment.update({
+      where: { id: paymentId },
+      data: {
+        status: 'completed',
+        transactionId: transactionId || payment.transactionId,
+      },
+    });
+
+    await tx.notification.create({
+      data: {
+        userId: payment.advisorId,
+        title: 'Payment Received',
+        message: `You received a payment of ${payment.amount} ${payment.currency}`,
+        category: 'payment',
+        deepLink: '/advisor-panel',
+      },
+    });
+
+    return updated;
   });
-
-  // '/payments/:id' is not a registered frontend route (see App.tsx's page
-  // switch) — falls through to the Dashboard default case. Recipient is the
-  // ADVISOR; earnings/payments live under advisor-panel's "Earnings" tab
-  // (AdvisorWorkspace.tsx, advisor-only).
-  await prisma.notification.create({
-    data: {
-      userId: payment.advisorId,
-      title: 'Payment Received',
-      message: `You received a payment of ${payment.amount} ${payment.currency}`,
-      category: 'payment',
-      deepLink: '/advisor-panel',
-    },
-  });
-
-  return updated;
 };
 
 const markPaymentFailed = async (paymentId: string, reason?: string) => {
-  const payment = await loadPayment(paymentId);
-  if (!payment) {
-    throw new Error('PAYMENT_NOT_FOUND');
-  }
+  return prisma.$transaction(async (tx) => {
+    const payment = await tx.payment.findUnique({
+      where: { id: paymentId },
+    });
+    if (!payment) {
+      throw new Error('PAYMENT_NOT_FOUND');
+    }
 
-  if (payment.status === 'failed') {
-    return payment;
-  }
+    if (payment.status === 'failed') {
+      return payment;
+    }
 
-  if (!canTransitionPayment(payment.status, 'failed')) {
-    throw new Error('INVALID_PAYMENT_STATE');
-  }
+    if (!canTransitionPayment(payment.status, 'failed')) {
+      throw new Error('INVALID_PAYMENT_STATE');
+    }
 
-  const updated = await prisma.payment.update({
-    where: { id: paymentId },
-    data: { status: 'failed' },
+    const updated = await tx.payment.update({
+      where: { id: paymentId },
+      data: { status: 'failed' },
+    });
+
+    await tx.notification.create({
+      data: {
+        userId: payment.clientId,
+        title: 'Payment Failed',
+        message: `Your payment of ${payment.amount} ${payment.currency} failed${reason ? `: ${reason}` : ''}. Please try again.`,
+        category: 'payment',
+        deepLink: '/book-advisor',
+      },
+    });
+
+    return updated;
   });
-
-  // '/sessions/:id' is not a registered frontend route — recipient is the
-  // CLIENT; payments live under book-advisor's "My Bookings" tab.
-  await prisma.notification.create({
-    data: {
-      userId: payment.clientId,
-      title: 'Payment Failed',
-      message: `Your payment of ${payment.amount} ${payment.currency} failed${reason ? `: ${reason}` : ''}. Please try again.`,
-      category: 'payment',
-      deepLink: '/book-advisor',
-    },
-  });
-
-  return updated;
 };
 
 const markPaymentRefunded = async (paymentId: string, reason?: string) => {
-  const payment = await loadPayment(paymentId);
-  if (!payment) {
-    throw new Error('PAYMENT_NOT_FOUND');
-  }
+  return prisma.$transaction(async (tx) => {
+    const payment = await tx.payment.findUnique({
+      where: { id: paymentId },
+    });
+    if (!payment) {
+      throw new Error('PAYMENT_NOT_FOUND');
+    }
 
-  if (payment.status === 'refunded') {
-    return payment;
-  }
+    if (payment.status === 'refunded') {
+      return payment;
+    }
 
-  if (!canTransitionPayment(payment.status, 'refunded')) {
-    throw new Error('INVALID_PAYMENT_STATE');
-  }
+    if (!canTransitionPayment(payment.status, 'refunded')) {
+      throw new Error('INVALID_PAYMENT_STATE');
+    }
 
-  const updated = await prisma.payment.update({
-    where: { id: paymentId },
-    data: { status: 'refunded' },
+    const updated = await tx.payment.update({
+      where: { id: paymentId },
+      data: { status: 'refunded' },
+    });
+
+    await tx.notification.createMany({
+      data: [
+        {
+          userId: payment.clientId,
+          title: 'Payment Refunded',
+          message: `Your payment of ${payment.amount} ${payment.currency} has been refunded${reason ? `: ${reason}` : ''}`,
+          category: 'payment',
+        },
+        {
+          userId: payment.advisorId,
+          title: 'Payment Refunded',
+          message: `A payment of ${payment.amount} ${payment.currency} was refunded${reason ? `: ${reason}` : ''}`,
+          category: 'payment',
+        },
+      ],
+    });
+
+    return updated;
   });
-
-  await prisma.notification.createMany({
-    data: [
-      {
-        userId: payment.clientId,
-        title: 'Payment Refunded',
-        message: `Your payment of ${payment.amount} ${payment.currency} has been refunded${reason ? `: ${reason}` : ''}`,
-        category: 'payment',
-      },
-      {
-        userId: payment.advisorId,
-        title: 'Payment Refunded',
-        message: `A payment of ${payment.amount} ${payment.currency} was refunded${reason ? `: ${reason}` : ''}`,
-        category: 'payment',
-      },
-    ],
-  });
-
-  return updated;
 };
 
 // Get payments for user

@@ -17,8 +17,14 @@ router.use(requireFeature('goals'));
 
 router.get('/', responseCache({ prefix: 'goals:list', ttlSeconds: CACHE_TTL_SECONDS.goals.list }), GoalController.getGoals);
 router.post('/', requireFeature('goals', 'createGoal'), idempotency({ scope: 'goals.create' }), validateBody(goalCreateSchema), GoalController.createGoal);
-router.get('/:id', validateParams(goalIdParamSchema), responseCache({ prefix: 'goals:item', ttlSeconds: CACHE_TTL_SECONDS.goals.item }), GoalController.getGoal);
-router.put('/:id', requireFeature('goals', 'editGoal'), validateParams(goalIdParamSchema), validateBody(goalUpdateSchema), GoalController.updateGoal);
+router.put(
+  '/:id',
+  requireFeature('goals', 'editGoal'),
+  idempotency({ scope: 'goals.update' }),
+  validateParams(goalIdParamSchema),
+  validateBody(goalUpdateSchema),
+  GoalController.updateGoal,
+);
 router.delete('/:id', requireFeature('goals', 'deleteGoal'), validateParams(goalIdParamSchema), GoalController.deleteGoal);
 
 // Group goals: add/remove members (groupGoals sub-feature)

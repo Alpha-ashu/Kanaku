@@ -3,6 +3,7 @@ import { authMiddleware } from '../../middleware/auth';
 import { pinGate } from '../../middleware/pinGate';
 import { validateBody, validateParams, validateQuery } from '../../middleware/validate';
 import { requireFeature } from '../../middleware/featureGate';
+import { idempotency } from '../../middleware/idempotency';
 import * as BudgetController from './budget.controller';
 import {
   budgetCreateSchema,
@@ -18,11 +19,23 @@ router.use(pinGate); // financial data requires a live PIN unlock
 router.use(requireFeature('budgetAlerts'));
 
 router.get('/', validateQuery(budgetQuerySchema), BudgetController.getBudgets);
-router.post('/', validateBody(budgetCreateSchema), BudgetController.createBudget);
+router.post(
+  '/',
+  idempotency({ scope: 'budgets.create' }),
+  validateBody(budgetCreateSchema),
+  BudgetController.createBudget,
+);
 router.get('/:id', validateParams(budgetIdParamSchema), BudgetController.getBudget);
-router.put('/:id', validateParams(budgetIdParamSchema), validateBody(budgetUpdateSchema), BudgetController.updateBudget);
+router.put(
+  '/:id',
+  idempotency({ scope: 'budgets.update' }),
+  validateParams(budgetIdParamSchema),
+  validateBody(budgetUpdateSchema),
+  BudgetController.updateBudget,
+);
 router.delete('/:id', validateParams(budgetIdParamSchema), BudgetController.deleteBudget);
 router.post('/:id/recalculate', validateParams(budgetIdParamSchema), BudgetController.recalculateBudgetSpent);
 
 export { router as budgetRoutes };
+
 

@@ -31,8 +31,6 @@ function shouldUseLocalFallback(error: unknown) {
   }
 
   const status = error.response?.status;
-  // Only fall back to local data on network errors (no status) or genuine server errors (5xx).
-  // A 404 means the resource does not exist - do NOT silently serve stale local data.
   return status == null || status >= 500;
 }
 
@@ -84,7 +82,6 @@ function normalizeInvestmentDates<T extends Record<string, any>>(investment: T):
 }
 
 function assertCloudGoalId(id: string) {
-  // Local Dexie IDs are numeric; backend goal routes require cloud string IDs.
   if (/^\d+$/.test(id)) {
     throw new Error(
       `Invalid cloud goal id: ${id}. This looks like a local Dexie id. Use local goal sync helpers instead of backend goal CRUD methods.`
@@ -101,8 +98,132 @@ function assertCloudEntityId(id: string, entityName: string) {
 }
 
 class BackendService {
+  public api: AxiosInstance;
+  private token: string | null = null;
+  private _inflightGets = new Map<string, Promise<any>>();
+
+  constructor() {
+    this.api = axios.create({
+      baseURL: API_BASE_URL,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      timeout: 15000,
+    });
+
+    this.api.interceptors.request.use((config) => {
+      let token = TokenManager.getAccessToken();
+
+      if (!token) {
+        token = this.token;
+      }
+
+      if (!token) {
+        try {
+          const sbKey = Object.keys(localStorage).find(
+            (key) => key.startsWith('sb-') && key.endsWith('-auth-token')
+          );
+          if (sbKey) {
+            const sessionData = localStorage.getItem(sbKey);
+            if (sessionData) {
+              const session = JSON.parse(sessionData);
+              token = session?.access_token || null;
+            }
+          }
+        } catch (e) {
+          // Ignore localStorage parsing issues
+        }
+      }
+
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+
+      const method = (config.method || 'GET').toUpperCase();
+      if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method) && !config.headers['Idempotency-Key']) {
+        config.headers['Idempotency-Key'] = generateUUID();
+      }
+
+      return config;
+    });
+
+    this.api.interceptors.response.use(
+      (response) => response,
+      async (error) => {
+        if (!axios.isAxiosError(error)) return Promise.reject(error);
+
+        const status = error.response?.status;
+        const serverMessage = error.response?.data?.error;
+        const originalRequest = error.config as any;
+
+        if (!error.response) {
+          const wrappedError = new Error('No internet connection. Please check your network.') as Error & {
+            status?: number;
+            original?: unknown;
+          };
+          wrappedError.original = error;
+          return Promise.reject(wrappedError);
+        }
+
+        const wrapWithStatus = (message: string) => {
+          const wrappedError = new Error(message) as Error & {
+            status?: number;
+            original?: unknown;
+          };
+          wrappedError.status = status;
+          wrappedError.original = error;
+          return wrappedError;
+        };
+
+        if (status === 401 && originalRequest && !originalRequest._retry) {
+          originalRequest._retry = true;
+          try {
+            console.log('[BackendService] Request returned 401. Attempting silent token refresh...');
+            const { refreshAccessToken } = await import('./api');
+            const newToken = await refreshAccessToken();
+            if (newToken) {
+              console.log('[BackendService] Token refreshed successfully. Retrying request...');
+              originalRequest.headers.Authorization = `Bearer ${newToken}`;
+              return this.api(originalRequest);
+            }
+          } catch (refreshErr) {
+            console.error('[BackendService] Silent refresh failed:', refreshErr);
+          }
+
+          console.warn('[BackendService] Unauthorized request, performing clean signout.');
+          TokenManager.clearTokens();
+          setTimeout(() => {
+            if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
+              console.log('[KANAKU Navigation] Redirected to Login: Reason = Unauthorized / Session Expired');
+              window.location.href = '/login';
+            }
+          }, 100);
+
+          return Promise.reject(wrapWithStatus('Your session has expired. Please sign in again.'));
+        }
+
+        if (status === 403) {
+          return Promise.reject(wrapWithStatus('You do not have access to this feature.'));
+        }
+
+        if (status === 429) {
+          return Promise.reject(wrapWithStatus('Too many requests. Please wait a moment and try again.'));
+        }
+
+        if (status != null && status >= 500) {
+          return Promise.reject(wrapWithStatus('Something went wrong. Please try again later.'));
+        }
+
+        if (serverMessage) {
+          return Promise.reject(wrapWithStatus(serverMessage));
+        }
+
+        return Promise.reject(wrapWithStatus('An unexpected error occurred.'));
+      }
+    );
+  }
+
   // ===== GOLD =====
-  // Gold is stored as an investment with assetType='gold'
   async createGold(gold: {
     type: string;
     quantity: number;
@@ -117,7 +238,6 @@ class BackendService {
     createdAt: Date;
     updatedAt: Date;
   }) {
-    // Map gold fields to investment schema (gold is stored as an investment asset)
     const investmentPayload = {
       assetType: 'gold',
       assetName: `${gold.type} (${gold.purityPercentage}% purity)`,
@@ -300,134 +420,7 @@ class BackendService {
       };
     }
   }
-   public api: AxiosInstance;
-  private token: string | null = null;
-  private _inflightGets: Map<string, Promise<any>>;
 
-  constructor() {
-    this._inflightGets = new Map<string, Promise<any>>();
-
-    // Use a plain axios instance — no custom adapter.
-    // Custom adapters that try to re-invoke the resolved axios default adapter are fragile
-    // in production Vite bundles (mangled names cause "a is not a function" errors).
-    // GET deduplication is handled via the overridden get() method below.
-    this.api = axios.create({
-      baseURL: API_BASE_URL,
-    });
-
-    // Add token to every request
-    this.api.interceptors.request.use((config) => {
-      // ALWAYS read dynamically from TokenManager first to stay in sync with background silent refreshes
-      let token = TokenManager.getAccessToken();
-
-      if (!token) {
-        token = this.token;
-      }
-
-      if (!token) {
-        // Dynamic fallback: Try to resolve the token directly from the Supabase session stored in localStorage
-        try {
-          const sbKey = Object.keys(localStorage).find(
-            (key) => key.startsWith('sb-') && key.endsWith('-auth-token')
-          );
-          if (sbKey) {
-            const sessionData = localStorage.getItem(sbKey);
-            if (sessionData) {
-              const session = JSON.parse(sessionData);
-              token = session?.access_token || null;
-            }
-          }
-        } catch (e) {
-          // Ignore localStorage parsing issues
-        }
-      }
-
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-      return config;
-    });
-
-    // Normalize error responses and handle token refreshes
-    this.api.interceptors.response.use(
-      (response) => response,
-      async (error) => {
-        if (!axios.isAxiosError(error)) return Promise.reject(error);
-
-        const status = error.response?.status;
-        const serverMessage = error.response?.data?.error;
-        const originalRequest = error.config as any;
-
-        if (!error.response) {
-          const wrappedError = new Error('No internet connection. Please check your network.') as Error & {
-            status?: number;
-            original?: unknown;
-          };
-          wrappedError.original = error;
-          return Promise.reject(wrappedError);
-        }
-
-        const wrapWithStatus = (message: string) => {
-          const wrappedError = new Error(message) as Error & {
-            status?: number;
-            original?: unknown;
-          };
-          wrappedError.status = status;
-          wrappedError.original = error;
-          return wrappedError;
-        };
-
-        // Handle 401 with silent token refresh
-        if (status === 401 && originalRequest && !originalRequest._retry) {
-          originalRequest._retry = true;
-          try {
-            console.log('[BackendService] Request returned 401. Attempting silent token refresh...');
-            const { refreshAccessToken } = await import('./api');
-            const newToken = await refreshAccessToken();
-            if (newToken) {
-              console.log('[BackendService] Token refreshed successfully. Retrying request...');
-              originalRequest.headers.Authorization = `Bearer ${newToken}`;
-              return this.api(originalRequest);
-            }
-          } catch (refreshErr) {
-            console.error('[BackendService] Silent refresh failed:', refreshErr);
-          }
-
-          console.warn('[BackendService] Unauthorized request, performing clean signout.');
-          TokenManager.clearTokens();
-          // Wait a tiny bit for local storage to actually clear before redirecting
-          setTimeout(() => {
-            if (window.location.pathname !== '/login') {
-              console.log('[KANAKU Navigation] Redirected to Login: Reason = Unauthorized / Session Expired');
-              window.location.href = '/login';
-            }
-          }, 100);
-
-          return Promise.reject(wrapWithStatus('Your session has expired. Please sign in again.'));
-        }
-
-        if (status === 403) {
-          return Promise.reject(wrapWithStatus('You do not have access to this feature.'));
-        }
-
-        if (status === 429) {
-          return Promise.reject(wrapWithStatus('Too many requests. Please wait a moment and try again.'));
-        }
-
-        if (status != null && status >= 500) {
-          return Promise.reject(wrapWithStatus('Something went wrong. Please try again later.'));
-        }
-
-        // 4xx with a server-supplied message - safe to show
-        if (serverMessage) {
-          return Promise.reject(wrapWithStatus(serverMessage));
-        }
-
-        return Promise.reject(wrapWithStatus('An unexpected error occurred.'));
-      }
-    );
-  }
-  
   // Generic HTTP Methods
   async get<T = any>(url: string, config?: any): Promise<T> {
     // Deduplicate concurrent identical GET requests to avoid redundant network calls.

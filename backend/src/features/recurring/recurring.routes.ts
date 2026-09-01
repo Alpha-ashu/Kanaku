@@ -3,6 +3,7 @@ import { authMiddleware } from '../../middleware/auth';
 import { pinGate } from '../../middleware/pinGate';
 import { validateBody, validateParams, validateQuery } from '../../middleware/validate';
 import { requireFeature } from '../../middleware/featureGate';
+import { idempotency } from '../../middleware/idempotency';
 import * as RecurringController from './recurring.controller';
 import {
   recurringCreateSchema,
@@ -18,11 +19,28 @@ router.use(pinGate); // financial data requires a live PIN unlock
 router.use(requireFeature('recurringTransactions'));
 
 router.get('/', validateQuery(recurringQuerySchema), RecurringController.getRecurringTransactions);
-router.post('/', validateBody(recurringCreateSchema), RecurringController.createRecurringTransaction);
+router.post(
+  '/',
+  idempotency({ scope: 'recurring.create' }),
+  validateBody(recurringCreateSchema),
+  RecurringController.createRecurringTransaction,
+);
 router.get('/:id', validateParams(recurringIdParamSchema), RecurringController.getRecurringTransaction);
-router.put('/:id', validateParams(recurringIdParamSchema), validateBody(recurringUpdateSchema), RecurringController.updateRecurringTransaction);
+router.put(
+  '/:id',
+  idempotency({ scope: 'recurring.update' }),
+  validateParams(recurringIdParamSchema),
+  validateBody(recurringUpdateSchema),
+  RecurringController.updateRecurringTransaction,
+);
 router.delete('/:id', validateParams(recurringIdParamSchema), RecurringController.deleteRecurringTransaction);
-router.patch('/:id/toggle', validateParams(recurringIdParamSchema), RecurringController.toggleRecurringStatus);
+router.patch(
+  '/:id/toggle',
+  idempotency({ scope: 'recurring.toggle' }),
+  validateParams(recurringIdParamSchema),
+  RecurringController.toggleRecurringStatus,
+);
 
 export { router as recurringRoutes };
+
 

@@ -5,6 +5,7 @@ import { requireRole, requireApproved } from '../../middleware/rbac';
 // role check in rbac.ts — so disabling `bookAdvisor` in the admin panel actually
 // blocks new bookings at the API layer.
 import { requireFeature } from '../../middleware/featureGate';
+import { idempotency } from '../../middleware/idempotency';
 import { validateBody, validateParams } from '../../middleware/validate';
 import * as BookingController from './booking.controller';
 import {
@@ -22,6 +23,7 @@ router.use(authMiddleware);
 // Create booking (users only)
 router.post(
   '/',
+  idempotency({ scope: 'bookings.create' }),
   requireFeature('bookAdvisor', 'createBooking'),
   validateBody(bookingCreateSchema),
   BookingController.createBooking

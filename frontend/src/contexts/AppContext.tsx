@@ -205,7 +205,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   }, [rawAccounts, transactions, goalContributions, loanPayments]);
 
   const totalBalance = useMemo(() => (
-    accounts.filter(acc => acc.isActive).reduce((sum, acc) => sum + acc.balance, 0)
+    accounts.filter(acc => acc.isActive).reduce((sum, acc) => sum + Number(acc.balance || 0), 0)
   ), [accounts]);
 
   // Run V2 Investment Module database migration on startup

@@ -331,7 +331,7 @@ export const Accounts: React.FC = () => {
 
 
     const totalBalance = useMemo(() => (
-        accounts.filter((a) => a.isActive).reduce((sum, a) => sum + a.balance, 0)
+        accounts.filter((a) => a.isActive).reduce((sum, a) => sum + Number(a.balance || 0), 0)
     ), [accounts]);
 
     // Previous Balance (before the account's most recent transaction) → Current

@@ -73,22 +73,34 @@ export const createGoal = async (req: AuthRequest, res: Response, next: NextFunc
       }
     }
 
-    const goal = await prisma.goal.create({
-      data: {
-        userId,
-        name: sanitize(name),
-        targetAmount: numericTarget,
-        targetDate: new Date(targetDate),
-        category,
-        isGroupGoal: isGroupGoal || false,
-        currentAmount: 0,
-        clientRequestId: clientRequestId || null,
-      },
-    });
+    try {
+      const goal = await prisma.goal.create({
+        data: {
+          userId,
+          name: sanitize(name),
+          targetAmount: numericTarget,
+          targetDate: new Date(targetDate),
+          category,
+          isGroupGoal: isGroupGoal || false,
+          currentAmount: 0,
+          clientRequestId: clientRequestId || null,
+        },
+      });
 
-    await cacheDeleteByPrefix('goals:');
+      await cacheDeleteByPrefix('goals:');
 
-    res.status(201).json({ success: true, data: goal });
+      return res.status(201).json({ success: true, data: goal });
+    } catch (createErr: any) {
+      if (createErr?.code === 'P2002' && clientRequestId) {
+        const raceExisting = await prisma.goal.findFirst({
+          where: { clientRequestId, userId }
+        });
+        if (raceExisting) {
+          return res.status(200).json({ success: true, data: raceExisting });
+        }
+      }
+      throw createErr;
+    }
   } catch (error) {
     next(error);
   }

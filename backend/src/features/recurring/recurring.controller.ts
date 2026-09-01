@@ -34,8 +34,12 @@ export const createRecurringTransaction = async (req: AuthRequest, res: Response
   try {
     const userId = getUserId(req);
     const body = req.body;
+    const sanitizedTitle = sanitize(body.title);
+    const numericAmount = Number(body.amount);
+    const interval = body.interval || 'monthly';
+    const type = body.type || 'expense';
 
-    // Idempotency check
+    // 1. Idempotency check via clientRequestId (deduplicates exact client retries)
     if (body.clientRequestId) {
       const existing = await prisma.recurringTransaction.findFirst({
         where: { clientRequestId: body.clientRequestId, userId },
@@ -45,31 +49,44 @@ export const createRecurringTransaction = async (req: AuthRequest, res: Response
       }
     }
 
-    const item = await prisma.recurringTransaction.create({
-      data: {
-        userId,
-        title: sanitize(body.title),
-        amount: Number(body.amount),
-        category: body.category,
-        subcategory: body.subcategory || null,
-        interval: body.interval,
-        nextDueDate: new Date(body.nextDueDate),
-        autoProcess: body.autoProcess ?? false,
-        accountId: body.accountId || null,
-        description: body.description ? sanitize(body.description) : null,
-        merchant: body.merchant ? sanitize(body.merchant) : null,
-        clientRequestId: body.clientRequestId || null,
-        status: 'active',
-        type: body.type || 'expense',
-        startDate: body.startDate ? new Date(body.startDate) : null,
-        endDate: body.endDate ? new Date(body.endDate) : null,
-        reminderDaysBefore: body.reminderDaysBefore != null ? Number(body.reminderDaysBefore) : null,
-        notes: body.notes ? sanitize(body.notes) : null,
-        transferToAccountId: body.transferToAccountId || null,
-      },
-    });
+    try {
+      const item = await prisma.recurringTransaction.create({
+        data: {
+          userId,
+          title: sanitizedTitle,
+          amount: numericAmount,
+          category: body.category,
+          subcategory: body.subcategory || null,
+          interval,
+          nextDueDate: new Date(body.nextDueDate),
+          autoProcess: body.autoProcess ?? false,
+          accountId: body.accountId || null,
+          description: body.description ? sanitize(body.description) : null,
+          merchant: body.merchant ? sanitize(body.merchant) : null,
+          clientRequestId: body.clientRequestId || null,
+          status: 'active',
+          type,
+          startDate: body.startDate ? new Date(body.startDate) : null,
+          endDate: body.endDate ? new Date(body.endDate) : null,
+          reminderDaysBefore: body.reminderDaysBefore != null ? Number(body.reminderDaysBefore) : null,
+          notes: body.notes ? sanitize(body.notes) : null,
+          transferToAccountId: body.transferToAccountId || null,
+        },
+      });
 
-    res.status(201).json({ success: true, data: item });
+      return res.status(201).json({ success: true, data: item });
+    } catch (createErr: any) {
+      // Handle P2002 unique constraint race condition
+      if (createErr?.code === 'P2002' && body.clientRequestId) {
+        const raceExisting = await prisma.recurringTransaction.findFirst({
+          where: { clientRequestId: body.clientRequestId, userId },
+        });
+        if (raceExisting) {
+          return res.status(200).json({ success: true, data: raceExisting });
+        }
+      }
+      throw createErr;
+    }
   } catch (error) {
     next(error);
   }
