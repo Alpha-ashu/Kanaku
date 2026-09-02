@@ -45,13 +45,41 @@ let package = Package(
                 .product(name: "Capacitor", package: "capacitor-swift-pm"),
                 .product(name: "Cordova", package: "capacitor-swift-pm")
             ],
-            path: "ios/Plugin"
+            path: "ios/Plugin",
+            exclude: ["Info.plist", "Plugin.m", "Plugin.h"]
         )
     ]
 )
 `;
   fs.writeFileSync(SPEECH_RECOGNITION_MANIFEST, speechPackageSwift);
   console.log(`[spm] Ensured Package.swift for @capacitor-community/speech-recognition`);
+
+  const pluginSwiftPath = path.join(SPEECH_RECOGNITION_DIR, 'ios', 'Plugin', 'Plugin.swift');
+  if (fs.existsSync(pluginSwiftPath)) {
+    let pluginSwift = fs.readFileSync(pluginSwiftPath, 'utf8');
+    if (!pluginSwift.includes('CAPBridgedPlugin')) {
+      pluginSwift = pluginSwift.replace(
+        'public class SpeechRecognition: CAPPlugin {',
+        `public class SpeechRecognition: CAPPlugin, CAPBridgedPlugin {
+    public let identifier = "SpeechRecognitionPlugin"
+    public let jsName = "SpeechRecognition"
+    public let pluginMethods: [CAPPluginMethod] = [
+        CAPPluginMethod(name: "available", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "start", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "stop", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "getSupportedLanguages", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "hasPermission", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "isListening", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "requestPermission", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "checkPermissions", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "requestPermissions", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "removeAllListeners", returnType: CAPPluginReturnPromise)
+    ]`
+      );
+      fs.writeFileSync(pluginSwiftPath, pluginSwift);
+      console.log(`[spm] Patched Plugin.swift with CAPBridgedPlugin for Capacitor 8`);
+    }
+  }
 }
 
 const MANIFEST = path.join('ios', 'App', 'CapApp-SPM', 'Package.swift');
