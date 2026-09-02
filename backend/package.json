@@ -5,8 +5,8 @@
   "type": "commonjs",
   "main": "dist/server.js",
   "scripts": {
-    "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
-    "worker": "ts-node-dev --respawn --transpile-only src/worker.ts",
+    "dev": "tsx watch src/server.ts",
+    "worker": "tsx watch src/worker.ts",
     "generate:prisma": "prisma generate",
     "db:test:reset": "node ../quality/diagnostics/backend/test-db.mjs",
     "ensure:cloud-sync-schema": "node ./scripts/ensure-cloud-sync-schema.cjs",

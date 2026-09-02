@@ -457,27 +457,95 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
         {visibleFeatures?.accounts !== false && (
           <motion.div {...fadeUp} className="mb-6 lg:mb-8">
             <SectionHeader title="Accounts & Wallets" onViewAll={() => setCurrentPage?.('accounts')} />
-            {accounts.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {accounts.slice(0, 6).map((acc) => (
-                  <Card
-                    key={acc.id}
-                    variant="glass"
-                    className="p-4 cursor-pointer hover:shadow-lg transition-all"
-                    onClick={() => setCurrentPage?.('accounts')}
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{acc.type}</span>
-                      <Wallet size={16} className="text-indigo-500" />
-                    </div>
-                    <h4 className="font-bold text-slate-900 dark:text-white text-base mb-1 truncate">{acc.name}</h4>
-                    <p className="text-lg font-black text-indigo-600 dark:text-indigo-400">{formatCurrencyAmount(acc.balance || 0, acc.currency ?? currency)}</p>
-                  </Card>
-                ))}
+
+            {/* Account Type Filters */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-none mb-3">
+              {[
+                { id: 'all', label: 'All' },
+                { id: 'bank', label: 'Banks' },
+                { id: 'card', label: 'Cards' },
+                { id: 'wallet', label: 'Wallets' },
+                { id: 'cash', label: 'Cash' },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as typeof activeTab)}
+                  className={cn(
+                    'px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer',
+                    activeTab === tab.id
+                      ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-sm'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                  )}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {filteredAccounts.length > 0 ? (
+              <div className="flex gap-4 overflow-x-auto pb-4 pt-1 px-1 snap-x snap-mandatory scrollbar-none scroll-smooth touch-scroll -mx-1">
+                {filteredAccounts.map((account) => {
+                  const style = getCardStyle(account);
+                  return (
+                    <Card
+                      key={account.id}
+                      className={cn(
+                        "p-5 w-[270px] xs:w-[290px] sm:w-[320px] shrink-0 snap-center hover:shadow-2xl transition-all cursor-pointer relative overflow-hidden group border-none text-white rounded-3xl",
+                        style.bgClass
+                      )}
+                      style={style.background ? { backgroundColor: style.background } : {}}
+                      onClick={() => setCurrentPage?.('accounts')}
+                    >
+                      {/* Glow & subtle overlay */}
+                      <div className={cn("absolute -top-16 -right-16 w-36 h-36 rounded-full blur-3xl opacity-30", style.glow)} />
+                      <div className="absolute top-1/2 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+
+                      <div className="relative z-10 flex flex-col justify-between h-full min-h-[140px]">
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="flex items-center gap-2.5">
+                            <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-white/15 backdrop-blur-md border border-white/20 text-white shadow-lg">
+                              {account.type === 'bank' && <Landmark size={20} />}
+                              {account.type === 'card' && <CreditCard size={20} />}
+                              {account.type === 'wallet' && <Wallet size={20} />}
+                              {account.type === 'cash' && <Banknote size={20} />}
+                            </div>
+                            <div className="drop-shadow-md rounded-lg overflow-hidden">
+                              {getBankCardLogo(account.name, true, 'sm')}
+                            </div>
+                          </div>
+                          {account.subType && (
+                            <div className="scale-90 opacity-90">
+                              <CardNetworkLogo network={account.subType} />
+                            </div>
+                          )}
+                          {!account.isActive && (
+                            <span className="text-[10px] font-bold text-white/60 bg-white/10 px-2 py-0.5 rounded-full backdrop-blur-sm border border-white/10">
+                              INACTIVE
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="space-y-1">
+                          <h4 className="text-lg sm:text-xl font-black text-white tracking-tight leading-tight truncate">
+                            {account.name}
+                          </h4>
+                          <div className="flex items-center justify-between pt-1">
+                            <p className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                              {formatCurrencyAmount(account.balance || 0, account.currency ?? currency)}
+                            </p>
+                            <p className="text-[10px] font-bold text-white/70 uppercase tracking-widest bg-white/15 px-2.5 py-0.5 rounded-lg backdrop-blur-sm">
+                              {account.type}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </Card>
+                  );
+                })}
               </div>
             ) : (
               <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setCurrentPage?.('accounts')}>
-                <EmptyWidget icon={Wallet} message="No accounts added yet - tap to add" />
+                <EmptyWidget icon={Wallet} message="No accounts in this category - tap to manage" />
               </Card>
             )}
           </motion.div>
