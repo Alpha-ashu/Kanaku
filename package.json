@@ -110,7 +110,6 @@
   "overrides": {
     "@prisma/client": "7.10.0",
     "prisma": "7.10.0",
-    "zod": "3.23.8",
     "@vercel/node": {
       "path-to-regexp": "^8.4.2"
     },

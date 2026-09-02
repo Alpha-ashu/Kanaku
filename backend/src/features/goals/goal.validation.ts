@@ -3,7 +3,7 @@ import { z } from '../../middleware/validate';
 export const goalCreateSchema = z.object({
   name: z.string().trim().min(1, 'Goal name is required').max(120),
   targetAmount: z.coerce.number().positive('Target amount must be positive'),
-  targetDate: z.coerce.date({ error: 'Invalid target date' }),
+  targetDate: z.coerce.date({ message: 'Invalid target date' }),
   category: z.string().trim().max(80).optional(),
   isGroupGoal: z.boolean().optional(),
   clientRequestId: z.string().trim().optional(),

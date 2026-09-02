@@ -14,7 +14,7 @@ const registerDeviceSchema = z.object({
   deviceId: z.string().min(1, 'Device ID is required'),
   deviceName: z.string().min(1, 'Device name is required'),
   deviceType: z.enum(['mobile', 'web', 'desktop', 'tablet'], {
-    error: 'Invalid device type',
+    message: 'Invalid device type',
   }),
   osType: z.string().min(1, 'OS type is required'),
   osVersion: z.string().optional(),
