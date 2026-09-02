@@ -90,17 +90,46 @@ function BillCard({
           </div>
         )}
         {/* Status badge */}
-        <span className={cn('absolute top-2 left-2 flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold', statusMeta.cls)}>
+        <span className={cn('absolute top-2 left-2 flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold z-10', statusMeta.cls)}>
           {statusMeta.icon}
           {statusMeta.label}
         </span>
-        {/* Action buttons on hover */}
+
+        {/* Quick action buttons on top-right (Always visible on mobile/touch screens) */}
+        <div className="absolute top-2 right-2 flex items-center gap-1.5 z-10">
+          <button
+            type="button"
+            data-testid="receipt-scanner-page-view-receipt-btn"
+            onClick={(e) => {
+              e.stopPropagation();
+              onView();
+            }}
+            className="flex h-7 w-7 items-center justify-center rounded-full bg-white/95 text-slate-700 shadow-sm border border-slate-200/80 hover:bg-white hover:text-indigo-600 active:scale-90 transition-all cursor-pointer"
+            title="Preview receipt"
+          >
+            <Eye size={13} />
+          </button>
+          <button
+            type="button"
+            data-testid="receipt-scanner-page-delete-btn"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete();
+            }}
+            className="flex h-7 w-7 items-center justify-center rounded-full bg-white/95 text-rose-600 shadow-sm border border-slate-200/80 hover:bg-rose-50 hover:text-rose-700 active:scale-90 transition-all cursor-pointer"
+            title="Delete receipt"
+          >
+            <Trash2 size={13} />
+          </button>
+        </div>
+
+        {/* Action buttons on desktop hover overlay */}
         <div
           onClick={(e) => {
             e.stopPropagation();
             onView();
           }}
-          className="absolute inset-0 flex items-center justify-center gap-2 bg-black/40 opacity-0 transition-opacity group-hover:opacity-100"
+          className="absolute inset-0 hidden sm:flex items-center justify-center gap-2 bg-black/40 opacity-0 transition-opacity group-hover:opacity-100 z-20"
         >
           <button
             type="button"
@@ -150,7 +179,7 @@ function BillCard({
   );
 }
 
-function BillDetailModal({ doc, tx, currency, onClose }: { doc: DocumentRecord; tx?: Transaction; currency: string; onClose: () => void }) {
+function BillDetailModal({ doc, tx, currency, onClose, onDelete }: { doc: DocumentRecord; tx?: Transaction; currency: string; onClose: () => void; onDelete?: () => void }) {
   const [imgSrc, setImgSrc] = useState<string | null>(null);
 
   React.useEffect(() => {
@@ -196,12 +225,28 @@ function BillDetailModal({ doc, tx, currency, onClose }: { doc: DocumentRecord; 
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">Scanned Document</p>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition-colors cursor-pointer"
-          >
-            <X size={15} />
-          </button>
+          <div className="flex items-center gap-1.5">
+            {onDelete && (
+              <button
+                type="button"
+                data-testid="receipt-scanner-page-modal-delete-header"
+                onClick={() => {
+                  onClose();
+                  onDelete();
+                }}
+                className="w-8 h-8 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-600 flex items-center justify-center transition-colors cursor-pointer"
+                title="Delete Receipt"
+              >
+                <Trash2 size={15} />
+              </button>
+            )}
+            <button
+              onClick={onClose}
+              className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition-colors cursor-pointer"
+            >
+              <X size={15} />
+            </button>
+          </div>
         </div>
 
         {/* Bill / Receipt Visual Container */}
@@ -274,8 +319,21 @@ function BillDetailModal({ doc, tx, currency, onClose }: { doc: DocumentRecord; 
           )}
         </div>
 
-        <div className="border-t border-slate-100 p-4 bg-slate-50/50">
-          <Button data-testid="receipt-scanner-page-close" variant="secondary" className="w-full rounded-2xl font-bold text-xs" onClick={onClose}>
+        <div className="border-t border-slate-100 p-4 bg-slate-50/50 flex items-center gap-2">
+          {onDelete && (
+            <Button
+              data-testid="receipt-scanner-page-modal-delete"
+              variant="destructive"
+              className="flex-1 rounded-2xl font-bold text-xs bg-rose-50 text-rose-600 hover:bg-rose-100 hover:text-rose-700 border border-rose-100 flex items-center justify-center gap-1.5 py-3 cursor-pointer"
+              onClick={() => {
+                onClose();
+                onDelete();
+              }}
+            >
+              <Trash2 size={14} /> Delete Receipt
+            </Button>
+          )}
+          <Button data-testid="receipt-scanner-page-close" variant="secondary" className={cn("rounded-2xl font-bold text-xs py-3", onDelete ? "flex-1" : "w-full")} onClick={onClose}>
             Close
           </Button>
         </div>
@@ -522,6 +580,7 @@ export const ReceiptScannerPage: React.FC = () => {
           tx={viewingDoc.tx}
           currency={currency}
           onClose={() => setViewingDoc(null)}
+          onDelete={() => setDocToDelete(viewingDoc.doc)}
         />
       )}
 

@@ -124,16 +124,24 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
  },
  }))
  );
- const [isSaving, setIsSaving] = useState(false);
- const [editingIndex, setEditingIndex] = useState<number | null>(null);
- const [selectedAccountId, setSelectedAccountId] = useState<number>(accounts[0]?.id || 0);
- const [realInsights, setRealInsights] = useState<SmartInsight[]>([]);
- const [queryAnswers, setQueryAnswers] = useState<Record<number, string>>({});
+  const [isSaving, setIsSaving] = useState(false);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [selectedAccountId, setSelectedAccountId] = useState<number>(() => accounts.find(a => !a.deletedAt)?.id || accounts[0]?.id || 0);
+  const [realInsights, setRealInsights] = useState<SmartInsight[]>([]);
+  const [queryAnswers, setQueryAnswers] = useState<Record<number, string>>({});
 
- // Refresh context memory from DB when Command Center opens
- useEffect(() => {
- VoiceContextStore.refresh();
- }, []);
+  // Ensure selectedAccountId synchronizes when accounts load from Dexie/API
+  useEffect(() => {
+    if ((!selectedAccountId || !accounts.some(a => a.id === selectedAccountId && !a.deletedAt)) && accounts.length > 0) {
+      const valid = accounts.find(a => !a.deletedAt) || accounts[0];
+      if (valid?.id) setSelectedAccountId(valid.id);
+    }
+  }, [accounts, selectedAccountId]);
+
+  // Refresh context memory from DB when Command Center opens
+  useEffect(() => {
+    VoiceContextStore.refresh();
+  }, []);
 
  // Generate dynamic insights and execute queries
  useEffect(() => {
@@ -198,20 +206,27 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
  } : a));
  };
 
- const removeAction = (index: number) => {
- setActions(prev => prev.filter((_, i) => i !== index));
- if (actions.length < 1) onClose();
- };
+  const removeAction = (index: number) => {
+    setActions(prev => prev.filter((_, i) => i !== index));
+    if (actions.length <= 1) onClose();
+  };
 
- const confirmAll = async () => {
-    if (!selectedAccountId) {
-      toast.error("Please select an account for these transactions");
-      return;
+  const confirmAll = async () => {
+    let activeAccId = Number(selectedAccountId);
+    let accountForCheck = activeAccId ? await db.accounts.get(activeAccId) : null;
+    if (!accountForCheck || accountForCheck.deletedAt) {
+      const fallback = accounts.find(a => !a.deletedAt) || await db.accounts.filter(a => !a.deletedAt).first();
+      if (fallback?.id) {
+        activeAccId = fallback.id;
+        accountForCheck = fallback;
+        setSelectedAccountId(fallback.id);
+      } else {
+        toast.error("Please select an account for these transactions");
+        return;
+      }
     }
 
-    // Every financial action needs an amount before it can post — previously
-    // amount-less rows (e.g. a dropped "5000" from speech) were skipped
-    // SILENTLY, so users lost entries without noticing.
+    // Every financial action needs an amount before it can post
     const missingAmounts = actions.filter(
       (a) => a.type !== 'query' && (!a.entities.amount || a.entities.amount <= 0)
     );
@@ -223,10 +238,7 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
       return;
     }
 
-    // Pre-check the no-overdraw invariant the backend enforces: net outflow
-    // from the selected account must not exceed its balance. Failing here with
-    // a clear message beats a backend INSUFFICIENT_BALANCE rejection after save.
-    const accountForCheck = await db.accounts.get(selectedAccountId);
+    // Pre-check the no-overdraw invariant the backend enforces
     const netOutflow = actions.reduce((sum, a) => {
       const amount = a.entities.amount || 0;
       if (['expense', 'loan_lend', 'investment', 'goal', 'subscription', 'bill_scan', 'group_expense'].includes(a.type)) return sum + amount;
@@ -262,11 +274,19 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
         timestamp: now
       }).catch(console.error);
 
-      // Verify selected account exists
-      const primaryAccount = await db.accounts.get(selectedAccountId);
-      if (!primaryAccount) {
-        toast.error("Selected account not found");
-        return;
+      // Verify selected account exists (with fallback to any active account if initial hydration was pending)
+      let targetAccountId = selectedAccountId;
+      let primaryAccount = targetAccountId ? await db.accounts.get(targetAccountId) : null;
+      if (!primaryAccount || primaryAccount.deletedAt) {
+        const fallback = await db.accounts.filter(a => !a.deletedAt).first();
+        if (fallback?.id) {
+          targetAccountId = fallback.id;
+          primaryAccount = fallback;
+          setSelectedAccountId(fallback.id);
+        } else {
+          toast.error("Please create an account first to save transactions.");
+          return;
+        }
       }
 
       // Net balance changes: accountId -> changeAmount
@@ -284,7 +304,7 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
           await saveTransactionWithBackendSync({
             type: (action.type === 'bill_scan' || action.type === 'subscription') ? 'expense' : action.type,
             amount: amount,
-            accountId: selectedAccountId,
+            accountId: targetAccountId,
             category: action.entities.category || 'Miscellaneous',
             description: action.entities.description || action.rawSegment,
             date: action.entities.date ? parseDateInputValue(action.entities.date) || now : now,
@@ -297,7 +317,7 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
 
           // Accumulate balance change
           const change = isIncome ? amount : -amount;
-          netBalanceChanges.set(selectedAccountId, (netBalanceChanges.get(selectedAccountId) || 0) + change);
+          netBalanceChanges.set(targetAccountId, (netBalanceChanges.get(targetAccountId) || 0) + change);
 
           successCount++;
         } else if (action.type === 'goal' && action.entities.amount) {
@@ -352,7 +372,7 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
             await db.goalContributions.add({
               goalId: targetGoal.id!,
               amount: amount,
-              accountId: selectedAccountId,
+              accountId: targetAccountId,
               date: now,
               notes: action.entities.description || `Voice contribution for ${targetGoal.name}`
             });
@@ -365,13 +385,13 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
             queueRecordUpsertSync('goals', targetGoal.id!);
 
             // Accumulate balance change
-            netBalanceChanges.set(selectedAccountId, (netBalanceChanges.get(selectedAccountId) || 0) - amount);
+            netBalanceChanges.set(targetAccountId, (netBalanceChanges.get(targetAccountId) || 0) - amount);
 
             // Add corresponding transaction
             const transactionId = await db.transactions.add({
               type: 'expense',
               amount: amount,
-              accountId: selectedAccountId,
+              accountId: targetAccountId,
               category: 'Savings',
               description: action.entities.description || `Goal contribution: ${targetGoal.name}`,
               date: now,
@@ -413,7 +433,7 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
             await db.loanPayments.add({
               loanId: matchedLoan.id!,
               amount: amount,
-              accountId: selectedAccountId,
+              accountId: targetAccountId,
               date: now,
               notes: action.entities.description || `Voice repayment/settlement`
             });
@@ -431,7 +451,7 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
             const transactionId = await db.transactions.add({
               type: txnType,
               amount: amount,
-              accountId: selectedAccountId,
+              accountId: targetAccountId,
               category: 'Loans',
               subcategory: isLentLoanRepayment ? 'Loan Repayment Received' : 'Loan Repayment Sent',
               description: action.entities.description || `Repayment for loan: ${matchedLoan.name}`,
@@ -445,7 +465,7 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
 
             // Accumulate balance change
             const change = isLentLoanRepayment ? amount : -amount;
-            netBalanceChanges.set(selectedAccountId, (netBalanceChanges.get(selectedAccountId) || 0) + change);
+            netBalanceChanges.set(targetAccountId, (netBalanceChanges.get(targetAccountId) || 0) + change);
 
           } else {
             // Standard new loan flow
@@ -471,7 +491,7 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
             const transactionId = await db.transactions.add({
               type: txnType,
               amount: amount,
-              accountId: selectedAccountId,
+              accountId: targetAccountId,
               category: 'Loans',
               subcategory: isBorrow ? 'Loan Received' : 'Loan Disbursed',
               description: action.entities.description || `${isBorrow ? 'Borrowed from' : 'Lent to'} ${personName}`,
@@ -492,7 +512,7 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
               status: 'active',
               contactPerson: personName,
               friendId,
-              accountId: selectedAccountId,
+              accountId: targetAccountId,
               loanDate: now,
               createdAt: now,
               updatedAt: now
@@ -501,7 +521,7 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
 
             // Accumulate balance change
             const change = isBorrow ? amount : -amount;
-            netBalanceChanges.set(selectedAccountId, (netBalanceChanges.get(selectedAccountId) || 0) + change);
+            netBalanceChanges.set(targetAccountId, (netBalanceChanges.get(targetAccountId) || 0) + change);
           }
 
           successCount++;
@@ -513,7 +533,7 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
           const destinationName = action.entities.person || action.entities.merchant || action.entities.description;
           if (destinationName) {
             const targetAcc = accounts.find(a => 
-              a.id !== selectedAccountId && 
+              a.id !== targetAccountId && 
               a.name.toLowerCase().includes(destinationName.toLowerCase())
             );
             if (targetAcc) {
@@ -522,7 +542,7 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
           }
 
           // Accumulate balance changes
-          netBalanceChanges.set(selectedAccountId, (netBalanceChanges.get(selectedAccountId) || 0) - amount);
+          netBalanceChanges.set(targetAccountId, (netBalanceChanges.get(targetAccountId) || 0) - amount);
           if (transferToAccountId) {
             netBalanceChanges.set(transferToAccountId, (netBalanceChanges.get(transferToAccountId) || 0) + amount);
           }
@@ -531,7 +551,7 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
           const transactionId = await db.transactions.add({
             type: 'transfer',
             amount: amount,
-            accountId: selectedAccountId,
+            accountId: targetAccountId,
             transferToAccountId,
             category: 'Transfer',
             description: action.entities.description || `Voice Transfer to ${destinationName || 'other account'}`,
@@ -548,7 +568,7 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
           const amount = action.entities.amount;
 
           // Accumulate balance change
-          netBalanceChanges.set(selectedAccountId, (netBalanceChanges.get(selectedAccountId) || 0) - amount);
+          netBalanceChanges.set(targetAccountId, (netBalanceChanges.get(targetAccountId) || 0) - amount);
 
           // Add investment record. assetType must be one of the known kinds —
           // a category tag like "GENERAL" leaking in here made saved
@@ -566,7 +586,7 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
             profitLoss: 0,
             purchaseDate: now,
             lastUpdated: now,
-            fundingAccountId: selectedAccountId,
+            fundingAccountId: targetAccountId,
             positionStatus: 'open',
             createdAt: now,
             updatedAt: now
@@ -577,7 +597,7 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
           const transactionId = await db.transactions.add({
             type: 'expense',
             amount: amount,
-            accountId: selectedAccountId,
+            accountId: targetAccountId,
             category: 'Investment',
             description: `Invested in ${action.entities.description || 'Asset'}`,
             date: now,
@@ -613,7 +633,7 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
           const groupExpenseId = await db.groupExpenses.add({
             name: action.entities.description || `Group expense with ${memberNames.slice(0, 3).join(', ')}${memberNames.length > 3 ? '…' : ''}`,
             totalAmount: amount,
-            paidBy: selectedAccountId,
+            paidBy: targetAccountId,
             date: now,
             members: groupMembers,
             description: action.rawSegment.slice(0, 300),
@@ -631,7 +651,7 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
           const transactionId = await db.transactions.add({
             type: 'expense',
             amount,
-            accountId: selectedAccountId,
+            accountId: targetAccountId,
             category: action.entities.category || 'Group Expense',
             description: action.entities.description || `Group expense (${shareCount} people)`,
             date: now,
@@ -642,7 +662,7 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
           } as any);
           queueRecordUpsertSync('transactions', transactionId as number);
 
-          netBalanceChanges.set(selectedAccountId, (netBalanceChanges.get(selectedAccountId) || 0) - amount);
+          netBalanceChanges.set(targetAccountId, (netBalanceChanges.get(targetAccountId) || 0) - amount);
           successCount++;
         }
       }

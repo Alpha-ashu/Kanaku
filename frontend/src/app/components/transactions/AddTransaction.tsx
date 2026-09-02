@@ -3,8 +3,8 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useApp, useAICapability } from '@/contexts/AppContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/database';
-import { saveTransactionWithBackendSync } from '@/lib/auth-sync-integration';
-import { applyTransactionAccountImpact } from '@/lib/transactionAggregation';
+import { saveTransactionWithBackendSync, updateTransactionWithBackendSync, queueRecordUpsertSync } from '@/lib/auth-sync-integration';
+import { applyTransactionAccountImpact, applyAccountBalanceDeltas, getTransactionAccountDeltas } from '@/lib/transactionAggregation';
 import { DocumentManagementService } from '@/services/documentManagementService';
 import { backendService } from '@/lib/backend-api';
 import {
@@ -270,6 +270,12 @@ export function AddTransaction() {
  const { user } = useAuth();
  const defaultDateKey = toLocalDateKey(new Date()) ?? new Date().toISOString().split('T')[0];
  const isOcrEnabled = useAICapability('ocrEngine', 'transactionOCR');
+  const [editingTransactionId] = useState<number | null>(() => {
+    const raw = localStorage.getItem('editTransactionId');
+    const num = raw ? Number(raw) : null;
+    return num && Number.isFinite(num) ? num : null;
+  });
+  const [originalTransaction, setOriginalTransaction] = useState<any>(null);
 
  // State
  const [formData, setFormData] = useState(() => {
@@ -300,7 +306,38 @@ export function AddTransaction() {
    localStorage.removeItem('quickAccountId');
    localStorage.removeItem('quickExpenseMode');
    localStorage.removeItem('quickBackPage');
+   localStorage.removeItem('editTransactionId');
  };
+
+  // Pre-fill form when editing an existing transaction
+  useEffect(() => {
+    if (!editingTransactionId) return;
+
+    db.transactions.get(editingTransactionId).then(existing => {
+      if (!existing) return;
+      setOriginalTransaction(existing);
+      const isTransfer = existing.type === 'transfer';
+      const existingDateKey = toLocalDateKey(new Date(existing.date)) ?? defaultDateKey;
+
+      setFormData({
+        type: existing.type as TransactionType,
+        amount: Number(existing.amount || 0),
+        accountId: existing.accountId || (accounts[0]?.id || 0),
+        toAccountId: existing.transferToAccountId || 0,
+        category: existing.category || (isTransfer ? 'Transfer' : DEFAULT_CATEGORY.expense),
+        subcategory: existing.subcategory || '',
+        description: existing.description || '',
+        merchant: existing.merchant || '',
+        date: existingDateKey,
+        notes: existing.notes || '',
+        payee: (existing as any).payee || '',
+      });
+      setAmountStr(existing.amount ? String(existing.amount) : '');
+      if (isTransfer) {
+        setTransferSubType(existing.transferToAccountId ? 'self' : 'others');
+      }
+    });
+  }, [editingTransactionId, accounts, defaultDateKey]);
 
  const [isSubmitting, setIsSubmitting] = useState(false);
  const [showScanner, setShowScanner] = useState(false);
@@ -611,36 +648,84 @@ export function AddTransaction() {
       const dayEnd = new Date(transactionDate);
       dayEnd.setHours(23, 59, 59, 999);
 
-      const similarTransactions = await db.transactions
-        .filter(t =>
-          !t.deletedAt &&
-          t.accountId === formData.accountId &&
-          t.type === formData.type &&
-          t.amount === formData.amount &&
-          t.category === normalizeCategorySelection(formData.category, formData.type as 'expense' | 'income') &&
-          !!t.date &&
-          new Date(t.date).getTime() >= dayStart.getTime() &&
-          new Date(t.date).getTime() <= dayEnd.getTime()
-        )
-        .limit(1)
-        .toArray();
+      if (!editingTransactionId) {
+        const similarTransactions = await db.transactions
+          .filter(t =>
+            !t.deletedAt &&
+            t.accountId === formData.accountId &&
+            t.type === formData.type &&
+            t.amount === formData.amount &&
+            t.category === normalizeCategorySelection(formData.category, formData.type as 'expense' | 'income') &&
+            !!t.date &&
+            new Date(t.date).getTime() >= dayStart.getTime() &&
+            new Date(t.date).getTime() <= dayEnd.getTime()
+          )
+          .limit(1)
+          .toArray();
 
-      if (similarTransactions.length > 0) {
-        const existingTx = similarTransactions[0];
-        // Ask user if they want to create an intentional duplicate
-        const confirmed = await new Promise<boolean>((resolve) => {
-          setPendingDuplicate({ existingTx, resolve });
-        });
-        setPendingDuplicate(null);
-        if (!confirmed) {
-          setIsSubmitting(false);
-          return;
+        if (similarTransactions.length > 0) {
+          const existingTx = similarTransactions[0];
+          // Ask user if they want to create an intentional duplicate
+          const confirmed = await new Promise<boolean>((resolve) => {
+            setPendingDuplicate({ existingTx, resolve });
+          });
+          setPendingDuplicate(null);
+          if (!confirmed) {
+            setIsSubmitting(false);
+            return;
+          }
+          intentionalDuplicate = true;
         }
-        intentionalDuplicate = true;
       }
 
       const now = new Date();
       let result: any;
+
+      // Handle Edit mode update
+      if (editingTransactionId && originalTransaction) {
+        const payload: any = {
+          type: formData.type,
+          amount: formData.amount,
+          accountId: formData.accountId,
+          category: normalizeCategorySelection(formData.category, formData.type as 'expense' | 'income'),
+          subcategory: formData.subcategory,
+          description: formData.description,
+          merchant: formData.merchant,
+          date: transactionDate,
+          notes: formData.notes,
+          transferToAccountId: (isTransfer || formData.type === 'withdrawal') ? (formData.toAccountId || undefined) : undefined,
+          transferType: formData.type === 'withdrawal' ? 'withdrawal' : (transferSubType === 'self' ? 'self-transfer' : 'external-payment'),
+          updatedAt: now,
+        };
+
+        // Calculate old deltas and new deltas to compute accurate account balance delta changes
+        const oldDeltas = getTransactionAccountDeltas(originalTransaction);
+        const newDeltas = getTransactionAccountDeltas({ ...originalTransaction, ...payload });
+
+        // Combined delta: reverse old delta (-old), apply new delta (+new)
+        const combinedDeltas = new Map<number, number>();
+        for (const [accId, delta] of oldDeltas.entries()) {
+          combinedDeltas.set(accId, (combinedDeltas.get(accId) || 0) - delta);
+        }
+        for (const [accId, delta] of newDeltas.entries()) {
+          combinedDeltas.set(accId, (combinedDeltas.get(accId) || 0) + delta);
+        }
+
+        // Update transaction via backend sync wrapper
+        await updateTransactionWithBackendSync(editingTransactionId, payload);
+
+        // Apply balance deltas atomically
+        await applyAccountBalanceDeltas(combinedDeltas, now);
+        for (const accId of combinedDeltas.keys()) {
+          queueRecordUpsertSync('accounts', accId);
+        }
+
+        toast.success('Transaction updated successfully');
+        clearQuickStorage();
+        refreshData();
+        setCurrentPage(returnPage);
+        return;
+      }
 
  if (isTransfer || formData.type === 'withdrawal') {
  const isWithdrawal = formData.type === 'withdrawal';
@@ -885,7 +970,7 @@ if (linkedDocId) {
  >
  <ArrowLeft size={18} />
  </button>
- <h1 className="text-base font-black text-slate-900 tracking-tight leading-none uppercase">Add Transaction</h1>
+ <h1 className="text-base font-black text-slate-900 tracking-tight leading-none uppercase">{editingTransactionId ? 'Edit Transaction' : 'Add Transaction'}</h1>
  </div>
  </div>
 

@@ -1,5 +1,10 @@
 import { KANAKUAI } from './KANKUIntelligenceEngine';
 import { parseMultipleTransactions, parseVoiceExpense } from '@/lib/voiceExpenseParser';
+import {
+  isSpeechRecognitionSupported,
+  startSpeechRecognition,
+  type SpeechSession,
+} from '@/services/speechRecognitionAdapter';
 
 export interface VoiceExpenseResult {
   amount?: number;
@@ -10,75 +15,24 @@ export interface VoiceExpenseResult {
   date?: string;
 }
 
-export interface SpeechRecognitionEvent extends Event {
-  results: SpeechRecognitionResultList;
-  resultIndex: number;
-}
-
-export interface SpeechRecognitionResultList {
-  length: number;
-  item(index: number): SpeechRecognitionResult;
-  [index: number]: SpeechRecognitionResult;
-}
-
-export interface SpeechRecognitionResult {
-  isFinal: boolean;
-  length: number;
-  item(index: number): SpeechRecognitionAlternative;
-  [index: number]: SpeechRecognitionAlternative;
-}
-
-export interface SpeechRecognitionAlternative {
-  transcript: string;
-  confidence: number;
-}
-
-export interface ISpeechRecognition extends EventTarget {
-  continuous: boolean;
-  interimResults: boolean;
-  lang: string;
-  start(): void;
-  stop(): void;
-  abort(): void;
-  onresult: ((event: SpeechRecognitionEvent) => void) | null;
-  onerror: ((event: Event) => void) | null;
-  onend: (() => void) | null;
-}
-
-declare global {
-  interface Window {
-    SpeechRecognition: new () => ISpeechRecognition;
-    webkitSpeechRecognition: new () => ISpeechRecognition;
-  }
-}
-
 class VoiceAIProcessor {
-  private recognition: ISpeechRecognition | null = null;
+  private activeSession: SpeechSession | null = null;
   private isListening = false;
   private userId: string;
 
   constructor(userId: string) {
     this.userId = userId;
-    this.initializeSpeechRecognition();
   }
 
-  private initializeSpeechRecognition(): void {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-
-    if (!SpeechRecognition) {
-      console.warn(' Speech Recognition not supported in this browser');
-      return;
+  stopListening(): void {
+    if (this.activeSession) {
+      void this.activeSession.stop().catch(() => undefined);
+      this.activeSession = null;
     }
-
-    this.recognition = new SpeechRecognition();
-
-    //  Optimized settings for expense recognition
-    this.recognition.continuous = true;
-    this.recognition.interimResults = true;
-    this.recognition.lang = 'en-US';
+    this.isListening = false;
   }
 
-  //  CORE VOICE AI LOGIC
+  // CORE VOICE AI LOGIC
   async processVoiceInput(audioFile?: File): Promise<VoiceExpenseResult[]> {
     console.log(' Processing voice input...');
 
@@ -92,63 +46,32 @@ class VoiceAIProcessor {
   }
 
   async startLiveRecognition(): Promise<VoiceExpenseResult[]> {
+    if (this.isListening) {
+      throw new Error('Already listening');
+    }
+
+    if (!(await isSpeechRecognitionSupported())) {
+      throw new Error('Speech recognition not available on this device');
+    }
+
+    this.isListening = true;
+    let fullTranscript = '';
+
     return new Promise((resolve, reject) => {
-      if (!this.recognition) {
-        reject(new Error('Speech recognition not available'));
-        return;
-      }
+      let settled = false;
 
-      if (this.isListening) {
-        reject(new Error('Already listening'));
-        return;
-      }
-
-      console.log(' Starting voice recognition...');
-      this.isListening = true;
-
-      let finalTranscript = '';
-      let interimTranscript = '';
-
-      this.recognition.onresult = async (event: SpeechRecognitionEvent) => {
-        interimTranscript = '';
-
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          const result = event.results[i];
-
-          if (result.isFinal) {
-            finalTranscript += result[0].transcript + ' ';
-            console.log(` Final transcript: ${result[0].transcript}`);
-          } else {
-            interimTranscript += result[0].transcript;
-            console.log(` Interim: ${result[0].transcript}`);
-          }
-        }
-
-        // Wait until recognition ends so multi-command input is parsed as one complete transcript.
-        if (finalTranscript.trim().length > 10) {
-          console.log(' Voice transcript updated:', finalTranscript.trim());
-        }
-      };
-
-      this.recognition.onerror = (event) => {
-        console.error(' Speech recognition error:', event);
+      const finishWithTranscript = (text: string) => {
+        if (settled) return;
+        settled = true;
         this.isListening = false;
-        reject(new Error('Speech recognition failed'));
-      };
+        this.activeSession = null;
 
-      this.recognition.onend = () => {
-        console.log(' Speech recognition ended');
-        this.isListening = false;
-
-        // Process final transcript if available
-        if (finalTranscript.trim()) {
-          this.parseVoiceExpenses(finalTranscript.trim())
+        const trimmed = text.trim();
+        if (trimmed) {
+          this.parseVoiceExpenses(trimmed)
             .then(results => {
-              if (results.length > 0) {
-                resolve(results);
-              } else {
-                reject(new Error('No expense detected in voice input'));
-              }
+              if (results.length > 0) resolve(results);
+              else reject(new Error('No expense detected in voice input'));
             })
             .catch(reject);
         } else {
@@ -156,7 +79,37 @@ class VoiceAIProcessor {
         }
       };
 
-      this.recognition.start();
+      startSpeechRecognition({
+        onPartial: (text) => {
+          fullTranscript = text;
+        },
+        onFinal: (text) => {
+          fullTranscript = `${fullTranscript} ${text}`.trim().replace(/\s+/g, ' ');
+        },
+        onEnd: () => {
+          finishWithTranscript(fullTranscript);
+        },
+        onError: (reason, message) => {
+          console.warn('[VoiceAIProcessor] recognition error:', reason, message);
+          if (reason !== 'no-speech') {
+            if (!settled) {
+              settled = true;
+              this.isListening = false;
+              this.activeSession = null;
+              reject(new Error(message || 'Speech recognition failed'));
+            }
+          }
+        },
+      }).then(session => {
+        this.activeSession = session;
+      }).catch(err => {
+        if (!settled) {
+          settled = true;
+          this.isListening = false;
+          this.activeSession = null;
+          reject(err);
+        }
+      });
     });
   }
 
@@ -436,13 +389,6 @@ class VoiceAIProcessor {
   // Public methods for UI integration
   startListening(): Promise<VoiceExpenseResult[]> {
     return this.startLiveRecognition();
-  }
-
-  stopListening(): void {
-    if (this.recognition && this.isListening) {
-      this.recognition.stop();
-      this.isListening = false;
-    }
   }
 
   isCurrentlyListening(): boolean {
