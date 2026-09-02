@@ -135,7 +135,7 @@
     "defu": "^6.1.5",
     "effect": "^3.20.0",
     "qs": "^6.15.2",
-    "@xmldom/xmldom": "^0.9.10",
+    "@xmldom/xmldom": "^0.9.12",
     "ws": "^8.21.0",
     "follow-redirects": "^1.16.0",
     "undici": "^6.24.0",
