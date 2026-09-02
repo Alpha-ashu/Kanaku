@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { formatCurrencyAmount } from '@/lib/currencyUtils';
 import { cn } from '@/lib/utils';
 import { calculateTaxSummary } from '@/lib/taxService';
+import { DeleteConfirmModal } from '@/app/components/shared/DeleteConfirmModal';
 
 type TabKey = 'all' | 'expense' | 'income' | 'transfer';
 
@@ -66,7 +67,10 @@ function BillCard({
   const amountPrefix = type === 'income' ? '+' : type === 'expense' ? '-' : '';
 
   return (
-    <div className="group relative flex flex-col overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md">
+    <div
+      onClick={onView}
+      className="group relative flex flex-col overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm transition-all hover:shadow-md cursor-pointer hover:border-gray-300"
+    >
       {/* Thumbnail */}
       <div className="relative h-36 w-full bg-gray-50 flex items-center justify-center overflow-hidden">
         {imgSrc ? (
@@ -91,18 +95,34 @@ function BillCard({
           {statusMeta.label}
         </span>
         {/* Action buttons on hover */}
-        <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
-          <button data-testid="receipt-scanner-page-view-receipt"
-            onClick={onView}
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-gray-800 shadow hover:bg-white cursor-pointer"
-            title="View receipt"
+        <div
+          onClick={(e) => {
+            e.stopPropagation();
+            onView();
+          }}
+          className="absolute inset-0 flex items-center justify-center gap-2 bg-black/40 opacity-0 transition-opacity group-hover:opacity-100"
+        >
+          <button
+            type="button"
+            data-testid="receipt-scanner-page-view-receipt"
+            onClick={(e) => {
+              e.stopPropagation();
+              onView();
+            }}
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-gray-800 shadow-md hover:bg-gray-100 cursor-pointer transition-transform active:scale-90"
+            title="View receipt preview"
           >
             <Eye size={16} />
           </button>
-          <button data-testid="receipt-scanner-page-delete"
-            onClick={onDelete}
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-red-50 text-red-600 shadow hover:bg-red-100 cursor-pointer"
-            title="Delete"
+          <button
+            type="button"
+            data-testid="receipt-scanner-page-delete"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete();
+            }}
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-red-500 text-white shadow-md hover:bg-red-600 cursor-pointer transition-transform active:scale-90"
+            title="Delete receipt"
           >
             <Trash2 size={16} />
           </button>
@@ -270,6 +290,8 @@ export const ReceiptScannerPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabKey>('all');
   const [scannerOpen, setScannerOpen] = useState(false);
   const [viewingDoc, setViewingDoc] = useState<{ doc: DocumentRecord; tx?: Transaction } | null>(null);
+  const [docToDelete, setDocToDelete] = useState<DocumentRecord | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const receipts = useLiveQuery(
     () => db.documents.where('documentType').equals('receipt').reverse().sortBy('uploadDate'),
@@ -302,13 +324,18 @@ export const ReceiptScannerPage: React.FC = () => {
     setCurrentPage('add-transaction');
   };
 
-  const handleDelete = async (doc: DocumentRecord) => {
-    if (!doc.id) return;
+  const confirmDelete = async () => {
+    if (!docToDelete?.id) return;
+    setIsDeleting(true);
     try {
-      await db.documents.delete(doc.id);
+      await db.documents.delete(docToDelete.id);
       toast.success('Receipt deleted');
-    } catch {
+      setDocToDelete(null);
+    } catch (err) {
+      console.error('Failed to delete receipt:', err);
       toast.error('Failed to delete receipt');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -471,7 +498,7 @@ export const ReceiptScannerPage: React.FC = () => {
                 tx={doc.linkedTransactionId ? txById.get(doc.linkedTransactionId) : undefined}
                 currency={currency}
                 onView={() => setViewingDoc({ doc, tx: doc.linkedTransactionId ? txById.get(doc.linkedTransactionId) : undefined })}
-                onDelete={() => handleDelete(doc)}
+                onDelete={() => setDocToDelete(doc)}
               />
             ))}
           </div>
@@ -496,6 +523,17 @@ export const ReceiptScannerPage: React.FC = () => {
           onClose={() => setViewingDoc(null)}
         />
       )}
+
+      {/* Delete confirmation modal */}
+      <DeleteConfirmModal
+        isOpen={!!docToDelete}
+        title="Delete Receipt"
+        message="Are you sure you want to delete this bill/receipt? This action cannot be undone."
+        itemName={docToDelete?.metadata?.merchantName || docToDelete?.fileName}
+        isLoading={isDeleting}
+        onConfirm={confirmDelete}
+        onCancel={() => setDocToDelete(null)}
+      />
     </CenteredLayout>
   );
 };
