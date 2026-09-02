@@ -23,6 +23,8 @@ import { formatLocalDate, parseDateInputValue, toLocalDateKey } from '@/lib/date
 import type { TaxComponent } from '@/types/receipt.types';
 import { formatCurrencyAmount } from '@/lib/currencyUtils';
 import { DocumentManagementService } from '@/services/documentManagementService';
+import { calculateTaxSummary } from '@/lib/taxService';
+import { useLiveQuery } from 'dexie-react-hooks';
 
 const CATEGORIES = {
  expense: Object.values(EXPENSE_CATEGORIES).map(cat => cat.name),
@@ -86,6 +88,7 @@ export const Transactions: React.FC = () => {
  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
  const [hasSyncedInitialDate, setHasSyncedInitialDate] = useState(false);
  const documentService = useMemo(() => new DocumentManagementService(), []);
+ const localDocuments = useLiveQuery(() => db.documents.toArray(), []) || [];
 
  const deferredSearch = useDeferredValue(searchQuery);
  const normalizedSearch = useMemo(() => deferredSearch.trim().toLowerCase(), [deferredSearch]);
@@ -131,45 +134,9 @@ export const Transactions: React.FC = () => {
  };
  }, [timeFilteredTransactions]);
 
- const taxStats = useMemo(() => {
- let totalTax = 0;
- let billCount = 0;
- const byCategory: Record<string, number> = {};
- const byType: Record<string, number> = {};
-
- for (const tx of timeFilteredTransactions) {
- if (tx.type !== 'expense') continue;
-
- const tax = parseMetadataNumber(tx.importMetadata?.['Tax Amount']);
- const taxBreakdown = parseTaxBreakdown(tx.importMetadata?.['Tax Breakdown']);
- const documentId = getDocumentIdFromTransaction(tx);
-
- if (documentId) {
- billCount += 1;
- }
-
- if (tax > 0) {
- totalTax += tax;
- const category = tx.category || 'Other';
- byCategory[category] = (byCategory[category] ?? 0) + tax;
- }
-
- for (const component of taxBreakdown) {
- byType[component.name] = (byType[component.name] ?? 0) + component.amount;
- }
- }
-
- const topCategories = Object.entries(byCategory).sort((a, b) => b[1] - a[1]).slice(0, 4);
- const topTaxTypes = Object.entries(byType).sort((a, b) => b[1] - a[1]).slice(0, 4);
-
- return {
- totalTax,
- billCount,
- topCategories,
- topTaxTypes,
- hasTaxData: totalTax > 0 || billCount > 0,
- };
- }, [timeFilteredTransactions]);
+ const taxSummary = useMemo(() => {
+ return calculateTaxSummary(transactions, localDocuments);
+ }, [transactions, localDocuments]);
 
  const formatCurrency = (amount: number) => formatCurrencyAmount(amount, currency);
 
@@ -502,66 +469,44 @@ export const Transactions: React.FC = () => {
  </Card>
  </div>
 
- {/* Tax Summary Card */}
- {taxStats.hasTaxData ? (
- <div className="rounded-2xl border border-orange-100 bg-gradient-to-br from-orange-50 to-amber-50 p-4 sm:p-6">
- <div className="flex items-center gap-2 mb-4">
- <div className="p-2 bg-orange-100 rounded-xl">
- <Layers size={16} className="text-orange-600" />
- </div>
- <div>
- <h3 className="text-sm font-bold text-orange-900">Tax Tracker</h3>
- <p className="text-xs text-orange-600">Taxes paid from scanned bills ({getPeriodLabel(timePeriod)})</p>
- </div>
- <div className="ml-auto text-right">
- <p className="text-xl font-bold text-orange-800">{formatCurrency(taxStats.totalTax)}</p>
- <p className="text-xs text-orange-500">{taxStats.billCount} bill{taxStats.billCount === 1 ? '' : 's'} attached</p>
- </div>
- </div>
- {taxStats.topCategories.length > 0 && (
- <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
- {taxStats.topCategories.map(([cat, amt]) => (
- <div key={cat} className="rounded-xl bg-white/60 border border-orange-100 px-3 py-2">
- <p className="text-xs font-semibold text-orange-700 truncate">{cat}</p>
- <p className="text-sm font-bold text-orange-900">{formatCurrency(amt)}</p>
- </div>
- ))}
- </div>
- )}
- {taxStats.topTaxTypes.length > 0 && (
- <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2">
- {taxStats.topTaxTypes.map(([name, amt]) => (
- <div key={name} className="rounded-xl bg-white/60 border border-orange-100 px-3 py-2">
- <p className="text-xs font-semibold text-orange-700 truncate">{name}</p>
- <p className="text-sm font-bold text-orange-900">{formatCurrency(amt)}</p>
- </div>
- ))}
- </div>
- )}
- <p className="text-xs text-orange-500 mt-3">
- Taxes are tracked from structured receipt metadata, including GST, VAT, and other components.
- </p>
- </div>
- ) : (
- <div className="rounded-2xl border border-dashed border-orange-200 bg-orange-50/40 p-4 sm:p-5 flex items-center gap-3 sm:gap-4">
- <div className="p-2.5 bg-orange-100 rounded-xl shrink-0">
- <Receipt size={18} className="text-orange-500" />
- </div>
- <div className="flex-1 min-w-0">
- <h3 className="text-sm font-bold text-orange-800">Tax Tracker</h3>
- <p className="text-xs text-orange-600 mt-0.5">
- Scan bills to automatically track GST, VAT, and other taxes paid per category.
- </p>
- </div>
- <button
- data-testid="transactions-tax-scan-bill-button"
- onClick={() => setShowScanModal(true)}
- className="shrink-0 flex items-center gap-1.5 rounded-xl bg-orange-500 px-3 py-2 text-xs font-bold text-white hover:bg-orange-600 transition-colors"
- >
- <Camera size={13} /> Scan Bill
- </button>
- </div>
- )}
+  {/* Tax Summary Card */}
+  <div className="rounded-2xl border border-orange-100 bg-gradient-to-br from-orange-50/80 via-amber-50/60 to-orange-50/40 p-4 sm:p-5 shadow-xs">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+      <div className="flex items-center gap-2.5">
+        <div className="p-2 bg-orange-500/10 text-orange-600 rounded-xl">
+          <Receipt size={18} />
+        </div>
+        <div>
+          <h3 className="text-sm font-bold text-slate-900">Tax Summary</h3>
+          <p className="text-xs text-slate-500">Taxes recorded across verified receipts & transactions</p>
+        </div>
+      </div>
+      <button
+        type="button"
+        onClick={() => setCurrentPage('receipt-scanner')}
+        className="inline-flex items-center gap-1.5 text-xs font-bold text-orange-700 hover:text-orange-900 bg-orange-100/70 hover:bg-orange-100 px-3 py-1.5 rounded-xl transition-colors cursor-pointer self-start sm:self-auto"
+      >
+        <Camera size={13} />
+        <span>Receipt Scanner</span>
+        <ChevronRight size={13} />
+      </button>
+    </div>
+
+    <div className="grid grid-cols-3 gap-2 sm:gap-3">
+      <div className="rounded-xl bg-white/80 border border-orange-100 p-2.5 sm:p-3">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">Total Tax</span>
+        <p className="text-sm sm:text-base font-black text-slate-900">{formatCurrency(taxSummary.totalTax)}</p>
+      </div>
+      <div className="rounded-xl bg-white/80 border border-orange-100 p-2.5 sm:p-3">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">This Week</span>
+        <p className="text-sm sm:text-base font-black text-orange-700">{formatCurrency(taxSummary.weeklyTax)}</p>
+      </div>
+      <div className="rounded-xl bg-white/80 border border-orange-100 p-2.5 sm:p-3">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">This Month</span>
+        <p className="text-sm sm:text-base font-black text-slate-900">{formatCurrency(taxSummary.monthlyTax)}</p>
+      </div>
+    </div>
+  </div>
 
  {/* Filters & Search */}
  <div className="flex flex-col gap-3 sm:gap-4">

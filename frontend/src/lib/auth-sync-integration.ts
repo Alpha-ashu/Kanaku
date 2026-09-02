@@ -1407,6 +1407,12 @@ export async function deduplicateLocalData() {
     await backfillRemoteIds(db.investments);
     await backfillRemoteIds(db.friends);
     await backfillRemoteIds(db.groupExpenses);
+    await backfillRemoteIds(db.toDoLists);
+    await backfillRemoteIds(db.toDoItems);
+    await backfillRemoteIds(db.budgets);
+    await backfillRemoteIds(db.recurringTransactions);
+    await backfillRemoteIds(db.notifications);
+    await backfillRemoteIds(db.documents);
 
     const dedupTable = async (localTable: any, nameKeyFn: (row: any) => string) => {
       const all: any[] = await localTable.toArray();
@@ -1450,8 +1456,6 @@ export async function deduplicateLocalData() {
 
         if (nameKey) {
           if (seenByNameKey.has(nameKey)) {
-            // If the existing one has a remoteId/cloudId but this one doesn't, we definitely delete this one
-            // If both have/don't have, we delete this one because it's sorted after (older/less canonical)
             toDelete.add(lid);
             continue;
           }
@@ -1485,6 +1489,27 @@ export async function deduplicateLocalData() {
     );
     await dedupTable(db.groupExpenses, (r) =>
       `${normalizeText(r.name)}|${Number(r.totalAmount ?? 0)}|${toIsoString(r.date)?.slice(0, 10)}`
+    );
+    await dedupTable(db.toDoLists, (r) =>
+      `${normalizeText(r.name)}|${r.listType || 'individual'}`
+    );
+    await dedupTable(db.toDoItems, (r) =>
+      `${Number(r.listId)}|${normalizeText(r.title)}`
+    );
+    await dedupTable(db.budgets, (r) =>
+      `${normalizeText(r.category)}|${normalizeText(r.period)}`
+    );
+    await dedupTable(db.recurringTransactions, (r) =>
+      `${normalizeText(r.name)}|${r.type}|${Number(r.amount ?? 0)}|${normalizeText(r.category)}`
+    );
+    await dedupTable(db.notifications, (r) =>
+      `${r.type}|${normalizeText(r.title)}|${normalizeText(r.message)}`
+    );
+    await dedupTable(db.smsTransactions, (r) =>
+      `${normalizeText(r.body)}|${toIsoString(r.date)}|${Number(r.amount ?? 0)}`
+    );
+    await dedupTable(db.documents, (r) =>
+      `${normalizeText(r.fileName)}|${r.documentType}|${Number(r.fileSize ?? 0)}`
     );
 
     // Rebuild account balances from openingBalance + all surviving transactions

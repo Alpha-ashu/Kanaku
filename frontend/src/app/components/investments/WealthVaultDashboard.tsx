@@ -65,7 +65,9 @@ function getMetalWeight(asset: WealthAsset): number {
 }
 
 function getOwnershipTag(asset: WealthAsset): OwnershipTag {
-  return asset.metadata?.ownershipTag ?? 'self';
+  const tag = asset.metadata?.ownershipTag;
+  if (tag === 'self' || tag === 'inherited' || tag === 'gifted') return tag;
+  return 'self';
 }
 
 function getLockerName(asset: WealthAsset): string {
@@ -546,10 +548,10 @@ export const WealthVaultDashboard: React.FC<{ onAddAsset?: () => void }> = ({ on
           </p>
           <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden divide-y divide-gray-100">
             {physicalMetals.map((asset) => {
-              const metalType = asset.assetType as PhysicalAssetType;
+              const metalType = (asset.assetType as PhysicalAssetType) || 'gold';
               const accent = METAL_ACCENTS[metalType] ?? METAL_ACCENTS.gold;
               const ownershipTag = getOwnershipTag(asset);
-              const badge = OWNERSHIP_BADGE[ownershipTag];
+              const badge = OWNERSHIP_BADGE[ownershipTag] || OWNERSHIP_BADGE.self;
               const weightGrams = getMetalWeight(asset);
               const pricePerGram = getMetalPriceInTarget(metalType);
               const liveVal = weightGrams > 0 ? weightGrams * pricePerGram : asset.currentValue;
@@ -622,7 +624,7 @@ export const WealthVaultDashboard: React.FC<{ onAddAsset?: () => void }> = ({ on
                   <div className="flex flex-wrap gap-1 mt-3">
                     {assets.slice(0, 2).map(a => (
                       <span key={a.id} className="text-[9px] font-bold px-2 py-0.5 bg-gray-50 border border-gray-100 rounded text-gray-600">
-                        {METAL_ACCENTS[a.assetType as PhysicalAssetType]?.emoji ?? '📦'} {a.assetName.split(' ').slice(0, 2).join(' ')}
+                        {METAL_ACCENTS[a.assetType as PhysicalAssetType]?.emoji ?? '📦'} {(a.assetName || 'Asset').split(' ').slice(0, 2).join(' ')}
                       </span>
                     ))}
                     {assets.length > 2 && (

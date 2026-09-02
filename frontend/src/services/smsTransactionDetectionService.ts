@@ -592,6 +592,13 @@ export const markSmsTransactionImported = async (id: number, linkedTransactionId
   });
 };
 
+export const updateSmsTransactionDirection = async (id: number, direction: 'expense' | 'income' | 'transfer' | string) => {
+  await db.smsTransactions.update(id, {
+    transactionType: direction === 'income' ? 'income' : 'expense',
+    updatedAt: new Date(),
+  });
+};
+
 export const primeSmsTransactionDraft = async (id: number) => {
   const record = await db.smsTransactions.get(id);
   if (!record?.id) return null;

@@ -24,8 +24,10 @@ import { motion } from 'framer-motion';
 import { downloadFile, shareFile } from '@/lib/download';
 import { formatLocalDate, parseDateInputValue, toLocalDateKey } from '@/lib/dateUtils';
 import { buildStatementReportInput, buildStatementReportPdf } from '@/lib/statementReportPdf';
-import { AIInsightsCard } from '@/app/components/shared/AIInsightsCard';
 import { formatCurrencyAmount } from '@/lib/currencyUtils';
+import { calculateAccountTotalBalance, calculateNetWorth } from '@/lib/financialMath';
+import { isClosedInvestment } from '@/lib/investmentUtils';
+import { AIInsightsCard } from '@/app/components/shared/AIInsightsCard';
 
 const chartColors = ['#2563EB', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#22C55E', '#0EA5E9', '#F97316'];
 
@@ -198,6 +200,32 @@ export const Reports: React.FC = () => {
  totalInvested,
  };
  }, [filteredTransactions, loans, goals, investments]);
+
+  const totalAccountBalance = useMemo(() => calculateAccountTotalBalance(accounts), [accounts]);
+    const totalInvestmentValue = useMemo(() => {
+    return investments
+      .filter((i) => !i.deletedAt && !isClosedInvestment(i))
+      .reduce((sum, i) => sum + (Number(i.currentValue ?? i.totalInvested ?? 0)), 0);
+  }, [investments]);
+
+  const totalBorrowed = useMemo(() => {
+    return loans.filter((l) => !l.deletedAt && (l.type === 'borrowed' || l.type === 'emi' || !l.type) && l.status === 'active')
+      .reduce((sum, l) => sum + Number(l.outstandingBalance ?? l.principalAmount ?? 0), 0);
+  }, [loans]);
+
+  const totalLent = useMemo(() => {
+    return loans.filter((l) => !l.deletedAt && l.type === 'lent' && l.status === 'active')
+      .reduce((sum, l) => sum + Number(l.outstandingBalance ?? l.principalAmount ?? 0), 0);
+  }, [loans]);
+
+  const authoritativeNetWorth = useMemo(() => {
+    return calculateNetWorth({
+      accountBalance: totalAccountBalance,
+      investmentValue: totalInvestmentValue,
+      totalLent: totalLent,
+      totalBorrowed: totalBorrowed,
+    });
+  }, [totalAccountBalance, totalInvestmentValue, totalLent, totalBorrowed]);
 
  const expenseBreakdown = useMemo(() => {
  const categories: Record<string, number> = {};
@@ -817,14 +845,9 @@ export const Reports: React.FC = () => {
  <div className="p-5 bg-black/5 rounded-2xl border border-black/10">
  <p className="text-xs text-gray-600 font-medium uppercase tracking-wide">Net Worth</p>
  <p className="text-2xl font-display font-bold text-gray-900 mt-2">
- {formatCurrency(
- accounts.reduce((sum, a) => sum + a.balance, 0) +
- summaryStats.totalGoalsProgress +
- summaryStats.totalInvested -
- summaryStats.totalDebt
- )}
+ {formatCurrency(authoritativeNetWorth)}
  </p>
- <p className="text-xs text-gray-500 mt-2">Includes assets, goals, investments, and liabilities.</p>
+ <p className="text-xs text-gray-500 mt-2">Authoritative calculation: Total Liquid Assets + Investments + Lent Loans - Outstanding Debt.</p>
  </div>
  </Card>
  </div>

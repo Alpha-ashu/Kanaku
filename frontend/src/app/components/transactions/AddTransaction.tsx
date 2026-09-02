@@ -31,6 +31,11 @@ import { SearchableDropdown } from '@/app/components/ui/SearchableDropdown';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { parseDateInputValue, toLocalDateKey } from '@/lib/dateUtils';
+import {
+  resolvePendingSmsTransactionDraft,
+  markSmsTransactionImported,
+  updateSmsTransactionDirection,
+} from '@/services/smsTransactionDetectionService';
 
 import { FloatingSaveBar } from '@/app/components/ui/FloatingSaveBar';
 
@@ -302,6 +307,7 @@ export function AddTransaction() {
  const [scannerMode, setScannerMode] = useState<'scan' | 'attachment' | null>(null);
  const [scanDocumentId, setScanDocumentId] = useState<number | null>(null);
  const [attachmentDocumentId, setAttachmentDocumentId] = useState<number | null>(null);
+ const [activeSmsTransactionId, setActiveSmsTransactionId] = useState<number | null>(null);
  const [amountStr, setAmountStr] = useState('');
  const [balanceError, setBalanceError] = useState<{ available: number; entered: number; accountName: string; currency: string } | null>(null);
  // pendingDuplicate holds a similar transaction found in the 24-hour window.
@@ -352,6 +358,74 @@ export function AddTransaction() {
   const [newCatName, setNewCatName] = useState('');
   const [newCatColor, setNewCatColor] = useState('#6366F1');
   const [isCreatingCategory, setIsCreatingCategory] = useState(false);
+
+  // Mount effect: Resolve pending SMS draft or pending Receipt scan
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadPendingDrafts() {
+      // 1. Check SMS transaction draft
+      try {
+        const smsDraft = await resolvePendingSmsTransactionDraft();
+        if (smsDraft && isMounted) {
+          setActiveSmsTransactionId(smsDraft.smsTransactionId);
+          setFormData((prev) => ({
+            ...prev,
+            type: smsDraft.type || 'expense',
+            amount: Number(smsDraft.amount) || 0,
+            accountId: (smsDraft.accountId && accounts.some((a) => a.id === smsDraft.accountId))
+              ? smsDraft.accountId
+              : prev.accountId,
+            category: smsDraft.category || prev.category,
+            subcategory: smsDraft.subcategory || '',
+            description: smsDraft.description || prev.description,
+            merchant: smsDraft.merchant || prev.merchant,
+            date: smsDraft.date || prev.date,
+          }));
+          if (smsDraft.amount) {
+            setAmountStr(String(smsDraft.amount));
+          }
+          toast.info('SMS Transaction Details Loaded');
+          return;
+        }
+      } catch (err) {
+        console.debug('Error resolving SMS draft:', err);
+      }
+
+      // 2. Check pending receipt scan
+      try {
+        const rawScan = localStorage.getItem('pendingReceiptScan');
+        if (rawScan && isMounted) {
+          localStorage.removeItem('pendingReceiptScan');
+          const scan = JSON.parse(rawScan);
+          const parsedAmount = Number(scan.amount || scan.extractedAmount || 0);
+          setFormData((prev) => ({
+            ...prev,
+            amount: parsedAmount || prev.amount,
+            merchant: scan.merchant || scan.merchantName || prev.merchant,
+            category: scan.category || prev.category,
+            date: scan.date ? (toLocalDateKey(scan.date) || prev.date) : prev.date,
+            description: scan.description || (scan.merchant ? `Bill at ${scan.merchant}` : prev.description),
+          }));
+          if (parsedAmount > 0) {
+            setAmountStr(String(parsedAmount));
+          }
+          if (scan.documentId) {
+            setScanDocumentId(Number(scan.documentId));
+          }
+          toast.info('Receipt Details Loaded');
+        }
+      } catch (err) {
+        console.debug('Error resolving receipt scan draft:', err);
+      }
+    }
+
+    void loadPendingDrafts();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [accounts]);
 
   const handleCreateCustomCategory = async () => {
     const name = newCatName.trim();
@@ -763,6 +837,10 @@ export function AddTransaction() {
  const linkedDocId = scanDocumentId ?? attachmentDocumentId;
 if (linkedDocId) {
  await new DocumentManagementService().linkTransaction(linkedDocId, result.id);
+ }
+ if (activeSmsTransactionId) {
+   await markSmsTransactionImported(activeSmsTransactionId, result.id);
+   await updateSmsTransactionDirection(activeSmsTransactionId, formData.type);
  }
  }
 

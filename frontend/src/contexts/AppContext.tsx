@@ -274,10 +274,17 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     });
   }, [rawAccounts, transactions, goalContributions, loanPayments]);
 
-  // Auto-seed local Dexie mock data for Budgets, Recurring Transactions, Notifications, Documents, and To-Dos if empty
+  // Auto-seed local Dexie sample data for demo/guest mode only if empty and unauthenticated
   useEffect(() => {
     async function populateMockDataIfEmpty() {
       try {
+        const hasAuthToken = typeof window !== 'undefined' && Boolean(localStorage.getItem('auth_token') || localStorage.getItem('user_id'));
+        const alreadySeeded = typeof window !== 'undefined' && localStorage.getItem('has_seeded_sample_data') === 'true';
+        if (hasAuthToken || alreadySeeded) {
+          return;
+        }
+        localStorage.setItem('has_seeded_sample_data', 'true');
+
         // 1. Budgets
         const budgetCount = await db.budgets.count();
         if (budgetCount === 0) {

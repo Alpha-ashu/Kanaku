@@ -189,24 +189,16 @@ export function hasDirectStockProvider(): boolean {
 
 export function getStockDataSetupHint(): string | null {
   if (!navigator.onLine) {
-    return 'You are offline. Live quotes will resume automatically once you reconnect.';
+    return 'You are offline. Live market quotes will resume automatically once you reconnect.';
   }
 
   if (hasDirectStockProvider()) {
     return null;
   }
 
-  if (isStockProxyDisabled()) {
-    return 'Stock proxy is disabled in this build. Add VITE_TWELVEDATA_API_KEY to frontend/.env.local for direct quotes.';
-  }
-
   const proxyCandidates = getStockProxyBases();
   if (proxyCandidates.length > 0 && proxyCandidates.every(base => !canUseProxy(base))) {
-    if (typeof window !== 'undefined' && window.location.protocol === 'https:' && !['localhost', '127.0.0.1'].includes(window.location.hostname)) {
-      return 'Live market data is temporarily unavailable. Please retry in a moment.';
-    }
-
-    return 'Start the backend with `npm run dev:backend` (or `npm run dev:full`) or add VITE_TWELVEDATA_API_KEY to frontend/.env.local.';
+    return 'Live market data is temporarily unavailable. Please retry in a moment.';
   }
 
   return null;

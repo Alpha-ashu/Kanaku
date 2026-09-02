@@ -4,11 +4,12 @@ import { useApp } from '@/contexts/AppContext';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { ReceiptScanner } from '@/app/components/transactions/ReceiptScanner';
 import { db, type DocumentRecord, type Transaction } from '@/lib/database';
-import { ScanLine, FileText, Receipt, Eye, Trash2, Plus, ImageOff, CheckCircle2, Clock, AlertCircle, Loader2, X } from 'lucide-react';
+import { ScanLine, FileText, Receipt, Eye, Trash2, Plus, ImageOff, CheckCircle2, Clock, AlertCircle, Loader2, X, Layers } from 'lucide-react';
 import { Button } from '@/app/components/ui/button';
 import { toast } from 'sonner';
 import { formatCurrencyAmount } from '@/lib/currencyUtils';
 import { cn } from '@/lib/utils';
+import { calculateTaxSummary } from '@/lib/taxService';
 
 type TabKey = 'all' | 'expense' | 'income' | 'transfer';
 
@@ -311,6 +312,10 @@ export const ReceiptScannerPage: React.FC = () => {
     }
   };
 
+  const taxSummary = useMemo(() => {
+    return calculateTaxSummary(transactions, receipts);
+  }, [transactions, receipts]);
+
   const counts: Record<TabKey, number> = useMemo(() => ({
     all: receipts.length,
     expense: receipts.filter(d => {
@@ -343,6 +348,68 @@ export const ReceiptScannerPage: React.FC = () => {
             <ScanLine size={16} />
             Scan / Add Bill
           </Button>
+        </div>
+
+        {/* Detailed Tax Tracker Section */}
+        <div className="rounded-2xl border border-orange-100 bg-gradient-to-br from-orange-50 via-amber-50 to-orange-50/40 p-4 sm:p-6 shadow-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2.5 bg-orange-500/10 text-orange-600 rounded-xl">
+                <Layers size={20} />
+              </div>
+              <div>
+                <h2 className="text-base font-bold text-slate-900">Receipt Tax Tracker</h2>
+                <p className="text-xs text-slate-500">Live GST, VAT, and invoice tax intelligence extracted from scanned bills</p>
+              </div>
+            </div>
+            <div className="text-left sm:text-right">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Total Tax Extracted</span>
+              <p className="text-xl font-black text-orange-900">{formatCurrencyAmount(taxSummary.totalTax, currency)}</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-4">
+            <div className="rounded-xl bg-white/80 border border-orange-100 p-2.5 sm:p-3">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">Total Tax</span>
+              <p className="text-sm sm:text-base font-black text-slate-900">{formatCurrencyAmount(taxSummary.totalTax, currency)}</p>
+            </div>
+            <div className="rounded-xl bg-white/80 border border-orange-100 p-2.5 sm:p-3">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">This Week</span>
+              <p className="text-sm sm:text-base font-black text-orange-700">{formatCurrencyAmount(taxSummary.weeklyTax, currency)}</p>
+            </div>
+            <div className="rounded-xl bg-white/80 border border-orange-100 p-2.5 sm:p-3">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">This Month</span>
+              <p className="text-sm sm:text-base font-black text-orange-900">{formatCurrencyAmount(taxSummary.monthlyTax, currency)}</p>
+            </div>
+          </div>
+
+          {taxSummary.topCategories.length > 0 && (
+            <div className="space-y-1.5 mb-3">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-1">Top Tax Categories</span>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {taxSummary.topCategories.map(([cat, amt]) => (
+                  <div key={cat} className="rounded-xl bg-white/70 border border-orange-100 px-3 py-2">
+                    <p className="text-xs font-semibold text-slate-700 truncate">{cat}</p>
+                    <p className="text-sm font-bold text-orange-900">{formatCurrencyAmount(amt, currency)}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {taxSummary.topTaxTypes.length > 0 && (
+            <div className="space-y-1.5">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-1">Tax Components (GST / VAT / Cess)</span>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {taxSummary.topTaxTypes.map(([name, amt]) => (
+                  <div key={name} className="rounded-xl bg-white/70 border border-orange-100 px-3 py-2">
+                    <p className="text-xs font-semibold text-slate-700 truncate">{name}</p>
+                    <p className="text-sm font-bold text-orange-900">{formatCurrencyAmount(amt, currency)}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Tabs */}

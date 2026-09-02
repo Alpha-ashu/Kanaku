@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useApp } from '@/contexts/AppContext';
 import { Search, Bell, Menu, GripVertical, Wallet, LogOut, Receipt } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from '@/app/components/ui/sheet';
@@ -315,8 +316,6 @@ export const TopBar: React.FC = () => {
     setCurrentPage(itemId);
     setMobileMenuOpen(false);
   };
-
- // The header's top offset must clear the status bar, not just sit 12px below
  // the viewport edge. `top-3` alone put it underneath the iOS Dynamic Island /
  // notch and the Android status bar, so the logo and the menu button were
  // partly unreadable and partly untappable on every notched device. The
@@ -517,97 +516,97 @@ export const TopBar: React.FC = () => {
  return (
  <div key={type} className="px-2">
  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-3 mb-2">{groupLabel}</p>
- <div className="space-y-0.5">
- {matches.map((result, localIdx) => {
- const globalIdx = searchResults.indexOf(result);
- const Icon = result.icon;
- const isActive = globalIdx === activeResultIndex;
- return (
- <button data-testid={`top-bar-button-2-${result.id}`}
- key={result.id}
- onMouseEnter={() => setActiveResultIndex(globalIdx)}
- onMouseDown={(e) => {
- e.preventDefault();
- result.action();
- }}
- className={`w-full flex items-start gap-3 px-3 py-2.5 rounded-2xl transition-colors text-left ${
- isActive ? 'bg-slate-100' : 'hover:bg-slate-50'
- }`}
- >
- <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
- type === 'page' ? 'bg-indigo-50 text-indigo-600' :
- type === 'account' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'
- }`}>
- <Icon size={16} />
- </div>
- <div className="min-w-0 flex-1">
- <p className="text-xs font-bold text-slate-900 truncate leading-tight">{result.title}</p>
- <p className="text-[10px] text-slate-400 font-medium truncate mt-0.5 leading-tight">{result.description}</p>
- </div>
- </button>
- );
- })}
- </div>
- </div>
- );
- })}
- </div>
- ) : (
- <div className="py-8 text-center text-slate-400">
- <Search size={24} className="mx-auto mb-2 opacity-30" />
- <p className="text-xs font-bold text-slate-700">No results for "{debouncedSearchQuery}"</p>
- <p className="text-[10px] text-slate-400 font-medium mt-0.5">Try a different search term</p>
- </div>
- )}
- </div>
- )}
- </div>
- </div>
+                <div className="space-y-0.5">
+                  {matches.map((result) => {
+                    const globalIdx = searchResults.indexOf(result);
+                    const Icon = result.icon;
+                    const isActive = globalIdx === activeResultIndex;
+                    return (
+                      <button data-testid={`top-bar-button-2-${result.id}`}
+                        key={result.id}
+                        onMouseEnter={() => setActiveResultIndex(globalIdx)}
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          result.action();
+                        }}
+                        className={`w-full flex items-start gap-3 px-3 py-2.5 rounded-2xl transition-colors text-left ${
+                          isActive ? 'bg-slate-100' : 'hover:bg-slate-50'
+                        }`}
+                      >
+                        <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
+                          type === 'page' ? 'bg-indigo-50 text-indigo-600' :
+                          type === 'account' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'
+                        }`}>
+                          <Icon size={16} />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-bold text-slate-900 truncate leading-tight">{result.title}</p>
+                          <p className="text-[10px] text-slate-400 font-medium truncate mt-0.5 leading-tight">{result.description}</p>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="py-8 text-center text-slate-400">
+          <Search size={24} className="mx-auto mb-2 opacity-30" />
+          <p className="text-xs font-bold text-slate-700">No results for "{searchQuery}"</p>
+          <p className="text-[10px] text-slate-400 font-medium mt-0.5">Try a different search term</p>
+        </div>
+      )}
+    </div>
+  )}
+</div>
+</div>
 
- {/* Right: Bell and Profile */}
- <div className="flex items-center gap-3 lg:gap-4 flex-shrink-0">
- {/* Sync status pill - hidden on very small screens to save space */}
- <div className="hidden sm:block">
- <SyncStatusBar compact />
- </div>
+        {/* Right: Bell and Profile */}
+        <div className="flex items-center gap-3 lg:gap-4 flex-shrink-0">
+          {/* Sync status pill - hidden on very small screens to save space */}
+          <div className="hidden sm:block">
+            <SyncStatusBar compact />
+          </div>
 
- {/* Mobile Search Button */}
- <button data-testid="top-bar-search"
- onClick={() => setIsMobileSearchOpen(true)}
- className="md:hidden rounded-xl bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 shadow-sm w-10 h-10 shrink-0 flex items-center justify-center transition-colors"
- aria-label="Search"
- >
- <Search size={20} />
- </button>
+          {/* Mobile Search Button */}
+          <button data-testid="top-bar-search"
+            onClick={() => setIsMobileSearchOpen(true)}
+            className="md:hidden rounded-xl bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 shadow-sm w-10 h-10 shrink-0 flex items-center justify-center transition-colors cursor-pointer"
+            aria-label="Search"
+          >
+            <Search size={20} />
+          </button>
 
- {/* Notification Bell */}
- {visibleFeatures?.notifications !== false && (
- <motion.button data-testid="top-bar-button-3"
- whileTap={{ scale: 0.95 }}
- onClick={handleNotificationClick}
- aria-label="Notifications"
- className="relative rounded-xl bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 shadow-sm w-10 h-10 shrink-0 flex items-center justify-center transition-colors"
- >
- <Bell size={20} />
- {/* Unread Badge */}
- {unreadNotificationsCount > 0 && (
- <motion.div
- initial={{ scale: 0 }}
- animate={{ scale: 1 }}
- className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 rounded-full border-2 border-white shadow-sm flex items-center justify-center"
- />
- )}
- </motion.button>
- )}
+          {/* Notification Bell */}
+          {visibleFeatures?.notifications !== false && (
+            <motion.button data-testid="top-bar-button-3"
+              whileTap={{ scale: 0.95 }}
+              onClick={handleNotificationClick}
+              aria-label="Notifications"
+              className="relative rounded-xl bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 shadow-sm w-10 h-10 shrink-0 flex items-center justify-center transition-colors cursor-pointer"
+            >
+              <Bell size={20} />
+              {/* Unread Badge */}
+              {unreadNotificationsCount > 0 && (
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 rounded-full border-2 border-white shadow-sm flex items-center justify-center"
+                />
+              )}
+            </motion.button>
+          )}
 
- {/* Profile Avatar */}
- {visibleFeatures?.userProfile !== false && (
- <motion.button data-testid="top-bar-button-4"
- whileTap={{ scale: 0.95 }}
- onClick={handleProfileClick}
- aria-label="User profile"
- className="w-10 h-10 rounded-xl bg-gray-200 overflow-hidden shadow-sm shrink-0 hover:shadow-md transition-shadow flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-bold text-sm"
- >
+          {/* Profile Avatar */}
+          {visibleFeatures?.userProfile !== false && (
+            <motion.button data-testid="top-bar-button-4"
+              whileTap={{ scale: 0.95 }}
+              onClick={handleProfileClick}
+              aria-label="User profile"
+              className="w-10 h-10 rounded-xl bg-gray-200 overflow-hidden shadow-sm shrink-0 hover:shadow-md transition-shadow flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-bold text-sm cursor-pointer"
+            >
               {(() => {
                 let initials = 'U';
                 try {
@@ -650,103 +649,102 @@ export const TopBar: React.FC = () => {
                   </>
                 );
               })()}
- </motion.button>
- )}
- </div>
- </div>
+            </motion.button>
+          )}
+        </div>
+      </div>
 
- {/* Mobile Fullscreen Search Sheet */}
- {isMobileSearchOpen && (
-    <div className="fixed inset-0 bg-white dark:bg-slate-900 z-[100] flex flex-col animate-in fade-in duration-200 text-slate-900 dark:text-slate-100 pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)]">
- {/* inset-0 starts this sheet at the true viewport top, which on a notched
-     device is behind the status bar — the search field and its Cancel button
-     ended up under the clock. Pad by the insets so the sheet's own content
-     starts below them. */}
- <div className="flex items-center gap-3 p-4 border-b border-slate-100">
- <Search className="text-slate-400 w-5 h-5" />
- <input data-testid="top-bar-search-transactions-assets-2"
- autoFocus
- type="text"
- id="topbar-search-mobile"
- name="topbar-search-mobile"
- value={searchQuery}
- onChange={(e) => setSearchQuery(e.target.value)}
- placeholder="Search transactions, assets..."
- className="flex-1 bg-slate-50 border-none rounded-xl h-11 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-slate-100 font-semibold text-slate-900"
- />
- <button data-testid="top-bar-cancel"
- onClick={() => {
- setIsMobileSearchOpen(false);
- setSearchQuery('');
- }}
- className="text-xs font-black uppercase text-slate-500 hover:text-slate-900 px-2"
- >
- Cancel
- </button>
- </div>
- 
- <div className="flex-1 overflow-y-auto p-4 space-y-6 scrollbar-hide" style={{ paddingBottom: 'calc(var(--bottom-reserved-space) + 8px)' }}>
- {searchQuery.trim() ? (
- searchResults.length > 0 ? (
- <div className="space-y-6">
- {['page', 'account', 'transaction'].map((type) => {
- const matches = searchResults.filter(r => r.type === type);
- if (matches.length === 0) return null;
- 
- const groupLabel = {
- page: 'Navigation & Tools',
- account: 'Assets & Accounts',
- transaction: 'Recent Transactions'
- }[type as 'page' | 'account' | 'transaction'];
+      {/* Mobile Fullscreen Search Sheet Portalized to document.body */}
+      {isMobileSearchOpen && typeof document !== 'undefined' && createPortal(
+        <div className="fixed inset-0 bg-white dark:bg-slate-900 z-[9999] flex flex-col animate-in fade-in duration-200 text-slate-900 dark:text-slate-100 pointer-events-auto h-[100dvh] w-screen overflow-hidden pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)]">
+          <div className="flex items-center gap-3 p-4 border-b border-slate-100 bg-white dark:bg-slate-900 shrink-0">
+            <Search className="text-slate-400 w-5 h-5 shrink-0" />
+            <input data-testid="top-bar-search-transactions-assets-2"
+              autoFocus
+              type="text"
+              id="topbar-search-mobile"
+              name="topbar-search-mobile"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search transactions, assets..."
+              className="flex-1 bg-slate-50 border-none rounded-xl h-11 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-slate-100 font-semibold text-slate-900 dark:text-slate-100 dark:bg-slate-800"
+            />
+            <button data-testid="top-bar-cancel"
+              onClick={() => {
+                setIsMobileSearchOpen(false);
+                setSearchQuery('');
+              }}
+              className="text-xs font-black uppercase text-slate-500 hover:text-slate-900 dark:hover:text-white px-2 cursor-pointer shrink-0"
+            >
+              Cancel
+            </button>
+          </div>
+          
+          <div className="flex-1 overflow-y-auto p-4 space-y-6 scrollbar-hide bg-slate-50/50 dark:bg-slate-950/50" style={{ paddingBottom: 'calc(var(--bottom-reserved-space) + 16px)' }}>
+            {searchQuery.trim() ? (
+              searchResults.length > 0 ? (
+                <div className="space-y-6">
+                  {['page', 'account', 'transaction'].map((type) => {
+                    const matches = searchResults.filter(r => r.type === type);
+                    if (matches.length === 0) return null;
+                    
+                    const groupLabel = {
+                      page: 'Navigation & Tools',
+                      account: 'Assets & Accounts',
+                      transaction: 'Recent Transactions'
+                    }[type as 'page' | 'account' | 'transaction'];
 
- return (
- <div key={type} className="space-y-2">
- <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">{groupLabel}</p>
- <div className="space-y-1 bg-white rounded-3xl p-2 border border-slate-100/50">
- {matches.map((result) => {
- const Icon = result.icon;
- return (
- <button data-testid={`top-bar-button-5-${result.id}`}
- key={result.id}
- onClick={result.action}
- className="w-full flex items-start gap-3.5 px-3 py-3 hover:bg-slate-100/50 active:bg-slate-100 rounded-2xl transition-colors text-left"
- >
- <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
- type === 'page' ? 'bg-indigo-50 text-indigo-600' :
- type === 'account' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'
- }`}>
- <Icon size={18} />
- </div>
- <div className="min-w-0 flex-1">
- <p className="text-sm font-bold text-slate-900 truncate">{result.title}</p>
- <p className="text-xs text-slate-400 font-medium truncate mt-0.5">{result.description}</p>
- </div>
- </button>
- );
- })}
- </div>
- </div>
- );
- })}
- </div>
- ) : (
- <div className="py-20 text-center text-slate-400">
- <Search size={32} className="mx-auto mb-3 opacity-30" />
- <p className="text-sm font-bold text-slate-900">No matches found</p>
- <p className="text-xs text-slate-400 font-medium mt-1">Try searching for something else</p>
- </div>
- )
- ) : (
- <div className="py-20 text-center text-slate-400">
- <Search size={32} className="mx-auto mb-3 opacity-30 animate-pulse text-indigo-500" />
- <p className="text-sm font-bold text-slate-900">Search anything in KANAKU</p>
- <p className="text-xs text-slate-400 font-medium mt-1">Type matching words for accounts, transactions, or pages</p>
- </div>
- )}
- </div>
- </div>
- )}
- </header>
- );
+                    return (
+                      <div key={type} className="space-y-2">
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">{groupLabel}</p>
+                        <div className="space-y-1 bg-white dark:bg-slate-900 rounded-3xl p-2 border border-slate-100 dark:border-slate-800 shadow-xs">
+                          {matches.map((result) => {
+                            const Icon = result.icon;
+                            return (
+                              <button data-testid={`top-bar-button-5-${result.id}`}
+                                key={result.id}
+                                onClick={() => {
+                                  setIsMobileSearchOpen(false);
+                                  result.action();
+                                }}
+                                className="w-full flex items-start gap-3.5 px-3 py-3 hover:bg-slate-100/60 dark:hover:bg-slate-800/60 active:bg-slate-100 rounded-2xl transition-colors text-left cursor-pointer"
+                              >
+                                <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                                  type === 'page' ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400' :
+                                  type === 'account' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-400' : 'bg-rose-50 text-rose-600 dark:bg-rose-950 dark:text-rose-400'
+                                }`}>
+                                  <Icon size={18} />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <p className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">{result.title}</p>
+                                  <p className="text-xs text-slate-400 font-medium truncate mt-0.5">{result.description}</p>
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="py-20 text-center text-slate-400">
+                  <Search size={32} className="mx-auto mb-3 opacity-30" />
+                  <p className="text-sm font-bold text-slate-900 dark:text-slate-100">No matches found</p>
+                  <p className="text-xs text-slate-400 font-medium mt-1">Try searching for something else</p>
+                </div>
+              )
+            ) : (
+              <div className="py-20 text-center text-slate-400">
+                <Search size={32} className="mx-auto mb-3 opacity-30 animate-pulse text-indigo-500" />
+                <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Search anything in KANAKU</p>
+                <p className="text-xs text-slate-400 font-medium mt-1">Type matching words for accounts, transactions, or pages</p>
+              </div>
+            )}
+          </div>
+        </div>,
+        document.body
+      )}
+    </header>
+  );
 };
-

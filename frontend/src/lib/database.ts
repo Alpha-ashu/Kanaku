@@ -475,6 +475,7 @@ export interface DocumentRecord {
   metadata?: Record<string, string>;
   createdAt: Date;
   updatedAt?: Date;
+  deletedAt?: Date;
 }
 
 export interface SmsDetectedTransaction {

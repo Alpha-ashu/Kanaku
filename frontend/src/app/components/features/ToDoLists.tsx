@@ -70,9 +70,19 @@ export const ToDoLists: React.FC = () => {
         ? await db.toDoLists.filter(list => sharedListIds.includes(list.id!) && list.ownerId !== currentUserId && list.ownerId !== 'user-default').toArray()
         : [];
       const combined = [...owned, ...shared];
-      const uniqueMap = new Map<number, ToDoList>();
-      combined.forEach(list => { if (list.id !== undefined) uniqueMap.set(list.id, list); });
-      return Array.from(uniqueMap.values());
+      const uniqueById = new Map<number, ToDoList>();
+      const seenByName = new Map<string, ToDoList>();
+
+      combined.forEach(list => {
+        if (list.id !== undefined) {
+          const key = (list.name || '').trim().toLowerCase();
+          if (!seenByName.has(key)) {
+            seenByName.set(key, list);
+            uniqueById.set(list.id, list);
+          }
+        }
+      });
+      return Array.from(uniqueById.values());
     },
     [currentUserId]
   ) || [];
