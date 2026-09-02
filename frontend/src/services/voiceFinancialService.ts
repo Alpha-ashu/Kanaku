@@ -111,7 +111,10 @@ function extractAmount(text: string): number | undefined {
     const match = text.match(pattern);
     if (match) {
       let val = parseFloat(match[1].replace(/,/g, ''));
-      if (/k|thousand|hazaar|hazar/i.test(match[0])) val *= 1000;
+      // Use k(?!\w) so the bare "k" shorthand (e.g. "5k", "10 K") matches but
+      // the 'k' inside compound words like "lakh" / "lakh" does NOT — without the
+      // lookahead "1 lakh" incorrectly multiplied by ×1000 then ×100000 = 10^8.
+      if (/k(?!\w)|thousand|hazaar|hazar/i.test(match[0])) val *= 1000;
       if (/lakh|lac/i.test(match[0])) val *= 100000;
       if (/cr|crore/i.test(match[0])) val *= 10000000;
       return val;
