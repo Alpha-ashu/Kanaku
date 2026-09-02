@@ -60,6 +60,8 @@ describe('BILLS SYNC & CLOUD STORAGE ARCHITECTURE', () => {
       where: { id: accountAId },
       data: { balance: 50000 },
     });
+    // Clean up any test bills from previous runs
+    await prisma.expenseBill.deleteMany({ where: { userId: userAId } });
   });
 
   afterAll(async () => {
@@ -76,7 +78,7 @@ describe('BILLS SYNC & CLOUD STORAGE ARCHITECTURE', () => {
 
   // 1. Upload & DB Persistence
   it('1. Uploads file, persists in storage and creates canonical ExpenseBill in DB with userId and sha256', async () => {
-    const samplePdf = Buffer.from('%PDF-1.4\n1 0 obj<</Type/Catalog>>endobj\nxref\n0 1\n0000000000 65535 f\ntrailer<</Size 1/Root 1 0 R>>\nstartxref\n49\n%%EOF');
+    const samplePdf = Buffer.from('%PDF-1.4\n1 0 obj<</Type/Catalog>>endobj\nxref\n0 1\n0000000000 65535 f\ntrailer<</Size 1/Root 1 0 R>>\nstartxref\n49\n%%EOF\n% medical_invoice_parity_' + Date.now());
 
     const res = await request(app)
       .post(`${API}/bills`)
@@ -106,12 +108,19 @@ describe('BILLS SYNC & CLOUD STORAGE ARCHITECTURE', () => {
 
   // 2. Idempotent Deduplication
   it('2. Idempotently returns existing bill without duplicate DB rows when identical buffer is uploaded again', async () => {
-    const samplePdf = Buffer.from('%PDF-1.4\n1 0 obj<</Type/Catalog>>endobj\nxref\n0 1\n0000000000 65535 f\ntrailer<</Size 1/Root 1 0 R>>\nstartxref\n49\n%%EOF');
+    const dbBill = await prisma.expenseBill.findUnique({ where: { id: uploadedBillId } });
+    expect(dbBill).not.toBeNull();
+    const existingSha = dbBill?.sha256;
+
+    // Re-upload same buffer
+    const { downloadBuffer } = await import('../../../../backend/src/utils/storage');
+    const downloaded = await downloadBuffer(dbBill!.storagePath);
+    expect(downloaded?.buffer).toBeDefined();
 
     const res = await request(app)
       .post(`${API}/bills`)
       .set('Authorization', `Bearer ${tokenA}`)
-      .attach('file', samplePdf, {
+      .attach('file', downloaded!.buffer, {
         filename: 'medical_invoice_copy.pdf',
         contentType: 'application/pdf',
       });
@@ -287,9 +296,9 @@ describe('BILLS SYNC & CLOUD STORAGE ARCHITECTURE', () => {
 
   // 9. Multi-Category File Support: PNG bill, JPG receipt, PDF statement
   it('9. Supports all required file categories: PNG, JPG, PDF with accurate metadata', async () => {
-    const pngBuf = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=', 'base64');
-    const jpgBuf = Buffer.from('/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=', 'base64');
-    const pdfBuf = Buffer.from('%PDF-1.4\n1 0 obj<</Type/Catalog>>endobj\nxref\n0 1\n0000000000 65535 f\ntrailer<</Size 1/Root 1 0 R>>\nstartxref\n49\n%%EOF\n% sbi_statement');
+    const pngBuf = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAACXBIWXMAAAPoAAAD6AG1e1JrAAAAFklEQVQYlWNgaPj/nyjMMKqwgZ7BAwDw1Pk5b+rh0wAAAABJRU5ErkJggg==', 'base64');
+    const jpgBuf = Buffer.from('/9j/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAKAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAf/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAABgj/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABykX//Z', 'base64');
+    const pdfBuf = Buffer.from('%PDF-1.4\n1 0 obj<</Type/Catalog>>endobj\nxref\n0 1\n0000000000 65535 f\ntrailer<</Size 1/Root 1 0 R>>\nstartxref\n49\n%%EOF\n% sbi_statement_' + Date.now());
 
     const [pngRes, jpgRes, pdfRes] = await Promise.all([
       request(app)
