@@ -204,15 +204,20 @@ function useVoiceEngine() {
   const [state, dispatch] = useReducer(reducer, init);
   const recRef = useRef<SpeechSession | null>(null);
   const transcriptRef = useRef('');
+  const stopTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Guards against processing the same utterance twice.
-  //
-  // Stopping fires two completion paths: the engine's own end event (onEnd below)
-  // and stopListening's 300ms safety-net timer. Both call processTranscript, so a
-  // single "stop" used to run the parse twice — two AI round-trips against a Gemini
-  // free tier that already 429s easily, and two Command Center opens over one
-  // utterance. Racy on web (whichever fired first); deterministic on native, where
-  // the adapter always emits onEnd.
   const processedRef = useRef(false);
+
+  // Unmount cleanup
+  useEffect(() => {
+    return () => {
+      if (stopTimeoutRef.current) clearTimeout(stopTimeoutRef.current);
+      if (recRef.current) {
+        void recRef.current.stop().catch(() => undefined);
+        recRef.current = null;
+      }
+    };
+  }, []);
 
   const processTranscript = useCallback(async (text: string) => {
     if (processedRef.current) return;
@@ -238,10 +243,33 @@ function useVoiceEngine() {
     }
   }, []);
 
+  const resetEngine = useCallback(() => {
+    if (stopTimeoutRef.current) {
+      clearTimeout(stopTimeoutRef.current);
+      stopTimeoutRef.current = null;
+    }
+    if (recRef.current) {
+      void recRef.current.stop().catch(() => undefined);
+      recRef.current = null;
+    }
+    processedRef.current = false;
+    transcriptRef.current = '';
+    dispatch({ type: 'RESET' });
+  }, []);
+
   const startListening = useCallback(async () => {
+    if (stopTimeoutRef.current) {
+      clearTimeout(stopTimeoutRef.current);
+      stopTimeoutRef.current = null;
+    }
+
+    if (recRef.current) {
+      void recRef.current.stop().catch(() => undefined);
+      recRef.current = null;
+    }
+
     // Engine selection lives in the adapter: native SpeechRecognizer/SFSpeechRecognizer
-    // on device, Web Speech API in the browser. Neither exists in a Capacitor WebView,
-    // which is why voice entry used to dead-end on mobile.
+    // on device, Web Speech API in the browser.
     if (!(await isSpeechRecognitionSupported())) {
       dispatch({
         type: 'SET_ERROR',
@@ -251,8 +279,7 @@ function useVoiceEngine() {
     }
 
     // On web the browser prompts here (and this also feeds the waveform). On native
-    // the adapter asks through the plugin, which covers iOS's separate speech
-    // entitlement as well as the microphone.
+    // the adapter asks through the plugin.
     if (!Capacitor.isNativePlatform()) {
       try {
         await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -267,32 +294,33 @@ function useVoiceEngine() {
     // New utterance — re-arm the once-only guard.
     processedRef.current = false;
 
-    const session = await startSpeechRecognition({
-      onPartial: (text) => dispatch({ type: 'SET_INTERIM', payload: text }),
-      onFinal: (text) => {
-        const next = `${transcriptRef.current} ${text}`.trim().replace(/\s+/g, ' ');
-        transcriptRef.current = next;
-        dispatch({ type: 'SET_TRANSCRIPT', payload: next });
-        dispatch({ type: 'SET_INTERIM', payload: '' });
-      },
-      onEnd: () => {
-        const val = transcriptRef.current.trim();
-        if (val) processTranscript(val);
-        else dispatch({ type: 'STOP_PROCESSING' });
-      },
-      onError: (reason, msg) => {
-        console.warn('[ASR] error:', reason, msg);
-        // A silent utterance is not worth an error banner — onEnd handles it.
-        if (reason === 'no-speech') return;
-        // Only the reasons the UI knows how to offer a fallback for are forwarded;
-        // anything else surfaces as a plain message.
-        const fallback: FallbackReason =
-          reason === 'network' || reason === 'denied' || reason === 'not-supported' ? reason : null;
-        dispatch({ type: 'SET_ERROR', payload: { msg, reason: fallback } });
-      },
-    });
+    try {
+      const session = await startSpeechRecognition({
+        onPartial: (text) => dispatch({ type: 'SET_INTERIM', payload: text }),
+        onFinal: (text) => {
+          const next = `${transcriptRef.current} ${text}`.trim().replace(/\s+/g, ' ');
+          transcriptRef.current = next;
+          dispatch({ type: 'SET_TRANSCRIPT', payload: next });
+          dispatch({ type: 'SET_INTERIM', payload: '' });
+        },
+        onEnd: () => {
+          const val = transcriptRef.current.trim();
+          if (val) processTranscript(val);
+          else dispatch({ type: 'STOP_PROCESSING' });
+        },
+        onError: (reason, msg) => {
+          console.warn('[ASR] error:', reason, msg);
+          if (reason === 'no-speech') return;
+          const fallback: FallbackReason =
+            reason === 'network' || reason === 'denied' || reason === 'not-supported' ? reason : null;
+          dispatch({ type: 'SET_ERROR', payload: { msg, reason: fallback } });
+        },
+      });
 
-    recRef.current = session;
+      recRef.current = session;
+    } catch (err: any) {
+      dispatch({ type: 'SET_ERROR', payload: { msg: err?.message || 'Failed to start voice recognition.' } });
+    }
   }, [processTranscript]);
 
   const stopListening = useCallback(() => {
@@ -300,10 +328,12 @@ function useVoiceEngine() {
     recRef.current = null;
     void session?.stop();
     dispatch({ type: 'STOP_LISTENING' });
-    setTimeout(() => {
+
+    if (stopTimeoutRef.current) clearTimeout(stopTimeoutRef.current);
+    stopTimeoutRef.current = setTimeout(() => {
       const val = transcriptRef.current.trim();
       if (val) processTranscript(val);
-    }, 300);
+    }, 250);
   }, [processTranscript]);
 
   const processManualInput = useCallback(() => {
@@ -312,14 +342,11 @@ function useVoiceEngine() {
     dispatch({ type: 'SET_TRANSCRIPT', payload: text });
     dispatch({ type: 'TOGGLE_MANUAL', payload: false });
     dispatch({ type: 'CLEAR_ERROR' });
-    // A deliberate submit is always a fresh utterance — re-arm the guard, or typing
-    // after a voice attempt (the exact fallback path when recognition fails) would
-    // be silently swallowed.
     processedRef.current = false;
     processTranscript(text);
   }, [state.manualInput, processTranscript]);
 
-  return { state, dispatch, startListening, stopListening, processManualInput };
+  return { state, dispatch, startListening, stopListening, resetEngine, processManualInput };
 }
 
 // ─── Status pill ──────────────────────────────────────────────────────────────
@@ -342,7 +369,7 @@ StatusPill.displayName = 'StatusPill';
 
 export function VoiceInput() {
   const { user } = useAuth();
-  const { state, dispatch, startListening, stopListening, processManualInput } = useVoiceEngine();
+  const { state, dispatch, startListening, stopListening, resetEngine, processManualInput } = useVoiceEngine();
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const isListening  = state.mode === 'listening';
   const isProcessing = state.mode === 'processing';
@@ -608,11 +635,14 @@ export function VoiceInput() {
             actions={state.actions}
             parser={state.parser}
             userId={user?.id}
-            onClose={() => dispatch({ type: 'SHOW_COMMAND_CENTER', payload: false })}
+            onClose={() => {
+              resetEngine();
+            }}
             onAddMore={() => {
-              dispatch({ type: 'SHOW_COMMAND_CENTER', payload: false });
-              dispatch({ type: 'SET_TRANSCRIPT', payload: '' });
-              startListening();
+              resetEngine();
+              setTimeout(() => {
+                void startListening();
+              }, 120);
             }}
           />
         )}

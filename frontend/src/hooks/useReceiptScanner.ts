@@ -20,9 +20,9 @@ export const useReceiptScanner = () => {
   const [onDeviceOnly, setOnDeviceOnly] = useState<boolean>(() => {
     try {
       const stored = localStorage.getItem(RECEIPT_OCR_ON_DEVICE_ONLY_KEY);
-      return stored !== null ? stored === 'true' : true; // Default ON-DEVICE OCR to true
+      return stored !== null ? stored === 'true' : false; // Default to allowing cloud fallback for maximum compatibility
     } catch {
-      return true;
+      return false;
     }
   });
 
@@ -91,35 +91,24 @@ export const useReceiptScanner = () => {
 
       let result: ReceiptScanResult | null = null;
 
-      // 1. On-device OCR first — it is private and fast, and on a clean bill it
-      //    is all we need.
+      // 1. Try on-device OCR first (fast & local)
       try {
         result = await scanWithOnDeviceOcr();
       } catch (onDeviceErr: any) {
-        console.info('[ReceiptScanner] On-device OCR attempt error:', onDeviceErr?.message);
+        console.info('[ReceiptScanner] On-device OCR attempt error (falling back to cloud):', onDeviceErr?.message);
       }
 
-      // 2. Escalate on QUALITY, not on emptiness.
-      //
-      //    On-device OCR of a thermal receipt nearly always yields *an* amount,
-      //    so gating on `!result.amount` meant the cloud engine effectively
-      //    never ran: a bill whose merchant read as "SHREGQWRICKI" and whose
-      //    unreadable printed total was silently replaced by the sum of its
-      //    parts still counted as success. Escalating when the reading is
-      //    visibly degraded is what makes the better engine reachable.
+      // 2. If on-device produced no result OR weak quality, escalate to cloud OCR engine
       const quality = assessScanQuality(result);
-      if (!onDeviceOnly && quality.shouldEscalate) {
-        console.info('[ReceiptScanner] Local read is weak, asking the cloud engine:', quality.reasons.join(', '));
+      if (!result || (!onDeviceOnly && quality.shouldEscalate)) {
+        console.info('[ReceiptScanner] Local read missing or weak, attempting cloud OCR...');
         try {
           const cloudResult = await cloudOcrService.current.scanReceipt(selectedFile, (progress) => {
             setScanProgress(progress.progress);
             setScanStatus(progress.status);
           });
 
-          // Only take the cloud reading if it is actually better — a rate-limited
-          // backend can fall back to the same heuristics we just ran.
-          const cloudQuality = assessScanQuality(cloudResult);
-          if (cloudResult?.amount && cloudQuality.score >= quality.score) {
+          if (cloudResult && (cloudResult.amount || !result)) {
             result = cloudResult;
           }
         } catch (cloudError: any) {
@@ -127,14 +116,12 @@ export const useReceiptScanner = () => {
         }
       }
 
-      
       if (!result) {
+        toast.error('Could not clearly read the receipt. Please enter details manually.');
         return null;
       }
 
-      // A garbled merchant is worse than an empty one: the user cannot tell
-      // "SHREGQWRICKI" is a misread until they compare it against the bill,
-      // whereas an empty field visibly asks to be filled in.
+      // Clean up garbled text
       if (looksGarbled(result.merchantName)) {
         result = { ...result, merchantName: undefined };
       }

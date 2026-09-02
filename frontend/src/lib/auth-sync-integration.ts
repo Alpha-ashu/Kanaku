@@ -1705,10 +1705,14 @@ const mergeBackendTable = async (table: SyncedTableName, backendRows: any[], nex
       .filter(Boolean),
   );
 
-  const staleLocalIds = existingRows
-    .filter((row) => row.cloudId && !backendCloudIds.has(String(row.cloudId)))
-    .map((row) => Number(row.id))
-    .filter(Number.isFinite);
+  // Safe stale deletion: only delete local records if the server actually returned a valid non-empty set of records.
+  // If the backend returned [] due to network/server outage, never wipe local data.
+  const staleLocalIds = (backendRows.length > 0)
+    ? existingRows
+        .filter((row) => row.cloudId && !backendCloudIds.has(String(row.cloudId)))
+        .map((row) => Number(row.id))
+        .filter(Number.isFinite)
+    : [];
 
   const localTable: any = getLocalTable(table);
 
@@ -1922,7 +1926,7 @@ async function _syncUserDataFromBackendInner(
   }
 
   const expandedTables = expandTablesForSync(finalTablesToSync);
-  const mergeTargets = new Set<SyncedTableName>(finalTablesToSync);
+  const mergeTargets = new Set<SyncedTableName>(expandedTables);
   const shouldFetch = (table: SyncedTableName) => expandedTables.includes(table);
 
   const [
@@ -2315,44 +2319,57 @@ async function _syncUserDataFromBackendInner(
     });
 
     // PHASE 3: Map and Merge Transactions and To-Do Items/Shares (which depend on Accounts, Groups, and To-Do Lists)
-    const mappedTransactions = backendTransactions.map((transaction: any) => ({
-      id: resolveLocalBackendId(String(transaction.id), localTransactions, () =>
-        localTransactions.find((row) =>
-          !row.cloudId &&
-          row.type === transaction.type &&
-          Number(row.amount ?? 0) === Number(transaction.amount ?? 0) &&
-          normalizeText(row.category) === normalizeText(transaction.category) &&
-          normalizeText(row.description) === normalizeText(transaction.description) &&
-          sameInstant(row.date, transaction.date),
-        )
-      ),
-      cloudId: String(transaction.id),
-      type: transaction.type,
-      amount: Number(transaction.amount ?? 0),
-      accountId: accountCloudToLocal.get(String(transaction.accountId)) ?? 0,
-      category: transaction.category ?? 'Other',
-      subcategory: transaction.subcategory ?? undefined,
-      description: transaction.description ?? '',
-      merchant: transaction.merchant ?? undefined,
-      date: toDate(transaction.date) ?? new Date(),
-      tags: Array.isArray(transaction.tags) ? transaction.tags : undefined,
-      attachment: transaction.attachment ?? undefined,
-      transferToAccountId: transaction.transferToAccountId ? accountCloudToLocal.get(String(transaction.transferToAccountId)) : undefined,
-      transferType: transaction.transferType ?? undefined,
-      expenseMode: transaction.expenseMode ?? undefined,
-      groupExpenseId: transaction.groupExpenseId ? groupCloudToLocal.get(String(transaction.groupExpenseId)) : undefined,
-      groupName: transaction.groupName ?? undefined,
-      splitType: transaction.splitType ?? undefined,
-      importSource: transaction.importSource ?? undefined,
-      importMetadata: transaction.importMetadata ?? undefined,
-      originalCategory: transaction.originalCategory ?? undefined,
-      importedAt: toDate(transaction.importedAt),
-      createdAt: toDate(transaction.createdAt) ?? new Date(),
-      updatedAt: toDate(transaction.updatedAt),
-      deletedAt: toDate(transaction.deletedAt),
-      syncStatus: 'synced' as const,
-      version: transaction.version ?? undefined,
-    })).filter((transaction) => transaction.accountId > 0);
+    const mappedTransactions = backendTransactions.map((transaction: any) => {
+      let resolvedAccountId = accountCloudToLocal.get(String(transaction.accountId));
+      if (!resolvedAccountId) {
+        const matchedLocal = localAccounts.find((a: any) => String(a.cloudId) === String(transaction.accountId));
+        if (matchedLocal?.id) {
+          resolvedAccountId = Number(matchedLocal.id);
+          accountCloudToLocal.set(String(transaction.accountId), resolvedAccountId);
+        } else if (localAccounts.length > 0 && localAccounts[0].id) {
+          resolvedAccountId = Number(localAccounts[0].id);
+        }
+      }
+
+      return {
+        id: resolveLocalBackendId(String(transaction.id), localTransactions, () =>
+          localTransactions.find((row) =>
+            !row.cloudId &&
+            row.type === transaction.type &&
+            Number(row.amount ?? 0) === Number(transaction.amount ?? 0) &&
+            normalizeText(row.category) === normalizeText(transaction.category) &&
+            normalizeText(row.description) === normalizeText(transaction.description) &&
+            sameInstant(row.date, transaction.date),
+          )
+        ),
+        cloudId: String(transaction.id),
+        type: transaction.type,
+        amount: Number(transaction.amount ?? 0),
+        accountId: resolvedAccountId || 1,
+        category: transaction.category ?? 'Other',
+        subcategory: transaction.subcategory ?? undefined,
+        description: transaction.description ?? '',
+        merchant: transaction.merchant ?? undefined,
+        date: toDate(transaction.date) ?? new Date(),
+        tags: Array.isArray(transaction.tags) ? transaction.tags : undefined,
+        attachment: transaction.attachment ?? undefined,
+        transferToAccountId: transaction.transferToAccountId ? accountCloudToLocal.get(String(transaction.transferToAccountId)) : undefined,
+        transferType: transaction.transferType ?? undefined,
+        expenseMode: transaction.expenseMode ?? undefined,
+        groupExpenseId: transaction.groupExpenseId ? groupCloudToLocal.get(String(transaction.groupExpenseId)) : undefined,
+        groupName: transaction.groupName ?? undefined,
+        splitType: transaction.splitType ?? undefined,
+        importSource: transaction.importSource ?? undefined,
+        importMetadata: transaction.importMetadata ?? undefined,
+        originalCategory: transaction.originalCategory ?? undefined,
+        importedAt: toDate(transaction.importedAt),
+        createdAt: toDate(transaction.createdAt) ?? new Date(),
+        updatedAt: toDate(transaction.updatedAt),
+        deletedAt: toDate(transaction.deletedAt),
+        syncStatus: 'synced' as const,
+        version: transaction.version ?? undefined,
+      };
+    });
 
     const mappedTodoItems = backendTodoItems.map((item: any) => {
       const localListId = listCloudToLocal.get(String(item.listId));

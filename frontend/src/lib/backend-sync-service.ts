@@ -9,11 +9,11 @@
  */
 
 import { db } from './database';
-import { buildApiUrl, getConfiguredApiBase, shouldSkipOptionalBackendRequests } from './apiBase';
-import supabase from '@/utils/supabase/client';
-import { toast } from 'sonner';
+import { getConfiguredApiBase, shouldSkipOptionalBackendRequests } from './apiBase';
 import { TokenManager } from './api';
 import { backendService } from './backend-api';
+import { syncUserDataFromCloud } from './auth-sync-integration';
+import { toast } from 'sonner';
 
 export interface BackendSyncStatus {
   isOnline: boolean;
@@ -44,12 +44,12 @@ class BackendSyncService {
 
   private setupNetworkListeners() {
     window.addEventListener('online', () => {
-      console.info('[BackendSync] Back online  initiating backend sync.');
+      console.info('[BackendSync] Back online initiating backend sync.');
       this.syncWithBackend();
     });
 
     window.addEventListener('offline', () => {
-      console.info('[BackendSync] Offline  backend sync paused.');
+      console.info('[BackendSync] Offline backend sync paused.');
     });
   }
 
@@ -112,39 +112,15 @@ class BackendSyncService {
         }
       }
 
-      // Backend-managed auth: identity comes from the backend JWT (decoded above).
-      // No Supabase session fallback.
-
       if (!userObj || !accessToken) {
         console.warn(' Backend sync failed: User not authenticated');
         return false;
       }
 
-      const response = await fetch(buildApiUrl(this.apiBase, '/sync/pull'), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-        },
-        body: JSON.stringify({
-          deviceId: this.getDeviceId(),
-          lastSyncedAt: this.lastSyncTime?.toISOString(),
-        }),
-      });
+      // Canonical sync execution via auth-sync-integration
+      await syncUserDataFromCloud(userObj.id, undefined, true);
 
-      if (!response.ok) {
-        throw new Error(`Backend sync failed: ${response.statusText}`);
-      }
-
-      const syncData = await response.json();
-
-      // Process backend response
-      await this.processBackendSyncData(syncData.data);
-
-      // Self-heal: retry any friends that never got a cloudId because their
-      // original creation silently fell back to local-only storage (e.g. the
-      // backend was briefly unreachable). Best-effort — never blocks/fails
-      // the main sync.
+      // Self-heal: retry any friends that never got a cloudId
       backendService.retrySyncAllPendingFriends().catch(() => {});
 
       // Synchronize System Gating Control & Feature Flags

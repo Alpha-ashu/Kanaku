@@ -57,6 +57,7 @@ const isNative = (): boolean => {
  * listeners are global — see startNative().
  */
 let activeNativeSession: SpeechSession | null = null;
+let activeWebSession: SpeechSession | null = null;
 
 const getWebEngine = (): (new () => any) | null => {
   if (typeof window === 'undefined') return null;
@@ -212,7 +213,7 @@ const startNative = async (
   return session;
 };
 
-/** Web path — the original Web Speech API behaviour, unchanged. */
+/** Web path — the original Web Speech API behaviour with active session protection. */
 const startWeb = (callbacks: SpeechCallbacks, language: string): SpeechSession => {
   const Engine = getWebEngine();
   if (!Engine) {
@@ -221,11 +222,36 @@ const startWeb = (callbacks: SpeechCallbacks, language: string): SpeechSession =
     return { stop: async () => undefined };
   }
 
-  const recognition = new Engine();
+  // Teardown any previous active session before starting a new one
+  if (activeWebSession) {
+    void activeWebSession.stop().catch(() => undefined);
+    activeWebSession = null;
+  }
+
+  let finished = false;
+  let recognition: any = null;
+
+  try {
+    recognition = new Engine();
+  } catch (err) {
+    callbacks.onError('unknown', 'Could not initialize speech engine.');
+    callbacks.onEnd();
+    return { stop: async () => undefined };
+  }
+
   recognition.continuous = true;
   recognition.interimResults = true;
   recognition.lang = language;
   recognition.maxAlternatives = 1;
+
+  const finish = () => {
+    if (finished) return;
+    finished = true;
+    callbacks.onEnd();
+    if (activeWebSession === session) {
+      activeWebSession = null;
+    }
+  };
 
   recognition.onresult = (event: any) => {
     let interim = '';
@@ -254,21 +280,31 @@ const startWeb = (callbacks: SpeechCallbacks, language: string): SpeechSession =
       default:
         callbacks.onError('unknown', `Speech error: ${event.error}`);
     }
+    finish();
   };
 
-  recognition.onend = () => callbacks.onEnd();
+  recognition.onend = () => finish();
 
-  recognition.start();
+  try {
+    recognition.start();
+  } catch (err: any) {
+    console.warn('[Speech] Web recognition start error:', err);
+    finish();
+  }
 
-  return {
+  const session: SpeechSession = {
     stop: async () => {
       try {
         recognition.stop();
       } catch {
         /* already stopped */
       }
+      finish();
     },
   };
+
+  activeWebSession = session;
+  return session;
 };
 
 /**

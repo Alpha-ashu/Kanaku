@@ -291,11 +291,16 @@ const API_CODE_MESSAGES: Record<string, string> = {
   NOT_FOUND: 'We could not find what you were looking for.',
   DUPLICATE_ENTRY: 'This item already exists. Please use different values.',
   VALIDATION_ERROR: 'Some of your inputs look incorrect. Please review and try again.',
-  DATABASE_UNAVAILABLE: 'Our servers are temporarily unavailable. Please try again in a moment.',
+  DATABASE_UNAVAILABLE: 'Our servers are temporarily unavailable. Your changes are saved locally and will sync once connected.',
   NETWORK_ERROR: 'Check your internet connection and try again.',
   TIMEOUT_ERROR: 'The request took too long. Please try again.',
   RATE_LIMIT_EXCEEDED: 'You are doing that too fast. Please wait a moment.',
   INTERNAL_ERROR: 'Something went wrong on our end. Please try again later.',
+  VOICE_UNAVAILABLE: 'Voice Assistant is temporarily unavailable. Please try again.',
+  VOICE_PERMISSION_DENIED: 'Microphone access is needed for voice entry. Please enable it in your device settings.',
+  OCR_UNAVAILABLE: 'Receipt scanning is temporarily unavailable. Please try again or enter details manually.',
+  OCR_UNREADABLE: 'Could not clearly read the receipt. Please try again with a clearer image or enter details manually.',
+  SYNC_FAILED: 'Could not sync with the cloud right now. Your data is safely stored locally.',
 };
 
 /**
@@ -303,20 +308,51 @@ const API_CODE_MESSAGES: Record<string, string> = {
  * API errors (with status/code) are mapped through the friendly map.
  * Technical details are logged to console, never shown to users.
  */
-export function resolveUserMessage(error: unknown): string {
-  if (!error || typeof error !== 'object') {
+export function resolveUserMessage(error: unknown, category?: 'voice' | 'ocr' | 'sync' | 'auth' | 'transaction'): string {
+  if (!error) {
     return 'Something went wrong. Please try again.';
   }
 
-  const err = error as Record<string, unknown>;
+  const err = (typeof error === 'object' ? error : { message: String(error) }) as Record<string, unknown>;
 
-  // Log technical detail for developers (silent in production)
-  if (err.message || err.code || err.status) {
-    logger.error('[ErrorHandling] Caught error', {
-      message: err.message,
-      code: err.code,
-      status: err.status,
-    });
+  // Log full technical detail for developers
+  logger.error('[ErrorHandling] Developer Diagnostics:', {
+    category,
+    message: err.message,
+    code: err.code,
+    status: err.status,
+    stack: err.stack,
+    details: err.details,
+  });
+
+  // Category-specific overrides
+  if (category === 'voice') {
+    const msg = String(err.message || '').toLowerCase();
+    if (msg.includes('denied') || msg.includes('permission') || msg.includes('not-allowed')) {
+      return 'Microphone access is needed for voice entry. Please allow microphone access in settings.';
+    }
+    if (msg.includes('network') || msg.includes('offline')) {
+      return 'Voice recognition needs an active internet connection. Please check your connection.';
+    }
+    if (msg.includes('no speech') || msg.includes('no-speech') || msg.includes('not catch')) {
+      return 'Did not catch that. Please speak clearly and try again.';
+    }
+    return 'Voice Assistant is temporarily unavailable. Please try again or type your entry.';
+  }
+
+  if (category === 'ocr') {
+    const msg = String(err.message || '').toLowerCase();
+    if (msg.includes('size') || msg.includes('large')) {
+      return 'File size is too large. Please select an image under 15 MB.';
+    }
+    if (msg.includes('format') || msg.includes('type') || msg.includes('supported')) {
+      return 'Supported file formats: JPG, PNG, PDF, HEIC, or WEBP.';
+    }
+    return 'Receipt scanning is temporarily unavailable. Please try again with a clearer photo or enter details manually.';
+  }
+
+  if (category === 'sync') {
+    return 'Cloud sync is temporarily delayed. Your records are saved safely on this device and will sync automatically.';
   }
 
   // API code takes highest priority
@@ -331,14 +367,25 @@ export function resolveUserMessage(error: unknown): string {
 
   // Network / fetch errors
   const message = String(err.message || '').toLowerCase();
-  if (message.includes('failed to fetch') || message.includes('network')) {
+  if (message.includes('failed to fetch') || message.includes('network') || message.includes('econnrefused')) {
     return 'Check your internet connection and try again.';
   }
   if (message.includes('timeout') || message.includes('timed out') || message.includes('aborted')) {
     return 'The request took too long. Please try again.';
   }
 
-  return 'Something went wrong. Please try again.';
+  // If the error message is clean and doesn't look technical (no stack traces, HTTP codes, SQL, JSON, brackets), use it
+  const raw = String(err.message || '').trim();
+  if (
+    raw &&
+    raw.length < 120 &&
+    !/[{}[\]<>]/.test(raw) &&
+    !/(error code|status code|5\d{2}|4\d{2}|prisma|sql|dexie|pgrst|http|at\s+\w+\.js)/i.test(raw)
+  ) {
+    return raw;
+  }
+
+  return 'We could not complete that request right now. Please try again.';
 }
 
 // ==================== Error Boundary Utility ====================
