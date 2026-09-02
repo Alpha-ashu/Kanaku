@@ -202,7 +202,8 @@ const startNative = async (
     } else if (/network/i.test(message)) {
       callbacks.onError('network', 'Speech recognition needs a network connection right now.');
     } else {
-      callbacks.onError('unknown', message || 'Speech recognition failed.');
+      console.error('[Speech] Native recognition error:', error);
+      callbacks.onError('unknown', 'Voice Assistant is temporarily unavailable. Please try again.');
     }
     await finish();
   }
@@ -287,7 +288,8 @@ const startWeb = (callbacks: SpeechCallbacks, language: string): SpeechSession =
         callbacks.onError('no-speech', 'Did not catch that. Please try again.');
         break;
       default:
-        callbacks.onError('unknown', `Speech error: ${event.error}`);
+        console.warn('[Speech] Web recognition event error:', event.error);
+        callbacks.onError('unknown', 'Voice Assistant is temporarily unavailable. Please try again.');
     }
     finish();
   };

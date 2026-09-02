@@ -237,7 +237,11 @@ function useVoiceEngine() {
         });
       }
     } catch (err: any) {
-      dispatch({ type: 'SET_ERROR', payload: { msg: err.message || 'Processing failed.' } });
+      console.error('[VoiceInput] Failed to process voice transcript:', err);
+      dispatch({
+        type: 'SET_ERROR',
+        payload: { msg: 'Voice Assistant is temporarily unavailable. Please try again or type below.' },
+      });
     } finally {
       dispatch({ type: 'STOP_PROCESSING' });
     }
@@ -319,7 +323,11 @@ function useVoiceEngine() {
 
       recRef.current = session;
     } catch (err: any) {
-      dispatch({ type: 'SET_ERROR', payload: { msg: err?.message || 'Failed to start voice recognition.' } });
+      console.error('[VoiceInput] Failed to start voice session:', err);
+      dispatch({
+        type: 'SET_ERROR',
+        payload: { msg: 'Voice Assistant is temporarily unavailable. Please try again.' },
+      });
     }
   }, [processTranscript]);
 

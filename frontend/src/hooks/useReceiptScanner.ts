@@ -167,7 +167,8 @@ export const useReceiptScanner = () => {
       if (documentId) {
         await documentService.current.markAsFailed(documentId);
       }
-      toast.error(error instanceof Error ? error.message : 'Scan failed. Please try again.');
+      console.error('[ReceiptScanner] Scan failed:', error);
+      toast.error('Could not scan the receipt. Please try again or enter details manually.');
       return null;
     } finally {
       setIsScanning(false);
