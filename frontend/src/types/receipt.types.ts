@@ -115,6 +115,11 @@ export interface ReceiptScanResult {
   requiresReview?: boolean;
   /** Which extractor produced this: gemini-vision | gemini-text | ocr-heuristic. */
   engine?: string;
+
+  /** Canonical backend bill attachment ID for cross-device cloud sync */
+  billId?: string;
+  /** Direct or signed download URL */
+  downloadUrl?: string | null;
 }
 
 export interface ReceiptScanPayload extends ReceiptScanResult {

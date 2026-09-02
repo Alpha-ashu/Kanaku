@@ -1052,6 +1052,16 @@ async function syncLocalRecordToBackendAPI(table: SyncedTableName, localId: numb
         if (!ge?.cloudId) return false;
         payload.groupExpenseId = ge.cloudId;
       }
+      if (typeof payload.attachment === 'string' && payload.attachment.startsWith('document:')) {
+        const docId = parseInt(payload.attachment.replace('document:', ''), 10);
+        if (Number.isFinite(docId)) {
+          const doc = await db.documents.get(docId);
+          if (doc?.cloudId) {
+            payload.attachment = `bill:${doc.cloudId}`;
+            await db.transactions.update(localId, { attachment: payload.attachment }).catch(() => {});
+          }
+        }
+      }
     } else if (table === 'loans') {
       if (record.friendId) {
         const f = await db.friends.get(Number(record.friendId));

@@ -4,6 +4,8 @@ import { AppError } from '../../utils/AppError';
 import { cacheDeleteByPrefix } from '../../cache/redis';
 import { eventBus } from '../../utils/eventBus';
 import { Prisma } from '../../db/prisma-client';
+import { prisma } from '../../db/prisma';
+import { logger } from '../../config/logger';
 import { add, isPositive, neg, parseMoney, roundMoney, ZERO } from '../../utils/money';
 
 export class TransactionService {
@@ -113,6 +115,7 @@ export class TransactionService {
       merchant,
       date,
       tags,
+      attachment,
       type,
       transferToAccountId,
       transferType,
@@ -217,6 +220,7 @@ export class TransactionService {
       merchant: merchant || null,
       date: txDate,
       tags: serializedTags,
+      attachment: attachment || null,
       transferToAccountId: type === 'transfer' ? transferToAccountId : null,
       transferType: type === 'transfer' ? (transferType || 'manual') : null,
       expenseMode: expenseMode || null,
@@ -229,6 +233,18 @@ export class TransactionService {
       synced: true,
       syncStatus: 'synced',
     }, balanceDeltas, options.enforceBalance ?? true);
+
+    if (attachment) {
+      const cleanBillId = String(attachment).replace(/^bill:/, '').trim();
+      if (cleanBillId) {
+        await prisma.expenseBill.updateMany({
+          where: { id: cleanBillId, userId },
+          data: { transactionId: newTx.id },
+        }).catch((err) => {
+          logger.warn('Failed to link expense bill to transaction', { billId: cleanBillId, txId: newTx.id, error: err?.message || err });
+        });
+      }
+    }
 
     await cacheDeleteByPrefix('transactions:');
     await cacheDeleteByPrefix('accounts:');
@@ -311,6 +327,7 @@ export class TransactionService {
       merchant: body.merchant !== undefined ? body.merchant : existing.merchant,
       date: body.date !== undefined ? new Date(body.date) : existing.date,
       tags: body.tags !== undefined ? transactionRepository.serializeTags(body.tags) : existing.tags,
+      attachment: body.attachment !== undefined ? (body.attachment || null) : existing.attachment,
       transferToAccountId: type === 'transfer' ? transferToAccountId : null,
       transferType: type === 'transfer' ? (body.transferType || existing.transferType) : null,
       expenseMode: body.expenseMode !== undefined ? body.expenseMode : existing.expenseMode,
@@ -321,6 +338,16 @@ export class TransactionService {
     };
 
     const updated = await transactionRepository.updateWithBalanceUpdate(id, updates, mergedDeltas);
+
+    if (body.attachment) {
+      const cleanBillId = String(body.attachment).replace(/^bill:/, '').trim();
+      if (cleanBillId) {
+        await prisma.expenseBill.updateMany({
+          where: { id: cleanBillId, userId },
+          data: { transactionId: id },
+        }).catch(() => {});
+      }
+    }
 
     await cacheDeleteByPrefix('transactions:');
     await cacheDeleteByPrefix('accounts:');

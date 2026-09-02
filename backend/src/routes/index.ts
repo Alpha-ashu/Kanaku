@@ -21,6 +21,7 @@ import { investmentRoutes } from '../features/investments/investment.routes';
 import { todoRoutes } from '../features/todos/todo.routes';
 import { groupRoutes } from '../features/groups/group.routes';
 import { dashboardRoutes } from '../features/dashboard/dashboard.routes';
+import { billsRoutes } from '../features/bills/bills.routes';
 import { categorizationRoutes, learnRouter } from '../features/categorization/categorization.routes';
 import { avatarRoutes } from '../features/avatars/avatar.routes';
 import voiceRoutes from '../features/voice/voice.routes';
@@ -120,8 +121,7 @@ router.use('/notifications', notificationRoutes);
 router.use('/devices', deviceRoutes);
 
 // Secure bill uploads
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-router.use('/bills', lazyRoute(() => require('../features/bills/bills.routes'), 'billsRoutes'));
+router.use('/bills', billsRoutes);
 
 // Dashboard aggregation
 router.use('/dashboard', dashboardRoutes);

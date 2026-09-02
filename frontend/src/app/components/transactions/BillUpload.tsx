@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { backendService } from '@/lib/backend-api';
+import { db } from '@/lib/database';
 import { Upload, Trash2, Download, FileText, Image } from 'lucide-react';
 import { toast } from 'sonner';
 import { downloadFile } from '@/lib/download';
@@ -23,102 +24,132 @@ export const BillUpload: React.FC<BillUploadProps> = ({ transactionId, onBillsCh
  const [isDragging, setIsDragging] = useState(false);
  const [uploading, setUploading] = useState(false);
 
- // Replace with backendService call for bills
- const [bills, setBills] = useState<ExpenseBillItem[]>([]);
- useEffect(() => {
- const fetchBills = async () => {
- const backendBills = await backendService.getExpenseBills(String(transactionId));
- setBills(backendBills || []);
- };
- fetchBills();
- }, [transactionId]);
+  // Replace with backendService call for bills
+  const [bills, setBills] = useState<ExpenseBillItem[]>([]);
+  useEffect(() => {
+    let isMounted = true;
+    const fetchBills = async () => {
+      try {
+        const tx = await db.transactions.get(transactionId);
+        const queryId = tx?.cloudId || (tx?.attachment?.startsWith('bill:') ? undefined : String(transactionId));
+        const backendBills = await backendService.getExpenseBills(queryId);
+        if (isMounted) {
+          setBills(backendBills || []);
+        }
+      } catch {
+        if (isMounted) setBills([]);
+      }
+    };
+    fetchBills();
+    return () => {
+      isMounted = false;
+    };
+  }, [transactionId]);
 
- useEffect(() => {
- if (onBillsChange) {
- onBillsChange(bills);
- }
- }, [bills, onBillsChange]);
+  useEffect(() => {
+    if (onBillsChange) {
+      onBillsChange(bills);
+    }
+  }, [bills, onBillsChange]);
 
- const handleFileSelect = async (files: FileList | null) => {
- if (!files || files.length === 0) return;
+  const handleFileSelect = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
 
- setUploading(true);
- try {
- for (let i = 0; i < files.length; i++) {
- const file = files[i];
+    setUploading(true);
+    try {
+      const tx = await db.transactions.get(transactionId);
+      const targetTransactionId = tx?.cloudId || undefined;
 
- // Validate file type
- const allowedTypes = [
- 'image/jpeg',
- 'image/png',
- 'image/webp',
- 'application/pdf',
- 'application/msword',
- 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
- 'application/vnd.ms-excel',
- 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
- 'text/csv',
- ];
- if (!allowedTypes.includes(file.type)) {
- toast.error(`${file.name} - Unsupported file type. Use JPG, PNG, WebP, PDF, DOC/DOCX, XLS/XLSX, or CSV.`);
- continue;
- }
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
 
- // Validate file size (max 10MB)
- if (file.size > 10 * 1024 * 1024) {
- toast.error(`${file.name} - File size exceeds 10MB`);
- continue;
- }
+        // Validate file type
+        const allowedTypes = [
+          'image/jpeg',
+          'image/png',
+          'image/webp',
+          'application/pdf',
+          'application/msword',
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          'application/vnd.ms-excel',
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          'text/csv',
+        ];
+        if (!allowedTypes.includes(file.type)) {
+          toast.error(`${file.name} - Unsupported file type. Use JPG, PNG, WebP, PDF, DOC/DOCX, XLS/XLSX, or CSV.`);
+          continue;
+        }
 
- await backendService.uploadExpenseBill({ transactionId, file });
+        // Validate file size (max 10MB)
+        if (file.size > 10 * 1024 * 1024) {
+          toast.error(`${file.name} - File size exceeds 10MB`);
+          continue;
+        }
 
- toast.success(`${file.name} uploaded`);
- }
- // Refresh bills after upload
- const backendBills = await backendService.getExpenseBills(String(transactionId));
- setBills(backendBills || []);
- } catch (error) {
- console.error('Failed to upload bill:', error);
- toast.error('Failed to upload bill');
- } finally {
- setUploading(false);
- }
- };
+        const uploaded = await backendService.uploadExpenseBill({ transactionId: targetTransactionId, file });
 
- const handleDeleteBill = async (billId: string) => {
- try {
- await backendService.deleteExpenseBill(billId);
- toast.success('Bill deleted');
- // Refresh bills after delete
- const backendBills = await backendService.getExpenseBills(String(transactionId));
- setBills(backendBills || []);
- } catch (error) {
- console.error('Failed to delete bill:', error);
- toast.error('Failed to delete bill');
- }
- };
+        if (uploaded?.id) {
+          await db.transactions.update(transactionId, {
+            attachment: `bill:${uploaded.id}`,
+            updatedAt: new Date(),
+          });
+        }
 
- const handleDownloadBill = async (bill: ExpenseBillItem) => {
- try {
- if (!bill.downloadUrl) {
- toast.error('Download link expired. Please refresh and try again.');
- return;
- }
- const response = await fetch(bill.downloadUrl);
- if (!response.ok) {
- throw new Error(`Download failed: ${response.status}`);
- }
- const blob = await response.blob();
- await downloadFile({
- filename: bill.fileName,
- mimeType: bill.fileType,
- data: blob,
- });
- } catch (error) {
- console.error('Failed to download bill:', error);
- toast.error('Failed to download bill');
- }
- };
+        toast.success(`${file.name} uploaded`);
+      }
+
+      // Refresh bills after upload
+      const refreshedTx = await db.transactions.get(transactionId);
+      const queryId = refreshedTx?.cloudId || (refreshedTx?.attachment?.startsWith('bill:') ? undefined : String(transactionId));
+      const backendBills = await backendService.getExpenseBills(queryId);
+      setBills(backendBills || []);
+    } catch (error) {
+      console.error('Failed to upload bill:', error);
+      toast.error('Failed to upload bill');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleDeleteBill = async (billId: string) => {
+    try {
+      await backendService.deleteExpenseBill(billId);
+      toast.success('Bill deleted');
+
+      await db.transactions.update(transactionId, {
+        attachment: undefined,
+        updatedAt: new Date(),
+      });
+
+      // Refresh bills after delete
+      const tx = await db.transactions.get(transactionId);
+      const queryId = tx?.cloudId || String(transactionId);
+      const backendBills = await backendService.getExpenseBills(queryId);
+      setBills(backendBills || []);
+    } catch (error) {
+      console.error('Failed to delete bill:', error);
+      toast.error('Failed to delete bill');
+    }
+  };
+
+  const handleDownloadBill = async (bill: ExpenseBillItem) => {
+    try {
+      const downloadUrl = bill.downloadUrl || backendService.getBillFileUrl(bill.id);
+      const response = await fetch(downloadUrl);
+      if (!response.ok) {
+        throw new Error(`Download failed: ${response.status}`);
+      }
+      const blob = await response.blob();
+      await downloadFile({
+        filename: bill.fileName,
+        mimeType: bill.fileType,
+        data: blob,
+      });
+    } catch (error) {
+      console.error('Failed to download bill:', error);
+      toast.error('Failed to download bill');
+    }
+  };
 
  const getFileIcon = (fileType: string) => {
  if (fileType.startsWith('image')) {

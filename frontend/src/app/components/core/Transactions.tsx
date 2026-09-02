@@ -20,6 +20,7 @@ import { backendSyncService } from '@/lib/backend-sync-service';
 
 import { TimeFilter, TimeFilterPeriod, filterByTimePeriod, getPeriodLabel } from '@/app/components/ui/TimeFilter';
 import { formatLocalDate, parseDateInputValue, toLocalDateKey } from '@/lib/dateUtils';
+import { backendService } from '@/lib/backend-api';
 import type { TaxComponent } from '@/types/receipt.types';
 import { formatCurrencyAmount } from '@/lib/currencyUtils';
 import { DocumentManagementService } from '@/services/documentManagementService';
@@ -57,15 +58,40 @@ const parseTaxBreakdown = (value?: string): TaxComponent[] => {
  }
 };
 
-const getDocumentIdFromTransaction = (transaction: { attachment?: string; importMetadata?: Record<string, string> }) => {
- const attachmentMatch = transaction.attachment?.match(/^document:(\d+)$/);
- if (attachmentMatch) {
- const documentId = Number.parseInt(attachmentMatch[1], 10);
- if (Number.isFinite(documentId)) return documentId;
- }
+export interface TransactionAttachmentRef {
+  type: 'cloud' | 'local';
+  id: string | number;
+}
 
- const metadataId = Number.parseInt(transaction.importMetadata?.['Document Id'] || '', 10);
- return Number.isFinite(metadataId) ? metadataId : null;
+const getTransactionAttachment = (transaction: { attachment?: string; importMetadata?: Record<string, string> }): TransactionAttachmentRef | null => {
+  if (transaction.attachment) {
+    const raw = String(transaction.attachment).trim();
+    const billMatch = raw.match(/^bill:(.+)$/);
+    if (billMatch) {
+      return { type: 'cloud', id: billMatch[1].trim() };
+    }
+    const docMatch = raw.match(/^document:(\d+)$/);
+    if (docMatch) {
+      const docId = Number.parseInt(docMatch[1], 10);
+      if (Number.isFinite(docId)) return { type: 'local', id: docId };
+    }
+    // Direct UUID pattern
+    if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(raw)) {
+      return { type: 'cloud', id: raw };
+    }
+  }
+
+  const metadataId = Number.parseInt(transaction.importMetadata?.['Document Id'] || '', 10);
+  if (Number.isFinite(metadataId)) {
+    return { type: 'local', id: metadataId };
+  }
+
+  return null;
+};
+
+const getDocumentIdFromTransaction = (transaction: { attachment?: string; importMetadata?: Record<string, string> }): string | number | null => {
+  const ref = getTransactionAttachment(transaction);
+  return ref ? ref.id : null;
 };
 
 export const Transactions: React.FC = () => {
@@ -102,12 +128,16 @@ export const Transactions: React.FC = () => {
  }, new Date(transactions[0].date));
  }, [transactions]);
 
- useEffect(() => {
- if (!hasSyncedInitialDate && transactions.length > 0) {
- setSelectedDate(filterReferenceDate);
- setHasSyncedInitialDate(true);
- }
- }, [filterReferenceDate, hasSyncedInitialDate, transactions.length]);
+  useEffect(() => {
+    if (!hasSyncedInitialDate && transactions.length > 0) {
+      setSelectedDate(filterReferenceDate);
+      setHasSyncedInitialDate(true);
+    }
+  }, [hasSyncedInitialDate, transactions, filterReferenceDate]);
+
+  useEffect(() => {
+    documentService.migrateLegacyLocalAttachments().catch(() => {});
+  }, [documentService]);
 
  const timeFilteredTransactions = useMemo(
  () => filterByTimePeriod(transactions, timePeriod, selectedDate),
@@ -236,32 +266,73 @@ export const Transactions: React.FC = () => {
  setPreviewDocument(null);
  };
 
- const handlePreviewBill = async (transaction: (typeof transactions)[number]) => {
- const documentId = getDocumentIdFromTransaction(transaction);
- if (!documentId) {
- toast.error('No bill is attached to this expense yet.');
- return;
- }
+  const handlePreviewBill = async (transaction: (typeof transactions)[number]) => {
+    const attachmentRef = getTransactionAttachment(transaction);
+    if (!attachmentRef) {
+      toast.error('No bill is attached to this expense yet.');
+      return;
+    }
 
- try {
- const document = await documentService.getDocument(documentId);
- if (!document?.fileData) {
- toast.error('The attached bill is missing local preview data.');
- return;
- }
+    try {
+      if (previewUrl && previewUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(previewUrl);
+      }
 
- if (previewUrl) {
- URL.revokeObjectURL(previewUrl);
- }
+      if (attachmentRef.type === 'cloud') {
+        const cleanBillId = String(attachmentRef.id);
+        // 1. Check local Dexie cache first
+        const cachedDoc = await db.documents.where('cloudId').equals(cleanBillId).first();
+        if (cachedDoc?.fileData) {
+          const nextPreviewUrl = URL.createObjectURL(cachedDoc.fileData);
+          setPreviewDocument(cachedDoc);
+          setPreviewUrl(nextPreviewUrl);
+          return;
+        }
 
- const nextPreviewUrl = URL.createObjectURL(document.fileData);
- setPreviewDocument(document);
- setPreviewUrl(nextPreviewUrl);
- } catch (error) {
- console.error('Failed to preview bill:', error);
- toast.error('Failed to open the attached bill.');
- }
- };
+        // 2. Fetch bill metadata and file URL from backend
+        const bill = await backendService.getExpenseBill(cleanBillId);
+        const resolvedUrl = bill?.downloadUrl || backendService.getBillFileUrl(cleanBillId);
+
+        setPreviewDocument({
+          fileName: bill?.fileName || 'Attached Bill',
+          fileType: bill?.fileType || 'image/jpeg',
+          uploadDate: bill?.uploadedAt ? new Date(bill.uploadedAt) : new Date(),
+          processingStatus: 'completed',
+          documentType: 'receipt',
+          fileSize: bill?.fileSize || 0,
+          cloudId: cleanBillId,
+          downloadUrl: resolvedUrl,
+          createdAt: new Date(),
+        });
+        setPreviewUrl(resolvedUrl);
+        return;
+      }
+
+      // Legacy local document handling
+      const documentId = Number(attachmentRef.id);
+      const document = await documentService.getDocument(documentId);
+      if (!document?.fileData) {
+        if (document?.cloudId) {
+          const resolvedUrl = document.downloadUrl || backendService.getBillFileUrl(document.cloudId);
+          setPreviewDocument(document);
+          setPreviewUrl(resolvedUrl);
+          return;
+        }
+        toast.error('The attached bill is missing local preview data.');
+        return;
+      }
+
+      const nextPreviewUrl = URL.createObjectURL(document.fileData);
+      setPreviewDocument(document);
+      setPreviewUrl(nextPreviewUrl);
+
+      // Trigger background upload of local attachment to the cloud
+      documentService.migrateLegacyLocalAttachments().catch(() => {});
+    } catch (error) {
+      console.error('Failed to preview bill:', error);
+      toast.error('Failed to open the attached bill.');
+    }
+  };
 
  const confirmDeleteTransaction = async () => {
  if (!transactionToDelete) return;

@@ -80,7 +80,7 @@ const inferCategoryFromKeywords = (text: string, amount?: number) => {
   return 'Others';
 };
 
-async function getActiveUserId(): Promise<string | undefined> {
+export async function getActiveUserId(): Promise<string | undefined> {
   // Backend-managed auth: derive the user id from the backend JWT, not Supabase.
   const token = TokenManager.getAccessToken();
   if (!token) return undefined;

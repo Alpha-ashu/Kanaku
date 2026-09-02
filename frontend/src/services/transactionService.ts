@@ -75,6 +75,7 @@ export class TransactionService {
         description: baseDescription,
         merchant: scanResult.merchantName || '',
         date: scanResult.date || new Date(),
+        attachment: scanResult.billId ? `bill:${scanResult.billId}` : undefined,
         importSource: 'receipt-scanner',
         importMetadata: buildReceiptImportMetadata(scanResult, currency),
       },

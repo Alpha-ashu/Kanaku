@@ -39,6 +39,10 @@ export const uploadBuffer = async (filePath: string, buffer: Buffer, contentType
       throw error;
     }
   } catch (err: any) {
+    if (process.env.NODE_ENV === 'production') {
+      console.error(`[Storage] Production cloud storage upload failed for ${filePath}:`, err?.message ?? err);
+      throw new Error(`Persistent cloud storage unavailable: ${err?.message ?? 'Upload failed'}`);
+    }
     console.warn(`Supabase storage upload failed for ${filePath}: ${err?.message ?? err}. Falling back to local disk storage.`);
     // Local directory fallback.
     //
@@ -103,7 +107,52 @@ export const createSignedUrl = async (filePath: string, expiresIn = SIGNED_URL_T
 
     return data?.signedUrl || null;
   } catch (err: any) {
-    console.warn(`Supabase createSignedUrl failed for ${filePath}: ${err?.message ?? err}. Returning local mock URL.`);
-    return `http://localhost:3000/uploads/${filePath}`;
+    return null;
   }
 };
+
+export const getLocalFilePath = (filePath: string): string | null => {
+  try {
+    const localDir = pathLib.join(process.cwd(), 'uploads');
+    const fullPath = pathLib.resolve(localDir, filePath);
+    const containment = localDir.endsWith(pathLib.sep) ? localDir : localDir + pathLib.sep;
+    if (fullPath.startsWith(containment) && fs.existsSync(fullPath)) {
+      return fullPath;
+    }
+  } catch {
+    // ignore
+  }
+  return null;
+};
+
+export const downloadBuffer = async (
+  filePath: string,
+): Promise<{ buffer: Buffer; contentType?: string } | null> => {
+  // 1. Try Supabase storage if client configured
+  try {
+    const client = getStorageClient();
+    if (client) {
+      const { data, error } = await client.storage.from(STORAGE_BUCKET).download(filePath);
+      if (!error && data) {
+        const arrayBuffer = await data.arrayBuffer();
+        return { buffer: Buffer.from(arrayBuffer), contentType: data.type };
+      }
+    }
+  } catch {
+    // Fall back to local disk
+  }
+
+  // 2. Try local disk fallback
+  try {
+    const localPath = getLocalFilePath(filePath);
+    if (localPath) {
+      const buffer = fs.readFileSync(localPath);
+      return { buffer };
+    }
+  } catch {
+    // ignore
+  }
+
+  return null;
+};
+

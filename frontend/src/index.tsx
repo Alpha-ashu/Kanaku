@@ -8,6 +8,7 @@ import { financialDataCaptureService } from '@/services/financialDataCaptureServ
 import { setupGlobalErrorHandlers, registerErrorReporter } from '@/lib/errorHandling';
 import { runGlobalMigration } from '@/lib/migration';
 import { initSchemaGuard } from '@/lib/syncSchemaGuard';
+import { initOfflineUploadQueue } from '@/lib/offlineUploadQueue';
 import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
 
 // Initialize Sentry if VITE_SENTRY_DSN is configured
@@ -52,6 +53,12 @@ try {
   financialDataCaptureService.bindOnlineQueueProcessor();
 } catch (e) {
   console.warn('[Startup] Online queue processor binding skipped:', e);
+}
+
+try {
+  initOfflineUploadQueue();
+} catch (e) {
+  console.warn('[Startup] Offline upload queue init skipped:', e);
 }
 
 const rootElement = document.getElementById('root');

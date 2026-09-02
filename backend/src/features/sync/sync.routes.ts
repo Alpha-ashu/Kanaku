@@ -15,10 +15,8 @@ const router = Router();
  * refuse to accept push payloads — older clients are guaranteed to be
  * prompted to reload before they can corrupt data.
  */
-// Must track frontend/src/lib/database.ts, which declares up to version 17.
-// This sat at 14 while the Dexie schema moved to 17, so the server advertised a
-// version three behind every shipping client.
-const SERVER_SCHEMA_VERSION = 17;
+// Must track frontend/src/lib/database.ts, which declares up to version 18.
+const SERVER_SCHEMA_VERSION = 18;
 
 // The floor below which push payloads are refused. Deliberately NOT raised to 17:
 // Android and iOS builds are installed by hand and lag behind web, and versions

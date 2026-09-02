@@ -1,8 +1,9 @@
 import { Response } from 'express';
-import { randomUUID } from 'crypto';
+import { randomUUID, createHash } from 'crypto';
 import { AuthRequest, getUserId } from '../../middleware/auth';
 import { logger } from '../../config/logger';
-import { validateBillUpload, ValidatedUpload } from '../../utils/uploadPolicy';
+import { validateBillUpload, makeStoragePath, ValidatedUpload } from '../../utils/uploadPolicy';
+import { uploadBuffer, createSignedUrl } from '../../utils/storage';
 import { processImage } from '../../utils/imageProcessing';
 import { scanReceiptWithGemini, scanReceiptFromText } from '../ai/ocr.engine';
 import type { ExtractedReceipt } from '../ai/receiptSchema';
@@ -280,15 +281,52 @@ export const startReceiptScan = async (req: AuthRequest, res: Response) => {
             setTimeout(() => reject(new Error('Extraction took too long')), JOB_BUDGET_MS)),
         ]);
 
+        // Persist the original uploaded file to backend storage and canonical database
+        let persistedBillId: string | undefined;
+        let persistedDownloadUrl: string | null = null;
+        try {
+          const baseName = (file.originalname || 'receipt').replace(/\.[^/.]+$/, '');
+          const extension = ocrValidated.extension || 'jpg';
+          const displayName = `${baseName}.${extension}`;
+          const storagePath = makeStoragePath(userId, extension);
+          await uploadBuffer(storagePath, validated.buffer, validated.contentType);
+
+          const sha256 = createHash('sha256').update(validated.buffer).digest('hex');
+          const bill = await prisma.expenseBill.create({
+            data: {
+              userId,
+              originalName: displayName,
+              contentType: validated.contentType,
+              size: validated.buffer.length,
+              storagePath,
+              sha256,
+              scanStatus: 'completed',
+              scanResult: JSON.stringify(normalized),
+            },
+          });
+          persistedBillId = bill.id;
+          persistedDownloadUrl = await createSignedUrl(storagePath);
+          logger.info('ATTACHMENT_DB_CREATED', { userId, billId: bill.id, storagePath });
+        } catch (saveErr: any) {
+          logger.warn('Failed to persist receipt image to storage/DB', { error: saveErr?.message || saveErr });
+        }
+
         // confidence and source travel with the payload: the polling client
         // renders the confidence banner from them, and without them it fell back
         // to a hardcoded 85% that read "high confidence" on every scan.
         OCR_JOBS.set(jobId, {
           status: 'completed',
           startedAt: Date.now(),
-          data: { ...normalized, source, confidence, requiresConfirmation: true },
+          data: {
+            ...normalized,
+            billId: persistedBillId,
+            downloadUrl: persistedDownloadUrl,
+            source,
+            confidence,
+            requiresConfirmation: true,
+          },
         });
-        audit({ event: 'ai.ocr_success', userId, meta: { jobId, source, confidence } });
+        audit({ event: 'ai.ocr_success', userId, meta: { jobId, billId: persistedBillId, source, confidence } });
       } catch (err: any) {
         logger.error('Background OCR failed', { jobId, error: err.message, stack: err.stack });
         OCR_JOBS.set(jobId, { status: 'failed', error: err.message, startedAt: Date.now() });

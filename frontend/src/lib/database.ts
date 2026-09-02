@@ -457,6 +457,7 @@ export interface UserCategoryPreference {
 
 export interface DocumentRecord {
   id?: number;
+  cloudId?: string;
   userId?: string;
   documentType: 'receipt' | 'statement';
   fileName: string;
@@ -465,6 +466,7 @@ export interface DocumentRecord {
   fileData?: Blob;
   fileHash?: string;
   filePath?: string;
+  downloadUrl?: string;
   uploadDate: Date;
   processingStatus: 'queued' | 'processing' | 'preview' | 'completed' | 'failed';
   linkedTransactionId?: number;
@@ -473,9 +475,27 @@ export interface DocumentRecord {
   sourceAccountName?: string;
   notes?: string;
   metadata?: Record<string, string>;
+  syncStatus?: SyncStatus;
   createdAt: Date;
   updatedAt?: Date;
   deletedAt?: Date;
+}
+
+export interface PendingFileUpload {
+  id?: number;
+  localId: string;
+  userId: string;
+  fileName: string;
+  fileType: string;
+  fileSize: number;
+  fileBlob: Blob;
+  sha256?: string;
+  transactionLocalId?: number;
+  documentId?: number;
+  retryCount: number;
+  lastError?: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface SmsDetectedTransaction {
@@ -729,6 +749,7 @@ export class ProductionDB extends KANAKUDB {
   investmentSubcategories!: Table<any>;
   investmentDocuments!: Table<any>;
   investmentLinks!: Table<any>;
+  pendingFileUploads!: Table<PendingFileUpload>;
 
   constructor() {
     super();
@@ -1205,6 +1226,12 @@ export class OfflineSyncDB extends ProductionDB {
     // budget kept firing alerts after the user deleted it.
     this.version(17).stores({
       budgets: 'id, cloudId, category, period, syncStatus',
+    });
+
+    // Version 18: index documents.cloudId and add pendingFileUploads for resilient cross-device sync
+    this.version(18).stores({
+      documents: '++id, cloudId, documentType, userId, processingStatus, uploadDate, accountId, syncStatus',
+      pendingFileUploads: '++id, localId, userId, transactionLocalId, documentId, createdAt',
     });
   }
 }

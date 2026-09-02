@@ -42,6 +42,7 @@ export interface SyncResponse {
     recurringTransactions: any[];
     goldAssets: any[];
     friends: any[];
+    expenseBills?: any[];
     settings?: any;
     lastSyncedAt: string;
     // Cursor for the next incremental pull — clients should store this and send
@@ -197,7 +198,7 @@ class SyncService {
       const want = (t: string) => !entityTypes || entityTypes.includes(t);
 
       // Fetch all user data in parallel
-      const [accounts, transactions, goals, loans, budgets, investments, recurring, goldAssets, friends, settings] = await Promise.all([
+      const [accounts, transactions, goals, loans, budgets, investments, recurring, goldAssets, friends, bills, settings] = await Promise.all([
         want('accounts') ? prisma.account.findMany({ where: whereClause, orderBy: { updatedAt: 'asc' } }) : [],
         want('transactions') ? prisma.transaction.findMany({ where: whereClause, orderBy: { updatedAt: 'asc' } }) : [],
         want('goals') ? prisma.goal.findMany({ where: whereClause, orderBy: { updatedAt: 'asc' } }) : [],
@@ -207,6 +208,7 @@ class SyncService {
         want('recurringTransactions') ? prisma.recurringTransaction.findMany({ where: whereClause, orderBy: { updatedAt: 'asc' } }) : [],
         want('goldAssets') ? prisma.goldAsset.findMany({ where: whereClause, orderBy: { updatedAt: 'asc' } }) : [],
         want('friends') ? prisma.friend.findMany({ where: whereClause, orderBy: { updatedAt: 'asc' } }) : [],
+        want('bills') || want('expenseBills') ? prisma.expenseBill.findMany({ where: whereClause, orderBy: { updatedAt: 'asc' } }) : [],
         want('settings') ? prisma.userSettings.findUnique({ where: { userId } }) : null,
       ]);
 
@@ -236,6 +238,7 @@ class SyncService {
           recurringTransactions: strip(recurring as any).map((r: any) => ({ ...r, name: r.title, frequency: r.interval })),
           goldAssets: strip(goldAssets as any),
           friends: strip(friends as any),
+          expenseBills: strip(bills as any),
           settings: settings || undefined,
           lastSyncedAt: now,
           serverTimestamp: now,
@@ -568,7 +571,7 @@ class SyncService {
   ) {
     const allowed = [
       'accountId', 'type', 'amount', 'category', 'subcategory',
-      'description', 'merchant', 'date', 'tags', 'transferToAccountId',
+      'description', 'merchant', 'date', 'tags', 'attachment', 'transferToAccountId',
       'transferType', 'version', 'syncStatus'
     ];
     const sanitizedData = this.pickAllowedFields(data, allowed);

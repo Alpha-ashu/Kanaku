@@ -54,6 +54,7 @@ export interface TransactionDraft {
   description: string;
   merchant?: string;
   date: Date;
+  attachment?: string;
   importSource?: string;
   importMetadata?: Record<string, string>;
 }
@@ -837,6 +838,7 @@ export const financialDataCaptureService = {
       description: draft.description,
       merchant: draft.merchant,
       date: draft.date,
+      attachment: draft.attachment,
       importSource: draft.importSource,
       importMetadata: draft.importMetadata,
       createdAt: new Date(),

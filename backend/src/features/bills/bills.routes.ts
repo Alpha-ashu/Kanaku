@@ -17,6 +17,7 @@ router.use(pinGate); // bills carry amounts and merchant data — requires a liv
 
 router.get('/', BillsController.getBills);
 router.get('/:id', validateParams(billIdParamSchema), BillsController.getBill);
+router.get('/:id/file', validateParams(billIdParamSchema), BillsController.getFile);
 router.post(
   '/',
   idempotency({ scope: 'bills.upload' }),

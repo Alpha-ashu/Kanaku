@@ -21,6 +21,7 @@ export const transactionCreateSchema = z.object({
   merchant: z.string().trim().max(120).optional(),
   date: DateSchema,
   tags: z.array(z.string().trim().max(40)).optional(),
+  attachment: z.string().trim().max(500).optional(),
   transferToAccountId: z.string().trim().min(1).optional(),
   transferType: z.enum([
     'self-transfer',

@@ -1000,6 +1000,21 @@ class BackendService {
     }
   }
 
+  async getExpenseBill(id: string) {
+    try {
+      const response = await this.api.get(`/bills/${id}`);
+      return response.data;
+    } catch (error) {
+      console.warn('Failed to fetch bill:', error);
+      return null;
+    }
+  }
+
+  getBillFileUrl(id: string): string {
+    const base = this.api.defaults.baseURL || '/api/v1';
+    return `${base.replace(/\/+$/, '')}/bills/${id}/file`;
+  }
+
   async uploadExpenseBill(payload: { transactionId?: string | number; file: File }) {
     const formData = new FormData();
     if (payload.transactionId !== undefined) {

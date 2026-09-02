@@ -32,12 +32,18 @@ vi.mock('@/lib/database', () => ({
       get: vi.fn(async (id: number) => mocks.state.transactionRows.find((row) => row.id === id)),
       update: mocks.updateTransaction,
     },
-    transaction: vi.fn(async (
-      _mode: string,
-      _documents: unknown,
-      _transactions: unknown,
-      work: () => Promise<void>,
-    ) => work()),
+    pendingFileUploads: {
+      where: vi.fn(() => ({
+        equals: vi.fn(() => ({
+          first: vi.fn(async () => undefined),
+        })),
+      })),
+      update: vi.fn(),
+    },
+    transaction: vi.fn(async (...args: any[]) => {
+      const work = args.find((arg) => typeof arg === 'function');
+      return work ? work() : Promise.resolve();
+    }),
   },
 }));
 

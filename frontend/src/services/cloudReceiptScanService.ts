@@ -374,6 +374,8 @@ export class CloudReceiptScanService {
           reviewIssues: Array.isArray(payload.validation?.issues) ? payload.validation.issues : undefined,
           requiresReview: Boolean(payload.validation?.requiresReview),
           engine: typeof payload.engine === 'string' ? payload.engine : undefined,
+          billId: typeof payload.billId === 'string' ? payload.billId : undefined,
+          downloadUrl: typeof payload.downloadUrl === 'string' ? payload.downloadUrl : undefined,
         };
       }
 
