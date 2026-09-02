@@ -19,6 +19,41 @@ import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 
+// 1. Ensure @capacitor-community/speech-recognition has a Package.swift
+const SPEECH_RECOGNITION_DIR = path.join('node_modules', '@capacitor-community', 'speech-recognition');
+const SPEECH_RECOGNITION_MANIFEST = path.join(SPEECH_RECOGNITION_DIR, 'Package.swift');
+
+if (fs.existsSync(SPEECH_RECOGNITION_DIR)) {
+  const speechPackageSwift = `// swift-tools-version: 5.9
+import PackageDescription
+
+let package = Package(
+    name: "CapacitorCommunitySpeechRecognition",
+    platforms: [.iOS(.v15)],
+    products: [
+        .library(
+            name: "CapacitorCommunitySpeechRecognition",
+            targets: ["SpeechRecognitionPlugin"])
+    ],
+    dependencies: [
+        .package(url: "https://github.com/ionic-team/capacitor-swift-pm.git", exact: "8.5.0")
+    ],
+    targets: [
+        .target(
+            name: "SpeechRecognitionPlugin",
+            dependencies: [
+                .product(name: "Capacitor", package: "capacitor-swift-pm"),
+                .product(name: "Cordova", package: "capacitor-swift-pm")
+            ],
+            path: "ios/Plugin"
+        )
+    ]
+)
+`;
+  fs.writeFileSync(SPEECH_RECOGNITION_MANIFEST, speechPackageSwift);
+  console.log(`[spm] Ensured Package.swift for @capacitor-community/speech-recognition`);
+}
+
 const MANIFEST = path.join('ios', 'App', 'CapApp-SPM', 'Package.swift');
 
 if (!fs.existsSync(MANIFEST)) {
@@ -26,15 +61,32 @@ if (!fs.existsSync(MANIFEST)) {
   process.exit(0);
 }
 
-const original = fs.readFileSync(MANIFEST, 'utf8');
-const normalised = original.replace(
+let content = fs.readFileSync(MANIFEST, 'utf8');
+
+// Normalise backslashes to forward slashes
+content = content.replace(
   /path: "([^"]+)"/g,
   (_match, value) => `path: "${value.split('\\').join('/')}"`,
 );
 
-if (normalised === original) {
-  process.exit(0);
+// Inject SpeechRecognition into dependencies if missing
+if (!content.includes('CapacitorCommunitySpeechRecognition')) {
+  content = content.replace(
+    /dependencies:\s*\[([\s\S]*?)(\n\s*\]\s*,\s*\n\s*targets:)/,
+    (_match, deps, end) => {
+      const speechDep = `        .package(name: "CapacitorCommunitySpeechRecognition", path: "../../../node_modules/@capacitor-community/speech-recognition"),\n`;
+      return `dependencies: [\n${speechDep}${deps.trimEnd()}${end}`;
+    }
+  );
+
+  content = content.replace(
+    /name:\s*"CapApp-SPM",\s*\n\s*dependencies:\s*\[([\s\S]*?)(\n\s*\]\s*\n\s*\)\s*\])/,
+    (_match, targetDeps, end) => {
+      const speechTargetDep = `                .product(name: "CapacitorCommunitySpeechRecognition", package: "CapacitorCommunitySpeechRecognition"),\n`;
+      return `name: "CapApp-SPM",\n            dependencies: [\n${speechTargetDep}${targetDeps.trimEnd()}${end}`;
+    }
+  );
 }
 
-fs.writeFileSync(MANIFEST, normalised);
-console.log(`[spm] Normalised Windows path separators in ${MANIFEST}`);
+fs.writeFileSync(MANIFEST, content);
+console.log(`[spm] Linked SpeechRecognition and normalised Windows path separators in ${MANIFEST}`);

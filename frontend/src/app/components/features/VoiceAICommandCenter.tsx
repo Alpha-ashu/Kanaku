@@ -620,13 +620,19 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
           const groupMembers = [
             { name: 'You', share, paid: true, isCurrentUser: true },
             ...(await Promise.all(memberNames.map(async (name) => {
-              let friend = await db.friends.filter(f => f.name.toLowerCase() === name.toLowerCase() && !f.deletedAt).first();
+              const cleanName = name.trim();
+              let friend = await db.friends.filter(f => !f.deletedAt && (
+                f.name.toLowerCase() === cleanName.toLowerCase() ||
+                f.name.toLowerCase().startsWith(cleanName.toLowerCase() + ' ') ||
+                f.name.toLowerCase().endsWith(' ' + cleanName.toLowerCase())
+              )).first();
+
               if (!friend) {
-                const friendId = await db.friends.add({ name, createdAt: now, updatedAt: now });
+                const friendId = await db.friends.add({ name: cleanName, createdAt: now, updatedAt: now });
                 queueRecordUpsertSync('friends', friendId as number);
                 friend = await db.friends.get(friendId as number);
               }
-              return { name, share, paid: false, friendId: friend?.id };
+              return { name: friend?.name || cleanName, share, paid: false, friendId: friend?.id };
             }))),
           ];
 

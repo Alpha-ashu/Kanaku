@@ -35,4 +35,28 @@ describe('voiceFinancialService', () => {
       entities: { amount: 300, person: 'Arun' },
     });
   });
+
+  it('correctly parses a 10-person group dinner expense with all participant names', () => {
+    const transcript =
+      'I spent 2,000 on dinner with Arun, Gijo, Sandeep, Brijit, Rajesh, Amala, Preeti, Suresh, Mohan and Vignesh.';
+    const result = parseTranscriptLocally(transcript);
+
+    expect(result.actions).toHaveLength(1);
+    const action = result.actions[0];
+    expect(action.type).toBe('group_expense');
+    expect(action.entities.amount).toBe(2000);
+    expect(action.entities.category).toBe('Food');
+    expect(action.entities.members).toEqual([
+      'Arun',
+      'Gijo',
+      'Sandeep',
+      'Brijit',
+      'Rajesh',
+      'Amala',
+      'Preeti',
+      'Suresh',
+      'Mohan',
+      'Vignesh',
+    ]);
+  });
 });

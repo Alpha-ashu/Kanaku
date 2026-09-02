@@ -72,6 +72,10 @@ export const VoiceContextStore = {
     const goals = await db.goals.toArray();
     context.knownGoals = goals.map((g) => g.name);
 
+    // Pull known contacts from friends table
+    const friends = await db.friends?.filter?.(f => !f.deletedAt)?.toArray?.() ?? [];
+    const friendNames = friends.map(f => f.name).filter(Boolean);
+
     // Pull known contacts from loans
     const loans = await db.loans.toArray();
     const loanContacts = loans
@@ -85,8 +89,8 @@ export const VoiceContextStore = {
     );
 
     context.knownContacts = Array.from(
-      new Set([...loanContacts, ...groupMembers])
-    ).slice(0, 20);
+      new Set([...friendNames, ...loanContacts, ...groupMembers])
+    ).slice(0, 30);
 
     // Pull top categories from recent transactions
     const recentTx = await db.transactions

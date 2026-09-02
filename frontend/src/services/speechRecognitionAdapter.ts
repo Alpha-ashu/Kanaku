@@ -122,31 +122,41 @@ const startNative = async (
   // on top of the first, so every partial would be delivered twice. Tear down any
   // previous session before opening this one; only one can be live at a time.
   await activeNativeSession?.stop().catch(() => undefined);
-  try {
-    await SpeechRecognition.removeAllListeners();
-  } catch {
-    /* nothing attached yet */
+  // Teardown any previous native session before starting a new one
+  if (activeNativeSession) {
+    try {
+      await activeNativeSession.stop();
+    } catch {
+      // ignore
+    }
+    activeNativeSession = null;
   }
 
-  const handles: PluginListenerHandle[] = [];
-  let finished = false;
   let latestPartial = '';
+  let finished = false;
+  let handles: PluginListenerHandle[] = [];
 
-  // Guarantees onEnd fires exactly once, whichever way the session terminates.
+  const removeListeners = async () => {
+    await Promise.all(handles.map((h) => h.remove().catch(() => undefined)));
+    handles = [];
+    try {
+      await SpeechRecognition.removeAllListeners();
+    } catch {
+      // ignore
+    }
+  };
+
   const finish = async () => {
     if (finished) return;
     finished = true;
-
-    // Nothing was promoted to a final result (common on Android, where the last
-    // partial is the best transcript we get) — don't silently drop the utterance.
-    if (latestPartial.trim()) {
-      callbacks.onFinal(latestPartial.trim());
+    if (latestPartial) {
+      const pending = latestPartial;
       latestPartial = '';
+      callbacks.onFinal(pending);
     }
-
-    await Promise.all(handles.map((h) => h.remove().catch(() => undefined)));
-    handles.length = 0;
+    await removeListeners();
     callbacks.onEnd();
+    if (activeNativeSession === session) activeNativeSession = null;
   };
 
   handles.push(
@@ -205,7 +215,6 @@ const startNative = async (
         /* already stopped */
       }
       await finish();
-      if (activeNativeSession === session) activeNativeSession = null;
     },
   };
 

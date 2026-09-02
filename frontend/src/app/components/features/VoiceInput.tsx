@@ -336,6 +336,23 @@ function useVoiceEngine() {
     }, 250);
   }, [processTranscript]);
 
+  const cancelListening = useCallback(() => {
+    if (stopTimeoutRef.current) {
+      clearTimeout(stopTimeoutRef.current);
+      stopTimeoutRef.current = null;
+    }
+    if (recRef.current) {
+      void recRef.current.stop().catch(() => undefined);
+      recRef.current = null;
+    }
+    processedRef.current = true;
+    transcriptRef.current = '';
+    dispatch({ type: 'RESET' });
+    setTimeout(() => {
+      processedRef.current = false;
+    }, 50);
+  }, []);
+
   const processManualInput = useCallback(() => {
     const text = state.manualInput.trim();
     if (!text) return;
@@ -346,7 +363,7 @@ function useVoiceEngine() {
     processTranscript(text);
   }, [state.manualInput, processTranscript]);
 
-  return { state, dispatch, startListening, stopListening, resetEngine, processManualInput };
+  return { state, dispatch, startListening, stopListening, cancelListening, resetEngine, processManualInput };
 }
 
 // ─── Status pill ──────────────────────────────────────────────────────────────
@@ -369,7 +386,7 @@ StatusPill.displayName = 'StatusPill';
 
 export function VoiceInput() {
   const { user } = useAuth();
-  const { state, dispatch, startListening, stopListening, resetEngine, processManualInput } = useVoiceEngine();
+  const { state, dispatch, startListening, stopListening, cancelListening, resetEngine, processManualInput } = useVoiceEngine();
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const isListening  = state.mode === 'listening';
   const isProcessing = state.mode === 'processing';
@@ -466,9 +483,20 @@ export function VoiceInput() {
           </motion.button>
         </div>
 
-        {/* Waveform */}
-        <div className="w-full max-w-sm">
+        {/* Waveform & Cancel action */}
+        <div className="w-full max-w-sm flex flex-col items-center gap-3">
           <Waveform active={isListening} />
+          {(isListening || isProcessing) && (
+            <motion.button
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              onClick={cancelListening}
+              className="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all shadow-sm active:scale-95"
+            >
+              <X size={14} /> Cancel Listening
+            </motion.button>
+          )}
         </div>
 
         {/* Transcript display */}

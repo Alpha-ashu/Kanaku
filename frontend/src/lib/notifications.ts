@@ -119,7 +119,10 @@ async function getActiveUserId() {
 async function showSystemNotification(title: string, body: string, deepLink?: string) {
   if (Capacitor.isNativePlatform()) {
     try {
-      const permission = await LocalNotifications.requestPermissions();
+      let permission = await LocalNotifications.checkPermissions();
+      if (permission.display === 'prompt' || permission.display === 'prompt-with-rationale') {
+        permission = await LocalNotifications.requestPermissions();
+      }
       if (permission.display === 'granted') {
         await LocalNotifications.schedule({
           notifications: [

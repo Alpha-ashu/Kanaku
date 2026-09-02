@@ -384,9 +384,17 @@ function regexClassifyIntent(segment: string): { type: FinancialActionType; conf
   // Scope the check to the segment's OPENING clause — disfluent speech merges
   // segments, and a trailing "…group expense." aside must not hijack an
   // unrelated leading action ("Done recharge for my Jio… group expense.").
+  const companions = segment.match(/\b(?:me|we|us)\s+and\s+([A-Za-z][^.!?]*)/i)
+    ?? segment.match(/\b(?:with|between|among|split with)\s+([A-Za-z][^.!?]*)/i);
+  const detectedMembers = companions ? extractNameList(companions[1]) : [];
+
   const openingClause = lower.split(/[.!?]/, 1)[0].slice(0, 100);
-  if (/\bgroup\s+expen[sd]|\bsplit\s+(?:with|between|among)|\bwe\s+(?:spent|paid)\b/i.test(openingClause)) {
-    return { type: 'group_expense', confidence: 0.84 };
+  if (
+    /\bgroup\s+expen[sd]|\bsplit\s+(?:with|between|among)|\bwe\s+(?:spent|paid)\b/i.test(openingClause) ||
+    detectedMembers.length >= 2 ||
+    (detectedMembers.length >= 1 && /\b(?:with|among|between)\b/i.test(lower))
+  ) {
+    return { type: 'group_expense', confidence: 0.88 };
   }
   if (isExplicitExpense && hasAmount) return { type: 'expense', confidence: 0.92 };
   // Loan intents outrank investment: disfluent speech often merges segments
@@ -431,11 +439,13 @@ function regexExtractDescription(text: string): string {
  */
 function extractNameList(phrase: string): string[] {
   return phrase
-    .split(/,|\band\b/i)
+    .split(/,|\band\b|&/i)
     .map((n) => n.trim().replace(/[.،]+$/g, ''))
-    .filter((n) => /^[A-Z]/.test(n) && n.length >= 1 && n.split(/\s+/).length <= 3)
-    .filter((n) => !/^(Me|We|I|Us|The|Then|So|And|But|He|She|They|It|Uh|Um|Umm|Mm+)\b/i.test(n))
-    .slice(0, 12);
+    .map((n) => n.replace(/\b(?:mr\.?|mrs\.?|ms\.?|dr\.?)\s+/gi, '').replace(/'s\s+(?:share|part)?$/i, '').trim())
+    .filter((n) => n.length >= 2 && n.split(/\s+/).length <= 3)
+    .filter((n) => !/^(Me|We|I|Us|The|Then|So|And|But|He|She|They|It|Uh|Um|Umm|Mm+|Food|Dinner|Lunch|Breakfast|Coffee|Tea|Bill|Total|Room|Hotel)\b/i.test(n))
+    .map((n) => n.split(/\s+/).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' '))
+    .slice(0, 20);
 }
 
 function regexExtractEntities(segment: string, type: FinancialActionType): ExtractedEntity {
@@ -449,10 +459,8 @@ function regexExtractEntities(segment: string, type: FinancialActionType): Extra
 
   if (type === 'group_expense') {
     entities.splitType = 'equal';
-    // Capture the companion list up to the sentence break, then keep name-like
-    // tokens — permissive on purpose so initials ("G Joe") survive.
-    const companions = segment.match(/\b(?:me|we|us)\s+and\s+([A-Z][^.!?]*)/)
-      ?? segment.match(/\b(?:with|between|among)\s+([A-Z][^.!?]*)/);
+    const companions = segment.match(/\b(?:me|we|us)\s+and\s+([A-Za-z][^.!?]*)/i)
+      ?? segment.match(/\b(?:with|between|among|split with)\s+([A-Za-z][^.!?]*)/i);
     if (companions) {
       entities.members = extractNameList(companions[1]);
     }

@@ -294,12 +294,55 @@ function isExplicitExpense(q: string): boolean {
     && /\b(?:for|on|at|from)\b/.test(q);
 }
 
+function extractMembers(text: string): string[] {
+  const match = text.match(/\b(?:with|between|among|split with|shared with|me and|we and)\s+([A-Za-z\s,and&.'"-]+)/i);
+  if (!match) return [];
+
+  const rawPhrase = match[1].trim();
+  const tokens = rawPhrase.split(/,|\band\b|&/i);
+
+  const members: string[] = [];
+  for (const rawToken of tokens) {
+    const token = rawToken
+      .trim()
+      .replace(/^[^\w]+|[^\w]+$/g, '')
+      .replace(/\b(?:mr\.?|mrs\.?|ms\.?|dr\.?)\s+/gi, '')
+      .replace(/'s\s+(?:share|part|half)?$/i, '')
+      .trim();
+
+    if (!token) continue;
+
+    const lower = token.toLowerCase();
+    if (
+      COMMON_NOUNS.has(lower) ||
+      /^(me|i|we|us|them|everyone|all|together|each|someone|people|guys|friends|boys|girls|others|food|dinner|lunch|bill|total|room|hotel)$/i.test(lower) ||
+      /\d/.test(token) ||
+      token.length < 2
+    ) {
+      continue;
+    }
+
+    const capitalized = token
+      .split(/\s+/)
+      .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+      .join(' ');
+
+    if (!members.includes(capitalized)) {
+      members.push(capitalized);
+    }
+  }
+
+  return members;
+}
+
 function parseSegment(segment: string): FinancialAction {
   const q = segment.toLowerCase();
   const amount = extractAmount(segment);
   const category = extractCategory(segment);
   const description = extractDescription(segment);
   const date = extractDate(segment);
+  const members = extractMembers(segment);
+  const person = extractPerson(segment);
 
   // QUERY — must check before anything else
   if (/\b(?:how much|what is|tell me|show me|what'?s|total|balance|how many|list|summary)\b/.test(q)) {
@@ -310,13 +353,21 @@ function parseSegment(segment: string): FinancialAction {
     };
   }
 
-  // EXPLICIT EXPENSE (paid/spent/bought for X) — check EARLY to prevent misclassification as goal
-  // e.g. "I paid 2000 for a room", "spent 500 on food"
-  if (isExplicitExpense(q) && amount) {
+  // GROUP EXPENSE — Check early when multiple members or explicit group keywords are present
+  if ((members.length > 0 && (/\b(?:split|group|shared|with|among|between)\b/i.test(q) || members.length >= 2)) ||
+      /\b(?:split|group expense|shared with|divide|among|between)\b/.test(q)) {
     return {
-      type: 'expense', rawSegment: segment,
-      entities: { amount, category, description: description || 'Expense', date },
-      confidence: 0.92, requiresReview: false,
+      type: 'group_expense',
+      rawSegment: segment,
+      entities: {
+        amount,
+        category: category !== 'Miscellaneous' ? category : 'Food',
+        description: description || (members.length > 0 ? `Group expense with ${members.slice(0, 3).join(', ')}` : 'Group Expense'),
+        members,
+        date,
+      },
+      confidence: 0.92,
+      requiresReview: false,
     };
   }
 
@@ -343,9 +394,6 @@ function parseSegment(segment: string): FinancialAction {
       confidence: 0.88, requiresReview: false,
     };
   }
-
-  // Extract person only for loan/transfer intents
-  const person = extractPerson(segment);
 
   // DEBT SETTLEMENT / REPAYMENT
   if (/\b(?:settled|settle|paid back|returned|repaid|cleared|clear loan|returned money|returned balance)\b/.test(q) && (person || amount)) {
@@ -390,15 +438,12 @@ function parseSegment(segment: string): FinancialAction {
     };
   }
 
-  // GROUP EXPENSE
-  if (/\b(?:split|group expense|shared with|divide|among|between)\b/.test(q)) {
-    const membersMatch = segment.match(/(?:with|between|among)\s+([A-Za-z ,and]+)/i);
-    const memberStr = membersMatch?.[1] || '';
-    const members = memberStr.split(/,|\band\b/).map(s => s.trim()).filter(Boolean);
+  // EXPLICIT EXPENSE (paid/spent/bought for X)
+  if (isExplicitExpense(q) && amount) {
     return {
-      type: 'group_expense', rawSegment: segment,
-      entities: { amount, category, description: description || 'Group Expense', members, date },
-      confidence: 0.85, requiresReview: false,
+      type: 'expense', rawSegment: segment,
+      entities: { amount, category, description: description || 'Expense', date },
+      confidence: 0.92, requiresReview: false,
     };
   }
 

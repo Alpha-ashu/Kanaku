@@ -51,6 +51,8 @@
 	<string>KANAKU uses the microphone for voice entry, so you can add a transaction by speaking instead of typing.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>KANAKU converts your speech to text on this device so you can add a transaction by speaking instead of typing.</string>
+	<key>NSContactsUsageDescription</key>
+	<string>KANAKU uses your contacts to help you easily split group expenses and select friends.</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>KANAKU uses Face ID to unlock the app, so you do not have to type your PIN every time.</string>
 	<!-- Export compliance. The app uses only exempt cryptography: HTTPS/TLS and
