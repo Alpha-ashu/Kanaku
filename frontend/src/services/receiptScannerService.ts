@@ -47,7 +47,7 @@ const RECEIPT_TOTAL_PATTERNS = [
 ];
 
 const RECEIPT_SUBTOTAL_PATTERNS = [/sub\s*total/i, /subtotal/i, /discounted\s*total/i];
-const RECEIPT_PRE_TAX_PATTERNS = [/sub\s*total/i, /pre\s*tax/i, /^\s*total\b/i];
+const RECEIPT_PRE_TAX_PATTERNS = [/sub\s*total/i, /pre\s*tax/i, /^\s*total\b/i, /bill\s*amount/i, /bill\s*total/i];
 const RECEIPT_TAX_PATTERNS = [/tax/i, /vat/i, /gst/i, /service\s*tax/i];
 const PAYMENT_METHOD_PATTERNS = [
   { label: 'Visa', pattern: /\bvisa\b/i },
@@ -1287,7 +1287,7 @@ export async function parseReceiptText(rawText: string, userId?: string): Promis
 
   const subtotal = extractSectionAmount(lines, RECEIPT_SUBTOTAL_PATTERNS);
   const pretaxAmount = extractPretaxAmount(lines);
-  let resolvedSubtotal = subtotal || pretaxAmount;
+  let resolvedSubtotal = subtotal || pretaxAmount || (product_total > 0 ? product_total : undefined);
 
   // STEP 2 & 3 - CLASSIFY BY CONTEXT AND POSITIONAL UNDERSTANDING
   const candidates: Array<{ amount: number; score: number; isKeywordMatch: boolean; lineIndex: number }> = [];
@@ -1315,8 +1315,10 @@ export async function parseReceiptText(rawText: string, userId?: string): Promis
 
       if (matchesTotalPattern && !/sub\s*total|tax/i.test(line)) {
         isKeywordMatch = true;
-        if (/grand\s*total|final\s*total|net\s*total|net\s*amount|amount\s*payable|total\s*payable|total\s*amount|bill\s*amount|bill\s*amt/i.test(line)) {
+        if (/grand\s*total|final\s*total|net\s*total|net\s*amount|amount\s*payable|total\s*payable|total\s*amount|amount\s*paid|paid\s*amount/i.test(line)) {
           score += 5;
+        } else if (/bill\s*amount|bill\s*amt/i.test(line)) {
+          score += 2;
         } else {
           score += 3;
         }
