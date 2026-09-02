@@ -107,11 +107,11 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
  userId,
  parser
 }) => {
- const { accounts, currency, goals, setCurrentPage } = useApp();
+ const { accounts, currency, goals, setCurrentPage, refreshData } = useApp();
  // STT/parsers leave artefacts like "T-shirt. ." and "Jijo." — normalise the
  // user-visible text fields once on entry so display and saves stay clean.
- const cleanSpeechText = (value?: string) =>
- value?.replace(/[\s.،。]+$/g, '').replace(/\s{2,}/g, ' ').trim() || undefined;
+  const cleanSpeechText = (value?: string) =>
+    value?.replace(/[\s.،。]+$/g, '').replace(/\s{2,}/g, ' ').trim() || undefined;
 
  const [actions, setActions] = useState<FinancialAction[]>(() =>
  initialActions.map((a) => ({
@@ -666,6 +666,7 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
           }))
       );
 
+      refreshData();
       onClose();
       setCurrentPage('transactions');
  } catch (error) {

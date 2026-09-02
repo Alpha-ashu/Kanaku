@@ -92,28 +92,41 @@ export const Investments: React.FC = () => {
  [currency, liveQuotes],
  );
 
- const portfolioStats = useMemo(() => {
-  const totalInvested = openInvestments.reduce((sum, investment) => sum + Number(getMetrics(investment).totalInvested || 0), 0);
-  const currentValue = openInvestments.reduce((sum, investment) => sum + Number(getMetrics(investment).currentValue || 0), 0);
-  const profitLoss = currentValue - totalInvested;
-  const profitLossPercent = totalInvested > 0 ? (profitLoss / totalInvested) * 100 : 0;
+  const portfolioStats = useMemo(() => {
+    try {
+      const totalInvested = openInvestments.reduce((sum, investment) => {
+        const m = getMetrics(investment);
+        return sum + Number(m?.totalInvested || 0);
+      }, 0);
+      const currentValue = openInvestments.reduce((sum, investment) => {
+        const m = getMetrics(investment);
+        return sum + Number(m?.currentValue || 0);
+      }, 0);
+      const profitLoss = currentValue - totalInvested;
+      const profitLossPercent = totalInvested > 0 ? (profitLoss / totalInvested) * 100 : 0;
 
- const assetAllocation = openInvestments.reduce((acc: any, investment) => {
- const metrics = getMetrics(investment);
- if (!acc[investment.assetType]) acc[investment.assetType] = 0;
- acc[investment.assetType] += metrics.currentValue;
- return acc;
- }, {});
+      const assetAllocation = openInvestments.reduce((acc: any, investment) => {
+        if (!investment) return acc;
+        const metrics = getMetrics(investment);
+        const typeKey = investment.assetType || 'other';
+        if (!acc[typeKey]) acc[typeKey] = 0;
+        acc[typeKey] += Number(metrics?.currentValue || 0);
+        return acc;
+      }, {});
 
- const chartData = Object.entries(assetAllocation).map(([name, value]) => ({
- name: name.charAt(0).toUpperCase() + name.slice(1),
- value,
- }));
+      const chartData = Object.entries(assetAllocation).map(([name, value]) => ({
+        name: (name || 'Asset').charAt(0).toUpperCase() + (name || 'Asset').slice(1),
+        value: Number(value) || 0,
+      }));
 
- return { totalInvested, currentValue, profitLoss, profitLossPercent, chartData };
- }, [getMetrics, openInvestments]);
+      return { totalInvested, currentValue, profitLoss, profitLossPercent, chartData };
+    } catch (e) {
+      console.error('[Investments] Error computing portfolio stats:', e);
+      return { totalInvested: 0, currentValue: 0, profitLoss: 0, profitLossPercent: 0, chartData: [] };
+    }
+  }, [getMetrics, openInvestments]);
 
- const formatCurrency = (amount: number) => formatCurrencyAmount(amount, currency);
+  const formatCurrency = (amount: number) => formatCurrencyAmount(amount, currency);
 
   const handleDeleteInvestment = async (investmentId: number, investmentName: string) => {
     // Check if linked to an active loan
@@ -440,7 +453,7 @@ export const Investments: React.FC = () => {
  <tr key={inv.id} className="hover:bg-gray-50">
  <td className="px-6 py-4 whitespace-nowrap">
  <div className="font-medium text-gray-900">{getInvestmentDisplayName(inv.assetName)}</div>
- <div className="text-sm text-gray-500">{new Date(inv.purchaseDate).toLocaleDateString()}</div>
+ <div className="text-sm text-gray-500">{inv.purchaseDate ? new Date(inv.purchaseDate).toLocaleDateString() : '—'}</div>
  </td>
  <td className="px-6 py-4 whitespace-nowrap">
  <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-700 capitalize">{inv.assetType}</span>
@@ -526,7 +539,7 @@ export const Investments: React.FC = () => {
  <p className="font-display font-bold text-gray-900 text-base truncate">{getInvestmentDisplayName(inv.assetName)}</p>
  <div className="flex items-center gap-2 mt-0.5">
  <span className="px-2 py-0.5 text-xs rounded-full bg-gray-100 text-gray-700 capitalize">{inv.assetType}</span>
- <span className="text-xs text-gray-400">{new Date(inv.purchaseDate).toLocaleDateString()}</span>
+ <span className="text-xs text-gray-400">{inv.purchaseDate ? new Date(inv.purchaseDate).toLocaleDateString() : '—'}</span>
  </div>
  </div>
  <div className="flex gap-1.5 shrink-0">

@@ -10,8 +10,8 @@ if (hasSigningProperties) {
 
 // Single source of truth for the app's version. Bump VERSION_CODE_BASE when you
 // cut a release; CI adds its run number on top so no two builds collide.
-def VERSION_CODE_BASE = 10
-def VERSION_NAME = "1.0.2"
+def VERSION_CODE_BASE = 12
+def VERSION_NAME = "1.0.4"
 
 android {
     namespace = "com.kanaku.app"

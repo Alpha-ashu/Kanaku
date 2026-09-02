@@ -37,6 +37,8 @@ export const quickActions: QuickActionItem[] = [
   // ─── Quick Create Actions ────────────────────────────────────────────────
   { id: 'add-expense', label: 'Add Expense', icon: 'food & dining', description: 'Log a new expense', category: 'create' },
   { id: 'add-income', label: 'Add Income', icon: 'salary', description: 'Record incoming money', category: 'create' },
+  { id: 'voice-input', label: 'Voice Logging', icon: 'voice logging', description: 'Speak to log instantly', category: 'create' },
+  { id: 'receipt-scanner', label: 'Receipt Scanner', icon: 'receipt scanner', description: 'Scan & parse receipts', category: 'create' },
   { id: 'transfer', label: 'Transfer', icon: 'transfer', description: 'Move between accounts', category: 'create' },
   { id: 'split-bill', label: 'Split Bill', icon: 'group expenses', description: 'Split shared cost', category: 'create' },
 
@@ -52,8 +54,6 @@ export const quickActions: QuickActionItem[] = [
   { id: 'reports', label: 'Reports', icon: 'reports', description: 'Analytics & insights', category: 'navigation' },
   { id: 'todo-lists', label: 'Todo Lists', icon: 'todo lists', description: 'Tasks & checklist items', category: 'navigation' },
   { id: 'book-advisor', label: 'Book Advisor', icon: 'book advisor', description: 'Financial advisory', category: 'tools', roles: ['admin', 'user'] },
-  { id: 'voice-input', label: 'Voice Logging', icon: 'voice logging', description: 'Speak to log instantly', category: 'tools', requiresVoice: true },
-  { id: 'receipt-scanner', label: 'Receipt Scanner', icon: 'receipt scanner', description: 'Scan & parse receipts', category: 'tools' },
   { id: 'notifications', label: 'Notifications', icon: 'notifications', description: 'Alerts & updates', category: 'navigation' },
   { id: 'recurring-transactions', label: 'Recurring', icon: 'recurring', description: 'Bills & subscriptions', category: 'navigation' },
   { id: 'budget-alerts', label: 'Budget Alerts', icon: 'budget alerts', description: 'Spending limit alerts', category: 'navigation' },

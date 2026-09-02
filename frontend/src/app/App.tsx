@@ -753,18 +753,7 @@ const AppContent: React.FC = () => {
     const hasManagerBypass = isManager && isManagerPage;
 
     // Gate AI/Voice assistant pages based on AI capability settings
-    const isVoiceDisabled = aiCapabilities?.voiceAssistant?.enabled === false;
     const isAIDisabled = aiCapabilities?.aiAutomation?.enabled === false;
-
-    if (isVoiceDisabled && (currentPage === 'voice-input' || currentPage === 'voice-review')) {
-      console.warn(`[Route Guard] Redirecting from disabled voice page: ${currentPage}`);
-      if (visibleFeatures.dashboard) {
-        setCurrentPage('dashboard');
-      } else {
-        setCurrentPage('settings');
-      }
-      return;
-    }
 
     if (isAIDisabled && currentPage === 'ai-insights') {
       console.warn(`[Route Guard] Redirecting from disabled AI insights page: ${currentPage}`);
@@ -1260,14 +1249,7 @@ const AppContent: React.FC = () => {
     const hasManagerBypass = isManager && isManagerPage;
 
     // Gate AI/Voice assistant pages based on AI capability settings
-    const isVoiceDisabled = aiCapabilities?.voiceAssistant?.enabled === false;
     const isAIDisabled = aiCapabilities?.aiAutomation?.enabled === false;
-
-    if (isVoiceDisabled && (currentPage === 'voice-input' || currentPage === 'voice-review')) {
-      console.warn(`[Access Denied] Voice assistant is disabled. Cannot render page: ${currentPage}`);
-      if (!visibleFeatures.dashboard) return <Settings />;
-      return <Dashboard setCurrentPage={setCurrentPage} />;
-    }
 
     if (isAIDisabled && currentPage === 'ai-insights') {
       console.warn(`[Access Denied] AI Insights is disabled. Cannot render page: ${currentPage}`);

@@ -103,8 +103,8 @@ export const BottomNav: React.FC<BottomNavProps> = ({ onQuickAdd }) => {
       className="fixed bottom-0 left-0 right-0 z-50 lg:hidden pointer-events-none"
       style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
     >
-      {/* The pill floats 8px (0.5rem) above the safe-area zone */}
-      <div className="mx-2 sm:mx-4 mb-2 sm:mb-3 bg-white/95 backdrop-blur-md border border-gray-200/80 rounded-2xl shadow-2xl pointer-events-auto flex items-center justify-between px-1.5 sm:px-3 h-16 relative overflow-visible">
+      {/* The pill floats above the safe-area zone */}
+      <div className="mx-2 sm:mx-4 mb-2 sm:mb-3 bg-white/95 backdrop-blur-xl border border-blue-100/80 rounded-2xl shadow-2xl shadow-blue-950/10 pointer-events-auto flex items-center justify-between px-1.5 sm:px-2 h-16 relative overflow-visible">
         {filteredNavigationItems.map((item, index) => {
           const Icon = item.icon;
           const isActive = currentPage === item.id;
@@ -119,12 +119,12 @@ export const BottomNav: React.FC<BottomNavProps> = ({ onQuickAdd }) => {
                   e.stopPropagation();
                   handleNavigation(item.id);
                 }}
-                className="flex items-center justify-center w-12 h-12 bg-slate-900 active:bg-black text-white rounded-full shadow-xl active:scale-90 transition-transform shrink-0 mx-1 z-30 focus:outline-none -mt-3 border-2 border-white cursor-pointer"
+                className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-600 active:from-blue-700 active:to-indigo-700 text-white rounded-full shadow-xl shadow-blue-500/35 active:scale-90 transition-transform shrink-0 mx-1 z-30 focus:outline-none -mt-3 border-2 border-white cursor-pointer"
                 title="Quick Add"
                 aria-label="Quick Add"
                 data-testid="nav-quick-add-button"
               >
-                <Icon className="w-6 h-6" strokeWidth={2.5} />
+                <Icon className="w-6 h-6 text-white" strokeWidth={2.5} />
               </button>
             );
           }
@@ -136,20 +136,19 @@ export const BottomNav: React.FC<BottomNavProps> = ({ onQuickAdd }) => {
               onClick={() => handleNavigation(item.id)}
               data-testid={`nav-${item.id}-button`}
               className={cn(
-                "flex flex-col items-center justify-center h-full flex-1 min-w-0 transition-colors duration-150 relative py-1 px-0.5 focus:outline-none select-none cursor-pointer",
-                isActive ? "text-slate-900 font-bold" : "text-gray-500 hover:text-gray-800"
+                "flex flex-col items-center justify-center h-[50px] flex-1 min-w-0 rounded-xl transition-all duration-200 relative py-1 px-1 focus:outline-none select-none cursor-pointer",
+                isActive
+                  ? "bg-blue-600 text-white shadow-md shadow-blue-500/25"
+                  : "text-slate-500 hover:text-blue-600 hover:bg-blue-50/50"
               )}
             >
-              {isActive && (
-                <div className="absolute top-1 w-6 h-1 bg-slate-900 rounded-full" />
-              )}
               <Icon
-                className={cn("w-5 h-5 transition-transform duration-150 mb-0.5", isActive ? "scale-110 text-slate-900" : "text-gray-500")}
-                strokeWidth={isActive ? 2.3 : 1.8}
+                className={cn("w-5 h-5 transition-transform duration-150 mb-0.5", isActive ? "scale-105 text-white" : "text-slate-500")}
+                strokeWidth={isActive ? 2.5 : 1.8}
               />
               <span className={cn(
                 "text-[10px] tracking-tight truncate max-w-full leading-tight",
-                isActive ? "font-black text-slate-900" : "font-medium text-gray-500"
+                isActive ? "font-bold text-white" : "font-medium text-slate-500"
               )}>
                 {item.label}
               </span>

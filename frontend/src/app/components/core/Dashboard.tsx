@@ -348,94 +348,112 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
   return (
     <CenteredLayout>
       <div className="space-y-6">
-        {/* Page Header */}
+        {/* Page Header with TimeFilter Period Selector */}
         <PageHeader
           title="Dashboard"
           subtitle="Here's what's happening with your money today."
         >
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setCurrentPage?.('add-transaction')}
-              className="flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold shadow-sm transition-colors cursor-pointer"
-            >
-              Add Transaction
-            </button>
+          <div className="flex items-center">
+            <TimeFilter value={timePeriod} onChange={setTimePeriod} />
           </div>
         </PageHeader>
 
-        {/* 1. Hero Net Worth Card */}
+        {/* 1. Primary Hero: Dark Navy Total Net Worth Card */}
         <motion.div {...fadeUp}>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card variant="glass" className="p-5 relative overflow-hidden bg-gradient-to-br from-indigo-900 via-indigo-950 to-slate-900 text-white border-indigo-800/40">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-semibold uppercase tracking-wider text-indigo-300">Total Net Worth</span>
-                <Sparkles size={18} className="text-indigo-400" />
+          <div className="w-full">
+            <Card
+              variant="glass"
+              className="p-6 relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-950 to-indigo-950 text-white border border-slate-800/80 shadow-2xl rounded-3xl"
+            >
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-bold uppercase tracking-wider text-indigo-300">Total Net Worth</span>
+                <div className="w-8 h-8 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-300">
+                  <Sparkles size={16} />
+                </div>
               </div>
-              <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-3">
+              <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-4 text-white">
                 {formatCurrency(totalNetWorth)}
               </h2>
-              <div className="flex items-center justify-between text-xs text-indigo-200/80 pt-3 border-t border-white/10">
-                <span>Total Assets: {formatCurrency(stats.totalBalance + investmentStats.currentValue)}</span>
-                <span>Active Accounts: {accounts.length}</span>
+              <div className="flex flex-wrap items-center justify-between gap-3 text-xs sm:text-sm text-indigo-200/80 pt-4 border-t border-white/10">
+                <span>Total Assets: <strong className="text-white font-semibold">{formatCurrency(stats.totalBalance + investmentStats.currentValue)}</strong></span>
+                <span>Active Accounts: <strong className="text-white font-semibold">{accounts.length}</strong></span>
               </div>
-            </Card>
-
-            <Card variant="glass" className="p-5 bg-white/60 dark:bg-slate-900/60 border-slate-200/60 dark:border-slate-800/60">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-emerald-600">Total Income</span>
-                <TrendingUp size={18} className="text-emerald-500" />
-              </div>
-              <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight mb-2">
-                {formatCurrency(stats.monthlyIncome)}
-              </h3>
-              <p className="text-xs text-slate-500">From all income streams this period</p>
-            </Card>
-
-            <Card variant="glass" className="p-5 bg-white/60 dark:bg-slate-900/60 border-slate-200/60 dark:border-slate-800/60">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-rose-600">Total Expenses</span>
-                <TrendingDown size={18} className="text-rose-500" />
-              </div>
-              <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight mb-2">
-                {formatCurrency(stats.monthlyExpense)}
-              </h3>
-              <p className="text-xs text-slate-500">Total spending across all categories</p>
             </Card>
           </div>
         </motion.div>
 
-        {/* Tax Summary Overview Card */}
+        {/* 2. Income & Expenses: Two Separate Vertical Cards */}
         <motion.div {...fadeUp}>
-          <Card variant="glass" className="p-5 bg-gradient-to-r from-amber-500/10 via-orange-500/5 to-transparent border-amber-500/20">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Total Income Card */}
+            <Card variant="glass" className="p-5 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-3xl shadow-sm">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-bold uppercase tracking-wider text-emerald-600">Total Income</span>
+                <div className="w-8 h-8 rounded-full bg-emerald-50 dark:bg-emerald-950/40 flex items-center justify-center text-emerald-600">
+                  <TrendingUp size={18} />
+                </div>
+              </div>
+              <h3 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight mb-1">
+                {formatCurrency(stats.monthlyIncome)}
+              </h3>
+              <p className="text-xs text-slate-500 font-medium">From all income streams ({getPeriodLabel(timePeriod)})</p>
+            </Card>
+
+            {/* Total Expenses Card */}
+            <Card variant="glass" className="p-5 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-3xl shadow-sm">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-bold uppercase tracking-wider text-rose-600">Total Expenses</span>
+                <div className="w-8 h-8 rounded-full bg-rose-50 dark:bg-rose-950/40 flex items-center justify-center text-rose-600">
+                  <TrendingDown size={18} />
+                </div>
+              </div>
+              <h3 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight mb-1">
+                {formatCurrency(stats.monthlyExpense)}
+              </h3>
+              <p className="text-xs text-slate-500 font-medium">Total spending across all categories ({getPeriodLabel(timePeriod)})</p>
+            </Card>
+          </div>
+        </motion.div>
+
+        {/* 3. Tax Summary: Dark Navy Interactive Card */}
+        <motion.div {...fadeUp}>
+          <Card
+            variant="glass"
+            className="p-5 relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-950 to-indigo-950 text-white border border-slate-800/80 shadow-xl rounded-3xl hover:border-indigo-500/40 cursor-pointer transition-all duration-200 active:scale-[0.99] group"
+            onClick={() => setCurrentPage?.('receipt-scanner')}
+          >
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-600 flex items-center justify-center font-bold">
+                <div className="w-10 h-10 rounded-2xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold">
                   <Receipt size={20} />
                 </div>
                 <div>
-                  <h4 className="text-sm font-bold text-slate-900 dark:text-white">Tax Summary</h4>
-                  <p className="text-xs text-slate-500">Calculated from transactions & receipt scans</p>
+                  <div className="flex items-center gap-1.5">
+                    <h4 className="text-sm font-bold text-white group-hover:text-indigo-300 transition-colors">Tax Summary</h4>
+                    <ChevronRight size={14} className="text-indigo-400 group-hover:translate-x-0.5 transition-transform" />
+                  </div>
+                  <p className="text-xs text-indigo-200/70">Calculated from transactions & receipt scans · Tap for detailed breakdown</p>
                 </div>
               </div>
-              <div className="grid grid-cols-3 gap-4 sm:gap-6 text-center sm:text-right">
+              <div className="grid grid-cols-3 gap-4 sm:gap-6 text-center sm:text-right pt-3 sm:pt-0 border-t sm:border-t-0 border-white/10">
                 <div>
-                  <p className="text-[10px] uppercase font-bold text-slate-400">Total Tax</p>
-                  <p className="text-sm sm:text-base font-black text-amber-600">{formatCurrency(taxSummary.totalTax)}</p>
+                  <p className="text-[10px] uppercase font-bold text-indigo-300">Total Tax</p>
+                  <p className="text-sm sm:text-base font-black text-amber-400">{formatCurrency(taxSummary.totalTax)}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] uppercase font-bold text-slate-400">This Month</p>
-                  <p className="text-sm sm:text-base font-black text-slate-700 dark:text-slate-200">{formatCurrency(taxSummary.monthlyTax)}</p>
+                  <p className="text-[10px] uppercase font-bold text-indigo-300">This Month</p>
+                  <p className="text-sm sm:text-base font-black text-white">{formatCurrency(taxSummary.monthlyTax)}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] uppercase font-bold text-slate-400">This Week</p>
-                  <p className="text-sm sm:text-base font-black text-slate-700 dark:text-slate-200">{formatCurrency(taxSummary.weeklyTax)}</p>
+                  <p className="text-[10px] uppercase font-bold text-indigo-300">This Week</p>
+                  <p className="text-sm sm:text-base font-black text-white">{formatCurrency(taxSummary.weeklyTax)}</p>
                 </div>
               </div>
             </div>
           </Card>
         </motion.div>
 
-        {/* 2. Accounts Section */}
+        {/* 4. Lower Dashboard Section 1: Accounts & Wallets */}
         {visibleFeatures?.accounts !== false && (
           <motion.div {...fadeUp} className="mb-6 lg:mb-8">
             <SectionHeader title="Accounts & Wallets" onViewAll={() => setCurrentPage?.('accounts')} />
@@ -465,16 +483,16 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
           </motion.div>
         )}
 
-        {/* 3. Recent Transactions */}
+        {/* 5. Lower Dashboard Section 2: Recent Transactions */}
         {visibleFeatures?.transactions !== false && (
           <motion.div {...fadeUp} className="mb-6 lg:mb-8">
             <SectionHeader title="Recent Transactions" onViewAll={() => setCurrentPage?.('transactions')} />
             {recentTransactions.length > 0 ? (
-              <Card data-testid="dashboard-card-3" variant="glass" className="divide-y divide-white/10 no-padding overflow-hidden border-white/20">
+              <Card data-testid="dashboard-card-3" variant="glass" className="divide-y divide-gray-100 no-padding overflow-hidden">
                 {recentTransactions.map((transaction) => (
-                  <div data-testid={`dashboard-div-${transaction.id}`} key={transaction.id} className="p-4 flex items-center justify-between hover:bg-transparent transition-colors cursor-pointer" onClick={() => setCurrentPage?.('transactions')}>
+                  <div data-testid={`dashboard-div-${transaction.id}`} key={transaction.id} className="p-4 flex items-center justify-between hover:bg-slate-50/50 transition-colors cursor-pointer" onClick={() => setCurrentPage?.('transactions')}>
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-white/40 shadow-sm border border-slate-100">
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-white shadow-sm border border-slate-100">
                         {getCategoryCartoonIcon(transaction.category || 'Miscellaneous', 24)}
                       </div>
                       <div>
@@ -492,10 +510,287 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
                 ))}
               </Card>
             ) : (
-              <Card data-testid="dashboard-card-4" className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setCurrentPage?.('add-transaction')}>
-                <EmptyWidget icon={CreditCard} message="No transactions - tap to add your first" />
+              <Card data-testid="dashboard-card-4" className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setCurrentPage?.('transactions')}>
+                <EmptyWidget icon={CreditCard} message="No transactions - tap to view activity" />
               </Card>
             )}
+          </motion.div>
+        )}
+
+        {/* 6. Lower Dashboard Section 3: Loans & EMI */}
+        {visibleFeatures?.loans !== false && (
+          <motion.div {...fadeUp} className="mb-6 lg:mb-8">
+            <SectionHeader title="Loans & EMI" onViewAll={() => setCurrentPage?.('loans')} />
+            {activeLoans.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {activeLoans.map((loan) => {
+                  const status = getLoanStatus(loan);
+                  const statusConfig = {
+                    overdue: { label: 'Overdue', bg: 'bg-red-50', text: 'text-red-600', border: 'border-red-100', icon: AlertTriangle, dotColor: 'bg-red-500' },
+                    upcoming: { label: 'Due Soon', bg: 'bg-amber-50', text: 'text-amber-600', border: 'border-amber-100', icon: Clock, dotColor: 'bg-amber-500' },
+                    active: { label: 'Active', bg: 'bg-blue-50', text: 'text-blue-600', border: 'border-blue-100', icon: CheckCircle2, dotColor: 'bg-blue-500' },
+                  }[status];
+                  return (
+                    <Card
+                      data-testid={`dashboard-card-5-${loan.id}`}
+                      key={loan.id}
+                      className={cn("p-4 cursor-pointer hover:shadow-lg transition-all border", statusConfig.border)}
+                      onClick={() => setCurrentPage?.('loans')}
+                    >
+                      <div className="flex items-start justify-between mb-3">
+                        <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center", statusConfig.bg)}>
+                          <Landmark size={18} className={statusConfig.text} />
+                        </div>
+                        <span className={cn("flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full", statusConfig.bg, statusConfig.text)}>
+                          <span className={cn("w-1.5 h-1.5 rounded-full", statusConfig.dotColor)} />
+                          {statusConfig.label}
+                        </span>
+                      </div>
+                      <h4 className="font-semibold text-gray-900 truncate text-sm mb-0.5">{loan.name}</h4>
+                      <p className="text-xs text-gray-500 mb-3 capitalize">{loan.type === 'emi' ? 'EMI Loan' : loan.type === 'borrowed' ? 'Borrowed' : 'Lent'}</p>
+                      <div className="space-y-1">
+                        <div className="flex justify-between items-center text-xs text-gray-500">
+                          <span>Outstanding</span>
+                          <span className="font-semibold text-gray-900">{formatCurrency(loan.outstandingBalance)}</span>
+                        </div>
+                        {loan.emiAmount && (
+                          <div className="flex justify-between items-center text-xs text-gray-500">
+                            <span>EMI</span>
+                            <span className="font-semibold text-gray-900">{formatCurrency(loan.emiAmount)}/mo</span>
+                          </div>
+                        )}
+                        {loan.dueDate && (
+                          <div className="flex justify-between items-center text-xs text-gray-500">
+                            <span>Next due</span>
+                            <span className={cn("font-semibold", status === 'overdue' ? 'text-red-600' : 'text-gray-900')}>
+                              {new Date(loan.dueDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </Card>
+                  );
+                })}
+              </div>
+            ) : (
+              <Card data-testid="dashboard-card-6" className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setCurrentPage?.('loans')}>
+                <EmptyWidget icon={Landmark} message="No active loans - click to manage" />
+              </Card>
+            )}
+          </motion.div>
+        )}
+
+        {/* 7. Lower Dashboard Section 4: Upcoming Events / Calendar */}
+        {visibleFeatures?.calendar !== false && (
+          <motion.div {...fadeUp} className="mb-6 lg:mb-8">
+            <SectionHeader title="Upcoming Events" onViewAll={() => setCurrentPage?.('calendar')} viewLabel="View Calendar" />
+            {upcomingEvents.length > 0 ? (
+              <Card data-testid="dashboard-card-7" className="divide-y divide-gray-100 cursor-pointer hover:shadow-md transition-shadow" onClick={() => setCurrentPage?.('calendar')}>
+                {upcomingEvents.map((event, i) => {
+                  const timeBadge = {
+                    today: { label: 'Today', cls: 'bg-red-100 text-red-600' },
+                    week: { label: 'This Week', cls: 'bg-amber-100 text-amber-600' },
+                    month: { label: 'This Month', cls: 'bg-blue-100 text-blue-600' },
+                  }[event.timeCategory];
+                  const typeIcon = event.type === 'emi'
+                    ? <Landmark size={16} className="text-purple-600" />
+                    : <AlertCircle size={16} className="text-orange-600" />;
+                  const typeBg = event.type === 'emi' ? 'bg-purple-50' : 'bg-orange-50';
+                  return (
+                    <div key={i} className="p-4 flex items-center justify-between hover:bg-transparent transition-colors">
+                      <div className="flex items-center gap-3">
+                        <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center", typeBg)}>
+                          {typeIcon}
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-900 text-sm">{event.label}</p>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <span className={cn("text-[10px] font-semibold px-2 py-0.5 rounded-full", timeBadge.cls)}>{timeBadge.label}</span>
+                            <span className="text-xs text-gray-500">
+                              {event.date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      {event.amount !== undefined && (
+                        <p className="font-semibold text-sm text-gray-900">{formatCurrency(event.amount)}</p>
+                      )}
+                    </div>
+                  );
+                })}
+              </Card>
+            ) : (
+              <Card data-testid="dashboard-card-8" className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setCurrentPage?.('calendar')}>
+                <div className="flex flex-col items-center justify-center py-8 text-gray-400">
+                  <Calendar size={36} className="mb-2 opacity-40" />
+                  <p className="text-sm font-medium">No upcoming events this month</p>
+                  <p className="text-xs text-gray-400 mt-1">EMI due dates and bills appear here</p>
+                </div>
+              </Card>
+            )}
+          </motion.div>
+        )}
+
+        {/* 8. Lower Dashboard Section 5: Borrow, Lend & Groups */}
+        {(visibleFeatures?.groups !== false || visibleFeatures?.loans !== false) && (
+          <motion.div {...fadeUp} className="mb-6 lg:mb-8">
+            <SectionHeader title="Borrow, Lend & Groups" onViewAll={() => setCurrentPage?.('groups')} />
+            <Card data-testid="dashboard-card-9" variant="glass" className="cursor-pointer hover:shadow-xl transition-all border-white/20" onClick={() => setCurrentPage?.('groups')}>
+              {(groupStats.borrowed > 0 || groupStats.lent > 0 || groupStats.pendingSettlements > 0 || groupStats.activeGroups > 0) ? (
+                <div className="p-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div className="bg-red-50 rounded-2xl p-3">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <HandCoins size={14} className="text-red-500" />
+                        <span className="text-[10px] font-bold text-red-500 uppercase tracking-wide">You Owe</span>
+                      </div>
+                      <p className="text-base font-bold text-gray-900">{formatCurrency(groupStats.borrowed)}</p>
+                      <p className="text-[10px] text-gray-400 mt-0.5">Borrowed</p>
+                    </div>
+
+                    <div className="bg-green-50 rounded-2xl p-3">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <BadgeDollarSign size={14} className="text-green-500" />
+                        <span className="text-[10px] font-bold text-green-500 uppercase tracking-wide">Owed to You</span>
+                      </div>
+                      <p className="text-base font-bold text-gray-900">{formatCurrency(groupStats.lent)}</p>
+                      <p className="text-[10px] text-gray-400 mt-0.5">Lent out</p>
+                    </div>
+
+                    <div className="bg-amber-50 rounded-2xl p-3">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <AlertCircle size={14} className="text-amber-500" />
+                        <span className="text-[10px] font-bold text-amber-500 uppercase tracking-wide">Pending</span>
+                      </div>
+                      <p className="text-base font-bold text-gray-900">{formatCurrency(groupStats.pendingSettlements)}</p>
+                      <p className="text-[10px] text-gray-400 mt-0.5">Unsettled</p>
+                    </div>
+
+                    <div className="bg-blue-50 rounded-2xl p-3">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <Users size={14} className="text-blue-500" />
+                        <span className="text-[10px] font-bold text-blue-500 uppercase tracking-wide">Groups</span>
+                      </div>
+                      <p className="text-base font-bold text-gray-900">{groupStats.activeGroups}</p>
+                      <p className="text-[10px] text-gray-400 mt-0.5">Active</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-end mt-3 text-xs text-gray-400 gap-1">
+                    <span>Tap to manage</span>
+                    <ChevronRight size={12} />
+                  </div>
+                </div>
+              ) : (
+                <EmptyWidget icon={Users} message="No group expenses or borrow/lend records" />
+              )}
+            </Card>
+          </motion.div>
+        )}
+
+        {/* 9. Lower Dashboard Section 6: Investments */}
+        {visibleFeatures?.investments !== false && (
+          <motion.div {...fadeUp} className="mb-6 lg:mb-8">
+            <SectionHeader title="Investments" onViewAll={() => setCurrentPage?.('investments')} />
+            {investmentStats.count > 0 ? (
+              <Card data-testid="dashboard-card-10" className="cursor-pointer hover:shadow-md transition-all" onClick={() => setCurrentPage?.('investments')}>
+                <div className="p-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                    <div className="bg-indigo-50 rounded-2xl p-3">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <Activity size={14} className="text-indigo-500" />
+                        <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-wide">Invested</span>
+                      </div>
+                      <p className="text-base font-bold text-gray-900">{formatCurrency(investmentStats.totalInvested)}</p>
+                    </div>
+                    <div className="bg-purple-50 rounded-2xl p-3">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <BarChart3 size={14} className="text-purple-500" />
+                        <span className="text-[10px] font-bold text-purple-500 uppercase tracking-wide">Current Value</span>
+                      </div>
+                      <p className="text-base font-bold text-gray-900">{formatCurrency(investmentStats.currentValue)}</p>
+                    </div>
+                    <div className={cn("rounded-2xl p-3", investmentStats.totalReturns >= 0 ? "bg-green-50" : "bg-red-50")}>
+                      <div className="flex items-center gap-1.5 mb-1">
+                        {investmentStats.totalReturns >= 0
+                          ? <TrendingUp size={14} className="text-green-500" />
+                          : <TrendingDown size={14} className="text-red-500" />}
+                        <span className={cn("text-[10px] font-bold uppercase tracking-wide", investmentStats.totalReturns >= 0 ? "text-green-500" : "text-red-500")}>Returns</span>
+                      </div>
+                      <p className={cn("text-base font-bold", investmentStats.totalReturns >= 0 ? "text-green-700" : "text-red-700")}>
+                        {investmentStats.totalReturns >= 0 ? '+' : ''}{formatCurrency(investmentStats.totalReturns)}
+                      </p>
+                    </div>
+                    <div className="bg-transparent rounded-2xl p-3">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <BarChart3 size={14} className="text-gray-500" />
+                        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wide">Holdings</span>
+                      </div>
+                      <p className="text-base font-bold text-gray-900">{investmentStats.count}</p>
+                    </div>
+                  </div>
+                  <div className="divide-y divide-gray-100">
+                    {openInvestments.slice(0, 3).map((inv) => {
+                      const metrics = getDashboardInvestmentMetrics(inv);
+                      return (
+                        <div key={inv.id} className="flex items-center justify-between py-2.5">
+                          <div>
+                            <p className="text-sm font-semibold text-gray-900">{getInvestmentDisplayName(inv.assetName)}</p>
+                            <p className="text-xs text-gray-400 capitalize">{inv.assetType} {metrics.assetCurrency}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm font-bold text-gray-900">{formatCurrency(metrics.currentValue)}</p>
+                            <p className={cn("text-xs font-semibold", metrics.profitLoss >= 0 ? "text-green-600" : "text-red-500")}>
+                              {metrics.profitLoss >= 0 ? '+' : ''}{formatCurrency(metrics.profitLoss)}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="flex items-center justify-end mt-2 text-xs text-gray-400 gap-1">
+                    <span>View all investments</span>
+                    <ChevronRight size={12} />
+                  </div>
+                </div>
+              </Card>
+            ) : (
+              <Card data-testid="dashboard-card-11" className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setCurrentPage?.('investments')}>
+                <EmptyWidget icon={BarChart3} message="No investments added yet - click to add" />
+              </Card>
+            )}
+          </motion.div>
+        )}
+
+        {/* 10. Lower Dashboard Section 7: Goals Progress */}
+        {visibleFeatures?.goals !== false && activeGoals.length > 0 && (
+          <motion.div {...fadeUp} className="mb-6 lg:mb-8">
+            <SectionHeader title="Goals Progress" onViewAll={() => setCurrentPage?.('goals')} />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {activeGoals.map((goal) => {
+                const progress = Math.min((goal.currentAmount / goal.targetAmount) * 100, 100);
+                return (
+                  <Card data-testid={`dashboard-card-12-${goal.id}`} key={goal.id} className="p-4 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setCurrentPage?.('goals')}>
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="font-medium text-gray-900 truncate text-sm">{goal.name}</h4>
+                      <Target size={16} className="text-pink-400 flex-shrink-0" />
+                    </div>
+                    <div className="mb-3">
+                      <div className="flex justify-between text-xs text-gray-500 mb-1.5">
+                        <span>{formatCurrency(goal.currentAmount)}</span>
+                        <span>{formatCurrency(goal.targetAmount)}</span>
+                      </div>
+                      <div className="w-full bg-gray-100 rounded-full h-2">
+                        <div
+                          className="bg-gradient-to-r from-pink-500 to-rose-500 h-2 rounded-full transition-all duration-500"
+                          style={{ width: `${progress}%` }}
+                        />
+                      </div>
+                    </div>
+                    <p className="text-xs font-semibold text-pink-600">{progress.toFixed(0)}% Complete</p>
+                  </Card>
+                );
+              })}
+            </div>
           </motion.div>
         )}
 

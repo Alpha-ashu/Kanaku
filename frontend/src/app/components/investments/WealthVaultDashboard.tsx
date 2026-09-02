@@ -94,11 +94,13 @@ export const WealthVaultDashboard: React.FC<{ onAddAsset?: () => void }> = ({ on
   const goldEntries = useLiveQuery(() => db.gold.toArray(), []) || [];
 
   const localGoldAssets = useMemo<WealthAsset[]>(() => {
-    return goldEntries.map(g => {
-      const weightGrams = g.unit === 'kg' ? g.quantity * 1000 : g.unit === 'ounce' ? g.quantity * 31.1035 : g.quantity;
-      const buyPricePerGram = g.purchasePrice > 0 ? (g.purchasePrice < 10000 ? g.purchasePrice : g.purchasePrice / Math.max(weightGrams, 1)) : 0;
-      const totalInvested = g.purchasePrice > 10000 ? g.purchasePrice : weightGrams * g.purchasePrice;
-      const currPrice = g.currentPrice || buyPricePerGram;
+    return (goldEntries || []).map(g => {
+      const quantity = Number(g.quantity) || 0;
+      const weightGrams = g.unit === 'kg' ? quantity * 1000 : g.unit === 'ounce' ? quantity * 31.1035 : quantity;
+      const purchasePrice = Number(g.purchasePrice) || 0;
+      const buyPricePerGram = purchasePrice > 0 ? (purchasePrice < 10000 ? purchasePrice : purchasePrice / Math.max(weightGrams, 1)) : 0;
+      const totalInvested = purchasePrice > 10000 ? purchasePrice : weightGrams * purchasePrice;
+      const currPrice = Number(g.currentPrice) || buyPricePerGram;
       const currentValue = weightGrams * currPrice;
 
       return {
@@ -159,22 +161,28 @@ export const WealthVaultDashboard: React.FC<{ onAddAsset?: () => void }> = ({ on
 
   // ── Filter only physical wealth assets ────────────────────────────────────────
   const wealthAssets = useMemo<WealthAsset[]>(() => {
-    const fromInvestments: WealthAsset[] = (investments as any[])
-      .map(inv => {
+    const fromInvestments: WealthAsset[] = (investments || [])
+      .map((inv: any) => {
+        if (!inv) return null;
         const metalType = getNormalizedMetalType(inv);
         if (metalType) {
+          const qty = Number(inv.quantity) || 1;
+          const bp = Number(inv.buyPrice) || 0;
+          const cp = Number(inv.currentPrice) || bp;
+          const ti = Number(inv.totalInvested) || (qty * bp);
+          const cv = Number(inv.currentValue) || (qty * cp);
           return {
-            id: inv.id,
+            id: inv.id || Math.random(),
             assetName: inv.assetName || inv.name || 'Gold Asset',
             assetType: metalType,
-            quantity: inv.quantity || 1,
-            buyPrice: inv.buyPrice || 0,
-            currentPrice: inv.currentPrice || inv.buyPrice || 0,
-            totalInvested: inv.totalInvested || (inv.quantity * inv.buyPrice) || 0,
-            currentValue: inv.currentValue || (inv.quantity * (inv.currentPrice || inv.buyPrice)) || 0,
+            quantity: qty,
+            buyPrice: bp,
+            currentPrice: cp,
+            totalInvested: ti,
+            currentValue: cv,
             purchaseDate: inv.purchaseDate ? new Date(inv.purchaseDate) : new Date(),
             metadata: {
-              weightGrams: inv.metadata?.weightGrams ?? inv.quantity,
+              weightGrams: inv.metadata?.weightGrams ?? qty,
               purityPercentage: inv.metadata?.purityPercentage ?? 91.6,
               lockerName: inv.metadata?.lockerName ?? 'Home Safe',
               ownershipTag: inv.metadata?.ownershipTag ?? 'self',
@@ -183,7 +191,23 @@ export const WealthVaultDashboard: React.FC<{ onAddAsset?: () => void }> = ({ on
           };
         }
         if (inv.assetType === 'real_estate' || inv.assetType === 'business') {
-          return inv;
+          const qty = Number(inv.quantity) || 1;
+          const bp = Number(inv.buyPrice) || 0;
+          const cp = Number(inv.currentPrice) || bp;
+          const ti = Number(inv.totalInvested) || (qty * bp);
+          const cv = Number(inv.currentValue) || (qty * cp);
+          return {
+            id: inv.id || Math.random(),
+            assetName: inv.assetName || inv.name || (inv.assetType === 'real_estate' ? 'Property' : 'Business Asset'),
+            assetType: inv.assetType,
+            quantity: qty,
+            buyPrice: bp,
+            currentPrice: cp,
+            totalInvested: ti,
+            currentValue: cv,
+            purchaseDate: inv.purchaseDate ? new Date(inv.purchaseDate) : new Date(),
+            metadata: inv.metadata || {},
+          };
         }
         return null;
       })

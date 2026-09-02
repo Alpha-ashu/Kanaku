@@ -1,5 +1,6 @@
 // PWA Registration and Setup
 import { toast } from 'sonner';
+import { Capacitor } from '@capacitor/core';
 
 let hasReloadedForServiceWorkerUpdate = false;
 
@@ -18,6 +19,29 @@ const showUpdateToast = (worker: ServiceWorker) => {
 };
 
 export const registerServiceWorker = async () => {
+  // On native Capacitor platforms (Android / iOS), never use Service Workers.
+  // Capacitor serves assets directly from native bundle/assets.
+  // An active Service Worker inside WebView can trap and serve stale cached bundles.
+  if (Capacitor.isNativePlatform()) {
+    if ('serviceWorker' in navigator) {
+      try {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(registrations.map((reg) => reg.unregister()));
+      } catch (e) {
+        console.warn('[PWA] Error unregistering SW on native platform:', e);
+      }
+    }
+    if ('caches' in window) {
+      try {
+        const keys = await caches.keys();
+        await Promise.all(keys.map((key) => caches.delete(key)));
+      } catch (e) {
+        console.warn('[PWA] Error clearing cache on native platform:', e);
+      }
+    }
+    return null;
+  }
+
   // Don't register service worker in development or for email confirmation flows
   const shouldSkip =
     import.meta.env.DEV ||
