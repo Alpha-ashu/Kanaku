@@ -153,7 +153,7 @@ jobs:
           cd android
           ./gradlew assembleDebug --no-daemon
 
-      - name: Build AAB (Release)
+      - name: Build AAB and APK (Release)
         if: |
           steps.keystore.outputs.has_keystore == 'true' &&
           (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.build_variant == 'release'))
@@ -170,20 +170,36 @@ jobs:
             ./gradlew assembleDebug --no-daemon
           else
             printf 'storeFile=../%s\nstorePassword=%s\nkeyAlias=%s\nkeyPassword=%s\n' "$KEYSTORE_PATH" "$KEYSTORE_PASSWORD" "$KEY_ALIAS" "$KEY_PASSWORD" > key.properties
-            ./gradlew bundleRelease --no-daemon
+            ./gradlew bundleRelease assembleRelease assembleDebug --no-daemon
             rm -f key.properties
           fi
 
+      # Direct installation APKs for devices
+      - name: Upload Release APK (Full / Sideload)
+        if: steps.keystore.outputs.has_keystore == 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: app-full-release-apk
+          path: android/app/build/outputs/apk/full/release/*.apk
+          if-no-files-found: ignore
+          retention-days: 30
+
+      - name: Upload Release APK (No-SMS / Store)
+        if: steps.keystore.outputs.has_keystore == 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: app-nosms-release-apk
+          path: android/app/build/outputs/apk/nosms/release/*.apk
+          if-no-files-found: ignore
+          retention-days: 30
+
       - name: Upload Debug APK artifacts
-        if: |
-          steps.keystore.outputs.has_keystore != 'true' ||
-          (github.event_name == 'workflow_dispatch' && github.event.inputs.build_variant == 'debug')
         uses: actions/upload-artifact@v7
         with:
           name: app-debug-apk
           path: android/app/build/outputs/apk/*/debug/*.apk
-          if-no-files-found: warn
-          retention-days: 7
+          if-no-files-found: ignore
+          retention-days: 14
 
       # nosms is the Play Store upload (no SMS permissions)
       - name: Upload Play Store AAB (nosms)
@@ -231,8 +247,8 @@ jobs:
           echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
           echo "- Branch: $BRANCH" >> $GITHUB_STEP_SUMMARY
           echo "- Triggered by: $EVENT" >> $GITHUB_STEP_SUMMARY
-          for apk in android/app/build/outputs/apk/*/debug/*.apk; do
-            [ -f "$apk" ] && echo "- Debug APK: ✅ $(basename "$apk")" >> $GITHUB_STEP_SUMMARY
+          for apk in android/app/build/outputs/apk/*/*/*.apk; do
+            [ -f "$apk" ] && echo "- APK: ✅ $(basename "$apk")" >> $GITHUB_STEP_SUMMARY
           done
           for aab in android/app/build/outputs/bundle/*/*.aab; do
             [ -f "$aab" ] && echo "- Release AAB: ✅ $(basename "$aab")" >> $GITHUB_STEP_SUMMARY
