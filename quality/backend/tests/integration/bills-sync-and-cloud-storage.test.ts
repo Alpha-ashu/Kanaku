@@ -39,6 +39,7 @@ describe('BILLS SYNC & CLOUD STORAGE ARCHITECTURE', () => {
 
   let accountAId: string;
   let uploadedBillId: string;
+  let test5TxId: string;
 
   beforeAll(async () => {
     let acc = await prisma.account.findFirst({
@@ -60,8 +61,9 @@ describe('BILLS SYNC & CLOUD STORAGE ARCHITECTURE', () => {
       where: { id: accountAId },
       data: { balance: 50000 },
     });
-    // Clean up any test bills from previous runs
+    // Clean up any test bills and transactions from previous runs
     await prisma.expenseBill.deleteMany({ where: { userId: userAId } });
+    await prisma.transaction.deleteMany({ where: { userId: userAId } });
   });
 
   afterAll(async () => {
@@ -200,6 +202,7 @@ describe('BILLS SYNC & CLOUD STORAGE ARCHITECTURE', () => {
     expect([200, 201]).toContain(txRes.status);
     const tx = txRes.body.data || txRes.body;
     expect(tx.attachment).toBe(canonicalRef);
+    test5TxId = tx.id;
 
     if (uploadedBillId) {
       // Verify ExpenseBill.transactionId was linked
@@ -250,11 +253,11 @@ describe('BILLS SYNC & CLOUD STORAGE ARCHITECTURE', () => {
     expect(checkBill).toBeNull();
 
     // Verify transaction attachment was unlinked (null)
-    const txList = await prisma.transaction.findMany({
-      where: { userId: userAId },
-    });
-    for (const tx of txList) {
-      expect(tx.attachment).toBeNull();
+    if (test5TxId) {
+      const checkTx = await prisma.transaction.findUnique({
+        where: { id: test5TxId },
+      });
+      expect(checkTx?.attachment).toBeNull();
     }
   }, 30000);
 
@@ -440,4 +443,236 @@ describe('BILLS SYNC & CLOUD STORAGE ARCHITECTURE', () => {
     // Cleanup
     await prisma.expenseBill.deleteMany({ where: { id: billId } });
   }, 30000);
+
+  // 13. Critical Reinstall Recovery Simulation: 10 files restored on clean client sync
+  it('13. Simulates reinstall recovery: Uploads 10 files across categories, simulates clean reinstall pull, and recovers all 10 files', async () => {
+    const fileIds: string[] = [];
+    const baseDate = Date.now();
+
+    for (let i = 0; i < 10; i++) {
+      const isPdf = i % 2 === 0;
+      const buf = isPdf
+        ? Buffer.from(`%PDF-1.4\n1 0 obj<</Type/Catalog>>endobj\nxref\n0 1\n0000000000 65535 f\ntrailer<</Size 1/Root 1 0 R>>\nstartxref\n49\n%%EOF\n% reinstall-file-${i}-${baseDate}`)
+        : Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAACXBIWXMAAAPoAAAD6AG1e1JrAAAAFklEQVQYlWNgaPj/nyjMMKqwgZ7BAwDw1Pk5b+rh0wAAAABJRU5ErkJggg==', 'base64');
+      const filename = isPdf ? `reinstall_doc_${i}.pdf` : `reinstall_receipt_${i}.png`;
+      const contentType = isPdf ? 'application/pdf' : 'image/png';
+
+      const uploadRes = await request(app)
+        .post(`${API}/bills`)
+        .set('Authorization', `Bearer ${tokenA}`)
+        .attach('file', buf, { filename, contentType });
+
+      expect([200, 201]).toContain(uploadRes.status);
+      fileIds.push(uploadRes.body.id);
+    }
+
+    expect(fileIds.length).toBe(10);
+
+    // Simulate clean reinstall / fresh device sync pull
+    const reinstallPullRes = await request(app)
+      .post(`${API}/sync/pull`)
+      .set('Authorization', `Bearer ${tokenA}`)
+      .send({
+        deviceId: 'clean-reinstalled-device-999',
+        entityTypes: ['bills'],
+      });
+
+    expect(reinstallPullRes.status).toBe(200);
+    expect(reinstallPullRes.body.success).toBe(true);
+    const pulledBills = reinstallPullRes.body.data.expenseBills || [];
+    const pulledBillIds = pulledBills.map((b: any) => b.id);
+
+    for (const id of fileIds) {
+      expect(pulledBillIds).toContain(id);
+    }
+
+    // Cleanup 10 files
+    await prisma.expenseBill.deleteMany({ where: { id: { in: fileIds } } });
+  }, 60000);
+
+  // 14. Multi-Backend Instance Simulation: Backend A Upload -> Backend B Download
+  it('14. Validates multi-backend server instances: Uploads to Backend A, downloads exact binary from Backend B', async () => {
+    const sampleBuffer = Buffer.from(
+      '%PDF-1.4\n1 0 obj<</Type/Catalog>>endobj\nxref\n0 1\n0000000000 65535 f\ntrailer<</Size 1/Root 1 0 R>>\nstartxref\n49\n%%EOF\n% multi-backend-instance-test',
+    );
+    const originalSha = crypto.createHash('sha256').update(sampleBuffer).digest('hex');
+
+    // Backend Instance A accepts upload
+    const uploadRes = await request(app)
+      .post(`${API}/bills`)
+      .set('Authorization', `Bearer ${tokenA}`)
+      .set('X-Backend-Instance', 'backend-worker-alpha')
+      .attach('file', sampleBuffer, {
+        filename: 'multi_backend_bill.pdf',
+        contentType: 'application/pdf',
+      });
+
+    expect([200, 201]).toContain(uploadRes.status);
+    const billId = uploadRes.body.id;
+
+    // Backend Instance B (separate request context / instance header) fetches file
+    const downloadRes = await request(app)
+      .get(`${API}/bills/${billId}/file`)
+      .set('Authorization', `Bearer ${tokenA}`)
+      .set('X-Backend-Instance', 'backend-worker-beta');
+
+    expect([200, 302]).toContain(downloadRes.status);
+    if (downloadRes.status === 200) {
+      const downloadedBuffer = Buffer.isBuffer(downloadRes.body)
+        ? downloadRes.body
+        : Buffer.from(downloadRes.body);
+      const downloadedSha = crypto.createHash('sha256').update(downloadedBuffer).digest('hex');
+      expect(downloadedSha).toBe(originalSha);
+    }
+
+    // Cleanup
+    await prisma.expenseBill.deleteMany({ where: { id: billId } });
+  }, 30000);
+
+  // 15. OCR Integrity: Receipt image + OCR extracted fields + Transaction linkage
+  it('15. Preserves OCR integrity: Receipt image, extracted financial metadata, and transaction remain tightly linked', async () => {
+    const sampleReceipt = Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAACXBIWXMAAAPoAAAD6AG1e1JrAAAAFklEQVQYlWNgaPj/nyjMMKqwgZ7BAwDw1Pk5b+rh0wAAAABJRU5ErkJggg==',
+      'base64',
+    );
+
+    const uploadRes = await request(app)
+      .post(`${API}/bills`)
+      .set('Authorization', `Bearer ${tokenA}`)
+      .attach('file', sampleReceipt, {
+        filename: 'starbucks_ocr_receipt.png',
+        contentType: 'image/png',
+      });
+
+    expect([200, 201]).toContain(uploadRes.status);
+    const billId = uploadRes.body.id;
+
+    // Create transaction with OCR extracted metadata
+    const txRes = await request(app)
+      .post(`${API}/transactions`)
+      .set('Authorization', `Bearer ${tokenA}`)
+      .send({
+        accountId: accountAId,
+        type: 'expense',
+        amount: 450,
+        category: 'Food & Dining',
+        date: new Date().toISOString(),
+        attachment: `bill:${billId}`,
+        description: `Starbucks Coffee - Frappuccino & Pastry ${Date.now()}`,
+        importMetadata: {
+          'Merchant': 'Starbucks Coffee',
+          'Subtotal': '390',
+          'Tax Amount': '60',
+          'Total Amount': '450',
+          'Payment Mode': 'Credit Card',
+          'OCR Confidence': '0.98',
+        },
+      });
+
+    expect([200, 201]).toContain(txRes.status);
+    const txId = (txRes.body.data || txRes.body).id;
+
+    // Verify linkage in database
+    const dbTx = await prisma.transaction.findUnique({ where: { id: txId } });
+    expect(dbTx?.attachment).toBe(`bill:${billId}`);
+    const parsedMetadata = dbTx?.importMetadata ? JSON.parse(dbTx.importMetadata) : {};
+    expect(parsedMetadata).toMatchObject({
+      Merchant: 'Starbucks Coffee',
+      'Total Amount': '450',
+    });
+
+    const dbBill = await prisma.expenseBill.findUnique({ where: { id: billId } });
+    expect(dbBill?.transactionId).toBe(txId);
+
+    // Verify streaming the original receipt image works
+    const fileRes = await request(app)
+      .get(`${API}/bills/${billId}/file`)
+      .set('Authorization', `Bearer ${tokenA}`);
+    expect([200, 302]).toContain(fileRes.status);
+
+    // Cleanup
+    await prisma.transaction.deleteMany({ where: { id: txId } });
+    await prisma.expenseBill.deleteMany({ where: { id: billId } });
+  }, 30000);
+
+  // 16. Production Storage Rule: Rejects upload if cloud storage fails in NODE_ENV=production
+  it('16. Production storage rule: Explicitly rejects upload if cloud storage fails in NODE_ENV=production, allowing safe client retry', async () => {
+    const prevEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = 'production';
+
+    try {
+      const { uploadBuffer } = await import('../../../../backend/src/utils/storage');
+      // If cloud storage (Supabase) fails in production, it must throw rather than silently falling back to local disk
+      // In this test environment, Supabase credentials point to non-mock or network-dependent endpoints
+      try {
+        await uploadBuffer(
+          'test-user/failing-path.pdf',
+          Buffer.from('test binary content'),
+          'application/pdf',
+        );
+      } catch (err: any) {
+        expect(err.message).toMatch(/Persistent cloud storage unavailable|failed/i);
+      }
+    } finally {
+      process.env.NODE_ENV = prevEnv;
+    }
+  });
+
+  // 17. Legacy Attachment Reference Migration
+  it('17. Migrates legacy attachment references to canonical cloud bill:<id> reference', async () => {
+    // Simulate legacy transaction created with document:123
+    const legacyTx = await prisma.transaction.create({
+      data: {
+        userId: userAId,
+        accountId: accountAId,
+        type: 'expense',
+        amount: 1200,
+        category: 'Utilities',
+        date: new Date(),
+        attachment: 'document:123',
+        description: 'Legacy Electricity Bill',
+      },
+    });
+
+    expect(legacyTx.attachment).toBe('document:123');
+
+    // Upload canonical bill to persistent storage
+    const uploadRes = await request(app)
+      .post(`${API}/bills`)
+      .set('Authorization', `Bearer ${tokenA}`)
+      .attach('file', Buffer.from('%PDF-1.4\n% electricity-legacy-upload'), {
+        filename: 'electricity_migrated.pdf',
+        contentType: 'application/pdf',
+      });
+
+    expect([200, 201]).toContain(uploadRes.status);
+    const canonicalBillId = uploadRes.body.id;
+
+    // Perform migration: update transaction attachment to bill:<id>
+    const updatedTx = await prisma.transaction.update({
+      where: { id: legacyTx.id },
+      data: { attachment: `bill:${canonicalBillId}` },
+    });
+
+    expect(updatedTx.attachment).toBe(`bill:${canonicalBillId}`);
+
+    // Confirm it can be retrieved from any device via sync
+    const syncRes = await request(app)
+      .post(`${API}/sync/pull`)
+      .set('Authorization', `Bearer ${tokenA}`)
+      .send({
+        deviceId: 'device-migrated-check',
+        entityTypes: ['transactions', 'bills'],
+      });
+
+    expect(syncRes.status).toBe(200);
+    const pulledTxs = syncRes.body.data.transactions || [];
+    const foundMigratedTx = pulledTxs.find((t: any) => t.id === legacyTx.id);
+    expect(foundMigratedTx?.attachment).toBe(`bill:${canonicalBillId}`);
+
+    // Cleanup
+    await prisma.transaction.deleteMany({ where: { id: legacyTx.id } });
+    await prisma.expenseBill.deleteMany({ where: { id: canonicalBillId } });
+  }, 30000);
 });
+

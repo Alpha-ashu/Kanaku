@@ -228,7 +228,9 @@ export class TransactionService {
       groupName: groupName || null,
       splitType: splitType || null,
       importSource: importSource || null,
-      importMetadata: importMetadata || null,
+      importMetadata: importMetadata
+        ? (typeof importMetadata === 'string' ? importMetadata : JSON.stringify(importMetadata))
+        : null,
       dedupHash: activeDedupHash,
       synced: true,
       syncStatus: 'synced',

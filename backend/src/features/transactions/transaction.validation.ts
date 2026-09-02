@@ -49,6 +49,8 @@ export const transactionCreateSchema = z.object({
   receivedAccount: z.string().trim().optional(),
   emiDeductionAccountId: z.string().trim().optional(),
   notes: z.string().trim().max(500).optional(),
+  importSource: z.string().trim().max(80).optional(),
+  importMetadata: z.record(z.string(), z.any()).optional(),
 });
 
 export const transactionCreateValidatedSchema = transactionCreateSchema.superRefine((data, ctx) => {
