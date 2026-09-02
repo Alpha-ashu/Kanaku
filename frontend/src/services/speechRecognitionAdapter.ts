@@ -69,9 +69,10 @@ export const isSpeechRecognitionSupported = async (): Promise<boolean> => {
   if (isNative()) {
     try {
       const { available } = await SpeechRecognition.available();
-      return Boolean(available);
+      if (typeof available === 'boolean') return available;
+      return true;
     } catch {
-      return false;
+      return true;
     }
   }
   return getWebEngine() !== null;
@@ -89,13 +90,14 @@ export const ensureSpeechPermission = async (): Promise<boolean> => {
 
   try {
     const current = await SpeechRecognition.checkPermissions();
-    if (current.speechRecognition === 'granted') return true;
+    if (current?.speechRecognition === 'granted') return true;
 
     const requested = await SpeechRecognition.requestPermissions();
-    return requested.speechRecognition === 'granted';
+    if (requested?.speechRecognition === 'granted') return true;
+    return requested?.speechRecognition !== 'denied';
   } catch (error) {
     console.warn('[Speech] Permission check failed:', error);
-    return false;
+    return true;
   }
 };
 
@@ -163,11 +165,12 @@ const startNative = async (
   );
 
   try {
+    const targetLang = language || (typeof navigator !== 'undefined' ? navigator.language : '') || 'en-IN';
     // `popup: false` keeps Android inline (no system dialog over our UI), which is
     // also the only mode where partialResults are delivered.
     const result = await SpeechRecognition.start({
-      language,
-      maxResults: 2,
+      language: targetLang,
+      maxResults: 5,
       partialResults: true,
       popup: false,
     });

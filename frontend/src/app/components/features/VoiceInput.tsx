@@ -107,45 +107,65 @@ const Waveform = memo(({ active }: { active: boolean }) => {
   useEffect(() => {
     if (!active) {
       setBars(Array(BAR_COUNT).fill(4));
-      cancelAnimationFrame(animRef.current!);
+      if (animRef.current) cancelAnimationFrame(animRef.current);
       streamRef.current?.getTracks().forEach(t => t.stop());
       return;
     }
 
-    let ctx: AudioContext;
-    navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-      streamRef.current = stream;
-      ctx = new AudioContext();
-      const src = ctx.createMediaStreamSource(stream);
-      const analyser = ctx.createAnalyser();
-      analyser.fftSize = 128;
-      src.connect(analyser);
-      analyserRef.current = analyser;
-      const data = new Uint8Array(analyser.frequencyBinCount);
+    // On native platforms (Android/iOS), do not call getUserMedia to avoid locking the microphone from native SpeechRecognizer
+    if (Capacitor.isNativePlatform()) {
+      const tick = () => {
+        setBars(prev => prev.map(() => active ? 8 + Math.random() * 38 : 4));
+        animRef.current = requestAnimationFrame(tick);
+      };
+      tick();
+      return () => {
+        if (animRef.current) cancelAnimationFrame(animRef.current);
+      };
+    }
 
+    let ctx: AudioContext | undefined;
+    if (typeof navigator !== 'undefined' && navigator.mediaDevices?.getUserMedia) {
+      navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+        streamRef.current = stream;
+        ctx = new AudioContext();
+        const src = ctx.createMediaStreamSource(stream);
+        const analyser = ctx.createAnalyser();
+        analyser.fftSize = 128;
+        src.connect(analyser);
+        analyserRef.current = analyser;
+        const data = new Uint8Array(analyser.frequencyBinCount);
+
+        const tick = () => {
+          analyser.getByteFrequencyData(data);
+          const step = Math.floor(data.length / BAR_COUNT);
+          setBars(Array.from({ length: BAR_COUNT }, (_, i) => {
+            const v = data[i * step] ?? 0;
+            return Math.max(4, Math.min(52, (v / 255) * 52));
+          }));
+          animRef.current = requestAnimationFrame(tick);
+        };
+        tick();
+      }).catch(() => {
+        // mic access denied or in use — animate smoothly
+        const tick = () => {
+          setBars(prev => prev.map(() => active ? 8 + Math.random() * 32 : 4));
+          animRef.current = requestAnimationFrame(tick);
+        };
+        tick();
+      });
+    } else {
       const tick = () => {
-        analyser.getByteFrequencyData(data);
-        const step = Math.floor(data.length / BAR_COUNT);
-        setBars(Array.from({ length: BAR_COUNT }, (_, i) => {
-          const v = data[i * step] ?? 0;
-          return Math.max(4, Math.min(52, (v / 255) * 52));
-        }));
+        setBars(prev => prev.map(() => active ? 8 + Math.random() * 32 : 4));
         animRef.current = requestAnimationFrame(tick);
       };
       tick();
-    }).catch(() => {
-      // mic access denied — just animate randomly
-      const tick = () => {
-        setBars(prev => prev.map(() => active ? 4 + Math.random() * 28 : 4));
-        animRef.current = requestAnimationFrame(tick);
-      };
-      tick();
-    });
+    }
 
     return () => {
-      cancelAnimationFrame(animRef.current!);
+      if (animRef.current) cancelAnimationFrame(animRef.current);
       streamRef.current?.getTracks().forEach(t => t.stop());
-      ctx?.close();
+      ctx?.close().catch(() => undefined);
     };
   }, [active]);
 

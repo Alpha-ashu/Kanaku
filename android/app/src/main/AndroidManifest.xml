@@ -91,6 +91,13 @@
          ever showing a prompt, so getUserMedia({ audio: true }) fails on device.
          (@capacitor-community/speech-recognition also contributes RECORD_AUDIO and
          the <queries> entry for RecognitionService package visibility.) -->
+    <!-- Voice entry. Android 11+ package visibility requirement for SpeechRecognizer -->
+    <queries>
+        <intent>
+            <action android:name="android.speech.RecognitionService" />
+        </intent>
+    </queries>
+
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
 
