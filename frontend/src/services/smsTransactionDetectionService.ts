@@ -646,3 +646,84 @@ export const describeSmsTransaction = (record: SmsDetectedTransaction) => {
   const action = record.transactionType === 'income' ? 'received' : 'spent';
   return `${amountLabel} ${action} at ${record.merchant}`;
 };
+
+export const parseSmsTextToTransaction = async (text: string): Promise<NativeSmsTransaction | null> => {
+  if (!text || !text.trim()) return null;
+  const compact = text.trim().replace(/\s+/g, ' ');
+  const lowered = compact.toLowerCase();
+
+  const amountPatterns = [
+    /(?:rs\.?|inr|₹)\s*([0-9,]+(?:\.\d{1,2})?)\s+(?:has\s+been\s+)?(?:debited|credited|spent|received|paid|withdrawn|sent|transferred)/i,
+    /(?:debited|credited|spent|received|paid|withdrawn|sent|transferred)\D{0,18}(?:rs\.?|inr|₹)\s*([0-9,]+(?:\.\d{1,2})?)/i,
+    /(?:amt|amount)\D{0,8}(?:rs\.?|inr|₹)\s*([0-9,]+(?:\.\d{1,2})?)/i,
+    /(?:rs\.?|inr|₹)\s*([0-9,]+(?:\.\d{1,2})?)/i,
+  ];
+
+  let amount: number | null = null;
+  for (const pattern of amountPatterns) {
+    const match = compact.match(pattern);
+    if (match && match[1]) {
+      const parsed = parseFloat(match[1].replace(/,/g, ''));
+      if (Number.isFinite(parsed) && parsed > 0) {
+        amount = parsed;
+        break;
+      }
+    }
+  }
+
+  if (!amount) return null;
+
+  const isDebit = /debited|spent|withdrawn|purchase|paid\s+to|paid\s+at|sent\s+to|transferred\s+to|sent\s+rs|sent\s+inr/i.test(lowered);
+  const isCredit = /credited|deposited|received\s+from|received\s+rs|received\s+inr|received/i.test(lowered);
+  const transactionType: 'income' | 'expense' = isDebit ? 'expense' : (isCredit ? 'income' : 'expense');
+
+  let merchant = 'Bank Alert';
+  const merchantPatterns = transactionType === 'income'
+    ? [
+        /from\s+([A-Za-z0-9&.,'\- ]{2,40}?)(?=\s+(?:on|ref|utr|txn|txnid|avl|available|balance|via|$)|[.,])/i,
+        /by\s+([A-Za-z0-9&.,'\- ]{2,40}?)(?=\s+(?:on|ref|utr|txn|avl|available|balance|via|$)|[.,])/i,
+      ]
+    : [
+        /(?:via\s+(?:upi|imps|neft)\s+to|to)\s+([A-Za-z0-9&.,'\- ]{2,40}?)(?=\s+(?:on|ref|utr|txn|txnid|avl|available|balance|from|via|$)|[.,])/i,
+        /at\s+([A-Za-z0-9&.,'\- ]{2,40}?)(?=\s+(?:on|ref|utr|txn|txnid|avl|available|balance|from|via|$)|[.,])/i,
+      ];
+
+  for (const pattern of merchantPatterns) {
+    const match = compact.match(pattern);
+    if (match && match[1]) {
+      merchant = match[1].trim();
+      break;
+    }
+  }
+
+  const bankMatches = compact.match(/\b(HDFC|ICICI|SBI|AXIS|KOTAK|YESBANK|IDFC|HSBC|CHASE|CITI|AMEX|BOB|CANARA|PNB|FEDERAL|INDUSIND|UNION|BANDHAN|RBL|AUBANK|PAYTM|PHONEPE|GPAY|CRED|SLICE|FI|JUPITER|UPI)\b/i);
+  const bankName = bankMatches ? bankMatches[1].toUpperCase() : undefined;
+
+  const accountMatch = compact.match(/(?:a\/c|acct|account|card)\s*(?:no\.?|number)?\s*[:\-]?\s*[xX*]{0,8}(\d{3,8})/i);
+  const accountLast4 = accountMatch ? accountMatch[1] : undefined;
+
+  const sourceSmsId = `manual_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+
+  return {
+    sourceSmsId,
+    amount,
+    transactionType,
+    merchant,
+    bankName,
+    accountLast4,
+    currencyCode: 'INR',
+    dateIso: new Date().toISOString(),
+    sourceAddress: 'Manual Paste',
+    sourceChannel: 'manual',
+    messagePreview: compact.slice(0, 180),
+    confidenceScore: 0.95,
+  };
+};
+
+export const importManualSmsText = async (text: string): Promise<SmsDetectedTransaction | null> => {
+  const native = await parseSmsTextToTransaction(text);
+  if (!native) return null;
+  await persistNativeTransaction(native, true);
+  const record = await db.smsTransactions.where('sourceSmsId').equals(native.sourceSmsId).first();
+  return record ?? null;
+};

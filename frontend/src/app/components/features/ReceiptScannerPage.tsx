@@ -60,7 +60,7 @@ function BillCard({
 
   const type = tx?.type ?? 'expense';
   const category = tx?.category ?? doc.metadata?.category ?? 'Uncategorized';
-  const dateVal = tx ? new Date(tx.date) : new Date(doc.uploadDate);
+  const dateVal = tx ? new Date(tx.date) : (doc.metadata?.date ? new Date(doc.metadata.date) : new Date(doc.uploadDate));
   const statusMeta = STATUS_META[doc.processingStatus];
 
   const amountColor = type === 'income' ? 'text-emerald-600' : type === 'expense' ? 'text-red-500' : 'text-sky-600';
@@ -175,7 +175,7 @@ function BillDetailModal({ doc, tx, currency, onClose }: { doc: DocumentRecord; 
     ? Math.abs(Number(tx.amount)) 
     : Number((doc as any).extractedAmount ?? doc.metadata?.amount ?? doc.metadata?.totalAmount ?? doc.metadata?.total ?? 0);
   const category = tx?.category || doc.metadata?.category || 'Expense';
-  const dateVal = tx ? new Date(tx.date) : new Date(doc.uploadDate);
+  const dateVal = tx ? new Date(tx.date) : (doc.metadata?.date ? new Date(doc.metadata.date) : new Date(doc.uploadDate));
   const dateStr = dateVal.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 
   return (
@@ -510,6 +510,7 @@ export const ReceiptScannerPage: React.FC = () => {
         <ReceiptScanner
           isOpen={scannerOpen}
           onClose={() => setScannerOpen(false)}
+          initialMode="scan"
           onApplyScan={handleApplyScan}
         />
       )}

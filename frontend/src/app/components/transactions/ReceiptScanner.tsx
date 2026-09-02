@@ -44,7 +44,8 @@ export const ReceiptScanner: React.FC<ReceiptScannerProps> = ({
 }) => {
  const { accounts, currency, setCurrentPage } = useApp();
  const { user } = useAuth();
- const isOcrEnabled = useAICapability('ocrEngine', 'transactionOCR');
+ const isOcrCapability = useAICapability('ocrEngine', 'transactionOCR');
+ const isOcrEnabled = isOcrCapability !== false;
 
  const {
  selectedFile,
@@ -71,8 +72,7 @@ export const ReceiptScanner: React.FC<ReceiptScannerProps> = ({
 
  // Step machine 
  const [step, setStep] = useState<Step>(() =>
- !isOcrEnabled ? 'source-attach'
- : initialMode === 'scan' ? 'source-scan'
+ initialMode === 'scan' ? 'source-scan'
  : initialMode === 'attachment' ? 'source-attach'
  : 'mode'
  );
@@ -92,18 +92,24 @@ export const ReceiptScanner: React.FC<ReceiptScannerProps> = ({
  useEffect(() => {
  if (isOpen) {
  setSelectedAccountId(initialAccountId ?? accounts[0]?.id ?? null);
+ setStep(
+ initialMode === 'scan' ? 'source-scan'
+ : initialMode === 'attachment' ? 'source-attach'
+ : 'mode'
+ );
  }
- }, [accounts, initialAccountId, isOpen]);
+ }, [accounts, initialAccountId, initialMode, isOpen]);
 
  // Reset on close 
  const handleClose = () => {
  clearFile();
  setAttachFile(null);
  setSelectedAccountId(accounts[0]?.id ?? null);
- setStep(!isOcrEnabled ? 'source-attach'
- : initialMode === 'scan' ? 'source-scan'
+ setStep(
+ initialMode === 'scan' ? 'source-scan'
  : initialMode === 'attachment' ? 'source-attach'
- : 'mode');
+ : 'mode'
+ );
  onClose();
  };
 
@@ -149,6 +155,24 @@ export const ReceiptScanner: React.FC<ReceiptScannerProps> = ({
  toast.error('Amount must be greater than zero');
  return;
  }
+ if (scanDocumentId) {
+ await documentService.current.updateDocumentStatus(scanDocumentId, 'completed', {
+ extractedCurrency: scanResult.currency,
+ extractedAmount: scanResult.amount,
+ metadata: {
+ merchantName: scanResult.merchantName || '',
+ merchant: scanResult.merchantName || '',
+ amount: scanResult.amount ? String(scanResult.amount) : '',
+ totalAmount: scanResult.amount ? String(scanResult.amount) : '',
+ invoiceNumber: scanResult.invoiceNumber || '',
+ paymentMethod: scanResult.paymentMethod || '',
+ taxAmount: scanResult.taxAmount?.toFixed(2) || '',
+ subtotal: scanResult.subtotal?.toFixed(2) || '',
+ category: scanResult.category || '',
+ date: scanResult.date ? (scanResult.date instanceof Date ? scanResult.date.toISOString() : String(scanResult.date)) : '',
+ },
+ });
+ }
  await createTransaction(scanResult, selectedAccountId, scanDocumentId, (transactionId) => {
  onTransactionCreated?.(transactionId);
  handleClose();
@@ -156,10 +180,28 @@ export const ReceiptScanner: React.FC<ReceiptScannerProps> = ({
  });
  };
 
- const handleApplyScanToForm = () => {
+ const handleApplyScanToForm = async () => {
  if (!scanResult || !selectedAccountId) {
  toast.error('Please select an account to continue');
  return;
+ }
+ if (scanDocumentId) {
+ await documentService.current.updateDocumentStatus(scanDocumentId, 'completed', {
+ extractedCurrency: scanResult.currency,
+ extractedAmount: scanResult.amount,
+ metadata: {
+ merchantName: scanResult.merchantName || '',
+ merchant: scanResult.merchantName || '',
+ amount: scanResult.amount ? String(scanResult.amount) : '',
+ totalAmount: scanResult.amount ? String(scanResult.amount) : '',
+ invoiceNumber: scanResult.invoiceNumber || '',
+ paymentMethod: scanResult.paymentMethod || '',
+ taxAmount: scanResult.taxAmount?.toFixed(2) || '',
+ subtotal: scanResult.subtotal?.toFixed(2) || '',
+ category: scanResult.category || '',
+ date: scanResult.date ? (scanResult.date instanceof Date ? scanResult.date.toISOString() : String(scanResult.date)) : '',
+ },
+ });
  }
  onApplyScan?.({ ...scanResult, accountId: selectedAccountId, scanDocumentId });
  toast.success(`Receipt applied to ${expenseMode === 'group' ? 'group' : 'individual'} expense form`);

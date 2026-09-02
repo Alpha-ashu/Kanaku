@@ -37,12 +37,17 @@ const RECEIPT_TOTAL_PATTERNS = [
   /net\s*total/i,
   /net\s*amount/i,
   /net\s*mount/i,
+  /bill\s*amount/i,
+  /bill\s*amt/i,
   /bill\s*total/i,
+  /invoice\s*amount/i,
+  /invoice\s*total/i,
+  /total\s*bill/i,
   /total/i,
 ];
 
-const RECEIPT_SUBTOTAL_PATTERNS = [/sub\s*total/i, /subtotal/i];
-const RECEIPT_PRE_TAX_PATTERNS = [/bill\s*amount/i, /bill\s*total/i, /^\s*total\b/i];
+const RECEIPT_SUBTOTAL_PATTERNS = [/sub\s*total/i, /subtotal/i, /discounted\s*total/i];
+const RECEIPT_PRE_TAX_PATTERNS = [/sub\s*total/i, /pre\s*tax/i, /^\s*total\b/i];
 const RECEIPT_TAX_PATTERNS = [/tax/i, /vat/i, /gst/i, /service\s*tax/i];
 const PAYMENT_METHOD_PATTERNS = [
   { label: 'Visa', pattern: /\bvisa\b/i },
@@ -1310,7 +1315,7 @@ export async function parseReceiptText(rawText: string, userId?: string): Promis
 
       if (matchesTotalPattern && !/sub\s*total|tax/i.test(line)) {
         isKeywordMatch = true;
-        if (/grand\s*total|final\s*total|net\s*total|net\s*amount|amount\s*payable|total\s*payable|total\s*amount/i.test(line)) {
+        if (/grand\s*total|final\s*total|net\s*total|net\s*amount|amount\s*payable|total\s*payable|total\s*amount|bill\s*amount|bill\s*amt/i.test(line)) {
           score += 5;
         } else {
           score += 3;

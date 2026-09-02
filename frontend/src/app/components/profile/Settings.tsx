@@ -7,7 +7,7 @@ import {
   Settings as SettingsIcon, ShieldCheck,
   Download, Check, AlertTriangle, Layers,
   LogOut, ChevronRight, User, KeyRound, BellRing,
-  Sparkles, CheckCircle2, SlidersHorizontal
+  Sparkles, CheckCircle2, SlidersHorizontal, MessageSquare
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useApp } from '@/contexts/AppContext';
@@ -45,6 +45,7 @@ import {
   enableSmsTransactionDetection,
   getSmsDetectionStatus,
   scanHistoricalSmsTransactions,
+  importManualSmsText,
   type SmsDetectionStatus,
 } from '@/services/smsTransactionDetectionService';
 import { runWithCloudSyncSuppressed } from '@/lib/auth-sync-integration';
@@ -110,6 +111,8 @@ export const Settings: React.FC = () => {
     historicalScanCompleted: false,
   });
   const [isSmsBusy, setIsSmsBusy] = useState(false);
+  const [pastedSmsText, setPastedSmsText] = useState('');
+  const [isParsingPastedSms, setIsParsingPastedSms] = useState(false);
 
   const [notifSettings, setNotifSettings] = useState<Record<string, boolean>>(() => {
     try {
@@ -424,6 +427,28 @@ export const Settings: React.FC = () => {
   const handleClearSmsData = async () => {
     await clearSmsDetectedTransactions();
     toast.success('Stored SMS detections cleared.');
+  };
+
+  const handleParsePastedSms = async () => {
+    if (!pastedSmsText.trim()) {
+      toast.error('Please paste a transaction message or bank SMS alert');
+      return;
+    }
+    setIsParsingPastedSms(true);
+    try {
+      const record = await importManualSmsText(pastedSmsText);
+      if (record?.id) {
+        toast.success(`Parsed ${record.transactionType === 'income' ? 'Income' : 'Expense'}: ₹${record.amount} at ${record.merchant}`);
+        setPastedSmsText('');
+        setCurrentPage('transactions');
+      } else {
+        toast.error('Could not detect transaction amount from the message. Please check the text.');
+      }
+    } catch (err) {
+      toast.error('Failed to parse message text');
+    } finally {
+      setIsParsingPastedSms(false);
+    }
   };
 
   // Profile info & Avatar
@@ -918,10 +943,12 @@ export const Settings: React.FC = () => {
 
           {/* 6. SMS AUTOMATION */}
           {shouldShowSection('sms') && (
-            <div className="space-y-2">
+            <div className="space-y-3">
               <p className="text-[11px] font-black uppercase tracking-wider text-slate-400 px-2">
                 SMS Transaction Tracking
               </p>
+
+              {/* Native Auto-Detection Card */}
               <div className="bg-white rounded-2xl border border-slate-200/70 shadow-sm p-4 space-y-3">
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3 min-w-0">
@@ -930,39 +957,95 @@ export const Settings: React.FC = () => {
                     </div>
                     <div className="min-w-0">
                       <p className="text-xs sm:text-sm font-bold text-slate-900">Auto-Detect Bank SMS</p>
-                      <p className="text-[11px] text-slate-400">On-device local parsing</p>
+                      <p className="text-[11px] text-slate-400">
+                        {smsStatus.supported ? 'On-device background SMS reader (Android)' : 'Automatic background SMS reader requires Android'}
+                      </p>
                     </div>
                   </div>
-                  <button
-                    type="button"
-                    onClick={handleToggleSmsDetection}
-                    disabled={isSmsBusy}
-                    data-testid="settings-sms-toggle"
-                    className={cn(
-                      "px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0",
-                      smsStatus.enabled ? "bg-slate-900 text-white" : "bg-teal-600 text-white shadow-sm"
-                    )}
-                  >
-                    {isSmsBusy ? '...' : smsStatus.enabled ? 'Disable' : 'Enable'}
-                  </button>
+                  {smsStatus.supported && (
+                    <button
+                      type="button"
+                      onClick={handleToggleSmsDetection}
+                      disabled={isSmsBusy}
+                      data-testid="settings-sms-toggle"
+                      className={cn(
+                        "px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0",
+                        smsStatus.enabled ? "bg-slate-900 text-white" : "bg-teal-600 text-white shadow-sm"
+                      )}
+                    >
+                      {isSmsBusy ? '...' : smsStatus.enabled ? 'Disable' : 'Enable'}
+                    </button>
+                  )}
                 </div>
 
-                <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
-                  <button
-                    type="button"
-                    onClick={handleRescanSms}
-                    disabled={isSmsBusy}
-                    className="text-indigo-600 font-bold hover:underline"
-                  >
-                    Rescan last 30 days
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleClearSmsData}
-                    className="text-rose-600 font-bold hover:underline"
-                  >
-                    Clear cached SMS
-                  </button>
+                {smsStatus.supported ? (
+                  <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
+                    <button
+                      type="button"
+                      onClick={handleRescanSms}
+                      disabled={isSmsBusy}
+                      className="text-indigo-600 font-bold hover:underline"
+                    >
+                      Rescan last 30 days
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleClearSmsData}
+                      className="text-rose-600 font-bold hover:underline"
+                    >
+                      Clear cached SMS
+                    </button>
+                  </div>
+                ) : (
+                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 text-xs text-slate-500">
+                    <p className="font-medium text-slate-700 mb-1">ℹ️ Platform Notes:</p>
+                    <ul className="list-disc pl-4 space-y-0.5 text-[11px]">
+                      <li><strong>Android App:</strong> Install the Full-SMS APK (`kanaku-full-release.apk`) to enable background SMS reading.</li>
+                      <li><strong>iOS App / Web:</strong> Apple iOS sandbox restricts apps from background SMS inbox access. Use the quick paste tool below to log transactions instantly from any copied message.</li>
+                    </ul>
+                  </div>
+                )}
+              </div>
+
+              {/* Universal Quick Paste & Parse Box (iOS / Android / Web) */}
+              <div className="bg-white rounded-2xl border border-slate-200/70 shadow-sm p-4 space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 shrink-0">
+                    <MessageSquare size={18} />
+                  </div>
+                  <div>
+                    <p className="text-xs sm:text-sm font-bold text-slate-900">Quick Paste & Parse Bank Alert</p>
+                    <p className="text-[11px] text-slate-400">Paste SMS, UPI, or banking alert text to auto-log</p>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <textarea
+                    rows={2}
+                    value={pastedSmsText}
+                    onChange={(e) => setPastedSmsText(e.target.value)}
+                    placeholder="e.g. Sent Rs. 450.00 to Swiggy on 02-Sep-26 via UPI ref 49201948..."
+                    className="w-full text-xs p-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-hidden focus:ring-2 focus:ring-indigo-500 focus:bg-white resize-none text-slate-800"
+                  />
+                  <div className="flex justify-end gap-2">
+                    {pastedSmsText && (
+                      <button
+                        type="button"
+                        onClick={() => setPastedSmsText('')}
+                        className="px-3 py-1.5 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-100"
+                      >
+                        Clear
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={handleParsePastedSms}
+                      disabled={isParsingPastedSms || !pastedSmsText.trim()}
+                      className="px-4 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-xs font-bold shadow-sm transition-all flex items-center gap-1.5"
+                    >
+                      {isParsingPastedSms ? 'Parsing...' : 'Parse & Add Transaction'}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

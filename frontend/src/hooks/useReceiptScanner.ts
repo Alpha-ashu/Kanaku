@@ -144,8 +144,10 @@ export const useReceiptScanner = () => {
         extractedAmount: result.amount,
         metadata: {
           merchantName: result.merchantName || '',
+          merchant: result.merchantName || '',
           amount: result.amount ? String(result.amount) : '',
           totalAmount: result.amount ? String(result.amount) : '',
+          date: result.date ? (result.date instanceof Date ? result.date.toISOString() : String(result.date)) : '',
           invoiceNumber: result.invoiceNumber || '',
           paymentMethod: result.paymentMethod || '',
           taxAmount: result.taxAmount?.toFixed(2) || '',

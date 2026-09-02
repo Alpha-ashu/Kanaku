@@ -17,8 +17,9 @@ import java.util.regex.Pattern;
 public final class SmsTransactionParser {
     private static final List<String> BANK_KEYWORDS = Arrays.asList(
         "HDFC", "ICICI", "SBI", "AXIS", "KOTAK", "YESBANK", "IDFC", "HSBC",
-        "CHASE", "CITI", "AMEX", "BOB", "CANARA", "PNB", "FEDERAL", "PAYTM",
-        "PHONEPE", "GPAY", "GOOGLEPAY", "AMAZONPAY", "UPI"
+        "CHASE", "CITI", "AMEX", "BOB", "CANARA", "PNB", "FEDERAL", "INDUSIND",
+        "UNION", "BANDHAN", "RBL", "AUBANK", "PAYTM", "PHONEPE", "GPAY",
+        "GOOGLEPAY", "AMAZONPAY", "CRED", "SLICE", "FI", "JUPITER", "UPI"
     );
 
     private static final Pattern MASKED_ACCOUNT_PATTERN = Pattern.compile(
@@ -138,17 +139,28 @@ public final class SmsTransactionParser {
             || lowered.contains("spent")
             || lowered.contains("received")
             || lowered.contains("paid")
+            || lowered.contains("sent")
+            || lowered.contains("transferred")
             || lowered.contains("withdrawn")
             || lowered.contains("deposit")
+            || lowered.contains("txn")
+            || lowered.contains("txnid")
             || lowered.contains("purchase");
         boolean hasSourceHint = lowered.contains("a/c")
+            || lowered.contains("acct")
             || lowered.contains("account")
             || lowered.contains("upi")
+            || lowered.contains("vpa")
             || lowered.contains("imps")
             || lowered.contains("neft")
+            || lowered.contains("rtgs")
             || lowered.contains("card")
             || lowered.contains("wallet")
-            || lowered.contains("bank");
+            || lowered.contains("bank")
+            || lowered.contains("ref")
+            || lowered.contains("utr")
+            || lowered.contains("pos")
+            || lowered.contains("atm");
         boolean hasAmountHint = lowered.contains("rs")
             || lowered.contains("inr")
             || lowered.contains("₹")
@@ -159,8 +171,8 @@ public final class SmsTransactionParser {
 
     private static Double extractAmount(String body) {
         String[] patterns = new String[] {
-            "(?i)(?:rs\\.?|inr|₹)\\s*([0-9,]+(?:\\.\\d{1,2})?)\\s+(?:has\\s+been\\s+)?(?:debited|credited|spent|received|paid|withdrawn)",
-            "(?i)(?:debited|credited|spent|received|paid|withdrawn)\\D{0,18}(?:rs\\.?|inr|₹)\\s*([0-9,]+(?:\\.\\d{1,2})?)",
+            "(?i)(?:rs\\.?|inr|₹)\\s*([0-9,]+(?:\\.\\d{1,2})?)\\s+(?:has\\s+been\\s+)?(?:debited|credited|spent|received|paid|withdrawn|sent|transferred)",
+            "(?i)(?:debited|credited|spent|received|paid|withdrawn|sent|transferred)\\D{0,18}(?:rs\\.?|inr|₹)\\s*([0-9,]+(?:\\.\\d{1,2})?)",
             "(?i)(?:amt|amount)\\D{0,8}(?:rs\\.?|inr|₹)\\s*([0-9,]+(?:\\.\\d{1,2})?)",
             "(?i)(?:rs\\.?|inr|₹)\\s*([0-9,]+(?:\\.\\d{1,2})?)"
         };
@@ -213,7 +225,11 @@ public final class SmsTransactionParser {
             || lowered.contains("withdrawn")
             || lowered.contains("purchase")
             || lowered.contains("paid to")
-            || lowered.contains("paid at");
+            || lowered.contains("paid at")
+            || lowered.contains("sent to")
+            || lowered.contains("transferred to")
+            || lowered.contains("sent rs")
+            || lowered.contains("sent inr");
 
         if (debit) {
             return "expense";
@@ -221,6 +237,9 @@ public final class SmsTransactionParser {
 
         if (lowered.contains("credited")
             || lowered.contains("deposited")
+            || lowered.contains("received from")
+            || lowered.contains("received rs")
+            || lowered.contains("received inr")
             || lowered.contains("received")) {
             return "income";
         }
