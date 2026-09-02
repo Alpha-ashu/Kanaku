@@ -135,7 +135,10 @@ describe("Cross-Device Source-of-Truth", () => {
       currency: "INR",
       cloudId: "cloud-acc-1",
       syncStatus: "synced",
-    });
+      isActive: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    } as any);
   });
 
   // -- 1. Sync queue uses userId, not deviceId --------------------------------
@@ -145,6 +148,7 @@ describe("Cross-Device Source-of-Truth", () => {
       amount: 100,
       accountId: 1,
       category: "Food",
+      description: "Test Expense",
       date: new Date(),
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -162,8 +166,9 @@ describe("Cross-Device Source-of-Truth", () => {
   // -- 2. Offline queue drains on reconnect ----------------------------------
   it("offline write queued -> drains via REST when online", async () => {
     const mockPost = vi.spyOn(apiClient, "post").mockResolvedValue({
+      success: true,
       data: { id: "cloud-tx-1", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-    });
+    } as any);
 
     vi.stubGlobal("navigator", { onLine: true });
 
@@ -172,6 +177,7 @@ describe("Cross-Device Source-of-Truth", () => {
       amount: 250,
       accountId: 1,
       category: "Transport",
+      description: "Test Transport",
       date: new Date(),
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -195,8 +201,9 @@ describe("Cross-Device Source-of-Truth", () => {
   // -- 3. Multiple records from "Device A" all sync --------------------------
   it("3 records queued from device A all flush via API", async () => {
     const mockPost = vi.spyOn(apiClient, "post").mockResolvedValue({
+      success: true,
       data: { id: "cloud-id", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-    });
+    } as any);
     vi.stubGlobal("navigator", { onLine: true });
 
     const ids: number[] = [];
@@ -206,6 +213,7 @@ describe("Cross-Device Source-of-Truth", () => {
         amount: 100 * (i + 1),
         accountId: 1,
         category: "Food",
+        description: `Expense ${i + 1}`,
         date: new Date(),
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -236,7 +244,7 @@ describe("Cross-Device Source-of-Truth", () => {
     vi.stubGlobal("navigator", { onLine: true });
 
     const txId = await db.transactions.add({
-      type: "expense", amount: 99, accountId: 1, category: "Food",
+      type: "expense", amount: 99, accountId: 1, category: "Food", description: "Food",
       date: new Date(), createdAt: new Date(), updatedAt: new Date(),
     });
 
@@ -266,7 +274,7 @@ describe("Cross-Device Source-of-Truth", () => {
     vi.stubGlobal("navigator", { onLine: true });
 
     const txId = await db.transactions.add({
-      type: "expense", amount: 88, accountId: 1, category: "Food",
+      type: "expense", amount: 88, accountId: 1, category: "Food", description: "Food",
       date: new Date(), createdAt: new Date(), updatedAt: new Date(),
     });
 

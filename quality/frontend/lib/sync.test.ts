@@ -128,7 +128,8 @@ describe('Frontend Synchronization & Queue Processing', () => {
       isActive: true,
       syncStatus: 'synced',
       cloudId: 'cloud-account-uuid',
-    });
+      createdAt: new Date(),
+    } as any);
   });
 
   describe('saveTransactionAndUpdateAccountWithBackendSync (API-First Fix)', () => {
@@ -146,7 +147,7 @@ describe('Frontend Synchronization & Queue Processing', () => {
           updatedAt: new Date().toISOString(),
           version: 1,
         },
-      });
+      } as any);
 
       const txPayload = {
         accountId: 1,
@@ -194,7 +195,7 @@ describe('Frontend Synchronization & Queue Processing', () => {
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         },
-      });
+      } as any);
 
       // Clear goals table and add a pending goal
       await db.goals.clear();
@@ -206,7 +207,7 @@ describe('Frontend Synchronization & Queue Processing', () => {
         syncStatus: 'pending',
         createdAt: new Date(),
         updatedAt: new Date(),
-      });
+      } as any);
 
       // Add to localStorage sync queue manually to simulate offline queue addition
       const syncItem = {

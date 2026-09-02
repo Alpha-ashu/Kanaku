@@ -83,9 +83,9 @@ async function doSession(text?: string) {
   const res = { final: [] as string[], ended: false, errors: [] as string[] };
   const session = await startSpeechRecognition({
     onPartial: () => {},
-    onFinal: (t) => res.final.push(t),
+    onFinal: (t: string) => res.final.push(t),
     onEnd: () => { res.ended = true; },
-    onError: (_r, m) => res.errors.push(m),
+    onError: (_r: unknown, m: string) => res.errors.push(m),
   });
   await new Promise((r) => setTimeout(r, 0));
   const inst = mockInstances[mockInstances.length - 1];
@@ -158,7 +158,7 @@ describe("Voice Session Lifecycle", () => {
       onPartial: () => {},
       onFinal: () => {},
       onEnd: () => {},
-      onError: (_r, m) => errors.push(m),
+      onError: (_r: unknown, m: string) => errors.push(m),
     });
     const inst = mockInstances[mockInstances.length - 1];
     inst.simulateError("not-allowed");
@@ -171,7 +171,7 @@ describe("Voice Session Lifecycle", () => {
       onPartial: () => {},
       onFinal: () => {},
       onEnd: () => {},
-      onError: (_r, m) => errors.push(m),
+      onError: (_r: unknown, m: string) => errors.push(m),
     });
     const inst = mockInstances[mockInstances.length - 1];
     inst.simulateError("no-speech");
@@ -187,7 +187,7 @@ describe("Voice Session Lifecycle", () => {
       onPartial: () => {},
       onFinal: () => {},
       onEnd: () => {},
-      onError: (_r, m) => errors.push(m),
+      onError: (_r: unknown, m: string) => errors.push(m),
     });
     const inst = mockInstances[mockInstances.length - 1];
     inst.simulateError("network");
@@ -225,7 +225,7 @@ describe("Voice AI — Local Parser (Backend Unavailable)", () => {
   it("parses income offline", () => {
     const r = parseTranscriptLocally("received salary 50000");
     expect(r.success).toBe(true);
-    const action = r.actions.find((a) => a.type === "income");
+    const action = r.actions.find((a: any) => a.type === "income");
     expect(action).toBeDefined();
     expect(action!.entities.amount).toBe(50000);
   });
@@ -256,7 +256,7 @@ describe("Voice AI — Local Parser (Backend Unavailable)", () => {
   it("handles Hinglish: ek lakh = 100000", () => {
     const r = parseTranscriptLocally("received ek lakh as bonus");
     expect(r.actions.length).toBeGreaterThan(0);
-    const inc = r.actions.find((a) => a.type === "income");
+    const inc = r.actions.find((a: any) => a.type === "income");
     expect(inc?.entities.amount).toBe(100000);
   });
 
