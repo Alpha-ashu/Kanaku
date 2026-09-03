@@ -15,6 +15,8 @@ RUN npm ci --ignore-scripts || npm install --ignore-scripts --no-audit --no-fund
 COPY . .
 RUN node scripts/ensure-prisma-runtime.cjs && npx -y prisma generate --schema backend/prisma/schema.prisma
 RUN npm run build:backend
+# Prune devDependencies so only production dependencies remain
+RUN npm prune --omit=dev --no-audit --no-fund || true
 
 # ── Stage 2: Production image ────────────────────────────────────────────────
 FROM node:22-alpine AS runner
@@ -24,14 +26,13 @@ RUN addgroup -S kanaku && adduser -S kanaku -G kanaku
 
 WORKDIR /app
 
-# Workspace manifests + backend & shared packages for production install
-COPY package.json package-lock.json ./
-COPY frontend/package.json ./frontend/
-COPY backend/package.json ./backend/
-COPY packages/shared ./packages/shared
-RUN npm install --omit=dev --ignore-scripts --no-audit --no-fund --workspace=backend && npm cache clean --force
+ENV NODE_ENV=production
+ENV NODE_PATH=/app/node_modules
 
-# Overwrite root package.json with backend/package.json so Node runs dist/server.js as CommonJS
+# Copy production node_modules from builder
+COPY --from=builder /app/node_modules ./node_modules
+
+# Backend package.json so Node runs dist/server.js as CommonJS
 COPY backend/package.json ./package.json
 
 # Copy built output + required assets
