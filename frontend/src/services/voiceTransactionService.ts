@@ -1,7 +1,17 @@
 import type { ParsedTransaction, ParsedGroupExpense } from '@/services/voiceCommandParser';
 import { TokenManager } from '@/lib/api';
 import { buildApiUrl, getConfiguredApiBase } from '@/lib/apiBase';
+import { getPinUnlockToken } from '@/lib/pinUnlockCoordinator';
 import supabase from '@/utils/supabase/client';
+
+const getVoiceHeaders = (token?: string | null, contentType = true): Record<string, string> => {
+  const pinUnlock = getPinUnlockToken();
+  return {
+    ...(contentType ? { 'Content-Type': 'application/json' } : {}),
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(pinUnlock ? { 'X-Pin-Unlock': pinUnlock } : {}),
+  };
+};
 
 interface Friend {
   id: string;
@@ -57,10 +67,7 @@ export class VoiceTransactionService {
       try {
         const response = await fetch(buildApiUrl(apiBase, '/transactions'), {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-          },
+          headers: getVoiceHeaders(token),
           body: JSON.stringify({
             description: tx.description,
             amount: tx.amount,
@@ -113,10 +120,7 @@ export class VoiceTransactionService {
       // Create group expense
       const response = await fetch(buildApiUrl(apiBase, '/group-expenses'), {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-        },
+        headers: getVoiceHeaders(token),
         body: JSON.stringify({
           ...groupExpense,
           userId,
@@ -135,10 +139,7 @@ export class VoiceTransactionService {
         try {
           await fetch(buildApiUrl(apiBase, '/transactions'), {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-            },
+            headers: getVoiceHeaders(token),
             body: JSON.stringify({
               description: `${expense.description} - Split with ${friend.name}`,
               amount: amountPerPerson,
@@ -174,7 +175,7 @@ export class VoiceTransactionService {
       try {
         // Try to get existing friend
         const searchResponse = await fetch(buildApiUrl(apiBase, `/friends/search?name=${encodeURIComponent(name)}`), {
-          headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+          headers: getVoiceHeaders(token, false),
         });
 
         if (searchResponse.ok) {
@@ -188,10 +189,7 @@ export class VoiceTransactionService {
         // Create new friend if not found
         const createResponse = await fetch(buildApiUrl(apiBase, '/friends'), {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-          },
+          headers: getVoiceHeaders(token),
           body: JSON.stringify({
             name: name.trim(),
             email: `${name.toLowerCase().replace(/\s+/g, '.')}@friend.local`,

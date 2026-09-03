@@ -503,9 +503,17 @@ class PinService {
     clearCachedPinStatus();
     const hashedPin = CryptoJS.SHA256(pin).toString();
     const result = await this.post('create', { pin: hashedPin });
-    this.persistPinState(result, true);
-    // Creating a PIN establishes the server unlock — bust the cached pre-PIN profile.
-    if (result.success) api.clearCache();
+    if (result.success) {
+      const unlockToken = (result as { pinUnlockToken?: string }).pinUnlockToken;
+      if (unlockToken) setPinUnlockToken(unlockToken);
+
+      this.persistPinState(result, true);
+      localStorage.setItem(this.PIN_VERIFIED_KEY, 'true');
+      localStorage.setItem(this.PIN_VERIFIED_AT_KEY, new Date().toISOString());
+      api.clearCache();
+    } else {
+      this.persistPinState(result, false);
+    }
     return result;
   }
 

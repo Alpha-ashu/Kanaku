@@ -4,7 +4,9 @@
  */
 
 import { db, type Transaction } from '@/lib/database';
-import { queueRecordUpsertSync } from '@/lib/auth-sync-integration';
+import { queueRecordUpsertSync, processPendingSyncQueue } from '@/lib/auth-sync-integration';
+import { getPinUnlockToken, setPinUnlockToken } from '@/lib/pinUnlockCoordinator';
+import { enqueueFileUpload } from '@/lib/offlineUploadQueue';
 import { rebuildAccountBalances, setAccountTargetBalance } from '@/lib/transactionAggregation';
 import { documentIntelligenceService } from './documentIntelligenceService';
 import { createWorker } from 'tesseract.js';
@@ -374,11 +376,21 @@ class StatementImportService {
     const formData = new FormData();
     formData.append('file', file, file.name);
 
+    const pinUnlock = getPinUnlockToken();
+    const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
+    if (pinUnlock) {
+      headers['X-Pin-Unlock'] = pinUnlock;
+    }
+
     const response = await fetch(`${API_BASE}/import/statement`, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${token}` },
+      headers,
       body: formData,
     });
+    const refreshedPin = response.headers?.get?.('X-Pin-Unlock');
+    if (refreshedPin) {
+      setPinUnlockToken(refreshedPin);
+    }
     if (!response.ok) {
       const body = await response.json().catch(() => ({}));
       throw new Error(body.error || `Statement parse failed (${response.status})`);
@@ -411,6 +423,15 @@ class StatementImportService {
       processingStatus: 'processing',
       accountId: options.accountId,
     });
+
+    if (file && options.userId) {
+      void enqueueFileUpload({
+        file,
+        fileName: file.name,
+        userId: options.userId,
+        documentId,
+      }).catch((err) => console.warn('[StatementImport] Server-parse statement file enqueue failed:', err));
+    }
 
     const meta = preview.statement;
     const suggestedAccount = await this.findSuggestedAccount(meta?.bankName, meta?.accountNumber);
@@ -451,6 +472,15 @@ class StatementImportService {
       processingStatus: 'processing',
       accountId: options.accountId,
     });
+
+    if (file && options.userId) {
+      void enqueueFileUpload({
+        file,
+        fileName: file.name,
+        userId: options.userId,
+        documentId,
+      }).catch((err) => console.warn('[StatementImport] Local-parse statement file enqueue failed:', err));
+    }
 
     try {
       let rawText = '';
@@ -612,6 +642,7 @@ class StatementImportService {
       queueRecordUpsertSync('transactions', transactionId);
     }
     queueRecordUpsertSync('accounts', options.accountId);
+    void processPendingSyncQueue();
 
     return {
       importedCount: validTransactions.length,

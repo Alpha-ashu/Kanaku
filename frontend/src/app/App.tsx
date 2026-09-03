@@ -280,6 +280,19 @@ const AppContent: React.FC = () => {
   const localAccountCount = useLiveQuery(() => db.accounts.count(), [], undefined);
   const hasNoLocalData = localAccountCount === 0;
 
+  // Maximum 5-second hold for first-row sync so slow/offline networks never freeze the app
+  const [dataGateTimedOut, setDataGateTimedOut] = useState(false);
+  useEffect(() => {
+    if (dataSyncing && hasNoLocalData) {
+      const timer = setTimeout(() => {
+        setDataGateTimedOut(true);
+      }, 5000);
+      return () => clearTimeout(timer);
+    } else {
+      setDataGateTimedOut(false);
+    }
+  }, [dataSyncing, hasNoLocalData]);
+
   // Auto scroll to top when page changes
   useScrollToTopOnPageChange(currentPage);
 
@@ -550,13 +563,14 @@ const AppContent: React.FC = () => {
           console.warn('[Startup] SMS detection init skipped:', err);
         }
       });
-      void Promise.resolve().then(async () => {
-        try {
-          await initializePushNotifications((page) => setCurrentPageRef.current?.(page));
-        } catch (err) {
+      // Defer push notification prompt slightly so the first React frame mounts cleanly
+      // before any native OS permission dialog obscures or pauses the webview
+      const pushTimer = setTimeout(() => {
+        void initializePushNotifications((page) => setCurrentPageRef.current?.(page)).catch((err) => {
           console.warn('[Startup] Push notifications init skipped:', err);
-        }
-      });
+        });
+      }, 800);
+      return () => clearTimeout(pushTimer);
     }
   }, [user, isAuthenticated]);
 
@@ -1210,7 +1224,7 @@ const AppContent: React.FC = () => {
     // after a re-login there is nothing local to show. Rendering a ₹0 dashboard there
     // reads as "my data is gone", so the shell (header + nav) paints instantly and only
     // the content area waits for the first rows — which arrive reactively via useLiveQuery.
-    const awaitingFirstRows = hasNoLocalData && dataSyncing;
+    const awaitingFirstRows = hasNoLocalData && dataSyncing && !dataGateTimedOut;
     if (user && (!dataReady || (currentPage === 'dashboard' && awaitingFirstRows)) && !bypassDataGatePages.has(currentPage)) {
       return (
         <div className="flex items-center justify-center h-[60vh] w-full">
@@ -1224,6 +1238,13 @@ const AppContent: React.FC = () => {
                 Having trouble reaching the cloud. Using last saved data.
               </p>
             )}
+            <button
+              type="button"
+              onClick={() => setDataGateTimedOut(true)}
+              className="mt-4 inline-block text-xs font-medium text-pink-600 hover:text-pink-700 underline cursor-pointer"
+            >
+              Continue to app
+            </button>
           </div>
         </div>
       );

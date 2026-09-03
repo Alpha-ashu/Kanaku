@@ -216,6 +216,7 @@ export const uploadBill = async (req: AuthRequest, res: Response, next: NextFunc
       fileName: bill.originalName,
       fileType: bill.contentType,
       fileSize: bill.size,
+      storagePath: bill.storagePath,
       uploadedAt: bill.createdAt,
       downloadUrl,
     });

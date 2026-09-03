@@ -40,6 +40,9 @@ COPY --from=builder /app/backend/generated ./generated
 COPY --from=builder /app/backend/prisma    ./prisma
 COPY --from=builder /app/backend/scripts   ./scripts
 
+# Verify critical runtime dependencies exist in runner image
+RUN node -e "require('zod'); require('@prisma/client'); console.log('Runtime dependencies verified in container')"
+
 # Non-root user for security
 USER kanaku
 

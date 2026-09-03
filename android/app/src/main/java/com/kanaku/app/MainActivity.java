@@ -32,6 +32,24 @@ public class MainActivity extends BridgeActivity {
         final Thread.UncaughtExceptionHandler previousHandler =
             Thread.getDefaultUncaughtExceptionHandler();
         Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
+            // In debug/CI builds without google-services.json, FirebaseMessaging throws
+            // IllegalStateException: Default FirebaseApp is not initialized.
+            // Catch this specific non-fatal configuration issue so granting permission doesn't kill the app.
+            boolean isFirebaseMissing = false;
+            Throwable t = throwable;
+            while (t != null) {
+                String msg = t.getMessage();
+                if (t instanceof IllegalStateException && msg != null && msg.contains("Default FirebaseApp is not initialized")) {
+                    isFirebaseMissing = true;
+                    break;
+                }
+                t = t.getCause();
+            }
+            if (isFirebaseMissing) {
+                Log.w("KANAKU_PUSH", "Firebase push registration skipped: FirebaseApp is not configured on this device.");
+                return;
+            }
+
             Log.e("KANAKU_CRASH", "Uncaught exception on thread " + thread.getName(), throwable);
             if (previousHandler != null) {
                 previousHandler.uncaughtException(thread, throwable);

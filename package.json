@@ -92,7 +92,8 @@
     "@capacitor/share": "8.0.1",
     "@capacitor/splash-screen": "8.0.2",
     "@capacitor/status-bar": "8.0.3",
-    "@capgo/capacitor-native-biometric": "8.6.7"
+    "@capgo/capacitor-native-biometric": "8.6.7",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@capacitor/android": "^8.5.0",

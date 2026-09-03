@@ -149,7 +149,7 @@ export const initializePushNotifications = async (navigate: NavigateToPage): Pro
     listenerHandles.push(
       await PushNotifications.addListener('registrationError', (error) => {
         // Typically a missing google-services.json or APNs entitlement.
-        console.warn('[Push] Registration failed:', error.error);
+        console.warn('[Push] Registration failed (non-fatal):', error?.error || error);
       }),
     );
 
@@ -177,12 +177,18 @@ export const initializePushNotifications = async (navigate: NavigateToPage): Pro
     );
 
     try {
-      await PushNotifications.register();
+      await Promise.race([
+        PushNotifications.register(),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Push registration timeout')), 4000)
+        ),
+      ]);
     } catch (regError) {
-      console.warn('[Push] PushNotifications.register skipped:', regError);
+      console.warn('[Push] PushNotifications.register skipped or timed out:', regError);
     }
   } catch (error) {
-    initialised = false;
+    // Keep initialised = true so an unconfigured device (e.g. missing google-services or APNs)
+    // does not re-enter this routine on every window focus or permission callback.
     console.info(
       '[Push] Initialisation skipped:',
       error instanceof Error ? error.message : String(error),

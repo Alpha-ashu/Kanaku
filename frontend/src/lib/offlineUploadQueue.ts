@@ -98,11 +98,18 @@ export async function processUploadQueue(): Promise<void> {
           attempt: (item.retryCount ?? 0) + 1,
         });
 
-        // Convert stored Blob back to File
-        const file = new File([item.fileBlob], item.fileName, {
-          type: item.fileType,
-          lastModified: item.createdAt instanceof Date ? item.createdAt.getTime() : Date.now(),
-        });
+        // Convert stored Blob back to File (or retain as Blob if File constructor is unavailable)
+        let file: File | Blob;
+        try {
+          file = item.fileBlob instanceof File
+            ? item.fileBlob
+            : new File([item.fileBlob], item.fileName, {
+                type: item.fileType,
+                lastModified: item.createdAt instanceof Date ? item.createdAt.getTime() : Date.now(),
+              });
+        } catch {
+          file = item.fileBlob;
+        }
 
         // If there is a linked transaction, find its cloudId
         let transactionCloudId: string | undefined;
@@ -117,6 +124,7 @@ export async function processUploadQueue(): Promise<void> {
         const uploaded = await backendService.uploadExpenseBill({
           transactionId: transactionCloudId,
           file,
+          fileName: item.fileName,
         });
 
         if (!uploaded?.id) {

@@ -7,6 +7,7 @@ import { categorizeText as localCategorizeText } from './smartCategorization';
 import { TokenManager } from './api';
 import supabase from '@/utils/supabase/client';
 import { getConfiguredApiBase } from '@/lib/apiBase';
+import { awaitPinUnlock, getPinUnlockToken, setPinUnlockToken } from './pinUnlockCoordinator';
 
 const API_BASE_URL = (getConfiguredApiBase()).replace(/\/+$/, '');
 const SHOULD_SKIP_OPTIONAL_BACKEND_REQUESTS = import.meta.env.DEV && !import.meta.env.VITE_API_URL;
@@ -139,6 +140,17 @@ class BackendService {
         config.headers.Authorization = `Bearer ${token}`;
       }
 
+      const pinUnlock = getPinUnlockToken();
+      if (pinUnlock) {
+        config.headers['X-Pin-Unlock'] = pinUnlock;
+      }
+
+      // If sending FormData, delete Content-Type so Axios and the browser generate
+      // the correct multipart/form-data boundary header.
+      if (config.data instanceof FormData) {
+        delete config.headers['Content-Type'];
+      }
+
       const method = (config.method || 'GET').toUpperCase();
       if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method) && !config.headers['Idempotency-Key']) {
         const payloadRequestId =
@@ -152,13 +164,38 @@ class BackendService {
     });
 
     this.api.interceptors.response.use(
-      (response) => response,
+      (response) => {
+        const refreshedPin = response.headers?.['x-pin-unlock'];
+        if (refreshedPin) {
+          setPinUnlockToken(refreshedPin);
+        }
+        return response;
+      },
       async (error) => {
         if (!axios.isAxiosError(error)) return Promise.reject(error);
 
         const status = error.response?.status;
         const serverMessage = error.response?.data?.error;
+        const serverCode = error.response?.data?.code;
         const originalRequest = error.config as any;
+
+        // If blocked by PIN gate, await pin unlock and retry once
+        if (status === 403 && (serverCode === 'PIN_VERIFICATION_REQUIRED' || String(serverMessage).includes('PIN') || String(error.response?.data?.message).includes('PIN')) && !originalRequest?._pinRetry) {
+          originalRequest._pinRetry = true;
+          try {
+            const unlocked = await awaitPinUnlock();
+            if (unlocked) {
+              const freshPin = getPinUnlockToken();
+              if (freshPin) {
+                originalRequest.headers = originalRequest.headers || {};
+                originalRequest.headers['X-Pin-Unlock'] = freshPin;
+              }
+              return this.api(originalRequest);
+            }
+          } catch {
+            // pass through to normal error handling
+          }
+        }
 
         if (!error.response) {
           const wrappedError = new Error('No internet connection. Please check your network.') as Error & {
@@ -1015,12 +1052,13 @@ class BackendService {
     return `${base.replace(/\/+$/, '')}/bills/${id}/file`;
   }
 
-  async uploadExpenseBill(payload: { transactionId?: string | number; file: File }) {
+  async uploadExpenseBill(payload: { transactionId?: string | number; file: File | Blob; fileName?: string }) {
     const formData = new FormData();
     if (payload.transactionId !== undefined) {
       formData.append('transactionId', String(payload.transactionId));
     }
-    formData.append('file', payload.file);
+    const name = (payload.file instanceof File) ? payload.file.name : (payload.fileName || 'bill.jpg');
+    formData.append('file', payload.file, name);
 
     const response = await this.api.post('/bills', formData);
     return response.data;
