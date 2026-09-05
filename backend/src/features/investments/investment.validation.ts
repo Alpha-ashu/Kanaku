@@ -12,6 +12,7 @@ export const investmentCreateSchema = z.object({
   purchaseDate: z.string().datetime().or(z.string().min(1)),
   lastUpdated: z.string().datetime().or(z.string().min(1)).optional(),
   metadata: z.any().optional(),
+  accountId: z.string().trim().optional(),
 });
 
 export const investmentUpdateSchema = investmentCreateSchema.partial();

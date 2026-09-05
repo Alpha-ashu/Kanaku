@@ -1,4 +1,4 @@
-import { prisma } from '../../utils/prisma';
+import { prisma } from '../../db/prisma';
 import { AppError } from '../../utils/errors';
 import crypto from 'crypto';
 
@@ -19,6 +19,26 @@ export class DeviceService {
     }
   ) {
     try {
+      // Disassociate tokens from any other user's devices to prevent notification leaks
+      if (data.fcmToken) {
+        await prisma.device.updateMany({
+          where: {
+            fcmToken: data.fcmToken,
+            userId: { not: userId },
+          },
+          data: { fcmToken: null },
+        }).catch(() => {});
+      }
+      if (data.apnsToken) {
+        await prisma.device.updateMany({
+          where: {
+            apnsToken: data.apnsToken,
+            userId: { not: userId },
+          },
+          data: { apnsToken: null },
+        }).catch(() => {});
+      }
+
       // Check if device already exists
       const existingDevice = await prisma.device.findUnique({
         where: {
@@ -30,7 +50,7 @@ export class DeviceService {
       });
 
       if (existingDevice) {
-        // Update existing device
+        // Update existing device and ensure it is reactivated
         return await prisma.device.update({
           where: {
             userId_deviceId: {
@@ -45,6 +65,7 @@ export class DeviceService {
             osVersion: data.osVersion,
             fcmToken: data.fcmToken || existingDevice.fcmToken,
             apnsToken: data.apnsToken || existingDevice.apnsToken,
+            isActive: true,
             lastSyncedAt: new Date(),
           },
         });
@@ -198,6 +219,25 @@ export class DeviceService {
     tokens: { fcmToken?: string; apnsToken?: string }
   ) {
     try {
+      if (tokens.fcmToken) {
+        await prisma.device.updateMany({
+          where: {
+            fcmToken: tokens.fcmToken,
+            userId: { not: userId },
+          },
+          data: { fcmToken: null },
+        }).catch(() => {});
+      }
+      if (tokens.apnsToken) {
+        await prisma.device.updateMany({
+          where: {
+            apnsToken: tokens.apnsToken,
+            userId: { not: userId },
+          },
+          data: { apnsToken: null },
+        }).catch(() => {});
+      }
+
       return await prisma.device.update({
         where: {
           userId_deviceId: {
@@ -208,6 +248,7 @@ export class DeviceService {
         data: {
           fcmToken: tokens.fcmToken || undefined,
           apnsToken: tokens.apnsToken || undefined,
+          isActive: true,
         },
       });
     } catch (error) {

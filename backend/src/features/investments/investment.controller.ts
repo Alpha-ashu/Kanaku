@@ -3,6 +3,9 @@ import { AuthRequest, getUserId } from '../../middleware/auth';
 import { prisma } from '../../db/prisma';
 import { AppError } from '../../utils/AppError';
 import { isDatabaseUnavailableError } from '../../utils/databaseAvailability';
+import { cacheDeleteByPrefix } from '../../cache/redis';
+import { FinancialLedgerService } from '../transactions/ledger.service';
+import { FinancialEventDispatcher, InvestmentPurchasedEvent } from '../transactions/dispatcher';
 
 const toDate = (value?: string) => {
   if (!value) return new Date();
@@ -64,6 +67,7 @@ export const createInvestment = async (req: AuthRequest, res: Response, next: Ne
       lastUpdated?: string;
       metadata?: any;
       clientRequestId?: string;
+      accountId?: string;
     };
 
     // Idempotency check
@@ -80,23 +84,78 @@ export const createInvestment = async (req: AuthRequest, res: Response, next: Ne
     const currentValue = body.currentValue ?? body.quantity * body.currentPrice;
     const profitLoss = body.profitLoss ?? currentValue - totalInvested;
 
-    const created = await prisma.investment.create({
-      data: {
-        userId,
-        assetType: body.assetType,
-        assetName: body.assetName,
-        quantity: body.quantity,
-        buyPrice: body.buyPrice,
-        currentPrice: body.currentPrice,
-        totalInvested,
-        currentValue,
-        profitLoss,
-        purchaseDate: toDate(body.purchaseDate),
-        lastUpdated: toDate(body.lastUpdated),
-        metadata: body.metadata !== undefined ? body.metadata : undefined,
-        clientRequestId: body.clientRequestId || null,
-      },
+    if (body.accountId) {
+      const account = await prisma.account.findFirst({
+        where: { id: body.accountId, userId, deletedAt: null },
+      });
+      if (!account) {
+        throw AppError.notFound('Account');
+      }
+      if (Number(account.balance) < totalInvested) {
+        throw AppError.badRequest('Insufficient account balance to purchase investment', 'INSUFFICIENT_FUNDS');
+      }
+    }
+
+    const created = await prisma.$transaction(async (tx) => {
+      const investment = await tx.investment.create({
+        data: {
+          userId,
+          assetType: body.assetType,
+          assetName: body.assetName,
+          quantity: body.quantity,
+          buyPrice: body.buyPrice,
+          currentPrice: body.currentPrice,
+          totalInvested,
+          currentValue,
+          profitLoss,
+          purchaseDate: toDate(body.purchaseDate),
+          lastUpdated: toDate(body.lastUpdated),
+          metadata: body.metadata !== undefined ? body.metadata : undefined,
+          clientRequestId: body.clientRequestId || null,
+        },
+      });
+
+      if (body.accountId) {
+        await tx.account.update({
+          where: { id: body.accountId },
+          data: {
+            balance: { decrement: totalInvested },
+          },
+        });
+
+        await tx.transaction.create({
+          data: {
+            userId,
+            accountId: body.accountId,
+            type: 'expense',
+            amount: totalInvested,
+            category: 'Investment',
+            description: `Investment purchase: ${investment.assetName} (${investment.assetType})`,
+            date: toDate(body.purchaseDate),
+          },
+        });
+
+        if (FinancialLedgerService.isEnabled('investments')) {
+          await FinancialEventDispatcher.publish(tx, new InvestmentPurchasedEvent(
+            userId,
+            investment.id,
+            body.accountId,
+            totalInvested,
+            investment.assetName,
+            investment.assetType,
+            `inv-purchase-${investment.id}`,
+          ));
+        }
+      }
+
+      return investment;
     });
+
+    await cacheDeleteByPrefix('investments:');
+    if (body.accountId) {
+      await cacheDeleteByPrefix('accounts:');
+      await cacheDeleteByPrefix('transactions:');
+    }
 
     res.status(201).json({ success: true, data: created });
   } catch (error) {

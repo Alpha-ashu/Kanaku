@@ -1,4 +1,4 @@
-import { prisma } from '../../utils/prisma';
+import { prisma } from '../../db/prisma';
 import { DeviceService } from '../devices/device.service';
 
 /**

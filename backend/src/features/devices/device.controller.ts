@@ -27,12 +27,16 @@ const updateTokensSchema = z.object({
   apnsToken: z.string().optional(),
 });
 
+const getUserIdFromReq = (req: DeviceRequest): string | undefined => {
+  return (req as any).userId || (req as any).user?.id;
+};
+
 /**
  * Register or update a device
  */
 export const registerDevice = async (req: DeviceRequest, res: Response, next: NextFunction) => {
   try {
-    const userId = (req as any).user?.id;
+    const userId = getUserIdFromReq(req);
     if (!userId) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
@@ -56,7 +60,7 @@ export const registerDevice = async (req: DeviceRequest, res: Response, next: Ne
  */
 export const getDevices = async (req: DeviceRequest, res: Response, next: NextFunction) => {
   try {
-    const userId = (req as any).user?.id;
+    const userId = getUserIdFromReq(req);
     if (!userId) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
@@ -78,7 +82,7 @@ export const getDevices = async (req: DeviceRequest, res: Response, next: NextFu
  */
 export const getDevice = async (req: DeviceRequest, res: Response, next: NextFunction) => {
   try {
-    const userId = (req as any).user?.id;
+    const userId = getUserIdFromReq(req);
     const { deviceId } = req.params;
 
     if (!userId) {
@@ -101,7 +105,7 @@ export const getDevice = async (req: DeviceRequest, res: Response, next: NextFun
  */
 export const updateSync = async (req: DeviceRequest, res: Response, next: NextFunction) => {
   try {
-    const userId = (req as any).user?.id;
+    const userId = getUserIdFromReq(req);
     const { deviceId } = req.params;
 
     if (!userId) {
@@ -125,7 +129,7 @@ export const updateSync = async (req: DeviceRequest, res: Response, next: NextFu
  */
 export const updateNotificationTokens = async (req: DeviceRequest, res: Response, next: NextFunction) => {
   try {
-    const userId = (req as any).user?.id;
+    const userId = getUserIdFromReq(req);
     const { deviceId } = req.params;
 
     if (!userId) {
@@ -151,7 +155,7 @@ export const updateNotificationTokens = async (req: DeviceRequest, res: Response
  */
 export const deactivateDevice = async (req: DeviceRequest, res: Response, next: NextFunction) => {
   try {
-    const userId = (req as any).user?.id;
+    const userId = getUserIdFromReq(req);
     const { deviceId } = req.params;
 
     if (!userId) {
@@ -175,7 +179,7 @@ export const deactivateDevice = async (req: DeviceRequest, res: Response, next: 
  */
 export const deleteDevice = async (req: DeviceRequest, res: Response, next: NextFunction) => {
   try {
-    const userId = (req as any).user?.id;
+    const userId = getUserIdFromReq(req);
     const { deviceId } = req.params;
 
     if (!userId) {

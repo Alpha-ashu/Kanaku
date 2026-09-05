@@ -107,7 +107,7 @@ const loadPayment = async (paymentId: string) =>
     where: { id: paymentId },
   });
 
-const markPaymentCompleted = async (paymentId: string, transactionId?: string) => {
+const markPaymentCompleted = async (paymentId: string, transactionId?: string, paymentMethod?: string) => {
   return prisma.$transaction(async (tx) => {
     const payment = await tx.payment.findUnique({
       where: { id: paymentId },
@@ -129,6 +129,7 @@ const markPaymentCompleted = async (paymentId: string, transactionId?: string) =
       data: {
         status: 'completed',
         transactionId: transactionId || payment.transactionId,
+        ...(paymentMethod ? { paymentMethod } : {}),
       },
     });
 
@@ -360,6 +361,7 @@ export const completePayment = async (req: AuthRequest, res: Response) => {
   try {
     const actorId = getUserId(req);
     const { paymentId, transactionId } = req.body;
+    const paymentMethod = normalizePaymentMethod(req.body.paymentMethod);
 
     if (!paymentId) {
       return res.status(400).json({ error: 'Missing paymentId' });
@@ -374,7 +376,7 @@ export const completePayment = async (req: AuthRequest, res: Response) => {
       return res.status(403).json({ error: 'Access denied' });
     }
 
-    const updated = await markPaymentCompleted(paymentId, transactionId);
+    const updated = await markPaymentCompleted(paymentId, transactionId, paymentMethod || undefined);
     res.json(updated);
   } catch (error: any) {
     if (error.message === 'INVALID_PAYMENT_STATE') {

@@ -11,19 +11,20 @@ interface AddLoanModalWithFriendsProps {
 }
 
 export const AddLoanModalWithFriends: React.FC<AddLoanModalWithFriendsProps> = ({ onClose }) => {
- const { friends, refreshData } = useApp();
- const [showAddFriend, setShowAddFriend] = useState(false);
- const [formData, setFormData] = useState({
- type: 'borrowed' as 'borrowed' | 'lent' | 'emi',
- name: '',
- principalAmount: 0,
- interestRate: 0,
- emiAmount: 0,
- dueDate: '',
- frequency: 'monthly' as 'monthly' | 'weekly' | 'custom',
- contactPerson: '',
- friendId: undefined as number | undefined,
- });
+  const { friends, accounts, refreshData } = useApp();
+  const [showAddFriend, setShowAddFriend] = useState(false);
+  const [formData, setFormData] = useState({
+    type: 'borrowed' as 'borrowed' | 'lent' | 'emi',
+    name: '',
+    principalAmount: 0,
+    interestRate: 0,
+    emiAmount: 0,
+    dueDate: '',
+    frequency: 'monthly' as 'monthly' | 'weekly' | 'custom',
+    contactPerson: '',
+    friendId: undefined as number | undefined,
+    accountId: undefined as string | undefined,
+  });
 
  const [newFriend, setNewFriend] = useState({
  name: '',
@@ -74,26 +75,35 @@ export const AddLoanModalWithFriends: React.FC<AddLoanModalWithFriendsProps> = (
  }
  };
 
- const handleSubmit = async (e: React.FormEvent) => {
- e.preventDefault();
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
- const { friendId, ...loanData } = formData;
- try {
- await backendService.createLoan({
- ...loanData,
- friendId: String(friendId),
- outstandingBalance: formData.principalAmount,
- status: 'active',
- dueDate: formData.dueDate ? new Date(formData.dueDate) : undefined,
- createdAt: new Date(),
- });
- toast.success('Loan added successfully');
- refreshData();
- onClose();
- } catch (error) {
- toast.error('Failed to add loan');
- }
- };
+    const { friendId, ...loanData } = formData;
+    if (formData.accountId && formData.type === 'lent') {
+      const selectedAcc = accounts.find(a => (a.cloudId || String(a.id)) === formData.accountId);
+      if (selectedAcc && Number(selectedAcc.balance) < formData.principalAmount) {
+        toast.error('Selected account does not have sufficient balance');
+        return;
+      }
+    }
+
+    try {
+      await backendService.createLoan({
+        ...loanData,
+        friendId: friendId ? String(friendId) : undefined,
+        outstandingBalance: formData.principalAmount,
+        status: 'active',
+        dueDate: formData.dueDate ? new Date(formData.dueDate) : undefined,
+        createdAt: new Date(),
+        accountId: formData.accountId,
+      });
+      toast.success('Loan added successfully');
+      refreshData();
+      onClose();
+    } catch (error: any) {
+      toast.error(error?.response?.data?.error || 'Failed to add loan');
+    }
+  };
 
  return (
  <ModalWrapper
@@ -144,23 +154,46 @@ export const AddLoanModalWithFriends: React.FC<AddLoanModalWithFriendsProps> = (
  />
  </div>
 
- {/* Principal Amount */}
- <div>
- <label className="block text-sm font-semibold text-gray-700 mb-2">Principal Amount</label>
- <div className="relative">
- <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium">$</span>
- <input
- type="number"
- step="0.01"
- value={formData.principalAmount || ''}
- onChange={(e) => setFormData({ ...formData, principalAmount: parseFloat(e.target.value) || 0 })}
- data-testid="loan-modal-amount-input"
- className="w-full pl-8 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 transition-colors"
- placeholder="0.00"
- required
- />
- </div>
- </div>
+  {/* Principal Amount */}
+  <div>
+  <label className="block text-sm font-semibold text-gray-700 mb-2">Principal Amount</label>
+  <div className="relative">
+  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium">₹</span>
+  <input
+  type="number"
+  step="0.01"
+  value={formData.principalAmount || ''}
+  onChange={(e) => setFormData({ ...formData, principalAmount: parseFloat(e.target.value) || 0 })}
+  data-testid="loan-modal-amount-input"
+  className="w-full pl-8 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 transition-colors"
+  placeholder="0.00"
+  required
+  />
+  </div>
+  </div>
+
+  {/* Linked Cash Account (Optional) */}
+  <div>
+    <div className="flex items-center justify-between mb-2">
+      <label className="block text-sm font-semibold text-gray-700">
+        {formData.type === 'borrowed' ? 'Deposit Principal Into' : formData.type === 'lent' ? 'Disburse From Account' : 'Linked Account (Optional)'}
+      </label>
+      <span className="text-xs text-gray-400 font-medium">Optional</span>
+    </div>
+    <select
+      value={formData.accountId || ''}
+      onChange={(e) => setFormData({ ...formData, accountId: e.target.value || undefined })}
+      data-testid="loan-modal-account-select"
+      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 transition-colors bg-white appearance-none text-sm text-gray-800"
+    >
+      <option value="">None (Obligation only, no cash movement)</option>
+      {accounts.map((acc) => (
+        <option key={acc.id} value={acc.cloudId || String(acc.id)}>
+          {acc.name} (₹{Number(acc.balance).toFixed(0)})
+        </option>
+      ))}
+    </select>
+  </div>
 
  {/* Friend Selection */}
  {(formData.type === 'borrowed' || formData.type === 'lent') && (

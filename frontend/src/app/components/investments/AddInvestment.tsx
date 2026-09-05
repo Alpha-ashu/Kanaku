@@ -11,6 +11,8 @@ import { toast } from 'sonner';
 import { SearchableDropdown } from '@/app/components/ui/SearchableDropdown';
 import { FloatingSaveBar } from '@/app/components/ui/FloatingSaveBar';
 import { Button } from '@/app/components/ui/button';
+import { applyAccountBalanceDeltas } from '@/lib/transactionAggregation';
+import { queueRecordUpsertSync, processPendingSyncQueue } from '@/lib/auth-sync-integration';
 
 import {
   MainCategoryCode,
@@ -270,8 +272,16 @@ export const AddInvestment: React.FC = () => {
         toast.success(`Recurring Rental Income created in Income module`);
       }
 
+      // Cross-module balance adjustment: deduct investment cost from funding account
+      if (formData.fundingAccountId && calculatedTotalCapital > 0) {
+        await applyAccountBalanceDeltas(new Map([[formData.fundingAccountId, -calculatedTotalCapital]]));
+        queueRecordUpsertSync('accounts', formData.fundingAccountId);
+        void processPendingSyncQueue();
+      }
+
       // 5. Sync to backend API if available
       try {
+        const fundingAccount = activeAccounts.find(a => a.id === formData.fundingAccountId);
         await backendService.createInvestment({
           assetType: selectedSubcategory,
           assetName: formData.name || `${fdDetails.bankName} Deposit`,
@@ -284,6 +294,7 @@ export const AddInvestment: React.FC = () => {
           purchaseDate: new Date(formData.date),
           broker: formData.broker,
           description: formData.description,
+          accountId: fundingAccount?.cloudId || (fundingAccount?.id ? String(fundingAccount.id) : undefined),
           metadata: {
             categoryCode: selectedCategory,
             subcategoryCode: selectedSubcategory,
@@ -291,7 +302,7 @@ export const AddInvestment: React.FC = () => {
             propertyDetails,
             businessDetails,
           },
-        } as any);
+        });
       } catch (e) {
         // Backend optional fallback
       }

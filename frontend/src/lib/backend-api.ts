@@ -392,8 +392,8 @@ class BackendService {
     currentValue: number;
     profitLoss: number;
     purchaseDate: Date;
-    lastUpdated: Date;
-    updatedAt: Date;
+    lastUpdated?: Date;
+    updatedAt?: Date;
     deletedAt?: Date;
     broker?: string;
     description?: string;
@@ -420,16 +420,18 @@ class BackendService {
     realizedProfitLoss?: number;
     settlementAccountId?: number;
     closeNotes?: string;
+    accountId?: string;
     metadata?: Record<string, any>;
   }) {
     const localInvestment = normalizeInvestmentDates(investment);
 
     try {
+      const now = new Date();
       const response = await this.api.post('/investments', {
         ...investment,
         purchaseDate: investment.purchaseDate.toISOString(),
-        lastUpdated: investment.lastUpdated.toISOString(),
-        updatedAt: investment.updatedAt.toISOString(),
+        lastUpdated: (investment.lastUpdated ?? now).toISOString(),
+        updatedAt: (investment.updatedAt ?? now).toISOString(),
         deletedAt: investment.deletedAt ? investment.deletedAt.toISOString() : undefined,
         closedAt: investment.closedAt ? investment.closedAt.toISOString() : undefined,
         clientRequestId: generateUUID(),
@@ -673,6 +675,7 @@ class BackendService {
     createdAt?: Date;
     updatedAt?: Date;
     deletedAt?: Date;
+    accountId?: string;
   }) {
     const response = await this.api.post('/loans', {
       ...loan,

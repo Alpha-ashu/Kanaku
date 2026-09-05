@@ -107,6 +107,56 @@ const removeListeners = async () => {
   listenerHandles = [];
 };
 
+const registerWebDevice = async (): Promise<void> => {
+  const deviceId = getDeviceId();
+  const ua = typeof navigator !== 'undefined' ? navigator.userAgent : '';
+  let osType = 'Web';
+  let deviceType: 'web' | 'desktop' | 'mobile' | 'tablet' = 'web';
+  let deviceName = 'Web Browser';
+
+  if (/Windows/i.test(ua)) {
+    osType = 'Windows';
+    deviceName = 'Windows PC';
+    deviceType = 'desktop';
+  } else if (/Macintosh|Mac OS X/i.test(ua)) {
+    osType = 'macOS';
+    deviceName = 'Mac';
+    deviceType = 'desktop';
+  } else if (/Linux/i.test(ua)) {
+    osType = 'Linux';
+    deviceName = 'Linux PC';
+    deviceType = 'desktop';
+  } else if (/Android/i.test(ua)) {
+    osType = 'Android';
+    deviceName = 'Android Browser';
+    deviceType = 'mobile';
+  } else if (/iPhone|iPad|iPod/i.test(ua)) {
+    osType = 'iOS';
+    deviceName = /iPad/i.test(ua) ? 'iPad Safari' : 'iPhone Safari';
+    deviceType = /iPad/i.test(ua) ? 'tablet' : 'mobile';
+  }
+
+  try {
+    await apiClient.post(
+      '/devices',
+      {
+        deviceId,
+        deviceName,
+        deviceType,
+        osType,
+        osVersion: typeof navigator !== 'undefined' ? (navigator.platform || '').slice(0, 40) : '',
+      },
+      { showErrorToast: false },
+    );
+    console.info('[Device] Web device registered successfully.');
+  } catch (error) {
+    console.info(
+      '[Device] Web device registration skipped:',
+      error instanceof Error ? error.message : String(error),
+    );
+  }
+};
+
 /**
  * Requests permission and registers for push. Call only AFTER PIN unlock —
  * registration ties a push token to an authenticated user, and the payloads that
@@ -115,7 +165,14 @@ const removeListeners = async () => {
  * Safe to call repeatedly; only the first call per session does work.
  */
 export const initializePushNotifications = async (navigate: NavigateToPage): Promise<void> => {
-  if (!isNative() || initialised) return;
+  if (!isNative()) {
+    if (!initialised) {
+      initialised = true;
+      void registerWebDevice();
+    }
+    return;
+  }
+  if (initialised) return;
   initialised = true;
 
   try {
@@ -204,12 +261,8 @@ export const teardownPushNotifications = async (): Promise<void> => {
   initialised = false;
   localStorage.removeItem(SYNCED_TOKEN_KEY);
 
-  if (!isNative()) return;
-
-  await removeListeners();
-
   try {
-    // Detach the token server-side so the outbox stops targeting this device.
+    // Detach the token / mark inactive server-side so the outbox stops targeting this device.
     const deviceId = localStorage.getItem(DEVICE_ID_KEY);
     if (deviceId) {
       await apiClient.post(
@@ -221,6 +274,10 @@ export const teardownPushNotifications = async (): Promise<void> => {
   } catch {
     /* best effort — the server also prunes tokens that FCM reports as dead */
   }
+
+  if (!isNative()) return;
+
+  await removeListeners();
 
   try {
     await PushNotifications.removeAllDeliveredNotifications();

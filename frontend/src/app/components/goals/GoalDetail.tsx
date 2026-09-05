@@ -6,10 +6,13 @@ import { Button } from '@/app/components/ui/button';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { Card } from '@/app/components/ui/card';
 import { getGoalCategoryMeta, getGoalProgress, getMilestoneLabel, getMonthlySuggestion } from '@/lib/goal-utils';
-import { MessageSquare, Plus, Target } from 'lucide-react';
+import { ArrowDownLeft, MessageSquare, Plus, Target } from 'lucide-react';
 import { toast } from 'sonner';
 import { takeVoiceDraft, VOICE_GOAL_DRAFT_KEY, type VoiceGoalDraft } from '@/lib/voiceDrafts';
 import { formatCurrencyAmount } from '@/lib/currencyUtils';
+import { backendService } from '@/lib/backend-api';
+import { queueRecordUpsertSync, processPendingSyncQueue } from '@/lib/auth-sync-integration';
+import { cn } from '@/lib/utils';
 
 const SELECTED_GOAL_ID_KEY = 'selected_goal_id';
 
@@ -23,10 +26,15 @@ export const GoalDetail: React.FC = () => {
  const { setCurrentPage, currency, accounts } = useApp();
  const [goal, setGoal] = useState<Goal | null>(null);
  const [contributions, setContributions] = useState<GoalContribution[]>([]);
+ const [activeTab, setActiveTab] = useState<'contribute' | 'withdraw'>('contribute');
  const [amount, setAmount] = useState(0);
  const [accountId, setAccountId] = useState<number>(accounts[0]?.id || 0);
  const [memberName, setMemberName] = useState<string>('');
  const [notes, setNotes] = useState('');
+ const [withdrawAmount, setWithdrawAmount] = useState(0);
+ const [withdrawAccountId, setWithdrawAccountId] = useState<number>(accounts[0]?.id || 0);
+ const [withdrawNotes, setWithdrawNotes] = useState('');
+ const [isSubmitting, setIsSubmitting] = useState(false);
 
  useEffect(() => {
  const selectedId = Number(localStorage.getItem(SELECTED_GOAL_ID_KEY));
@@ -144,51 +152,139 @@ export const GoalDetail: React.FC = () => {
  return null;
  }, [goal, sortedContributions, lastContributionDate]);
 
- const addContribution = async (e: React.FormEvent) => {
- e.preventDefault();
- if (!goal?.id) return;
- if (amount <= 0) {
- toast.error('Enter a valid contribution amount');
- return;
- }
+  const addContribution = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!goal?.id) return;
+    if (amount <= 0) {
+      toast.error('Enter a valid contribution amount');
+      return;
+    }
 
- const account = accounts.find((item) => item.id === accountId);
- if (!account) {
- toast.error('Select an account for this contribution');
- return;
- }
+    const account = accounts.find((item) => item.id === accountId);
+    if (!account) {
+      toast.error('Select an account for this contribution');
+      return;
+    }
 
- if (account.balance < amount) {
- toast.error('Selected account does not have enough balance');
- return;
- }
+    if (account.balance < amount) {
+      toast.error('Selected account does not have enough balance');
+      return;
+    }
 
- await db.goalContributions.add({
- goalId: goal.id,
- amount,
- accountId,
- date: new Date(),
- memberName: goal.isGroupGoal ? memberName : undefined,
- status: goal.isGroupGoal ? 'paid' : undefined,
- notes: notes.trim() || undefined,
- });
+    setIsSubmitting(true);
+    try {
+      if (goal.cloudId && account.cloudId && navigator.onLine) {
+        try {
+          await backendService.api.post(`/goals/${goal.cloudId}/contribute`, {
+            amount,
+            accountId: account.cloudId,
+            memberName: goal.isGroupGoal ? memberName : undefined,
+            notes: notes.trim() || undefined,
+          });
+        } catch (backendError) {
+          console.warn('[GoalDetail] Direct contribution sync failed, falling back to sync queue:', backendError);
+        }
+      }
 
- await db.goals.update(goal.id, {
- currentAmount: goal.currentAmount + amount,
- updatedAt: new Date(),
- });
+      await db.goalContributions.add({
+        goalId: goal.id,
+        amount,
+        accountId,
+        date: new Date(),
+        memberName: goal.isGroupGoal ? memberName : undefined,
+        status: goal.isGroupGoal ? 'paid' : undefined,
+        notes: notes.trim() || undefined,
+      });
 
- await applyAccountBalanceDeltas(new Map([[accountId, -amount]]));
+      await db.goals.update(goal.id, {
+        currentAmount: goal.currentAmount + amount,
+        updatedAt: new Date(),
+      });
 
- toast.success('Contribution added');
- setAmount(0);
- setNotes('');
+      await applyAccountBalanceDeltas(new Map([[accountId, -amount]]));
 
- const updatedGoal = await db.goals.get(goal.id);
- const rows = await db.goalContributions.where('goalId').equals(goal.id).reverse().sortBy('date');
- setGoal(updatedGoal || null);
- setContributions(rows.reverse());
- };
+      queueRecordUpsertSync('goals', goal.id);
+      queueRecordUpsertSync('accounts', accountId);
+      void processPendingSyncQueue();
+
+      toast.success('Contribution added');
+      setAmount(0);
+      setNotes('');
+
+      const updatedGoal = await db.goals.get(goal.id);
+      const rows = await db.goalContributions.where('goalId').equals(goal.id).reverse().sortBy('date');
+      setGoal(updatedGoal || null);
+      setContributions(rows.reverse());
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleWithdraw = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!goal?.id) return;
+    if (withdrawAmount <= 0) {
+      toast.error('Enter a valid withdrawal amount');
+      return;
+    }
+
+    if (withdrawAmount > goal.currentAmount) {
+      toast.error('Withdrawal amount exceeds goal balance');
+      return;
+    }
+
+    const account = accounts.find((item) => item.id === withdrawAccountId);
+    if (!account) {
+      toast.error('Select an account to receive this withdrawal');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      if (goal.cloudId && account.cloudId && navigator.onLine) {
+        try {
+          await backendService.api.post(`/goals/${goal.cloudId}/withdraw`, {
+            amount: withdrawAmount,
+            accountId: account.cloudId,
+            notes: withdrawNotes.trim() || undefined,
+          });
+        } catch (backendError) {
+          console.warn('[GoalDetail] Direct withdrawal sync failed, falling back to sync queue:', backendError);
+        }
+      }
+
+      await db.goalContributions.add({
+        goalId: goal.id,
+        amount: -withdrawAmount,
+        accountId: withdrawAccountId,
+        date: new Date(),
+        status: 'paid',
+        notes: withdrawNotes.trim() ? `Withdrawal: ${withdrawNotes.trim()}` : 'Withdrawal from savings goal',
+      });
+
+      await db.goals.update(goal.id, {
+        currentAmount: Math.max(0, goal.currentAmount - withdrawAmount),
+        updatedAt: new Date(),
+      });
+
+      await applyAccountBalanceDeltas(new Map([[withdrawAccountId, withdrawAmount]]));
+
+      queueRecordUpsertSync('goals', goal.id);
+      queueRecordUpsertSync('accounts', withdrawAccountId);
+      void processPendingSyncQueue();
+
+      toast.success('Funds withdrawn to account');
+      setWithdrawAmount(0);
+      setWithdrawNotes('');
+
+      const updatedGoal = await db.goals.get(goal.id);
+      const rows = await db.goalContributions.where('goalId').equals(goal.id).reverse().sortBy('date');
+      setGoal(updatedGoal || null);
+      setContributions(rows.reverse());
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
  if (!goal) {
  return null;
@@ -271,66 +367,152 @@ export const GoalDetail: React.FC = () => {
 
  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
  <div className="space-y-6">
- <div className="bg-white rounded-[32px] p-6 lg:p-8 ring-1 ring-gray-100 shadow-[0_8px_40px_-12px_rgba(0,0,0,0.05)]">
- <h3 className="text-xl font-bold text-gray-900 mb-6">Add Contribution</h3>
- <form data-testid="goal-detail-form" onSubmit={addContribution} className="space-y-4">
- <div>
- <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Amount</label>
- <input
- type="number"
- step="0.01"
- value={amount || ''}
- onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
- data-testid="goals-detail-amount-input"
- className="w-full bg-white border-0 rounded-2xl px-4 py-3.5 text-gray-900 font-medium text-lg placeholder-gray-400 focus:ring-2 focus:ring-gray-900 focus:bg-white transition-all"
- placeholder="0.00"
- required
- />
- </div>
- <div>
- <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">From Account</label>
- <select
- value={accountId}
- onChange={(e) => setAccountId(parseInt(e.target.value, 10))}
- data-testid="goals-detail-account-select"
- className="w-full bg-white border-0 rounded-2xl px-4 py-3.5 text-gray-900 font-medium focus:ring-2 focus:ring-gray-900 focus:bg-white transition-all appearance-none"
- >
- {accounts.map((account) => (
- <option data-testid={`goal-detail-option-${account.id}`} key={account.id} value={account.id}>{account.name}</option>
- ))}
- </select>
- </div>
- {goal.isGroupGoal && (
- <div>
- <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Group Member</label>
- <select
- value={memberName}
- onChange={(e) => setMemberName(e.target.value)}
- data-testid="goals-detail-member-select"
- className="w-full bg-white border-0 rounded-2xl px-4 py-3.5 text-gray-900 font-medium focus:ring-2 focus:ring-gray-900 focus:bg-white transition-all appearance-none"
- >
- {(goal.members || []).map((member) => (
- <option data-testid={`goal-detail-option-2-${member.name}`} key={member.name} value={member.name}>{member.name}</option>
- ))}
- </select>
- </div>
- )}
- <div>
- <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Notes</label>
- <textarea
- value={notes}
- onChange={(e) => setNotes(e.target.value)}
- data-testid="goals-detail-notes-textarea"
- className="w-full resize-none rounded-2xl bg-white px-4 py-3.5 text-sm font-medium text-gray-900 placeholder-gray-400 transition-all focus:bg-white focus:ring-2 focus:ring-gray-900"
- rows={3}
- placeholder="Optional note for this contribution"
- />
- </div>
- <button type="submit" data-testid="goals-detail-submit-button" className="w-full py-4 rounded-2xl bg-gray-900 hover:bg-gray-800 text-white font-bold text-sm transition-all flex items-center justify-center gap-2 mt-2">
- <Plus size={18} /> Add Contribution
- </button>
- </form>
- </div>
+        <div className="bg-white rounded-[32px] p-6 lg:p-8 ring-1 ring-gray-100 shadow-[0_8px_40px_-12px_rgba(0,0,0,0.05)]">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-bold text-gray-900">
+              {activeTab === 'contribute' ? 'Add Contribution' : 'Withdraw Funds'}
+            </h3>
+            <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-xl">
+              <button
+                type="button"
+                onClick={() => setActiveTab('contribute')}
+                className={cn(
+                  'px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5',
+                  activeTab === 'contribute' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'
+                )}
+              >
+                <Plus size={13} /> Add
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('withdraw')}
+                className={cn(
+                  'px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5',
+                  activeTab === 'withdraw' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'
+                )}
+              >
+                <ArrowDownLeft size={13} /> Withdraw
+              </button>
+            </div>
+          </div>
+
+          {activeTab === 'contribute' ? (
+            <form data-testid="goal-detail-form" onSubmit={addContribution} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Amount</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={amount || ''}
+                  onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
+                  data-testid="goals-detail-amount-input"
+                  className="w-full bg-white border-0 rounded-2xl px-4 py-3.5 text-gray-900 font-medium text-lg placeholder-gray-400 focus:ring-2 focus:ring-gray-900 focus:bg-white transition-all"
+                  placeholder="0.00"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">From Account</label>
+                <select
+                  value={accountId}
+                  onChange={(e) => setAccountId(parseInt(e.target.value, 10))}
+                  data-testid="goals-detail-account-select"
+                  className="w-full bg-white border-0 rounded-2xl px-4 py-3.5 text-gray-900 font-medium focus:ring-2 focus:ring-gray-900 focus:bg-white transition-all appearance-none"
+                >
+                  {accounts.map((account) => (
+                    <option data-testid={`goal-detail-option-${account.id}`} key={account.id} value={account.id}>{account.name}</option>
+                  ))}
+                </select>
+              </div>
+              {goal.isGroupGoal && (
+                <div>
+                  <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Group Member</label>
+                  <select
+                    value={memberName}
+                    onChange={(e) => setMemberName(e.target.value)}
+                    data-testid="goals-detail-member-select"
+                    className="w-full bg-white border-0 rounded-2xl px-4 py-3.5 text-gray-900 font-medium focus:ring-2 focus:ring-gray-900 focus:bg-white transition-all appearance-none"
+                  >
+                    {(goal.members || []).map((member) => (
+                      <option data-testid={`goal-detail-option-2-${member.name}`} key={member.name} value={member.name}>{member.name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              <div>
+                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Notes</label>
+                <textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  data-testid="goals-detail-notes-textarea"
+                  className="w-full resize-none rounded-2xl bg-white px-4 py-3.5 text-sm font-medium text-gray-900 placeholder-gray-400 transition-all focus:bg-white focus:ring-2 focus:ring-gray-900"
+                  rows={3}
+                  placeholder="Optional note for this contribution"
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                data-testid="goals-detail-submit-button"
+                className="w-full py-4 rounded-2xl bg-gray-900 hover:bg-gray-800 disabled:opacity-50 text-white font-bold text-sm transition-all flex items-center justify-center gap-2 mt-2"
+              >
+                <Plus size={18} /> Add Contribution
+              </button>
+            </form>
+          ) : (
+            <form data-testid="goal-detail-withdraw-form" onSubmit={handleWithdraw} className="space-y-4">
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider">Withdraw Amount</label>
+                  <span className="text-xs text-gray-500 font-medium">Available: {formatCurrency(goal.currentAmount)}</span>
+                </div>
+                <input
+                  type="number"
+                  step="0.01"
+                  max={goal.currentAmount}
+                  value={withdrawAmount || ''}
+                  onChange={(e) => setWithdrawAmount(parseFloat(e.target.value) || 0)}
+                  data-testid="goals-detail-withdraw-input"
+                  className="w-full bg-white border-0 rounded-2xl px-4 py-3.5 text-gray-900 font-medium text-lg placeholder-gray-400 focus:ring-2 focus:ring-gray-900 focus:bg-white transition-all"
+                  placeholder="0.00"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Deposit To Account</label>
+                <select
+                  value={withdrawAccountId}
+                  onChange={(e) => setWithdrawAccountId(parseInt(e.target.value, 10))}
+                  data-testid="goals-detail-withdraw-account-select"
+                  className="w-full bg-white border-0 rounded-2xl px-4 py-3.5 text-gray-900 font-medium focus:ring-2 focus:ring-gray-900 focus:bg-white transition-all appearance-none"
+                >
+                  {accounts.map((account) => (
+                    <option key={account.id} value={account.id}>{account.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Notes</label>
+                <textarea
+                  value={withdrawNotes}
+                  onChange={(e) => setWithdrawNotes(e.target.value)}
+                  data-testid="goals-detail-withdraw-notes"
+                  className="w-full resize-none rounded-2xl bg-white px-4 py-3.5 text-sm font-medium text-gray-900 placeholder-gray-400 transition-all focus:bg-white focus:ring-2 focus:ring-gray-900"
+                  rows={3}
+                  placeholder="Reason for withdrawal"
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={isSubmitting || goal.currentAmount <= 0}
+                data-testid="goals-detail-withdraw-submit-button"
+                className="w-full py-4 rounded-2xl bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white font-bold text-sm transition-all flex items-center justify-center gap-2 mt-2"
+              >
+                <ArrowDownLeft size={18} /> Withdraw Funds
+              </button>
+            </form>
+          )}
+        </div>
 
  {goal.isGroupGoal && (
  <div className="bg-white rounded-[32px] p-6 lg:p-8 ring-1 ring-gray-100 shadow-[0_8px_40px_-12px_rgba(0,0,0,0.05)]">

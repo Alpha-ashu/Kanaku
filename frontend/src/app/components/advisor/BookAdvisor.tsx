@@ -8,12 +8,16 @@ import {
   Video, Phone, MessageCircle, ArrowRight, RefreshCw, CheckCircle2,
   Sparkles, Shield, Zap, Info, ArrowUpRight, Plus, X, UserPlus,
   UserCheck, Send, Paperclip, Lock, FileText, Share2, ThumbsUp,
-  Bookmark, Eye, Filter, Check, MoreVertical, ExternalLink
+  Bookmark, Eye, Filter, Check, MoreVertical, ExternalLink,
+  CreditCard, Wallet, Banknote, QrCode, ShieldCheck, IndianRupee
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { resolveAvatarSelection } from '@/lib/avatar-gallery';
 import { motion, AnimatePresence } from 'framer-motion';
+import { db } from '@/lib/database';
+import { applyTransactionAccountImpact } from '@/lib/transactionAggregation';
+import { queueRecordUpsertSync } from '@/lib/auth-sync-integration';
 
 // ─── Interfaces ──────────────────────────────────────────────────────────────
 // Fields the backend has no column for are optional and are simply not rendered
@@ -56,6 +60,14 @@ export interface BookingData {
   createdAt: string;
   /** Present once the advisor accepts — this is what the chat thread hangs off. */
   sessionId?: string;
+  payment?: {
+    id: string;
+    status: string;
+    amount: number;
+    currency: string;
+    paymentMethod?: string;
+  } | null;
+  sessionStatus?: string;
   /**
    * True when the request never reached the server: it lives in this browser
    * tab only, the advisor cannot see it, and it is gone on reload. Shown as
@@ -124,7 +136,17 @@ interface BookingApiRow {
   status?: string;
   createdAt?: string;
   advisor?: { id: string; name: string } | null;
-  session?: { id: string; status: string } | null;
+  session?: {
+    id: string;
+    status: string;
+    payment?: {
+      id: string;
+      status: string;
+      amount: number | string;
+      currency: string;
+      paymentMethod?: string | null;
+    } | null;
+  } | null;
 }
 
 interface SessionMessageApiRow {
@@ -194,6 +216,13 @@ const mapBooking = (row: BookingApiRow, advisorLookup: Map<string, AdvisorProfil
   const sessionType = ['video', 'audio', 'chat'].includes(row.sessionType)
     ? (row.sessionType as BookingData['sessionType'])
     : 'video';
+  const payment = row.session?.payment ? {
+    id: row.session.payment.id,
+    status: row.session.payment.status,
+    amount: Number(row.session.payment.amount || row.amount || 0),
+    currency: row.session.payment.currency || 'INR',
+    paymentMethod: row.session.payment.paymentMethod || undefined,
+  } : null;
 
   return {
     id: row.id,
@@ -209,6 +238,8 @@ const mapBooking = (row: BookingApiRow, advisorLookup: Map<string, AdvisorProfil
     amount: Number(row.amount ?? 0),
     createdAt: row.createdAt || new Date().toISOString(),
     sessionId: row.session?.id,
+    payment,
+    sessionStatus: row.session?.status,
   };
 };
 
@@ -312,6 +343,119 @@ export const BookAdvisor: React.FC = () => {
   const [isUploadingAttachment, setIsUploadingAttachment] = useState(false);
   const [newMessageText, setNewMessageText] = useState('');
   const attachmentInputRef = React.useRef<HTMLInputElement>(null);
+
+  // ── Payment Settlement State ───────────────────────────────────────────────
+  const [payingBooking, setPayingBooking] = useState<BookingData | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<'upi' | 'credit_card' | 'debit_card' | 'bank_transfer' | 'cash'>('upi');
+  const [selectedAccountId, setSelectedAccountId] = useState<number | null>(null);
+  const [userAccounts, setUserAccounts] = useState<Array<{ id: number; name: string; balance: number; currency: string }>>([]);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+
+  const openPaymentModal = async (bkg: BookingData) => {
+    setPayingBooking(bkg);
+    setPaymentMethod('upi');
+    try {
+      const accs = await db.accounts.filter(a => Boolean(a.isActive) && !a.deletedAt).toArray();
+      const validAccs = accs
+        .filter((a): a is typeof a & { id: number } => typeof a.id === 'number')
+        .map(a => ({
+          id: a.id,
+          name: a.name,
+          balance: Number(a.balance || 0),
+          currency: a.currency || 'INR',
+        }));
+      setUserAccounts(validAccs);
+      if (validAccs.length > 0) {
+        setSelectedAccountId(validAccs[0].id);
+      } else {
+        setSelectedAccountId(null);
+      }
+    } catch {
+      setUserAccounts([]);
+      setSelectedAccountId(null);
+    }
+  };
+
+  const handleConfirmPayment = async () => {
+    if (!payingBooking) return;
+    setIsProcessingPayment(true);
+    const amountToPay = Number(payingBooking.payment?.amount || payingBooking.amount || 0);
+
+    try {
+      let paymentId = payingBooking.payment?.id;
+
+      if (!paymentId && payingBooking.sessionId) {
+        try {
+          const initRes = await backendService.api.post('/payments/initiate', {
+            sessionId: payingBooking.sessionId,
+            paymentMethod,
+            description: `Payment for ${payingBooking.topic || 'Consultation'}`,
+          });
+          paymentId = initRes.data?.payment?.id;
+        } catch {
+          // If already initiated, proceed
+        }
+      }
+
+      if (paymentId) {
+        await backendService.api.post('/payments/complete', {
+          paymentId,
+          paymentMethod,
+          transactionId: `pay_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+        });
+      }
+
+      if (selectedAccountId !== null && amountToPay > 0) {
+        try {
+          const newTx = {
+            accountId: selectedAccountId,
+            type: 'expense' as const,
+            amount: amountToPay,
+            category: 'Consultation',
+            subcategory: 'Financial Advisory',
+            description: `Consultation fee for ${payingBooking.advisorName} (${payingBooking.sessionType} session)`,
+            date: new Date(),
+            tags: ['advisory', 'consultation'],
+            expenseMode: 'individual' as const,
+            syncStatus: 'pending' as const,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          };
+          const txLocalId = await db.transactions.add(newTx);
+          await applyTransactionAccountImpact(newTx);
+          if (typeof txLocalId === 'number') {
+            queueRecordUpsertSync('transactions', txLocalId);
+          }
+          queueRecordUpsertSync('accounts', selectedAccountId);
+        } catch (localErr) {
+          console.warn('[BookAdvisor] Local transaction recording warning:', localErr);
+        }
+      }
+
+      setBookings(prev => prev.map(b => {
+        if (b.id === payingBooking.id) {
+          return {
+            ...b,
+            payment: {
+              id: paymentId || b.payment?.id || 'completed',
+              status: 'completed',
+              amount: amountToPay,
+              currency: b.payment?.currency || 'INR',
+              paymentMethod,
+            },
+          };
+        }
+        return b;
+      }));
+
+      toast.success(`Payment of ₹${amountToPay.toLocaleString('en-IN')} settled successfully!`);
+      setPayingBooking(null);
+    } catch (err: any) {
+      toast.error(err?.response?.data?.error || 'Failed to complete payment');
+    } finally {
+      setIsProcessingPayment(false);
+    }
+  };
 
   // ── Data loading ───────────────────────────────────────────────────────────
   const loadAdvisorsAndBookings = useCallback(async () => {
@@ -906,6 +1050,27 @@ export const BookAdvisor: React.FC = () => {
                     <span className="text-slate-900 font-black">₹{bkg.amount}</span>
                   </div>
 
+                  {/* Consultation Settlement Status */}
+                  {bkg.payment?.status === 'completed' ? (
+                    <div className="flex items-center justify-between px-3 py-2 bg-emerald-50 border border-emerald-200/80 rounded-2xl text-emerald-700 text-[11px] font-bold">
+                      <span className="flex items-center gap-1.5"><CheckCircle2 size={13} className="text-emerald-600" /> Fee Paid</span>
+                      <span className="font-black">₹{bkg.payment.amount}</span>
+                    </div>
+                  ) : (bkg.status === 'completed' || bkg.payment?.status === 'pending') ? (
+                    <div className="flex items-center justify-between p-2.5 bg-amber-50/80 border border-amber-200/80 rounded-2xl">
+                      <div className="min-w-0">
+                        <p className="text-[10px] font-black uppercase tracking-wider text-amber-700">Fee Pending</p>
+                        <p className="text-xs font-black text-slate-900">₹{bkg.payment?.amount || bkg.amount}</p>
+                      </div>
+                      <button
+                        onClick={() => void openPaymentModal(bkg)}
+                        className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-1.5 shadow-xs cursor-pointer transition-all active:scale-95"
+                      >
+                        <CreditCard size={12} /> Pay Fee
+                      </button>
+                    </div>
+                  ) : null}
+
                   <div className="grid grid-cols-3 gap-2 pt-2">
                     <button
                       onClick={() => {
@@ -1265,6 +1430,19 @@ export const BookAdvisor: React.FC = () => {
                         Join Call
                       </button>
                     )}
+                    {(bkg.status === 'completed' || bkg.payment?.status === 'pending') && bkg.payment?.status !== 'completed' && (
+                      <button
+                        onClick={() => void openPaymentModal(bkg)}
+                        className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-black text-xs uppercase tracking-wider shadow-sm cursor-pointer flex items-center gap-1.5"
+                      >
+                        <CreditCard size={13} /> Pay Fee (₹{bkg.payment?.amount || bkg.amount})
+                      </button>
+                    )}
+                    {bkg.payment?.status === 'completed' && (
+                      <span className="px-3 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200/80 rounded-xl text-xs font-black uppercase flex items-center gap-1">
+                        <CheckCircle2 size={13} /> Paid ₹{bkg.payment.amount}
+                      </span>
+                    )}
                   </div>
                 </div>
               ))}
@@ -1509,6 +1687,139 @@ export const BookAdvisor: React.FC = () => {
                 >
                   {isSubmittingBooking ? <Loader2 size={16} className="animate-spin" /> : <Calendar size={16} />}
                   <span>Submit Booking Request</span>
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ─── MODAL 3: PAYMENT SETTLEMENT MODAL ──────────────────────────────── */}
+      <AnimatePresence>
+        {payingBooking && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs"
+            onClick={e => { if (e.target === e.currentTarget && !isProcessingPayment) setPayingBooking(null); }}
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 10 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 10 }}
+              className="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden border border-slate-200"
+            >
+              <div className="p-6 bg-gradient-to-r from-slate-900 to-indigo-950 text-white relative">
+                <button
+                  onClick={() => setPayingBooking(null)}
+                  disabled={isProcessingPayment}
+                  className="absolute top-4 right-4 p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer disabled:opacity-50"
+                >
+                  <X size={18} />
+                </button>
+
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-2xl bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center text-white">
+                    <CreditCard size={24} />
+                  </div>
+                  <div>
+                    <h3 className="font-black text-lg tracking-tight">Settle Consultation Fee</h3>
+                    <p className="text-xs text-indigo-300 font-semibold">Direct payment to advisor</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-6 space-y-5">
+                {/* Session Summary Card */}
+                <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <img src={payingBooking.advisorAvatar} alt={payingBooking.advisorName} className="w-9 h-9 rounded-xl object-cover" />
+                      <div>
+                        <h4 className="font-extrabold text-slate-900 text-xs">{payingBooking.advisorName}</h4>
+                        <p className="text-[10px] text-slate-400 font-bold">{payingBooking.topic}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[9px] font-black uppercase text-slate-400 block">Amount Due</span>
+                      <span className="text-base font-black text-indigo-600">
+                        ₹{payingBooking.payment?.amount || payingBooking.amount}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Payment Method Selector */}
+                <div>
+                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-2">
+                    Select Payment Method
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { id: 'upi' as const, label: 'Instant UPI', sub: 'GPay / PhonePe / Paytm', icon: QrCode },
+                      { id: 'credit_card' as const, label: 'Credit Card', sub: 'Visa / Mastercard / RuPay', icon: CreditCard },
+                      { id: 'bank_transfer' as const, label: 'Net Banking', sub: 'Direct Bank Transfer', icon: Banknote },
+                      { id: 'cash' as const, label: 'Cash / Handover', sub: 'In-person Settlement', icon: Wallet },
+                    ].map(method => (
+                      <button
+                        key={method.id}
+                        type="button"
+                        onClick={() => setPaymentMethod(method.id)}
+                        className={cn(
+                          'p-3 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between',
+                          paymentMethod === method.id
+                            ? 'bg-indigo-50/70 border-indigo-500 shadow-xs'
+                            : 'bg-white border-slate-200/80 hover:bg-slate-50'
+                        )}
+                      >
+                        <div className="flex items-center justify-between w-full mb-1">
+                          <method.icon size={16} className={paymentMethod === method.id ? 'text-indigo-600' : 'text-slate-500'} />
+                          {paymentMethod === method.id && <CheckCircle2 size={14} className="text-indigo-600" />}
+                        </div>
+                        <div>
+                          <p className="text-xs font-black text-slate-900">{method.label}</p>
+                          <p className="text-[10px] font-bold text-slate-400 mt-0.5">{method.sub}</p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Account Deduction Leg (Optional) */}
+                {userAccounts.length > 0 && (
+                  <div>
+                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1.5">
+                      Deduct from Cash/Bank Account (Optional)
+                    </label>
+                    <select
+                      value={selectedAccountId ?? ''}
+                      onChange={e => setSelectedAccountId(e.target.value ? Number(e.target.value) : null)}
+                      className="w-full bg-slate-50 border border-slate-200/80 rounded-xl py-2.5 px-3 font-bold text-slate-900 text-xs outline-none focus:ring-2 focus:ring-indigo-500/20"
+                    >
+                      <option value="">None (Settled externally / no local deduction)</option>
+                      {userAccounts.map(acc => (
+                        <option key={acc.id} value={acc.id}>
+                          {acc.name} — Balance: ₹{acc.balance.toLocaleString('en-IN')}
+                        </option>
+                      ))}
+                    </select>
+                    {selectedAccountId !== null && (
+                      <p className="text-[10px] font-semibold text-emerald-600 mt-1 flex items-center gap-1">
+                        <ShieldCheck size={12} /> Automatically logs an expense transaction in your ledger
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Confirm Action Button */}
+                <button
+                  onClick={() => void handleConfirmPayment()}
+                  disabled={isProcessingPayment}
+                  className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black text-xs uppercase tracking-wider shadow-lg shadow-indigo-200 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                >
+                  {isProcessingPayment ? <Loader2 size={16} className="animate-spin" /> : <ShieldCheck size={16} />}
+                  <span>Confirm & Settle ₹{payingBooking.payment?.amount || payingBooking.amount}</span>
                 </button>
               </div>
             </motion.div>

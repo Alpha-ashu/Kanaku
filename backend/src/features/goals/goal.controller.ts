@@ -7,6 +7,8 @@ import { logger } from '../../config/logger';
 import { cacheDeleteByPrefix } from '../../cache/redis';
 import { isDatabaseUnavailableError } from '../../utils/databaseAvailability';
 import { inviteParticipants } from '../collaboration/invitation.service';
+import { FinancialLedgerService } from '../transactions/ledger.service';
+import { FinancialEventDispatcher, GoalContributionEvent, GoalWithdrawalEvent } from '../transactions/dispatcher';
 
 export const getGoals = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
@@ -352,6 +354,246 @@ export const removeGoalMember = async (req: AuthRequest, res: Response, next: Ne
     await cacheDeleteByPrefix('goals:');
 
     res.json({ success: true, message: 'Member removed' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getGoalContributions = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const userId = getUserId(req);
+    const { id } = req.params;
+
+    const goal = await prisma.goal.findFirst({
+      where: {
+        id,
+        deletedAt: null,
+        OR: [
+          { userId },
+          { goalMembers: { some: { userId, deletedAt: null } } },
+        ],
+      },
+    });
+    if (!goal) {
+      throw AppError.notFound('Goal');
+    }
+
+    const contributions = await prisma.goalContribution.findMany({
+      where: { goalId: id },
+      orderBy: { date: 'desc' },
+      include: {
+        account: {
+          select: { id: true, name: true, type: true },
+        },
+      },
+    });
+
+    res.json({ success: true, data: contributions });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const addGoalContribution = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const userId = getUserId(req);
+    const { id } = req.params;
+    const { amount, accountId, memberName, notes } = req.body;
+
+    if (!amount) {
+      throw AppError.badRequest('Amount is required', 'AMOUNT_REQUIRED');
+    }
+
+    const numericAmount = Number(amount);
+    if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
+      throw AppError.badRequest('Amount must be a positive number', 'INVALID_AMOUNT');
+    }
+
+    if (!accountId) {
+      throw AppError.badRequest('accountId is required', 'ACCOUNT_REQUIRED');
+    }
+
+    const result = await prisma.$transaction(async (tx) => {
+      const goal = await tx.goal.findFirst({
+        where: { id, userId, deletedAt: null },
+      });
+      if (!goal) {
+        throw AppError.notFound('Goal');
+      }
+
+      const account = await tx.account.findFirst({
+        where: { id: accountId, userId, deletedAt: null },
+      });
+      if (!account) {
+        throw AppError.notFound('Account');
+      }
+
+      const currentBalance = Number(account.balance);
+      if (currentBalance < numericAmount) {
+        throw AppError.badRequest('Insufficient account balance', 'INSUFFICIENT_BALANCE');
+      }
+
+      await tx.account.update({
+        where: { id: accountId },
+        data: {
+          balance: { decrement: numericAmount },
+        },
+      });
+
+      const updatedGoal = await tx.goal.update({
+        where: { id },
+        data: {
+          currentAmount: { increment: numericAmount },
+        },
+      });
+
+      const created = await tx.goalContribution.create({
+        data: {
+          userId,
+          goalId: id,
+          accountId,
+          amount: numericAmount,
+          date: new Date(),
+          memberName: memberName ? sanitize(memberName) : null,
+          status: 'paid',
+          notes: notes ? sanitize(notes) : null,
+        },
+      });
+
+      await tx.transaction.create({
+        data: {
+          userId,
+          accountId,
+          type: 'expense',
+          amount: numericAmount,
+          category: 'Savings Goal',
+          description: `Contribution to ${goal.name}`,
+          date: new Date(),
+        },
+      });
+
+      if (FinancialLedgerService.isEnabled('goals')) {
+        await FinancialEventDispatcher.publish(tx, new GoalContributionEvent(
+          userId,
+          id,
+          accountId,
+          numericAmount,
+          goal.name,
+          goal.isGroupGoal,
+          `goal-contrib-${created.id}`,
+        ));
+      }
+
+      return { contribution: created, goal: updatedGoal };
+    });
+
+    await cacheDeleteByPrefix('goals:');
+    await cacheDeleteByPrefix('accounts:');
+    await cacheDeleteByPrefix('transactions:');
+
+    res.status(201).json({ success: true, data: result });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const withdrawFromGoal = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const userId = getUserId(req);
+    const { id } = req.params;
+    const { amount, accountId, notes } = req.body;
+
+    if (!amount) {
+      throw AppError.badRequest('Amount is required', 'AMOUNT_REQUIRED');
+    }
+
+    const numericAmount = Number(amount);
+    if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
+      throw AppError.badRequest('Amount must be a positive number', 'INVALID_AMOUNT');
+    }
+
+    if (!accountId) {
+      throw AppError.badRequest('accountId is required', 'ACCOUNT_REQUIRED');
+    }
+
+    const result = await prisma.$transaction(async (tx) => {
+      const goal = await tx.goal.findFirst({
+        where: { id, userId, deletedAt: null },
+      });
+      if (!goal) {
+        throw AppError.notFound('Goal');
+      }
+
+      const currentGoalAmount = Number(goal.currentAmount);
+      if (currentGoalAmount < numericAmount) {
+        throw AppError.badRequest('Withdrawal amount exceeds goal balance', 'EXCEEDS_GOAL_BALANCE');
+      }
+
+      const account = await tx.account.findFirst({
+        where: { id: accountId, userId, deletedAt: null },
+      });
+      if (!account) {
+        throw AppError.notFound('Account');
+      }
+
+      await tx.account.update({
+        where: { id: accountId },
+        data: {
+          balance: { increment: numericAmount },
+        },
+      });
+
+      const updatedGoal = await tx.goal.update({
+        where: { id },
+        data: {
+          currentAmount: { decrement: numericAmount },
+        },
+      });
+
+      const created = await tx.goalContribution.create({
+        data: {
+          userId,
+          goalId: id,
+          accountId,
+          amount: numericAmount,
+          date: new Date(),
+          status: 'withdrawn',
+          notes: notes ? sanitize(notes) : null,
+        },
+      });
+
+      await tx.transaction.create({
+        data: {
+          userId,
+          accountId,
+          type: 'income',
+          amount: numericAmount,
+          category: 'Goal Withdrawal',
+          description: `Withdrawal from ${goal.name}`,
+          date: new Date(),
+        },
+      });
+
+      if (FinancialLedgerService.isEnabled('goals')) {
+        await FinancialEventDispatcher.publish(tx, new GoalWithdrawalEvent(
+          userId,
+          id,
+          accountId,
+          numericAmount,
+          goal.name,
+          goal.isGroupGoal,
+          `goal-withdraw-${created.id}`,
+        ));
+      }
+
+      return { withdrawal: created, goal: updatedGoal };
+    });
+
+    await cacheDeleteByPrefix('goals:');
+    await cacheDeleteByPrefix('accounts:');
+    await cacheDeleteByPrefix('transactions:');
+
+    res.status(200).json({ success: true, data: result });
   } catch (error) {
     next(error);
   }

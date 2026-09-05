@@ -26,7 +26,7 @@ router.use(authMiddleware);
 
 /** Helper: throw 401 if userId is missing (should never happen after authMiddleware) */
 function requireUserId(req: AuthRequest): string {
-  const userId = req.user?.id;
+  const userId = req.userId || req.user?.id;
   if (!userId) throw AppError.unauthorized();
   return userId;
 }
@@ -200,10 +200,18 @@ router.post('/update', securityGate, validateBody(updatePinSchema), async (req: 
  */
 router.get('/status', async (req: AuthRequest, res: Response, _next: NextFunction) => {
   try {
-    const result = await pinService.getPinStatus(req.user?.id || '');
+    const userId = req.userId || req.user?.id;
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: 'Unauthorized',
+        sessionExpired: true,
+      });
+    }
+    const result = await pinService.getPinStatus(userId);
     res.json(result);
   } catch (error) {
-    // PIN status is non-critical  degrade gracefully rather than erroring
+    // PIN status is non-critical — degrade gracefully rather than erroring
     res.json({
       success: false,
       message: 'PIN service temporarily unavailable',

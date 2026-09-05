@@ -1,5 +1,7 @@
 import { db, type PendingFileUpload } from './database';
 import { backendService } from './backend-api';
+import { queueRecordUpsertSync, processPendingSyncQueue } from './auth-sync-integration';
+import { apiClient } from './api';
 
 const MAX_QUEUE_RETRIES = 10;
 let isProcessing = false;
@@ -164,6 +166,25 @@ export async function processUploadQueue(): Promise<void> {
               transactionId: item.transactionLocalId,
               attachment: canonicalAttachment,
             });
+
+            // Trigger sync so the updated attachment is synced to the backend
+            try {
+              queueRecordUpsertSync('transactions', item.transactionLocalId);
+              void processPendingSyncQueue();
+            } catch (syncErr) {
+              console.warn('[OfflineUploadQueue] Failed to queue transaction sync:', syncErr);
+            }
+
+            // If already synced with a cloudId, also update remote directly for instant linking
+            if (tx.cloudId) {
+              try {
+                await apiClient.put(`/transactions/${tx.cloudId}`, {
+                  attachment: canonicalAttachment,
+                });
+              } catch (apiErr) {
+                console.warn('[OfflineUploadQueue] Direct remote attachment update failed (will sync later):', apiErr);
+              }
+            }
           }
         }
 

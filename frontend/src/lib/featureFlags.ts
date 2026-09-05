@@ -352,7 +352,7 @@ export const SUB_FEATURE_DEFINITIONS: Record<string, ModuleSubFeatures> = {
   transactions: {
     addTransaction:    { name: 'Add Transaction',    key: 'addTransaction',    enabled: true, roleAccess: { admin: true, manager: true,  advisor: true,  user: true  } },
     editTransaction:   { name: 'Edit Transaction',   key: 'editTransaction',   enabled: true, roleAccess: { admin: true, manager: true,  advisor: true,  user: true  } },
-    deleteTransaction: { name: 'Delete Transaction', key: 'deleteTransaction', enabled: true, roleAccess: { admin: true, manager: true,  advisor: false, user: false } },
+    deleteTransaction: { name: 'Delete Transaction', key: 'deleteTransaction', enabled: true, roleAccess: { admin: true, manager: true,  advisor: false, user: true  } },
     importStatement:   { name: 'Import Statement',   key: 'importStatement',   enabled: true, roleAccess: { admin: true, manager: true,  advisor: true,  user: true  } },
     exportStatement:   { name: 'Export Statement',   key: 'exportStatement',   enabled: true, roleAccess: { admin: true, manager: true,  advisor: true,  user: true  } },
     attachBill:        { name: 'Attach Bill',        key: 'attachBill',        enabled: true, roleAccess: { admin: true, manager: true,  advisor: true,  user: true  } },
@@ -384,7 +384,7 @@ export const SUB_FEATURE_DEFINITIONS: Record<string, ModuleSubFeatures> = {
     excelExport:     { name: 'Excel Export',  key: 'excelExport',     enabled: true, roleAccess: { admin: true, manager: true,  advisor: true,  user: true  } },
     csvExport:       { name: 'CSV Export',    key: 'csvExport',       enabled: true, roleAccess: { admin: true, manager: true,  advisor: true,  user: true  } },
     aiInsightsReport:{ name: 'AI Insights',   key: 'aiInsightsReport',enabled: true, roleAccess: { admin: true, manager: false, advisor: true,  user: true  } },
-    forecasting:     { name: 'Forecasting',   key: 'forecasting',     enabled: true, roleAccess: { admin: true, manager: true,  advisor: true,  user: false } },
+    forecasting:     { name: 'Forecasting',   key: 'forecasting',     enabled: true, roleAccess: { admin: true, manager: true,  advisor: true,  user: true  } },
   },
   bookAdvisor: {
     createBooking:    { name: 'Create Booking',    key: 'createBooking',    enabled: true,  roleAccess: { admin: true, manager: false, advisor: false, user: true  } },

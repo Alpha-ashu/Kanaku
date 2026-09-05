@@ -225,16 +225,29 @@ export const getSessions = async (req: AuthRequest, res: Response) => {
     const advisorId = getUserId(req);
     const sessions = await prisma.advisorSession.findMany({
       where: { advisorId },
-      include: { client: { select: { id: true, name: true, email: true } }, chatMessages: true, payment: true },
+      include: {
+        client: { select: { id: true, name: true, email: true } },
+        chatMessages: true,
+        payment: true,
+        booking: { select: { id: true, amount: true, description: true } },
+      },
       orderBy: { startTime: 'desc' },
     });
     const clientIds = sessions.map((s) => s.client?.id).filter(Boolean) as string[];
     const clientProfiles = await prisma.profiles.findMany({ where: { id: { in: clientIds } }, select: { id: true, phone: true } });
     const phoneMap = new Map<string, string | null>();
     clientProfiles.forEach((p) => phoneMap.set(p.id, p.phone));
-    const enrichedSessions = sessions.map((session) =>
-      session.client ? { ...session, client: { ...session.client, phone: phoneMap.get(session.client.id) || null } } : session,
-    );
+    const enrichedSessions = sessions.map((session) => {
+      const clientWithPhone = session.client ? { ...session.client, phone: phoneMap.get(session.client.id) || null } : session.client;
+      const amount = session.payment?.amount != null
+        ? Number(session.payment.amount)
+        : (session.booking?.amount != null ? Number(session.booking.amount) : 0);
+      return {
+        ...session,
+        client: clientWithPhone,
+        amount,
+      };
+    });
     res.json(enrichedSessions);
   } catch (error: any) {
     logger.error('Failed to fetch sessions', { error });

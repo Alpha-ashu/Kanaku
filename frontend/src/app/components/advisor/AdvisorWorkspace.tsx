@@ -3,9 +3,9 @@ import { useApp } from '@/contexts/AppContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { backendService } from '@/lib/backend-api';
 import {
- Briefcase, Clock, CheckCircle, XCircle,
- RotateCw, Power, Users, IndianRupee, Calendar, Loader2, ChevronLeft,
- Star, CheckCircle2, TrendingUp, Bell
+  Briefcase, Clock, CheckCircle, XCircle,
+  RotateCw, Power, Users, IndianRupee, Calendar, Loader2, ChevronLeft,
+  Star, CheckCircle2, TrendingUp, Bell, MessageSquare, Send, Play, X
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -57,6 +57,94 @@ export const AdvisorWorkspace: React.FC = () => {
  const [postForm, setPostForm] = useState({ category: POST_CATEGORIES[0], title: '', content: '' });
  const [isPublishing, setIsPublishing] = useState(false);
 
+ const [consultationModal, setConsultationModal] = useState<{
+    booking: any;
+    sessionId: string;
+    status: string;
+  } | null>(null);
+  const [consultationMessages, setConsultationMessages] = useState<any[]>([]);
+  const [newConsultationMsg, setNewConsultationMsg] = useState('');
+  const [isSendingConsultationMsg, setIsSendingConsultationMsg] = useState(false);
+  const [isStartingSession, setIsStartingSession] = useState(false);
+  const [isCompletingSession, setIsCompletingSession] = useState(false);
+  const [consultationNotes, setConsultationNotes] = useState('');
+  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
+
+  const openConsultation = async (b: any) => {
+    const sess = b.session || sessions.find((s: any) => s.bookingId === b.id);
+    const sessId = sess?.id || b.sessionId;
+    if (!sessId) {
+      toast.error('Consultation session ID is not available for this booking');
+      return;
+    }
+    const currentStatus = sess?.status || 'scheduled';
+    setConsultationModal({
+      booking: b,
+      sessionId: sessId,
+      status: currentStatus,
+    });
+    setIsLoadingMessages(true);
+    try {
+      const res = await backendService.api.get(`/sessions/${sessId}/messages`);
+      setConsultationMessages(Array.isArray(res.data) ? res.data : []);
+    } catch {
+      toast.error('Could not load session messages');
+    } finally {
+      setIsLoadingMessages(false);
+    }
+  };
+
+  const handleStartSession = async () => {
+    if (!consultationModal) return;
+    setIsStartingSession(true);
+    try {
+      await backendService.api.post(`/sessions/${consultationModal.sessionId}/start`);
+      toast.success('Consultation started! Chat is active.');
+      setConsultationModal(prev => prev ? { ...prev, status: 'in-progress' } : null);
+      fetchData();
+    } catch (err: any) {
+      toast.error(err?.response?.data?.error || 'Failed to start session');
+    } finally {
+      setIsStartingSession(false);
+    }
+  };
+
+  const handleSendConsultationMessage = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!consultationModal || !newConsultationMsg.trim() || isSendingConsultationMsg) return;
+    const text = newConsultationMsg.trim();
+    setNewConsultationMsg('');
+    setIsSendingConsultationMsg(true);
+    try {
+      const res = await backendService.api.post(`/sessions/${consultationModal.sessionId}/messages`, {
+        message: text,
+      });
+      setConsultationMessages(prev => [...prev, res.data]);
+    } catch (err: any) {
+      toast.error(err?.response?.data?.error || 'Failed to send message');
+      setNewConsultationMsg(text);
+    } finally {
+      setIsSendingConsultationMsg(false);
+    }
+  };
+
+  const handleCompleteSession = async () => {
+    if (!consultationModal) return;
+    setIsCompletingSession(true);
+    try {
+      await backendService.api.post(`/sessions/${consultationModal.sessionId}/complete`, {
+        notes: consultationNotes.trim() || undefined,
+      });
+      toast.success('Consultation completed! Payment logged.');
+      setConsultationModal(prev => prev ? { ...prev, status: 'completed' } : null);
+      fetchData();
+    } catch (err: any) {
+      toast.error(err?.response?.data?.error || 'Failed to complete session');
+    } finally {
+      setIsCompletingSession(false);
+    }
+  };
+
  const isAdvisor = role === 'advisor';
 
  const fetchData = useCallback(async () => {
@@ -82,13 +170,6 @@ export const AdvisorWorkspace: React.FC = () => {
 
  useEffect(() => { fetchData(); }, [fetchData]);
 
- // Only advisors can access this.
- //
- // This guard used to sit ABOVE fetchData/useEffect. `role` is resolved
- // asynchronously by AuthContext (a provisional value first, then the backend
- // answer), so the moment it flipped to 'advisor' the component went from N to
- // N+2 hooks and React threw "Rendered more hooks than during the previous
- // render" — the workspace crashed for the very users it is built for.
  if (!isAdvisor) {
  return (
  <div className="flex items-center justify-center min-h-screen bg-white">
@@ -115,8 +196,6 @@ export const AdvisorWorkspace: React.FC = () => {
  content: postForm.content.trim(),
  });
  setPostForm({ category: POST_CATEGORIES[0], title: '', content: '' });
- // Every follower is notified server-side, so say so rather than implying
- // the update just sits on a page.
  toast.success('Update published — your followers have been notified');
  fetchData();
  } catch (err: any) {
@@ -181,9 +260,14 @@ export const AdvisorWorkspace: React.FC = () => {
  } catch { toast.error('Failed to save'); }
  };
 
- const pending = bookings.filter(b => b.status === 'pending');
- const confirmed = bookings.filter(b => ['accepted', 'scheduled'].includes(b.status));
- const totalEarnings = sessions.filter(s => s.status === 'completed').reduce((s: number, sess: any) => s + (Number(sess.amount) || 0), 0);
+  const pending = bookings.filter(b => b.status === 'pending');
+  const confirmed = bookings.filter(b => ['accepted', 'scheduled'].includes(b.status));
+  const settledEarnings = sessions
+    .filter(s => s.status === 'completed' && s.payment?.status === 'completed')
+    .reduce((acc: number, sess: any) => acc + (Number(sess.amount) || Number(sess.payment?.amount) || 0), 0);
+  const pendingEarnings = sessions
+    .filter(s => s.status === 'completed' && s.payment?.status !== 'completed')
+    .reduce((acc: number, sess: any) => acc + (Number(sess.amount) || Number(sess.payment?.amount) || 0), 0);
 
  const TABS: { id: WorkspaceTab; label: string; icon: React.ElementType; badge?: number }[] = [
  { id: 'bookings', label: 'Bookings', icon: Calendar, badge: pending.length || undefined },
@@ -195,7 +279,6 @@ export const AdvisorWorkspace: React.FC = () => {
 
  return (
  <div className="min-h-screen bg-white">
- {/* Header */}
  <div className="bg-transparent border-b border-gray-100 px-4 lg:px-8 py-4 sticky top-0 z-10">
  <div className="max-w-5xl mx-auto flex items-center gap-3">
  <button data-testid="advisor-workspace-button" onClick={() => setCurrentPage('dashboard')} className="p-2 hover:bg-gray-100 rounded-xl md:!hidden"><ChevronLeft size={20} className="text-gray-600" /></button>
@@ -213,7 +296,6 @@ export const AdvisorWorkspace: React.FC = () => {
  </div>
  </div>
 
- {/* Tab Bar */}
  <div className="bg-white border-b border-gray-100">
  <div className="max-w-5xl mx-auto px-4 lg:px-8 flex overflow-x-auto scrollbar-hide">
  {TABS.map(tab => (
@@ -234,7 +316,6 @@ export const AdvisorWorkspace: React.FC = () => {
  <div className="flex items-center justify-center py-16"><Loader2 size={28} className="animate-spin text-indigo-400" /></div>
  ) : (
  <>
- {/* BOOKINGS */}
  {activeTab === 'bookings' && (
  <div className="space-y-6">
  {pending.length > 0 && (
@@ -288,14 +369,22 @@ export const AdvisorWorkspace: React.FC = () => {
  <p className="font-bold text-gray-900 text-sm">{b.client?.name ?? 'Client'}</p>
  <p className="text-xs text-gray-500">{b.sessionType} {new Date(b.proposedDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })} at {b.proposedTime}</p>
  </div>
- {getStatusBadge(b.status)}
+ <div className="flex items-center gap-2">
+    {getStatusBadge(b.status)}
+    <button
+      onClick={() => void openConsultation(b)}
+      className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+      data-testid={`advisor-ws-open-consultation-${b.id}`}
+    >
+      <MessageSquare size={13} /> Consultation
+    </button>
+  </div>
  </div>
  ))}
  </section>
  </div>
  )}
 
- {/* CLIENTS */}
  {activeTab === 'clients' && (
  <div className="space-y-4">
  <h2 className="text-[11px] font-bold uppercase tracking-widest text-gray-400">All Clients ({[...new Set(sessions.map((s: any) => s.clientId))].length})</h2>
@@ -322,7 +411,6 @@ export const AdvisorWorkspace: React.FC = () => {
  </div>
  )}
 
- {/* SCHEDULE */}
  {activeTab === 'schedule' && (
  <div className="space-y-4">
  <div className="bg-blue-50 border border-blue-100 rounded-2xl px-4 py-3">
@@ -364,14 +452,18 @@ export const AdvisorWorkspace: React.FC = () => {
  </div>
  )}
 
- {/* EARNINGS */}
  {activeTab === 'earnings' && (
  <div className="space-y-5">
- <div className="grid grid-cols-2 gap-4">
+ <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
  <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-5 text-white">
  <TrendingUp size={20} className="mb-2 opacity-80" />
- <p className="text-2xl font-black">{totalEarnings.toLocaleString('en-IN')}</p>
- <p className="text-sm text-emerald-100 mt-0.5">Total Earnings</p>
+ <p className="text-2xl font-black">₹{settledEarnings.toLocaleString('en-IN')}</p>
+ <p className="text-sm text-emerald-100 mt-0.5">Settled Earnings</p>
+ </div>
+ <div className="bg-white rounded-2xl border border-amber-200 shadow-sm p-5">
+ <Clock size={20} className="mb-2 text-amber-500" />
+ <p className="text-2xl font-black text-amber-700">₹{pendingEarnings.toLocaleString('en-IN')}</p>
+ <p className="text-sm text-gray-500 mt-0.5">Pending Settlement</p>
  </div>
  <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
  <CheckCircle2 size={20} className="mb-2 text-indigo-500" />
@@ -390,16 +482,24 @@ export const AdvisorWorkspace: React.FC = () => {
  <p className="text-xs text-gray-500">{s.sessionType} {s.startTime ? new Date(s.startTime).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'TBD'}</p>
  </div>
  <div className="text-right shrink-0">
- {s.amount ? <p className="font-black text-emerald-700 text-sm">{Number(s.amount).toLocaleString('en-IN')}</p> : <p className="text-xs text-gray-400"></p>}
+ {s.amount ? <p className="font-black text-emerald-700 text-sm">₹{Number(s.amount).toLocaleString('en-IN')}</p> : <p className="text-xs text-gray-400"></p>}
  {s.rating && <span className="flex items-center gap-0.5 text-amber-500 text-xs justify-end"><Star size={10} className="fill-amber-400" />{s.rating}</span>}
  </div>
- {getStatusBadge(s.status)}
+ <div className="flex items-center gap-1.5 shrink-0">
+    {getStatusBadge(s.status)}
+    {s.status === 'completed' && (
+      s.payment?.status === 'completed' ? (
+        <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">Paid</span>
+      ) : (
+        <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200">Pending</span>
+      )
+    )}
+  </div>
  </div>
  ))}
  </div>
  )}
 
- {/* UPDATES — published to the client Discover feed; followers are notified */}
  {activeTab === 'updates' && (
  <div className="space-y-5">
  <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-3">
@@ -488,7 +588,6 @@ export const AdvisorWorkspace: React.FC = () => {
  )}
  </div>
 
- {/* Reschedule Modal */}
  <AnimatePresence>
  {rescheduleModal && (
  <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -523,7 +622,165 @@ export const AdvisorWorkspace: React.FC = () => {
  </motion.div>
  </div>
  )}
- </AnimatePresence>
+
+  {consultationModal && (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4">
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.95, opacity: 0 }}
+        className="bg-white rounded-3xl max-w-2xl w-full h-[85vh] max-h-[750px] shadow-2xl flex flex-col overflow-hidden"
+      >
+        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-slate-50/50">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-black text-base shadow-sm">
+              {consultationModal.booking?.client?.name?.charAt(0)?.toUpperCase() ?? 'C'}
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="font-bold text-gray-900 text-base">{consultationModal.booking?.client?.name ?? 'Client Consultation'}</h3>
+                {getStatusBadge(consultationModal.status)}
+              </div>
+              <p className="text-xs text-gray-500">
+                {consultationModal.booking?.sessionType} • {consultationModal.booking?.proposedTime} • ₹{consultationModal.booking?.amount}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {consultationModal.status === 'scheduled' && (
+              <button
+                onClick={handleStartSession}
+                disabled={isStartingSession}
+                className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 transition-colors cursor-pointer"
+                data-testid="advisor-ws-start-session-button"
+              >
+                {isStartingSession ? <Loader2 size={13} className="animate-spin" /> : <Play size={13} />} Start Session
+              </button>
+            )}
+            {consultationModal.status === 'in-progress' && (
+              <button
+                onClick={handleCompleteSession}
+                disabled={isCompletingSession}
+                className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 transition-colors cursor-pointer"
+                data-testid="advisor-ws-complete-session-button"
+              >
+                {isCompletingSession ? <Loader2 size={13} className="animate-spin" /> : <CheckCircle2 size={13} />} Complete
+              </button>
+            )}
+            <button
+              onClick={() => setConsultationModal(null)}
+              className="p-2 hover:bg-gray-100 text-gray-400 hover:text-gray-600 rounded-xl transition-colors"
+              data-testid="advisor-ws-consultation-close-button"
+            >
+              <X size={18} />
+            </button>
+          </div>
+        </div>
+
+        {consultationModal.booking?.description && (
+          <div className="px-6 py-2.5 bg-indigo-50/60 border-b border-indigo-100/50 flex items-center justify-between text-xs text-indigo-900">
+            <span className="font-medium truncate"><strong>Topic:</strong> {consultationModal.booking.description}</span>
+          </div>
+        )}
+
+        <div className="flex-1 p-6 overflow-y-auto space-y-4 bg-slate-50/30">
+          {isLoadingMessages ? (
+            <div className="flex items-center justify-center h-full">
+              <Loader2 size={24} className="animate-spin text-indigo-500" />
+            </div>
+          ) : consultationMessages.length === 0 ? (
+            <div className="text-center py-16">
+              <div className="w-14 h-14 bg-indigo-50 text-indigo-500 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                <MessageSquare size={24} />
+              </div>
+              <p className="text-gray-700 font-bold text-sm">No messages yet</p>
+              <p className="text-gray-400 text-xs mt-1">
+                {consultationModal.status === 'scheduled'
+                  ? 'Click "Start Session" above to begin consultation with your client.'
+                  : 'Type a message below to consult with your client.'}
+              </p>
+            </div>
+          ) : (
+            consultationMessages.map((msg: any) => {
+              const isMe = msg.senderId === user?.id;
+              return (
+                <div key={msg.id || `${msg.timestamp}-${msg.message}`} className={cn('flex flex-col', isMe ? 'items-end' : 'items-start')}>
+                  <div className="flex items-center gap-1.5 mb-1 px-1">
+                    <span className="text-[10px] font-bold text-gray-400">
+                      {isMe ? 'You (Advisor)' : (msg.sender?.name || 'Client')}
+                    </span>
+                    <span className="text-[10px] text-gray-400">
+                      {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </div>
+                  <div
+                    className={cn(
+                      'px-4 py-2.5 rounded-2xl max-w-[80%] text-sm font-medium shadow-xs leading-relaxed',
+                      isMe ? 'bg-indigo-600 text-white rounded-tr-xs' : 'bg-white text-gray-800 border border-gray-100 rounded-tl-xs'
+                    )}
+                  >
+                    {msg.message}
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        <div className="p-4 border-t border-gray-100 bg-white">
+          {consultationModal.status === 'in-progress' && (
+            <div className="mb-2">
+              <input
+                type="text"
+                value={consultationNotes}
+                onChange={e => setConsultationNotes(e.target.value)}
+                placeholder="Optional advisory notes or summary..."
+                className="w-full px-3.5 py-1.5 border border-gray-100 rounded-xl text-xs text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-indigo-300"
+                data-testid="advisor-ws-session-notes-input"
+              />
+            </div>
+          )}
+          {consultationModal.status === 'completed' ? (
+            <div className="text-center py-2 text-xs font-semibold text-emerald-600 bg-emerald-50 rounded-xl border border-emerald-100">
+              ✓ This consultation session has been successfully completed and recorded.
+            </div>
+          ) : consultationModal.status === 'scheduled' ? (
+            <div className="flex items-center justify-between p-3 bg-amber-50 rounded-2xl border border-amber-100">
+              <p className="text-xs text-amber-700 font-medium">Session is scheduled. Start the session to begin live messaging.</p>
+              <button
+                onClick={handleStartSession}
+                disabled={isStartingSession}
+                className="px-3 py-1.5 bg-emerald-600 text-white text-xs font-bold rounded-xl flex items-center gap-1 cursor-pointer"
+              >
+                <Play size={12} /> Start
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={handleSendConsultationMessage} className="flex gap-2">
+              <input
+                type="text"
+                value={newConsultationMsg}
+                onChange={e => setNewConsultationMsg(e.target.value)}
+                placeholder="Type your advisory advice or answer..."
+                disabled={isSendingConsultationMsg}
+                className="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all"
+                data-testid="advisor-ws-chat-input"
+              />
+              <button
+                type="submit"
+                disabled={!newConsultationMsg.trim() || isSendingConsultationMsg}
+                className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-xl text-sm font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+                data-testid="advisor-ws-send-msg-button"
+              >
+                {isSendingConsultationMsg ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
+              </button>
+            </form>
+          )}
+        </div>
+      </motion.div>
+    </div>
+  )}
+  </AnimatePresence>
  </div>
  );
 };

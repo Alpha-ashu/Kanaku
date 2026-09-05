@@ -2,6 +2,7 @@ import { TokenManager } from '@/lib/api';
 import supabase from '@/utils/supabase/client';
 import type { OCRProgress, ReceiptCharge, ReceiptLineItem, ReceiptScanResult, TaxComponent, TotalValidationResult } from '@/types/receipt.types';
 import { getConfiguredApiBase } from '@/lib/apiBase';
+import { getPinUnlockToken, setPinUnlockToken } from '@/lib/pinUnlockCoordinator';
 
 const API_BASE = (getConfiguredApiBase()).replace(/\/+$/, '');
 
@@ -257,9 +258,13 @@ export class CloudReceiptScanService {
     formData.append('file', compressedBlob, `${file.name.replace(/\.[^.]+$/, '') || 'receipt'}.jpg`);
 
     const token = await getAuthToken();
-    const headers: HeadersInit = {};
+    const pinUnlock = getPinUnlockToken();
+    const headers: Record<string, string> = {};
     if (token) {
       headers.Authorization = `Bearer ${token}`;
+    }
+    if (pinUnlock) {
+      headers['X-Pin-Unlock'] = pinUnlock;
     }
 
     const startUrl = `${API_BASE}/receipts/start`;
@@ -270,6 +275,12 @@ export class CloudReceiptScanService {
       headers,
       body: formData,
     });
+
+    const startPinUnlock = startResponse.headers?.get?.('X-Pin-Unlock');
+    if (startPinUnlock) {
+      setPinUnlockToken(startPinUnlock);
+      headers['X-Pin-Unlock'] = startPinUnlock;
+    }
 
     if (!startResponse.ok) {
       const errorBody = await startResponse.json().catch(() => ({}));
@@ -290,6 +301,11 @@ export class CloudReceiptScanService {
       onProgress?.({ status: progressMessage(elapsed), progress: progressPercent(elapsed) });
 
       const statusResponse = await fetchWithRetries(statusUrl, { headers });
+      const statusPinUnlock = statusResponse.headers?.get?.('X-Pin-Unlock');
+      if (statusPinUnlock) {
+        setPinUnlockToken(statusPinUnlock);
+        headers['X-Pin-Unlock'] = statusPinUnlock;
+      }
       if (!statusResponse.ok) {
         // A transient blip while the job is still running is not a failure —
         // only give up if the status endpoint keeps failing.

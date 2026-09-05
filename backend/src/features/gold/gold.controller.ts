@@ -5,6 +5,8 @@ import { sanitize } from '../../utils/sanitize';
 import { AppError } from '../../utils/AppError';
 import { logger } from '../../config/logger';
 import { isDatabaseUnavailableError } from '../../utils/databaseAvailability';
+import { FinancialLedgerService } from '../transactions/ledger.service';
+import { FinancialEventDispatcher, InvestmentPurchasedEvent } from '../transactions/dispatcher';
 
 export const getGoldAssets = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
@@ -44,21 +46,75 @@ export const createGoldAsset = async (req: AuthRequest, res: Response, next: Nex
       }
     }
 
-    const item = await prisma.goldAsset.create({
-      data: {
-        userId,
-        type: body.type,
-        quantity: Number(body.quantity),
-        unit: body.unit,
-        purchasePrice: Number(body.purchasePrice),
-        currentPrice: Number(body.currentPrice),
-        purchaseDate: new Date(body.purchaseDate),
-        purityPercentage: body.purityPercentage ?? 99.9,
-        location: body.location ? sanitize(body.location) : null,
-        certificateNumber: body.certificateNumber ? sanitize(body.certificateNumber) : null,
-        notes: body.notes ? sanitize(body.notes) : null,
-        clientRequestId: body.clientRequestId || null,
-      },
+    const quantity = Number(body.quantity);
+    const purchasePrice = Number(body.purchasePrice);
+    const totalCost = Number(body.totalInvested) || (quantity * purchasePrice);
+
+    if (body.accountId) {
+      const account = await prisma.account.findFirst({
+        where: { id: body.accountId, userId, deletedAt: null },
+      });
+      if (!account) {
+        throw AppError.notFound('Account');
+      }
+      if (Number(account.balance) < totalCost) {
+        throw AppError.badRequest('Insufficient account balance to purchase gold asset', 'INSUFFICIENT_FUNDS');
+      }
+    }
+
+    const item = await prisma.$transaction(async (tx) => {
+      const goldAsset = await tx.goldAsset.create({
+        data: {
+          userId,
+          type: body.type,
+          quantity,
+          unit: body.unit,
+          purchasePrice,
+          currentPrice: Number(body.currentPrice),
+          purchaseDate: new Date(body.purchaseDate),
+          purityPercentage: body.purityPercentage ?? 99.9,
+          location: body.location ? sanitize(body.location) : null,
+          certificateNumber: body.certificateNumber ? sanitize(body.certificateNumber) : null,
+          notes: body.notes ? sanitize(body.notes) : null,
+          clientRequestId: body.clientRequestId || null,
+        },
+      });
+
+      if (body.accountId) {
+        await tx.account.update({
+          where: { id: body.accountId },
+          data: {
+            balance: { decrement: totalCost },
+          },
+        });
+
+        await tx.transaction.create({
+          data: {
+            userId,
+            accountId: body.accountId,
+            type: 'expense',
+            amount: totalCost,
+            category: 'Investment',
+            subcategory: 'Gold',
+            description: `Gold asset purchase: ${goldAsset.type} (${goldAsset.quantity} ${goldAsset.unit})`,
+            date: new Date(body.purchaseDate),
+          },
+        });
+
+        if (FinancialLedgerService.isEnabled('investments')) {
+          await FinancialEventDispatcher.publish(tx, new InvestmentPurchasedEvent(
+            userId,
+            goldAsset.id,
+            body.accountId,
+            totalCost,
+            `Gold (${goldAsset.type})`,
+            'gold',
+            `gold-purchase-${goldAsset.id}`,
+          ));
+        }
+      }
+
+      return goldAsset;
     });
 
     res.status(201).json({ success: true, data: item });

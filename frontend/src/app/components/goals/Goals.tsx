@@ -15,6 +15,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { VOICE_GOAL_DRAFT_KEY, takeVoiceDraft, type VoiceGoalDraft } from '@/lib/voiceDrafts';
 import { formatCurrencyAmount } from '@/lib/currencyUtils';
+import { backendService } from '@/lib/backend-api';
+import { queueRecordUpsertSync, processPendingSyncQueue } from '@/lib/auth-sync-integration';
 
 export const Goals: React.FC = () => {
  const { goals, accounts, currency, setCurrentPage } = useApp();
@@ -633,6 +635,18 @@ const ContributeModal: React.FC<{
  return;
  }
 
+ if (goal.cloudId && account.cloudId && navigator.onLine) {
+ try {
+ await backendService.api.post(`/goals/${goal.cloudId}/contribute`, {
+ amount,
+ accountId: account.cloudId,
+ notes: notes.trim() || undefined,
+ });
+ } catch (backendError) {
+ console.warn('[Goals] Direct contribution sync failed; relying on sync queue', backendError);
+ }
+ }
+
  await db.goalContributions.add({
  goalId,
  amount,
@@ -645,9 +659,12 @@ const ContributeModal: React.FC<{
  currentAmount: goal.currentAmount + amount,
  updatedAt: new Date(),
  });
- // Goal and contribution updates are synced through local DB hooks.
 
  await applyAccountBalanceDeltas(new Map([[accountId, -amount]]));
+
+ queueRecordUpsertSync('goals', goalId);
+ queueRecordUpsertSync('accounts', accountId);
+ void processPendingSyncQueue();
 
  toast.success('Contribution added successfully');
  onClose();

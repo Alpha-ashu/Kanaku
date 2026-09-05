@@ -51,7 +51,7 @@ const DEFAULT_SUB_FEATURES: Record<string, Record<string, { enabled: boolean; ro
   transactions: {
     addTransaction:       { enabled: true, roleAccess: { admin: true, manager: true, advisor: true,  user: true  } },
     editTransaction:      { enabled: true, roleAccess: { admin: true, manager: true, advisor: true,  user: true  } },
-    deleteTransaction:    { enabled: true, roleAccess: { admin: true, manager: true, advisor: false, user: false } },
+    deleteTransaction:    { enabled: true, roleAccess: { admin: true, manager: true, advisor: false, user: true  } },
     importStatement:      { enabled: true, roleAccess: { admin: true, manager: true, advisor: true,  user: true  } },
     exportStatement:      { enabled: true, roleAccess: { admin: true, manager: true, advisor: true,  user: true  } },
     attachBill:           { enabled: true, roleAccess: { admin: true, manager: true, advisor: true,  user: true  } },
@@ -85,7 +85,7 @@ const DEFAULT_SUB_FEATURES: Record<string, Record<string, { enabled: boolean; ro
     excelExport:      { enabled: true, roleAccess: { admin: true, manager: true, advisor: true,  user: true  } },
     csvExport:        { enabled: true, roleAccess: { admin: true, manager: true, advisor: true,  user: true  } },
     aiInsightsReport: { enabled: true, roleAccess: { admin: true, manager: false, advisor: true, user: true  } },
-    forecasting:      { enabled: true, roleAccess: { admin: true, manager: true, advisor: true,  user: false } },
+    forecasting:      { enabled: true, roleAccess: { admin: true, manager: true, advisor: true,  user: true  } },
   },
   // ── Book Advisor ─────────────────────────────────────────────────────────
   bookAdvisor: {

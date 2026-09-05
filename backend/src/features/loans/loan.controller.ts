@@ -7,14 +7,10 @@ import { logger } from '../../config/logger';
 import { cacheDeleteByPrefix } from '../../cache/redis';
 import { isDatabaseUnavailableError } from '../../utils/databaseAvailability';
 import { FinancialLedgerService } from '../transactions/ledger.service';
-// NOTE: LoanDisbursedEvent is deliberately not published here. It requires an
-// accountId for the cash leg, and POST /loans accepts no account — a loan is
-// created as a standalone obligation with no modelled cash movement. Wiring
-// disbursement means adding an account to the create contract, which is a product
-// decision, not mechanical wiring. See docs/release/MOBILE_RELEASE_GUIDE.md.
 import {
   FinancialEventDispatcher,
   LoanPaymentCreatedEvent,
+  LoanDisbursedEvent,
 } from '../transactions/dispatcher';
 
 export const getLoans = async (req: AuthRequest, res: Response, next: NextFunction) => {
@@ -51,6 +47,7 @@ export const createLoan = async (req: AuthRequest, res: Response, next: NextFunc
       frequency,
       contactPerson,
       clientRequestId,
+      accountId,
     } = req.body;
 
     if (!type || !name || !principalAmount) {
@@ -73,23 +70,73 @@ export const createLoan = async (req: AuthRequest, res: Response, next: NextFunc
         return res.status(200).json({ success: true, data: existing });
       }
     }
+
+    if (accountId) {
+      const account = await prisma.account.findFirst({
+        where: { id: accountId, userId, deletedAt: null },
+      });
+      if (!account) {
+        throw AppError.notFound('Account');
+      }
+      if (type === 'lent' && Number(account.balance) < numericPrincipal) {
+        throw AppError.badRequest('Insufficient account balance to disburse lent loan', 'INSUFFICIENT_FUNDS');
+      }
+    }
+
     try {
-      const loan = await prisma.loan.create({
-        data: {
-          userId,
-          type,
-          name: sanitize(name),
-          principalAmount: numericPrincipal,
-          outstandingBalance: numericPrincipal,
-          interestRate,
-          emiAmount,
-          dueDate: dueDate ? new Date(dueDate) : null,
-          frequency,
-          contactPerson: contactPerson ? sanitize(contactPerson) : undefined,
-          status: 'active',
-          clientRequestId: clientRequestId || null,
-        },
-        include: { payments: true },
+      const loan = await prisma.$transaction(async (tx) => {
+        const createdLoan = await tx.loan.create({
+          data: {
+            userId,
+            type,
+            name: sanitize(name),
+            principalAmount: numericPrincipal,
+            outstandingBalance: numericPrincipal,
+            interestRate,
+            emiAmount,
+            dueDate: dueDate ? new Date(dueDate) : null,
+            frequency,
+            contactPerson: contactPerson ? sanitize(contactPerson) : undefined,
+            status: 'active',
+            clientRequestId: clientRequestId || null,
+          },
+          include: { payments: true },
+        });
+
+        if (accountId) {
+          await tx.account.update({
+            where: { id: accountId },
+            data: {
+              balance: { [type === 'borrowed' ? 'increment' : 'decrement']: numericPrincipal },
+            },
+          });
+
+          await tx.transaction.create({
+            data: {
+              userId,
+              accountId,
+              type: type === 'borrowed' ? 'income' : 'expense',
+              amount: numericPrincipal,
+              category: 'Loan',
+              description: `Loan disbursement: ${createdLoan.name}`,
+              date: new Date(),
+            },
+          });
+
+          if (FinancialLedgerService.isEnabled('loans')) {
+            await FinancialEventDispatcher.publish(tx, new LoanDisbursedEvent(
+              userId,
+              createdLoan.id,
+              accountId,
+              numericPrincipal,
+              createdLoan.name,
+              type as 'borrowed' | 'lent',
+              `loan-disburse-${createdLoan.id}`,
+            ));
+          }
+        }
+
+        return createdLoan;
       });
 
       // Track loan participant in unified collaboration engine
@@ -113,6 +160,10 @@ export const createLoan = async (req: AuthRequest, res: Response, next: NextFunc
       }
 
       await cacheDeleteByPrefix('loans:');
+      if (accountId) {
+        await cacheDeleteByPrefix('accounts:');
+        await cacheDeleteByPrefix('transactions:');
+      }
 
       return res.status(201).json({ success: true, data: loan });
     } catch (createErr: any) {

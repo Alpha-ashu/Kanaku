@@ -140,23 +140,28 @@ export const Loans: React.FC = () => {
  const [isDeleting, setIsDeleting] = useState(false);
  const [showBillListForLoan, setShowBillListForLoan] = useState<number | null>(null);
 
- const populateMockLoans = async () => {
-   try {
-     const existing = await db.loans.toArray();
-     if (existing.length === 0) {
-       await db.loans.bulkAdd(SEED_MOCK_LOANS);
-       toast.success('Populated 6 realistic sample loans & EMIs!');
-     }
-   } catch (e) {
-     console.error('Failed to seed loans:', e);
-   }
- };
+  const populateMockLoans = async () => {
+    try {
+      const hasAuthToken = typeof window !== 'undefined' && Boolean(localStorage.getItem('auth_token') || localStorage.getItem('user_id'));
+      const alreadySeeded = typeof window !== 'undefined' && localStorage.getItem('has_seeded_sample_loans') === 'true';
+      if (hasAuthToken || alreadySeeded) {
+        return;
+      }
+      localStorage.setItem('has_seeded_sample_loans', 'true');
+      const existing = await db.loans.toArray();
+      if (existing.length === 0) {
+        await db.loans.bulkAdd(SEED_MOCK_LOANS);
+      }
+    } catch (e) {
+      console.error('Failed to seed loans:', e);
+    }
+  };
 
- React.useEffect(() => {
-   if (loans && loans.length === 0) {
-     populateMockLoans();
-   }
- }, [loans?.length]);
+  React.useEffect(() => {
+    if (loans && loans.length === 0) {
+      void populateMockLoans();
+    }
+  }, [loans?.length]);
 
 
  const handleViewBill = async (loanId: number) => {

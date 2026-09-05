@@ -1,4 +1,4 @@
-import { prisma } from "../../utils/prisma";
+import { prisma } from "../../db/prisma";
 import { v4 as uuidv4 } from "uuid";
 import * as nacl from "tweetnacl";
 import * as naclUtil from "tweetnacl-util";

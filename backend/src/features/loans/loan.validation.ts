@@ -10,6 +10,7 @@ export const loanCreateSchema = z.object({
   frequency: z.string().trim().max(40).optional(),
   contactPerson: z.string().trim().max(120).optional(),
   clientRequestId: z.string().trim().optional(),
+  accountId: z.string().trim().optional(),
 });
 
 export const loanUpdateSchema = z

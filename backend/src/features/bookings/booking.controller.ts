@@ -123,6 +123,16 @@ export const getBookings = async (req: AuthRequest, res: Response) => {
           client: {
             select: { id: true, name: true, email: true },
           },
+          session: {
+            select: {
+              id: true,
+              status: true,
+              startTime: true,
+              payment: {
+                select: { id: true, status: true, amount: true, currency: true, paymentMethod: true },
+              },
+            },
+          },
         },
         orderBy: { createdAt: 'desc' },
       });
@@ -140,7 +150,14 @@ export const getBookings = async (req: AuthRequest, res: Response) => {
           // conversation — /sessions/:id/messages is keyed by session id and
           // there is no "list my sessions" route for the client role.
           session: {
-            select: { id: true, status: true, startTime: true },
+            select: {
+              id: true,
+              status: true,
+              startTime: true,
+              payment: {
+                select: { id: true, status: true, amount: true, currency: true, paymentMethod: true },
+              },
+            },
           },
         },
         orderBy: { createdAt: 'desc' },
@@ -175,6 +192,16 @@ export const getBooking = async (req: AuthRequest, res: Response) => {
         },
         advisor: {
           select: { id: true, name: true, email: true },
+        },
+        session: {
+          select: {
+            id: true,
+            status: true,
+            startTime: true,
+            payment: {
+              select: { id: true, status: true, amount: true, currency: true, paymentMethod: true },
+            },
+          },
         },
       },
     });

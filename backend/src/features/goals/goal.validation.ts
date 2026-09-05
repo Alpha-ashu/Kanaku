@@ -28,3 +28,16 @@ export const goalMemberAddSchema = z.object({
   name: z.string().trim().max(120).optional(),
 });
 
+export const goalContributionSchema = z.object({
+  amount: z.coerce.number().positive('Contribution amount must be positive'),
+  accountId: z.string().trim().min(1, 'Account ID is required'),
+  memberName: z.string().trim().max(120).optional(),
+  notes: z.string().trim().max(500).optional(),
+});
+
+export const goalWithdrawalSchema = z.object({
+  amount: z.coerce.number().positive('Withdrawal amount must be positive'),
+  accountId: z.string().trim().min(1, 'Account ID is required'),
+  notes: z.string().trim().max(500).optional(),
+});
+
