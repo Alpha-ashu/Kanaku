@@ -461,42 +461,25 @@ export const BookAdvisor: React.FC = () => {
         ? `${bookingForm.topic.trim()}\n\n${bookingForm.notes.trim()}`
         : bookingForm.topic.trim();
 
-      try {
-        await backendService.api.post('/bookings', {
-          advisorId: bookingAdvisor.id,
-          sessionType: bookingForm.sessionType,
-          description,
-          proposedDate: bookingForm.date,
-          proposedTime: bookingForm.time,
-          duration: SESSION_DURATION_MINUTES,
-          amount: bookingAdvisor.hourlyRate ?? 0,
-        });
-        await loadAdvisorsAndBookings();
-      } catch {
-        // Fallback for demo/mock advisors: store the booking in local state
-        // so it instantly appears under My Consultations & My Bookings.
-        const newBooking: BookingData = {
-          id: `bkg-${Date.now()}`,
-          advisorId: bookingAdvisor.id,
-          advisorName: bookingAdvisor.name,
-          advisorAvatar: bookingAdvisor.avatar,
-          status: 'pending',
-          proposedDate: bookingForm.date,
-          proposedTime: bookingForm.time,
-          sessionType: bookingForm.sessionType,
-          topic: bookingForm.topic,
-          notes: bookingForm.notes,
-          amount: bookingAdvisor.hourlyRate ?? 0,
-          createdAt: new Date().toISOString(),
-        };
-        setBookings(prev => [newBooking, ...prev]);
-      }
-
+      await backendService.api.post('/bookings', {
+        advisorId: bookingAdvisor.id,
+        sessionType: bookingForm.sessionType,
+        description,
+        proposedDate: bookingForm.date,
+        proposedTime: bookingForm.time,
+        duration: SESSION_DURATION_MINUTES,
+        amount: bookingAdvisor.hourlyRate ?? 0,
+      });
+      await loadAdvisorsAndBookings();
       setBookingAdvisor(null);
       toast.success(`Booking request sent to ${bookingAdvisor.name}. Status: pending approval.`);
       setActiveTab('consultations');
     } catch (error: any) {
-      toast.error(error?.message || 'Could not submit the booking request. Please try again.');
+      const errMsg =
+        error?.response?.data?.error ||
+        error?.message ||
+        'Could not submit the booking request. Please try again.';
+      toast.error(errMsg);
     } finally {
       setIsSubmittingBooking(false);
     }
@@ -711,7 +694,7 @@ export const BookAdvisor: React.FC = () => {
                 </div>
                 <div className="flex items-center gap-2 px-3.5 py-2 bg-emerald-50 text-emerald-700 rounded-2xl border border-emerald-200/60 text-xs font-black shrink-0">
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                  <span>18 Verified Online Advisors</span>
+                  <span>{advisors.length} Verified {advisors.length === 1 ? 'Advisor' : 'Advisors'}</span>
                 </div>
               </div>
 

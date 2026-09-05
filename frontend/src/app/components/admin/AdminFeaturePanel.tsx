@@ -78,7 +78,7 @@ const FEATURE_DEFAULT_ROLE_ACCESS: Record<string, Record<UserRole, boolean>> = {
   todoLists:              { admin: true, manager: false, advisor: false, user: false },
   investments:            { admin: true, manager: false, advisor: false, user: false },
   transfer:               { admin: true, manager: false, advisor: false, user: false },
-  bookAdvisor:            { admin: true, manager: false, advisor: false, user: false },
+  bookAdvisor:            { admin: true, manager: false, advisor: false, user: true },
   payments:               { admin: true, manager: false, advisor: false, user: false },
   clientManagement:       { admin: true, manager: false, advisor: false, user: false },
   aiInsights:             { admin: true, manager: false, advisor: false, user: false },

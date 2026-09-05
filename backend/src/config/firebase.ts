@@ -62,6 +62,10 @@ export function initializeFirebase() {
   }
 }
 
+export function isFirebaseConfigured(): boolean {
+  return Boolean(firebaseConfig.project_id && firebaseConfig.private_key && firebaseConfig.client_email);
+}
+
 /**
  * Get Firebase Admin instance
  * Returns the messaging service for sending push notifications
@@ -69,6 +73,9 @@ export function initializeFirebase() {
 export function getFirebaseMessaging() {
   if (getApps().length === 0) {
     initializeFirebase();
+  }
+  if (getApps().length === 0) {
+    throw new Error("Firebase Admin not initialized: credentials are missing or invalid.");
   }
   return getMessaging();
 }
@@ -88,6 +95,14 @@ export async function sendPushNotification(
     data?: { [key: string]: string };
   }
 ) {
+  if (!isFirebaseConfigured()) {
+    if (process.env.NODE_ENV !== "production") {
+      console.info(`[Push/DevMock] Simulated push notification to ${fcmToken.substring(0, 8)}...: "${title}" - "${body}"`);
+      return "mock-message-id";
+    }
+    throw new Error("Firebase Admin not configured: FIREBASE_* env vars are missing.");
+  }
+
   try {
     const messaging = getFirebaseMessaging();
 

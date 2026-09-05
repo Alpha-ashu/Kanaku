@@ -2,9 +2,10 @@
 import React, { useEffect, useState } from 'react';
 import { useApp } from '@/contexts/AppContext';
 import { db } from '@/lib/database';
-import { SearchableDropdown } from '@/app/components/ui/SearchableDropdown';
 import { backendService } from '@/lib/backend-api';
-import { Users, UserPlus, X, ChevronLeft, Loader2, Check, Save, ArrowLeft, Mail, Phone, Heart, Briefcase, Home, User, Sparkles } from 'lucide-react';
+import { SearchableDropdown } from '@/app/components/ui/SearchableDropdown';
+import { pickDeviceContacts, isContactPickerSupported, parseVCardContent } from '@/services/contactsService';
+import { Users, UserPlus, X, ChevronLeft, Loader2, Check, Save, ArrowLeft, Mail, Phone, Heart, Briefcase, Home, User, Sparkles, Contact, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -25,6 +26,71 @@ export const AddFriends: React.FC = () => {
  const [isSubmitting, setIsSubmitting] = useState(false);
  const [queue, setQueue] = useState<{ name: string; email: string; phone: string; relationship: string }[]>([]);
  const [formData, setFormData] = useState({ name: '', email: '', phone: '', relationship: 'friend' });
+ const vcfInputRef = React.useRef<HTMLInputElement>(null);
+
+ const addContactsToQueue = (newContacts: { name: string; email?: string; phone?: string }[]) => {
+   const existingNames = new Set([
+     ...(friends || []).map((f: any) => (f.name || '').toLowerCase().trim()),
+     ...queue.map(q => q.name.toLowerCase().trim()),
+   ]);
+
+   let added = 0;
+   const toAdd: typeof queue = [];
+
+   for (const c of newContacts) {
+     const normName = (c.name || '').toLowerCase().trim();
+     if (!normName || existingNames.has(normName)) continue;
+     existingNames.add(normName);
+     toAdd.push({
+       name: c.name.trim(),
+       email: c.email || '',
+       phone: c.phone || '',
+       relationship: 'friend',
+     });
+     added++;
+   }
+
+   if (added > 0) {
+     setQueue(prev => [...prev, ...toAdd]);
+     toast.success(`Added ${added} contact${added === 1 ? '' : 's'} to queue!`);
+   } else {
+     toast.info('Selected contacts are already in your list or queue.');
+   }
+ };
+
+ const handlePickContacts = async () => {
+   if (isContactPickerSupported()) {
+     try {
+       const picked = await pickDeviceContacts();
+       if (picked.length > 0) {
+         addContactsToQueue(picked);
+       }
+     } catch (err: any) {
+       toast.error(err?.message || 'Could not access device contacts');
+     }
+   } else {
+     // Fallback to vcf file upload
+     vcfInputRef.current?.click();
+   }
+ };
+
+ const handleVcfFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+   const file = e.target.files?.[0];
+   if (!file) return;
+   try {
+     const text = await file.text();
+     const parsed = parseVCardContent(text);
+     if (parsed.length === 0) {
+       toast.info('No valid contacts found in this .vcf file.');
+       return;
+     }
+     addContactsToQueue(parsed);
+   } catch {
+     toast.error('Could not read contacts file');
+   } finally {
+     if (vcfInputRef.current) vcfInputRef.current.value = '';
+   }
+ };
 
  const addToQueue = () => {
  if (!formData.name.trim()) { toast.error('Name is required'); return; }
@@ -70,74 +136,113 @@ export const AddFriends: React.FC = () => {
  return (
  <div className="flex flex-col min-h-screen bg-white">
 
- {/* Header */}
- <header className="px-4 lg:px-6 py-4 bg-white border-b border-slate-100">
- <div className="flex flex-row flex-wrap items-center justify-between gap-4 w-full">
- <div className="flex items-center gap-3">
- <button data-testid="add-friends-back" onClick={() => setCurrentPage('friends')} title="Back" className="lg:!hidden p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all">
- <ArrowLeft size={20} />
- </button>
- <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">Add Friends</h1>
- </div>
- </div>
- </header>
+  {/* Header */}
+  <header className="px-4 lg:px-6 py-4 bg-white border-b border-slate-100">
+  <div className="flex flex-row flex-wrap items-center justify-between gap-4 w-full">
+  <div className="flex items-center gap-3">
+  <button data-testid="add-friends-back" onClick={() => setCurrentPage('friends')} title="Back" className="lg:!hidden p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all">
+  <ArrowLeft size={20} />
+  </button>
+  <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">Add Friends</h1>
+  </div>
+  <div className="flex items-center gap-2">
+    <input
+      type="file"
+      ref={vcfInputRef}
+      accept=".vcf,text/vcard"
+      className="hidden"
+      onChange={handleVcfFileChange}
+    />
+    <button
+      type="button"
+      onClick={handlePickContacts}
+      data-testid="add-friends-import-contacts"
+      className="flex items-center gap-1.5 px-3 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl text-xs font-bold transition-all border border-indigo-200"
+      title="Import contacts from device or vCard file"
+    >
+      <Contact size={15} />
+      <span>Import Contacts</span>
+    </button>
+  </div>
+  </div>
+  </header>
 
- {/* Main Single-Page Content Area */}
- <main className="flex-1 p-3 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 overflow-y-auto pb-48">
- 
- {/* Left Column: Form (lg:col-7) */}
- <div className="lg:col-span-7 flex flex-col gap-4">
- <div className="premium-glass-card p-4 sm:p-6 space-y-4 sm:space-y-6">
- <div className="space-y-1">
- <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Friend Name</label>
- <div className="relative">
- <User className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
- <input id="add-friend-name" name="name" aria-label="Friend name" data-testid="add-friends-full-name" type="text" value={formData.name} onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))} className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-300 text-xs" placeholder="Full Name" />
- </div>
- </div>
+  {/* Main Single-Page Content Area */}
+  <main className="flex-1 p-3 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 overflow-y-auto pb-48">
+  
+  {/* Left Column: Form (lg:col-7) */}
+  <div className="lg:col-span-7 flex flex-col gap-4">
+  <div className="premium-glass-card p-4 sm:p-6 space-y-4 sm:space-y-6">
+  <div className="space-y-1">
+  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Friend Name</label>
+  <div className="relative">
+  <User className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
+  <input id="add-friend-name" name="name" aria-label="Friend name" data-testid="add-friends-full-name" type="text" value={formData.name} onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))} className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-300 text-xs" placeholder="Full Name" />
+  </div>
+  </div>
 
- <div className="grid grid-cols-2 gap-4">
- <div className="space-y-1">
- <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Email</label>
- <div className="relative">
- <Mail className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
- <input id="add-friend-email" name="email" aria-label="Friend email" data-testid="add-friends-optional" type="email" value={formData.email} onChange={e => setFormData(prev => ({ ...prev, email: e.target.value }))} className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-300 text-xs" placeholder="Optional" />
- </div>
- </div>
- <div className="space-y-1">
- <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Phone</label>
- <div className="relative">
- <Phone className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
- <input id="add-friend-phone" name="phone" aria-label="Friend phone" data-testid="add-friends-optional-2" type="tel" value={formData.phone} onChange={e => setFormData(prev => ({ ...prev, phone: e.target.value }))} className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-300 text-xs" placeholder="Optional" />
- </div>
- </div>
- </div>
+  <div className="grid grid-cols-2 gap-4">
+  <div className="space-y-1">
+  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Email</label>
+  <div className="relative">
+  <Mail className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
+  <input id="add-friend-email" name="email" aria-label="Friend email" data-testid="add-friends-optional" type="email" value={formData.email} onChange={e => setFormData(prev => ({ ...prev, email: e.target.value }))} className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-300 text-xs" placeholder="Optional" />
+  </div>
+  </div>
+  <div className="space-y-1">
+  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Phone</label>
+  <div className="relative">
+  <Phone className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
+  <input id="add-friend-phone" name="phone" aria-label="Friend phone" data-testid="add-friends-optional-2" type="tel" value={formData.phone} onChange={e => setFormData(prev => ({ ...prev, phone: e.target.value }))} className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-300 text-xs" placeholder="Optional" />
+  </div>
+  </div>
+  </div>
 
- <div className="space-y-2">
- <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Relationship</label>
- <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
- {RELATIONSHIP_TYPES.map(r => (
- <button data-testid={`add-friends-button-${r.key}`} key={r.key} onClick={() => setFormData(prev => ({ ...prev, relationship: r.key }))} className={cn("flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl transition-all", formData.relationship === r.key ?"bg-indigo-600 text-white shadow-lg" :"bg-slate-50 text-slate-400 hover:bg-slate-100")}>
- {r.icon}
- <span className="text-[7px] font-black uppercase tracking-tighter">{r.label}</span>
- </button>
- ))}
- </div>
- </div>
+  <div className="space-y-2">
+  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Relationship</label>
+  <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+  {RELATIONSHIP_TYPES.map(r => (
+  <button data-testid={`add-friends-button-${r.key}`} key={r.key} onClick={() => setFormData(prev => ({ ...prev, relationship: r.key }))} className={cn("flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl transition-all", formData.relationship === r.key ?"bg-indigo-600 text-white shadow-lg" :"bg-slate-50 text-slate-400 hover:bg-slate-100")}>
+  {r.icon}
+  <span className="text-[7px] font-black uppercase tracking-tighter">{r.label}</span>
+  </button>
+  ))}
+  </div>
+  </div>
 
- <button data-testid="add-friends-add-to-list" onClick={addToQueue} className="w-full py-3 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-slate-800 transition-all">
- <UserPlus size={14} /> Add to List
- </button>
- </div>
+  <button data-testid="add-friends-add-to-list" onClick={addToQueue} className="w-full py-3 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-slate-800 transition-all">
+  <UserPlus size={14} /> Add to List
+  </button>
+  </div>
 
- <div className="p-4 bg-indigo-50 border border-indigo-100 rounded-2xl flex items-center gap-3">
- <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center shrink-0"><Users size={16} className="text-white" /></div>
- <div>
- <p className="text-[8px] font-black text-indigo-600 uppercase tracking-widest">Bulk Actions</p>
- <p className="text-[10px] font-bold text-slate-700">Add multiple friends at once and save them all together.</p>
- </div>
- </div>
- </div>
+  <div className="p-4 bg-indigo-50 border border-indigo-100 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+  <div className="flex items-center gap-3">
+  <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center shrink-0"><Users size={16} className="text-white" /></div>
+  <div>
+  <p className="text-[8px] font-black text-indigo-600 uppercase tracking-widest">Bulk Actions & Contacts</p>
+  <p className="text-[10px] font-bold text-slate-700">Import from your device contacts or upload a vCard (.vcf) file.</p>
+  </div>
+  </div>
+  <div className="flex items-center gap-2 shrink-0">
+    <button
+      type="button"
+      onClick={handlePickContacts}
+      className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 transition-all shadow-xs"
+    >
+      <Contact size={13} />
+      <span>Pick Contacts</span>
+    </button>
+    <button
+      type="button"
+      onClick={() => vcfInputRef.current?.click()}
+      className="px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 transition-all"
+    >
+      <Upload size={13} />
+      <span>Upload .vcf</span>
+    </button>
+  </div>
+  </div>
+  </div>
 
  {/* Right Column: Queue (lg:col-5) */}
  <div className="lg:col-span-5 flex flex-col gap-4">

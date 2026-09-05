@@ -168,14 +168,22 @@ export async function processEmail(job: { data: DeliveryJob }): Promise<unknown>
     deepLink,
     headers: { 'X-Notification-ID': notificationId },
   });
-  if (!sent) throw new Error('SendGrid send failed');
+
+  if (!sent) {
+    if (process.env.NODE_ENV !== 'production') {
+      logger.info(`[outbox] Email send simulated/skipped in development for ${notificationId}`);
+      await markChannel(notificationId, 'email', 'sent');
+      return { sent: false, simulated: true };
+    }
+    throw new Error('Email delivery failed (SendGrid/SMTP)');
+  }
 
   await markChannel(notificationId, 'email', 'sent');
   return { sent: true };
 }
 
 export async function processPush(job: { data: DeliveryJob }): Promise<unknown> {
-  const { notificationId, userId, deviceId, fcmToken, title, message, category, deepLink, priority, metadata } =
+  const { notificationId, userId, title, message, category, deepLink, priority, metadata } =
     job.data;
 
   const claimed = await claimChannelDelivery(notificationId, 'push');
@@ -183,46 +191,75 @@ export async function processPush(job: { data: DeliveryJob }): Promise<unknown> 
     return { skipped: true, reason: 'already_sent_or_claimed' };
   }
 
-  if (!deviceId || !fcmToken) {
+  // Find all active devices for the user with push tokens (FCM or APNs)
+  const devices = await prisma.device.findMany({
+    where: {
+      userId,
+      isActive: true,
+      OR: [
+        { fcmToken: { not: null } },
+        { apnsToken: { not: null } },
+      ],
+    },
+    orderBy: { lastSyncedAt: 'desc' },
+  });
+
+  if (devices.length === 0) {
     await markChannel(notificationId, 'push', 'failed');
     return { skipped: true, reason: 'no_device' };
   }
 
-  const device = await prisma.device.findUnique({ where: { id: deviceId } });
-  if (!device || device.userId !== userId || !device.isActive || device.fcmToken !== fcmToken) {
-    await markChannel(notificationId, 'push', 'failed');
-    return { skipped: true, reason: 'device_unavailable' };
-  }
+  const meta = parseJson<any>(metadata, {});
+  const pushTitle = meta?.pushTitle ?? title;
+  const pushBody = meta?.pushBody ?? message;
 
-  try {
-    const meta = parseJson<any>(metadata, {});
-    const pushTitle = meta?.pushTitle ?? title;
-    const pushBody = meta?.pushBody ?? message;
+  let anySent = false;
+  let lastError: any = null;
 
-    const messageId = await sendPushNotification(fcmToken, {
-      title: pushTitle,
-      body: pushBody,
-      data: {
-        notificationId,
-        category: category || '',
-        deepLink: deepLink || '',
-        priority: priority || 'normal',
-      },
-    });
-    await prisma.device.update({ where: { id: deviceId }, data: { lastSeenAt: new Date() } }).catch(() => {});
-    await markChannel(notificationId, 'push', 'sent');
-    return { sent: true, messageId };
-  } catch (err) {
-    // A dead/unregistered token will never succeed — clean it up so we stop
-    // retrying it, then re-throw so the drainer records the failed attempt.
-    const msg = err instanceof Error ? err.message.toLowerCase() : '';
-    if (msg.includes('invalid') || msg.includes('unregistered') || msg.includes('not-registered')) {
-      await prisma.device
-        .update({ where: { id: deviceId }, data: { fcmToken: null, isActive: false } })
-        .catch(() => {});
+  for (const device of devices) {
+    const token = device.fcmToken || device.apnsToken;
+    if (!token) continue;
+
+    try {
+      await sendPushNotification(token, {
+        title: pushTitle,
+        body: pushBody,
+        data: {
+          notificationId,
+          category: category || '',
+          deepLink: deepLink || '',
+          priority: priority || 'normal',
+        },
+      });
+      await prisma.device.update({ where: { id: device.id }, data: { lastSeenAt: new Date() } }).catch(() => {});
+      anySent = true;
+    } catch (err: any) {
+      lastError = err;
+      const msg = err instanceof Error ? err.message.toLowerCase() : '';
+      if (msg.includes('invalid') || msg.includes('unregistered') || msg.includes('not-registered')) {
+        await prisma.device
+          .update({ where: { id: device.id }, data: { fcmToken: null, apnsToken: null, isActive: false } })
+          .catch(() => {});
+      }
     }
-    throw err;
   }
+
+  if (anySent) {
+    await markChannel(notificationId, 'push', 'sent');
+    return { sent: true };
+  }
+
+  if (lastError) {
+    if (process.env.NODE_ENV !== 'production') {
+      logger.info(`[outbox] Push simulated/skipped in development for ${notificationId}`);
+      await markChannel(notificationId, 'push', 'sent');
+      return { sent: false, simulated: true };
+    }
+    throw lastError;
+  }
+
+  await markChannel(notificationId, 'push', 'failed');
+  return { sent: false, reason: 'all_devices_failed' };
 }
 
 // ── Per-notification delivery (all due channels in one pass) ──────────────────
@@ -257,10 +294,18 @@ async function buildJob(row: OutboxRow, channel: Channel): Promise<DeliveryJob> 
   };
   if (channel === 'push') {
     const device = await prisma.device.findFirst({
-      where: { userId: row.userId, isActive: true, fcmToken: { not: null } },
+      where: {
+        userId: row.userId,
+        isActive: true,
+        OR: [
+          { fcmToken: { not: null } },
+          { apnsToken: { not: null } },
+        ],
+      },
+      orderBy: { lastSyncedAt: 'desc' },
     });
     base.deviceId = device?.id;
-    base.fcmToken = device?.fcmToken ?? undefined;
+    base.fcmToken = device?.fcmToken || device?.apnsToken || undefined;
   }
   return base;
 }
