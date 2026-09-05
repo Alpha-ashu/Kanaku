@@ -4,7 +4,7 @@ import { useApp } from '@/contexts/AppContext';
 import { db } from '@/lib/database';
 import { backendService } from '@/lib/backend-api';
 import { SearchableDropdown } from '@/app/components/ui/SearchableDropdown';
-import { pickDeviceContacts, isContactPickerSupported, parseVCardContent } from '@/services/contactsService';
+import { pickDeviceContacts, isContactPickerSupported, parseVCardContent, parseCsvContacts } from '@/services/contactsService';
 import { Users, UserPlus, X, ChevronLeft, Loader2, Check, Save, ArrowLeft, Mail, Phone, Heart, Briefcase, Home, User, Sparkles, Contact, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -74,23 +74,24 @@ export const AddFriends: React.FC = () => {
    }
  };
 
- const handleVcfFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-   const file = e.target.files?.[0];
-   if (!file) return;
-   try {
-     const text = await file.text();
-     const parsed = parseVCardContent(text);
-     if (parsed.length === 0) {
-       toast.info('No valid contacts found in this .vcf file.');
-       return;
-     }
-     addContactsToQueue(parsed);
-   } catch {
-     toast.error('Could not read contacts file');
-   } finally {
-     if (vcfInputRef.current) vcfInputRef.current.value = '';
-   }
- };
+  const handleContactFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const isCsv = file.name.toLowerCase().endsWith('.csv') || file.type.includes('csv');
+      const parsed = isCsv ? parseCsvContacts(text) : parseVCardContent(text);
+      if (parsed.length === 0) {
+        toast.info(`No valid contacts found in this ${isCsv ? '.csv' : '.vcf'} file.`);
+        return;
+      }
+      addContactsToQueue(parsed);
+    } catch {
+      toast.error('Could not read contacts file');
+    } finally {
+      if (vcfInputRef.current) vcfInputRef.current.value = '';
+    }
+  };
 
  const addToQueue = () => {
  if (!formData.name.trim()) { toast.error('Name is required'); return; }
@@ -104,33 +105,22 @@ export const AddFriends: React.FC = () => {
   const handleSaveAll = async () => {
     if (queue.length === 0) { toast.error('Add at least one friend'); return; }
     setIsSubmitting(true);
-    let successCount = 0;
     try {
-      for (const friend of queue) {
-        const now = new Date();
-        try {
-          await backendService.createFriend({
-            name: friend.name,
-            email: friend.email || undefined,
-            phone: friend.phone || undefined,
-            createdAt: now,
-            updatedAt: now,
-          });
-          successCount++;
-        } catch (err: any) {
-          const errMsg = err?.response?.data?.error || err?.message || 'Failed to save';
-          toast.error(`Error adding ${friend.name}: ${errMsg}`);
-        }
+      const result = await backendService.createFriendsBulk(queue);
+      if (result.createdCount > 0) {
+        toast.success(`${result.createdCount} friend${result.createdCount === 1 ? '' : 's'} added!`);
       }
-      if (successCount > 0) {
-        toast.success(`${successCount} friends added!`);
+      if (result.skippedCount > 0) {
+        toast.info(`${result.skippedCount} contact${result.skippedCount === 1 ? '' : 's'} skipped (already existed or invalid)`);
       }
       setQueue([]);
       refreshData();
       setCurrentPage('friends');
-    } catch (error) {
-      toast.error('Failed to save friends');
-    } finally { setIsSubmitting(false); }
+    } catch (error: any) {
+      toast.error(error?.message || 'Failed to save friends');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
  return (
@@ -149,16 +139,16 @@ export const AddFriends: React.FC = () => {
     <input
       type="file"
       ref={vcfInputRef}
-      accept=".vcf,text/vcard"
+      accept=".vcf,.csv,text/vcard,text/csv"
       className="hidden"
-      onChange={handleVcfFileChange}
+      onChange={handleContactFileChange}
     />
     <button
       type="button"
       onClick={handlePickContacts}
       data-testid="add-friends-import-contacts"
       className="flex items-center gap-1.5 px-3 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl text-xs font-bold transition-all border border-indigo-200"
-      title="Import contacts from device or vCard file"
+      title="Import contacts from device, .vcf, or .csv file"
     >
       <Contact size={15} />
       <span>Import Contacts</span>
@@ -176,8 +166,8 @@ export const AddFriends: React.FC = () => {
   <div className="space-y-1">
   <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Friend Name</label>
   <div className="relative">
-  <User className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
-  <input id="add-friend-name" name="name" aria-label="Friend name" data-testid="add-friends-full-name" type="text" value={formData.name} onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))} className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-300 text-xs" placeholder="Full Name" />
+  <User className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+  <input id="add-friend-name" name="name" aria-label="Friend name" data-testid="add-friends-full-name" type="text" value={formData.name} onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-900 text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="Full Name" />
   </div>
   </div>
 
@@ -185,15 +175,15 @@ export const AddFriends: React.FC = () => {
   <div className="space-y-1">
   <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Email</label>
   <div className="relative">
-  <Mail className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
-  <input id="add-friend-email" name="email" aria-label="Friend email" data-testid="add-friends-optional" type="email" value={formData.email} onChange={e => setFormData(prev => ({ ...prev, email: e.target.value }))} className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-300 text-xs" placeholder="Optional" />
+  <Mail className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+  <input id="add-friend-email" name="email" aria-label="Friend email" data-testid="add-friends-optional" type="email" value={formData.email} onChange={e => setFormData(prev => ({ ...prev, email: e.target.value }))} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-900 text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="Optional" />
   </div>
   </div>
   <div className="space-y-1">
   <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Phone</label>
   <div className="relative">
-  <Phone className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
-  <input id="add-friend-phone" name="phone" aria-label="Friend phone" data-testid="add-friends-optional-2" type="tel" value={formData.phone} onChange={e => setFormData(prev => ({ ...prev, phone: e.target.value }))} className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-300 text-xs" placeholder="Optional" />
+  <Phone className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+  <input id="add-friend-phone" name="phone" aria-label="Friend phone" data-testid="add-friends-optional-2" type="tel" value={formData.phone} onChange={e => setFormData(prev => ({ ...prev, phone: e.target.value }))} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-900 text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="Optional" />
   </div>
   </div>
   </div>
@@ -220,7 +210,7 @@ export const AddFriends: React.FC = () => {
   <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center shrink-0"><Users size={16} className="text-white" /></div>
   <div>
   <p className="text-[8px] font-black text-indigo-600 uppercase tracking-widest">Bulk Actions & Contacts</p>
-  <p className="text-[10px] font-bold text-slate-700">Import from your device contacts or upload a vCard (.vcf) file.</p>
+  <p className="text-[10px] font-bold text-slate-700">Import from your device contacts or upload a .vcf / .csv file.</p>
   </div>
   </div>
   <div className="flex items-center gap-2 shrink-0">
@@ -238,7 +228,7 @@ export const AddFriends: React.FC = () => {
       className="px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 transition-all"
     >
       <Upload size={13} />
-      <span>Upload .vcf</span>
+      <span>Upload .vcf / .csv</span>
     </button>
   </div>
   </div>

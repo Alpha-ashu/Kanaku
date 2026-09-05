@@ -107,6 +107,7 @@ export class DeviceService {
           deviceName: true,
           deviceType: true,
           osType: true,
+          osVersion: true,
           isActive: true,
           lastSyncedAt: true,
           createdAt: true,

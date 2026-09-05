@@ -152,6 +152,7 @@ export const Settings: React.FC = () => {
     deviceName: string | null;
     deviceType: string | null;
     osType: string | null;
+    osVersion?: string | null;
     isActive: boolean;
     lastSyncedAt: string | null;
     createdAt: string;
@@ -159,6 +160,7 @@ export const Settings: React.FC = () => {
   const [showDevicesModal, setShowDevicesModal] = useState(false);
   const [loadingDevices, setLoadingDevices] = useState(false);
   const [revokingDeviceId, setRevokingDeviceId] = useState<string | null>(null);
+  const [testingDeviceId, setTestingDeviceId] = useState<string | null>(null);
 
   const loadDevices = async () => {
     try {
@@ -188,6 +190,18 @@ export const Settings: React.FC = () => {
       toast.error('Failed to revoke device access');
     } finally {
       setRevokingDeviceId(null);
+    }
+  };
+
+  const handleTestNotification = async (deviceId: string) => {
+    try {
+      setTestingDeviceId(deviceId);
+      const res = await apiClient.post<any>(`/devices/${encodeURIComponent(deviceId)}/test-notification`);
+      toast.success(res.data?.message || 'Push notification test ping sent!');
+    } catch (err: any) {
+      toast.error(err?.response?.data?.error || err?.message || 'Failed to send test push notification');
+    } finally {
+      setTestingDeviceId(null);
     }
   };
 
@@ -1271,21 +1285,35 @@ export const Settings: React.FC = () => {
                               </span>
                             </div>
                             <p className="text-[11px] text-slate-400 mt-0.5 truncate">
-                              {device.osType || 'OS'} • {device.deviceType || 'device'} • Last seen {new Date(device.lastSyncedAt || device.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                              {device.osType || 'OS'}{device.osVersion ? ` (${device.osVersion})` : ''} • {device.deviceType || 'device'} • Last seen {new Date(device.lastSyncedAt || device.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                             </p>
                           </div>
                         </div>
 
-                        {!isCurrent && device.isActive && (
-                          <button
-                            type="button"
-                            onClick={() => void handleDeactivateDevice(device.deviceId, device.deviceName)}
-                            disabled={revokingDeviceId === device.deviceId}
-                            className="px-2.5 py-1 text-xs font-semibold text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors border border-rose-200 shrink-0"
-                          >
-                            {revokingDeviceId === device.deviceId ? 'Revoking...' : 'Revoke'}
-                          </button>
-                        )}
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          {device.isActive && (
+                            <button
+                              type="button"
+                              onClick={() => void handleTestNotification(device.deviceId)}
+                              disabled={testingDeviceId === device.deviceId}
+                              title="Send test push notification ping to this device"
+                              className="px-2 py-1 text-xs font-semibold text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors border border-blue-200 flex items-center gap-1"
+                            >
+                              <Bell size={12} className={cn(testingDeviceId === device.deviceId && "animate-pulse")} />
+                              <span>{testingDeviceId === device.deviceId ? 'Pinging...' : 'Test Push'}</span>
+                            </button>
+                          )}
+                          {!isCurrent && device.isActive && (
+                            <button
+                              type="button"
+                              onClick={() => void handleDeactivateDevice(device.deviceId, device.deviceName)}
+                              disabled={revokingDeviceId === device.deviceId}
+                              className="px-2.5 py-1 text-xs font-semibold text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors border border-rose-200"
+                            >
+                              {revokingDeviceId === device.deviceId ? 'Revoking...' : 'Revoke'}
+                            </button>
+                          )}
+                        </div>
                       </div>
                     );
                   })

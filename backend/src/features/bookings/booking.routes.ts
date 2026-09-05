@@ -67,6 +67,12 @@ router.put(
   validateBody(cancelBookingSchema),
   BookingController.cancelBooking
 );
+router.post(
+  '/:id/cancel',
+  validateParams(bookingIdParamSchema),
+  validateBody(cancelBookingSchema),
+  BookingController.cancelBooking
+);
 
 // Advisor workspace: list all clients
 router.get(

@@ -7,6 +7,7 @@ import { AppError } from '../../utils/AppError';
 import { isDatabaseUnavailableError } from '../../utils/databaseAvailability';
 import { getSocketManager } from '../../sockets';
 import { inviteParticipants, resolveContactDetailsForFriend } from '../collaboration/invitation.service';
+import { dispatchNotification } from '../notifications/notification.dispatcher';
 
 async function findUserByEmailOrPhone(email?: string | null, phone?: string | null): Promise<any> {
   if (email) {
@@ -349,32 +350,30 @@ export const createFriend = async (req: AuthRequest, res: Response, next: NextFu
 
     if (targetUser) {
       if (isMutual) {
-        // Send notification to B (target user) that B's request was accepted
-        const notificationB = await prisma.notification.create({
-          data: {
-            userId: targetUser.id,
-            sourceUserId: userId,
-            title: 'Friend Request Accepted',
-            message: `${currentUser.name} accepted your friend request.`,
-            type: 'friend_accepted',
-            priority: 'high',
-            channels: '["app"]',
-            deliveryStatus: '{}',
-          },
+        // Send multi-channel notification to B (target user) that B's request was accepted
+        const notificationB = await dispatchNotification({
+          userId: targetUser.id,
+          sourceUserId: userId,
+          title: 'Friend Request Accepted',
+          message: `${currentUser.name} accepted your friend request.`,
+          type: 'friend_accepted',
+          category: 'friend',
+          deepLink: '/friends',
+          priority: 'high',
+          channels: ['app', 'email', 'push'],
         });
 
-        // Send notification to A (current user) that they are now friends
-        const notificationA = await prisma.notification.create({
-          data: {
-            userId,
-            sourceUserId: targetUser.id,
-            title: 'Friend Request Accepted',
-            message: `You are now friends with ${targetUser.name}.`,
-            type: 'friend_accepted',
-            priority: 'high',
-            channels: '["app"]',
-            deliveryStatus: '{}',
-          },
+        // Send multi-channel notification to A (current user) that they are now friends
+        const notificationA = await dispatchNotification({
+          userId,
+          sourceUserId: targetUser.id,
+          title: 'Friend Request Accepted',
+          message: `You are now friends with ${targetUser.name}.`,
+          type: 'friend_accepted',
+          category: 'friend',
+          deepLink: '/friends',
+          priority: 'high',
+          channels: ['app', 'email', 'push'],
         });
 
         // Notify both via sockets immediately
@@ -390,17 +389,16 @@ export const createFriend = async (req: AuthRequest, res: Response, next: NextFu
         }
       } else {
         // B hasn't added A yet, this is a new friend request to B
-        const notificationB = await prisma.notification.create({
-          data: {
-            userId: targetUser.id,
-            sourceUserId: userId,
-            title: 'New Friend Request',
-            message: `${currentUser.name} sent you a friend request.`,
-            type: 'friend_request',
-            priority: 'high',
-            channels: '["app"]',
-            deliveryStatus: '{}',
-          },
+        const notificationB = await dispatchNotification({
+          userId: targetUser.id,
+          sourceUserId: userId,
+          title: 'New Friend Request',
+          message: `${currentUser.name} sent you a friend request on Kanaku.`,
+          type: 'friend_request',
+          category: 'friend',
+          deepLink: '/friends',
+          priority: 'high',
+          channels: ['app', 'email', 'push'],
         });
 
         // Notify B via sockets
@@ -521,10 +519,6 @@ export const bulkCreateFriends = async (req: AuthRequest, res: Response, next: N
 
       if (!name) {
         skipped.push({ name: name || '(unnamed)', reason: 'Name is required' });
-        continue;
-      }
-      if (!cleanEmail && !cleanPhone) {
-        skipped.push({ name, reason: 'Email or phone is required' });
         continue;
       }
       if (existingNameKeys.has(name.toLowerCase())) {

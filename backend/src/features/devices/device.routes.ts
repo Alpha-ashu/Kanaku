@@ -71,6 +71,15 @@ router.post(
 );
 
 /**
+ * POST /api/v1/devices/:deviceId/test-notification - Send test push notification to a device
+ */
+router.post(
+  '/:deviceId/test-notification',
+  validateParams(deviceIdParamsSchema),
+  DeviceController.testNotification,
+);
+
+/**
  * DELETE /api/v1/devices/:deviceId - Delete a device
  */
 router.delete('/:deviceId', validateParams(deviceIdParamsSchema), DeviceController.deleteDevice);

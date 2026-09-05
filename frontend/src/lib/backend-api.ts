@@ -878,6 +878,82 @@ class BackendService {
   }
 
   /**
+   * Bulk add multiple friends atomically to both local storage and cloud backend.
+   */
+  async createFriendsBulk(friends: Array<{
+    name: string;
+    email?: string;
+    phone?: string;
+    relationship?: string;
+  }>): Promise<{
+    created: any[];
+    skipped: { name: string; reason: string }[];
+    createdCount: number;
+    skippedCount: number;
+  }> {
+    if (!friends.length) {
+      return { created: [], skipped: [], createdCount: 0, skippedCount: 0 };
+    }
+
+    const now = new Date();
+    const cleanList = friends.map(f => ({
+      name: f.name.trim(),
+      email: f.email?.trim() || undefined,
+      phone: f.phone?.trim() || undefined,
+    }));
+
+    const saveLocally = async () => {
+      const created: any[] = [];
+      for (const item of cleanList) {
+        const localId = await RealtimeDataManager.addFriend({
+          ...item,
+          createdAt: now,
+          updatedAt: now,
+        });
+        created.push({ id: `local_${localId}`, localId, ...item });
+      }
+      return { created, skipped: [], createdCount: created.length, skippedCount: 0 };
+    };
+
+    if (SHOULD_SKIP_OPTIONAL_BACKEND_REQUESTS) {
+      return saveLocally();
+    }
+
+    try {
+      const response = await this.api.post('/friends/bulk', {
+        friends: cleanList,
+      });
+      const resData = response.data?.data ?? response.data;
+      const createdItems = Array.isArray(resData?.created) ? resData.created : [];
+
+      // Save synced items into Dexie
+      for (const item of createdItems) {
+        await RealtimeDataManager.addFriend({
+          name: item.name,
+          email: item.email || undefined,
+          phone: item.phone || undefined,
+          cloudId: item.id,
+          syncStatus: 'synced',
+          createdAt: now,
+          updatedAt: now,
+        });
+      }
+
+      return {
+        created: createdItems,
+        skipped: resData?.skipped || [],
+        createdCount: resData?.createdCount ?? createdItems.length,
+        skippedCount: resData?.skippedCount ?? (resData?.skipped?.length || 0),
+      };
+    } catch (error) {
+      if (!shouldUseLocalFallback(error)) {
+        throw error;
+      }
+      return saveLocally();
+    }
+  }
+
+  /**
    * Retry pushing a local-only friend (one that never got a `cloudId` because
    * the original `createFriend` backend call failed and silently fell back
    * to local-only storage) up to the backend. Updates the local record with

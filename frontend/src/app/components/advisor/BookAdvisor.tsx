@@ -9,7 +9,7 @@ import {
   Sparkles, Shield, Zap, Info, ArrowUpRight, Plus, X, UserPlus,
   UserCheck, Send, Paperclip, Lock, FileText, Share2, ThumbsUp,
   Bookmark, Eye, Filter, Check, MoreVertical, ExternalLink,
-  CreditCard, Wallet, Banknote, QrCode, ShieldCheck, IndianRupee
+  CreditCard, Wallet, Banknote, QrCode, ShieldCheck, IndianRupee, Download
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -457,6 +457,59 @@ export const BookAdvisor: React.FC = () => {
     }
   };
 
+  const handleJoinCall = (bkg: BookingData) => {
+    const sessionId = bkg.sessionId || bkg.id;
+    const roomName = `Kanaku-Consultation-${sessionId.slice(0, 12)}`;
+    const meetUrl = `https://meet.jit.si/${encodeURIComponent(roomName)}`;
+    toast.success('Connecting to encrypted video consultation room...');
+    window.open(meetUrl, '_blank', 'noopener,noreferrer');
+  };
+
+  const handleDownloadIcs = (bkg: BookingData) => {
+    try {
+      const [year, month, day] = bkg.proposedDate.split('-').map(Number);
+      const [hours, minutes] = (bkg.proposedTime || '10:00').split(':').map(Number);
+      const startDate = new Date(year || 2026, (month || 1) - 1, day || 1, hours || 10, minutes || 0);
+      const endDate = new Date(startDate.getTime() + 45 * 60000);
+
+      const pad = (n: number) => String(n).padStart(2, '0');
+      const formatIcsDate = (d: Date) =>
+        `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}00Z`;
+
+      const ics = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'PRODID:-//Kanaku//Consultation Appointment//EN',
+        'CALSCALE:GREGORIAN',
+        'METHOD:PUBLISH',
+        'BEGIN:VEVENT',
+        `UID:kanaku-booking-${bkg.id}@kanaku.app`,
+        `DTSTAMP:${formatIcsDate(new Date())}`,
+        `DTSTART:${formatIcsDate(startDate)}`,
+        `DTEND:${formatIcsDate(endDate)}`,
+        `SUMMARY:Advisor Consultation with ${bkg.advisorName}`,
+        `DESCRIPTION:Kanaku Consultation Session\\nAdvisor: ${bkg.advisorName}\\nTopic: ${bkg.topic}\\nFormat: ${bkg.sessionType}`,
+        'LOCATION:Kanaku Encrypted Video Meeting',
+        'STATUS:CONFIRMED',
+        'END:VEVENT',
+        'END:VCALENDAR',
+      ].join('\r\n');
+
+      const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `consultation-${bkg.advisorName.toLowerCase().replace(/[^a-z0-9]/g, '-')}.ics`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success('Calendar invitation (.ics) downloaded');
+    } catch {
+      toast.error('Could not download calendar file');
+    }
+  };
+
   // ── Data loading ───────────────────────────────────────────────────────────
   const loadAdvisorsAndBookings = useCallback(async () => {
     setIsLoading(true);
@@ -631,12 +684,13 @@ export const BookAdvisor: React.FC = () => {
 
 
   const handleCancelBooking = async (bookingId: string) => {
+    if (!confirm('Are you sure you want to cancel this booking request?')) return;
     try {
       await backendService.api.put(`/bookings/${bookingId}/cancel`, {});
       toast.success('Booking cancelled');
       await loadAdvisorsAndBookings();
     } catch (error: any) {
-      toast.error(error?.message || 'Could not cancel the booking');
+      toast.error(error?.response?.data?.error || error?.message || 'Could not cancel the booking');
     }
   };
 
@@ -1419,29 +1473,57 @@ export const BookAdvisor: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-6 text-xs font-bold text-slate-600 shrink-0">
+                  <div className="flex items-center flex-wrap gap-3 text-xs font-bold text-slate-600 shrink-0">
                     <span className="flex items-center gap-1.5"><Calendar size={14} className="text-indigo-600" /> {bkg.proposedDate}</span>
                     <span className="flex items-center gap-1.5"><Clock size={14} className="text-indigo-600" /> {bkg.proposedTime}</span>
-                    {bkg.status === 'accepted' && (
+                    
+                    {/* Add to Calendar (.ics) */}
+                    {(bkg.status === 'accepted' || bkg.status === 'pending') && (
                       <button
-                        onClick={() => toast.success('Joining encrypted Google Meet / Video call...')}
-                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-black text-xs uppercase tracking-wider shadow-sm cursor-pointer"
+                        type="button"
+                        onClick={() => handleDownloadIcs(bkg)}
+                        title="Download calendar event file (.ics)"
+                        className="p-2 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 border border-slate-200 rounded-xl transition-colors cursor-pointer flex items-center gap-1"
                       >
-                        Join Call
+                        <Download size={13} />
+                        <span className="text-[10px]">.ics</span>
                       </button>
                     )}
+
+                    {bkg.status === 'accepted' && (
+                      <button
+                        type="button"
+                        onClick={() => handleJoinCall(bkg)}
+                        className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-black text-xs uppercase tracking-wider shadow-xs cursor-pointer flex items-center gap-1.5"
+                      >
+                        <Video size={13} /> Join Call
+                      </button>
+                    )}
+
                     {(bkg.status === 'completed' || bkg.payment?.status === 'pending') && bkg.payment?.status !== 'completed' && (
                       <button
+                        type="button"
                         onClick={() => void openPaymentModal(bkg)}
-                        className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-black text-xs uppercase tracking-wider shadow-sm cursor-pointer flex items-center gap-1.5"
+                        className="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-black text-xs uppercase tracking-wider shadow-xs cursor-pointer flex items-center gap-1.5"
                       >
                         <CreditCard size={13} /> Pay Fee (₹{bkg.payment?.amount || bkg.amount})
                       </button>
                     )}
+
                     {bkg.payment?.status === 'completed' && (
                       <span className="px-3 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200/80 rounded-xl text-xs font-black uppercase flex items-center gap-1">
                         <CheckCircle2 size={13} /> Paid ₹{bkg.payment.amount}
                       </span>
+                    )}
+
+                    {['pending', 'reschedule', 'accepted'].includes(bkg.status) && (
+                      <button
+                        type="button"
+                        onClick={() => void handleCancelBooking(bkg.id)}
+                        className="px-2.5 py-1.5 text-xs font-semibold text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-xl transition-colors border border-rose-200 cursor-pointer"
+                      >
+                        Cancel
+                      </button>
                     )}
                   </div>
                 </div>

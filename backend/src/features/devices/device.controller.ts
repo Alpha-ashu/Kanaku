@@ -1,13 +1,9 @@
-import { Request, Response, NextFunction } from 'express';
-import type { ParamsFlatDictionary } from 'express-serve-static-core';
+import { Response, NextFunction } from 'express';
+import { AuthRequest, getUserId } from '../../middleware/auth';
 import { DeviceService } from './device.service';
+import { prisma } from '../../db/prisma';
+import { sendPushNotification } from '../../config/firebase';
 import { z } from 'zod';
-
-// See middleware/auth.ts's AuthRequest for why this override exists: Express 5
-// widened route params to `string | string[]` for array-capturing patterns
-// this app's routes never use. This file doesn't route through AuthRequest, so
-// it needs the same fix locally.
-type DeviceRequest = Request<ParamsFlatDictionary>;
 
 // Validation schemas
 const registerDeviceSchema = z.object({
@@ -27,20 +23,12 @@ const updateTokensSchema = z.object({
   apnsToken: z.string().optional(),
 });
 
-const getUserIdFromReq = (req: DeviceRequest): string | undefined => {
-  return (req as any).userId || (req as any).user?.id;
-};
-
 /**
  * Register or update a device
  */
-export const registerDevice = async (req: DeviceRequest, res: Response, next: NextFunction) => {
+export const registerDevice = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const userId = getUserIdFromReq(req);
-    if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-
+    const userId = getUserId(req);
     const validatedData = registerDeviceSchema.parse(req.body);
 
     const device = await DeviceService.registerDevice(userId, validatedData as any);
@@ -58,13 +46,9 @@ export const registerDevice = async (req: DeviceRequest, res: Response, next: Ne
 /**
  * Get all devices for current user
  */
-export const getDevices = async (req: DeviceRequest, res: Response, next: NextFunction) => {
+export const getDevices = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const userId = getUserIdFromReq(req);
-    if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-
+    const userId = getUserId(req);
     const devices = await DeviceService.getUserDevices(userId);
 
     res.status(200).json({
@@ -80,14 +64,10 @@ export const getDevices = async (req: DeviceRequest, res: Response, next: NextFu
 /**
  * Get specific device
  */
-export const getDevice = async (req: DeviceRequest, res: Response, next: NextFunction) => {
+export const getDevice = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const userId = getUserIdFromReq(req);
+    const userId = getUserId(req);
     const { deviceId } = req.params;
-
-    if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
 
     const device = await DeviceService.getDevice(userId, deviceId);
 
@@ -103,14 +83,10 @@ export const getDevice = async (req: DeviceRequest, res: Response, next: NextFun
 /**
  * Update device sync timestamp
  */
-export const updateSync = async (req: DeviceRequest, res: Response, next: NextFunction) => {
+export const updateSync = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const userId = getUserIdFromReq(req);
+    const userId = getUserId(req);
     const { deviceId } = req.params;
-
-    if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
 
     const device = await DeviceService.updateDeviceSync(userId, deviceId);
 
@@ -127,14 +103,10 @@ export const updateSync = async (req: DeviceRequest, res: Response, next: NextFu
 /**
  * Update notification tokens
  */
-export const updateNotificationTokens = async (req: DeviceRequest, res: Response, next: NextFunction) => {
+export const updateNotificationTokens = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const userId = getUserIdFromReq(req);
+    const userId = getUserId(req);
     const { deviceId } = req.params;
-
-    if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
 
     const validatedData = updateTokensSchema.parse(req.body);
 
@@ -153,14 +125,10 @@ export const updateNotificationTokens = async (req: DeviceRequest, res: Response
 /**
  * Deactivate a device
  */
-export const deactivateDevice = async (req: DeviceRequest, res: Response, next: NextFunction) => {
+export const deactivateDevice = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const userId = getUserIdFromReq(req);
+    const userId = getUserId(req);
     const { deviceId } = req.params;
-
-    if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
 
     const device = await DeviceService.deactivateDevice(userId, deviceId);
 
@@ -177,20 +145,100 @@ export const deactivateDevice = async (req: DeviceRequest, res: Response, next: 
 /**
  * Delete a device
  */
-export const deleteDevice = async (req: DeviceRequest, res: Response, next: NextFunction) => {
+export const deleteDevice = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const userId = getUserIdFromReq(req);
+    const userId = getUserId(req);
     const { deviceId } = req.params;
-
-    if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
 
     await DeviceService.deleteDevice(userId, deviceId);
 
     res.status(200).json({
       success: true,
       message: 'Device deleted successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Send test push notification to a device
+ */
+export const testNotification = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const userId = getUserId(req);
+    const { deviceId } = req.params;
+
+    const device = await prisma.device.findFirst({
+      where: {
+        userId,
+        deviceId,
+        isActive: true,
+      },
+    });
+
+    if (!device) {
+      return res.status(404).json({ error: 'Active device not found' });
+    }
+
+    const title = 'Kanaku Test Notification';
+    const message = `Push notification delivered successfully to ${device.deviceName || 'your device'}.`;
+
+    // Create durable notification record in the database
+    const notification = await prisma.notification.create({
+      data: {
+        userId,
+        title,
+        message,
+        type: 'info',
+        category: 'device_test',
+        deepLink: '/settings',
+        priority: 'high',
+        channels: JSON.stringify(['push', 'app']),
+        deliveryStatus: JSON.stringify({
+          app: 'sent',
+          push: device.fcmToken || device.apnsToken ? 'sent' : 'queued',
+        }),
+        status: 'sent',
+        sentAt: new Date(),
+      },
+    });
+
+    // Directly dispatch push notification if token exists
+    const token = device.fcmToken || device.apnsToken;
+    let pushResult: any = null;
+    if (token) {
+      try {
+        pushResult = await sendPushNotification(token, {
+          title,
+          body: message,
+          data: {
+            notificationId: notification.id,
+            category: 'device_test',
+            deepLink: '/settings',
+            priority: 'high',
+          },
+        });
+      } catch (err: any) {
+        console.warn('[DeviceController] Test push notification warning:', err.message);
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      message: token
+        ? 'Push notification sent to device'
+        : 'Test notification created (device has no push token attached)',
+      data: {
+        notificationId: notification.id,
+        device: {
+          id: device.id,
+          deviceId: device.deviceId,
+          deviceName: device.deviceName,
+          hasToken: Boolean(token),
+        },
+        pushResult,
+      },
     });
   } catch (error) {
     next(error);

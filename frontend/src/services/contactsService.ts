@@ -112,3 +112,84 @@ export function parseVCardContent(vcfText: string): DeviceContact[] {
 
   return contacts;
 }
+
+/**
+ * Parse CSV contacts export (Google Contacts, Outlook, iOS, or standard Name,Email,Phone).
+ */
+export function parseCsvContacts(csvText: string): DeviceContact[] {
+  const lines = csvText.split(/\r\n|\r|\n/).filter(line => line.trim().length > 0);
+  if (lines.length === 0) return [];
+
+  const splitRow = (line: string): string[] => {
+    const cells: string[] = [];
+    let current = '';
+    let inQuotes = false;
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      if (char === '"') {
+        if (inQuotes && line[i + 1] === '"') {
+          current += '"';
+          i++;
+        } else {
+          inQuotes = !inQuotes;
+        }
+      } else if (char === ',' && !inQuotes) {
+        cells.push(current.trim());
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+    cells.push(current.trim());
+    return cells;
+  };
+
+  const headerRow = splitRow(lines[0]);
+  const headerLower = headerRow.map(h => h.toLowerCase());
+
+  // Find column indices
+  let nameIdx = headerLower.findIndex(h => h === 'name' || h === 'full name' || h.includes('display name'));
+  let givenNameIdx = headerLower.findIndex(h => h.includes('given name') || h.includes('first name'));
+  let familyNameIdx = headerLower.findIndex(h => h.includes('family name') || h.includes('last name'));
+  let emailIdx = headerLower.findIndex(h => h.includes('email') || h.includes('e-mail'));
+  let phoneIdx = headerLower.findIndex(h => h.includes('phone') || h.includes('mobile') || h.includes('tel'));
+
+  const hasHeader = nameIdx !== -1 || givenNameIdx !== -1 || emailIdx !== -1 || phoneIdx !== -1;
+  const dataLines = hasHeader ? lines.slice(1) : lines;
+
+  if (!hasHeader) {
+    nameIdx = 0;
+    emailIdx = 1;
+    phoneIdx = 2;
+  }
+
+  const contacts: DeviceContact[] = [];
+
+  for (const line of dataLines) {
+    const cells = splitRow(line);
+    let name = '';
+    if (nameIdx >= 0 && cells[nameIdx]) {
+      name = cells[nameIdx];
+    } else if (givenNameIdx >= 0 || familyNameIdx >= 0) {
+      const first = givenNameIdx >= 0 ? cells[givenNameIdx] || '' : '';
+      const last = familyNameIdx >= 0 ? cells[familyNameIdx] || '' : '';
+      name = `${first} ${last}`.trim();
+    }
+
+    name = name.trim();
+    const email = emailIdx >= 0 && cells[emailIdx] ? cells[emailIdx].trim().toLowerCase() : undefined;
+    const rawPhone = phoneIdx >= 0 && cells[phoneIdx] ? cells[phoneIdx].trim() : undefined;
+    const phone = rawPhone ? rawPhone.replace(/[\s\-()]/g, '') : undefined;
+
+    if (name || email || phone) {
+      contacts.push({
+        name: name || email || phone || 'Unnamed Contact',
+        email: email || undefined,
+        phone: phone || undefined,
+      });
+    }
+  }
+
+  return contacts;
+}
+

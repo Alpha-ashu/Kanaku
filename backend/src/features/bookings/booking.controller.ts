@@ -2,6 +2,7 @@ import { Response } from 'express';
 import { AuthRequest, getUserId } from '../../middleware/auth';
 import { prisma } from '../../db/prisma';
 import { isDatabaseUnavailableError } from '../../utils/databaseAvailability';
+import { dispatchNotification } from '../notifications/notification.dispatcher';
 
 // Create a new booking request
 export const createBooking = async (req: AuthRequest, res: Response) => {
@@ -82,21 +83,18 @@ export const createBooking = async (req: AuthRequest, res: Response) => {
       },
     });
 
-    // Create notification for advisor. The message must name the CLIENT who
-    // booked (req.user), not the advisor themselves — the advisor is the
-    // recipient. (Previously used advisor.name, so advisors saw their own name.)
+    // Create multi-channel notification for advisor (app, email, push).
     const clientName = req.user?.name || 'A client';
-    await prisma.notification.create({
-      data: {
-        userId: advisorId,
-        title: 'New Booking Request',
-        message: `${clientName} has requested a ${sessionType} session`,
-        category: 'booking',
-        // '/bookings' is not a registered frontend route (see App.tsx's page
-        // switch) — falls through to the Dashboard default case. Recipient is
-        // the ADVISOR; requests live under advisor-panel (advisor-only).
-        deepLink: '/advisor-panel',
-      },
+    await dispatchNotification({
+      userId: advisorId,
+      sourceUserId: clientId,
+      title: 'New Booking Request',
+      message: `${clientName} requested a ${sessionType} consultation on ${proposedDate} at ${proposedTime}`,
+      type: 'booking_request',
+      category: 'booking',
+      deepLink: '/advisor-panel',
+      priority: 'high',
+      channels: ['app', 'email', 'push'],
     });
 
     res.status(201).json(booking);
@@ -253,18 +251,17 @@ export const acceptBooking = async (req: AuthRequest, res: Response) => {
       },
     });
 
-    // Notify client
-    await prisma.notification.create({
-      data: {
-        userId: booking.clientId,
-        title: 'Booking Accepted',
-        message: 'Your advisor has accepted your booking request',
-        category: 'booking',
-        // '/sessions/:id' is not a registered frontend route — falls through
-        // to the Dashboard default case. Recipient is the CLIENT; bookings
-        // live under book-advisor's "My Bookings" tab.
-        deepLink: '/book-advisor',
-      },
+    // Notify client via multi-channel delivery (app, email, push)
+    await dispatchNotification({
+      userId: booking.clientId,
+      sourceUserId: advisorId,
+      title: 'Booking Accepted',
+      message: `Your advisor has accepted your ${booking.sessionType} consultation on ${booking.proposedDate}`,
+      type: 'booking_accepted',
+      category: 'booking',
+      deepLink: '/book-advisor',
+      priority: 'high',
+      channels: ['app', 'email', 'push'],
     });
 
     res.json({ booking: updated, session });
@@ -296,14 +293,17 @@ export const rejectBooking = async (req: AuthRequest, res: Response) => {
       },
     });
 
-    // Notify client
-    await prisma.notification.create({
-      data: {
-        userId: booking.clientId,
-        title: 'Booking Rejected',
-        message: `Your advisor rejected your booking request${reason ? `: ${reason}` : ''}`,
-        category: 'booking',
-      },
+    // Notify client via multi-channel delivery (app, email, push)
+    await dispatchNotification({
+      userId: booking.clientId,
+      sourceUserId: advisorId,
+      title: 'Booking Declined',
+      message: `Your advisor declined your booking request${reason ? `: ${reason}` : ''}`,
+      type: 'booking_rejected',
+      category: 'booking',
+      deepLink: '/book-advisor',
+      priority: 'normal',
+      channels: ['app', 'email', 'push'],
     });
 
     res.json(updated);
@@ -345,16 +345,17 @@ export const rescheduleBooking = async (req: AuthRequest, res: Response) => {
       },
     });
 
-    // '/bookings/:id' is not a registered frontend route — recipient is the
-    // CLIENT; bookings live under book-advisor's "My Bookings" tab.
-    await prisma.notification.create({
-      data: {
-        userId: booking.clientId,
-        title: 'Booking Reschedule Requested',
-        message: `Your advisor proposed a new time: ${proposedDate} ${proposedTime}${reason ? ` (${reason})` : ''}`,
-        category: 'booking',
-        deepLink: '/book-advisor',
-      },
+    // Notify client via multi-channel delivery (app, email, push)
+    await dispatchNotification({
+      userId: booking.clientId,
+      sourceUserId: advisorId,
+      title: 'Booking Reschedule Requested',
+      message: `Your advisor proposed a new time: ${proposedDate} ${proposedTime}${reason ? ` (${reason})` : ''}`,
+      type: 'booking_rescheduled',
+      category: 'booking',
+      deepLink: '/book-advisor',
+      priority: 'high',
+      channels: ['app', 'email', 'push'],
     });
 
     res.json(updated);
@@ -386,14 +387,17 @@ export const cancelBooking = async (req: AuthRequest, res: Response) => {
       data: { status: 'cancelled' },
     });
 
-    // Notify advisor
-    await prisma.notification.create({
-      data: {
-        userId: booking.advisorId,
-        title: 'Booking Cancelled',
-        message: 'A client has cancelled their booking request',
-        category: 'booking',
-      },
+    // Notify advisor via multi-channel delivery (app, email, push)
+    await dispatchNotification({
+      userId: booking.advisorId,
+      sourceUserId: clientId,
+      title: 'Booking Cancelled',
+      message: 'A client has cancelled their booking request.',
+      type: 'booking_cancelled',
+      category: 'booking',
+      deepLink: '/advisor-panel',
+      priority: 'normal',
+      channels: ['app', 'email', 'push'],
     });
 
     res.json(updated);
