@@ -495,6 +495,11 @@ class BackendService {
     return response.data;
   }
 
+  async patch<T = any>(url: string, data?: any, config?: any): Promise<T> {
+    const response = await this.api.patch<T>(url, data, config);
+    return response.data;
+  }
+
   // Auth Methods
   setToken(token: string) {
     this.token = token;

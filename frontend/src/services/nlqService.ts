@@ -72,46 +72,61 @@ export const NLQService = {
     const q = query.toLowerCase();
     const now = new Date();
 
-    // 1. "How much did I spend on [Category]?"
+    // 1. "How much did I spend on [Category]?" or "How much did I spend this month?"
     if (q.includes('spend') || q.includes('spent') || q.includes('cost')) {
+      let periodStart = startOfMonth(now);
+      let periodName = "this month";
+
+      if (q.includes('week')) {
+        periodStart = startOfWeek(now);
+        periodName = "this week";
+      } else if (q.includes('today')) {
+        periodStart = subDays(now, 1);
+        periodName = "today";
+      }
+
       const categories = ['food', 'travel', 'rent', 'shopping', 'bills', 'fuel', 'health', 'entertainment', 'groceries', 'transport'];
       const matchedCategory = categories.find(cat => q.includes(cat));
 
+      let transactions;
       if (matchedCategory) {
-        let periodStart = startOfMonth(now);
-        let periodName = "this month";
-
-        if (q.includes('week')) {
-          periodStart = startOfWeek(now);
-          periodName = "this week";
-        } else if (q.includes('today')) {
-          periodStart = subDays(now, 1);
-          periodName = "today";
-        }
-
-        const transactions = await db.transactions
+        transactions = await db.transactions
           .where('category')
           .equals(matchedCategory.charAt(0).toUpperCase() + matchedCategory.slice(1))
-          .and(t => t.type === 'expense' && t.date >= periodStart)
+          .and(t => t.type === 'expense' && t.date >= periodStart && !t.deletedAt)
           .toArray();
-
-        const total = transactions.reduce((sum, t) => sum + Number(t.amount || 0), 0);
-
-        return {
-          answer: `You've spent a total of ₹${total.toLocaleString('en-IN')} on ${matchedCategory} ${periodName}.`,
-          data: { total, count: transactions.length },
-          source: 'local',
-        };
+      } else {
+        transactions = await db.transactions
+          .filter(t => t.type === 'expense' && t.date >= periodStart && !t.deletedAt)
+          .toArray();
       }
+
+      const total = transactions.reduce((sum, t) => sum + Number(t.amount || 0), 0);
+
+      return {
+        answer: matchedCategory
+          ? `You've spent a total of ₹${total.toLocaleString('en-IN')} on ${matchedCategory} ${periodName} (${transactions.length} transaction${transactions.length !== 1 ? 's' : ''}).`
+          : `You've spent a total of ₹${total.toLocaleString('en-IN')} ${periodName} across all categories (${transactions.length} transaction${transactions.length !== 1 ? 's' : ''}).`,
+        data: { total, count: transactions.length },
+        transactions: transactions.slice(0, 5).map(t => ({
+          id: String(t.id || Math.random()),
+          date: new Date(t.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }),
+          description: t.description || t.category,
+          amount: Number(t.amount || 0),
+          category: t.category,
+          type: t.type,
+        })),
+        source: 'local',
+      };
     }
 
     // 2. "What's my balance?"
     if (q.includes('balance') || q.includes('total money')) {
-      const accounts = await db.accounts.toArray();
+      const accounts = await db.accounts.filter(a => !a.deletedAt).toArray();
       const totalBalance = accounts.reduce((sum, acc) => sum + Number(acc.balance || 0), 0);
 
       return {
-        answer: `Your total balance across all ${accounts.length} accounts is ₹${totalBalance.toLocaleString('en-IN')}.`,
+        answer: `Your total balance across all ${accounts.length} active account${accounts.length !== 1 ? 's' : ''} is ₹${totalBalance.toLocaleString('en-IN')}.`,
         data: { totalBalance },
         source: 'local',
       };
@@ -123,13 +138,23 @@ export const NLQService = {
       const transactions = await db.transactions
         .orderBy('date')
         .reverse()
+        .filter(t => !t.deletedAt)
         .limit(count)
         .toArray();
 
-      const list = transactions.map(t => `- ${t.description}: ₹${Number(t.amount || 0)}`).join('\n');
       return {
-        answer: `Here are your last ${transactions.length} transactions:\n${list}`,
+        answer: transactions.length > 0
+          ? `Here are your last ${transactions.length} transactions:`
+          : `No recent transactions found.`,
         data: transactions,
+        transactions: transactions.map(t => ({
+          id: String(t.id || Math.random()),
+          date: new Date(t.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }),
+          description: t.description || t.category,
+          amount: Number(t.amount || 0),
+          category: t.category,
+          type: t.type,
+        })),
         source: 'local',
       };
     }
@@ -177,10 +202,23 @@ export const NLQService = {
 
     // 6. Loans / debts
     if (q.includes('owe') || q.includes('debt') || q.includes('loan')) {
-      const loans = await db.loans.where('status').equals('active').toArray();
+      const loans = await db.loans.where('status').equals('active').and(l => !l.deletedAt).toArray();
 
-      const lentTotal = loans.filter(l => l.type === 'lent').reduce((sum, l) => sum + Number(l.outstandingBalance || 0), 0);
-      const borrowedTotal = loans.filter(l => l.type === 'borrowed').reduce((sum, l) => sum + Number(l.outstandingBalance || 0), 0);
+      const lentLoans = loans.filter(l => l.type === 'lent');
+      const borrowedLoans = loans.filter(l => l.type === 'borrowed');
+      const lentTotal = lentLoans.reduce((sum, l) => sum + Number(l.outstandingBalance || 0), 0);
+      const borrowedTotal = borrowedLoans.reduce((sum, l) => sum + Number(l.outstandingBalance || 0), 0);
+
+      if (q.includes('who owes') || q.includes('owes me')) {
+        const debtors = lentLoans.map(l => `${l.contactPerson || l.name}: ₹${Number(l.outstandingBalance || 0).toLocaleString('en-IN')}`).join(', ');
+        return {
+          answer: lentLoans.length > 0
+            ? `People owe you a total of ₹${lentTotal.toLocaleString('en-IN')}:\n${debtors}`
+            : `Nobody currently owes you money.`,
+          data: { lentTotal, loans: lentLoans },
+          source: 'local',
+        };
+      }
 
       return {
         answer: `People owe you ₹${lentTotal.toLocaleString('en-IN')}, and you owe ₹${borrowedTotal.toLocaleString('en-IN')} to others.`,

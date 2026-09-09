@@ -231,10 +231,26 @@ function useVoiceEngine() {
         dispatch({ type: 'SET_PARSER', payload: res.parser });
         dispatch({ type: 'SHOW_COMMAND_CENTER', payload: true });
       } else {
-        dispatch({
-          type: 'SET_ERROR',
-          payload: { msg: 'No financial action detected. Try: "Paid 500 for lunch"' },
-        });
+        const isQuery = /^(how|what|show|who|list|tell|did i|can you|is there|my balance|summary)/i.test(text.trim()) ||
+          /\b(balance|spent|spending|owe|owes|dues|expenses|transactions|total)\b/i.test(text);
+
+        if (isQuery) {
+          const queryAction: FinancialAction = {
+            type: 'query',
+            rawSegment: text,
+            confidence: 0.9,
+            requiresReview: false,
+            entities: {},
+          };
+          dispatch({ type: 'SET_ACTIONS', payload: [queryAction] });
+          dispatch({ type: 'SET_PARSER', payload: res.parser || 'gemini' });
+          dispatch({ type: 'SHOW_COMMAND_CENTER', payload: true });
+        } else {
+          dispatch({
+            type: 'SET_ERROR',
+            payload: { msg: 'No financial action detected. Try: "Paid 500 for lunch" or "How much did I spend this month?"' },
+          });
+        }
       }
     } catch (err: any) {
       console.error('[VoiceInput] Failed to process voice transcript:', err);
@@ -671,6 +687,7 @@ export function VoiceInput() {
             actions={state.actions}
             parser={state.parser}
             userId={user?.id}
+            initialTab={state.actions.some(a => a.type === 'query') ? 'chat' : 'actions'}
             onClose={() => {
               resetEngine();
             }}

@@ -49,6 +49,7 @@ interface ConversationalAIProps {
   /** Optional external conversation ID for multi-turn context */
   conversationId?: string;
   className?: string;
+  initialQuery?: string;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -86,16 +87,16 @@ function TypingDots() {
 function TransactionCard({ tx }: { tx: NonNullable<QueryResult["transactions"]>[number] }) {
   const isExpense = tx.type === "expense";
   return (
-    <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-xs">
-      <div className="flex items-center gap-2 min-w-0">
-        <span className={`shrink-0 p-1 rounded-full ${isExpense ? "bg-red-500/20 text-red-400" : "bg-emerald-500/20 text-emerald-400"}`}>
-          {isExpense ? <TrendingDown size={10} /> : <TrendingUp size={10} />}
+    <div className="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-white border border-slate-200/80 shadow-xs text-xs">
+      <div className="flex items-center gap-2.5 min-w-0">
+        <span className={`shrink-0 p-1.5 rounded-full ${isExpense ? "bg-rose-100 text-rose-600" : "bg-emerald-100 text-emerald-600"}`}>
+          {isExpense ? <TrendingDown size={11} /> : <TrendingUp size={11} />}
         </span>
-        <span className="truncate text-white/80">{tx.description || tx.category}</span>
+        <span className="truncate text-slate-800 font-semibold">{tx.description || tx.category}</span>
       </div>
       <div className="flex items-center gap-2 shrink-0 ml-2">
-        <span className="text-white/50">{tx.date}</span>
-        <span className={`font-semibold ${isExpense ? "text-red-400" : "text-emerald-400"}`}>
+        <span className="text-slate-400 font-medium text-[11px]">{tx.date}</span>
+        <span className={`font-bold ${isExpense ? "text-rose-600" : "text-emerald-600"}`}>
           {isExpense ? "−" : "+"}₹{INR_FORMAT.format(tx.amount)}
         </span>
       </div>
@@ -106,13 +107,13 @@ function TransactionCard({ tx }: { tx: NonNullable<QueryResult["transactions"]>[
 function SourceBadge({ source }: { source?: "backend" | "local" }) {
   if (!source) return null;
   return (
-    <span className={`inline-flex items-center gap-1 text-[9px] px-1.5 py-0.5 rounded-full ${
+    <span className={`inline-flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-full border ${
       source === "backend"
-        ? "bg-violet-500/20 text-violet-300"
-        : "bg-amber-500/20 text-amber-300"
+        ? "bg-violet-50 text-violet-700 border-violet-200"
+        : "bg-amber-50 text-amber-700 border-amber-200"
     }`}>
       {source === "backend" ? <Wifi size={8} /> : <WifiOff size={8} />}
-      {source === "backend" ? "Live" : "Offline"}
+      {source === "backend" ? "AI Live" : "Offline"}
     </span>
   );
 }
@@ -123,12 +124,13 @@ const ConversationalAI: React.FC<ConversationalAIProps> = ({
   onActionDetected,
   conversationId: externalConvId,
   className = "",
+  initialQuery,
 }) => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: uid(),
       role: "assistant",
-      content: "Hi! I'm your Kanaku AI assistant. Ask me anything about your finances, or tell me about an expense to record it.",
+      content: "Hi! I'm your Kanaku AI assistant. Ask me anything about your finances, or speak an expense to log it.",
       timestamp: new Date(),
       source: "backend",
     },
@@ -141,6 +143,7 @@ const ConversationalAI: React.FC<ConversationalAIProps> = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const recognitionRef = useRef<any>(null);
+  const initialQueryExecutedRef = useRef(false);
 
   // Auto-scroll to latest message
   useEffect(() => {
@@ -213,6 +216,14 @@ const ConversationalAI: React.FC<ConversationalAIProps> = ({
     }
   }, [isLoading, conversationId, appendMessage, onActionDetected]);
 
+  // Execute initial query if provided (e.g. from voice speech)
+  useEffect(() => {
+    if (initialQuery && initialQuery.trim() && !initialQueryExecutedRef.current) {
+      initialQueryExecutedRef.current = true;
+      void sendMessage(initialQuery.trim());
+    }
+  }, [initialQuery, sendMessage]);
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -254,9 +265,9 @@ const ConversationalAI: React.FC<ConversationalAIProps> = ({
   }, [isRecording, sendMessage]);
 
   return (
-    <div className={`flex flex-col h-full ${className}`}>
+    <div className={`flex flex-col h-full bg-slate-50/50 ${className}`}>
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-3 py-2 space-y-3 min-h-0">
+      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3.5 min-h-0 custom-scrollbar">
         <AnimatePresence initial={false}>
           {messages.map(msg => (
             <motion.div
@@ -265,23 +276,23 @@ const ConversationalAI: React.FC<ConversationalAIProps> = ({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2 }}
-              className={`flex gap-2 ${msg.role === "user" ? "flex-row-reverse" : "flex-row"}`}
+              className={`flex gap-2.5 ${msg.role === "user" ? "flex-row-reverse" : "flex-row"}`}
             >
               {/* Avatar */}
-              <div className={`shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs ${
+              <div className={`shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs shadow-xs ${
                 msg.role === "user"
                   ? "bg-violet-600 text-white"
-                  : "bg-gradient-to-br from-indigo-500 to-violet-600 text-white"
+                  : "bg-gradient-to-br from-indigo-600 to-violet-600 text-white"
               }`}>
-                {msg.role === "user" ? <User size={12} /> : <Bot size={12} />}
+                {msg.role === "user" ? <User size={13} /> : <Bot size={13} />}
               </div>
 
               {/* Bubble */}
-              <div className={`max-w-[80%] ${msg.role === "user" ? "items-end" : "items-start"} flex flex-col gap-1`}>
-                <div className={`rounded-2xl px-3 py-2 text-sm leading-relaxed ${
+              <div className={`max-w-[85%] ${msg.role === "user" ? "items-end" : "items-start"} flex flex-col gap-1`}>
+                <div className={`rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-xs ${
                   msg.role === "user"
-                    ? "bg-violet-600 text-white rounded-tr-sm"
-                    : "bg-white/10 text-white/90 border border-white/10 rounded-tl-sm backdrop-blur-sm"
+                    ? "bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-tr-xs font-medium"
+                    : "bg-white text-slate-900 border border-slate-200/90 rounded-tl-xs"
                 }`}>
                   {msg.isTyping ? (
                     <TypingDots />
@@ -292,12 +303,12 @@ const ConversationalAI: React.FC<ConversationalAIProps> = ({
 
                 {/* Transaction cards */}
                 {!msg.isTyping && msg.transactions && msg.transactions.length > 0 && (
-                  <div className="w-full space-y-1 mt-1">
+                  <div className="w-full space-y-1.5 mt-1.5">
                     {msg.transactions.slice(0, 5).map(tx => (
                       <TransactionCard key={tx.id} tx={tx} />
                     ))}
                     {msg.transactions.length > 5 && (
-                      <p className="text-[10px] text-white/40 text-center">
+                      <p className="text-[11px] text-slate-400 text-center font-medium">
                         +{msg.transactions.length - 5} more transactions
                       </p>
                     )}
@@ -306,8 +317,8 @@ const ConversationalAI: React.FC<ConversationalAIProps> = ({
 
                 {/* Meta row */}
                 {!msg.isTyping && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-white/30">
+                  <div className="flex items-center gap-2 px-1">
+                    <span className="text-[10px] text-slate-400 font-medium">
                       {msg.timestamp.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
                     </span>
                     {msg.role === "assistant" && <SourceBadge source={msg.source} />}
@@ -322,14 +333,14 @@ const ConversationalAI: React.FC<ConversationalAIProps> = ({
 
       {/* Quick prompts (shown when only greeting present) */}
       {messages.length === 1 && (
-        <div className="px-3 pb-2 flex flex-wrap gap-1.5">
+        <div className="px-4 pb-2.5 flex flex-wrap gap-1.5">
           {QUICK_PROMPTS.map(p => (
             <button
               key={p}
               onClick={() => sendMessage(p)}
-              className="text-[11px] px-2.5 py-1 rounded-full bg-white/10 text-white/70 border border-white/15 hover:bg-violet-600/30 hover:text-white transition-colors flex items-center gap-1"
+              className="text-[11px] px-3 py-1.5 rounded-full bg-white text-slate-700 border border-slate-200/90 shadow-xs hover:border-violet-300 hover:bg-violet-50/60 hover:text-violet-700 transition-all flex items-center gap-1.5 font-medium active:scale-95"
             >
-              <Sparkles size={9} className="text-violet-400" />
+              <Sparkles size={11} className="text-violet-500" />
               {p}
             </button>
           ))}
@@ -337,38 +348,40 @@ const ConversationalAI: React.FC<ConversationalAIProps> = ({
       )}
 
       {/* Input row */}
-      <div className="shrink-0 px-3 pb-3 pt-1">
-        <div className="flex items-center gap-2 bg-white/10 border border-white/15 rounded-2xl px-3 py-2 backdrop-blur-sm focus-within:border-violet-500/60 transition-colors">
+      <div className="shrink-0 px-4 pb-4 pt-2 border-t border-slate-100 bg-white/70 backdrop-blur-sm">
+        <div className="flex items-center gap-2 bg-slate-50 border border-slate-200/90 rounded-2xl px-3.5 py-2.5 shadow-xs focus-within:border-violet-500 focus-within:bg-white focus-within:ring-2 focus-within:ring-violet-100 transition-all">
           <input
             ref={inputRef}
             type="text"
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Ask about finances or record expense…"
-            className="flex-1 bg-transparent text-sm text-white placeholder:text-white/30 outline-none min-w-0"
+            placeholder="Ask about finances or record an expense…"
+            className="flex-1 bg-transparent text-sm text-slate-900 placeholder:text-slate-400 outline-none min-w-0 font-normal"
             disabled={isLoading}
             maxLength={300}
           />
 
           <button
             onClick={toggleVoice}
-            className={`shrink-0 p-1.5 rounded-full transition-all ${
+            type="button"
+            className={`shrink-0 p-2 rounded-xl transition-all ${
               isRecording
-                ? "bg-red-500 text-white animate-pulse"
-                : "text-white/50 hover:text-white hover:bg-white/10"
+                ? "bg-red-500 text-white animate-pulse shadow-sm"
+                : "text-slate-400 hover:text-slate-700 hover:bg-slate-200/70"
             }`}
             title={isRecording ? "Stop recording" : "Voice input"}
           >
-            {isRecording ? <MicOff size={14} /> : <Mic size={14} />}
+            {isRecording ? <MicOff size={15} /> : <Mic size={15} />}
           </button>
 
           <button
             onClick={() => sendMessage(input)}
             disabled={!input.trim() || isLoading}
-            className="shrink-0 p-1.5 rounded-full bg-violet-600 text-white disabled:opacity-40 hover:bg-violet-500 transition-colors"
+            type="button"
+            className="shrink-0 p-2 rounded-xl bg-violet-600 text-white disabled:opacity-30 disabled:hover:bg-violet-600 hover:bg-violet-700 shadow-sm transition-all"
           >
-            {isLoading ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
+            {isLoading ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
           </button>
         </div>
       </div>
