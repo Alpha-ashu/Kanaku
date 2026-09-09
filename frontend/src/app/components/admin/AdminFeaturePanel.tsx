@@ -246,6 +246,17 @@ export const AdminFeaturePanel: React.FC = () => {
   const hasFetchedMatrixRef = useRef(false);
   const hasFetchedAIMatrixRef = useRef(false);
 
+  // Debounce refs for backend saves and cross-tab broadcasts to avoid spamming the network on rapid clicks
+  const debouncedSaveAIRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const debouncedSaveFeaturesRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (debouncedSaveAIRef.current) clearTimeout(debouncedSaveAIRef.current);
+      if (debouncedSaveFeaturesRef.current) clearTimeout(debouncedSaveFeaturesRef.current);
+    };
+  }, []);
+
   const applyFeatureVisibility = useCallback((featureList: FeatureControl[]) => {
     const newVisibility: Record<string, boolean> = {};
     featureList.forEach(feature => {
@@ -366,21 +377,25 @@ export const AdminFeaturePanel: React.FC = () => {
     aiUserInteractedRef.current = true;
     setAiFeatures(updated);
     localStorage.setItem(ADMIN_AI_FEATURE_SETTINGS_KEY, JSON.stringify(updated));
-
-    if (aiBroadcastChannel) {
-      aiBroadcastChannel.postMessage({
-        type: 'AI_FEATURE_UPDATE',
-        features: updated,
-        timestamp: new Date().toISOString()
-      });
-    }
-
-    void backendService.saveAIFeatureFlagsMatrix(updated).catch((err) => {
-      console.error('[AdminFeaturePanel] Failed to sync AI feature flags matrix to backend:', err);
-      toast.error('Failed to save AI feature settings');
-    });
-
     window.dispatchEvent(new CustomEvent('adminAIFeatureUpdate', { detail: { features: updated } }));
+
+    if (debouncedSaveAIRef.current) {
+      clearTimeout(debouncedSaveAIRef.current);
+    }
+    debouncedSaveAIRef.current = setTimeout(() => {
+      if (aiBroadcastChannel) {
+        aiBroadcastChannel.postMessage({
+          type: 'AI_FEATURE_UPDATE',
+          features: updated,
+          timestamp: new Date().toISOString()
+        });
+      }
+
+      void backendService.saveAIFeatureFlagsMatrix(updated).catch((err) => {
+        console.error('[AdminFeaturePanel] Failed to sync AI feature flags matrix to backend:', err);
+        toast.error('Failed to save AI feature settings');
+      });
+    }, 400);
   }, [aiBroadcastChannel]);
 
   // Sync listener
@@ -467,20 +482,24 @@ export const AdminFeaturePanel: React.FC = () => {
     }, {} as Record<string, { enabled: boolean; roleAccess: any; children: any; lastUpdated: string }>);
 
     localStorage.setItem(ADMIN_FEATURE_SETTINGS_KEY, JSON.stringify(settingsToSave));
-
-    if (broadcastChannel) {
-      broadcastChannel.postMessage({
-        type: 'FEATURE_UPDATE',
-        features: updatedFeatures,
-        timestamp: new Date().toISOString()
-      });
-    }
-
-    void backendService.saveFeatureFlagsMatrix(settingsToSave).catch((err) => {
-      console.error('Failed to sync global feature flags matrix to backend database:', err);
-    });
-
     window.dispatchEvent(new CustomEvent('adminFeatureUpdate', { detail: { features: updatedFeatures } }));
+
+    if (debouncedSaveFeaturesRef.current) {
+      clearTimeout(debouncedSaveFeaturesRef.current);
+    }
+    debouncedSaveFeaturesRef.current = setTimeout(() => {
+      if (broadcastChannel) {
+        broadcastChannel.postMessage({
+          type: 'FEATURE_UPDATE',
+          features: updatedFeatures,
+          timestamp: new Date().toISOString()
+        });
+      }
+
+      void backendService.saveFeatureFlagsMatrix(settingsToSave).catch((err) => {
+        console.error('Failed to sync global feature flags matrix to backend database:', err);
+      });
+    }, 400);
   };
 
   const handleToggleFeatureEnabled = (key: string, isEnabled: boolean) => {

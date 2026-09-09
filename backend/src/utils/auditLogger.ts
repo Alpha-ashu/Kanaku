@@ -54,6 +54,7 @@ export type AuditEventType =
   | 'ai.ocr_failure'
   | 'ai.prompt_injection'
   | 'ai.quota_exceeded'
+  | 'ai.chat_request'
   | 'ai.voice_request'
   | 'ai.voice_stt'
   | 'ai.voice_correction'

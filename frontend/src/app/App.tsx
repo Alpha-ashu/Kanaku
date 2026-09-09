@@ -763,7 +763,7 @@ const AppContent: React.FC = () => {
       return;
     }
 
-    const hasAdminBypass = isAdmin && (isSystemAdminPage || isManagerPage);
+    const hasAdminBypass = isAdmin;
     const hasManagerBypass = isManager && isManagerPage;
 
     // Gate AI/Voice assistant pages based on AI capability settings
@@ -1266,7 +1266,7 @@ const AppContent: React.FC = () => {
       return <Dashboard setCurrentPage={setCurrentPage} />;
     }
 
-    const hasAdminBypass = isAdmin && (isSystemAdminPage || isManagerPage);
+    const hasAdminBypass = isAdmin;
     const hasManagerBypass = isManager && isManagerPage;
 
     // Gate AI/Voice assistant pages based on AI capability settings

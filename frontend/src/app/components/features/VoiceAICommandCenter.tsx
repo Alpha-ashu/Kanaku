@@ -37,6 +37,7 @@ import { VoiceContextStore } from"@/services/voiceContextStore";
 import { saveTransactionWithBackendSync, queueRecordUpsertSync } from"@/lib/auth-sync-integration";
 import { parseDateInputValue } from"@/lib/dateUtils";
 import { applyAccountBalanceDeltas } from"@/lib/transactionAggregation";
+import ConversationalAI from"./ConversationalAI";
 
 // All supported expense/income categories for the edit dropdown
 const ALL_CATEGORIES = [
@@ -129,6 +130,8 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
   const [selectedAccountId, setSelectedAccountId] = useState<number>(() => accounts.find(a => !a.deletedAt)?.id || accounts[0]?.id || 0);
   const [realInsights, setRealInsights] = useState<SmartInsight[]>([]);
   const [queryAnswers, setQueryAnswers] = useState<Record<number, string>>({});
+  /** 'actions' = expense review tab; 'chat' = conversational AI Q&A tab */
+  const [activeTab, setActiveTab] = useState<'actions' | 'chat'>('actions');
 
   // Ensure selectedAccountId synchronizes when accounts load from Dexie/API
   useEffect(() => {
@@ -721,7 +724,7 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
  };
 
  return (
- <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 md:p-6 overflow-hidden">
+ <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 md:p-6 overflow-hidden" style={{ contain: 'strict' }}>
  <motion.div data-testid="voice-aicommand-center-div" 
  initial={{ opacity: 0 }}
  animate={{ opacity: 1 }}
@@ -801,7 +804,38 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
  </div>
  </div>
 
- {/* Action List */}
+  {/* Tab switcher */}
+  <div className="flex border-b border-gray-100 px-4 md:px-8 shrink-0">
+    <button
+      onClick={() => setActiveTab('actions')}
+      className={`flex items-center gap-1.5 px-3 py-2.5 text-xs font-semibold border-b-2 transition-colors ${
+        activeTab === 'actions'
+          ? 'border-indigo-600 text-indigo-700'
+          : 'border-transparent text-slate-400 hover:text-slate-600'
+      }`}
+    >
+      <Zap size={12} />
+      Actions ({actions.length})
+    </button>
+    <button
+      onClick={() => setActiveTab('chat')}
+      className={`flex items-center gap-1.5 px-3 py-2.5 text-xs font-semibold border-b-2 transition-colors ${
+        activeTab === 'chat'
+          ? 'border-violet-600 text-violet-700'
+          : 'border-transparent text-slate-400 hover:text-slate-600'
+      }`}
+    >
+      <Sparkles size={12} />
+      Ask AI
+    </button>
+  </div>
+
+  {/* Conditional body: Actions list OR Conversational AI */}
+  {activeTab === 'chat' ? (
+    <div className="flex-1 overflow-hidden">
+      <ConversationalAI className="h-full" />
+    </div>
+  ) : (
  <div className="flex-1 overflow-y-auto p-3 md:p-8 pt-3 md:pt-6 space-y-3 md:space-y-4 custom-scrollbar">
  <AnimatePresence mode="popLayout">
  {actions.map((action, index) => (
@@ -919,6 +953,7 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
  ))}
  </AnimatePresence>
  </div>
+ )} {/* end activeTab ternary */}
 
  {/* Footer */}
  <div className="p-4 md:p-8 pt-3 md:pt-4 bg-white rounded-b-[32px] md:rounded-b-[40px] border-t border-gray-100">

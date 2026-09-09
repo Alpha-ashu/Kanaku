@@ -1368,6 +1368,62 @@ class BackendService {
       return saveLocalNotification();
     }
   }
+
+  // ─── Conversational AI Chat ───────────────────────────────────────────────
+
+  /**
+   * Send a message to the conversational AI assistant.
+   * Handles intent classification (expense recording, financial queries) and
+   * returns a structured response with an optional action and/or transactions.
+   */
+  async sendAIChatMessage(
+    message: string,
+    conversationId?: string,
+  ): Promise<{
+    conversationId: string;
+    reply: string;
+    intent: string;
+    action?: {
+      type: string;
+      entities: {
+        amount?: number;
+        category?: string;
+        description?: string;
+        date?: string;
+        person?: string;
+        merchant?: string;
+        paymentMethod?: string;
+      };
+      confidence: number;
+      requiresConfirmation: boolean;
+    };
+    transactions?: Array<{
+      id: string;
+      date: string;
+      description: string;
+      amount: number;
+      category: string;
+      type: string;
+    }>;
+    requiresConfirmation: boolean;
+    parser: 'gemini' | 'groq' | 'offline';
+  }> {
+    const response = await this.api.post('/ai/chat', { message, conversationId });
+    return response.data;
+  }
+
+  /**
+   * Fetch the current user's top expense categories (for smart dropdown hints).
+   */
+  async getUserCategories(): Promise<string[]> {
+    try {
+      const response = await this.api.get('/ai/chat/categories');
+      return response.data?.categories ?? [];
+    } catch {
+      return [];
+    }
+  }
 }
 
 export const backendService = new BackendService();
+

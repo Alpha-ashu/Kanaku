@@ -43,7 +43,9 @@ export const transformFeaturesToRoleCentric = (features: any): Record<string, Re
     const isFeatureEnabled = fVal.enabled !== false;
     
     roles.forEach(role => {
-      const roleHasAccess = fVal.roleAccess ? fVal.roleAccess[role] === true : false;
+      const roleHasAccess = role === 'admin'
+        ? (fVal.roleAccess && typeof fVal.roleAccess['admin'] === 'boolean' ? fVal.roleAccess['admin'] : true)
+        : (fVal.roleAccess ? fVal.roleAccess[role] === true : false);
       roleCentric[role][fKey] = isFeatureEnabled && roleHasAccess;
       if (fVal.lastUpdated) {
         roleCentric[role][`${fKey}_lastUpdated`] = fVal.lastUpdated;
@@ -52,7 +54,9 @@ export const transformFeaturesToRoleCentric = (features: any): Record<string, Re
       if (fVal.children) {
         for (const [cKey, cVal] of Object.entries(fVal.children) as [string, any][]) {
           const isChildEnabled = cVal.enabled !== false;
-          const childRoleHasAccess = cVal.roleAccess ? cVal.roleAccess[role] === true : false;
+          const childRoleHasAccess = role === 'admin'
+            ? (cVal.roleAccess && typeof cVal.roleAccess['admin'] === 'boolean' ? cVal.roleAccess['admin'] : true)
+            : (cVal.roleAccess ? cVal.roleAccess[role] === true : false);
           roleCentric[role][`${fKey}_${cKey}`] = isFeatureEnabled && roleHasAccess && isChildEnabled && childRoleHasAccess;
         }
       }
@@ -154,7 +158,9 @@ export const transformAIFeaturesToRoleCentric = (aiFeatures: any): Record<string
     const isFeatureEnabled = fVal.enabled !== false;
     
     roles.forEach(role => {
-      const roleHasAccess = fVal.roleAccess ? fVal.roleAccess[role] === true : false;
+      const roleHasAccess = role === 'admin'
+        ? (fVal.roleAccess && typeof fVal.roleAccess['admin'] === 'boolean' ? fVal.roleAccess['admin'] : true)
+        : (fVal.roleAccess ? fVal.roleAccess[role] === true : false);
       roleCentric[role][fKey] = isFeatureEnabled && roleHasAccess;
       if (fVal.lastUpdated) {
         roleCentric[role][`${fKey}_lastUpdated`] = fVal.lastUpdated;
@@ -163,7 +169,9 @@ export const transformAIFeaturesToRoleCentric = (aiFeatures: any): Record<string
       if (fVal.capabilities) {
         for (const [cKey, cVal] of Object.entries(fVal.capabilities) as [string, any][]) {
           const isCapEnabled = cVal.enabled !== false;
-          const capRoleHasAccess = cVal.roleAccess ? cVal.roleAccess[role] === true : false;
+          const capRoleHasAccess = role === 'admin'
+            ? (cVal.roleAccess && typeof cVal.roleAccess['admin'] === 'boolean' ? cVal.roleAccess['admin'] : true)
+            : (cVal.roleAccess ? cVal.roleAccess[role] === true : false);
           roleCentric[role][`${fKey}_${cKey}`] = isFeatureEnabled && roleHasAccess && isCapEnabled && capRoleHasAccess;
         }
       }

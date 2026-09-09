@@ -3,6 +3,7 @@ import { authMiddleware, AuthRequest, getUserId } from '../../middleware/auth';
 import { validateBody } from '../../middleware/validate';
 import { captureAIEvent } from './ai.controller';
 import { aiEventBodySchema } from './ai.validation';
+import { handleChatMessage, handleGetCategories } from './chat.controller';
 import { getAIQuotaInfo } from '../../utils/aiUsageTracker';
 import { requireAIFeature } from '../../middleware/featureGate';
 import { authenticatedRateLimit } from '../../middleware/rateLimit';
@@ -21,6 +22,10 @@ const router = Router();
 
 router.use(authMiddleware);
 router.post('/events', validateBody(aiEventBodySchema), captureAIEvent);
+
+// Conversational AI chat endpoint (intent classification + financial query)
+router.post('/chat', handleChatMessage);
+router.get('/chat/categories', handleGetCategories);
 
 // Return the authenticated user's current AI usage quota
 router.get('/quota', async (req: AuthRequest, res: Response) => {

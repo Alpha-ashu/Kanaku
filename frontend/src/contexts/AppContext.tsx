@@ -5,7 +5,7 @@ import { db, Account, Transaction, Loan, Goal, Investment, GroupExpense, Friend 
 import { isBoilerplateDescription } from '@/services/smartExpenseImportService';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSecurity } from '@/contexts/SecurityContext';
-import { getVisibleFeaturesForRole, mergeVisibleFeatures, normalizeFeatures, FeatureVisibility, computeSubFeatureMap, AIModuleKey, computeAICapabilityMap } from '@/lib/featureFlags';
+import { getVisibleFeaturesForRole, mergeVisibleFeatures, normalizeFeatures, FeatureVisibility, FeatureKey, computeSubFeatureMap, AIModuleKey, computeAICapabilityMap } from '@/lib/featureFlags';
 import { type SyncStats, useSyncStats, offlineSyncEngine } from '@/lib/offline-sync-engine';
 import { deduplicateLocalData, saveAccountWithBackendSync, syncUserDataFromCloud, updateAccountWithBackendSync } from '@/lib/auth-sync-integration';
 import { computeDerivedBalances } from '@/lib/transactionAggregation';
@@ -695,17 +695,17 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   }, [currency, language, user?.id]);
 
-  // Debounce ref to prevent computeVisibleFeatures firing multiple times per tick
-  const computeScheduledRef = useRef(false);
+  // Debounce ref to prevent computeVisibleFeatures firing multiple times in rapid succession
+  const computeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastLocalAdminSaveTimeRef = useRef<number>(0);
 
   // Single source of truth: role defaults + admin overrides (admin can only restrict, not grant beyond role)
   const computeVisibleFeatures = useCallback(() => {
-    // Deduplicate: if already scheduled for this tick, skip
-    if (computeScheduledRef.current) return;
-    computeScheduledRef.current = true;
-    // Use queueMicrotask so all synchronous state batches settle first
-    queueMicrotask(() => {
-      computeScheduledRef.current = false;
+    if (computeTimerRef.current) {
+      clearTimeout(computeTimerRef.current);
+    }
+    computeTimerRef.current = setTimeout(() => {
+      computeTimerRef.current = null;
       const roleFeatures = getVisibleFeaturesForRole(role, import.meta.env.MODE);
       const adminSettings = localStorage.getItem('admin_global_feature_settings');
       const adminAISettings = localStorage.getItem('admin_ai_feature_settings');
@@ -746,11 +746,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                 // Only apply if it restricts — if role default is false, keep false
                 // If admin says false, override to false (restriction wins)
                 if (!value && merged[key] === true) {
-                  merged[key] = false; // Admin disabled this feature
+                  if (role !== 'admin') {
+                    merged[key] = false; // Admin disabled this feature for non-admin
+                  }
                 }
                 // If admin says true but role says false, keep role false (role is ceiling)
               } else if (value && typeof (value as any).enabled === 'boolean' && !(value as any).enabled) {
-                merged[key] = false; // Admin disabled this feature
+                if (role !== 'admin') {
+                  merged[key] = false; // Admin disabled this feature for non-admin
+                }
               }
             });
           }
@@ -767,20 +771,24 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
           if (typeof value === 'boolean') {
             // If admin explicitly set false and role allows it, respect the restriction
-            if (!value) merged[key] = false;
+            if (!value && role !== 'admin') merged[key] = false;
             return;
           }
 
           if (role === 'admin') {
             // Admin role: apply full RBAC logic
-            let isVisible = true;
+            let isVisible = roleFeatures[key as FeatureKey] ?? true;
             if (value?.readiness === 'deprecated') {
               isVisible = false;
-            } else if (value?.roleAccess && typeof value.roleAccess['admin'] === 'boolean') {
-              isVisible = value.roleAccess['admin'];
-            }
-            if (value && typeof value.enabled === 'boolean' && !value.enabled) {
+            } else if (value && typeof value.enabled === 'boolean' && !value.enabled) {
               isVisible = false; // globally disabled
+            } else if (value?.roleAccess && typeof value.roleAccess['admin'] === 'boolean') {
+              // Core user features (accounts, transactions, dashboard) should never be accidentally revoked from admin
+              if (['accounts', 'transactions', 'dashboard'].includes(key)) {
+                isVisible = value.enabled !== false;
+              } else {
+                isVisible = value.roleAccess['admin'];
+              }
             }
             merged[key] = isVisible;
           } else {
@@ -819,7 +827,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         setVisibleFeaturesState(roleFeatures);
         setSubFeatures(computeSubFeatureMap(role, null));
       }
-    });
+    }, 40);
   }, [role]);
 
   useEffect(() => {
@@ -987,6 +995,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     if (!user?.id) return;
 
     const unsubscribe = socketClient.on('feature_flags_updated', (payload: any) => {
+      // If this client just saved flags locally within 3.5s, skip redundant echo re-fetch
+      if (Date.now() - lastLocalAdminSaveTimeRef.current < 3500) {
+        return;
+      }
       const scope = payload?.type === 'ai' ? 'ai' : 'all';
       console.log(`[AppContext] feature_flags_updated (${scope}) — re-fetching feature flags`);
       void fetchGlobalFlags(scope, true);
@@ -1083,6 +1095,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     };
 
     const handleAdminFeatureUpdate = (e: Event) => {
+      lastLocalAdminSaveTimeRef.current = Date.now();
       console.log('[AppContext] Admin feature update detected, recomputing visible features');
       computeVisibleFeatures();
     };
