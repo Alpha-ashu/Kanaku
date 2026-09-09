@@ -168,7 +168,7 @@
     "motion-dom": "12.40.0",
     "motion-utils": "12.39.0",
     "brace-expansion": "^5.0.9",
-    "fast-uri": "^3.1.5",
+    "fast-uri": "^3.1.7",
     "fast-xml-parser": "^5.10.1",
     "react-router": "^7.18.2"
   },
