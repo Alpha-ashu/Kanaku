@@ -135,20 +135,18 @@ html {
 
 /* CSS Variables for Layout */
 :root {
-  /* Bottom navigation height (64px = h-16) */
-  --bottom-nav-height: 64px;
+  /* Bottom navigation height (60px) */
+  --bottom-nav-height: 60px;
 
-  /* BottomNav floats `bottom-2` (8px) above the real bottom edge.
-     The pill's visual bottom-edge is therefore 8px above the viewport bottom
-     plus whatever the home-indicator / gesture-pill safe area adds. We reserve
-     that full zone so page content is never hidden behind the nav. */
-  --bottom-nav-float-offset: 8px;
+  /* BottomNav float offset above the bottom safe edge */
+  --bottom-nav-float-offset: 16px;
 
-  /* Total space reserved at the bottom: nav height + float gap + safe area */
+  /* Total space reserved at the bottom: nav height + float gap + safe area + clearance */
   --bottom-reserved-space: calc(
     var(--bottom-nav-height)
     + var(--bottom-nav-float-offset)
-    + max(0px, env(safe-area-inset-bottom, 0px))
+    + max(8px, env(safe-area-inset-bottom, 0px))
+    + 16px
   );
 
   /* The floating pill header sits at:

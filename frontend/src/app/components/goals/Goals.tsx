@@ -162,34 +162,25 @@ export const Goals: React.FC = () => {
  const completedGoals = goals.filter((goal) => goal.currentAmount >= goal.targetAmount).length;
 
  return (
- <CenteredLayout>
- <div className="space-y-6 sm:space-y-8">
- 
-   <div className="flex items-center justify-between gap-4 w-full">
-     <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-       <button
-         type="button"
-         onClick={() => setCurrentPage('dashboard')}
-         className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200/80 hover:bg-slate-50 active:scale-95 shadow-xs flex items-center justify-center text-slate-700 transition-all shrink-0 cursor-pointer"
-         aria-label="Go to dashboard"
-         title="Go to dashboard"
-         data-testid="goals-go-back-button"
-       >
-         <ArrowLeft size={18} className="text-slate-700" />
-       </button>
-       <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none truncate">Goals & Savings</h1>
-     </div>
-     {canCreateGoal && (
-       <Button
-         onClick={() => setCurrentPage('add-goal')}
-         data-testid="goals-add-goal-button"
-         className="shadow-sm bg-[#18181B] hover:bg-black text-white h-9 sm:h-10 px-4 sm:px-5 rounded-full font-bold text-xs sm:text-sm flex items-center gap-1.5 shrink-0"
-       >
-         <Plus size={16} />
-         <span>Add Goal</span>
-       </Button>
-     )}
-   </div>
+  <CenteredLayout>
+  <div className="space-y-6 sm:space-y-8">
+  
+    <PageHeader
+      title="Goals & Savings"
+      backTestId="goals-go-back-button"
+    >
+      {canCreateGoal && (
+        <Button
+          onClick={() => setCurrentPage('add-goal')}
+          data-testid="goals-add-goal-button"
+          className="shadow-sm bg-[#18181B] hover:bg-black text-white h-9 sm:h-10 px-3.5 sm:px-5 rounded-full font-bold text-xs sm:text-sm flex items-center gap-1.5 shrink-0 cursor-pointer"
+        >
+          <Plus size={16} />
+          <span className="hidden sm:inline">Add Goal</span>
+          <span className="sm:hidden">Add</span>
+        </Button>
+      )}
+    </PageHeader>
 
   {/* Summary Stats */}
   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 items-stretch">
@@ -200,7 +191,7 @@ export const Goals: React.FC = () => {
   <Target className="sm:w-5 sm:h-5" size={18} />
   </div>
   <p className="text-slate-400 font-semibold mb-1 text-xs uppercase tracking-wider">Total Goals</p>
-  <h3 className="text-2xl sm:text-3xl font-display font-bold text-slate-900 dark:text-white tracking-tight">
+  <h3 className="font-amount-md font-bold text-slate-900 dark:text-white tracking-tight">
   {goals.length}
   </h3>
   </div>
@@ -214,7 +205,7 @@ export const Goals: React.FC = () => {
   <TrendingUp className="sm:w-5 sm:h-5" size={18} />
   </div>
   <p className="text-slate-400 font-semibold mb-1 text-xs uppercase tracking-wider">Total Saved</p>
-  <h3 className="text-2xl sm:text-3xl font-display font-bold text-slate-900 dark:text-white tracking-tight">
+  <h3 className="font-amount-md font-bold text-slate-900 dark:text-white tracking-tight">
   {formatCurrency(totalSavedAmount)}
   </h3>
   </div>
@@ -228,7 +219,7 @@ export const Goals: React.FC = () => {
   <Bell className="sm:w-5 sm:h-5" size={18} />
   </div>
   <p className="text-slate-400 font-semibold mb-1 text-xs uppercase tracking-wider">Remaining</p>
-  <h3 className="text-2xl sm:text-3xl font-display font-bold text-slate-900 dark:text-white tracking-tight">
+  <h3 className="font-amount-md font-bold text-slate-900 dark:text-white tracking-tight">
   {formatCurrency(totalRemainingAmount)}
   </h3>
   </div>

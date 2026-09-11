@@ -26,6 +26,7 @@ export type VoiceActionType =
   | 'goal'
   | 'investment'
   | 'group_expense'
+  | 'subscription'
   | 'unknown';
 
 /** Entities extracted from one spoken financial action. */
@@ -47,6 +48,8 @@ export interface VoiceActionEntities {
   members?: string[];
   /** group_expense split style; equal when unspecified */
   splitType?: 'equal' | 'custom';
+  /** subscription: how often it recurs */
+  recurrence?: 'monthly' | 'yearly' | 'weekly' | 'daily' | 'one-time';
 }
 
 /**

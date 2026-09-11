@@ -233,11 +233,12 @@ export const Investments: React.FC = () => {
   {canAdd && (
   <Button
   onClick={() => setCurrentPage('add-investment')}
-  className="shadow-xs bg-[#18181B] hover:bg-black text-white h-9 sm:h-10 px-4 sm:px-5 rounded-full font-bold text-xs sm:text-sm flex items-center gap-1.5 active:scale-95 transition-all cursor-pointer"
+  className="shadow-xs bg-[#18181B] hover:bg-black text-white h-9 sm:h-10 px-3.5 sm:px-5 rounded-full font-bold text-xs sm:text-sm flex items-center gap-1.5 active:scale-95 transition-all cursor-pointer shrink-0"
   data-testid="investments-add-button"
   >
   <Plus size={16} />
-  <span>Add Investment</span>
+  <span className="hidden sm:inline">Add Investment</span>
+  <span className="sm:hidden">Add</span>
   </Button>
   )}
   </PageHeader>

@@ -9,6 +9,21 @@ import { backendService } from '@/lib/backend-api';
 // with local-only action types and entities. Backend responses stay assignable.
 import type { VoiceActionType, VoiceActionEntities, VoiceFinancialAction } from '@kanaku/shared';
 
+/** Something the assistant sets up for the future; executed by aiTaskExecutor after the user confirms. */
+export interface AssistantTask {
+  type: 'create_goal' | 'create_budget' | 'add_todo' | 'create_recurring';
+  title: string;
+  amount?: number;
+  category?: string;
+  /** create_goal: target date; add_todo: due date; create_recurring: next due date (YYYY-MM-DD) */
+  date?: string;
+  period?: 'weekly' | 'monthly' | 'yearly';
+  interval?: 'weekly' | 'monthly' | 'yearly';
+  priority?: 'low' | 'medium' | 'high';
+  transactionType?: 'expense' | 'income' | 'transfer';
+  notes?: string;
+}
+
 export interface FinancialActionEntities extends VoiceActionEntities {
   members?: string[];
   answer?: string;
@@ -17,6 +32,7 @@ export interface FinancialActionEntities extends VoiceActionEntities {
   assetType?: string;
   recurrence?: 'monthly' | 'yearly' | 'weekly' | 'daily' | 'one-time';
   billUrl?: string;
+  task?: AssistantTask;
 }
 
 /** Backend action types plus client-only intents from the local parser. */
@@ -25,7 +41,8 @@ export type ClientVoiceActionType =
   | 'group_expense'
   | 'query'
   | 'bill_scan'
-  | 'subscription';
+  | 'subscription'
+  | 'task';
 
 export type FinancialAction = VoiceFinancialAction<ClientVoiceActionType, FinancialActionEntities>;
 
@@ -573,6 +590,7 @@ export function getActionTypeLabel(type: FinancialAction['type']): string {
     query: ' Financial Query',
     bill_scan: ' Bill Scan',
     subscription: ' Subscription',
+    task: ' Task',
     unknown: ' Unknown',
   };
   return labels[type] ?? type;
@@ -591,6 +609,7 @@ export function getActionTypeColor(type: FinancialAction['type']): string {
     query: 'bg-cyan-50 border-cyan-200 text-cyan-700',
     bill_scan: 'bg-yellow-50 border-yellow-200 text-yellow-700',
     subscription: 'bg-pink-50 border-pink-200 text-pink-700',
+    task: 'bg-violet-50 border-violet-200 text-violet-700',
     unknown: 'bg-gray-50 border-gray-200 text-gray-700',
   };
   return colors[type] ?? colors.unknown;

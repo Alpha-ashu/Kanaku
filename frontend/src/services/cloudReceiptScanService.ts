@@ -2,9 +2,26 @@ import { TokenManager } from '@/lib/api';
 import supabase from '@/utils/supabase/client';
 import type { OCRProgress, ReceiptCharge, ReceiptLineItem, ReceiptScanResult, TaxComponent, TotalValidationResult } from '@/types/receipt.types';
 import { getConfiguredApiBase } from '@/lib/apiBase';
-import { getPinUnlockToken, setPinUnlockToken } from '@/lib/pinUnlockCoordinator';
+import { awaitPinUnlock, getPinUnlockToken, setPinUnlockToken } from '@/lib/pinUnlockCoordinator';
 
 const API_BASE = (getConfiguredApiBase()).replace(/\/+$/, '');
+
+export type CloudScanErrorCode =
+  | 'PIN_LOCKED'
+  | 'FEATURE_DISABLED'
+  | 'RATE_LIMITED'
+  | 'UNAUTHENTICATED'
+  | 'UNSUPPORTED'
+  | 'SCAN_FAILED'
+  | 'TIMEOUT';
+
+/** A cloud-scan failure the UI can explain to the user instead of hiding. */
+export class CloudScanError extends Error {
+  constructor(public readonly code: CloudScanErrorCode, message: string) {
+    super(message);
+    this.name = 'CloudScanError';
+  }
+}
 
 /**
  * Upload sizing. A bill is text on paper: 1600px on the long edge keeps small
@@ -247,34 +264,60 @@ export class CloudReceiptScanService {
     file: File,
     onProgress?: (progress: OCRProgress) => void,
   ): Promise<ReceiptScanResult> {
-    if (!file.type.startsWith('image/')) {
-      throw new Error('Cloud receipt scan currently supports image files only');
+    const isPdf = file.type === 'application/pdf';
+    if (!file.type.startsWith('image/') && !isPdf) {
+      throw new CloudScanError('UNSUPPORTED', 'That file type is not supported. Use a photo or PDF of the bill.');
     }
 
     onProgress?.({ status: 'Preparing your receipt…', progress: 10 });
-    const compressedBlob = await compressImageForUpload(file);
+    // The backend reads a PDF's text layer directly (or rasterises a scanned
+    // one), so it goes up untouched; only photos are downscaled.
+    const payload: Blob = isPdf ? file : await compressImageForUpload(file);
+    const baseName = file.name.replace(/\.[^.]+$/, '') || 'receipt';
 
     const formData = new FormData();
-    formData.append('file', compressedBlob, `${file.name.replace(/\.[^.]+$/, '') || 'receipt'}.jpg`);
+    formData.append('file', payload, `${baseName}.${isPdf ? 'pdf' : 'jpg'}`);
 
     const token = await getAuthToken();
-    const pinUnlock = getPinUnlockToken();
-    const headers: Record<string, string> = {};
-    if (token) {
-      headers.Authorization = `Bearer ${token}`;
-    }
-    if (pinUnlock) {
-      headers['X-Pin-Unlock'] = pinUnlock;
-    }
+    const buildHeaders = (): Record<string, string> => {
+      const next: Record<string, string> = {};
+      if (token) next.Authorization = `Bearer ${token}`;
+      const pinUnlock = getPinUnlockToken();
+      if (pinUnlock) next['X-Pin-Unlock'] = pinUnlock;
+      return next;
+    };
+    let headers = buildHeaders();
 
     const startUrl = `${API_BASE}/receipts/start`;
     onProgress?.({ status: "We're analyzing your receipt. This may take a few seconds.", progress: 30 });
 
-    const startResponse = await fetchWithRetries(startUrl, {
-      method: 'POST',
-      headers,
-      body: formData,
-    });
+    let startResponse = await fetchWithRetries(startUrl, { method: 'POST', headers, body: formData });
+
+    // The receipts API sits behind the server-side PIN gate. Right after an
+    // unlock the server can still answer 403 while /pin/verify is in flight —
+    // wait for it and retry once. A 403 with no verify pending is a real lock,
+    // which used to be swallowed here and silently downgraded every scan to
+    // the on-device reader.
+    if (startResponse.status === 403) {
+      const body = await startResponse.clone().json().catch(() => ({} as Record<string, unknown>));
+      if (body?.code === 'PIN_VERIFICATION_REQUIRED') {
+        if (await awaitPinUnlock()) {
+          headers = buildHeaders();
+          startResponse = await fetchWithRetries(startUrl, { method: 'POST', headers, body: formData });
+        }
+        if (startResponse.status === 403) {
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('KANAKU_FORCE_PIN_LOCK'));
+          }
+          throw new CloudScanError('PIN_LOCKED', 'Unlock Kanaku with your PIN to use AI receipt reading.');
+        }
+      } else {
+        throw new CloudScanError(
+          'FEATURE_DISABLED',
+          typeof body?.error === 'string' ? body.error : 'AI receipt reading is turned off for your account.',
+        );
+      }
+    }
 
     const startPinUnlock = startResponse.headers?.get?.('X-Pin-Unlock');
     if (startPinUnlock) {
@@ -282,9 +325,22 @@ export class CloudReceiptScanService {
       headers['X-Pin-Unlock'] = startPinUnlock;
     }
 
+    if (startResponse.status === 401) {
+      throw new CloudScanError('UNAUTHENTICATED', 'Please sign in again to use AI receipt reading.');
+    }
+    if (startResponse.status === 429) {
+      const body = await startResponse.json().catch(() => ({} as Record<string, unknown>));
+      throw new CloudScanError(
+        'RATE_LIMITED',
+        typeof body?.error === 'string' ? body.error : 'Too many scans right now — wait a minute and try again.',
+      );
+    }
     if (!startResponse.ok) {
-      const errorBody = await startResponse.json().catch(() => ({}));
-      throw new Error(errorBody.error || 'We could not start reading this receipt. Please try again.');
+      const errorBody = await startResponse.json().catch(() => ({} as Record<string, unknown>));
+      throw new CloudScanError(
+        'SCAN_FAILED',
+        typeof errorBody?.error === 'string' ? errorBody.error : 'We could not start reading this receipt. Please try again.',
+      );
     }
 
     const { job_id } = await startResponse.json();
@@ -311,7 +367,7 @@ export class CloudReceiptScanService {
         // only give up if the status endpoint keeps failing.
         consecutiveStatusErrors += 1;
         if (consecutiveStatusErrors >= 4 || statusResponse.status === 404) {
-          throw new Error('We lost track of this scan. Please try again.');
+          throw new CloudScanError('SCAN_FAILED', 'We lost track of this scan. Please try again.');
         }
         await sleep(pollDelayMs(elapsed));
         continue;
@@ -398,13 +454,14 @@ export class CloudReceiptScanService {
       if (job.status === 'failed') {
         // The server's message names the real cause; anything internal-sounding
         // is replaced rather than shown to the user.
-        throw new Error(friendlyFailure(job.error));
+        throw new CloudScanError('SCAN_FAILED', friendlyFailure(job.error));
       }
 
       await sleep(pollDelayMs(Date.now() - startedAt));
     }
 
-    throw new Error(
+    throw new CloudScanError(
+      'TIMEOUT',
       "This receipt is taking longer than expected to read. Check your connection and try again, "
       + 'or enter the amount manually.',
     );

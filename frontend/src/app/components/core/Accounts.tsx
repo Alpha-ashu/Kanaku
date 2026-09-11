@@ -375,10 +375,11 @@ export const Accounts: React.FC = () => {
                         {canCreate && (
                         <Button data-testid="accounts-button"
                             onClick={() => setCurrentPage("add-account")}
-                            className="shadow-sm bg-slate-950 hover:bg-slate-800 text-white h-9 sm:h-10 px-4 sm:px-5 rounded-full font-bold text-xs sm:text-sm flex items-center gap-1.5"
+                            className="shadow-sm bg-slate-950 hover:bg-slate-800 text-white h-9 sm:h-10 px-3.5 sm:px-5 rounded-full font-bold text-xs sm:text-sm flex items-center gap-1.5 shrink-0"
                         >
                             <Plus size={16} />
-                            <span>Add Account</span>
+                            <span className="hidden sm:inline">Add Account</span>
+                            <span className="sm:hidden">Add</span>
                         </Button>
                         )}
                     </PageHeader>

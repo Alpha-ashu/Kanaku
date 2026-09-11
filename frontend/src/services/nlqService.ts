@@ -27,6 +27,10 @@ export interface QueryResult {
   }>;
   /** 'backend' when answered by server AI, 'local' when answered offline */
   source?: 'backend' | 'local';
+  /** Which engine the backend used — 'offline' means the AI providers were unreachable */
+  parser?: string;
+  /** Classified intent (record_*, query, overview, advice, task, out_of_scope) */
+  intent?: string;
   /** Action to prompt the frontend to record after a conversational query */
   action?: {
     type: string;
@@ -53,6 +57,8 @@ export const NLQService = {
         answer: chatResponse.reply,
         transactions: chatResponse.transactions,
         source: 'backend',
+        parser: chatResponse.parser,
+        intent: chatResponse.intent,
         action: chatResponse.action,
         requiresConfirmation: chatResponse.requiresConfirmation,
       };

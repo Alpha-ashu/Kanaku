@@ -1390,15 +1390,7 @@ class BackendService {
     intent: string;
     action?: {
       type: string;
-      entities: {
-        amount?: number;
-        category?: string;
-        description?: string;
-        date?: string;
-        person?: string;
-        merchant?: string;
-        paymentMethod?: string;
-      };
+      entities: Record<string, any>;
       confidence: number;
       requiresConfirmation: boolean;
     };
@@ -1411,7 +1403,7 @@ class BackendService {
       type: string;
     }>;
     requiresConfirmation: boolean;
-    parser: 'gemini' | 'groq' | 'offline';
+    parser: 'gemini' | 'groq' | 'openrouter' | 'offline';
   }> {
     const response = await this.api.post('/ai/chat', { message, conversationId });
     return response.data;

@@ -185,11 +185,12 @@ export const RecurringTransactions: React.FC = () => {
           >
             <button
               onClick={() => setShowAddForm((v) => !v)}
-              className="bg-[#18181B] hover:bg-black text-white px-4 sm:px-5 h-9 sm:h-10 rounded-full text-xs sm:text-sm font-bold active:scale-95 transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+              className="bg-[#18181B] hover:bg-black text-white px-3.5 sm:px-5 h-9 sm:h-10 rounded-full text-xs sm:text-sm font-bold active:scale-95 transition-all shadow-xs flex items-center gap-1.5 cursor-pointer shrink-0"
               data-testid="recurring-toggle-form-button"
             >
               <Plus size={16} />
-              <span>{showAddForm ? 'Close' : 'Create Recurring'}</span>
+              <span className="hidden sm:inline">{showAddForm ? 'Close' : 'Create Recurring'}</span>
+              <span className="sm:hidden">{showAddForm ? 'Close' : 'Create'}</span>
             </button>
           </PageHeader>
         </div>

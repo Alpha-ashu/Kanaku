@@ -221,10 +221,11 @@ export const BudgetAlertsPage: React.FC = () => {
           >
             <button data-testid="budget-alerts-page-add-budget"
               onClick={() => setShowAddModal(true)}
-              className="flex items-center gap-1.5 px-4 sm:px-5 h-9 sm:h-10 bg-[#18181B] hover:bg-black text-white rounded-full active:scale-95 transition-all font-bold text-xs sm:text-sm shadow-xs cursor-pointer"
+              className="flex items-center gap-1.5 px-3.5 sm:px-5 h-9 sm:h-10 bg-[#18181B] hover:bg-black text-white rounded-full active:scale-95 transition-all font-bold text-xs sm:text-sm shadow-xs cursor-pointer shrink-0"
             >
               <Plus size={16} />
-              <span>Add Budget</span>
+              <span className="hidden sm:inline">Add Budget</span>
+              <span className="sm:hidden">Add</span>
             </button>
           </PageHeader>
         </div>

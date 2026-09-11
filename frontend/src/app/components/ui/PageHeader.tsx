@@ -63,9 +63,16 @@ export const PageHeaderCard: React.FC<PageHeaderProps> = ({
             </div>
           )}
 
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 tracking-tight leading-none truncate">
-            {title}
-          </h1>
+          <div className="min-w-0">
+            <h1 className="font-page-title text-slate-900 tracking-tight leading-tight truncate">
+              {title}
+            </h1>
+            {subtitle && (
+              <p className="font-page-sub text-slate-500 mt-0.5 truncate">
+                {subtitle}
+              </p>
+            )}
+          </div>
         </div>
 
         {children && (

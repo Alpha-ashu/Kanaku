@@ -313,7 +313,7 @@ export const Loans: React.FC = () => {
       >
         <ArrowLeft size={18} className="text-slate-700" />
       </button>
-      <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none truncate">Loans & EMIs</h1>
+      <h1 className="font-page-title text-slate-900 tracking-tight leading-none truncate">Loans & EMIs</h1>
     </div>
     <div className="flex items-center gap-2 shrink-0">
       {canAddLoan && (
@@ -325,10 +325,11 @@ export const Loans: React.FC = () => {
             setCurrentPage('add-transaction');
           }}
           data-testid="loans-add-loan-button"
-          className="shadow-xs bg-[#18181B] hover:bg-black text-white h-10 px-4 sm:px-5 rounded-full font-bold text-xs sm:text-sm flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer"
+          className="shadow-xs bg-[#18181B] hover:bg-black text-white h-9 sm:h-10 px-3.5 sm:px-5 rounded-full font-bold text-xs sm:text-sm flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer shrink-0"
         >
           <Plus size={16} />
-          <span>Add Loan</span>
+          <span className="hidden sm:inline">Add Loan</span>
+          <span className="sm:hidden">Add</span>
         </Button>
       )}
     </div>
@@ -343,7 +344,7 @@ export const Loans: React.FC = () => {
   <Home className="sm:w-5 sm:h-5" size={18} />
   </div>
   <p className="text-slate-400 font-semibold mb-1 text-xs uppercase tracking-wider">Total Borrowed</p>
-  <h3 className="text-2xl sm:text-3xl font-display font-bold text-slate-900 dark:text-white tracking-tight">
+  <h3 className="font-amount-md font-bold text-slate-900 dark:text-white tracking-tight">
   {formatCurrency(loanStats.totalBorrowed)}
   </h3>
   </div>
@@ -357,7 +358,7 @@ export const Loans: React.FC = () => {
   <Users className="sm:w-5 sm:h-5" size={18} />
   </div>
   <p className="text-slate-400 font-semibold mb-1 text-xs uppercase tracking-wider">Total Lent</p>
-  <h3 className="text-2xl sm:text-3xl font-display font-bold text-slate-900 dark:text-white tracking-tight">
+  <h3 className="font-amount-md font-bold text-slate-900 dark:text-white tracking-tight">
   {formatCurrency(loanStats.totalLent)}
   </h3>
   </div>
@@ -371,7 +372,7 @@ export const Loans: React.FC = () => {
   <TrendingUp className="sm:w-5 sm:h-5" size={18} />
   </div>
   <p className="text-slate-400 font-semibold mb-1 text-xs uppercase tracking-wider">Monthly EMI</p>
-  <h3 className="text-2xl sm:text-3xl font-display font-bold text-slate-900 dark:text-white tracking-tight">
+  <h3 className="font-amount-md font-bold text-slate-900 dark:text-white tracking-tight">
   {formatCurrency(loanStats.totalEMI)}
   </h3>
   </div>
@@ -385,7 +386,7 @@ export const Loans: React.FC = () => {
   <AlertCircle className="sm:w-5 sm:h-5" size={18} />
   </div>
   <p className="text-slate-400 font-semibold mb-1 text-xs uppercase tracking-wider">Overdue</p>
-  <h3 className="text-2xl sm:text-3xl font-display font-bold text-slate-900 dark:text-white tracking-tight">
+  <h3 className="font-amount-md font-bold text-slate-900 dark:text-white tracking-tight">
   {loanStats.overdueCount}
   </h3>
   </div>

@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import {
   Mic, MicOff, Loader2, X, Keyboard, ArrowRight,
   AlertCircle, Wifi, WifiOff, RefreshCw, Sparkles,
-  TrendingDown, TrendingUp, Repeat, Target, Briefcase,
+  TrendingDown, TrendingUp, Repeat, Target, Briefcase, MessageCircle,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { processVoiceTranscript, FinancialAction } from '@/services/voiceFinancialService';
@@ -33,10 +33,13 @@ interface VoiceState {
   showManualInput: boolean;
   manualInput: string;
   showCommandCenter: boolean;
+  /** Command Center opened straight into the chat tab (no spoken actions). */
+  chatMode: boolean;
   retryCount: number;
 }
 
 type VA =
+  | { type: 'OPEN_CHAT' }
   | { type: 'START_LISTENING' }
   | { type: 'STOP_LISTENING' }
   | { type: 'SET_INTERIM'; payload: string }
@@ -56,11 +59,13 @@ type VA =
 const init: VoiceState = {
   mode: 'idle', transcript: '', interimTranscript: '',
   error: null, fallbackReason: null, actions: [],
-  showManualInput: false, manualInput: '', showCommandCenter: false, retryCount: 0,
+  showManualInput: false, manualInput: '', showCommandCenter: false, chatMode: false, retryCount: 0,
 };
 
 function reducer(s: VoiceState, a: VA): VoiceState {
   switch (a.type) {
+    case 'OPEN_CHAT':
+      return { ...s, mode: 'idle', error: null, fallbackReason: null, actions: [], parser: undefined, showManualInput: false, showCommandCenter: true, chatMode: true };
     case 'START_LISTENING':
       return { ...s, mode: 'listening', transcript: '', interimTranscript: '', error: null };
     case 'STOP_LISTENING':
@@ -233,6 +238,8 @@ const HINTS = [
   { icon: <Target size={12} />, text: 'Saved ₹5000 for trip', color: 'bg-purple-50 text-purple-600 border-purple-100' },
   { icon: <Briefcase size={12} />, text: 'Invested ₹10k in SIP', color: 'bg-teal-50 text-teal-600 border-teal-100' },
   { icon: <TrendingDown size={12} />, text: 'Lent ₹3000 to Rahul', color: 'bg-amber-50 text-amber-600 border-amber-100' },
+  { icon: <Repeat size={12} />, text: 'Netflix ₹649 monthly', color: 'bg-pink-50 text-pink-600 border-pink-100' },
+  { icon: <Sparkles size={12} />, text: 'Me and Arun spent 3000 on dinner', color: 'bg-orange-50 text-orange-600 border-orange-100' },
 ];
 
 // ─── Hook ─────────────────────────────────────────────────────────────────────
@@ -424,7 +431,7 @@ function useVoiceEngine() {
     processTranscript(text);
   }, [state.manualInput, processTranscript]);
 
-  return { state, dispatch, startListening, stopListening, cancelListening, resetEngine, processManualInput };
+  return { state, dispatch, startListening, stopListening, cancelListening, resetEngine, processManualInput, recRef };
 }
 
 // ─── Status pill ──────────────────────────────────────────────────────────────
@@ -447,7 +454,7 @@ StatusPill.displayName = 'StatusPill';
 
 export function VoiceInput() {
   const { user } = useAuth();
-  const { state, dispatch, startListening, stopListening, cancelListening, resetEngine, processManualInput } = useVoiceEngine();
+  const { state, dispatch, startListening, stopListening, cancelListening, resetEngine, processManualInput, recRef } = useVoiceEngine();
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const isListening  = state.mode === 'listening';
   const isProcessing = state.mode === 'processing';
@@ -496,6 +503,18 @@ export function VoiceInput() {
         </div>
         <div className="flex items-center gap-2">
           <StatusPill mode={state.mode} fallback={state.fallbackReason} />
+          <button data-testid="voice-input-ask-ai"
+            onClick={() => {
+              if (recRef.current) return; // never interrupt an active recording
+              dispatch({ type: 'OPEN_CHAT' });
+            }}
+            className="h-9 sm:h-10 px-3 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white text-xs font-bold shadow-md shadow-violet-200/60 hover:opacity-95 active:scale-95 flex items-center gap-1.5 transition-all shrink-0 cursor-pointer"
+            aria-label="Ask the AI assistant"
+            title="Chat with the AI assistant"
+          >
+            <MessageCircle size={15} />
+            <span className="hidden sm:inline">Ask AI</span>
+          </button>
           <button data-testid="voice-input-button"
             onClick={() => dispatch({ type: 'TOGGLE_MANUAL' })}
             className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200/80 hover:bg-slate-50 active:scale-95 shadow-xs flex items-center justify-center text-slate-700 transition-all shrink-0 cursor-pointer"
@@ -763,7 +782,7 @@ export function VoiceInput() {
             actions={state.actions}
             parser={state.parser}
             userId={user?.id}
-            initialTab={state.actions.some(a => a.type === 'query') ? 'chat' : 'actions'}
+            initialTab={state.chatMode || state.actions.some(a => a.type === 'query') ? 'chat' : 'actions'}
             onClose={() => {
               resetEngine();
             }}

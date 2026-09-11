@@ -95,8 +95,11 @@ interface LLMRawAction {
   members?: unknown;
   merchant?: string | null;
   date?: string | null;
+  recurrence?: string | null;
   confidence?: number;
 }
+
+const RECURRENCES = ['monthly', 'yearly', 'weekly', 'daily'] as const;
 
 const TODAY = () => new Date().toISOString().slice(0, 10);
 
@@ -122,7 +125,7 @@ OUTPUT: Return a JSON array only. No markdown, no explanation.
 
 Each element must have:
 {
-  "type": "expense" | "income" | "transfer" | "loan_borrow" | "loan_lend" | "goal" | "investment" | "group_expense",
+  "type": "expense" | "income" | "transfer" | "loan_borrow" | "loan_lend" | "goal" | "investment" | "group_expense" | "subscription",
   "amount": <positive number, required>,
   "category": <string — see list below>,
   "description": <short noun phrase, 1-5 words, e.g. "Petrol", "Dinner", "Netflix subscription">,
@@ -130,8 +133,14 @@ Each element must have:
   "members": <group_expense only: array of the OTHER participants' names (exclude the speaker/"me"), else null>,
   "merchant": <merchant/place name if mentioned, else null>,
   "date": <"YYYY-MM-DD" or null — use today's date if "today" is said, yesterday's date if "yesterday">,
+  "recurrence": <subscription only: "monthly" | "yearly" | "weekly", else null>,
   "confidence": <0.0 to 1.0>
 }
+
+SUBSCRIPTIONS / RECURRING BILLS:
+  "paid 649 for Netflix", "Spotify subscription 119 monthly", "yearly Prime 1499"
+  → {"type":"subscription","amount":649,"category":"Entertainment","description":"Netflix","recurrence":"monthly"}
+  Any recurring service (OTT, gym, phone plan, insurance premium said to be monthly/yearly) is a subscription.
 
 GROUP EXPENSES:
   "me and Arun and Preeti had dinner, we spent a group expense of 6000"
@@ -207,6 +216,8 @@ function normaliseRawActions(
         ? a.members.map((m) => String(m).trim()).filter((m) => m.length > 0 && m.toLowerCase() !== 'me')
         : undefined;
 
+      const recurrence = RECURRENCES.find((r) => r === String(a.recurrence ?? '').toLowerCase());
+
       return {
         type,
         rawSegment: transcript,
@@ -218,6 +229,7 @@ function normaliseRawActions(
           merchant: a.merchant ?? undefined,
           members: members && members.length > 0 ? members : undefined,
           date,
+          recurrence: recurrence ?? (type === 'subscription' ? 'monthly' : undefined),
         },
         confidence,
         requiresReview: confidence < confidenceThreshold,
@@ -309,7 +321,7 @@ async function extractWithOpenAICompatible(
 function normaliseType(raw: string | undefined): FinancialActionType {
   const t = (raw ?? '').toLowerCase().replace(/-/g, '_');
   const valid: FinancialActionType[] = [
-    'expense', 'income', 'transfer', 'loan_borrow', 'loan_lend', 'goal', 'investment', 'group_expense',
+    'expense', 'income', 'transfer', 'loan_borrow', 'loan_lend', 'goal', 'investment', 'group_expense', 'subscription',
   ];
   return (valid.includes(t as FinancialActionType) ? t : 'expense') as FinancialActionType;
 }

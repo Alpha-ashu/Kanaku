@@ -24,13 +24,15 @@ import {
  Search,
  FileText,
  RefreshCcw,
- Calendar
+ Calendar,
+ ClipboardList
 } from"lucide-react";
 import { motion, AnimatePresence } from"framer-motion";
 import { useApp } from"@/contexts/AppContext";
 import { db, Transaction, Loan, GroupExpense, Investment } from"@/lib/database";
 import { toast } from"sonner";
-import { getActionTypeColor, getActionTypeLabel, FinancialAction } from"@/services/voiceFinancialService";
+import { getActionTypeColor, getActionTypeLabel, FinancialAction, AssistantTask } from"@/services/voiceFinancialService";
+import { executeAssistantTask } from"@/services/aiTaskExecutor";
 import { BudgetCoachService, BudgetInsight } from"@/services/budgetCoachService";
 import { NLQService } from"@/services/nlqService";
 import { VoiceContextStore } from"@/services/voiceContextStore";
@@ -73,6 +75,29 @@ function sanitizeLabel(description: string | undefined, rawSegment: string): str
       .trim();
   }
   return src.charAt(0).toUpperCase() + src.slice(1);
+}
+
+function describeTaskKind(task?: AssistantTask): string {
+  switch (task?.type) {
+    case 'create_goal': return 'New goal';
+    case 'create_budget': return 'Budget';
+    case 'add_todo': return 'To-do';
+    case 'create_recurring': return 'Recurring';
+    default: return 'Task';
+  }
+}
+
+function describeTaskDetails(task: AssistantTask | undefined, currency: string): string {
+  if (!task) return '';
+  const parts: string[] = [];
+  if (task.amount) parts.push(`${currency} ${task.amount.toLocaleString()}`);
+  if (task.type === 'create_budget') parts.push(`${task.period || 'monthly'} · ${task.category || task.title}`);
+  if (task.type === 'create_recurring') parts.push(`${task.interval || 'monthly'} ${task.transactionType || 'expense'}`);
+  if (task.type === 'add_todo') parts.push(`${task.priority || 'medium'} priority`);
+  if (task.date) {
+    parts.push(task.type === 'add_todo' ? `due ${task.date}` : task.type === 'create_goal' ? `target ${task.date}` : `next ${task.date}`);
+  }
+  return parts.join(' · ');
 }
 
 interface SmartInsight {
@@ -237,9 +262,10 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
       }
     }
 
-    // Every financial action needs an amount before it can post
+    // Every financial action needs an amount before it can post (tasks such
+    // as a to-do reminder legitimately have none)
     const missingAmounts = actions.filter(
-      (a) => a.type !== 'query' && (!a.entities.amount || a.entities.amount <= 0)
+      (a) => a.type !== 'query' && a.type !== 'task' && (!a.entities.amount || a.entities.amount <= 0)
     );
     if (missingAmounts.length > 0) {
       toast.error(
@@ -302,9 +328,23 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
 
       // Net balance changes: accountId -> changeAmount
       const netBalanceChanges = new Map<number, number>();
+      const taskSummaries: string[] = [];
 
       for (const action of actions) {
         if (action.type === 'query') continue;
+
+        if (action.type === 'task') {
+          if (!action.entities.task) continue;
+          const summary = await executeAssistantTask(action.entities.task, {
+            userId,
+            accountId: targetAccountId,
+            accountCloudId: primaryAccount?.cloudId ? String(primaryAccount.cloudId) : undefined,
+          });
+          taskSummaries.push(summary);
+          successCount++;
+          continue;
+        }
+
         if (!action.entities.amount) continue;
 
         if (action.type === 'expense' || action.type === 'income' || action.type === 'subscription' || action.type === 'bill_scan') {
@@ -689,12 +729,17 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
         queueRecordUpsertSync('accounts', accountId);
       }
 
-      toast.success(`Successfully processed ${successCount} financial action${successCount !== 1 ? 's' : ''}`);
+      if (taskSummaries.length > 0) {
+        toast.success(taskSummaries.join(' · '), { duration: 6000 });
+      }
+      if (successCount > taskSummaries.length || taskSummaries.length === 0) {
+        toast.success(`Successfully processed ${successCount} financial action${successCount !== 1 ? 's' : ''}`);
+      }
 
       // Save confirmed actions to context memory for future context-aware parsing
       VoiceContextStore.addRecentActions(
         actions
-          .filter(a => a.type !== 'query')
+          .filter(a => a.type !== 'query' && a.type !== 'task')
           .map(a => ({
             type: a.type,
             description: a.entities.description || a.rawSegment,
@@ -724,9 +769,10 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
  case 'bill_scan': return <FileText className="w-5 h-5" />;
  case 'subscription': return <RefreshCcw className="w-5 h-5" />;
  case 'group_expense': return <Users className="w-5 h-5" />;
- case 'loan_borrow': 
+ case 'loan_borrow':
  case 'loan_lend': return <Users className="w-5 h-5" />;
  case 'investment': return <Briefcase className="w-5 h-5" />;
+ case 'task': return <ClipboardList className="w-5 h-5" />;
  default: return <Zap className="w-5 h-5" />;
  }
  };
@@ -863,28 +909,44 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
             : undefined
         }
         onActionDetected={(action) => {
-          const entities = action.entities || {};
-          const amount = entities.amount ? Number(entities.amount) : 0;
-          const category = entities.category || 'General';
-          const description = entities.description || 'Recorded via AI chat';
+          const e = action.entities || {};
+          const type = ((action.type as FinancialAction['type']) || 'expense');
+          const amount = e.amount ? Number(e.amount) : 0;
+          const task = e.task as AssistantTask | undefined;
+          const description = e.description || task?.title || 'Recorded via AI chat';
 
+          // Carry every entity the assistant extracted — person for loans,
+          // members for a split, recurrence for a subscription, and so on —
+          // so the confirm step saves the same record the user described.
           setActions((prev) => [
             ...prev,
             {
-              type: (action.type as any) || 'expense',
+              type,
               rawSegment: description,
               confidence: action.confidence || 0.95,
               requiresReview: false,
               entities: {
-                amount,
-                category,
+                amount: amount || undefined,
+                category: e.category || (type === 'task' ? undefined : 'General'),
                 description,
+                person: e.person || undefined,
+                merchant: e.merchant || undefined,
+                date: e.date || undefined,
+                paymentMethod: e.paymentMethod || undefined,
+                members: Array.isArray(e.members) && e.members.length ? e.members : undefined,
+                recurrence: e.recurrence || undefined,
+                assetType: e.assetType || undefined,
+                quantity: e.quantity || undefined,
+                goalTarget: e.goalTarget || undefined,
+                task,
               },
             },
           ]);
-          toast.success(
-            `Expense detected: ₹${amount} for ${description}. Switched to Actions tab.`
-          );
+
+          const label = type === 'task'
+            ? `${describeTaskKind(task)} ready: ${task?.title ?? description}`
+            : `${getActionTypeLabel(type).trim()} detected: ₹${amount.toLocaleString()} for ${description}`;
+          toast.success(`${label}. Review it in the Actions tab and confirm.`);
           setActiveTab('actions');
         }}
       />
@@ -912,6 +974,18 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
  <div className="p-5 bg-cyan-50/50 rounded-[28px] border border-cyan-100/50">
  <p className="text-slate-900 font-bold leading-relaxed whitespace-pre-line">{queryAnswers[index] ||"Analyzing..."}</p>
  </div>
+ </div>
+ ) : action.type === 'task' ? (
+ <div className="flex-1 space-y-2 min-w-0">
+ <div className="flex items-center gap-2">
+ <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{getActionTypeLabel(action.type)}</span>
+ <span className="text-[10px] bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full font-bold">{describeTaskKind(action.entities.task)}</span>
+ </div>
+ <h4 className="text-sm md:text-xl font-bold text-slate-900 break-words" data-testid={`voice-ai-task-title-${index}`}>{action.entities.task?.title || action.rawSegment}</h4>
+ <p className="text-xs md:text-sm text-slate-500 font-medium">{describeTaskDetails(action.entities.task, currency)}</p>
+ <button onClick={(e) => { e.stopPropagation(); removeAction(index); }} className="text-rose-400 hover:text-rose-600 flex items-center gap-1 text-[10px] md:text-xs font-bold transition-colors" data-testid={`voice-ai-task-remove-button-${index}`}>
+ <Trash2 size={10}/> Remove
+ </button>
  </div>
  ) : action.type === 'bill_scan' ? (
  <div className="flex-1 space-y-3">

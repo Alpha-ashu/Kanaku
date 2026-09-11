@@ -17,6 +17,7 @@
 
 import { prisma } from '../../db/prisma';
 import { logger } from '../../config/logger';
+import { buildFinancialSnapshot } from './financial-snapshot';
 
 // ─── Public Types ─────────────────────────────────────────────────────────────
 
@@ -27,7 +28,13 @@ export type QueryIntent =
   | 'PERSON_BALANCE'
   | 'ACCOUNT_BALANCE'
   | 'RECENT_TRANSACTIONS'
-  | 'CATEGORY_USAGE';
+  | 'CATEGORY_USAGE'
+  | 'INCOME_SUMMARY'
+  | 'GOALS_PROGRESS'
+  | 'LOANS_SUMMARY'
+  | 'INVESTMENT_SUMMARY'
+  | 'BUDGET_STATUS'
+  | 'UPCOMING_RECURRING';
 
 export interface QueryParams {
   intent: QueryIntent;
@@ -318,6 +325,98 @@ async function categoryUsage(userId: string): Promise<QueryResult> {
   };
 }
 
+// ─── Snapshot-backed summaries ───────────────────────────────────────────────
+// Goals, loans, investments, budgets and upcoming recurring items are read
+// through the shared snapshot so the chat's "overview" and these targeted
+// answers can never disagree about the same numbers.
+
+async function incomeSummary(userId: string, params: QueryParams): Promise<QueryResult> {
+  const { startDate, endDate } = params;
+  const { startDate: defaultStart, endDate: defaultEnd } = currentPeriodBounds();
+  const where = { userId, deletedAt: null, type: 'income', date: { gte: startDate ?? defaultStart, lte: endDate ?? defaultEnd } };
+
+  const [rows, aggregate] = await Promise.all([
+    prisma.transaction.findMany({
+      where,
+      orderBy: { date: 'desc' },
+      take: 10,
+      select: { id: true, date: true, description: true, amount: true, category: true, type: true },
+    }),
+    prisma.transaction.aggregate({ where, _sum: { amount: true }, _count: { id: true } }),
+  ]);
+
+  const total = Number(aggregate._sum.amount ?? 0);
+  const period = startDate ? `${startDate.toDateString()} – ${(endDate ?? defaultEnd).toDateString()}` : 'this month';
+  if (aggregate._count.id === 0) {
+    return { summary: `No income recorded ${period}. Tell me "got salary ₹50,000" and I'll add it.` };
+  }
+  return {
+    summary: `You received ${INR(total)} ${period} across ${aggregate._count.id} credit${aggregate._count.id !== 1 ? 's' : ''}.`,
+    transactions: rows.map(toRow),
+    meta: { total, count: aggregate._count.id, period },
+  };
+}
+
+async function goalsProgress(userId: string): Promise<QueryResult> {
+  const { goals } = await buildFinancialSnapshot(userId);
+  if (goals.count === 0) {
+    return { summary: 'You have no goals yet. Say "create a goal Emergency fund ₹1,00,000 by March" and I\'ll set one up.' };
+  }
+  const lines = goals.items.map((g) =>
+    `• ${g.name}: ${INR(g.saved)} of ${INR(g.target)} (${g.pct}%)${g.targetDate ? ` — target ${g.targetDate}` : ''}`);
+  return {
+    summary: `Goals — ${INR(goals.totalSaved)} saved of ${INR(goals.totalTarget)} (${goals.progressPct ?? 0}%):\n${lines.join('\n')}`,
+    meta: { goals: goals.items },
+  };
+}
+
+async function loansSummary(userId: string): Promise<QueryResult> {
+  const { loans } = await buildFinancialSnapshot(userId);
+  if (loans.items.length === 0) return { summary: 'No active loans — nobody owes you and you owe nobody.' };
+  const owedToYou = loans.items.filter((l) => l.type === 'lent');
+  const youOwe = loans.items.filter((l) => l.type === 'borrowed');
+  const parts: string[] = [];
+  if (owedToYou.length) {
+    parts.push(`People owe you ${INR(loans.lentOutstanding)}:\n${owedToYou.map((l) => `• ${l.person}: ${INR(l.outstanding)}`).join('\n')}`);
+  }
+  if (youOwe.length) {
+    parts.push(`You owe ${INR(loans.borrowedOutstanding)}:\n${youOwe.map((l) => `• ${l.person}: ${INR(l.outstanding)}${l.emi ? ` (EMI ${INR(l.emi)})` : ''}${l.dueDate ? `, due ${l.dueDate}` : ''}`).join('\n')}`);
+  }
+  return { summary: parts.join('\n\n'), meta: { lent: loans.lentOutstanding, borrowed: loans.borrowedOutstanding } };
+}
+
+async function investmentSummary(userId: string): Promise<QueryResult> {
+  const { investments } = await buildFinancialSnapshot(userId);
+  if (investments.count === 0) return { summary: 'No investments recorded yet. Say "invested ₹10,000 in SIP" to add one.' };
+  const direction = investments.profitLoss >= 0 ? 'up' : 'down';
+  const byType = investments.byType.map((t) => `• ${t.assetType.replace('_', ' ')}: ${INR(t.value)}`).join('\n');
+  return {
+    summary: `Portfolio worth ${INR(investments.currentValue)} on ${INR(investments.invested)} invested — ${direction} ${INR(Math.abs(investments.profitLoss))} across ${investments.count} holding${investments.count !== 1 ? 's' : ''}.\n${byType}`,
+    meta: { ...investments },
+  };
+}
+
+async function budgetStatus(userId: string): Promise<QueryResult> {
+  const { budgets } = await buildFinancialSnapshot(userId);
+  if (budgets.items.length === 0) return { summary: 'No budgets set. Say "set a food budget of ₹8,000" and I\'ll create one with alerts.' };
+  const lines = budgets.items.map((b) => {
+    const flag = b.status === 'exceeded' ? ' — over limit' : b.status === 'warning' ? ' — near limit' : '';
+    return `• ${b.category}: ${INR(b.spent)} of ${INR(b.limit)} (${b.pct}%)${flag}`;
+  });
+  const head = budgets.breached > 0
+    ? `${budgets.breached} of ${budgets.items.length} budgets need attention:`
+    : `All ${budgets.items.length} budgets are within limits:`;
+  return { summary: `${head}\n${lines.join('\n')}`, meta: { budgets: budgets.items } };
+}
+
+async function upcomingRecurring(userId: string): Promise<QueryResult> {
+  const { upcoming } = await buildFinancialSnapshot(userId);
+  if (upcoming.length === 0) return { summary: 'Nothing recurring is due in the next two weeks.' };
+  const total = upcoming.reduce((s, u) => s + u.amount, 0);
+  const lines = upcoming.map((u) => `• ${u.title}: ${INR(u.amount)} on ${u.dueDate}`);
+  return { summary: `Due in the next 14 days (${INR(total)} total):\n${lines.join('\n')}`, meta: { upcoming } };
+}
+
 // ─── Public Entry Point ───────────────────────────────────────────────────────
 
 export async function executeFinancialQuery(
@@ -333,6 +432,12 @@ export async function executeFinancialQuery(
       case 'ACCOUNT_BALANCE':     return await accountBalance(userId);
       case 'RECENT_TRANSACTIONS': return await recentTransactions(userId, params);
       case 'CATEGORY_USAGE':      return await categoryUsage(userId);
+      case 'INCOME_SUMMARY':      return await incomeSummary(userId, params);
+      case 'GOALS_PROGRESS':      return await goalsProgress(userId);
+      case 'LOANS_SUMMARY':       return await loansSummary(userId);
+      case 'INVESTMENT_SUMMARY':  return await investmentSummary(userId);
+      case 'BUDGET_STATUS':       return await budgetStatus(userId);
+      case 'UPCOMING_RECURRING':  return await upcomingRecurring(userId);
       default:
         return { summary: 'Unsupported query type.' };
     }

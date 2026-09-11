@@ -38,6 +38,8 @@ interface Message {
   timestamp: Date;
   transactions?: QueryResult["transactions"];
   source?: "backend" | "local";
+  /** backend engine: gemini / groq / openrouter, or 'offline' when the AI was unreachable */
+  parser?: string;
   action?: QueryResult["action"];
   requiresConfirmation?: boolean;
   isTyping?: boolean;
@@ -61,11 +63,49 @@ function uid(): string {
 const INR_FORMAT = new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 });
 
 const QUICK_PROMPTS = [
+  "Give me an overview of my finances",
   "How much did I spend this month?",
-  "What's my account balance?",
-  "Show last 5 transactions",
+  "How can I save more every month?",
   "Who owes me money?",
+  "Set a food budget of ₹8,000",
+  "Remind me to pay rent on the 1st",
 ];
+
+/**
+ * Assistant replies use a tiny markdown subset — **bold**, "• " bullets and a
+ * trailing _italic_ disclaimer — rendered here so answers stay scannable.
+ */
+function RichText({ text }: { text: string }) {
+  const renderInline = (line: string) =>
+    line.split(/(\*\*[^*]+\*\*)/g).map((part, i) =>
+      part.startsWith("**") && part.endsWith("**")
+        ? <strong key={i} className="font-bold text-slate-900">{part.slice(2, -2)}</strong>
+        : <React.Fragment key={i}>{part}</React.Fragment>,
+    );
+
+  return (
+    <div className="space-y-1">
+      {text.split("\n").map((rawLine, i) => {
+        const line = rawLine.trimEnd();
+        if (!line.trim()) return <div key={i} className="h-1" />;
+        const bullet = line.match(/^\s*[•\-*]\s+(.*)$/);
+        if (bullet) {
+          return (
+            <div key={i} className="flex gap-2">
+              <span className="text-violet-500 shrink-0">•</span>
+              <span className="min-w-0 break-words">{renderInline(bullet[1])}</span>
+            </div>
+          );
+        }
+        const italic = line.match(/^_(.+)_$/);
+        if (italic) {
+          return <p key={i} className="text-[11px] italic text-slate-400">{italic[1]}</p>;
+        }
+        return <p key={i} className="break-words">{renderInline(line)}</p>;
+      })}
+    </div>
+  );
+}
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
@@ -104,16 +144,21 @@ function TransactionCard({ tx }: { tx: NonNullable<QueryResult["transactions"]>[
   );
 }
 
-function SourceBadge({ source }: { source?: "backend" | "local" }) {
+function SourceBadge({ source, parser }: { source?: "backend" | "local"; parser?: string }) {
   if (!source) return null;
+  // The backend answers even when every AI provider is down (regex + rules),
+  // and that must not be badged as the live AI — the user should know to read
+  // those answers more carefully.
+  const live = source === "backend" && parser !== "offline";
+  const label = live ? "AI Live" : source === "backend" ? "Basic mode" : "Offline";
   return (
     <span className={`inline-flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-full border ${
-      source === "backend"
+      live
         ? "bg-violet-50 text-violet-700 border-violet-200"
         : "bg-amber-50 text-amber-700 border-amber-200"
-    }`}>
+    }`} title={!live && source === "backend" ? "AI service unreachable — answered with basic rules" : undefined}>
       {source === "backend" ? <Wifi size={8} /> : <WifiOff size={8} />}
-      {source === "backend" ? "AI Live" : "Offline"}
+      {label}
     </span>
   );
 }
@@ -130,7 +175,7 @@ const ConversationalAI: React.FC<ConversationalAIProps> = ({
     {
       id: uid(),
       role: "assistant",
-      content: "Hi! I'm your Kanaku AI assistant. Ask me anything about your finances, or speak an expense to log it.",
+      content: "Hi! I'm your Kanaku assistant. I can log any transaction you tell me, answer questions about your money, give you an overview, coach you on saving and investing, and set up goals, budgets, reminders or recurring bills.",
       timestamp: new Date(),
       source: "backend",
     },
@@ -190,6 +235,7 @@ const ConversationalAI: React.FC<ConversationalAIProps> = ({
                 content: result.answer,
                 transactions: result.transactions,
                 source: result.source,
+                parser: result.parser,
                 action: result.action,
                 requiresConfirmation: result.requiresConfirmation,
                 isTyping: false,
@@ -296,6 +342,8 @@ const ConversationalAI: React.FC<ConversationalAIProps> = ({
                 }`}>
                   {msg.isTyping ? (
                     <TypingDots />
+                  ) : msg.role === "assistant" ? (
+                    <RichText text={msg.content} />
                   ) : (
                     <p className="whitespace-pre-wrap break-words">{msg.content}</p>
                   )}
@@ -321,7 +369,7 @@ const ConversationalAI: React.FC<ConversationalAIProps> = ({
                     <span className="text-[10px] text-slate-400 font-medium">
                       {msg.timestamp.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
                     </span>
-                    {msg.role === "assistant" && <SourceBadge source={msg.source} />}
+                    {msg.role === "assistant" && <SourceBadge source={msg.source} parser={msg.parser} />}
                   </div>
                 )}
               </div>
@@ -356,10 +404,10 @@ const ConversationalAI: React.FC<ConversationalAIProps> = ({
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Ask about finances or record an expense…"
+            placeholder="Ask, log an expense, or say “set a budget…”"
             className="flex-1 bg-transparent text-sm text-slate-900 placeholder:text-slate-400 outline-none min-w-0 font-normal"
             disabled={isLoading}
-            maxLength={300}
+            maxLength={500}
           />
 
           <button

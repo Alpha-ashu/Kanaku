@@ -416,7 +416,7 @@ export const Transactions: React.FC = () => {
       >
         <ArrowLeft size={18} className="text-slate-700" />
       </button>
-      <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none truncate">Transactions</h1>
+      <h1 className="font-page-title text-slate-900 tracking-tight leading-none truncate">Transactions</h1>
     </div>
     <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
       {canImport && (
@@ -424,20 +424,22 @@ export const Transactions: React.FC = () => {
           data-testid="transactions-scan-bill-button"
           variant="secondary"
           onClick={() => setShowScanModal(true)}
-          className="shadow-2xs border border-slate-200/90 bg-white hover:bg-slate-50 text-slate-800 h-9 sm:h-10 px-3.5 sm:px-4 rounded-full font-bold text-xs sm:text-sm"
+          className="shadow-2xs border border-slate-200/90 bg-white hover:bg-slate-50 text-slate-800 h-9 sm:h-10 px-3 sm:px-4 rounded-full font-bold text-xs sm:text-sm shrink-0"
         >
-          <Camera size={16} className="mr-1.5" />
-          <span>Scan Bill</span>
+          <Camera size={16} className="mr-1 sm:mr-1.5 shrink-0" />
+          <span className="hidden sm:inline">Scan Bill</span>
+          <span className="sm:hidden">Scan</span>
         </Button>
       )}
       {canAdd && (
         <Button
           data-testid="transactions-add-button"
           onClick={() => setShowTransactionTypeModal(true)}
-          className="shadow-sm bg-slate-950 hover:bg-slate-800 text-white h-9 sm:h-10 px-4 sm:px-5 rounded-full font-bold text-xs sm:text-sm"
+          className="shadow-sm bg-slate-950 hover:bg-slate-800 text-white h-9 sm:h-10 px-3.5 sm:px-5 rounded-full font-bold text-xs sm:text-sm shrink-0"
         >
-          <Plus size={16} className="mr-1.5" />
-          <span>Add Transaction</span>
+          <Plus size={16} className="mr-1 sm:mr-1.5 shrink-0" />
+          <span className="hidden sm:inline">Add Transaction</span>
+          <span className="sm:hidden">Add</span>
         </Button>
       )}
     </div>
@@ -467,7 +469,7 @@ export const Transactions: React.FC = () => {
             <ArrowDownLeft size={16} />
           </div>
         </div>
-        <p className="text-2xl sm:text-3xl font-display font-bold text-slate-900 dark:text-white tracking-tight">{formatCurrency(stats.income)}</p>
+        <p className="font-amount-md font-bold text-slate-900 dark:text-white tracking-tight">{formatCurrency(stats.income)}</p>
       </div>
     </Card>
 
@@ -481,7 +483,7 @@ export const Transactions: React.FC = () => {
             <ArrowUpRight size={16} />
           </div>
         </div>
-        <p className="text-2xl sm:text-3xl font-display font-bold text-slate-900 dark:text-white tracking-tight">{formatCurrency(stats.expenses)}</p>
+        <p className="font-amount-md font-bold text-slate-900 dark:text-white tracking-tight">{formatCurrency(stats.expenses)}</p>
       </div>
     </Card>
 
@@ -496,7 +498,7 @@ export const Transactions: React.FC = () => {
           </div>
         </div>
         <p className={cn(
-          "text-2xl sm:text-3xl font-display font-bold tracking-tight",
+          "font-amount-md font-bold tracking-tight",
           stats.netFlow >= 0 ? "text-slate-900 dark:text-white" : "text-rose-600"
         )}>
           {stats.netFlow > 0 ? '+' : ''}{formatCurrency(stats.netFlow)}

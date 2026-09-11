@@ -330,7 +330,7 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
 
   const SectionHeader = ({ title, onViewAll, viewLabel = 'View All' }: { title: string; onViewAll?: () => void; viewLabel?: string }) => (
     <div className="flex items-center justify-between mb-3 px-1">
-      <h3 className="font-extrabold text-slate-900 text-base sm:text-lg tracking-tight">{title}</h3>
+      <h3 className="font-section-title text-slate-900 tracking-tight">{title}</h3>
       {onViewAll && (
         <button
           onClick={onViewAll}
@@ -355,8 +355,8 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
         {/* Top Header Row with Greeting */}
         <div className="flex items-center justify-between gap-3 pt-1">
           <div>
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Welcome Back 👋</p>
-            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight leading-tight mt-0.5">
+            <p className="font-stat-label text-slate-400 mb-0.5">Welcome Back 👋</p>
+            <h1 className="font-page-title text-slate-900 tracking-tight leading-tight">
               Stay On Track Today
             </h1>
           </div>
@@ -387,7 +387,7 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
                       <Sparkles size={13} className="text-purple-600" />
                       <span>Total Net Worth</span>
                     </div>
-                    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-slate-900">
+                    <h2 className="font-hero-metric tracking-tight text-slate-900">
                       {formatCurrency(totalNetWorth)}
                     </h2>
                   </div>

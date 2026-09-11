@@ -2,9 +2,14 @@ import { useCallback, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { DocumentManagementService } from '@/services/documentManagementService';
 import { EnhancedReceiptScannerService } from '@/services/enhancedReceiptScannerService';
-import { cloudReceiptScanService } from '@/services/cloudReceiptScanService';
-import { assessScanQuality, looksGarbled } from '@/lib/ocrTextQuality';
+import { cloudReceiptScanService, CloudScanError } from '@/services/cloudReceiptScanService';
+import { looksGarbled } from '@/lib/ocrTextQuality';
 import type { ReceiptScanResult } from '@/types/receipt.types';
+
+/** Failures the user can act on are shown verbatim; engine internals are not. */
+const isActionableCloudFailure = (err: unknown): err is CloudScanError =>
+  err instanceof CloudScanError
+  && ['PIN_LOCKED', 'FEATURE_DISABLED', 'RATE_LIMITED', 'UNAUTHENTICATED', 'TIMEOUT'].includes(err.code);
 
 const RECEIPT_OCR_ON_DEVICE_ONLY_KEY = 'receipt_scanner_on_device_only';
 
@@ -90,35 +95,80 @@ export const useReceiptScanner = () => {
       );
 
       let result: ReceiptScanResult | null = null;
+      let resultSource: 'cloud' | 'device' | null = null;
+      let cloudFailure: any = null;
 
-      // 1. Try on-device OCR first (fast & local)
-      try {
-        result = await scanWithOnDeviceOcr();
-      } catch (onDeviceErr: any) {
-        console.info('[ReceiptScanner] On-device OCR attempt error (falling back to cloud):', onDeviceErr?.message);
-      }
+      const isPdf = selectedFile.type === 'application/pdf';
+      const isOnline = typeof navigator === 'undefined' || navigator.onLine !== false;
+      // PDFs have no pixels for the on-device reader; they always need the server.
+      const cloudPermitted = isOnline && (!onDeviceOnly || isPdf);
 
-      // 2. If on-device produced no result OR weak quality, escalate to cloud OCR engine
-      const quality = assessScanQuality(result);
-      if (!result || (!onDeviceOnly && quality.shouldEscalate)) {
-        console.info('[ReceiptScanner] Local read missing or weak, attempting cloud OCR...');
+      const runCloud = async (): Promise<ReceiptScanResult | null> => {
         try {
-          const cloudResult = await cloudOcrService.current.scanReceipt(selectedFile, (progress) => {
+          return await cloudOcrService.current.scanReceipt(selectedFile, (progress) => {
             setScanProgress(progress.progress);
             setScanStatus(progress.status);
           });
-
-          if (cloudResult && (cloudResult.amount || !result)) {
-            result = cloudResult;
-          }
-        } catch (cloudError: any) {
-          console.info('[ReceiptScanner] Cloud extraction unavailable:', cloudError?.message);
+        } catch (err: any) {
+          cloudFailure = err instanceof Error ? err : new Error(String(err));
+          console.info('[ReceiptScanner] AI extraction unavailable:', cloudFailure.message);
+          return null;
         }
+      };
+
+      const runOnDevice = async (): Promise<ReceiptScanResult | null> => {
+        if (isPdf) return null;
+        try {
+          return await scanWithOnDeviceOcr();
+        } catch (err: any) {
+          console.info('[ReceiptScanner] On-device OCR failed:', err?.message);
+          return null;
+        }
+      };
+
+      if (cloudPermitted) {
+        // AI (vision) first: it is the only engine that reads thermal-print
+        // bills reliably. On-device OCR was previously run first and the AI
+        // pass only escalated on a "weak" read — which let plausible-looking
+        // but wrong local reads through and doubled the wait on every scan.
+        result = await runCloud();
+        if (result) resultSource = 'cloud';
+
+        if (!result || !result.amount) {
+          const local = await runOnDevice();
+          if (local && (local.amount || !result)) {
+            result = local;
+            resultSource = 'device';
+          }
+        }
+      } else if (isPdf) {
+        toast.error(isOnline
+          ? 'PDF bills need the AI reader — turn off "on-device only" to scan this file.'
+          : 'PDF bills need an internet connection to be read.');
+        return null;
+      } else {
+        result = await runOnDevice();
+        if (result) resultSource = 'device';
       }
 
       if (!result) {
-        toast.error('Could not clearly read the receipt. Please enter details manually.');
+        if (isActionableCloudFailure(cloudFailure)) {
+          toast.error(cloudFailure.message, { duration: 7000 });
+        } else {
+          toast.error('Could not clearly read the receipt. Please enter details manually.', {
+            description: cloudFailure?.message,
+          });
+        }
         return null;
+      }
+
+      if (resultSource === 'device' && cloudFailure) {
+        // The user is looking at the weaker engine's read — say so instead of
+        // presenting it as the AI result.
+        toast.warning('AI reading unavailable — showing the on-device read. Please verify the figures.', {
+          description: isActionableCloudFailure(cloudFailure) ? cloudFailure.message : undefined,
+          duration: 7000,
+        });
       }
 
       // Clean up garbled text
