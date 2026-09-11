@@ -71,6 +71,7 @@ const USER_FRIENDLY_MESSAGES: Record<string, string> = {
   // Accounts / transactions
   ACCOUNT_UNAVAILABLE: 'That account is no longer available. Please pick an active account or create a new one before recording transactions.',
   TRANSFER_ACCOUNT_UNAVAILABLE: 'The transfer destination account is no longer available. Please choose an active account.',
+  INSUFFICIENT_BALANCE: 'Insufficient balance in the selected account for this transaction.',
   // Data
   NOT_FOUND: 'We could not find what you were looking for.',
   DUPLICATE_ENTRY: 'This item already exists. Please use different values.',
@@ -111,13 +112,29 @@ function getUserMessage(
   }
 
   // Fall back to HTTP-status-based friendly message
-  if (status === 400) return 'Some of your inputs look incorrect. Please review and try again.';
+  if (status >= 500) return 'Something went wrong on our end. Please try again later.';
   if (status === 401) return 'Please sign in to continue.';
   if (status === 403) return 'You do not have permission to do that.';
   if (status === 404) return 'We could not find what you were looking for.';
   if (status === 409) return 'This item already exists. Please use different values.';
   if (status === 429) return 'You are doing that too fast. Please wait a moment and try again.';
-  if (status >= 500) return 'Something went wrong on our end. Please try again later.';
+
+  // For 400 (Bad Request), if the server provided a specific business message, use it
+  if (
+    status === 400 &&
+    technicalMessage &&
+    typeof technicalMessage === 'string' &&
+    technicalMessage !== 'Bad Request' &&
+    technicalMessage.length > 5 &&
+    technicalMessage.length < 300 &&
+    !technicalMessage.includes('at ') &&
+    !technicalMessage.includes('<html>') &&
+    !technicalMessage.includes('Cannot ')
+  ) {
+    return technicalMessage;
+  }
+
+  if (status === 400) return 'Some of your inputs look incorrect. Please review and try again.';
   return 'Something went wrong. Please try again.';
 }
 

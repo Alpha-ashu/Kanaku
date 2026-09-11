@@ -39,26 +39,21 @@ export class DeviceService {
         }).catch(() => {});
       }
 
-      // Check if device already exists
+      // Check if device already exists globally by deviceId (deviceId is @unique)
       const existingDevice = await prisma.device.findUnique({
         where: {
-          userId_deviceId: {
-            userId,
-            deviceId: data.deviceId,
-          },
+          deviceId: data.deviceId,
         },
       });
 
       if (existingDevice) {
-        // Update existing device and ensure it is reactivated
+        // Update existing device, reassign userId if necessary, and ensure it is reactivated
         return await prisma.device.update({
           where: {
-            userId_deviceId: {
-              userId,
-              deviceId: data.deviceId,
-            },
+            id: existingDevice.id,
           },
           data: {
+            userId,
             deviceName: data.deviceName,
             deviceType: data.deviceType,
             osType: data.osType,

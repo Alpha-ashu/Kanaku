@@ -460,7 +460,8 @@ export const updateGroup = async (req: AuthRequest, res: Response) => {
     const existingMembers = await prisma.groupExpenseMember.findMany({
       where: { groupExpenseId: id, deletedAt: null }
     });
-    const isParticipant = existingMembers.some(m => m.userId === userId);
+    const isMemberByEmail = Boolean(currentUser.email && existingMembers.some(m => m.email && m.email.toLowerCase() === currentUser.email?.toLowerCase()));
+    const isParticipant = existingMembers.some(m => m.userId === userId) || isMemberByEmail;
 
     if (!isCreator && !isParticipant) {
       return res.status(403).json({ success: false, error: 'Access denied' });
@@ -693,16 +694,26 @@ export const updateGroup = async (req: AuthRequest, res: Response) => {
         const myMemberEntry = body.members.find((m: any) => m.isCurrentUser || m.userId === userId || m.email === currentUser.email);
         if (myMemberEntry) {
           const nextPaid = myMemberEntry.paid || myMemberEntry.paymentStatus === 'paid';
-          const existingMember = existingMembers.find(m => m.userId === userId);
+          const existingMember = existingMembers.find(m =>
+            m.userId === userId ||
+            (currentUser.email && m.email && m.email.toLowerCase() === currentUser.email.toLowerCase())
+          );
           const wasPaid = existingMember?.hasPaid || false;
 
           await prisma.$transaction(async (tx) => {
             if (nextPaid && !wasPaid && existingMember) {
               await tx.groupExpenseMember.updateMany({
-                where: { groupExpenseId: id, userId },
+                where: {
+                  groupExpenseId: id,
+                  OR: [
+                    { userId },
+                    ...(currentUser.email ? [{ email: { equals: currentUser.email, mode: 'insensitive' as const } }] : []),
+                  ]
+                },
                 data: {
                   hasPaid: true,
                   paidAt: new Date(),
+                  userId,
                 }
               });
 

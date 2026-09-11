@@ -241,6 +241,8 @@ export const idempotency = (options: IdempotencyOptions) => {
       resolveInFlight = resolve;
       rejectInFlight = reject;
     });
+    // Prevent unhandled promise rejection when no concurrent request is awaiting this promise
+    currentInFlight.catch(() => {});
     inFlightRequests.set(cacheKey, currentInFlight);
 
     // Intercept the response to capture result and cache it

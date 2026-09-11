@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect, useDeferredValue } from 'react';
+import { createPortal } from 'react-dom';
 import { useApp, useSubFeature } from '@/contexts/AppContext';
 import { db, type DocumentRecord } from '@/lib/database';
 import { deleteTransactionWithBackendSync, queueRecordUpsertSync } from '@/lib/auth-sync-integration';
@@ -771,121 +772,127 @@ export const Transactions: React.FC = () => {
   )}
  </Card>
 
- {/* MOBILE TRANSACTION DETAIL SHEET */}
- {selectedTransaction && (() => {
- const tx = selectedTransaction;
- const account = accountById.get(tx.accountId);
- const displayType = tx.type === 'transfer' ? (tx.subcategory === 'Transfer In' ? 'income' : 'expense') : tx.type;
- const attachedDocumentId = getDocumentIdFromTransaction(tx);
- const attachedTaxAmount = parseMetadataNumber(tx.importMetadata?.['Tax Amount']);
- return (
- <div className="fixed inset-0 z-[61] lg:hidden flex flex-col justify-end">
- <div data-testid="transactions-div" className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setSelectedTransaction(null)} />
- <motion.div
- initial={{ y: '100%' }}
- animate={{ y: 0 }}
- exit={{ y: '100%' }}
- transition={{ type: 'spring', stiffness: 400, damping: 40 }}
- className="relative bg-white rounded-t-[32px] overflow-hidden shadow-2xl max-h-[90vh] flex flex-col"
- >
- {/* Sheet handle */}
- <div className="flex justify-center pt-3 pb-1 shrink-0">
- <div className="w-10 h-1 rounded-full bg-gray-200" />
- </div>
+  {/* MOBILE TRANSACTION DETAIL SHEET */}
+  {selectedTransaction && typeof document !== 'undefined' && createPortal(
+    (() => {
+      const tx = selectedTransaction;
+      const account = accountById.get(tx.accountId);
+      const displayType = tx.type === 'transfer' ? (tx.subcategory === 'Transfer In' ? 'income' : 'expense') : tx.type;
+      const attachedDocumentId = getDocumentIdFromTransaction(tx);
+      const attachedTaxAmount = parseMetadataNumber(tx.importMetadata?.['Tax Amount']);
+      return (
+        <div className="fixed inset-0 z-[120] lg:hidden flex flex-col justify-end">
+          <div data-testid="transactions-div" className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedTransaction(null)} />
+          <motion.div
+            initial={{ y: '100%' }}
+            animate={{ y: 0 }}
+            exit={{ y: '100%' }}
+            transition={{ type: 'spring', stiffness: 400, damping: 40 }}
+            className="relative bg-white rounded-t-[32px] overflow-hidden shadow-2xl max-h-[90vh] flex flex-col z-[121]"
+          >
+            {/* Sheet handle */}
+            <div className="flex justify-center pt-3 pb-1 shrink-0">
+              <div className="w-10 h-1 rounded-full bg-gray-200" />
+            </div>
 
- {/* Sheet header */}
- <div className="flex items-start justify-between gap-3 px-6 pt-4 pb-4 border-b border-gray-100 shrink-0">
- <div className="flex items-center gap-3">
- <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-white border border-gray-100">
- {getCategoryCartoonIcon(tx.category || 'Miscellaneous', 26)}
- </div>
- <div>
- <p className="font-black text-gray-900 text-base leading-tight">{tx.description || tx.category}</p>
- <p className="text-xs text-gray-400 font-medium mt-0.5">{formatLocalDate(tx.date, 'en-US')}</p>
- </div>
- </div>
- <button data-testid="transactions-button-5" onClick={() => setSelectedTransaction(null)} className="p-2 rounded-xl hover:bg-gray-100 transition-colors text-gray-400">
- <X size={18} />
- </button>
- </div>
+            {/* Sheet header */}
+            <div className="flex items-start justify-between gap-3 px-6 pt-4 pb-4 border-b border-gray-100 shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-white border border-gray-100 shadow-xs">
+                  {getCategoryCartoonIcon(tx.category || 'Miscellaneous', 26)}
+                </div>
+                <div>
+                  <p className="font-black text-gray-900 text-base leading-tight">{tx.description || tx.category}</p>
+                  <p className="text-xs text-gray-400 font-medium mt-0.5">{formatLocalDate(tx.date, 'en-US')}</p>
+                </div>
+              </div>
+              <button data-testid="transactions-button-5" onClick={() => setSelectedTransaction(null)} className="p-2 rounded-xl hover:bg-gray-100 transition-colors text-gray-400">
+                <X size={18} />
+              </button>
+            </div>
 
- {/* Sheet body */}
- <div className="overflow-y-auto flex-1">
- {/* Amount hero */}
- <div className="px-6 py-5 flex items-center justify-between bg-white/60">
- <div>
- <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Amount</p>
- <p className={cn('text-3xl font-black tracking-tight mt-0.5', displayType === 'income' ? 'text-emerald-600' : 'text-gray-900')}>
- {displayType === 'income' ? '+' : '-'}{formatCurrency(tx.amount)}
- </p>
- </div>
- <span className={cn(
- 'px-3 py-1.5 rounded-xl text-xs font-black uppercase tracking-wide',
- displayType === 'income' ? 'bg-emerald-100 text-emerald-700' :
- tx.type === 'transfer' ? 'bg-blue-100 text-blue-700' : 'bg-rose-100 text-rose-700'
- )}>
- {displayType === 'income' ? ' Income' : tx.type === 'transfer' ? ' Transfer' : ' Expense'}
- </span>
- </div>
+            {/* Sheet body */}
+            <div className="overflow-y-auto flex-1 custom-scrollbar">
+              {/* Amount hero */}
+              <div className="px-6 py-5 flex items-center justify-between bg-white/60">
+                <div>
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Amount</p>
+                  <p className={cn('text-3xl font-black tracking-tight mt-0.5', displayType === 'income' ? 'text-emerald-600' : 'text-gray-900')}>
+                    {displayType === 'income' ? '+' : '-'}{formatCurrency(tx.amount)}
+                  </p>
+                </div>
+                <span className={cn(
+                  'px-3 py-1.5 rounded-xl text-xs font-black uppercase tracking-wide',
+                  displayType === 'income' ? 'bg-emerald-100 text-emerald-700' :
+                  tx.type === 'transfer' ? 'bg-blue-100 text-blue-700' : 'bg-rose-100 text-rose-700'
+                )}>
+                  {displayType === 'income' ? ' Income' : tx.type === 'transfer' ? ' Transfer' : ' Expense'}
+                </span>
+              </div>
 
- {/* Detail rows */}
- <div className="px-6 py-4 space-y-3">
- {[
- { label: 'Category', value: tx.category },
- { label: 'Account', value: account?.name || '' },
- { label: 'Date', value: formatLocalDate(tx.date, 'en-US') },
- ...(attachedTaxAmount > 0 ? [{ label: 'Tax Amount', value: formatCurrency(attachedTaxAmount) }] : []),
- ...(tx.notes ? [{ label: 'Notes', value: tx.notes }] : []),
- ].map(({ label, value }) => (
- <div key={label} className="flex items-center justify-between py-2.5 border-b border-gray-50">
- <span className="text-xs font-black text-gray-400 uppercase tracking-widest">{label}</span>
- <span className="text-sm font-bold text-gray-800 text-right max-w-[60%] truncate">{value}</span>
- </div>
- ))}
- </div>
+              {/* Detail rows */}
+              <div className="px-6 py-4 space-y-3">
+                {[
+                  { label: 'Category', value: tx.category },
+                  { label: 'Account', value: account?.name || '' },
+                  { label: 'Date', value: formatLocalDate(tx.date, 'en-US') },
+                  ...(attachedTaxAmount > 0 ? [{ label: 'Tax Amount', value: formatCurrency(attachedTaxAmount) }] : []),
+                  ...(tx.notes ? [{ label: 'Notes', value: tx.notes }] : []),
+                ].map(({ label, value }) => (
+                  <div key={label} className="flex items-center justify-between py-2.5 border-b border-gray-50">
+                    <span className="text-xs font-black text-gray-400 uppercase tracking-widest">{label}</span>
+                    <span className="text-sm font-bold text-gray-800 text-right max-w-[60%] truncate">{value}</span>
+                  </div>
+                ))}
+              </div>
 
- {/* View Bill button always visible when bill attached */}
- {attachedDocumentId && (
- <div className="px-6 pb-2">
- <button data-testid="transactions-view-attached-bill"
- onClick={() => { handlePreviewBill(tx); setSelectedTransaction(null); }}
- className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-orange-50 border border-orange-100 text-orange-600 font-black text-sm hover:bg-orange-100 active:scale-[0.98] transition-all"
- >
- <Eye size={16} /> View Attached Bill
- </button>
- </div>
- )}
+              {/* View Bill button always visible when bill attached */}
+              {attachedDocumentId && (
+                <div className="px-6 pb-2">
+                  <button data-testid="transactions-view-attached-bill"
+                    onClick={() => { handlePreviewBill(tx); setSelectedTransaction(null); }}
+                    className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-orange-50 border border-orange-100 text-orange-600 font-black text-sm hover:bg-orange-100 active:scale-[0.98] transition-all"
+                  >
+                    <Eye size={16} /> View Attached Bill
+                  </button>
+                </div>
+              )}
 
- {/* Action buttons */}
- <div className="px-6 pb-8 pt-3 grid grid-cols-2 gap-3">
- {canEdit && (
- <button data-testid="transactions-edit"
- onClick={() => { localStorage.setItem('editTransactionId', tx.id?.toString() || ''); setCurrentPage('add-transaction'); setSelectedTransaction(null); }}
- className="flex items-center justify-center gap-2 py-3 rounded-2xl bg-blue-50 border border-blue-100 text-blue-600 font-black text-sm hover:bg-blue-100 active:scale-[0.98] transition-all"
- >
- <Edit2 size={15} /> Edit
- </button>
- )}
- {canDelete && (
- <button data-testid="transactions-delete"
- onClick={() => { handleDeleteTransaction(tx.id!, tx.description); setSelectedTransaction(null); }}
- className="flex items-center justify-center gap-2 py-3 rounded-2xl bg-rose-50 border border-rose-100 text-rose-600 font-black text-sm hover:bg-rose-100 active:scale-[0.98] transition-all"
- >
- <Trash2 size={15} /> Delete
- </button>
- )}
- </div>
- </div>
- </motion.div>
- </div>
- );
- })()}
+              {/* Action buttons */}
+              <div
+                className="px-6 pt-3 grid grid-cols-2 gap-3"
+                style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 2rem)' }}
+              >
+                {canEdit && (
+                  <button data-testid="transactions-edit"
+                    onClick={() => { localStorage.setItem('editTransactionId', tx.id?.toString() || ''); setCurrentPage('add-transaction'); setSelectedTransaction(null); }}
+                    className="flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-blue-50 border border-blue-100 text-blue-600 font-black text-sm hover:bg-blue-100 active:scale-[0.98] transition-all cursor-pointer"
+                  >
+                    <Edit2 size={15} /> Edit
+                  </button>
+                )}
+                {canDelete && (
+                  <button data-testid="transactions-delete"
+                    onClick={() => { handleDeleteTransaction(tx.id!, tx.description); setSelectedTransaction(null); }}
+                    className="flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-rose-50 border border-rose-100 text-rose-600 font-black text-sm hover:bg-rose-100 active:scale-[0.98] transition-all cursor-pointer"
+                  >
+                    <Trash2 size={15} /> Delete
+                  </button>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      );
+    })(),
+    document.body
+  )}
 
   {/* Transaction Type Modal */}
-  {showTransactionTypeModal && (
-    <div className="fixed inset-0 flex items-center justify-center z-[60] p-4">
+  {showTransactionTypeModal && typeof document !== 'undefined' && createPortal(
+    <div className="fixed inset-0 flex items-center justify-center z-[120] p-4">
       <div data-testid="transactions-div-2" 
-        className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" 
+        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" 
         onClick={() => setShowTransactionTypeModal(false)} 
       />
       <motion.div
@@ -928,13 +935,14 @@ export const Transactions: React.FC = () => {
 
         <Button data-testid="transactions-cancel"
           variant="ghost"
-          className="w-full mt-6 rounded-xl hover:bg-slate-100 text-slate-500 font-bold"
           onClick={() => setShowTransactionTypeModal(false)}
+          className="w-full mt-6 py-6 rounded-2xl font-bold text-slate-500 hover:bg-slate-100"
         >
           Cancel
         </Button>
       </motion.div>
-    </div>
+    </div>,
+    document.body
   )}
 
  <DeleteConfirmModal
@@ -950,44 +958,45 @@ export const Transactions: React.FC = () => {
  }}
  />
 
- {previewDocument && previewUrl && (
- <div className="fixed inset-0 z-[70] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
- <div className="w-full max-w-4xl rounded-[28px] bg-transparent backdrop-blur-3xl shadow-2xl border border-white/20 overflow-hidden">
- <div className="flex items-start justify-between gap-4 border-b border-gray-100 px-5 py-4 sm:px-6">
- <div className="min-w-0">
- <h3 className="text-lg font-bold text-gray-900">Attached Bill</h3>
- <p className="text-sm text-gray-500 truncate">{previewDocument.fileName}</p>
- </div>
- <Button data-testid="transactions-button-6"
- variant="ghost"
- size="icon"
- className="h-9 w-9 shrink-0 text-gray-500 hover:text-gray-900"
- onClick={closePreview}
- >
- <X size={16} />
- </Button>
- </div>
+  {previewDocument && previewUrl && typeof document !== 'undefined' && createPortal(
+  <div className="fixed inset-0 z-[120] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+  <div className="w-full max-w-4xl rounded-[28px] bg-transparent backdrop-blur-3xl shadow-2xl border border-white/20 overflow-hidden">
+  <div className="flex items-start justify-between gap-4 border-b border-gray-100 px-5 py-4 sm:px-6">
+  <div className="min-w-0">
+  <h3 className="text-lg font-bold text-gray-900">Attached Bill</h3>
+  <p className="text-sm text-gray-500 truncate">{previewDocument.fileName}</p>
+  </div>
+  <Button data-testid="transactions-button-6"
+  variant="ghost"
+  size="icon"
+  className="h-9 w-9 shrink-0 text-gray-500 hover:text-gray-900"
+  onClick={closePreview}
+  >
+  <X size={16} />
+  </Button>
+  </div>
 
- <div className="bg-white p-3 sm:p-4">
- <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white min-h-[60vh]">
- {previewDocument.fileType === 'application/pdf' ? (
- <iframe
- src={previewUrl}
- title={previewDocument.fileName}
- className="h-[70vh] w-full"
- />
- ) : (
- <img
- src={previewUrl}
- alt={previewDocument.fileName}
- className="max-h-[70vh] w-full object-contain bg-white"
- />
- )}
- </div>
- </div>
- </div>
- </div>
- )}
+  <div className="bg-white p-3 sm:p-4">
+  <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white min-h-[60vh]">
+  {previewDocument.fileType === 'application/pdf' ? (
+  <iframe
+  src={previewUrl}
+  title={previewDocument.fileName}
+  className="h-[70vh] w-full"
+  />
+  ) : (
+  <img
+  src={previewUrl}
+  alt={previewDocument.fileName}
+  className="max-h-[70vh] w-full object-contain bg-white"
+  />
+  )}
+  </div>
+  </div>
+  </div>
+  </div>,
+  document.body
+  )}
 
  <ReceiptScanner
  isOpen={showScanModal}

@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { AlertTriangle, Loader } from 'lucide-react';
 
 interface DeleteConfirmModalProps {
@@ -23,9 +24,10 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
  isDangerous = true,
 }) => {
  if (!isOpen) return null;
+ if (typeof document === 'undefined') return null;
 
- return (
- <div className="fixed inset-0 bg-black/40 backdrop-blur-md flex items-center justify-center z-[100] p-4">
+ return createPortal(
+ <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-[130] p-4">
  <div className="bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl max-w-sm w-full border border-white/50 overflow-hidden transform transition-all">
  <div className={`p-6 border-l-4 ${isDangerous ? 'border-red-500' : 'border-yellow-500'}`}>
  <div className="flex items-start gap-4">
@@ -81,6 +83,7 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
  </button>
  </div>
  </div>
- </div>
- );
+    </div>,
+    document.body
+  );
 };

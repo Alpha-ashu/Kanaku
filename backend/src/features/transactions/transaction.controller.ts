@@ -29,7 +29,10 @@ export const getTransactions = async (req: AuthRequest, res: Response, next: Nex
 export const createTransaction = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userId = getUserId(req);
-    const transaction = await transactionService.createTransaction(userId, req.body);
+    const isSync = req.query.sync === 'true' || req.headers['x-sync-mode'] === 'true' || req.body?.synced === true;
+    const transaction = await transactionService.createTransaction(userId, req.body, {
+      enforceBalance: !isSync,
+    });
     res.status(201).json({ success: true, data: transaction });
   } catch (error) {
     handleTransactionDatabaseError(error, next);

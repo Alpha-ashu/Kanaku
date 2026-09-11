@@ -1133,16 +1133,17 @@ async function syncLocalRecordToBackendAPI(table: SyncedTableName, localId: numb
   }
 
   let response;
+  const reqConfig = { showErrorToast: false, headers: { 'x-sync-mode': 'true' } };
   if (record.cloudId) {
-    response = await apiClient.put(`${path}/${record.cloudId}`, payload, { showErrorToast: false });
+    response = await apiClient.put(`${path}/${record.cloudId}`, payload, reqConfig);
   } else {
     if (table === 'to_do_list_shares') {
       response = await apiClient.post(`/todos/lists/${payload.listId}/share`, {
         sharedWithEmail: payload.sharedWithUserId,
         permission: payload.permission,
-      }, { showErrorToast: false });
+      }, reqConfig);
     } else {
-      response = await apiClient.post(path, payload, { showErrorToast: false });
+      response = await apiClient.post(path, payload, reqConfig);
     }
   }
 

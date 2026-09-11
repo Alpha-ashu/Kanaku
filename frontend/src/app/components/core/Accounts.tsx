@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { useApp, useSubFeature } from "@/contexts/AppContext";
 import { db } from "@/lib/database";
 import {
@@ -1043,9 +1044,9 @@ export const Accounts: React.FC = () => {
 
             {/* Edit Account Modal */}
             <AnimatePresence>
-                {editModalOpen && editingAccount && (
+                {editModalOpen && editingAccount && typeof document !== 'undefined' && createPortal(
                     <motion.div
-                        className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 pb-[var(--bottom-nav-height)] sm:pb-0 sm:p-4"
+                        className="fixed inset-0 z-[120] flex items-end sm:items-center justify-center p-0 sm:p-4"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
@@ -1161,12 +1162,8 @@ export const Accounts: React.FC = () => {
                                             type="number"
                                             value={editingAccount.balance}
                                             onChange={(e) => {
-                                                const val = parseFloat(e.target.value) || 0;
-                                                setEditingAccount(prev => prev ? {
-                                                    ...prev,
-                                                    balance: val,
-                                                    openingBalance: Math.round((val - editingAccountDelta) * 100) / 100
-                                                } : null);
+                                                const val = parseFloat(e.target.value);
+                                                setEditingAccount(prev => prev ? { ...prev, balance: isNaN(val) ? 0 : val } : null);
                                             }}
                                             className="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border border-slate-200 focus:border-slate-900 focus:ring-4 focus:ring-slate-900/5 outline-none text-sm font-bold text-slate-900 transition-all"
                                             placeholder="0.00"
@@ -1200,7 +1197,7 @@ export const Accounts: React.FC = () => {
                             </div>
 
                             {/* Fixed Actions Footer - Inside Modal but absolutely positioned */}
-                            <div className="absolute bottom-0 left-0 right-0 p-6 bg-white/95 backdrop-blur-md border-t border-slate-50 z-20">
+                            <div className="absolute bottom-0 left-0 right-0 p-6 bg-white/95 backdrop-blur-md border-t border-slate-50 z-20" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1.5rem)' }}>
                                 <div className="flex gap-3">
                                     <button data-testid="accounts-cancel"
                                         onClick={() => { setEditModalOpen(false); setEditingAccount(null); }}
@@ -1222,7 +1219,8 @@ export const Accounts: React.FC = () => {
                                 </div>
                             </div>
                         </motion.div>
-                    </motion.div>
+                    </motion.div>,
+                    document.body
                 )}
             </AnimatePresence>
 
@@ -1241,8 +1239,8 @@ export const Accounts: React.FC = () => {
             )}
 
             {/* Transaction Type Picker Modal */}
-            {showTransactionTypeModal && (
-                <div className="fixed inset-0 flex items-center justify-center z-[60] p-4 sm:p-6">
+            {showTransactionTypeModal && typeof document !== 'undefined' && createPortal(
+                <div className="fixed inset-0 flex items-center justify-center z-[120] p-4 sm:p-6">
                     <div data-testid="accounts-div-2"
                         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
                         onClick={() => setShowTransactionTypeModal(false)}
@@ -1268,7 +1266,7 @@ export const Accounts: React.FC = () => {
                                     onClick={() => {
                                         setShowTransactionTypeModal(false);
                                         if (activeCardAccountId) {
-                                            localStorage.setItem('quickAccountId', String(activeCardAccountId));
+                                            localStorage.setItem('quickFormAccountId', activeCardAccountId.toString());
                                         }
                                         localStorage.setItem('quickFormType', opt.type);
                                         setCurrentPage('add-transaction');
@@ -1297,13 +1295,11 @@ export const Accounts: React.FC = () => {
                             Cancel
                         </Button>
                     </motion.div>
-                </div>
+                </div>,
+                document.body
             )}
         </CenteredLayout>
     );
 };
-
-
-
 
 
