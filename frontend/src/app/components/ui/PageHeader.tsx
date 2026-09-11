@@ -10,6 +10,7 @@ export interface PageHeaderProps {
   children?: React.ReactNode;
   showBack?: boolean;
   backTo?: string;
+  backTestId?: string;
   onBack?: () => void;
   className?: string;
 }
@@ -21,6 +22,7 @@ export const PageHeaderCard: React.FC<PageHeaderProps> = ({
   children,
   showBack,
   backTo = 'dashboard',
+  backTestId,
   onBack,
   className,
 }) => {
@@ -45,7 +47,7 @@ export const PageHeaderCard: React.FC<PageHeaderProps> = ({
         <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
           {shouldShowBack && (
             <button
-              data-testid="page-header-go-back"
+              data-testid={backTestId || "page-header-go-back"}
               onClick={handleBackClick}
               className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200/80 hover:bg-slate-50 active:scale-95 shadow-xs flex items-center justify-center text-slate-700 transition-all shrink-0 cursor-pointer"
               aria-label="Go back"

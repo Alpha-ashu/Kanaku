@@ -358,7 +358,12 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
     );
 
     if (!otpResult.success) {
-      throw AppError.badRequest(otpResult.message || 'Failed to send verification code.', 'OTP_SEND_FAILED');
+      // retryAfter ⇒ cooldown/rate-limit (429); otherwise the email provider rejected the send (502).
+      throw new AppError(
+        otpResult.retryAfter ? 429 : 502,
+        'OTP_SEND_FAILED',
+        otpResult.message || 'Failed to send verification code.',
+      );
     }
 
     auditFromRequest(req, 'auth.register_initiated', {
@@ -549,10 +554,12 @@ export const resendRegistrationOtp = async (req: Request, res: Response, next: N
     );
 
     if (!otpResult.success) {
-      return res.status(429).json({
+      const rateLimited = Boolean(otpResult.retryAfter);
+      return res.status(rateLimited ? 429 : 502).json({
         success: false,
+        code: rateLimited ? 'OTP_RATE_LIMITED' : 'OTP_SEND_FAILED',
         message: otpResult.message || 'Please wait before requesting another OTP.',
-        retryAfter: otpResult.retryAfter || 30,
+        retryAfter: rateLimited ? otpResult.retryAfter : undefined,
       });
     }
 
@@ -1230,7 +1237,7 @@ export const forgotPassword = async (req: Request, res: Response, next: NextFunc
     );
 
     if (!result.success) {
-      return res.status(429).json(result);
+      return res.status(result.retryAfter ? 429 : 502).json(result);
     }
 
     res.json(result);

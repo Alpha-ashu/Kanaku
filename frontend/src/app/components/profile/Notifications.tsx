@@ -132,27 +132,18 @@ export const Notifications: React.FC = () => {
     <CenteredLayout maxWidth="max-w-4xl">
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between gap-3 w-full">
-          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-            <button
-              type="button"
-              onClick={() => setCurrentPage('dashboard')}
-              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200/80 hover:bg-slate-50 active:scale-95 shadow-xs flex items-center justify-center text-slate-700 transition-all shrink-0 cursor-pointer"
-              aria-label="Go to dashboard"
-              title="Go to dashboard"
-              data-testid="notifications-go-back-button"
-            >
-              <ArrowLeft size={18} className="text-slate-700" />
-            </button>
-            <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none truncate">Notifications</h1>
-          </div>
-
+        <PageHeader
+          title="Notifications"
+          showBack={true}
+          backTestId="notifications-go-back-button"
+          onBack={() => setCurrentPage('dashboard')}
+        >
           <div className="flex items-center gap-2 shrink-0">
             {unreadCount > 0 && (
               <button
                 onClick={handleMarkAllAsRead}
                 data-testid="notifications-mark-all-read-button"
-                className="flex items-center gap-1.5 px-4 h-9 sm:h-10 rounded-full font-bold text-xs sm:text-sm bg-indigo-600 hover:bg-indigo-500 text-white shadow-xs transition-all active:scale-95 cursor-pointer"
+                className="flex items-center gap-1.5 px-4 sm:px-5 h-9 sm:h-10 rounded-full font-bold text-xs sm:text-sm bg-[#18181B] hover:bg-black text-white shadow-xs transition-all active:scale-95 cursor-pointer"
               >
                 <Check size={14} />
                 <span>Mark All Read</span>
@@ -169,7 +160,7 @@ export const Notifications: React.FC = () => {
               </button>
             )}
           </div>
-        </div>
+        </PageHeader>
 
         {/* Filter Tabs */}
         <div className="flex items-center gap-1 p-1 bg-white/95 backdrop-blur-xl rounded-full border border-slate-200/80 shadow-xs max-w-full overflow-x-auto scrollbar-hide shrink-0">
@@ -271,7 +262,7 @@ export const Notifications: React.FC = () => {
                               <button
                                 onClick={() => notification.id && markNotificationAsRead(notification.id)}
                                 data-testid={`notifications-mark-read-button-${notification.id}`}
-                                className="px-3 py-1.5 rounded-xl font-bold text-xs text-indigo-600 hover:bg-indigo-50 border border-indigo-200/80 transition-all active:scale-95 cursor-pointer"
+                                className="px-3.5 py-1.5 rounded-full font-bold text-xs text-slate-700 hover:bg-slate-100 bg-slate-50 border border-slate-200/80 transition-all active:scale-95 cursor-pointer"
                               >
                                 Mark Read
                               </button>
@@ -280,7 +271,7 @@ export const Notifications: React.FC = () => {
                               <button
                                 onClick={() => handleOpenNotification(notification)}
                                 data-testid={`notifications-open-button-${notification.id}`}
-                                className="flex items-center gap-1 px-3.5 py-1.5 rounded-xl font-bold text-xs bg-slate-900 hover:bg-slate-800 text-white shadow-sm transition-all active:scale-95 cursor-pointer"
+                                className="flex items-center gap-1 px-4 py-1.5 rounded-full font-bold text-xs bg-[#18181B] hover:bg-black text-white shadow-xs transition-all active:scale-95 cursor-pointer"
                               >
                                 Open
                                 <ExternalLink size={12} />

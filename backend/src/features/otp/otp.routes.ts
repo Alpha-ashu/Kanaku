@@ -37,7 +37,7 @@ router.post('/send', authMiddleware, validateBody(sendOtpSchema), async (req: Au
     );
 
     if (!result.success) {
-      return res.status(429).json(result);
+      return res.status(result.retryAfter ? 429 : 502).json(result);
     }
 
     res.json(result);

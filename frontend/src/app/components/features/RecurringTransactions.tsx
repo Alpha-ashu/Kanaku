@@ -1,7 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { PageHeader } from '@/app/components/ui/PageHeader';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
-import { Card } from '@/app/components/ui/card';
 import { Calendar, Plus, RefreshCw, ShieldCheck, CreditCard, Loader2, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { db, RecurringTransaction } from '@/lib/database';
@@ -183,7 +182,6 @@ export const RecurringTransactions: React.FC = () => {
         <div className="pb-4 lg:pb-6">
           <PageHeader
             title="Recurring Transactions"
-            icon={<RefreshCw className="text-indigo-600" size={20} />}
           >
             <button
               onClick={() => setShowAddForm((v) => !v)}
@@ -197,22 +195,21 @@ export const RecurringTransactions: React.FC = () => {
         </div>
 
         {/* Forecast Card */}
-        <div className="bg-gradient-to-r from-slate-900 to-indigo-950 rounded-[32px] p-8 shadow-xl relative overflow-hidden mb-8 group">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 group-hover:opacity-30 transition-opacity" />
+        <div className="bg-[#18181B] rounded-[28px] sm:rounded-[32px] p-6 sm:p-8 shadow-[0_10px_30px_-4px_rgba(0,0,0,0.2)] relative overflow-hidden mb-6 sm:mb-8 border border-white/5">
           <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
             <div>
-              <p className="text-[10px] font-black text-indigo-300 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
-                <ShieldCheck size={12} /> Auto-Pay Liquidity Protection
+              <p className="text-[10px] sm:text-xs font-black text-slate-400 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
+                <ShieldCheck size={14} className="text-emerald-400" /> Auto-Pay Liquidity Protection
               </p>
-              <h3 className="text-3xl font-black text-white tracking-tight">
-                {fc(Math.round(totalMonthlyCommitment))}<span className="text-indigo-300 text-lg">/mo</span>
+              <h3 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                {fc(Math.round(totalMonthlyCommitment))}<span className="text-slate-400 text-base sm:text-lg font-semibold">/mo</span>
               </h3>
-              <p className="text-indigo-200 text-sm mt-1.5 font-medium leading-relaxed max-w-xl">
+              <p className="text-slate-300 text-xs sm:text-sm mt-1.5 font-medium leading-relaxed max-w-xl">
                 Aggregate monthly projection of active recurring liabilities. Ensure your linked accounts retain sufficient balance before the due date.
               </p>
             </div>
             <div className="bg-white/10 backdrop-blur-md px-5 py-4 rounded-2xl border border-white/10 shrink-0">
-              <span className="text-[10px] font-black uppercase text-indigo-300 tracking-wider">Active schedules</span>
+              <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Active schedules</span>
               <p className="text-2xl font-black text-white mt-1">{items.filter((i) => i.status === 'active').length} Profiles</p>
             </div>
           </div>
@@ -220,23 +217,23 @@ export const RecurringTransactions: React.FC = () => {
 
         {/* Add Form */}
         {showAddForm && (
-          <div data-testid="recurring-transactions-card" className="bg-white rounded-[28px] sm:rounded-[32px] p-6 sm:p-8 border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] mb-8">
+          <div data-testid="recurring-transactions-card" className="bg-white rounded-[28px] sm:rounded-[32px] p-6 sm:p-8 border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] mb-6 sm:mb-8">
             <h3 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight mb-6">Create New Recurring Schedule</h3>
             <form data-testid="recurring-transactions-form" onSubmit={handleCreate} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div>
-                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Schedule Name</label>
+                <label className="block text-[10px] sm:text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Schedule Name</label>
                 <input
                   type="text"
                   placeholder="e.g. Spotify Premium, Rent"
                   value={form.name}
                   onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200/80 rounded-2xl text-sm font-medium focus:outline-none focus:border-indigo-600 transition-colors"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200/80 rounded-2xl text-sm font-medium focus:outline-none focus:border-slate-900 transition-colors"
                   data-testid="recurring-form-name-input"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Amount</label>
+                <label className="block text-[10px] sm:text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Amount</label>
                 <input
                   type="number"
                   min="0"
@@ -244,17 +241,17 @@ export const RecurringTransactions: React.FC = () => {
                   placeholder="0.00"
                   value={form.amount}
                   onChange={(e) => setForm((f) => ({ ...f, amount: e.target.value }))}
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200/80 rounded-2xl text-sm font-medium focus:outline-none focus:border-indigo-600 transition-colors"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200/80 rounded-2xl text-sm font-medium focus:outline-none focus:border-slate-900 transition-colors"
                   data-testid="recurring-form-amount-input"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Type</label>
+                <label className="block text-[10px] sm:text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Type</label>
                 <select
                   value={form.type}
                   onChange={(e) => setForm((f) => ({ ...f, type: e.target.value as TxType }))}
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200/80 rounded-2xl text-sm font-medium focus:outline-none focus:border-indigo-600 transition-colors"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200/80 rounded-2xl text-sm font-medium focus:outline-none focus:border-slate-900 transition-colors"
                   data-testid="recurring-form-type-select"
                 >
                   <option data-testid="recurring-transactions-expense" value="expense">Expense</option>
@@ -264,23 +261,23 @@ export const RecurringTransactions: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Category</label>
+                <label className="block text-[10px] sm:text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Category</label>
                 <input
                   type="text"
                   placeholder="e.g. Rent & Housing"
                   value={form.category}
                   onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200/80 rounded-2xl text-sm font-medium focus:outline-none focus:border-indigo-600 transition-colors"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200/80 rounded-2xl text-sm font-medium focus:outline-none focus:border-slate-900 transition-colors"
                   data-testid="recurring-form-category-input"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Billing Frequency</label>
+                <label className="block text-[10px] sm:text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Billing Frequency</label>
                 <select
                   value={form.frequency}
                   onChange={(e) => setForm((f) => ({ ...f, frequency: e.target.value as Frequency }))}
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200/80 rounded-2xl text-sm font-medium focus:outline-none focus:border-indigo-600 transition-colors"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200/80 rounded-2xl text-sm font-medium focus:outline-none focus:border-slate-900 transition-colors"
                   data-testid="recurring-form-frequency-select"
                 >
                   <option data-testid="recurring-transactions-weekly" value="weekly">Weekly</option>
@@ -290,23 +287,23 @@ export const RecurringTransactions: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Next Due Date</label>
+                <label className="block text-[10px] sm:text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Next Due Date</label>
                 <input
                   type="date"
                   value={form.nextDueDate}
                   onChange={(e) => setForm((f) => ({ ...f, nextDueDate: e.target.value }))}
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200/80 rounded-2xl text-sm font-medium focus:outline-none focus:border-indigo-600 transition-colors"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200/80 rounded-2xl text-sm font-medium focus:outline-none focus:border-slate-900 transition-colors"
                   data-testid="recurring-form-date-input"
                 />
               </div>
 
               {accounts.length > 0 && (
                 <div>
-                  <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Account</label>
+                  <label className="block text-[10px] sm:text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Account</label>
                   <select
                     value={form.accountId}
                     onChange={(e) => setForm((f) => ({ ...f, accountId: e.target.value }))}
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200/80 rounded-2xl text-sm font-medium focus:outline-none focus:border-indigo-600 transition-colors"
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200/80 rounded-2xl text-sm font-medium focus:outline-none focus:border-slate-900 transition-colors"
                     data-testid="recurring-form-account-select"
                   >
                     <option data-testid="recurring-transactions-select-account" value="">— Select account —</option>
@@ -344,10 +341,10 @@ export const RecurringTransactions: React.FC = () => {
             {items.map((item) => (
               <div data-testid={`recurring-transactions-card-2-${item.id}`}
                 key={item.id}
-                className={`bg-white rounded-[24px] sm:rounded-[28px] p-5 sm:p-6 border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] flex flex-col md:flex-row md:items-center justify-between gap-5 sm:gap-6 transition-all ${item.status === 'paused' ? 'opacity-65' : ''}`}
+                className={`bg-white rounded-[24px] sm:rounded-[28px] p-5 sm:p-6 border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] flex flex-col md:flex-row md:items-center justify-between gap-5 sm:gap-6 transition-all ${item.status === 'paused' ? 'opacity-65' : ''}`}
               >
                 <div className="flex items-center gap-4">
-                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${item.status === 'active' ? 'bg-indigo-50 text-indigo-600' : 'bg-slate-100 text-slate-400'}`}>
+                  <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 bg-slate-100 text-slate-700">
                     <CreditCard size={20} />
                   </div>
                   <div>
@@ -357,9 +354,9 @@ export const RecurringTransactions: React.FC = () => {
                         <span className="px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase bg-slate-100 text-slate-400 tracking-wider">Paused</span>
                       )}
                       <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${
-                        item.type === 'income' ? 'bg-emerald-100 text-emerald-700' :
-                        item.type === 'transfer' ? 'bg-sky-100 text-sky-700' :
-                        'bg-rose-100 text-rose-700'
+                        item.type === 'income' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' :
+                        item.type === 'transfer' ? 'bg-sky-50 text-sky-700 border border-sky-100' :
+                        'bg-rose-50 text-rose-700 border border-rose-100'
                       }`}>{item.type}</span>
                     </h4>
                     <div className="flex items-center gap-3 mt-1.5 flex-wrap">
@@ -373,7 +370,7 @@ export const RecurringTransactions: React.FC = () => {
                           : String(item.nextDueDate).slice(0, 10)}
                       </span>
                       {item.syncStatus === 'pending' && (
-                        <span className="text-[9px] text-amber-500 font-bold uppercase">⏳ Pending sync</span>
+                        <span className="text-[9px] text-amber-600 font-bold uppercase">⏳ Pending sync</span>
                       )}
                     </div>
                   </div>
@@ -394,7 +391,7 @@ export const RecurringTransactions: React.FC = () => {
                       className={`px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
                         item.status === 'active'
                           ? 'bg-slate-100 hover:bg-slate-200 text-slate-700'
-                          : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700'
+                          : 'bg-[#18181B] hover:bg-black text-white'
                       }`}
                       data-testid={`recurring-card-toggle-${item.id}`}
                     >
@@ -402,7 +399,7 @@ export const RecurringTransactions: React.FC = () => {
                     </button>
                     <button
                       onClick={() => handleDelete(item)}
-                      className="w-9 h-9 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-600 flex items-center justify-center transition-all cursor-pointer"
+                      className="w-9 h-9 rounded-full bg-slate-100 hover:bg-rose-50 hover:text-rose-600 text-slate-500 flex items-center justify-center transition-all cursor-pointer"
                       title="Delete"
                       data-testid={`recurring-card-delete-${item.id}`}
                     >

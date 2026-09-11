@@ -35,12 +35,15 @@ export interface SendEmailOptions {
 }
 
 export async function sendEmail(opts: SendEmailOptions): Promise<boolean> {
+  const sendgridConfigured = ensureInitialized() && Boolean(env.SENDGRID_FROM_EMAIL);
+  const smtpConfigured = isSmtpConfigured();
+
   // 1. Try SendGrid if configured
-  if (ensureInitialized() && env.SENDGRID_FROM_EMAIL) {
+  if (sendgridConfigured) {
     try {
       await sgMail.send({
         to: opts.to,
-        from: { email: env.SENDGRID_FROM_EMAIL, name: FROM_NAME },
+        from: { email: env.SENDGRID_FROM_EMAIL!, name: FROM_NAME },
         subject: opts.subject,
         html: opts.html,
         categories: opts.categories,
@@ -52,6 +55,7 @@ export async function sendEmail(opts: SendEmailOptions): Promise<boolean> {
       logger.error('[Email/SendGrid] Send failed:', {
         to: opts.to,
         subject: opts.subject,
+        status: err?.code ?? err?.response?.statusCode,
         error: err?.response?.body || err.message,
       });
       // Fall through to SMTP if configured
@@ -59,20 +63,24 @@ export async function sendEmail(opts: SendEmailOptions): Promise<boolean> {
   }
 
   // 2. Try SMTP if configured (Gmail, SES, Brevo, custom SMTP)
-  if (isSmtpConfigured()) {
+  if (smtpConfigured) {
     const smtpSuccess = await sendSmtpEmail(opts);
     if (smtpSuccess) return true;
   }
 
-  // 3. Fallback for Local Development / Testing (no email credentials required)
-  if (process.env.NODE_ENV !== 'production') {
+  // 3. Dev/test with NO provider configured: simulate. A configured provider
+  // that failed must report false so callers (and developers) see the failure
+  // instead of a silently "sent" email.
+  if (!sendgridConfigured && !smtpConfigured && process.env.NODE_ENV !== 'production') {
     logger.info(`[Email/DevMock] Simulated email send to ${opts.to}: "${opts.subject}"`);
     return true;
   }
 
-  logger.warn('[Email] No email provider configured (SENDGRID_API_KEY / SMTP_HOST) — skipping send', {
-    to: opts.to,
-    subject: opts.subject,
-  });
+  if (!sendgridConfigured && !smtpConfigured) {
+    logger.warn('[Email] No email provider configured (SENDGRID_API_KEY + SENDGRID_FROM_EMAIL, or SMTP_HOST) — skipping send', {
+      to: opts.to,
+      subject: opts.subject,
+    });
+  }
   return false;
 }

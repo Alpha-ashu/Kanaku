@@ -253,20 +253,23 @@ const CONFIG_MANIFEST: readonly ConfigItem[] = [
     present: () => has('SECURITY_JWT_SECRET') || has('JWT_SECRET'),
   },
 
-  // ── Email (SendGrid) ────────────────────────────────────────────────────────
+  // ── Email (SendGrid OR SMTP) ────────────────────────────────────────────────
+  // Signup is gated on an emailed OTP, so production needs SOME working
+  // provider — but either one satisfies it (emails/providers/sendgrid.provider.ts
+  // tries SendGrid, then SMTP). Requiring SendGrid specifically made it
+  // impossible to move production to SMTP without a code change.
   {
     key: 'SENDGRID_API_KEY',
-    group: 'Email (SendGrid)',
-    purpose: 'Transactional + security-alert email via the notification outbox',
+    group: 'Email',
+    purpose:
+      'Outbound mail (OTP, alerts, notifications) — SENDGRID_API_KEY + SENDGRID_FROM_EMAIL, ' +
+      'or SMTP_HOST / SMTP_USER + SMTP_PASS (+ SMTP_FROM_EMAIL)',
     services: ALL, // worker delivers; api delivers too in combined mode
     tier: prodRequired,
-  },
-  {
-    key: 'SENDGRID_FROM_EMAIL',
-    group: 'Email (SendGrid)',
-    purpose: 'Verified "from" address for outbound mail',
-    services: ALL,
-    tier: prodRequired,
+    present: () =>
+      (has('SENDGRID_API_KEY') && has('SENDGRID_FROM_EMAIL')) ||
+      has('SMTP_HOST') ||
+      (has('SMTP_USER') && has('SMTP_PASS')),
   },
 
   // ── Push (Firebase / FCM) ────────────────────────────────────────────────────

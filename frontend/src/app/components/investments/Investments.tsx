@@ -229,7 +229,6 @@ export const Investments: React.FC = () => {
   {/* Header */}
   <PageHeader
   title="Investments"
-  icon={<BarChart3 size={20} className="sm:w-6 sm:h-6" />}
   >
   {canAdd && (
   <Button
@@ -307,13 +306,13 @@ export const Investments: React.FC = () => {
  {/* Stats */}
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
- <Card data-testid="investments-card" variant="glass" className="p-4 sm:p-6 relative overflow-hidden">
+ <Card data-testid="investments-card" className="p-5 sm:p-6 rounded-[28px] sm:rounded-[32px] bg-white border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] relative overflow-hidden">
  <div className="relative z-10">
- <div className="w-10 h-10 sm:w-12 sm:h-12 bg-black rounded-2xl flex items-center justify-center mb-2 sm:mb-4 shadow-sm">
- <TrendingUp className="text-white" size={18} />
+ <div className="w-10 h-10 sm:w-12 sm:h-12 bg-slate-100 rounded-2xl flex items-center justify-center mb-2 sm:mb-4 text-slate-800">
+ <TrendingUp size={18} />
  </div>
- <p className="text-gray-500 font-medium mb-0.5 sm:mb-1 text-xs sm:text-sm uppercase tracking-wide">Total Invested</p>
- <h3 className="text-xl sm:text-2xl font-display font-bold text-gray-900 tracking-tight">
+ <p className="text-slate-400 font-black mb-0.5 sm:mb-1 text-[11px] sm:text-xs uppercase tracking-wider">Total Invested</p>
+ <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
  {formatCurrency(portfolioStats.totalInvested)}
  </h3>
  </div>
@@ -321,13 +320,13 @@ export const Investments: React.FC = () => {
  </motion.div>
 
  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
- <Card data-testid="investments-card-2" variant="glass" className="p-4 sm:p-6 relative overflow-hidden">
+ <Card data-testid="investments-card-2" className="p-5 sm:p-6 rounded-[28px] sm:rounded-[32px] bg-white border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] relative overflow-hidden">
  <div className="relative z-10">
- <div className="w-10 h-10 sm:w-12 sm:h-12 bg-black rounded-2xl flex items-center justify-center mb-2 sm:mb-4 shadow-sm">
- <BarChart3 className="text-white" size={18} />
+ <div className="w-10 h-10 sm:w-12 sm:h-12 bg-slate-100 rounded-2xl flex items-center justify-center mb-2 sm:mb-4 text-slate-800">
+ <BarChart3 size={18} />
  </div>
- <p className="text-gray-500 font-medium mb-0.5 sm:mb-1 text-xs sm:text-sm uppercase tracking-wide">Current Value</p>
- <h3 className="text-xl sm:text-2xl font-display font-bold text-gray-900 tracking-tight">
+ <p className="text-slate-400 font-black mb-0.5 sm:mb-1 text-[11px] sm:text-xs uppercase tracking-wider">Current Value</p>
+ <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
  {formatCurrency(portfolioStats.currentValue)}
  </h3>
  </div>
@@ -335,22 +334,21 @@ export const Investments: React.FC = () => {
  </motion.div>
 
  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
- <Card data-testid="investments-card-3" variant={portfolioStats.profitLoss >= 0 ? 'mesh-green' : 'mesh-red'} className="p-4 sm:p-6 relative overflow-hidden">
+ <Card data-testid="investments-card-3" className="p-5 sm:p-6 rounded-[28px] sm:rounded-[32px] bg-white border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] relative overflow-hidden">
  <div className="relative z-10">
- <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mb-2 sm:mb-4">
+ <div className={cn("w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center mb-2 sm:mb-4", portfolioStats.profitLoss >= 0 ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600")}>
  {portfolioStats.profitLoss >= 0
- ? <TrendingUp className="text-white" size={18} />
- : <TrendingDown className="text-white" size={18} />}
+ ? <TrendingUp size={18} />
+ : <TrendingDown size={18} />}
  </div>
- <p className="text-white/80 font-medium mb-0.5 sm:mb-1 text-xs sm:text-sm uppercase tracking-wide">Profit / Loss</p>
- <h3 className="text-xl sm:text-2xl font-display font-bold text-white tracking-tight">
+ <p className="text-slate-400 font-black mb-0.5 sm:mb-1 text-[11px] sm:text-xs uppercase tracking-wider">Profit / Loss</p>
+ <h3 className={cn("text-xl sm:text-2xl font-black tracking-tight", portfolioStats.profitLoss >= 0 ? "text-emerald-600" : "text-rose-600")}>
  {portfolioStats.profitLoss >= 0 ? '+' : ''}{formatCurrency(portfolioStats.profitLoss)}
  </h3>
- <p className="text-white/80 text-xs sm:text-sm mt-0.5 sm:mt-1">
+ <p className={cn("text-xs sm:text-sm font-bold mt-0.5 sm:mt-1", portfolioStats.profitLoss >= 0 ? "text-emerald-600" : "text-rose-600")}>
  {portfolioStats.profitLoss >= 0 ? '+' : ''}{portfolioStats.profitLossPercent.toFixed(2)}%
  </p>
  </div>
- <div className="absolute -top-8 -right-8 w-40 h-40 bg-white/10 rounded-full blur-2xl pointer-events-none" />
  </Card>
  </motion.div>
  </div>
@@ -358,8 +356,8 @@ export const Investments: React.FC = () => {
  {/* Charts */}
  {openInvestments.length > 0 && (
  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
- <Card data-testid="investments-card-4" variant="glass" className="p-6">
- <h3 className="text-lg font-display font-bold text-gray-900 mb-4">Asset Allocation</h3>
+ <Card data-testid="investments-card-4" className="p-6 rounded-[28px] sm:rounded-[32px] bg-white border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)]">
+ <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight mb-4">Asset Allocation</h3>
  <ResponsiveContainer width="100%" height={250}>
  <PieChart>
  <Pie
@@ -381,8 +379,8 @@ export const Investments: React.FC = () => {
  </ResponsiveContainer>
  </Card>
 
- <Card data-testid="investments-card-5" variant="glass" className="p-6">
- <h3 className="text-lg font-display font-bold text-gray-900 mb-4">Top Performers</h3>
+ <Card data-testid="investments-card-5" className="p-6 rounded-[28px] sm:rounded-[32px] bg-white border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)]">
+ <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight mb-4">Top Performers</h3>
  <div className="space-y-3">
  {[...openInvestments]
  .sort((a, b) => getMetrics(b).percentChange - getMetrics(a).percentChange)
@@ -390,16 +388,16 @@ export const Investments: React.FC = () => {
  .map(inv => {
  const metrics = getMetrics(inv);
  return (
- <div key={inv.id} className="flex items-center justify-between p-3 bg-white rounded-lg hover:bg-gray-100 transition-colors">
+ <div key={inv.id} className="flex items-center justify-between p-3 bg-slate-50/70 rounded-2xl border border-slate-100/80 hover:bg-slate-100/70 transition-colors">
  <div>
- <p className="font-display font-bold text-gray-900 text-sm">{getInvestmentDisplayName(inv.assetName)}</p>
- <p className="text-xs text-gray-500 capitalize mt-0.5">{inv.assetType} {metrics.assetCurrency}</p>
+ <p className="font-bold text-slate-900 text-sm">{getInvestmentDisplayName(inv.assetName)}</p>
+ <p className="text-xs text-slate-400 capitalize mt-0.5">{inv.assetType} {metrics.assetCurrency}</p>
  </div>
  <div className="text-right">
- <p className={`font-bold text-sm ${metrics.profitLoss >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+ <p className={`font-bold text-sm ${metrics.profitLoss >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
  {metrics.profitLoss >= 0 ? '+' : ''}{formatCurrency(metrics.profitLoss)}
  </p>
- <p className={`text-xs ${metrics.profitLoss >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+ <p className={`text-xs font-bold ${metrics.profitLoss >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
  {metrics.percentChange >= 0 ? '+' : ''}{metrics.percentChange.toFixed(2)}%
  </p>
  </div>
@@ -413,8 +411,8 @@ export const Investments: React.FC = () => {
 
  
  {openInvestments.length > 0 && (
- <Card data-testid="investments-card-6" variant="glass" className="overflow-hidden hidden sm:block">
- <div className="flex items-center justify-between px-6 py-3 bg-white border-b border-gray-200">
+ <Card data-testid="investments-card-6" className="rounded-[28px] sm:rounded-[32px] bg-white border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] overflow-hidden hidden sm:block">
+ <div className="flex items-center justify-between px-6 py-4 bg-white border-b border-slate-100">
  <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">
  Portfolio Holdings
  {Object.keys(liveQuotes).length > 0 && (
@@ -531,14 +529,14 @@ export const Investments: React.FC = () => {
  const metrics = getMetrics(inv);
  const isProfit = metrics.profitLoss >= 0;
  return (
- <Card data-testid={`investments-card-7-${inv.id}`} key={inv.id} variant="glass" className="p-4">
+ <Card data-testid={`investments-card-7-${inv.id}`} key={inv.id} className="p-4 sm:p-5 rounded-[24px] sm:rounded-[28px] bg-white border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)]">
  {/* Row 1: name + actions */}
  <div className="flex items-start justify-between gap-2 mb-3">
  <div className="min-w-0">
- <p className="font-display font-bold text-gray-900 text-base truncate">{getInvestmentDisplayName(inv.assetName)}</p>
+ <p className="font-black text-slate-900 text-base truncate tracking-tight">{getInvestmentDisplayName(inv.assetName)}</p>
  <div className="flex items-center gap-2 mt-0.5">
- <span className="px-2 py-0.5 text-xs rounded-full bg-gray-100 text-gray-700 capitalize">{inv.assetType}</span>
- <span className="text-xs text-gray-400">{inv.purchaseDate ? new Date(inv.purchaseDate).toLocaleDateString() : '—'}</span>
+ <span className="px-2 py-0.5 text-xs font-bold rounded-full bg-slate-100 text-slate-600 capitalize">{inv.assetType}</span>
+ <span className="text-xs text-slate-400">{inv.purchaseDate ? new Date(inv.purchaseDate).toLocaleDateString() : '—'}</span>
  </div>
  </div>
  <div className="flex gap-1.5 shrink-0">

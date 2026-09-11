@@ -74,11 +74,14 @@ class OtpService {
     const cooldownTime = new Date(Date.now() - COOLDOWN_SECONDS * 1000);
     const blockWindow = new Date(Date.now() - 60 * 60 * 1000); // 1 hour
 
-    // Check recent OTP sent within cooldown period
+    // Check recent OTP sent within cooldown period. EXPIRED is excluded so a
+    // send the provider rejected (expired immediately) doesn't lock the user
+    // out for 30s; a natural expiry is already older than the cooldown window.
     const recentOtp = await prisma.otpRequest.findFirst({
       where: {
         destination,
         purpose,
+        status: { not: 'EXPIRED' },
         createdAt: { gte: cooldownTime },
       },
       orderBy: { createdAt: 'desc' },
@@ -163,7 +166,21 @@ class OtpService {
       });
 
       // Deliver OTP (via existing notification/email infrastructure)
-      await this.deliverOtp(cleanDestination, otp, channel, purpose);
+      const delivered = await this.deliverOtp(cleanDestination, otp, channel, purpose);
+
+      if (!delivered) {
+        // Never actually reached the user — expire it so a retry starts clean
+        // instead of leaving a "valid" OTP the user has no way to obtain.
+        await prisma.otpRequest.updateMany({
+          where: { destination: cleanDestination, purpose, status: 'ACTIVE' },
+          data: { status: 'EXPIRED' },
+        });
+        logger.error(`[OTP] Delivery failed for ${cleanDestination.substring(0, 3)}*** (${purpose}) — no provider succeeded`);
+        return {
+          success: false,
+          message: `We couldn't send the verification code to your ${channel === 'sms' ? 'phone' : 'email'}. Please try again shortly.`,
+        };
+      }
 
       logger.info(`[OTP] Sent ${channel} OTP to ${cleanDestination.substring(0, 3)}*** for ${purpose}`);
 
@@ -274,7 +291,7 @@ class OtpService {
     otp: string,
     channel: OtpChannel,
     purpose: OtpPurpose,
-  ): Promise<void> {
+  ): Promise<boolean> {
     const purposeText = {
       signup: 'account registration',
       login: 'login verification',
@@ -298,16 +315,18 @@ class OtpService {
       if (sent) {
         logger.info(`[OTP] Email delivered to ${destination.substring(0, 3)}*** for ${purposeText}`);
       } else {
-        logger.warn(`[OTP] Email delivery failed/skipped for ${destination.substring(0, 3)}*** — OTP still valid, user can request resend`);
+        logger.error(`[OTP] Email delivery failed for ${destination.substring(0, 3)}*** (${purposeText}) — no provider succeeded`);
       }
-    } else {
-      // SMS delivery
-      logger.info(`[OTP] SMS delivery to ${destination}: OTP for ${purposeText}`);
-      // In production, integrate with SMS gateway (Twilio, MSG91, etc.)
-      if (process.env.NODE_ENV !== 'production') {
-        logger.info(`[OTP] DEV MODE - OTP: ${otp} (destination: ${destination})`);
-      }
+      return sent;
     }
+
+    // SMS delivery — no gateway integrated yet (Twilio, MSG91, etc.); treat as
+    // best-effort success since this is a placeholder path, not a real send.
+    logger.info(`[OTP] SMS delivery to ${destination}: OTP for ${purposeText}`);
+    if (process.env.NODE_ENV !== 'production') {
+      logger.info(`[OTP] DEV MODE - OTP: ${otp} (destination: ${destination})`);
+    }
+    return true;
   }
 
   /**

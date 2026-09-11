@@ -47,6 +47,11 @@ services:
         sync: false
       - key: FRONTEND_URL
         sync: false
+      # Email: signup OTPs are hard-gated on delivery. Either SendGrid (below) or
+      # SMTP satisfies the startup check — for SMTP add SMTP_HOST, SMTP_PORT,
+      # SMTP_USER, SMTP_PASS, SMTP_FROM_EMAIL in the dashboard (see backend/.env.example).
+      # A gmail.com SENDGRID_FROM_EMAIL fails DMARC alignment via SendGrid; use a
+      # custom-domain sender with Domain Authentication, or Gmail SMTP with an app password.
       - key: SENDGRID_API_KEY
         sync: false
       - key: SENDGRID_FROM_EMAIL

@@ -601,11 +601,10 @@ export const Settings: React.FC = () => {
         {/* Header */}
         <PageHeader
           title="Settings"
-          icon={<SettingsIcon className="text-slate-900" size={22} />}
         />
 
         {/* ─── Compact Native Profile Header ─────────────────────────────── */}
-        <div className="rounded-[24px] sm:rounded-[28px] bg-slate-900 text-white p-4 sm:p-5 shadow-lg border border-slate-800 flex items-center justify-between gap-3">
+        <div className="rounded-[28px] sm:rounded-[32px] bg-[#18181B] text-white p-4 sm:p-5 shadow-[0_10px_30px_-4px_rgba(0,0,0,0.2)] border border-slate-800 flex items-center justify-between gap-3">
           <div
             onClick={() => setCurrentPage('user-profile')}
             className="flex items-center gap-3 min-w-0 flex-1 cursor-pointer group"
@@ -689,11 +688,11 @@ export const Settings: React.FC = () => {
               <p className="text-[11px] font-black uppercase tracking-wider text-slate-400 px-2">
                 Preferences
               </p>
-              <div className="bg-white rounded-2xl border border-slate-200/70 shadow-sm divide-y divide-slate-100 overflow-hidden">
+              <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] divide-y divide-slate-100 overflow-hidden">
                 {/* Language Row */}
                 <div className="p-3.5 sm:p-4 flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-9 h-9 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600 shrink-0">
+                    <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-slate-700 shrink-0">
                       <Globe size={18} />
                     </div>
                     <div className="min-w-0">
@@ -727,7 +726,7 @@ export const Settings: React.FC = () => {
                 {/* Currency Row */}
                 <div className="p-3.5 sm:p-4 flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0">
+                    <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-slate-700 shrink-0">
                       <Coins size={18} />
                     </div>
                     <div className="min-w-0">
@@ -766,11 +765,11 @@ export const Settings: React.FC = () => {
               <p className="text-[11px] font-black uppercase tracking-wider text-slate-400 px-2">
                 Security & Access
               </p>
-              <div className="bg-white rounded-2xl border border-slate-200/70 shadow-sm divide-y divide-slate-100 overflow-hidden">
+              <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] divide-y divide-slate-100 overflow-hidden">
                 {/* Auto-lock */}
                 <div className="p-3.5 sm:p-4 flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-9 h-9 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600 shrink-0">
+                    <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-slate-700 shrink-0">
                       <Lock size={18} />
                     </div>
                     <div className="min-w-0">
@@ -802,7 +801,7 @@ export const Settings: React.FC = () => {
                 {biometric?.available && (
                   <div className="p-3.5 sm:p-4 flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-9 h-9 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 shrink-0">
+                      <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-slate-700 shrink-0">
                         <Fingerprint size={18} />
                       </div>
                       <div className="min-w-0">
@@ -855,7 +854,7 @@ export const Settings: React.FC = () => {
                   className="p-3.5 sm:p-4 flex items-center justify-between gap-3 cursor-pointer hover:bg-slate-50 active:bg-slate-100 transition-colors"
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 shrink-0">
+                    <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-slate-700 shrink-0">
                       <Smartphone size={18} />
                     </div>
                     <div className="min-w-0">
@@ -884,7 +883,7 @@ export const Settings: React.FC = () => {
               <p className="text-[11px] font-black uppercase tracking-wider text-slate-400 px-2">
                 Alerts & Notifications
               </p>
-              <div className="bg-white rounded-2xl border border-slate-200/70 shadow-sm divide-y divide-slate-100 overflow-hidden">
+              <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] divide-y divide-slate-100 overflow-hidden">
                 {[
                   { key: 'transactionAlerts', label: 'Transaction Alerts', desc: 'Real-time alert on expense/income' },
                   { key: 'budgetAlerts', label: 'Budget Threshold Warnings', desc: 'Alert when exceeding category limits' },
@@ -928,11 +927,11 @@ export const Settings: React.FC = () => {
               <p className="text-[11px] font-black uppercase tracking-wider text-slate-400 px-2">
                 Data & Backups
               </p>
-              <div className="bg-white rounded-2xl border border-slate-200/70 shadow-sm divide-y divide-slate-100 overflow-hidden">
+              <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] divide-y divide-slate-100 overflow-hidden">
                 {/* Import Row */}
                 <div className="p-3.5 sm:p-4 flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 shrink-0">
+                    <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-slate-700 shrink-0">
                       <Upload size={18} />
                     </div>
                     <div className="min-w-0">
@@ -944,7 +943,7 @@ export const Settings: React.FC = () => {
                     type="button"
                     onClick={() => setShowImportModal(true)}
                     data-testid="settings-import-button"
-                    className="px-3.5 py-1.5 rounded-xl bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-700 active:scale-95 transition-all shadow-sm shrink-0"
+                    className="px-4 py-1.5 rounded-full bg-[#18181B] hover:bg-black text-white text-xs font-bold active:scale-95 transition-all shadow-xs shrink-0 cursor-pointer"
                   >
                     Import
                   </button>
@@ -953,7 +952,7 @@ export const Settings: React.FC = () => {
                 {/* Backup Row */}
                 <div className="p-3.5 sm:p-4 flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-9 h-9 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600 shrink-0">
+                    <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-slate-700 shrink-0">
                       <Database size={18} />
                     </div>
                     <div className="min-w-0">
@@ -966,7 +965,7 @@ export const Settings: React.FC = () => {
                     onClick={handleCreateBackup}
                     disabled={isBackingUp}
                     data-testid="settings-create-backup-button"
-                    className="px-3.5 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 active:scale-95 transition-all shadow-sm shrink-0"
+                    className="px-4 py-1.5 rounded-full bg-[#18181B] hover:bg-black text-white text-xs font-bold active:scale-95 transition-all shadow-xs shrink-0 cursor-pointer"
                   >
                     {isBackingUp ? 'Saving...' : 'Backup'}
                   </button>
@@ -1029,7 +1028,7 @@ export const Settings: React.FC = () => {
               <p className="text-[11px] font-black uppercase tracking-wider text-slate-400 px-2">
                 Category Customization
               </p>
-              <div className="bg-white rounded-2xl border border-slate-200/70 shadow-sm p-4">
+              <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] p-4 sm:p-5">
                 <CustomCategoriesSection />
               </div>
             </div>
@@ -1043,10 +1042,10 @@ export const Settings: React.FC = () => {
               </p>
 
               {/* Native Auto-Detection Card */}
-              <div className="bg-white rounded-2xl border border-slate-200/70 shadow-sm p-4 space-y-3">
+              <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] p-4 sm:p-5 space-y-3">
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-9 h-9 rounded-xl bg-teal-50 flex items-center justify-center text-teal-600 shrink-0">
+                    <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-slate-700 shrink-0">
                       <Smartphone size={18} />
                     </div>
                     <div className="min-w-0">
@@ -1063,8 +1062,8 @@ export const Settings: React.FC = () => {
                       disabled={isSmsBusy}
                       data-testid="settings-sms-toggle"
                       className={cn(
-                        "px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0",
-                        smsStatus.enabled ? "bg-slate-900 text-white" : "bg-teal-600 text-white shadow-sm"
+                        "px-4 py-1.5 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer",
+                        smsStatus.enabled ? "bg-slate-900 text-white" : "bg-[#18181B] hover:bg-black text-white shadow-xs"
                       )}
                     >
                       {isSmsBusy ? '...' : smsStatus.enabled ? 'Disable' : 'Enable'}
@@ -1085,14 +1084,15 @@ export const Settings: React.FC = () => {
                     <button
                       type="button"
                       onClick={handleClearSmsData}
+                      disabled={isSmsBusy}
                       className="text-rose-600 font-bold hover:underline"
                     >
                       Clear cached SMS
                     </button>
                   </div>
                 ) : (
-                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 text-xs text-slate-500">
-                    <p className="font-medium text-slate-700 mb-1">ℹ️ Platform Notes:</p>
+                  <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-100 text-xs text-slate-500">
+                    <p className="font-bold text-slate-700 mb-1">ℹ️ Platform Notes:</p>
                     <ul className="list-disc pl-4 space-y-0.5 text-[11px]">
                       <li><strong>Android App:</strong> Install the Full-SMS APK (`kanaku-full-release.apk`) to enable background SMS reading.</li>
                       <li><strong>iOS App / Web:</strong> Apple iOS sandbox restricts apps from background SMS inbox access. Use the quick paste tool below to log transactions instantly from any copied message.</li>
@@ -1102,9 +1102,9 @@ export const Settings: React.FC = () => {
               </div>
 
               {/* Universal Quick Paste & Parse Box (iOS / Android / Web) */}
-              <div className="bg-white rounded-2xl border border-slate-200/70 shadow-sm p-4 space-y-3">
+              <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] p-4 sm:p-5 space-y-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 shrink-0">
+                  <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-slate-700 shrink-0">
                     <MessageSquare size={18} />
                   </div>
                   <div>
@@ -1119,14 +1119,14 @@ export const Settings: React.FC = () => {
                     value={pastedSmsText}
                     onChange={(e) => setPastedSmsText(e.target.value)}
                     placeholder="e.g. Sent Rs. 450.00 to Swiggy on 02-Sep-26 via UPI ref 49201948..."
-                    className="w-full text-xs p-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-hidden focus:ring-2 focus:ring-indigo-500 focus:bg-white resize-none text-slate-800"
+                    className="w-full text-xs p-3 rounded-2xl bg-slate-50 border border-slate-200/80 focus:outline-none focus:border-slate-900 resize-none text-slate-800"
                   />
                   <div className="flex justify-end gap-2">
                     {pastedSmsText && (
                       <button
                         type="button"
                         onClick={() => setPastedSmsText('')}
-                        className="px-3 py-1.5 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-100"
+                        className="px-3.5 py-1.5 rounded-full text-xs font-bold text-slate-500 hover:bg-slate-100 cursor-pointer"
                       >
                         Clear
                       </button>
@@ -1135,7 +1135,7 @@ export const Settings: React.FC = () => {
                       type="button"
                       onClick={handleParsePastedSms}
                       disabled={isParsingPastedSms || !pastedSmsText.trim()}
-                      className="px-4 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-xs font-bold shadow-sm transition-all flex items-center gap-1.5"
+                      className="px-4 py-1.5 rounded-full bg-[#18181B] hover:bg-black disabled:opacity-50 text-white text-xs font-bold shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
                     >
                       {isParsingPastedSms ? 'Parsing...' : 'Parse & Add Transaction'}
                     </button>
@@ -1151,7 +1151,7 @@ export const Settings: React.FC = () => {
               <p className="text-[11px] font-black uppercase tracking-wider text-slate-400 px-2">
                 Legal & Privacy
               </p>
-              <div className="bg-white rounded-2xl border border-slate-200/70 shadow-sm divide-y divide-slate-100 overflow-hidden">
+              <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] divide-y divide-slate-100 overflow-hidden">
                 <div
                   onClick={() => setCurrentPage('privacy-policy')}
                   data-testid="settings-privacy-link"
@@ -1185,7 +1185,7 @@ export const Settings: React.FC = () => {
               <p className="text-[11px] font-black uppercase tracking-wider text-rose-500 px-2">
                 Danger Zone
               </p>
-              <div className="bg-rose-50/60 rounded-2xl border border-rose-200/80 p-3.5 sm:p-4 flex items-center justify-between gap-3">
+              <div className="bg-rose-50/50 rounded-[24px] sm:rounded-[28px] border border-rose-100/80 p-4 sm:p-5 flex items-center justify-between gap-3">
                 <div className="min-w-0">
                   <p className="text-xs sm:text-sm font-bold text-rose-950">Factory Reset / Clear All</p>
                   <p className="text-[11px] text-rose-700">Wipe all local and cloud ledger data</p>
@@ -1194,7 +1194,7 @@ export const Settings: React.FC = () => {
                   type="button"
                   onClick={handleClearAllData}
                   data-testid="settings-clear-data-button"
-                  className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold transition-all active:scale-95 shrink-0 shadow-sm"
+                  className="px-4 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-full text-xs font-bold transition-all active:scale-95 shrink-0 shadow-xs cursor-pointer"
                 >
                   Clear Data
                 </button>

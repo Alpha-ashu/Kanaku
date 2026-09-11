@@ -374,12 +374,11 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
           </div>
         </div>
 
-        {/* 1. Primary Hero: Financial Health & Net Worth Card (Reference Screen 1 Card Style) */}
+        {/* ── Unified Hero Card: Net Worth + Arc Gauge + 3 Mini Gauges ── */}
         <motion.div {...fadeUp}>
-          <div className="w-full">
-            <Card
-              className="p-6 sm:p-8 bg-white border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)] rounded-[28px] sm:rounded-[32px] relative overflow-hidden"
-            >
+          <Card className="bg-white border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)] rounded-[28px] sm:rounded-[32px] relative overflow-hidden">
+            {/* Top half: Net Worth + Arc Gauge */}
+            <div className="p-6 sm:p-8">
               <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
                 {/* Left: Summary Metrics */}
                 <div className="md:col-span-7 flex flex-col justify-between space-y-4">
@@ -413,7 +412,7 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
                   </div>
                 </div>
 
-                {/* Right: Circular Arc Progress Gauge (Reference Screen 1 Gauge Style) */}
+                {/* Right: Arc Gauge */}
                 <div className="md:col-span-5 flex justify-center md:justify-end pt-2 md:pt-0">
                   <AppArcGauge
                     value={stats.monthlyExpense}
@@ -427,46 +426,45 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
                   />
                 </div>
               </div>
-            </Card>
-          </div>
-        </motion.div>
+            </div>
 
-        {/* 2. 3 Mini Metric Cards (Reference Screen 1 Protein/Carbs/Fat style) */}
-        <motion.div {...fadeUp}>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 sm:gap-4">
-            {/* Total Expenses (Peach tone) */}
-            <AppMiniGauge
-              tone="peach"
-              label="Total Expenses"
-              value={formatCurrency(stats.monthlyExpense)}
-              subLabel={getPeriodLabel(timePeriod, selectedDate)}
-              progressPercent={stats.monthlyIncome > 0 ? Math.min(100, (stats.monthlyExpense / stats.monthlyIncome) * 100) : 50}
-              icon={<TrendingDown size={16} />}
-              onClick={() => setCurrentPage?.('transactions')}
-            />
+            {/* Divider */}
+            <div className="border-t border-slate-100 mx-4 sm:mx-6" />
 
-            {/* Total Income (Lavender tone) */}
-            <AppMiniGauge
-              tone="lavender"
-              label="Total Income"
-              value={formatCurrency(stats.monthlyIncome)}
-              subLabel={getPeriodLabel(timePeriod, selectedDate)}
-              progressPercent={100}
-              icon={<TrendingUp size={16} />}
-              onClick={() => setCurrentPage?.('transactions')}
-            />
-
-            {/* Net Balance / Surplus (Mint tone) */}
-            <AppMiniGauge
-              tone="mint"
-              label="Net Cashflow"
-              value={formatCurrency(stats.monthlyIncome - stats.monthlyExpense)}
-              subLabel={(stats.monthlyIncome - stats.monthlyExpense >= 0) ? 'Surplus' : 'Deficit'}
-              progressPercent={stats.monthlyIncome > 0 ? Math.min(100, Math.max(0, stats.savingsRate)) : 40}
-              icon={<Activity size={16} />}
-              onClick={() => setCurrentPage?.('reports')}
-            />
-          </div>
+            {/* Bottom half: 3 Mini Gauges */}
+            <div className="grid grid-cols-3 gap-0 divide-x divide-slate-100">
+              <AppMiniGauge
+                tone="peach"
+                label="Total Expenses"
+                value={formatCurrency(stats.monthlyExpense)}
+                subLabel={getPeriodLabel(timePeriod, selectedDate)}
+                progressPercent={stats.monthlyIncome > 0 ? Math.min(100, (stats.monthlyExpense / stats.monthlyIncome) * 100) : 50}
+                icon={<TrendingDown size={16} />}
+                onClick={() => setCurrentPage?.('transactions')}
+                className="rounded-none rounded-bl-[28px] sm:rounded-bl-[32px] border-0 shadow-none bg-transparent"
+              />
+              <AppMiniGauge
+                tone="lavender"
+                label="Total Income"
+                value={formatCurrency(stats.monthlyIncome)}
+                subLabel={getPeriodLabel(timePeriod, selectedDate)}
+                progressPercent={100}
+                icon={<TrendingUp size={16} />}
+                onClick={() => setCurrentPage?.('transactions')}
+                className="rounded-none border-0 shadow-none bg-transparent"
+              />
+              <AppMiniGauge
+                tone="mint"
+                label="Net Cashflow"
+                value={formatCurrency(stats.monthlyIncome - stats.monthlyExpense)}
+                subLabel={(stats.monthlyIncome - stats.monthlyExpense >= 0) ? 'Surplus' : 'Deficit'}
+                progressPercent={stats.monthlyIncome > 0 ? Math.min(100, Math.max(0, stats.savingsRate)) : 40}
+                icon={<Activity size={16} />}
+                onClick={() => setCurrentPage?.('reports')}
+                className="rounded-none rounded-br-[28px] sm:rounded-br-[32px] border-0 shadow-none bg-transparent"
+              />
+            </div>
+          </Card>
         </motion.div>
 
         {/* 3. Tax Summary: Soft Light Card */}
