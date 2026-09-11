@@ -534,53 +534,56 @@ export const LiveMarket: React.FC = () => {
  : null;
 
  return (
- <div className="h-full flex flex-col bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
- {/* Top bar */}
- <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-3 shrink-0">
- <div className="w-8 h-8 rounded-xl bg-black flex items-center justify-center">
- <Activity size={15} className="text-white" />
- </div>
- <div className="flex-1">
- <h2 className="font-display font-bold text-gray-900 text-sm">Live Market</h2>
- <div className="flex items-center gap-1.5">
- {isOnline ? (
- <Wifi size={10} className="text-emerald-500" />
- ) : (
- <WifiOff size={10} className="text-red-400" />
- )}
- <p className="text-[10px] text-gray-400">
- {!isOnline ? (
- 'Offline - cached data'
- ) : usingCache ? (
- (() => {
- const age = getCacheAge();
- if (!age) return 'Cached data';
- const mins = Math.round(age / 60000);
- return mins < 1 ? 'Cached - just now' : `Cached - ${mins}m ago`;
- })()
- ) : (
- timeSince !== null ? `Updated ${timeSince}s ago Auto-refresh 8s` : 'Connecting...'
- )}
- </p>
- {usingCache && isOnline && (
- <Clock size={10} className="text-amber-400" />
- )}
- </div>
- </div>
- <button data-testid="live-market-refresh-market-data"
- type="button"
- onClick={() => loadQuotes(pageSymbols, true)}
- disabled={refreshing || loading}
- aria-label="Refresh market data"
- className="w-8 h-8 rounded-xl border border-gray-200 hover:bg-gray-50 flex items-center justify-center transition-colors disabled:opacity-40"
- title="Refresh"
- >
- <RefreshCw size={14} className={cn('text-gray-500', refreshing && 'animate-spin')} />
- </button>
- </div>
+  <div className="h-full flex flex-col bg-white rounded-[28px] sm:rounded-[32px] border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] overflow-hidden">
+  {/* Top bar */}
+  <div className="px-4 py-3.5 border-b border-slate-100 flex items-center gap-3 shrink-0">
+  <div className="w-8 h-8 rounded-full bg-slate-900 flex items-center justify-center shadow-xs">
+  <Activity size={15} className="text-white" />
+  </div>
+  <div className="flex-1">
+  <h2 className="font-display font-bold text-slate-900 text-sm">Live Market</h2>
+  <div className="flex items-center gap-1.5">
+  {isOnline ? (
+  <Wifi size={10} className="text-emerald-500" />
+  ) : (
+  <WifiOff size={10} className="text-red-400" />
+  )}
+  <p className="text-[10px] text-slate-400 font-medium">
+  {!isOnline ? (
+  'Offline - cached data'
+  ) : usingCache ? (
+  (() => {
+  const age = getCacheAge();
+  if (!age) return 'Cached data';
+  const mins = Math.round(age / 60000);
+  return mins < 1 ? 'Cached - just now' : `Cached - ${mins}m ago`;
+  })()
+  ) : (
+  timeSince !== null ? `Updated ${timeSince}s ago Auto-refresh 8s` : 'Connecting...'
+  )}
+  </p>
+  {usingCache && isOnline && (
+  <Clock size={10} className="text-amber-400" />
+  )}
+  </div>
+  </div>
+  <button data-testid="live-market-refresh-market-data"
+  type="button"
+  onClick={() => {
+    const syms = watchlist.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+    void loadQuotes(syms, true);
+  }}
+  disabled={refreshing || !isOnline}
+  className="p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors disabled:opacity-40 cursor-pointer"
+  title="Refresh market data"
+  aria-label="Refresh market data"
+  >
+  <RefreshCw size={14} className={refreshing ? 'animate-spin' : ''} />
+  </button>
+  </div>
 
   {/* Market filter tabs */}
-  <div className="px-3 sm:px-4 py-2 border-b border-gray-100 shrink-0 w-full overflow-x-auto no-scrollbar scrollbar-none">
+  <div className="px-3 sm:px-4 py-2 border-b border-slate-100 shrink-0 w-full overflow-x-auto no-scrollbar scrollbar-none">
     <div className="flex flex-wrap sm:flex-nowrap gap-1.5 min-w-full sm:min-w-max justify-start sm:justify-start">
       {MARKET_TABS.map((market) => (
         <button
@@ -588,10 +591,10 @@ export const LiveMarket: React.FC = () => {
           key={market}
           onClick={() => handleMarketChange(market)}
           className={cn(
-            'px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer select-none shrink-0',
+            'px-3.5 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap cursor-pointer select-none shrink-0',
             activeMarket === market
-              ? 'bg-gray-900 text-white shadow-sm'
-              : 'bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700'
+              ? 'bg-[#18181B] text-white shadow-xs'
+              : 'bg-slate-100 text-slate-600 hover:bg-slate-200/80 hover:text-slate-900'
           )}
         >
           {MARKET_LABELS[market]}
@@ -601,15 +604,15 @@ export const LiveMarket: React.FC = () => {
   </div>
 
  {/* Search bar */}
- <div className="px-4 py-2.5 border-b border-gray-100 shrink-0">
+ <div className="px-4 py-2.5 border-b border-slate-100 shrink-0">
  <div className="relative">
- <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+ <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
  <input data-testid="live-market-search-stocks"
  type="text"
  value={searchQuery}
  onChange={e => setSearchQuery(e.target.value)}
  placeholder={`Search ${MARKET_LABELS[activeMarket]} stocks...`}
- className="w-full pl-8 pr-8 py-2 text-xs bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-gray-300 focus:bg-white transition-colors"
+ className="w-full pl-9 pr-8 py-2 text-xs font-semibold bg-slate-50 border border-slate-200/80 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all text-slate-900 placeholder:text-slate-400"
  />
  {searchQuery && (
  <button data-testid="live-market-clear-market-search"

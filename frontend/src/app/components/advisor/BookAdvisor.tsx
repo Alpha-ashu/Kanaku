@@ -802,23 +802,24 @@ export const BookAdvisor: React.FC = () => {
   return (
     <div className="flex flex-col min-h-screen bg-white pb-28">
       {/* Top Header Navigation */}
-      <header className="bg-white sticky top-0 z-30">
+      <header className="bg-white sticky top-0 z-30 border-b border-slate-100">
         <div className="max-w-7xl mx-auto px-4 lg:px-8 py-4 flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-600 to-indigo-800 flex items-center justify-center text-white shadow-lg shadow-indigo-200">
-                <Briefcase size={20} />
-              </div>
-              <div>
-                <h1 className="text-lg font-black text-slate-900 tracking-tight leading-none">Find an Advisor</h1>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Professional Financial & Tax Network</p>
-              </div>
-            </div>
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <button
+              type="button"
+              onClick={() => setCurrentPage('dashboard')}
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200/80 hover:bg-slate-50 active:scale-95 shadow-xs flex items-center justify-center text-slate-700 transition-all shrink-0 cursor-pointer"
+              aria-label="Go to dashboard"
+              title="Go to dashboard"
+              data-testid="book-advisor-go-back-button"
+            >
+              <ChevronLeft className="w-5 h-5 text-slate-700" />
+            </button>
+            <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none truncate">Find an Advisor</h1>
           </div>
 
-
           {/* 5 Primary Navigation Tabs — Adaptive Responsive Navigation */}
-          <nav className="flex items-center justify-center gap-1 sm:gap-1.5 bg-white p-1 sm:p-1.5 rounded-2xl border border-slate-200/80 shadow-xs max-w-full mx-auto overflow-x-auto scrollbar-hide">
+          <nav className="flex items-center justify-center gap-1 bg-white/95 backdrop-blur-xl p-1 rounded-full border border-slate-200/80 shadow-xs max-w-full overflow-x-auto scrollbar-hide shrink-0">
             {[
               { id: 'discover', label: 'Discover', icon: Search },
               { id: 'consultations', label: 'My Consultations', icon: Briefcase, badge: bookings.length },
@@ -835,28 +836,21 @@ export const BookAdvisor: React.FC = () => {
                   title={tab.label}
                   aria-label={tab.label}
                   className={cn(
-                    'flex items-center justify-center gap-2 rounded-xl text-xs font-black transition-all duration-300 ease-in-out cursor-pointer whitespace-nowrap min-w-[44px] h-[44px] px-2.5 sm:px-3.5 md:px-4',
+                    'flex items-center justify-center gap-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap px-3.5 sm:px-4 py-2 cursor-pointer',
                     isActive
-                      ? 'bg-indigo-600 text-white shadow-sm scale-102 flex-1 md:flex-initial'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                      ? 'bg-[#18181B] text-white shadow-xs'
+                      : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100/60'
                   )}
                 >
-                  <Icon size={16} className="shrink-0" />
-                  <span
-                    className={cn(
-                      'transition-all duration-300 ease-in-out',
-                      isActive ? 'inline-block' : 'hidden md:inline-block'
-                    )}
-                  >
-                    {tab.label}
-                  </span>
+                  <Icon size={15} className="shrink-0" />
+                  <span>{tab.label}</span>
                   {tab.badge !== undefined && tab.badge > 0 && (
                     <span
                       className={cn(
-                        'px-1.5 py-0.5 rounded-full text-[9px] font-black shrink-0 transition-all duration-300',
+                        'px-1.5 py-0.2 rounded-full text-[9px] font-black shrink-0',
                         isActive
-                          ? 'bg-white/20 text-white inline-block'
-                          : 'bg-slate-100 text-slate-700 border border-slate-200 hidden md:inline-block'
+                          ? 'bg-white/20 text-white'
+                          : 'bg-slate-200/80 text-slate-700'
                       )}
                     >
                       {tab.badge}
@@ -866,7 +860,6 @@ export const BookAdvisor: React.FC = () => {
               );
             })}
           </nav>
-
         </div>
       </header>
 

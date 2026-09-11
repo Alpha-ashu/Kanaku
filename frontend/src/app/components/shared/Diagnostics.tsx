@@ -124,15 +124,18 @@ export const Diagnostics: React.FC = () => {
  return (
  <CenteredLayout>
  <div className="space-y-6">
- <div className="flex items-center gap-3">
- <button data-testid="diagnostics-button"
- onClick={() => setCurrentPage('dashboard')}
- className="lg:!hidden p-2 hover:bg-white rounded-xl transition-all"
- >
- <ChevronLeft size={20} className="text-gray-900" />
- </button>
- <h2 className="text-2xl font-black text-gray-900 tracking-tight">Diagnostics</h2>
- </div>
+    <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+      <button
+        data-testid="diagnostics-button"
+        onClick={() => setCurrentPage('dashboard')}
+        className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200/80 hover:bg-slate-50 active:scale-95 shadow-xs flex items-center justify-center text-slate-700 transition-all shrink-0 cursor-pointer"
+        aria-label="Go to dashboard"
+        title="Go to dashboard"
+      >
+        <ChevronLeft className="w-5 h-5 text-slate-700" />
+      </button>
+      <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none truncate">Diagnostics</h1>
+    </div>
 
  <div className="bg-white rounded-[2rem] border border-gray-100 p-8 space-y-6 shadow-sm">
  <div className="flex items-center gap-3">

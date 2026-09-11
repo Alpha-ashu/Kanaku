@@ -144,7 +144,6 @@ export const ClientManagementPage: React.FC = () => {
  <div className="pb-4 lg:pb-6">
  <PageHeader
  title="Client Management"
- subtitle="Advisors & Managers portal to track clients, inspect asset allocation, and audit portfolios"
  icon={<Users className="text-teal-600" size={20} />}
  />
  </div>
@@ -173,13 +172,13 @@ export const ClientManagementPage: React.FC = () => {
 
  {/* Filter bar */}
  <div className="mb-6 relative">
- <Search size={18} className="absolute left-4 top-4 text-slate-400" />
+ <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
  <input data-testid="client-management-page-search-clients-by-name"
  type="text"
  placeholder="Search clients by name, email, phone..."
  value={searchQuery}
  onChange={e => setSearchQuery(e.target.value)}
- className="w-full pl-12 pr-4 py-3.5 bg-white border border-slate-200 rounded-[20px] text-sm font-medium focus:outline-none focus:border-teal-600 transition-colors shadow-sm"
+ className="w-full pl-12 pr-4 h-11 bg-white border border-slate-200/80 rounded-full text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all shadow-xs text-slate-900 placeholder:text-slate-400"
  />
  </div>
 

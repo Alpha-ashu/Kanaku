@@ -601,20 +601,19 @@ export const AdminFeaturePanel: React.FC = () => {
       <div className="min-h-screen pb-20">
         <PageHeader
           title="System Gating Control"
-          subtitle="Configure global features, sub-capabilities, and AI models."
         />
 
         {/* Tab Switcher */}
-        <div className="flex items-center gap-1.5 bg-slate-100 p-1.5 rounded-3xl w-fit mb-8 border border-slate-200/50 shadow-sm shrink-0">
+        <div className="flex items-center gap-1 p-1 bg-white/95 backdrop-blur-xl rounded-full border border-slate-200/80 shadow-xs w-fit mb-8 shrink-0">
           <button
             type="button"
             onClick={() => setActiveTab('app')}
             data-testid="admin-tab-app-button"
             className={cn(
-              "px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2",
+              "px-5 py-2 rounded-full text-xs font-bold transition-all duration-200 flex items-center gap-2 cursor-pointer",
               activeTab === 'app'
-                ? "bg-white text-slate-900 shadow-md shadow-slate-100"
-                : "text-slate-500 hover:text-slate-900"
+                ? "bg-[#18181B] text-white shadow-xs"
+                : "text-slate-500 hover:text-slate-900 hover:bg-slate-100/60"
             )}
           >
             <Settings size={14} />
@@ -625,10 +624,10 @@ export const AdminFeaturePanel: React.FC = () => {
             onClick={() => setActiveTab('ai')}
             data-testid="admin-tab-ai-button"
             className={cn(
-              "px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2",
+              "px-5 py-2 rounded-full text-xs font-bold transition-all duration-200 flex items-center gap-2 cursor-pointer",
               activeTab === 'ai'
-                ? "bg-white text-slate-900 shadow-md shadow-slate-100"
-                : "text-slate-500 hover:text-slate-900"
+                ? "bg-[#18181B] text-white shadow-xs"
+                : "text-slate-500 hover:text-slate-900 hover:bg-slate-100/60"
             )}
           >
             <Brain size={14} />

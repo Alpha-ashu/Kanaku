@@ -279,22 +279,36 @@ export const AdvisorWorkspace: React.FC = () => {
 
  return (
  <div className="min-h-screen bg-white">
- <div className="bg-transparent border-b border-gray-100 px-4 lg:px-8 py-4 sticky top-0 z-10">
- <div className="max-w-5xl mx-auto flex items-center gap-3">
- <button data-testid="advisor-workspace-button" onClick={() => setCurrentPage('dashboard')} className="p-2 hover:bg-gray-100 rounded-xl md:!hidden"><ChevronLeft size={20} className="text-gray-600" /></button>
- <div className="flex items-center gap-4">
- <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">Advisor Workspace</h1>
- </div>
- <button onClick={toggleAvailability} disabled={isTogglingAvail}
- className={cn('flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold border-2 transition-all',
- advisorProfile?.availability ? 'border-emerald-400 bg-emerald-50 text-emerald-700' : 'border-gray-300 bg-white text-gray-600')}
- data-testid="advisor-ws-avail-status-button"
- >
- {isTogglingAvail ? <Loader2 size={14} className="animate-spin" /> : <Power size={14} />}
- {advisorProfile?.availability ? 'Available' : 'Unavailable'}
- </button>
- </div>
- </div>
+  <div className="bg-white/95 backdrop-blur-md border-b border-slate-100 px-4 lg:px-8 py-4 sticky top-0 z-10">
+    <div className="max-w-5xl mx-auto flex items-center justify-between gap-3 w-full">
+      <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+        <button
+          data-testid="advisor-workspace-button"
+          onClick={() => setCurrentPage('dashboard')}
+          className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200/80 hover:bg-slate-50 active:scale-95 shadow-xs flex items-center justify-center text-slate-700 transition-all shrink-0 cursor-pointer"
+          aria-label="Go to dashboard"
+          title="Go to dashboard"
+        >
+          <ChevronLeft className="w-5 h-5 text-slate-700" />
+        </button>
+        <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none truncate">Advisor Workspace</h1>
+      </div>
+      <button
+        onClick={toggleAvailability}
+        disabled={isTogglingAvail}
+        className={cn(
+          'flex items-center gap-2 px-4 sm:px-5 h-9 sm:h-10 rounded-full text-xs sm:text-sm font-bold border transition-all active:scale-95 cursor-pointer shrink-0 shadow-xs',
+          advisorProfile?.availability
+            ? 'border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+            : 'border-slate-200/80 bg-white text-slate-700 hover:bg-slate-50'
+        )}
+        data-testid="advisor-ws-avail-status-button"
+      >
+        {isTogglingAvail ? <Loader2 size={14} className="animate-spin" /> : <Power size={14} />}
+        <span>{advisorProfile?.availability ? 'Available' : 'Unavailable'}</span>
+      </button>
+    </div>
+  </div>
 
  <div className="bg-white border-b border-gray-100">
  <div className="max-w-5xl mx-auto px-4 lg:px-8 flex overflow-x-auto scrollbar-hide">

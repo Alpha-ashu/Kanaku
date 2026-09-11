@@ -136,7 +136,6 @@ export const AdvisorPanel: React.FC = () => {
  <div className="px-4 lg:px-8 pt-6 lg:pt-10 pb-4 lg:pb-6">
  <PageHeader 
  title="Advisor Workspace" 
- subtitle="Manage availability & bookings" 
  icon={<Briefcase size={20} className="sm:w-6 sm:h-6" />}
  showBack
  backTo="dashboard"
@@ -145,31 +144,31 @@ export const AdvisorPanel: React.FC = () => {
  <div className="px-4 lg:px-8 space-y-6">
  {/* Stats */}
  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
- <div className="bg-blue-50 rounded-2xl border border-blue-200 p-6">
+ <div className="bg-blue-50/80 rounded-[28px] sm:rounded-[32px] border border-blue-100 p-6 shadow-xs">
  <div className="flex items-center justify-between">
  <div>
- <p className="text-blue-600 text-sm font-medium">Pending Bookings</p>
- <p className="text-3xl font-bold text-blue-900 mt-2">{pendingBookings.length}</p>
+ <p className="text-blue-600 text-xs font-bold uppercase tracking-wider">Pending Bookings</p>
+ <p className="text-3xl font-black text-blue-900 mt-2">{pendingBookings.length}</p>
  </div>
  <Clock size={32} className="text-blue-300" />
  </div>
  </div>
 
- <div className="bg-green-50 rounded-2xl border border-green-200 p-6">
+ <div className="bg-emerald-50/80 rounded-[28px] sm:rounded-[32px] border border-emerald-100 p-6 shadow-xs">
  <div className="flex items-center justify-between">
  <div>
- <p className="text-green-600 text-sm font-medium">Confirmed Sessions</p>
- <p className="text-3xl font-bold text-green-900 mt-2">{acceptedBookings.length}</p>
+ <p className="text-emerald-600 text-xs font-bold uppercase tracking-wider">Confirmed Sessions</p>
+ <p className="text-3xl font-black text-emerald-900 mt-2">{acceptedBookings.length}</p>
  </div>
- <CheckCircle size={32} className="text-green-300" />
+ <CheckCircle size={32} className="text-emerald-300" />
  </div>
  </div>
 
- <div className="bg-purple-50 rounded-2xl border border-purple-200 p-6">
+ <div className="bg-purple-50/80 rounded-[28px] sm:rounded-[32px] border border-purple-100 p-6 shadow-xs">
  <div className="flex items-center justify-between">
  <div>
- <p className="text-purple-600 text-sm font-medium">Monthly Earnings</p>
- <p className="text-3xl font-bold text-purple-900 mt-2">{totalEarning.toLocaleString()}</p>
+ <p className="text-purple-600 text-xs font-bold uppercase tracking-wider">Monthly Earnings</p>
+ <p className="text-3xl font-black text-purple-900 mt-2">{totalEarning.toLocaleString()}</p>
  </div>
  <DollarSign size={32} className="text-purple-300" />
  </div>
@@ -177,7 +176,7 @@ export const AdvisorPanel: React.FC = () => {
  </div>
 
  {/* Availability Schedule */}
- <div className="bg-white rounded-2xl border border-gray-200 p-6">
+ <div className="bg-white rounded-[28px] sm:rounded-[32px] border border-slate-100 p-6 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)]">
  <h3 className="text-lg font-semibold text-gray-900 mb-4">Your Availability</h3>
  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
  {availability.map((slot, idx) => (

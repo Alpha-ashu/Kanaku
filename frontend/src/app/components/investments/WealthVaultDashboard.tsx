@@ -311,22 +311,22 @@ export const WealthVaultDashboard: React.FC<{ onAddAsset?: () => void }> = ({ on
         <div className="flex items-center gap-2">
           <button
             onClick={() => loadPrices(true)}
-            className="p-2.5 rounded-xl border border-gray-200 bg-white shadow-sm hover:bg-gray-50 active:scale-95 transition-all"
+            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-slate-200/80 bg-white shadow-xs hover:bg-slate-50 active:scale-95 transition-all flex items-center justify-center cursor-pointer"
             title="Refresh prices"
             data-testid="vault-refresh-prices-button"
           >
             <RefreshCw
               size={14}
-              className={`text-gray-500 ${loadingPrices ? 'animate-spin text-amber-500' : ''}`}
+              className={`text-slate-500 ${loadingPrices ? 'animate-spin text-amber-500' : ''}`}
             />
           </button>
           <button
             onClick={onAddAsset ?? (() => setCurrentPage('add-investment'))}
-            className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl font-bold text-xs bg-gray-950 hover:bg-gray-800 text-white shadow transition-all active:scale-95"
+            className="flex items-center gap-1.5 px-4 sm:px-5 h-9 sm:h-10 rounded-full font-bold text-xs sm:text-sm bg-[#18181B] hover:bg-black text-white shadow-xs transition-all active:scale-95 cursor-pointer"
             data-testid="vault-add-asset-button"
           >
-            <Plus size={13} />
-            Add Asset
+            <Plus size={14} />
+            <span>Add Asset</span>
           </button>
         </div>
       </div>

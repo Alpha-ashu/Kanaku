@@ -7,6 +7,7 @@ import {
   ExternalLink,
   Check,
   Sparkles,
+  ArrowLeft,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useApp } from '@/contexts/AppContext';
@@ -130,59 +131,59 @@ export const Notifications: React.FC = () => {
   return (
     <CenteredLayout maxWidth="max-w-4xl">
       <div className="space-y-6">
-        {/* Modern Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-6 rounded-3xl text-white shadow-xl border border-indigo-500/20">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="p-2 rounded-xl bg-indigo-500/20 text-indigo-300">
-                <Bell size={20} />
-              </span>
-              <h1 className="text-2xl font-black tracking-tight">Notifications</h1>
-            </div>
-            <p className="text-slate-300 text-xs sm:text-sm mt-1">
-              {unreadCount > 0
-                ? `You have ${unreadCount} unread update${unreadCount > 1 ? 's' : ''}`
-                : 'All clear! You are completely up to date.'}
-            </p>
+        {/* Header */}
+        <div className="flex items-center justify-between gap-3 w-full">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <button
+              type="button"
+              onClick={() => setCurrentPage('dashboard')}
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200/80 hover:bg-slate-50 active:scale-95 shadow-xs flex items-center justify-center text-slate-700 transition-all shrink-0 cursor-pointer"
+              aria-label="Go to dashboard"
+              title="Go to dashboard"
+              data-testid="notifications-go-back-button"
+            >
+              <ArrowLeft size={18} className="text-slate-700" />
+            </button>
+            <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none truncate">Notifications</h1>
           </div>
 
-          <div className="flex items-center gap-2 self-start sm:self-auto">
+          <div className="flex items-center gap-2 shrink-0">
             {unreadCount > 0 && (
               <button
                 onClick={handleMarkAllAsRead}
                 data-testid="notifications-mark-all-read-button"
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl font-bold text-xs bg-indigo-600 hover:bg-indigo-500 text-white shadow-md transition-all active:scale-95 cursor-pointer"
+                className="flex items-center gap-1.5 px-4 h-9 sm:h-10 rounded-full font-bold text-xs sm:text-sm bg-indigo-600 hover:bg-indigo-500 text-white shadow-xs transition-all active:scale-95 cursor-pointer"
               >
                 <Check size={14} />
-                Mark All Read
+                <span>Mark All Read</span>
               </button>
             )}
             {notifications.length > 0 && (
               <button
                 onClick={handleClearAll}
                 data-testid="notifications-clear-all-button"
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl font-bold text-xs bg-white/10 hover:bg-white/20 text-slate-200 border border-white/10 transition-all active:scale-95 cursor-pointer"
+                className="flex items-center gap-1.5 px-4 h-9 sm:h-10 rounded-full font-bold text-xs sm:text-sm bg-white hover:bg-slate-50 text-slate-700 border border-slate-200/80 shadow-xs transition-all active:scale-95 cursor-pointer"
               >
                 <Trash2 size={14} />
-                Clear All
+                <span>Clear All</span>
               </button>
             )}
           </div>
         </div>
 
         {/* Filter Tabs */}
-        <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide py-1">
+        <div className="flex items-center gap-1 p-1 bg-white/95 backdrop-blur-xl rounded-full border border-slate-200/80 shadow-xs max-w-full overflow-x-auto scrollbar-hide shrink-0">
           {filters.map((filter) => {
             const isActive = filterType === filter.value;
             return (
               <button
                 key={filter.value}
-                onClick={() => setFilterType(filter.value)}
+                onClick={() => setFilterType(filter.value as any)}
                 data-testid={`notifications-filter-tab-${filter.value}`}
-                className={`px-4 py-2 rounded-xl font-extrabold text-xs transition-all cursor-pointer whitespace-nowrap ${
+                className={`px-4 py-1.5 sm:py-2 rounded-full font-bold text-xs sm:text-sm transition-all cursor-pointer whitespace-nowrap ${
                   isActive
-                    ? 'bg-slate-900 text-white shadow-md scale-105'
-                    : 'bg-white hover:bg-slate-50 text-slate-600 border border-slate-200/80 hover:border-slate-300'
+                    ? 'bg-[#18181B] text-white shadow-xs'
+                    : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100/60'
                 }`}
               >
                 {filter.label}
@@ -207,10 +208,10 @@ export const Notifications: React.FC = () => {
                     exit={{ opacity: 0, scale: 0.96 }}
                     transition={{ duration: 0.2, delay: Math.min(index, 10) * 0.02 }}
                     data-testid={`notifications-card-select-${notification.id}`}
-                    className={`bg-white rounded-2xl p-5 shadow-sm border transition-all duration-200 hover:shadow-md relative overflow-hidden group ${
+                    className={`bg-white rounded-[24px] sm:rounded-[28px] p-5 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] border transition-all duration-200 hover:shadow-md relative overflow-hidden group ${
                       isUnread
                         ? `border-slate-300/90 ${presentation.borderAccent}`
-                        : 'border-slate-200/60 opacity-90'
+                        : 'border-slate-100 opacity-90'
                     }`}
                   >
                     <div className="flex items-start gap-4">

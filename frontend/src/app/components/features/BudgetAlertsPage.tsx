@@ -423,14 +423,14 @@ export const BudgetAlertsPage: React.FC = () => {
       {showAddModal && (
         <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
           <div data-testid="budget-alerts-page-div" 
-            className="absolute inset-0 bg-black/50" 
+            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" 
             onClick={() => setShowAddModal(false)} 
           />
-          <div className="relative bg-white rounded-2xl p-8 w-full max-w-md border border-gray-200 shadow-lg z-10 max-h-[calc(100dvh-2rem-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px))] overflow-y-auto">
-            <h3 className="text-xl font-bold text-gray-900 mb-6">Set Category Budget</h3>
+          <div className="relative bg-white rounded-[28px] sm:rounded-[36px] p-6 sm:p-8 w-full max-w-md border border-slate-100 shadow-2xl z-10 max-h-[calc(100dvh-2rem-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px))] overflow-y-auto">
+            <h3 className="text-xl font-black text-slate-900 tracking-tight mb-6">Set Category Budget</h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">
                   Category *
                 </label>
                 <input data-testid="budget-alerts-page-e-g-food-shopping"
@@ -439,11 +439,11 @@ export const BudgetAlertsPage: React.FC = () => {
                   value={newCategory}
                   onChange={(e) => setNewCategory(e.target.value)}
                   placeholder="e.g., Food, Shopping"
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-gray-300 focus:bg-white"
+                  className="w-full h-11 px-4 border border-slate-200/80 rounded-2xl bg-white text-slate-900 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">
                   Limit Amount *
                 </label>
                 <input data-testid="budget-alerts-page-e-g-5000"
@@ -452,19 +452,19 @@ export const BudgetAlertsPage: React.FC = () => {
                   value={newLimit || ''}
                   onChange={(e) => setNewLimit(parseFloat(e.target.value) || 0)}
                   placeholder="e.g., 5000"
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-gray-300 focus:bg-white"
+                  className="w-full h-11 px-4 border border-slate-200/80 rounded-2xl bg-white text-slate-900 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all"
                 />
               </div>
               <div className="flex gap-3 pt-4">
                 <button data-testid="budget-alerts-page-cancel"
                   onClick={() => setShowAddModal(false)}
-                  className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl hover:bg-gray-50 transition-colors font-medium text-gray-700"
+                  className="flex-1 h-11 border border-slate-200/80 rounded-full hover:bg-slate-50 active:scale-95 transition-all font-bold text-xs sm:text-sm text-slate-700 cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button data-testid="budget-alerts-page-save-budget"
                   onClick={handleAddBudget}
-                  className="flex-1 px-4 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition-colors font-medium"
+                  className="flex-1 h-11 bg-[#18181B] text-white rounded-full hover:bg-black active:scale-95 transition-all font-bold text-xs sm:text-sm shadow-xs cursor-pointer"
                 >
                   Save Budget
                 </button>

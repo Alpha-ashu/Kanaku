@@ -4,7 +4,7 @@ import { useApp } from '@/contexts/AppContext';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { ReceiptScanner } from '@/app/components/transactions/ReceiptScanner';
 import { db, type DocumentRecord, type Transaction } from '@/lib/database';
-import { ScanLine, FileText, Receipt, Eye, Trash2, Plus, ImageOff, CheckCircle2, Clock, AlertCircle, Loader2, X, Layers } from 'lucide-react';
+import { ScanLine, FileText, Receipt, Eye, Trash2, Plus, ImageOff, CheckCircle2, Clock, AlertCircle, Loader2, X, Layers, ArrowLeft } from 'lucide-react';
 import { Button } from '@/app/components/ui/button';
 import { toast } from 'sonner';
 import { formatCurrencyAmount } from '@/lib/currencyUtils';
@@ -69,7 +69,7 @@ function BillCard({
   return (
     <div
       onClick={onView}
-      className="group relative flex flex-col overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm transition-all hover:shadow-md cursor-pointer hover:border-gray-300"
+      className="group relative flex flex-col overflow-hidden rounded-[28px] sm:rounded-[32px] border border-slate-100 bg-white shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] transition-all hover:shadow-md cursor-pointer hover:border-slate-200/80"
     >
       {/* Thumbnail */}
       <div className="relative h-36 w-full bg-gray-50 flex items-center justify-center overflow-hidden">
@@ -421,22 +421,31 @@ export const ReceiptScannerPage: React.FC = () => {
     <CenteredLayout>
       <div className="space-y-6 pb-10">
         {/* Header */}
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h1 className="text-2xl font-black text-gray-900 tracking-tight">Bills & Receipts</h1>
-            <p className="mt-0.5 text-sm text-gray-500">{receipts.length} receipt{receipts.length !== 1 ? 's' : ''} stored</p>
+        <div className="flex items-center justify-between gap-3 w-full">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <button
+              type="button"
+              onClick={() => setCurrentPage('dashboard')}
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200/80 hover:bg-slate-50 active:scale-95 shadow-xs flex items-center justify-center text-slate-700 transition-all shrink-0 cursor-pointer"
+              aria-label="Go to dashboard"
+              title="Go to dashboard"
+              data-testid="receipt-scanner-page-go-back-button"
+            >
+              <ArrowLeft size={18} className="text-slate-700" />
+            </button>
+            <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none truncate">Bills & Receipts</h1>
           </div>
           <Button data-testid="receipt-scanner-page-scan-add-bill"
             onClick={() => setScannerOpen(true)}
-            className="flex items-center gap-2 rounded-2xl bg-gray-900 px-5 py-2.5 text-sm font-bold text-white shadow hover:bg-gray-800"
+            className="shadow-xs bg-[#18181B] hover:bg-black text-white h-9 sm:h-10 px-4 sm:px-5 rounded-full font-bold text-xs sm:text-sm flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer shrink-0"
           >
             <ScanLine size={16} />
-            Scan / Add Bill
+            <span>Scan / Add Bill</span>
           </Button>
         </div>
 
         {/* Detailed Tax Tracker Section */}
-        <div className="rounded-2xl border border-orange-100 bg-gradient-to-br from-orange-50 via-amber-50 to-orange-50/40 p-4 sm:p-6 shadow-xs">
+        <div className="rounded-[28px] sm:rounded-[32px] border border-orange-100/80 bg-gradient-to-br from-orange-50/80 via-amber-50/60 to-orange-50/30 p-5 sm:p-6 shadow-xs">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
             <div className="flex items-center gap-2.5">
               <div className="p-2.5 bg-orange-500/10 text-orange-600 rounded-xl">
@@ -498,23 +507,23 @@ export const ReceiptScannerPage: React.FC = () => {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 rounded-2xl bg-gray-100 p-1">
+        <div className="flex gap-1 rounded-full bg-white/95 backdrop-blur-xl border border-slate-200/80 p-1 shadow-xs max-w-full overflow-x-auto scrollbar-hide">
           {TABS.map(tab => (
             <button data-testid={`receipt-scanner-page-button-${tab.key}`}
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
               className={cn(
-                'flex flex-1 items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold transition-all',
+                'flex flex-1 items-center justify-center gap-1.5 rounded-full px-4 py-1.5 sm:py-2 text-xs font-bold transition-all whitespace-nowrap cursor-pointer',
                 activeTab === tab.key
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
+                  ? 'bg-[#18181B] text-white shadow-xs'
+                  : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100/60'
               )}
             >
               {tab.label}
               {counts[tab.key] > 0 && (
                 <span className={cn(
                   'rounded-full px-1.5 py-0.5 text-[10px] font-bold',
-                  activeTab === tab.key ? 'bg-gray-100 text-gray-700' : 'bg-gray-200 text-gray-500'
+                  activeTab === tab.key ? 'bg-white/20 text-white' : 'bg-slate-200/80 text-slate-600'
                 )}>
                   {counts[tab.key]}
                 </span>

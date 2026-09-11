@@ -5,7 +5,7 @@ import { backendService } from '@/lib/backend-api';
 import { queueTransactionDeleteSync } from '@/lib/auth-sync-integration';
 import { Avatar, AvatarFallback, AvatarImage } from '@/app/components/ui/avatar';
 import { getCategoryCartoonIcon, getCategoryColor } from '@/app/components/ui/CartoonCategoryIcons';
-import { Plus, Users, Trash2, Edit2, Check, X, CalendarDays } from 'lucide-react';
+import { Plus, Users, Trash2, Edit2, Check, X, CalendarDays, ArrowLeft } from 'lucide-react';
 import { Button } from '@/app/components/ui/button';
 import { toast } from 'sonner';
 import { DeleteConfirmModal } from '@/app/components/shared/DeleteConfirmModal';
@@ -234,59 +234,70 @@ export const Groups: React.FC = () => {
  return (
  <CenteredLayout>
  <div className="space-y-6 sm:space-y-8">
- 
- <div className="flex flex-row flex-wrap items-center justify-between gap-4 w-full">
- <div className="flex items-center gap-4">
- <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">Group Expenses</h1>
- </div>
-  <div className="flex gap-3">
-  {canAddMember && (
-  <Button data-testid="groups-button"
-  variant="secondary"
-  onClick={() => setCurrentPage('add-friends')}
-  className="shadow-sm border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 h-12 px-5 rounded-2xl font-bold flex items-center gap-2"
-  >
-  <Plus size={18} />
-  <span>Friend</span>
-  </Button>
-  )}
-  {canCreate && (
-  <Button data-testid="groups-button-2"
-  onClick={openGroupExpenseForm}
-  className="shadow-lg bg-gray-900 hover:bg-gray-800 text-white h-12 px-5 rounded-2xl font-bold flex items-center gap-2"
-  >
-  <Plus size={18} />
-  <span>Expense</span>
-  </Button>
-  )}
-  </div>
- </div>
+    <div className="flex items-center justify-between gap-3 w-full">
+      <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+        <button
+          type="button"
+          onClick={() => setCurrentPage('dashboard')}
+          className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200/80 hover:bg-slate-50 active:scale-95 shadow-xs flex items-center justify-center text-slate-700 transition-all shrink-0 cursor-pointer"
+          aria-label="Go to dashboard"
+          title="Go to dashboard"
+          data-testid="groups-go-back-button"
+        >
+          <ArrowLeft size={18} className="text-slate-700" />
+        </button>
+        <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none truncate">Group Expenses</h1>
+      </div>
+      <div className="flex items-center gap-2 shrink-0">
+        {canAddMember && (
+          <Button
+            data-testid="groups-button"
+            variant="secondary"
+            onClick={() => setCurrentPage('add-friends')}
+            className="shadow-xs border border-slate-200/80 bg-white hover:bg-slate-50 text-slate-700 h-9 sm:h-10 px-4 sm:px-5 rounded-full font-bold text-xs sm:text-sm flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer"
+          >
+            <Plus size={16} />
+            <span>Friend</span>
+          </Button>
+        )}
+        {canCreate && (
+          <Button
+            data-testid="groups-button-2"
+            onClick={openGroupExpenseForm}
+            className="shadow-xs bg-[#18181B] hover:bg-black text-white h-9 sm:h-10 px-4 sm:px-5 rounded-full font-bold text-xs sm:text-sm flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer"
+          >
+            <Plus size={16} />
+            <span>Expense</span>
+          </Button>
+        )}
+      </div>
+    </div>
 
- <section className="rounded-[28px] border border-gray-200 bg-white p-5 shadow-sm">
- <div className="flex flex-wrap items-center justify-between gap-3">
- <div className="min-w-0">
- <p className="text-base font-semibold text-gray-900">Friends</p>
- <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-gray-500">
- {savedFriends.length > 0 ? (
- <>
- <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-sky-100 px-2 text-xs font-bold text-sky-700">
- {savedFriends.length}
- </span>
- <span>Ready for your next split</span>
- </>
- ) : (
- <span>Add friends first to start splitting bills</span>
- )}
- </div>
- </div>
- <Button
- data-testid="groups-manage-friends-button"
- onClick={() => setCurrentPage('friends')}
- className="shadow-sm bg-sky-50 text-sky-700 hover:bg-sky-100 text-xs sm:text-sm h-9 px-3"
- >
- Manage Friends
- </Button>
- </div>
+    <section className="rounded-[28px] sm:rounded-[32px] border border-slate-100 bg-white p-5 sm:p-6 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)]">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-base font-bold text-slate-900">Friends</p>
+          <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-slate-500">
+            {savedFriends.length > 0 ? (
+              <>
+                <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-purple-100 px-2 text-xs font-bold text-purple-700">
+                  {savedFriends.length}
+                </span>
+                <span>Ready for your next split</span>
+              </>
+            ) : (
+              <span>Add friends first to start splitting bills</span>
+            )}
+          </div>
+        </div>
+        <Button
+          data-testid="groups-manage-friends-button"
+          onClick={() => setCurrentPage('friends')}
+          className="shadow-xs bg-white text-slate-700 border border-slate-200/80 hover:bg-slate-50 text-xs sm:text-sm h-9 px-4 rounded-full font-bold cursor-pointer"
+        >
+          Manage Friends
+        </Button>
+      </div>
 
  {savedFriends.length > 0 ? (
  <div className="mt-4 overflow-hidden rounded-[24px] border border-sky-100 bg-gradient-to-r from-sky-50 via-white to-white p-4">
@@ -337,10 +348,10 @@ export const Groups: React.FC = () => {
  const coverColor = getCategoryColor(expense.category || 'Miscellaneous');
 
  return (
- <div
- key={expense.id}
- className="rounded-[30px] border border-gray-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
- >
+  <div
+  key={expense.id}
+  className="rounded-[28px] sm:rounded-[32px] border border-slate-100 bg-white p-5 sm:p-6 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] transition-shadow hover:shadow-md"
+  >
  <div className="flex gap-4">
  <div
  ref={el => { if (el) el.style.backgroundColor = coverColor || ''; }}

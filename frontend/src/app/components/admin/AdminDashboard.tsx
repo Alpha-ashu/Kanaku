@@ -374,18 +374,21 @@ export const AdminDashboard: React.FC = () => {
         <div className="space-y-6">
           {/* Header */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <button data-testid="admin-dashboard-button" onClick={goBack} className="lg:!hidden p-2 hover:bg-gray-100 rounded-xl transition-colors">
-                <ChevronLeft size={20} />
+            <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+              <button
+                data-testid="admin-dashboard-button"
+                onClick={goBack}
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200/80 hover:bg-slate-50 active:scale-95 shadow-xs flex items-center justify-center text-slate-700 transition-all shrink-0 cursor-pointer"
+                aria-label="Go back"
+                title="Go back"
+              >
+                <ChevronLeft className="w-5 h-5 text-slate-700" />
               </button>
-              <div>
-                <h2 className="text-2xl font-black text-slate-900 tracking-tight">Admin Console</h2>
-                <p className="text-slate-500 font-medium text-sm mt-0.5">System governance, RBAC & demo accounts</p>
-              </div>
+              <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none truncate">Admin Console</h1>
             </div>
 
             {/* Tab Navigation */}
-            <div className="flex flex-wrap gap-1 bg-slate-100 p-1.5 rounded-2xl w-fit shadow-inner">
+            <div className="flex flex-wrap gap-1 p-1 bg-white/95 backdrop-blur-xl rounded-full border border-slate-200/80 shadow-xs w-fit max-w-full overflow-x-auto scrollbar-hide shrink-0">
               {[
                 { id: 'overview', label: 'Overview' },
                 { id: 'users', label: 'User Directory' },
@@ -398,10 +401,10 @@ export const AdminDashboard: React.FC = () => {
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
                   className={cn(
-                    'px-4 py-2 rounded-xl text-xs font-black transition-all select-none',
+                    'px-4 py-1.5 sm:py-2 rounded-full text-xs font-bold transition-all whitespace-nowrap cursor-pointer select-none',
                     activeTab === tab.id
-                      ? 'bg-white text-slate-900 shadow-sm'
-                      : 'text-slate-500 hover:text-slate-900'
+                      ? 'bg-[#18181B] text-white shadow-xs'
+                      : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100/60'
                   )}
                 >
                   {tab.label}

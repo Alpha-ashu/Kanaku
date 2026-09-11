@@ -375,14 +375,13 @@ export const EditInvestment: React.FC = () => {
  <div className="max-w-2xl lg:max-w-4xl mx-auto pb-48">
  <PageHeader
  title="Edit Investment"
- subtitle="Update your investment details"
  icon={<TrendingUp size={20} className="sm:w-6 sm:h-6" />}
  showBack
  backTo="investments"
  onBack={() => localStorage.removeItem('editingInvestmentId')}
  />
 
- <div className="bg-white rounded-xl border border-gray-200 p-8">
+ <div className="bg-white rounded-[28px] sm:rounded-[32px] border border-slate-100 p-6 sm:p-8 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)]">
  <form data-testid="edit-investment-form" onSubmit={handleSubmit} className="space-y-6">
  <div>
  <label className="block text-sm font-medium text-gray-700 mb-2">Asset Type</label>
