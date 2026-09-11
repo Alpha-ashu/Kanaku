@@ -220,8 +220,8 @@ export const RecurringTransactions: React.FC = () => {
 
         {/* Add Form */}
         {showAddForm && (
-          <Card data-testid="recurring-transactions-card" variant="glass" className="p-8 mb-8 border-white/40 shadow-xl">
-            <h3 className="text-lg font-black text-slate-900 tracking-tight mb-6">Create New Recurring Schedule</h3>
+          <div data-testid="recurring-transactions-card" className="bg-white rounded-[28px] sm:rounded-[32px] p-6 sm:p-8 border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] mb-8">
+            <h3 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight mb-6">Create New Recurring Schedule</h3>
             <form data-testid="recurring-transactions-form" onSubmit={handleCreate} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div>
                 <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Schedule Name</label>
@@ -230,7 +230,7 @@ export const RecurringTransactions: React.FC = () => {
                   placeholder="e.g. Spotify Premium, Rent"
                   value={form.name}
                   onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                  className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:border-indigo-600 transition-colors"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200/80 rounded-2xl text-sm font-medium focus:outline-none focus:border-indigo-600 transition-colors"
                   data-testid="recurring-form-name-input"
                 />
               </div>
@@ -244,7 +244,7 @@ export const RecurringTransactions: React.FC = () => {
                   placeholder="0.00"
                   value={form.amount}
                   onChange={(e) => setForm((f) => ({ ...f, amount: e.target.value }))}
-                  className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:border-indigo-600 transition-colors"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200/80 rounded-2xl text-sm font-medium focus:outline-none focus:border-indigo-600 transition-colors"
                   data-testid="recurring-form-amount-input"
                 />
               </div>
@@ -254,7 +254,7 @@ export const RecurringTransactions: React.FC = () => {
                 <select
                   value={form.type}
                   onChange={(e) => setForm((f) => ({ ...f, type: e.target.value as TxType }))}
-                  className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:border-indigo-600 transition-colors"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200/80 rounded-2xl text-sm font-medium focus:outline-none focus:border-indigo-600 transition-colors"
                   data-testid="recurring-form-type-select"
                 >
                   <option data-testid="recurring-transactions-expense" value="expense">Expense</option>
@@ -270,7 +270,7 @@ export const RecurringTransactions: React.FC = () => {
                   placeholder="e.g. Rent & Housing"
                   value={form.category}
                   onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
-                  className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:border-indigo-600 transition-colors"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200/80 rounded-2xl text-sm font-medium focus:outline-none focus:border-indigo-600 transition-colors"
                   data-testid="recurring-form-category-input"
                 />
               </div>
@@ -280,7 +280,7 @@ export const RecurringTransactions: React.FC = () => {
                 <select
                   value={form.frequency}
                   onChange={(e) => setForm((f) => ({ ...f, frequency: e.target.value as Frequency }))}
-                  className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:border-indigo-600 transition-colors"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200/80 rounded-2xl text-sm font-medium focus:outline-none focus:border-indigo-600 transition-colors"
                   data-testid="recurring-form-frequency-select"
                 >
                   <option data-testid="recurring-transactions-weekly" value="weekly">Weekly</option>
@@ -295,7 +295,7 @@ export const RecurringTransactions: React.FC = () => {
                   type="date"
                   value={form.nextDueDate}
                   onChange={(e) => setForm((f) => ({ ...f, nextDueDate: e.target.value }))}
-                  className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:border-indigo-600 transition-colors"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200/80 rounded-2xl text-sm font-medium focus:outline-none focus:border-indigo-600 transition-colors"
                   data-testid="recurring-form-date-input"
                 />
               </div>
@@ -306,7 +306,7 @@ export const RecurringTransactions: React.FC = () => {
                   <select
                     value={form.accountId}
                     onChange={(e) => setForm((f) => ({ ...f, accountId: e.target.value }))}
-                    className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:border-indigo-600 transition-colors"
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200/80 rounded-2xl text-sm font-medium focus:outline-none focus:border-indigo-600 transition-colors"
                     data-testid="recurring-form-account-select"
                   >
                     <option data-testid="recurring-transactions-select-account" value="">— Select account —</option>
@@ -321,31 +321,30 @@ export const RecurringTransactions: React.FC = () => {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="bg-indigo-600 text-white px-6 py-4 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-indigo-700 active:scale-95 transition-all shadow-lg shadow-indigo-100 flex items-center gap-2 disabled:opacity-60"
+                  className="bg-[#18181B] hover:bg-black text-white px-6 py-3 rounded-full text-xs font-bold active:scale-95 transition-all shadow-xs flex items-center gap-2 disabled:opacity-60 cursor-pointer"
                   data-testid="recurring-form-submit-button"
                 >
                   {saving && <Loader2 size={14} className="animate-spin" />}
-                  Create Schedule
+                  <span>Create Schedule</span>
                 </button>
               </div>
             </form>
-          </Card>
+          </div>
         )}
 
         {/* Schedule List */}
         {items.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-gray-300 bg-white px-4 py-16 text-center">
+          <div className="rounded-[28px] sm:rounded-[32px] border border-dashed border-slate-200 bg-white px-4 py-16 text-center shadow-xs">
             <RefreshCw className="mx-auto mb-3 text-slate-300" size={32} />
             <p className="text-sm font-semibold text-slate-500">No recurring schedules yet.</p>
             <p className="text-xs text-slate-400 mt-1">Add rent, subscriptions, salaries — anything that repeats.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-6">
+          <div className="grid grid-cols-1 gap-4 sm:gap-6">
             {items.map((item) => (
-              <Card data-testid={`recurring-transactions-card-2-${item.id}`}
+              <div data-testid={`recurring-transactions-card-2-${item.id}`}
                 key={item.id}
-                variant="glass"
-                className={`p-6 border-white/40 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6 transition-all ${item.status === 'paused' ? 'opacity-65' : ''}`}
+                className={`bg-white rounded-[24px] sm:rounded-[28px] p-5 sm:p-6 border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] flex flex-col md:flex-row md:items-center justify-between gap-5 sm:gap-6 transition-all ${item.status === 'paused' ? 'opacity-65' : ''}`}
               >
                 <div className="flex items-center gap-4">
                   <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${item.status === 'active' ? 'bg-indigo-50 text-indigo-600' : 'bg-slate-100 text-slate-400'}`}>
@@ -355,15 +354,15 @@ export const RecurringTransactions: React.FC = () => {
                     <h4 className="font-black text-slate-900 tracking-tight flex items-center gap-2">
                       {item.name}
                       {item.status === 'paused' && (
-                        <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-slate-100 text-slate-400 tracking-wider">Paused</span>
+                        <span className="px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase bg-slate-100 text-slate-400 tracking-wider">Paused</span>
                       )}
-                      <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${
+                      <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${
                         item.type === 'income' ? 'bg-emerald-100 text-emerald-700' :
                         item.type === 'transfer' ? 'bg-sky-100 text-sky-700' :
                         'bg-rose-100 text-rose-700'
                       }`}>{item.type}</span>
                     </h4>
-                    <div className="flex items-center gap-4 mt-1.5 flex-wrap">
+                    <div className="flex items-center gap-3 mt-1.5 flex-wrap">
                       <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{item.category}</span>
                       <span className="w-1.5 h-1.5 rounded-full bg-slate-200" />
                       <span className="text-xs font-bold text-slate-500 capitalize">{item.frequency}</span>
@@ -380,7 +379,7 @@ export const RecurringTransactions: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between md:justify-end gap-6 border-t md:border-none pt-4 md:pt-0">
+                <div className="flex items-center justify-between md:justify-end gap-5 sm:gap-6 border-t md:border-none pt-4 md:pt-0">
                   <div className="text-left md:text-right">
                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">
                       {item.type === 'income' ? 'Income' : 'Liability'}
@@ -389,13 +388,13 @@ export const RecurringTransactions: React.FC = () => {
                       {fc(item.amount)}
                     </p>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
                     <button
                       onClick={() => handleToggleStatus(item)}
-                      className={`px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                      className={`px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
                         item.status === 'active'
-                          ? 'bg-slate-50 text-slate-500 hover:bg-slate-100'
-                          : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'
+                          ? 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                          : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700'
                       }`}
                       data-testid={`recurring-card-toggle-${item.id}`}
                     >
@@ -403,7 +402,7 @@ export const RecurringTransactions: React.FC = () => {
                     </button>
                     <button
                       onClick={() => handleDelete(item)}
-                      className="p-2.5 rounded-xl bg-rose-50 text-rose-500 hover:bg-rose-100 transition-all"
+                      className="w-9 h-9 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-600 flex items-center justify-center transition-all cursor-pointer"
                       title="Delete"
                       data-testid={`recurring-card-delete-${item.id}`}
                     >
@@ -411,7 +410,7 @@ export const RecurringTransactions: React.FC = () => {
                     </button>
                   </div>
                 </div>
-              </Card>
+              </div>
             ))}
           </div>
         )}

@@ -369,10 +369,10 @@ export const ToDoLists: React.FC = () => {
       {showCreateModal && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 pb-[calc(var(--bottom-nav-height)+1.25rem)] sm:pb-4">
           <div data-testid="to-do-lists-div-2" className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => { setShowCreateModal(false); resetModal(); }} />
-          <div className="relative bg-white rounded-2xl w-full max-w-md shadow-2xl z-10 overflow-hidden max-h-[90vh] flex flex-col">
-            <div className="flex items-center justify-between p-5 border-b border-slate-100 shrink-0">
-              <h3 className="text-base font-black text-slate-900">Create New List</h3>
-              <button onClick={() => { setShowCreateModal(false); resetModal(); }} title="Close" data-testid="todo-create-modal-close-button" className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-all">
+          <div className="relative bg-white rounded-[28px] sm:rounded-[36px] w-full max-w-md shadow-2xl z-10 overflow-hidden max-h-[90vh] flex flex-col border border-slate-100">
+            <div className="flex items-center justify-between p-5 sm:p-6 border-b border-slate-100 shrink-0">
+              <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">Create New List</h3>
+              <button onClick={() => { setShowCreateModal(false); resetModal(); }} title="Close" data-testid="todo-create-modal-close-button" className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition-all cursor-pointer">
                 <X size={16} />
               </button>
             </div>
@@ -603,12 +603,12 @@ export const ToDoLists: React.FC = () => {
             </div>
 
             {/* Footer buttons */}
-            <div className="p-5 border-t border-slate-100 flex gap-3 shrink-0">
+            <div className="p-5 sm:p-6 border-t border-slate-100 flex gap-3 shrink-0">
               <button
                 type="button"
                 onClick={() => { setShowCreateModal(false); resetModal(); }}
                 data-testid="todo-create-cancel-button"
-                className="flex-1 py-3 border-2 border-slate-200 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-50 transition-all"
+                className="flex-1 py-3 border border-slate-200/80 rounded-full text-xs font-bold text-slate-700 hover:bg-slate-50 active:scale-95 transition-all cursor-pointer"
               >
                 Cancel
               </button>
@@ -618,10 +618,10 @@ export const ToDoLists: React.FC = () => {
                 disabled={isCreating || !newListName.trim()}
                 data-testid="todo-create-submit-button"
                 className={cn(
-                  'flex-1 py-3 text-white rounded-xl text-[10px] font-black uppercase tracking-widest active:scale-95 transition-all disabled:opacity-50',
+                  'flex-1 py-3 text-white rounded-full text-xs font-bold active:scale-95 transition-all disabled:opacity-50 cursor-pointer shadow-xs',
                   listType === 'together'
                     ? 'bg-violet-600 hover:bg-violet-700'
-                    : 'bg-indigo-600 hover:bg-indigo-700'
+                    : 'bg-[#18181B] hover:bg-black'
                 )}
               >
                 {isCreating ? 'Creating…' : 'Create List'}

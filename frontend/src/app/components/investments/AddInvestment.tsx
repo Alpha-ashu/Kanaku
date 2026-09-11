@@ -353,7 +353,7 @@ export const AddInvestment: React.FC = () => {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto w-full p-4 sm:p-6 lg:p-8 space-y-6">
         {/* Total Summary Banner (Below Header Section) */}
-        <div className="p-5 sm:p-6 rounded-2xl bg-gradient-to-br from-slate-900 via-indigo-950 to-indigo-900 text-white shadow-xl border border-indigo-500/20">
+        <div className="p-6 sm:p-7 rounded-[28px] sm:rounded-[32px] bg-gradient-to-br from-slate-900 via-indigo-950 to-indigo-900 text-white shadow-xl border border-indigo-500/20">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs font-bold text-white/70 uppercase tracking-wider">Asset</p>
@@ -374,8 +374,8 @@ export const AddInvestment: React.FC = () => {
           {/* Left Column: Dynamic Form */}
           <div className="lg:col-span-7 space-y-6">
             {/* Dynamic Form Component based on Category/Subcategory */}
-            <div className="bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 shadow-xs space-y-5">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div className="bg-white rounded-[28px] sm:rounded-[32px] border border-slate-100 p-6 sm:p-8 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] space-y-6">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
                 <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
                   <BarChart3 className="text-indigo-600" size={18} />
                   {selectedSubcategory.replace('_', ' ').toUpperCase()} Specification
@@ -421,7 +421,7 @@ export const AddInvestment: React.FC = () => {
 
               {/* Common Metadata Fields: Broker/Platform & Date */}
               {selectedSubcategory !== 'fd' && selectedSubcategory !== 'rd' && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-slate-100">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-slate-100">
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-slate-600">Broker / Platform</label>
                     <input
@@ -429,7 +429,7 @@ export const AddInvestment: React.FC = () => {
                       value={formData.broker}
                       onChange={e => setFormData(prev => ({ ...prev, broker: e.target.value }))}
                       data-testid="investments-create-broker-input"
-                      className="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl px-3.5 text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
+                      className="w-full h-11 bg-slate-50 border border-slate-200 rounded-2xl px-4 text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
                       placeholder="e.g. Zerodha, Groww, Bank"
                     />
                   </div>
@@ -441,7 +441,7 @@ export const AddInvestment: React.FC = () => {
                       value={formData.date}
                       onChange={e => setFormData(prev => ({ ...prev, date: e.target.value }))}
                       data-testid="investments-create-date-input"
-                      className="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl px-3.5 text-sm font-semibold text-slate-900 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
+                      className="w-full h-11 bg-slate-50 border border-slate-200 rounded-2xl px-4 text-sm font-semibold text-slate-900 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
                     />
                   </div>
                 </div>
@@ -454,14 +454,14 @@ export const AddInvestment: React.FC = () => {
                   value={formData.description}
                   onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))}
                   data-testid="investments-create-notes-textarea"
-                  className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none min-h-[80px] resize-none"
+                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none min-h-[80px] resize-none"
                   placeholder="Notes, portfolio strategy..."
                 />
               </div>
             </div>
 
             {/* Payment Account */}
-            <div className="bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 shadow-xs space-y-3">
+            <div className="bg-white rounded-[28px] sm:rounded-[32px] border border-slate-100 p-6 sm:p-8 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] space-y-4">
               <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
                 <CreditCard className="text-indigo-600" size={18} />
                 <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Payment Account</h2>
@@ -483,7 +483,7 @@ export const AddInvestment: React.FC = () => {
                   onChange={val => setFormData(prev => ({ ...prev, fundingAccountId: parseInt(val) }))}
                   placeholder="Select Funding Account"
                   testId="investments-create-account-dropdown"
-                  className="h-12 rounded-xl border border-slate-200 bg-slate-50 font-semibold text-sm text-slate-900"
+                  className="h-12 rounded-2xl border border-slate-200 bg-slate-50 font-semibold text-sm text-slate-900"
                 />
               </div>
             </div>
@@ -492,7 +492,7 @@ export const AddInvestment: React.FC = () => {
           {/* Right Column: Financial Breakdown */}
           <div className="lg:col-span-5 space-y-6 lg:sticky lg:top-20">
             {/* Pricing & Quantity Card */}
-            <div className="bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 shadow-xs space-y-5">
+            <div className="bg-white rounded-[28px] sm:rounded-[32px] border border-slate-100 p-6 sm:p-8 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] space-y-6">
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div className="flex items-center gap-2">
                   <TrendingUp className="text-indigo-600" size={18} />
@@ -502,7 +502,7 @@ export const AddInvestment: React.FC = () => {
 
               {/* Quantity / Weight and Buy Price Inputs */}
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-center space-y-1.5 focus-within:bg-white focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all">
+                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-center space-y-1.5 focus-within:bg-white focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all">
                   <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
                     {selectedCategory === 'physical_assets' ? `Weight (${physicalDetails.weightUnit})` : 'Quantity'}
                   </span>
@@ -527,7 +527,7 @@ export const AddInvestment: React.FC = () => {
                   )}
                 </div>
 
-                <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-center space-y-1.5 focus-within:bg-white focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all">
+                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-center space-y-1.5 focus-within:bg-white focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all">
                   <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
                     {selectedCategory === 'physical_assets' ? `Price per unit` : `Buy Price (${assetCurrencySymbol})`}
                   </span>
@@ -543,7 +543,7 @@ export const AddInvestment: React.FC = () => {
               </div>
 
               {/* Fees and Subtotal Row */}
-              <div className="flex items-center justify-between gap-4 pt-3 border-t border-slate-100">
+              <div className="flex items-center justify-between gap-4 pt-4 border-t border-slate-100">
                 <div className="w-1/2 space-y-1">
                   <label className="text-xs font-semibold text-slate-600">Fees ({currency})</label>
                   <input
@@ -551,7 +551,7 @@ export const AddInvestment: React.FC = () => {
                     value={formData.purchaseFees || ''}
                     onChange={e => setFormData(prev => ({ ...prev, purchaseFees: parseFloat(e.target.value) || 0 }))}
                     data-testid="investments-create-fees-input"
-                    className="w-full h-10 bg-slate-50 border border-slate-200 rounded-xl px-3 text-sm font-semibold text-slate-900 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all outline-none"
+                    className="w-full h-11 bg-slate-50 border border-slate-200 rounded-2xl px-4 text-sm font-semibold text-slate-900 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all outline-none"
                     placeholder="0"
                   />
                 </div>

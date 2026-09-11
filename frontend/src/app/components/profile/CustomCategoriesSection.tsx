@@ -150,16 +150,16 @@ export const CustomCategoriesSection: React.FC = () => {
   };
 
   return (
-    <div className="bg-gray-50 rounded-3xl overflow-hidden" data-testid="custom-categories-section">
-      <div className="p-6 border-b border-gray-200">
+    <div className="bg-white rounded-[28px] sm:rounded-[32px] border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] overflow-hidden" data-testid="custom-categories-section">
+      <div className="p-6 border-b border-slate-100">
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-indigo-100 flex items-center justify-center">
-              <Tag className="text-indigo-600" size={20} />
+            <div className="w-10 h-10 rounded-2xl bg-indigo-50 border border-indigo-100/60 flex items-center justify-center shrink-0">
+              <Tag className="text-indigo-600" size={18} />
             </div>
             <div>
-              <h4 className="font-medium text-gray-900">Categories</h4>
-              <p className="text-sm text-gray-500">
+              <h4 className="font-bold text-slate-900">Categories</h4>
+              <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
                 Your own categories appear everywhere you pick one.
                 {importedCount > 0 && ` ${importedCount} came from an import.`}
               </p>
@@ -169,22 +169,22 @@ export const CustomCategoriesSection: React.FC = () => {
             type="button"
             onClick={handleSync}
             disabled={busy}
-            className="px-3 py-1.5 text-sm font-medium rounded-full border border-gray-300 hover:bg-white transition-all active:scale-95 disabled:opacity-50 inline-flex items-center gap-1.5"
+            className="px-3.5 py-1.5 text-xs sm:text-sm font-bold rounded-full border border-slate-200/80 bg-white hover:bg-slate-50 text-slate-700 shadow-xs active:scale-95 disabled:opacity-50 inline-flex items-center gap-1.5 transition-all cursor-pointer"
             data-testid="categories-sync-button"
           >
             <Download size={14} /> Sync
           </button>
         </div>
 
-        <div className="mt-4 inline-flex rounded-full bg-white border border-gray-200 p-1">
+        <div className="mt-4 inline-flex rounded-full bg-slate-100/90 border border-slate-200/40 p-1">
           {(['expense', 'income'] as CategoryType[]).map((type) => (
             <button
               key={type}
               type="button"
               onClick={() => { setActiveType(type); setEditingId(null); setIsCreating(false); }}
               className={cn(
-                'px-4 py-1.5 text-sm font-medium rounded-full transition-all capitalize',
-                activeType === type ? 'bg-black text-white' : 'text-gray-600 hover:text-gray-900',
+                'px-4 py-1.5 text-xs sm:text-sm font-bold rounded-full transition-all capitalize cursor-pointer',
+                activeType === type ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900',
               )}
               data-testid={`categories-tab-${type}`}
             >
@@ -197,13 +197,13 @@ export const CustomCategoriesSection: React.FC = () => {
       <div className="p-6 space-y-4">
         {/* Create */}
         {isCreating ? (
-          <div className="bg-white rounded-2xl border border-gray-200 p-4 space-y-3">
+          <div className="bg-slate-50/70 rounded-[22px] sm:rounded-[24px] border border-slate-200/80 p-4 sm:p-5 space-y-3.5">
             <input
               autoFocus
               value={draft.name}
               onChange={(event) => setDraft((prev) => ({ ...prev, name: event.target.value }))}
               placeholder={`New ${activeType} category`}
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-black"
+              className="w-full px-4 py-2.5 rounded-2xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-slate-900/10 text-sm font-medium"
               data-testid="category-name-input"
             />
             <div className="flex flex-wrap gap-2">
@@ -214,8 +214,8 @@ export const CustomCategoriesSection: React.FC = () => {
                   aria-label={`Colour ${color}`}
                   onClick={() => setDraft((prev) => ({ ...prev, color }))}
                   className={cn(
-                    'w-7 h-7 rounded-full transition-transform',
-                    draft.color === color ? 'ring-2 ring-offset-2 ring-black scale-110' : 'hover:scale-105',
+                    'w-7 h-7 rounded-full transition-transform cursor-pointer',
+                    draft.color === color ? 'ring-2 ring-offset-2 ring-slate-900 scale-110' : 'hover:scale-105',
                   )}
                   style={{ backgroundColor: color }}
                 />
@@ -224,7 +224,7 @@ export const CustomCategoriesSection: React.FC = () => {
             <select
               value={draft.icon}
               onChange={(event) => setDraft((prev) => ({ ...prev, icon: event.target.value }))}
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white"
+              className="w-full px-4 py-2.5 rounded-2xl border border-slate-200 bg-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-slate-900/10 cursor-pointer"
               data-testid="category-icon-select"
             >
               {ICON_CHOICES.map((icon) => (
@@ -236,7 +236,7 @@ export const CustomCategoriesSection: React.FC = () => {
                 type="button"
                 onClick={handleCreate}
                 disabled={busy}
-                className="px-4 py-2 rounded-full bg-black text-white text-sm font-medium disabled:opacity-50"
+                className="px-5 py-2.5 rounded-full bg-slate-900 hover:bg-black text-white text-xs sm:text-sm font-bold shadow-xs active:scale-95 disabled:opacity-50 cursor-pointer transition-all"
                 data-testid="category-save-button"
               >
                 Add category
@@ -244,7 +244,7 @@ export const CustomCategoriesSection: React.FC = () => {
               <button
                 type="button"
                 onClick={() => { setIsCreating(false); setDraft(emptyDraft()); }}
-                className="px-4 py-2 rounded-full border border-gray-300 text-sm font-medium"
+                className="px-4 py-2.5 rounded-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-bold cursor-pointer transition-all"
               >
                 Cancel
               </button>
@@ -254,7 +254,7 @@ export const CustomCategoriesSection: React.FC = () => {
           <button
             type="button"
             onClick={() => setIsCreating(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-black text-white text-sm font-medium hover:bg-gray-900 transition-all active:scale-95"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-900 text-white text-xs sm:text-sm font-bold hover:bg-black transition-all active:scale-95 shadow-xs cursor-pointer"
             data-testid="category-add-button"
           >
             <Plus size={16} /> New {activeType} category
@@ -262,12 +262,12 @@ export const CustomCategoriesSection: React.FC = () => {
         )}
 
         {/* Custom categories */}
-        <div className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+        <div className="space-y-2.5">
+          <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
             Your categories ({customOptions.length})
           </p>
           {customOptions.length === 0 ? (
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-slate-500 py-2">
               None yet. Add one above, or import a file — unrecognised categories are created for you.
             </p>
           ) : (
@@ -277,17 +277,17 @@ export const CustomCategoriesSection: React.FC = () => {
               return (
                 <div
                   key={record.id}
-                  className="bg-white rounded-2xl border border-gray-200 p-3 flex items-center gap-3"
+                  className="bg-white rounded-[20px] sm:rounded-[22px] border border-slate-100 shadow-xs hover:border-slate-200 p-3 sm:p-3.5 flex items-center gap-3 transition-all"
                 >
                   {isEditing ? (
                     <>
                       <input
                         value={editDraft.name}
                         onChange={(event) => setEditDraft((prev) => ({ ...prev, name: event.target.value }))}
-                        className="flex-1 min-w-0 px-3 py-1.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-black"
+                        className="flex-1 min-w-0 px-3.5 py-1.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-900/10 text-sm font-medium"
                         data-testid="category-edit-input"
                       />
-                      <div className="flex gap-1">
+                      <div className="flex gap-1.5">
                         {COLOR_CHOICES.slice(0, 6).map((color) => (
                           <button
                             key={color}
@@ -295,8 +295,8 @@ export const CustomCategoriesSection: React.FC = () => {
                             aria-label={`Colour ${color}`}
                             onClick={() => setEditDraft((prev) => ({ ...prev, color }))}
                             className={cn(
-                              'w-5 h-5 rounded-full',
-                              editDraft.color === color && 'ring-2 ring-offset-1 ring-black',
+                              'w-5 h-5 rounded-full cursor-pointer transition-transform',
+                              editDraft.color === color && 'ring-2 ring-offset-1 ring-slate-900 scale-110',
                             )}
                             style={{ backgroundColor: color }}
                           />
@@ -306,7 +306,7 @@ export const CustomCategoriesSection: React.FC = () => {
                         type="button"
                         onClick={() => handleSaveEdit(record)}
                         disabled={busy}
-                        className="p-2 rounded-full hover:bg-gray-100 text-green-600 disabled:opacity-50"
+                        className="w-8 h-8 rounded-full hover:bg-emerald-50 text-emerald-600 disabled:opacity-50 flex items-center justify-center transition-colors cursor-pointer"
                         aria-label="Save"
                       >
                         <Check size={16} />
@@ -314,7 +314,7 @@ export const CustomCategoriesSection: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => setEditingId(null)}
-                        className="p-2 rounded-full hover:bg-gray-100 text-gray-500"
+                        className="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-500 flex items-center justify-center transition-colors cursor-pointer"
                         aria-label="Cancel"
                       >
                         <X size={16} />
@@ -323,36 +323,36 @@ export const CustomCategoriesSection: React.FC = () => {
                   ) : (
                     <>
                       <span
-                        className="w-8 h-8 rounded-xl shrink-0"
+                        className="w-8 h-8 rounded-xl shrink-0 shadow-xs"
                         style={{ backgroundColor: option.color || '#6B7280' }}
                       />
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium text-gray-900 truncate">{option.name}</p>
+                        <p className="font-bold text-slate-900 truncate">{option.name}</p>
                         {record.createdFromImport && (
-                          <p className="text-xs text-gray-500">Created by an import</p>
+                          <p className="text-xs text-slate-400">Created by an import</p>
                         )}
                       </div>
                       {!record.cloudId && (
-                        <span className="text-xs text-amber-600 shrink-0">Not synced</span>
+                        <span className="text-xs text-amber-600 font-bold shrink-0">Not synced</span>
                       )}
                       <button
                         type="button"
                         onClick={() => beginEdit(record)}
-                        className="p-2 rounded-full hover:bg-gray-100 text-gray-600"
+                        className="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-colors cursor-pointer"
                         aria-label={`Edit ${option.name}`}
                         data-testid="category-edit-button"
                       >
-                        <Pencil size={16} />
+                        <Pencil size={14} />
                       </button>
                       <button
                         type="button"
                         onClick={() => handleDelete(record)}
                         disabled={busy}
-                        className="p-2 rounded-full hover:bg-red-50 text-red-600 disabled:opacity-50"
+                        className="w-8 h-8 rounded-full hover:bg-rose-50 text-slate-400 hover:text-rose-600 disabled:opacity-50 flex items-center justify-center transition-colors cursor-pointer"
                         aria-label={`Remove ${option.name}`}
                         data-testid="category-delete-button"
                       >
-                        <Trash2 size={16} />
+                        <Trash2 size={14} />
                       </button>
                     </>
                   )}
@@ -364,14 +364,14 @@ export const CustomCategoriesSection: React.FC = () => {
 
         {/* Built-ins, for reference */}
         <details className="pt-2">
-          <summary className="text-xs font-semibold uppercase tracking-wide text-gray-500 cursor-pointer">
+          <summary className="text-xs font-bold uppercase tracking-wider text-slate-400 cursor-pointer select-none">
             Built-in categories ({builtinOptions.length})
           </summary>
           <div className="mt-3 flex flex-wrap gap-2">
             {builtinOptions.map((option) => (
               <span
                 key={option.name}
-                className="px-3 py-1 rounded-full bg-white border border-gray-200 text-sm text-gray-700"
+                className="px-3.5 py-1 rounded-full bg-slate-50 border border-slate-200/80 text-xs font-semibold text-slate-700"
               >
                 {option.name}
               </span>
@@ -382,3 +382,4 @@ export const CustomCategoriesSection: React.FC = () => {
     </div>
   );
 };
+

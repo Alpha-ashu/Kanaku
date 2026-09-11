@@ -166,105 +166,105 @@ export const BillUpload: React.FC<BillUploadProps> = ({ transactionId, onBillsCh
  return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
  };
 
- return (
- <div className="space-y-4">
- {/* Upload Area */}
- <div
- onDragEnter={() => setIsDragging(true)}
- onDragLeave={() => setIsDragging(false)}
- onDragOver={(e) => e.preventDefault()}
- onDrop={(e) => {
- e.preventDefault();
- setIsDragging(false);
- handleFileSelect(e.dataTransfer.files);
- }}
- className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
- isDragging
- ? 'border-blue-500 bg-blue-50'
- : 'border-gray-300 bg-white hover:border-gray-400'
- }`}
- >
- <Upload
- size={32}
- className={`mx-auto mb-2 ${isDragging ? 'text-blue-600' : 'text-gray-400'}`}
- />
- <p className="font-medium text-gray-900 mb-1">
- Drag and drop your bills/receipts here
- </p>
- <p className="text-sm text-gray-500 mb-4">
- or click to browse (JPG, PNG, WebP, PDF, DOC/DOCX, XLS/XLSX, CSV - Max 10MB)
- </p>
- <label className="inline-block">
- <input data-testid="bill-upload-select-bill-files"
- type="file"
- multiple
- accept="image/jpeg,image/png,image/webp,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv"
- onChange={(e) => handleFileSelect(e.target.files)}
- disabled={uploading}
- className="hidden"
- aria-label="Select bill files"
- title="Select bill files"
- />
- <span
- className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
- uploading
- ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
- : 'bg-blue-600 text-white hover:bg-blue-700 cursor-pointer'
- }`}
- aria-label="Select Files"
- title="Select Files"
- >
- <Upload size={18} />
- {uploading ? 'Uploading...' : 'Select Files'}
- </span>
- </label>
- </div>
+  return (
+  <div className="space-y-4">
+  {/* Upload Area */}
+  <div
+  onDragEnter={() => setIsDragging(true)}
+  onDragLeave={() => setIsDragging(false)}
+  onDragOver={(e) => e.preventDefault()}
+  onDrop={(e) => {
+  e.preventDefault();
+  setIsDragging(false);
+  handleFileSelect(e.dataTransfer.files);
+  }}
+  className={`border-2 border-dashed rounded-[24px] sm:rounded-[28px] p-6 text-center transition-all ${
+  isDragging
+  ? 'border-purple-500 bg-purple-50/50'
+  : 'border-slate-200/80 bg-white hover:border-slate-300'
+  }`}
+  >
+  <Upload
+  size={32}
+  className={`mx-auto mb-2 ${isDragging ? 'text-purple-600' : 'text-slate-400'}`}
+  />
+  <p className="font-bold text-slate-900 mb-1 text-sm">
+  Drag and drop your bills/receipts here
+  </p>
+  <p className="text-xs text-slate-400 mb-4">
+  or click to browse (JPG, PNG, WebP, PDF, DOC/DOCX, XLS/XLSX, CSV - Max 10MB)
+  </p>
+  <label className="inline-block">
+  <input data-testid="bill-upload-select-bill-files"
+  type="file"
+  multiple
+  accept="image/jpeg,image/png,image/webp,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv"
+  onChange={(e) => handleFileSelect(e.target.files)}
+  disabled={uploading}
+  className="hidden"
+  aria-label="Select bill files"
+  title="Select bill files"
+  />
+  <span
+  className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-xs sm:text-sm shadow-xs transition-all active:scale-95 ${
+  uploading
+  ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+  : 'bg-[#18181B] text-white hover:bg-black cursor-pointer'
+  }`}
+  aria-label="Select Files"
+  title="Select Files"
+  >
+  <Upload size={16} />
+  {uploading ? 'Uploading...' : 'Select Files'}
+  </span>
+  </label>
+  </div>
 
- {/* Uploaded Bills List */}
- {bills.length > 0 && (
- <div className="space-y-2">
- <h4 className="font-medium text-gray-900">Attached Bills ({bills.length})</h4>
- <div className="space-y-2">
- {bills.map((bill) => (
- <div
- key={bill.id}
- className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200"
- >
- <div className="flex items-center gap-3 flex-1 min-w-0">
- {getFileIcon(bill.fileType)}
- <div className="flex-1 min-w-0">
- <p className="font-medium text-gray-900 truncate">
- {bill.fileName}
- </p>
- <p className="text-xs text-gray-500">
- {formatFileSize(bill.fileSize)} - {new Date(bill.uploadedAt).toLocaleDateString()}
- </p>
- </div>
- </div>
+  {/* Uploaded Bills List */}
+  {bills.length > 0 && (
+  <div className="space-y-2">
+  <h4 className="font-bold text-slate-900 text-xs sm:text-sm">Attached Bills ({bills.length})</h4>
+  <div className="space-y-2">
+  {bills.map((bill) => (
+  <div
+  key={bill.id}
+  className="flex items-center justify-between p-3.5 bg-white rounded-2xl border border-slate-100 shadow-2xs"
+  >
+  <div className="flex items-center gap-3 flex-1 min-w-0">
+  {getFileIcon(bill.fileType)}
+  <div className="flex-1 min-w-0">
+  <p className="font-bold text-slate-900 text-xs sm:text-sm truncate">
+  {bill.fileName}
+  </p>
+  <p className="text-[11px] text-slate-400 font-medium mt-0.5">
+  {formatFileSize(bill.fileSize)} • {new Date(bill.uploadedAt).toLocaleDateString()}
+  </p>
+  </div>
+  </div>
 
- <div className="flex gap-2 ml-2">
- <button data-testid={`bill-upload-download-bill-${bill.id}`}
- onClick={() => handleDownloadBill(bill)}
- title="Download bill"
- aria-label="Download bill"
- className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
- >
- <Download size={18} />
- </button>
- <button data-testid={`bill-upload-delete-bill-${bill.id}`}
- onClick={() => handleDeleteBill(bill.id!)}
- title="Delete bill"
- aria-label="Delete bill"
- className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
- >
- <Trash2 size={18} />
- </button>
- </div>
- </div>
- ))}
- </div>
- </div>
- )}
+  <div className="flex items-center gap-1.5 ml-2 shrink-0">
+  <button data-testid={`bill-upload-download-bill-${bill.id}`}
+  onClick={() => handleDownloadBill(bill)}
+  title="Download bill"
+  aria-label="Download bill"
+  className="w-8 h-8 rounded-full bg-slate-50 hover:bg-slate-100 text-slate-600 flex items-center justify-center transition-colors cursor-pointer"
+  >
+  <Download size={15} />
+  </button>
+  <button data-testid={`bill-upload-delete-bill-${bill.id}`}
+  onClick={() => handleDeleteBill(bill.id!)}
+  title="Delete bill"
+  aria-label="Delete bill"
+  className="w-8 h-8 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-600 flex items-center justify-center transition-colors cursor-pointer"
+  >
+  <Trash2 size={15} />
+  </button>
+  </div>
+  </div>
+  ))}
+  </div>
+  </div>
+  )}
  </div>
  );
 };

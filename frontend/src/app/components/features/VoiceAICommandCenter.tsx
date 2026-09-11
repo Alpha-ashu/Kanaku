@@ -794,9 +794,9 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
   )}
   </p>
   </div>
-  <button onClick={onClose} className="p-2 md:p-3 bg-slate-100 hover:bg-slate-200 rounded-xl md:rounded-2xl transition-colors" data-testid="voice-ai-close-button">
-  <X size={18} className="text-slate-600" />
-  </button>
+    <button onClick={onClose} className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-slate-100 hover:bg-slate-200 active:scale-95 flex items-center justify-center text-slate-700 transition-all cursor-pointer" data-testid="voice-ai-close-button">
+      <X size={18} className="text-slate-700" />
+    </button>
   </div>
 
   {activeTab === 'actions' && (
@@ -825,29 +825,31 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
   </div>
 
   {/* Tab switcher */}
-  <div className="flex border-b border-gray-100 px-4 md:px-8 shrink-0">
-    <button
-      onClick={() => setActiveTab('actions')}
-      className={`flex items-center gap-1.5 px-3 py-2.5 text-xs font-semibold border-b-2 transition-colors ${
-        activeTab === 'actions'
-          ? 'border-indigo-600 text-indigo-700'
-          : 'border-transparent text-slate-400 hover:text-slate-600'
-      }`}
-    >
-      <Zap size={12} />
-      Actions ({recordableActionsCount})
-    </button>
-    <button
-      onClick={() => setActiveTab('chat')}
-      className={`flex items-center gap-1.5 px-3 py-2.5 text-xs font-semibold border-b-2 transition-colors ${
-        activeTab === 'chat'
-          ? 'border-violet-600 text-violet-700'
-          : 'border-transparent text-slate-400 hover:text-slate-600'
-      }`}
-    >
-      <Sparkles size={12} />
-      Ask AI
-    </button>
+  <div className="p-3 md:px-8 border-b border-gray-100 shrink-0 flex items-center">
+    <div className="inline-flex p-1 bg-slate-100/90 rounded-full gap-1">
+      <button
+        onClick={() => setActiveTab('actions')}
+        className={`flex items-center gap-1.5 px-3.5 sm:px-4 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+          activeTab === 'actions'
+            ? 'bg-white text-indigo-700 shadow-xs'
+            : 'text-slate-500 hover:text-slate-700'
+        }`}
+      >
+        <Zap size={13} />
+        <span>Actions ({recordableActionsCount})</span>
+      </button>
+      <button
+        onClick={() => setActiveTab('chat')}
+        className={`flex items-center gap-1.5 px-3.5 sm:px-4 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+          activeTab === 'chat'
+            ? 'bg-white text-violet-700 shadow-xs'
+            : 'text-slate-500 hover:text-slate-700'
+        }`}
+      >
+        <Sparkles size={13} />
+        <span>Ask AI</span>
+      </button>
+    </div>
   </div>
 
   {/* Conditional body: Actions list OR Conversational AI */}
@@ -1008,18 +1010,20 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
  )} {/* end activeTab ternary */}
 
  {/* Footer */}
- {activeTab === 'actions' && (
-   <div className="p-4 md:p-8 pt-3 md:pt-4 bg-white rounded-b-[32px] md:rounded-b-[40px] border-t border-gray-100 shrink-0">
-     <div className="flex flex-col md:flex-row gap-3 md:gap-4">
-       <button onClick={onAddMore} className="w-full md:flex-1 py-4 md:py-5 bg-white border border-slate-200 text-slate-700 rounded-2xl md:rounded-[28px] font-bold hover:bg-slate-50 transition-all flex items-center justify-center gap-2 shadow-sm order-2 md:order-1" data-testid="voice-ai-add-more-button">
-         <Mic size={18} className="text-indigo-500" /> Add More
-       </button>
-       <button onClick={confirmAll} disabled={isSaving || recordableActionsCount === 0} className="w-full md:flex-[2] py-4 md:py-5 bg-indigo-600 text-white rounded-2xl md:rounded-[28px] font-black text-base md:text-lg hover:bg-indigo-700 disabled:bg-slate-300 transition-all flex items-center justify-center gap-3 shadow-xl order-1 md:order-2" data-testid="voice-ai-submit-button">
-         {isSaving ? "Syncing..." : "Confirm & Sync Actions"} <ArrowRight size={20} />
-       </button>
-     </div>
-   </div>
- )}
+  {activeTab === 'actions' && (
+    <div className="p-4 md:p-8 pt-3 md:pt-4 bg-white rounded-b-[32px] md:rounded-b-[40px] border-t border-gray-100 shrink-0">
+      <div className="flex flex-col md:flex-row gap-3 md:gap-4">
+        <button onClick={onAddMore} className="w-full md:flex-1 py-3.5 sm:py-4 bg-white border border-slate-200 text-slate-700 rounded-full font-bold hover:bg-slate-50 active:scale-95 transition-all flex items-center justify-center gap-2 shadow-xs order-2 md:order-1 cursor-pointer text-sm" data-testid="voice-ai-add-more-button">
+          <Mic size={18} className="text-indigo-500" />
+          <span>Add More</span>
+        </button>
+        <button onClick={confirmAll} disabled={isSaving || recordableActionsCount === 0} className="w-full md:flex-[2] py-3.5 sm:py-4 bg-[#18181B] hover:bg-black text-white rounded-full font-bold text-sm hover:opacity-95 disabled:bg-slate-300 active:scale-95 transition-all flex items-center justify-center gap-2 shadow-xs order-1 md:order-2 cursor-pointer" data-testid="voice-ai-submit-button">
+          <span>{isSaving ? "Syncing..." : "Confirm & Sync Actions"}</span>
+          <ArrowRight size={18} />
+        </button>
+      </div>
+    </div>
+  )}
  </motion.div>
  </div>
  );

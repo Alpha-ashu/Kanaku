@@ -980,68 +980,68 @@ export const UserProfile: React.FC = () => {
  )}
 
  {/* Avatar Section */}
- <motion.div
- initial={{ opacity: 0, y: 20 }}
- animate={{ opacity: 1, y: 0 }}
- className="bg-white border border-gray-200 rounded-2xl p-6 flex flex-col items-center gap-4"
- >
- <motion.div
- animate={{ y: [0, -6, 0] }}
- transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
- className="relative"
- >
- <div className="relative group">
- <img
- src={activeAvatar.url}
- alt="Avatar"
- className="w-32 h-32 rounded-full border-4 border-blue-500 object-cover shadow-xl bg-white"
- onError={(e) => {
- (e.target as HTMLImageElement).src = 'https://api.dicebear.com/7.x/avataaars/svg?seed=fallback';
- }}
- />
- <div className="absolute inset-0 rounded-full bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
- </div>
- </motion.div>
- <div className="flex flex-wrap items-center justify-center gap-2">
- <p className="text-gray-900 font-semibold text-lg">
- {[
- isEditingBasic ? tempData.firstName : profileData.firstName,
- isEditingBasic ? tempData.lastName : profileData.lastName,
- ].filter(Boolean).join(' ') || 'User'}
- </p>
- {ageSource && (
- <span className="px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
- {ageGroupLabel}
- </span>
- )}
- </div>
- <div className="flex flex-wrap items-center justify-center gap-2">
- <button
- onClick={() => {
- setIsEditingBasic(true);
- setShowAvatarGallery((prev) => !prev);
- }}
- data-testid="profile-choose-avatar-button"
- className="inline-flex items-center gap-2 rounded-full border border-blue-200 px-4 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-50"
- >
- Choose Avatar
- </button>
- {showAvatarGallery && (
- <button
- onClick={handleSaveProfile}
- data-testid="profile-save-avatar-button"
- className="inline-flex items-center gap-2 rounded-full border border-green-200 px-4 py-2 text-xs font-semibold text-green-700 hover:bg-green-50"
- >
- <Check size={14} />
- Save Avatar
- </button>
- )}
- </div>
- {showAvatarGallery && (
- <div className="mt-4 w-full max-w-3xl rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
- <div className="flex items-center justify-between mb-4">
- <p className="text-sm font-bold text-gray-700 uppercase tracking-wider">Choose your style</p>
- <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-1 rounded-full font-bold">
+  <motion.div
+  initial={{ opacity: 0, y: 20 }}
+  animate={{ opacity: 1, y: 0 }}
+  className="bg-white border border-slate-100 rounded-[28px] sm:rounded-[32px] p-6 flex flex-col items-center gap-4 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)]"
+  >
+  <motion.div
+  animate={{ y: [0, -6, 0] }}
+  transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+  className="relative"
+  >
+  <div className="relative group">
+  <img
+  src={activeAvatar.url}
+  alt="Avatar"
+  className="w-32 h-32 rounded-full border-4 border-slate-900 object-cover shadow-xl bg-white"
+  onError={(e) => {
+  (e.target as HTMLImageElement).src = 'https://api.dicebear.com/7.x/avataaars/svg?seed=fallback';
+  }}
+  />
+  <div className="absolute inset-0 rounded-full bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+  </div>
+  </motion.div>
+  <div className="flex flex-wrap items-center justify-center gap-2">
+  <p className="text-slate-900 font-bold text-lg">
+  {[
+  isEditingBasic ? tempData.firstName : profileData.firstName,
+  isEditingBasic ? tempData.lastName : profileData.lastName,
+  ].filter(Boolean).join(' ') || 'User'}
+  </p>
+  {ageSource && (
+  <span className="px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200/80">
+  {ageGroupLabel}
+  </span>
+  )}
+  </div>
+  <div className="flex flex-wrap items-center justify-center gap-2">
+  <button
+  onClick={() => {
+  setIsEditingBasic(true);
+  setShowAvatarGallery((prev) => !prev);
+  }}
+  data-testid="profile-choose-avatar-button"
+  className="inline-flex items-center gap-2 rounded-full border border-slate-200/80 bg-white hover:bg-slate-50 px-4 py-2 text-xs font-bold text-slate-700 shadow-xs active:scale-95 transition-all cursor-pointer"
+  >
+  Choose Avatar
+  </button>
+  {showAvatarGallery && (
+  <button
+  onClick={handleSaveProfile}
+  data-testid="profile-save-avatar-button"
+  className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 px-4 py-2 text-xs font-bold text-emerald-700 shadow-xs active:scale-95 transition-all cursor-pointer"
+  >
+  <Check size={14} />
+  Save Avatar
+  </button>
+  )}
+  </div>
+  {showAvatarGallery && (
+  <div className="mt-4 w-full max-w-3xl rounded-[28px] sm:rounded-[32px] border border-slate-100 bg-white p-6 shadow-md">
+  <div className="flex items-center justify-between mb-4">
+  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Choose your style</p>
+  <span className="text-[10px] bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full font-bold">
  {AVATAR_OPTIONS.length} OPTIONS
  </span>
  </div>
@@ -1098,215 +1098,215 @@ export const UserProfile: React.FC = () => {
  animate={{ opacity: 1, y: 0 }}
  transition={{ delay: 0.1 }}
  >
- <Card data-testid="user-profile-card-7" variant="flat" className="overflow-hidden relative shadow-[0px_1px_2px_rgba(0,0,0,0.04),_0px_4px_12px_rgba(0,0,0,0.06)] bg-white border border-gray-200 rounded-2xl p-6 lg:p-8">
- {/* Header row */}
- <div className="flex items-center justify-between mb-5">
- <h3 className="text-lg font-bold text-gray-900">Basic Information</h3>
- <button
- onClick={() => {
- setIsEditingBasic(!isEditingBasic);
- if (isEditingBasic) setTempData(profileData);
- }}
- data-testid="profile-edit-basic-button"
- className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${isEditingBasic
- ? 'bg-red-50 text-red-600 hover:bg-red-100'
- : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
- }`}
- >
- {isEditingBasic ? 'Cancel' : 'Edit'}
- </button>
- </div>
+ <Card data-testid="user-profile-card-7" variant="flat" className="overflow-hidden relative shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] bg-white border border-slate-100 rounded-[28px] sm:rounded-[32px] p-6 lg:p-8">
+  {/* Header row */}
+  <div className="flex items-center justify-between mb-5">
+  <h3 className="text-lg font-bold text-slate-900">Basic Information</h3>
+  <button
+  onClick={() => {
+  setIsEditingBasic(!isEditingBasic);
+  if (isEditingBasic) setTempData(profileData);
+  }}
+  data-testid="profile-edit-basic-button"
+  className={`px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold transition-colors cursor-pointer shadow-xs ${isEditingBasic
+  ? 'bg-rose-50 text-rose-600 hover:bg-rose-100'
+  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+  }`}
+  >
+  {isEditingBasic ? 'Cancel' : 'Edit'}
+  </button>
+  </div>
 
- {!isEditingBasic ? (
- /* View mode EUR" clean horizontal info rows */
- <div className="divide-y divide-gray-100">
- <div className="flex items-center justify-between py-3.5">
- <span className="text-sm text-gray-500 flex items-center gap-2">
- <User size={14} className="text-gray-400" /> First Name
- </span>
- <span className="text-sm font-semibold text-gray-900">{profileData.firstName || ''}</span>
- </div>
- <div className="flex items-center justify-between py-3.5">
- <span className="text-sm text-gray-500 flex items-center gap-2">
- <User size={14} className="text-gray-400" /> Last Name
- </span>
- <span className="text-sm font-semibold text-gray-900">{profileData.lastName || ''}</span>
- </div>
- <div className="flex items-center justify-between py-3.5">
- <span className="text-sm text-gray-500 flex items-center gap-2">
- <User size={14} className="text-gray-400" /> Gender
- </span>
- <span className="text-sm font-semibold text-gray-900">{genderLabel(profileData.gender)}</span>
- </div>
- <div className="flex items-center justify-between py-3.5">
- <span className="text-sm text-gray-500 flex items-center gap-2">
- <Calendar size={14} className="text-gray-400" /> Date of Birth
- </span>
- <span className="text-sm font-semibold text-gray-900">
- {profileData.dateOfBirth
- ? format(parseISO(profileData.dateOfBirth), 'dd-MMM-yyyy')
- : ''}
- </span>
- </div>
- <div className="flex items-center justify-between py-3.5">
- <span className="text-sm text-gray-500 flex items-center gap-2">
- <Briefcase size={14} className="text-gray-400" /> Job Type
- </span>
- <span className="text-sm font-semibold text-gray-900">{jobTypeLabel(profileData.jobType)}</span>
- </div>
- <div className="flex items-center justify-between py-3.5">
- <span className="text-sm text-gray-500 flex items-center gap-2">
- <span className="text-gray-400 font-bold text-sm w-3.5 inline-flex justify-center"></span> Monthly Income
- </span>
- <span className="text-sm font-semibold text-gray-900"> {Math.round(profileData.monthlyIncome || 0).toLocaleString()}</span>
- </div>
- </div>
- ) : (
- /* Edit mode: form with two-column grid for related fields */
- <div className="space-y-5">
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-stretch">
- <div>
- <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">First Name</label>
- <input
- type="text"
- value={tempData.firstName}
- onChange={(e) => setTempData({ ...tempData, firstName: e.target.value })}
- data-testid="profile-first-name-input"
- className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
- placeholder="Enter first name"
- aria-label="First name"
- id="firstName"
- name="firstName"
- />
- </div>
- <div>
- <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Last Name</label>
- <input
- type="text"
- value={tempData.lastName}
- onChange={(e) => setTempData({ ...tempData, lastName: e.target.value })}
- data-testid="profile-last-name-input"
- className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
- placeholder="Enter last name"
- aria-label="Last name"
- id="lastName"
- name="lastName"
- />
- </div>
- </div>
+  {!isEditingBasic ? (
+  /* View mode clean horizontal info rows */
+  <div className="divide-y divide-slate-100">
+  <div className="flex items-center justify-between py-3.5">
+  <span className="text-sm text-slate-500 flex items-center gap-2">
+  <User size={14} className="text-slate-400" /> First Name
+  </span>
+  <span className="text-sm font-bold text-slate-900">{profileData.firstName || ''}</span>
+  </div>
+  <div className="flex items-center justify-between py-3.5">
+  <span className="text-sm text-slate-500 flex items-center gap-2">
+  <User size={14} className="text-slate-400" /> Last Name
+  </span>
+  <span className="text-sm font-bold text-slate-900">{profileData.lastName || ''}</span>
+  </div>
+  <div className="flex items-center justify-between py-3.5">
+  <span className="text-sm text-slate-500 flex items-center gap-2">
+  <User size={14} className="text-slate-400" /> Gender
+  </span>
+  <span className="text-sm font-bold text-slate-900">{genderLabel(profileData.gender)}</span>
+  </div>
+  <div className="flex items-center justify-between py-3.5">
+  <span className="text-sm text-slate-500 flex items-center gap-2">
+  <Calendar size={14} className="text-slate-400" /> Date of Birth
+  </span>
+  <span className="text-sm font-bold text-slate-900">
+  {profileData.dateOfBirth
+  ? format(parseISO(profileData.dateOfBirth), 'dd-MMM-yyyy')
+  : ''}
+  </span>
+  </div>
+  <div className="flex items-center justify-between py-3.5">
+  <span className="text-sm text-slate-500 flex items-center gap-2">
+  <Briefcase size={14} className="text-slate-400" /> Job Type
+  </span>
+  <span className="text-sm font-bold text-slate-900">{jobTypeLabel(profileData.jobType)}</span>
+  </div>
+  <div className="flex items-center justify-between py-3.5">
+  <span className="text-sm text-slate-500 flex items-center gap-2">
+  <span className="text-slate-400 font-bold text-sm w-3.5 inline-flex justify-center"></span> Monthly Income
+  </span>
+  <span className="text-sm font-bold text-slate-900"> {Math.round(profileData.monthlyIncome || 0).toLocaleString()}</span>
+  </div>
+  </div>
+  ) : (
+  /* Edit mode: form with two-column grid for related fields */
+  <div className="space-y-5">
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-stretch">
+  <div>
+  <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">First Name</label>
+  <input
+  type="text"
+  value={tempData.firstName}
+  onChange={(e) => setTempData({ ...tempData, firstName: e.target.value })}
+  data-testid="profile-first-name-input"
+  className="w-full px-4 py-3 border border-slate-200 bg-slate-50/50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-slate-900/10 text-sm font-medium"
+  placeholder="Enter first name"
+  aria-label="First name"
+  id="firstName"
+  name="firstName"
+  />
+  </div>
+  <div>
+  <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Last Name</label>
+  <input
+  type="text"
+  value={tempData.lastName}
+  onChange={(e) => setTempData({ ...tempData, lastName: e.target.value })}
+  data-testid="profile-last-name-input"
+  className="w-full px-4 py-3 border border-slate-200 bg-slate-50/50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-slate-900/10 text-sm font-medium"
+  placeholder="Enter last name"
+  aria-label="Last name"
+  id="lastName"
+  name="lastName"
+  />
+  </div>
+  </div>
 
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-stretch">
- <div>
- <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide flex items-center gap-1.5">
- <User size={12} className="text-gray-400" /> Gender
- </label>
- <select
- value={tempData.gender}
- onChange={(e) => setTempData({ ...tempData, gender: e.target.value as ProfileData['gender'] })}
- data-testid="profile-gender-select"
- className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
- aria-label="Select gender"
- id="gender"
- name="gender"
- >
- <option data-testid="user-profile-select-gender" value="">Select gender</option>
- <option data-testid="user-profile-male" value="male">Male</option>
- <option data-testid="user-profile-female" value="female">Female</option>
- <option data-testid="user-profile-non-binary" value="non-binary">Non-binary</option>
- <option data-testid="user-profile-prefer-not-to-say" value="prefer-not-to-say">Prefer not to say</option>
- </select>
- </div>
- <div>
-  <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide flex items-center gap-1.5">
-  <Calendar size={12} className="text-gray-400" /> Date of Birth
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-stretch">
+  <div>
+  <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider flex items-center gap-1.5">
+  <User size={12} className="text-slate-400" /> Gender
   </label>
-  <div data-testid="user-profile-div" 
-     className="relative group w-full" 
-     onClick={(e) => {
-       const input = e.currentTarget.querySelector('input');
-       if (input) (input as any).showPicker?.();
-     }}
-   >
-     <div className="w-full px-4 py-3 border border-gray-300 rounded-xl focus-within:ring-2 focus-within:ring-blue-500 text-sm text-left flex items-center justify-between bg-white min-h-[46px] cursor-pointer">
-       <span className={tempData.dateOfBirth ? "text-gray-900" : "text-gray-400"}>
-         {(() => {
-           if (!tempData.dateOfBirth) return 'Select Date';
-           try {
-             const date = new Date(tempData.dateOfBirth);
-             if (isNaN(date.getTime())) return tempData.dateOfBirth;
-             const day = String(date.getDate()).padStart(2, '0');
-             const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-             return `${day}-${months[date.getMonth()]}-${date.getFullYear()}`;
-           } catch (err) {
-             return tempData.dateOfBirth;
-           }
-         })()}
-       </span>
-       <Calendar size={14} className="text-gray-400" />
-     </div>
-     <input
-       type="date"
-       value={tempData.dateOfBirth}
-       onChange={(e) => setTempData({ ...tempData, dateOfBirth: e.target.value })}
-       data-testid="profile-dob-input"
-       className="absolute inset-0 opacity-0 cursor-pointer z-20"
-       max={new Date().toISOString().split('T')[0]}
-       aria-label="Date of birth"
-       id="dateOfBirth"
-       name="dateOfBirth"
-     />
+  <select
+  value={tempData.gender}
+  onChange={(e) => setTempData({ ...tempData, gender: e.target.value as ProfileData['gender'] })}
+  data-testid="profile-gender-select"
+  className="w-full px-4 py-3 border border-slate-200 bg-slate-50/50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-slate-900/10 text-sm font-medium cursor-pointer"
+  aria-label="Select gender"
+  id="gender"
+  name="gender"
+  >
+  <option data-testid="user-profile-select-gender" value="">Select gender</option>
+  <option data-testid="user-profile-male" value="male">Male</option>
+  <option data-testid="user-profile-female" value="female">Female</option>
+  <option data-testid="user-profile-non-binary" value="non-binary">Non-binary</option>
+  <option data-testid="user-profile-prefer-not-to-say" value="prefer-not-to-say">Prefer not to say</option>
+  </select>
+  </div>
+  <div>
+   <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider flex items-center gap-1.5">
+   <Calendar size={12} className="text-slate-400" /> Date of Birth
+   </label>
+   <div data-testid="user-profile-div" 
+      className="relative group w-full" 
+      onClick={(e) => {
+        const input = e.currentTarget.querySelector('input');
+        if (input) (input as any).showPicker?.();
+      }}
+    >
+      <div className="w-full px-4 py-3 border border-slate-200 bg-slate-50/50 rounded-2xl focus-within:ring-2 focus-within:ring-slate-900/10 text-sm text-left flex items-center justify-between min-h-[46px] cursor-pointer">
+        <span className={tempData.dateOfBirth ? "text-slate-900 font-medium" : "text-slate-400 font-medium"}>
+          {(() => {
+            if (!tempData.dateOfBirth) return 'Select Date';
+            try {
+              const date = new Date(tempData.dateOfBirth);
+              if (isNaN(date.getTime())) return tempData.dateOfBirth;
+              const day = String(date.getDate()).padStart(2, '0');
+              const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+              return `${day}-${months[date.getMonth()]}-${date.getFullYear()}`;
+            } catch (err) {
+              return tempData.dateOfBirth;
+            }
+          })()}
+        </span>
+        <Calendar size={14} className="text-slate-400" />
+      </div>
+      <input
+        type="date"
+        value={tempData.dateOfBirth}
+        onChange={(e) => setTempData({ ...tempData, dateOfBirth: e.target.value })}
+        data-testid="profile-dob-input"
+        className="absolute inset-0 opacity-0 cursor-pointer z-20"
+        max={new Date().toISOString().split('T')[0]}
+        aria-label="Date of birth"
+        id="dateOfBirth"
+        name="dateOfBirth"
+      />
+    </div>
    </div>
   </div>
- </div>
 
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-stretch">
- <div>
- <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide flex items-center gap-1.5">
- <Briefcase size={12} className="text-gray-400" /> Job Type
- </label>
- <select
- value={tempData.jobType}
- onChange={(e) => setTempData({ ...tempData, jobType: e.target.value as any })}
- data-testid="profile-job-type-select"
- className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
- aria-label="Select job type"
- id="jobType"
- name="jobType"
- >
- <option data-testid="user-profile-select-job-type" value="">Select job type</option>
- <option data-testid="user-profile-salaried-employed" value="salaried">Salaried / Employed</option>
- <option data-testid="user-profile-self-employed-business-owner" value="businessman">Self-employed / Business Owner</option>
- <option data-testid="user-profile-freelancer" value="freelancer">Freelancer</option>
- </select>
- </div>
- <div>
- <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide flex items-center gap-1.5">
- <span className="text-gray-400 font-bold text-sm"></span> Monthly Income
- </label>
- <input
- type="number"
- value={tempData.monthlyIncome || ''}
- onChange={(e) => setTempData({ ...tempData, monthlyIncome: parseFloat(e.target.value) || 0 })}
- data-testid="profile-income-input"
- className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
- placeholder="0.00"
- id="monthlyIncome"
- name="monthlyIncome"
- />
- </div>
- </div>
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-stretch">
+  <div>
+  <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider flex items-center gap-1.5">
+  <Briefcase size={12} className="text-slate-400" /> Job Type
+  </label>
+  <select
+  value={tempData.jobType}
+  onChange={(e) => setTempData({ ...tempData, jobType: e.target.value as any })}
+  data-testid="profile-job-type-select"
+  className="w-full px-4 py-3 border border-slate-200 bg-slate-50/50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-slate-900/10 text-sm font-medium cursor-pointer"
+  aria-label="Select job type"
+  id="jobType"
+  name="jobType"
+  >
+  <option data-testid="user-profile-select-job-type" value="">Select job type</option>
+  <option data-testid="user-profile-salaried-employed" value="salaried">Salaried / Employed</option>
+  <option data-testid="user-profile-self-employed-business-owner" value="businessman">Self-employed / Business Owner</option>
+  <option data-testid="user-profile-freelancer" value="freelancer">Freelancer</option>
+  </select>
+  </div>
+  <div>
+  <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider flex items-center gap-1.5">
+  <span className="text-slate-400 font-bold text-sm"></span> Monthly Income
+  </label>
+  <input
+  type="number"
+  value={tempData.monthlyIncome || ''}
+  onChange={(e) => setTempData({ ...tempData, monthlyIncome: parseFloat(e.target.value) || 0 })}
+  data-testid="profile-income-input"
+  className="w-full px-4 py-3 border border-slate-200 bg-slate-50/50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-slate-900/10 text-sm font-medium"
+  placeholder="0.00"
+  id="monthlyIncome"
+  name="monthlyIncome"
+  />
+  </div>
+  </div>
 
- <button
- onClick={handleSaveProfile}
- disabled={isLoading}
- data-testid="profile-save-basic-button"
- className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white py-3 rounded-xl font-semibold transition-colors"
- >
- {isLoading ? 'Saving...' : 'Save Changes'}
- </button>
- </div>
- )}
- </Card>
+  <button
+  onClick={handleSaveProfile}
+  disabled={isLoading}
+  data-testid="profile-save-basic-button"
+  className="w-full bg-slate-900 hover:bg-black disabled:opacity-60 text-white py-3.5 rounded-full font-bold transition-colors shadow-xs cursor-pointer active:scale-95"
+  >
+  {isLoading ? 'Saving...' : 'Save Changes'}
+  </button>
+  </div>
+  )}
+  </Card>
  </motion.div>
 
  {/* Location & Currency Card */}
@@ -1315,166 +1315,166 @@ export const UserProfile: React.FC = () => {
  animate={{ opacity: 1, y: 0 }}
  transition={{ delay: 0.15 }}
  >
- <Card data-testid="user-profile-card-8" variant="flat" className="overflow-hidden relative shadow-[0px_1px_2px_rgba(0,0,0,0.04),_0px_4px_12px_rgba(0,0,0,0.06)] bg-white border border-gray-200 rounded-2xl p-6 lg:p-8">
- {/* Header row */}
- <div className="flex items-center justify-between mb-5">
- <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
- <MapPin size={18} className="text-blue-500" /> Location &amp; Currency
- </h3>
- <button
- onClick={() => {
- setIsEditingLocation(!isEditingLocation);
- if (isEditingLocation) setTempData(profileData);
- }}
- data-testid="profile-edit-location-button"
- className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${isEditingLocation
- ? 'bg-red-50 text-red-600 hover:bg-red-100'
- : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
- }`}
- >
- {isEditingLocation ? 'Cancel' : 'Edit'}
- </button>
- </div>
+ <Card data-testid="user-profile-card-8" variant="flat" className="overflow-hidden relative shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] bg-white border border-slate-100 rounded-[28px] sm:rounded-[32px] p-6 lg:p-8">
+  {/* Header row */}
+  <div className="flex items-center justify-between mb-5">
+  <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+  <MapPin size={18} className="text-slate-700" /> Location &amp; Currency
+  </h3>
+  <button
+  onClick={() => {
+  setIsEditingLocation(!isEditingLocation);
+  if (isEditingLocation) setTempData(profileData);
+  }}
+  data-testid="profile-edit-location-button"
+  className={`px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold transition-colors cursor-pointer shadow-xs ${isEditingLocation
+  ? 'bg-rose-50 text-rose-600 hover:bg-rose-100'
+  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+  }`}
+  >
+  {isEditingLocation ? 'Cancel' : 'Edit'}
+  </button>
+  </div>
 
- {!isEditingLocation ? (
- <div className="divide-y divide-gray-100">
- <div className="flex items-center justify-between py-3.5">
- <span className="text-sm text-gray-500 flex items-center gap-2">
- <MapPin size={14} className="text-gray-400" /> Country
- </span>
- <span className="text-sm font-semibold text-gray-900">{profileData.country || ''}</span>
- </div>
- <div className="flex items-center justify-between py-3.5">
- <span className="text-sm text-gray-500 flex items-center gap-2">
- <MapPin size={14} className="text-gray-400" /> State / Province
- </span>
- <span className="text-sm font-semibold text-gray-900">{profileData.state || ''}</span>
- </div>
- <div className="flex items-center justify-between py-3.5">
- <span className="text-sm text-gray-500 flex items-center gap-2">
- <MapPin size={14} className="text-gray-400" /> City
- </span>
- <span className="text-sm font-semibold text-gray-900">{profileData.city || ''}</span>
- </div>
- <div className="flex items-center justify-between py-3.5">
- <span className="text-sm text-gray-500 flex items-center gap-2">
- <DollarSign size={14} className="text-gray-400" /> Currency
- </span>
- <span className="text-sm font-semibold text-gray-900">{currency}</span>
- </div>
- </div>
- ) : (
- <div className="space-y-6">
- {/* Unified Location Search */}
- <div className="space-y-4">
- <div>
- <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide flex items-center gap-1.5">
- <MapPin size={12} className="text-gray-400" /> Search City
- </label>
- <div className="relative">
- <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
- <MapPin size={16} />
- </div>
- <input
- type="text"
- value={tempData.city}
- onChange={(e) => handleCitySearch(e.target.value)}
- data-testid="profile-city-search-input"
- className={`w-full pl-10 pr-10 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm transition-all ${
- isSearchingCity ? 'border-blue-200 bg-blue-50/10' : ''
- }`}
- placeholder="Type city name (e.g. Chennai)"
- id="city-search"
- autoComplete="off"
- />
- {isSearchingCity && (
- <div className="absolute right-3 top-1/2 -translate-y-1/2">
- <motion.div
- animate={{ rotate: 360 }}
- transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
- >
- <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full" />
- </motion.div>
- </div>
- )}
+  {!isEditingLocation ? (
+  <div className="divide-y divide-slate-100">
+  <div className="flex items-center justify-between py-3.5">
+  <span className="text-sm text-slate-500 flex items-center gap-2">
+  <MapPin size={14} className="text-slate-400" /> Country
+  </span>
+  <span className="text-sm font-bold text-slate-900">{profileData.country || ''}</span>
+  </div>
+  <div className="flex items-center justify-between py-3.5">
+  <span className="text-sm text-slate-500 flex items-center gap-2">
+  <MapPin size={14} className="text-slate-400" /> State / Province
+  </span>
+  <span className="text-sm font-bold text-slate-900">{profileData.state || ''}</span>
+  </div>
+  <div className="flex items-center justify-between py-3.5">
+  <span className="text-sm text-slate-500 flex items-center gap-2">
+  <MapPin size={14} className="text-slate-400" /> City
+  </span>
+  <span className="text-sm font-bold text-slate-900">{profileData.city || ''}</span>
+  </div>
+  <div className="flex items-center justify-between py-3.5">
+  <span className="text-sm text-slate-500 flex items-center gap-2">
+  <DollarSign size={14} className="text-slate-400" /> Currency
+  </span>
+  <span className="text-sm font-bold text-slate-900">{currency}</span>
+  </div>
+  </div>
+  ) : (
+  <div className="space-y-6">
+  {/* Unified Location Search */}
+  <div className="space-y-4">
+  <div>
+  <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider flex items-center gap-1.5">
+  <MapPin size={12} className="text-slate-400" /> Search City
+  </label>
+  <div className="relative">
+  <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+  <MapPin size={16} />
+  </div>
+  <input
+  type="text"
+  value={tempData.city}
+  onChange={(e) => handleCitySearch(e.target.value)}
+  data-testid="profile-city-search-input"
+  className={`w-full pl-10 pr-10 py-3 border border-slate-200 bg-slate-50/50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-slate-900/10 text-sm font-medium transition-all ${
+  isSearchingCity ? 'border-slate-300 bg-slate-50' : ''
+  }`}
+  placeholder="Type city name (e.g. Chennai)"
+  id="city-search"
+  autoComplete="off"
+  />
+  {isSearchingCity && (
+  <div className="absolute right-3.5 top-1/2 -translate-y-1/2">
+  <motion.div
+  animate={{ rotate: 360 }}
+  transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+  >
+  <div className="w-4 h-4 border-2 border-slate-900 border-t-transparent rounded-full" />
+  </motion.div>
+  </div>
+  )}
 
- {/* Suggestions Dropdown */}
- {citySuggestions.length > 0 && (
- <div className="absolute z-20 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
- {citySuggestions.map((suggestion, idx) => (
- <button
- key={idx}
- onClick={() => handleSelectCity(suggestion)}
- data-testid={`profile-city-suggest-${idx}`}
- className="w-full text-left px-4 py-3 hover:bg-blue-50 transition-colors border-b border-gray-50 last:border-0 flex flex-col"
- >
- <span className="text-sm font-semibold text-gray-900">
- {suggestion.address.city || suggestion.address.town || suggestion.address.village || suggestion.display_name.split(',')[0]}
- </span>
- <span className="text-xs text-gray-500 truncate">
- {suggestion.display_name}
- </span>
- </button>
- ))}
- </div>
- )}
- </div>
- </div>
+  {/* Suggestions Dropdown */}
+  {citySuggestions.length > 0 && (
+  <div className="absolute z-20 w-full mt-2 bg-white border border-slate-100 rounded-2xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+  {citySuggestions.map((suggestion, idx) => (
+  <button
+  key={idx}
+  onClick={() => handleSelectCity(suggestion)}
+  data-testid={`profile-city-suggest-${idx}`}
+  className="w-full text-left px-4 py-3 hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-0 flex flex-col cursor-pointer"
+  >
+  <span className="text-sm font-bold text-slate-900">
+  {suggestion.address.city || suggestion.address.town || suggestion.address.village || suggestion.display_name.split(',')[0]}
+  </span>
+  <span className="text-xs text-slate-500 truncate mt-0.5">
+  {suggestion.display_name}
+  </span>
+  </button>
+  ))}
+  </div>
+  )}
+  </div>
+  </div>
 
- {/* Resolved Location Details */}
- {(tempData.city || tempData.state || tempData.country) && (
- <div className="p-4 bg-blue-50/50 border border-blue-100 rounded-xl space-y-2 animate-in zoom-in-95 duration-200">
- <p className="text-xs font-bold text-blue-600 uppercase tracking-wider">Detected Location</p>
- <div className="flex items-start gap-2">
- <MapPin size={14} className="text-blue-500 mt-0.5" />
- <p className="text-sm text-gray-900 font-medium leading-relaxed">
- {[tempData.city, tempData.state, tempData.country].filter(Boolean).join(', ')}
- </p>
- </div>
- </div>
- )}
- </div>
+  {/* Resolved Location Details */}
+  {(tempData.city || tempData.state || tempData.country) && (
+  <div className="p-4 bg-slate-50/70 border border-slate-200/80 rounded-2xl space-y-2 animate-in zoom-in-95 duration-200">
+  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Detected Location</p>
+  <div className="flex items-start gap-2">
+  <MapPin size={14} className="text-slate-600 mt-0.5" />
+  <p className="text-sm text-slate-900 font-bold leading-relaxed">
+  {[tempData.city, tempData.state, tempData.country].filter(Boolean).join(', ')}
+  </p>
+  </div>
+  </div>
+  )}
+  </div>
 
- {/* Currency Section */}
- <div className="pt-4 border-t border-gray-100">
- <label htmlFor="currency-select" className="block text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide flex items-center gap-1.5">
- <DollarSign size={12} className="text-gray-400" /> Currency Settings
- </label>
- <select
- id="currency-select"
- title="Currency Settings"
- value={currency}
- onChange={(e) => setCurrency(e.target.value)}
- data-testid="profile-currency-select"
- className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white"
- >
- <option data-testid="user-profile-usd-us-dollar" value="USD">USD - US Dollar</option>
- <option data-testid="user-profile-eur-euro" value="EUR">EUR - Euro</option>
- <option data-testid="user-profile-gbp-british-pound" value="GBP">GBP - British Pound</option>
- <option data-testid="user-profile-inr-indian-rupee" value="INR">INR - Indian Rupee</option>
- <option data-testid="user-profile-jpy-japanese-yen" value="JPY">JPY - Japanese Yen</option>
- <option data-testid="user-profile-aud-australian-dollar" value="AUD">AUD - Australian Dollar</option>
- <option data-testid="user-profile-cad-canadian-dollar" value="CAD">CAD - Canadian Dollar</option>
- <option data-testid="user-profile-chf-swiss-franc" value="CHF">CHF - Swiss Franc</option>
- <option data-testid="user-profile-cny-chinese-yuan" value="CNY">CNY - Chinese Yuan</option>
- <option data-testid="user-profile-sgd-singapore-dollar" value="SGD">SGD - Singapore Dollar</option>
- </select>
- <p className="mt-2 text-[10px] text-gray-400 italic">
- Currency updates automatically based on selected city, but can be overridden manually.
- </p>
- </div>
+  {/* Currency Section */}
+  <div className="pt-4 border-t border-slate-100">
+  <label htmlFor="currency-select" className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider flex items-center gap-1.5">
+  <DollarSign size={12} className="text-slate-400" /> Currency Settings
+  </label>
+  <select
+  id="currency-select"
+  title="Currency Settings"
+  value={currency}
+  onChange={(e) => setCurrency(e.target.value)}
+  data-testid="profile-currency-select"
+  className="w-full px-4 py-3 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-slate-900/10 text-sm font-medium bg-white cursor-pointer"
+  >
+  <option data-testid="user-profile-usd-us-dollar" value="USD">USD - US Dollar</option>
+  <option data-testid="user-profile-eur-euro" value="EUR">EUR - Euro</option>
+  <option data-testid="user-profile-gbp-british-pound" value="GBP">GBP - British Pound</option>
+  <option data-testid="user-profile-inr-indian-rupee" value="INR">INR - Indian Rupee</option>
+  <option data-testid="user-profile-jpy-japanese-yen" value="JPY">JPY - Japanese Yen</option>
+  <option data-testid="user-profile-aud-australian-dollar" value="AUD">AUD - Australian Dollar</option>
+  <option data-testid="user-profile-cad-canadian-dollar" value="CAD">CAD - Canadian Dollar</option>
+  <option data-testid="user-profile-chf-swiss-franc" value="CHF">CHF - Swiss Franc</option>
+  <option data-testid="user-profile-cny-chinese-yuan" value="CNY">CNY - Chinese Yuan</option>
+  <option data-testid="user-profile-sgd-singapore-dollar" value="SGD">SGD - Singapore Dollar</option>
+  </select>
+  <p className="mt-2 text-[10px] text-slate-400 italic">
+  Currency updates automatically based on selected city, but can be overridden manually.
+  </p>
+  </div>
 
- <button
- onClick={handleSaveProfile}
- disabled={isLoading}
- data-testid="profile-save-location-button"
- className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white py-3.5 rounded-xl font-bold shadow-lg shadow-blue-100 transition-all active:scale-[0.98]"
- >
- {isLoading ? 'Saving...' : 'Save Location & Currency'}
- </button>
- </div>
- )}
- </Card>
+  <button
+  onClick={handleSaveProfile}
+  disabled={isLoading}
+  data-testid="profile-save-location-button"
+  className="w-full bg-slate-900 hover:bg-black disabled:opacity-60 text-white py-3.5 rounded-full font-bold shadow-xs transition-all active:scale-[0.98] cursor-pointer"
+  >
+  {isLoading ? 'Saving...' : 'Save Location & Currency'}
+  </button>
+  </div>
+  )}
+  </Card>
  </motion.div>
  </div>{/* end left col */}
 
@@ -1488,252 +1488,252 @@ export const UserProfile: React.FC = () => {
  animate={{ opacity: 1, y: 0 }}
  transition={{ delay: 0.2 }}
  >
- <Card data-testid="user-profile-card-9" variant="flat" className="overflow-hidden relative shadow-[0px_1px_2px_rgba(0,0,0,0.04),_0px_4px_12px_rgba(0,0,0,0.06)] bg-white border border-gray-200 rounded-2xl p-6 lg:p-8">
- <h3 className="text-lg font-bold text-gray-900 mb-5 flex items-center gap-2">
- <Lock size={20} className="text-orange-600" />
- Secure Information
- </h3>
+ <Card data-testid="user-profile-card-9" variant="flat" className="overflow-hidden relative shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] bg-white border border-slate-100 rounded-[28px] sm:rounded-[32px] p-6 lg:p-8">
+  <h3 className="text-lg font-bold text-slate-900 mb-5 flex items-center gap-2">
+  <Lock size={18} className="text-amber-500" />
+  Secure Information
+  </h3>
 
- {/* Email Section */}
- <div className="mb-5 pb-5 border-b border-gray-200">
- <div className="flex items-center justify-between mb-4">
- <div className="flex items-center gap-3">
- <Mail size={20} className="text-blue-600" />
- <div>
- <p className="font-medium text-gray-900">Email Address</p>
- <p className="text-sm text-gray-500">Change via mobile verification</p>
- </div>
- </div>
- <Lock size={18} className="text-orange-500" />
- </div>
+  {/* Email Section */}
+  <div className="mb-5 pb-5 border-b border-slate-100">
+  <div className="flex items-center justify-between mb-4">
+  <div className="flex items-center gap-3">
+  <Mail size={18} className="text-slate-600" />
+  <div>
+  <p className="font-bold text-slate-900">Email Address</p>
+  <p className="text-xs text-slate-400 mt-0.5">Change via mobile verification</p>
+  </div>
+  </div>
+  <Lock size={16} className="text-amber-500" />
+  </div>
 
- {verification.type !== 'email-change' ? (
- <>
- <p className="text-gray-900 font-medium text-sm mb-3 break-all">{profileData.email}</p>
- <button
- onClick={() =>
- setVerification({
- type: 'email-change',
- otp: '',
- newValue: '',
- step: 'request',
- })
- }
- data-testid="profile-change-email-button"
- className="bg-blue-50 hover:bg-blue-100 text-blue-600 px-4 py-2 rounded-lg font-medium transition-colors"
- >
- Change Email
- </button>
- </>
- ) : (
- <div className="space-y-4">
- {verification.step === 'request' && (
- <>
- <input
- type="email"
- placeholder="Enter new email"
- value={verification.newValue}
- onChange={(e) =>
- setVerification({ ...verification, newValue: e.target.value })
- }
- data-testid="profile-new-email-input"
- className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
- id="newEmail"
- name="newEmail"
- />
- <div className="flex gap-3">
- <button
- onClick={handleChangeEmail}
- data-testid="profile-send-email-otp-button"
- className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-medium transition-colors"
- >
- Send OTP to Mobile
- </button>
- <button
- onClick={() =>
- setVerification({
- type: null,
- otp: '',
- newValue: '',
- step: 'request',
- })
- }
- data-testid="profile-cancel-email-change-button"
- className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-900 py-2 rounded-lg font-medium transition-colors"
- >
- Cancel
- </button>
- </div>
- </>
- )}
+  {verification.type !== 'email-change' ? (
+  <>
+  <p className="text-slate-900 font-bold text-sm mb-3 break-all">{profileData.email}</p>
+  <button
+  onClick={() =>
+  setVerification({
+  type: 'email-change',
+  otp: '',
+  newValue: '',
+  step: 'request',
+  })
+  }
+  data-testid="profile-change-email-button"
+  className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-full font-bold text-xs sm:text-sm transition-colors cursor-pointer shadow-xs active:scale-95"
+  >
+  Change Email
+  </button>
+  </>
+  ) : (
+  <div className="space-y-4">
+  {verification.step === 'request' && (
+  <>
+  <input
+  type="email"
+  placeholder="Enter new email"
+  value={verification.newValue}
+  onChange={(e) =>
+  setVerification({ ...verification, newValue: e.target.value })
+  }
+  data-testid="profile-new-email-input"
+  className="w-full px-4 py-3 border border-slate-200 bg-slate-50/50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-slate-900/10 text-sm font-medium"
+  id="newEmail"
+  name="newEmail"
+  />
+  <div className="flex gap-3">
+  <button
+  onClick={handleChangeEmail}
+  data-testid="profile-send-email-otp-button"
+  className="flex-1 bg-slate-900 hover:bg-black text-white py-2.5 rounded-full font-bold text-xs sm:text-sm shadow-xs transition-colors cursor-pointer active:scale-95"
+  >
+  Send OTP to Mobile
+  </button>
+  <button
+  onClick={() =>
+  setVerification({
+  type: null,
+  otp: '',
+  newValue: '',
+  step: 'request',
+  })
+  }
+  data-testid="profile-cancel-email-change-button"
+  className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-2.5 rounded-full font-bold text-xs sm:text-sm shadow-xs transition-colors cursor-pointer"
+  >
+  Cancel
+  </button>
+  </div>
+  </>
+  )}
 
- {verification.step === 'otp-sent' && (
- <>
- <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
- <p className="text-sm text-blue-800">
- OTP sent to your registered mobile number
- </p>
- </div>
- <input
- type="text"
- placeholder="Enter 6-digit OTP"
- value={verification.otp}
- onChange={(e) => setVerification({ ...verification, otp: e.target.value })}
- maxLength={6}
- data-testid="profile-email-otp-input"
- className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-center text-2xl tracking-widest"
- />
- <p className="text-xs text-gray-500 mt-2">Use code: 123456 (Demo)</p>
- <div className="flex gap-3 mt-4">
- <button
- onClick={handleVerifyEmailOTP}
- data-testid="profile-verify-email-otp-button"
- className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg font-medium transition-colors"
- >
- Verify OTP
- </button>
- <button
- onClick={() =>
- setVerification({
- type: null,
- otp: '',
- newValue: '',
- step: 'request',
- })
- }
- data-testid="profile-cancel-email-otp-button"
- className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-900 py-2 rounded-lg font-medium transition-colors"
- >
- Cancel
- </button>
- </div>
- </>
- )}
- </div>
- )}
- </div>
+  {verification.step === 'otp-sent' && (
+  <>
+  <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 mb-4">
+  <p className="text-sm font-medium text-slate-800">
+  OTP sent to your registered mobile number
+  </p>
+  </div>
+  <input
+  type="text"
+  placeholder="Enter 6-digit OTP"
+  value={verification.otp}
+  onChange={(e) => setVerification({ ...verification, otp: e.target.value })}
+  maxLength={6}
+  data-testid="profile-email-otp-input"
+  className="w-full px-4 py-3 border border-slate-200 bg-slate-50/50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-slate-900/10 text-center text-2xl tracking-widest font-mono"
+  />
+  <p className="text-xs text-slate-400 mt-2">Use code: 123456 (Demo)</p>
+  <div className="flex gap-3 mt-4">
+  <button
+  onClick={handleVerifyEmailOTP}
+  data-testid="profile-verify-email-otp-button"
+  className="flex-1 bg-slate-900 hover:bg-black text-white py-2.5 rounded-full font-bold text-xs sm:text-sm shadow-xs transition-colors cursor-pointer active:scale-95"
+  >
+  Verify OTP
+  </button>
+  <button
+  onClick={() =>
+  setVerification({
+  type: null,
+  otp: '',
+  newValue: '',
+  step: 'request',
+  })
+  }
+  data-testid="profile-cancel-email-otp-button"
+  className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-2.5 rounded-full font-bold text-xs sm:text-sm shadow-xs transition-colors cursor-pointer"
+  >
+  Cancel
+  </button>
+  </div>
+  </>
+  )}
+  </div>
+  )}
+  </div>
 
 
- <div>
- <div className="flex items-center justify-between mb-4">
- <div className="flex items-center gap-3">
- <Phone size={20} className="text-green-600" />
- <div>
- <p className="font-medium text-gray-900">Mobile Number</p>
- <p className="text-sm text-gray-500">Change via email verification</p>
- </div>
- </div>
- <Lock size={18} className="text-orange-500" />
- </div>
+  <div>
+  <div className="flex items-center justify-between mb-4">
+  <div className="flex items-center gap-3">
+  <Phone size={18} className="text-slate-600" />
+  <div>
+  <p className="font-bold text-slate-900">Mobile Number</p>
+  <p className="text-xs text-slate-400 mt-0.5">Change via email verification</p>
+  </div>
+  </div>
+  <Lock size={16} className="text-amber-500" />
+  </div>
 
- {verification.type !== 'mobile-change' ? (
- <>
- <p className="text-gray-900 font-medium text-lg mb-4">{profileData.mobile}</p>
- <button
- onClick={() =>
- setVerification({
- type: 'mobile-change',
- otp: '',
- newValue: '',
- step: 'request',
- })
- }
- data-testid="profile-change-mobile-button"
- className="bg-green-50 hover:bg-green-100 text-green-600 px-4 py-2 rounded-lg font-medium transition-colors"
- >
- Change Mobile
- </button>
- </>
- ) : (
- <div className="space-y-4">
- {verification.step === 'request' && (
- <>
- <input
- type="tel"
- placeholder="Enter new mobile number"
- value={verification.newValue}
- onChange={(e) =>
- setVerification({ ...verification, newValue: e.target.value })
- }
- data-testid="profile-new-mobile-input"
- className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
- id="newMobile"
- name="newMobile"
- />
- <div className="flex gap-3">
- <button
- onClick={handleChangeMobile}
- data-testid="profile-send-mobile-otp-button"
- className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg font-medium transition-colors"
- >
- Send OTP to Email
- </button>
- <button
- onClick={() =>
- setVerification({
- type: null,
- otp: '',
- newValue: '',
- step: 'request',
- })
- }
- data-testid="profile-cancel-mobile-change-button"
- className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-900 py-2 rounded-lg font-medium transition-colors"
- >
- Cancel
- </button>
- </div>
- </>
- )}
+  {verification.type !== 'mobile-change' ? (
+  <>
+  <p className="text-slate-900 font-bold text-lg mb-4">{profileData.mobile}</p>
+  <button
+  onClick={() =>
+  setVerification({
+  type: 'mobile-change',
+  otp: '',
+  newValue: '',
+  step: 'request',
+  })
+  }
+  data-testid="profile-change-mobile-button"
+  className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-full font-bold text-xs sm:text-sm transition-colors cursor-pointer shadow-xs active:scale-95"
+  >
+  Change Mobile
+  </button>
+  </>
+  ) : (
+  <div className="space-y-4">
+  {verification.step === 'request' && (
+  <>
+  <input
+  type="tel"
+  placeholder="Enter new mobile number"
+  value={verification.newValue}
+  onChange={(e) =>
+  setVerification({ ...verification, newValue: e.target.value })
+  }
+  data-testid="profile-new-mobile-input"
+  className="w-full px-4 py-3 border border-slate-200 bg-slate-50/50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-slate-900/10 text-sm font-medium"
+  id="newMobile"
+  name="newMobile"
+  />
+  <div className="flex gap-3">
+  <button
+  onClick={handleChangeMobile}
+  data-testid="profile-send-mobile-otp-button"
+  className="flex-1 bg-slate-900 hover:bg-black text-white py-2.5 rounded-full font-bold text-xs sm:text-sm shadow-xs transition-colors cursor-pointer active:scale-95"
+  >
+  Send OTP to Email
+  </button>
+  <button
+  onClick={() =>
+  setVerification({
+  type: null,
+  otp: '',
+  newValue: '',
+  step: 'request',
+  })
+  }
+  data-testid="profile-cancel-mobile-change-button"
+  className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-2.5 rounded-full font-bold text-xs sm:text-sm shadow-xs transition-colors cursor-pointer"
+  >
+  Cancel
+  </button>
+  </div>
+  </>
+  )}
 
- {verification.step === 'otp-sent' && (
- <>
- <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
- <p className="text-sm text-green-800">
- OTP sent to your registered email
- </p>
- </div>
- <input
- type="text"
- placeholder="Enter 6-digit OTP"
- value={verification.otp}
- onChange={(e) => setVerification({ ...verification, otp: e.target.value })}
- maxLength={6}
- data-testid="profile-mobile-otp-input"
- className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-center text-2xl tracking-widest"
- id="emailOtp"
- name="emailOtp"
- />
- <p className="text-xs text-gray-500 mt-2">Use code: 123456 (Demo)</p>
- <div className="flex gap-3 mt-4">
- <button
- onClick={handleVerifyMobileOTP}
- data-testid="profile-verify-mobile-otp-button"
- className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg font-medium transition-colors"
- >
- Verify OTP
- </button>
- <button
- onClick={() =>
- setVerification({
- type: null,
- otp: '',
- newValue: '',
- step: 'request',
- })
- }
- data-testid="profile-cancel-mobile-otp-button"
- className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-900 py-2 rounded-lg font-medium transition-colors"
- >
- Cancel
- </button>
- </div>
- </>
- )}
- </div>
- )}
- </div>
- </Card>
+  {verification.step === 'otp-sent' && (
+  <>
+  <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 mb-4">
+  <p className="text-sm font-medium text-slate-800">
+  OTP sent to your registered email
+  </p>
+  </div>
+  <input
+  type="text"
+  placeholder="Enter 6-digit OTP"
+  value={verification.otp}
+  onChange={(e) => setVerification({ ...verification, otp: e.target.value })}
+  maxLength={6}
+  data-testid="profile-mobile-otp-input"
+  className="w-full px-4 py-3 border border-slate-200 bg-slate-50/50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-slate-900/10 text-center text-2xl tracking-widest font-mono"
+  id="emailOtp"
+  name="emailOtp"
+  />
+  <p className="text-xs text-slate-400 mt-2">Use code: 123456 (Demo)</p>
+  <div className="flex gap-3 mt-4">
+  <button
+  onClick={handleVerifyMobileOTP}
+  data-testid="profile-verify-mobile-otp-button"
+  className="flex-1 bg-slate-900 hover:bg-black text-white py-2.5 rounded-full font-bold text-xs sm:text-sm shadow-xs transition-colors cursor-pointer active:scale-95"
+  >
+  Verify OTP
+  </button>
+  <button
+  onClick={() =>
+  setVerification({
+  type: null,
+  otp: '',
+  newValue: '',
+  step: 'request',
+  })
+  }
+  data-testid="profile-cancel-mobile-otp-button"
+  className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-2.5 rounded-full font-bold text-xs sm:text-sm shadow-xs transition-colors cursor-pointer"
+  >
+  Cancel
+  </button>
+  </div>
+  </>
+  )}
+  </div>
+  )}
+  </div>
+  </Card>
  </motion.div>
 
  {/* Change PIN Section */}
@@ -1742,109 +1742,109 @@ export const UserProfile: React.FC = () => {
  animate={{ opacity: 1, y: 0 }}
  transition={{ delay: 0.35 }}
  >
- <Card data-testid="user-profile-card-10" variant="flat" className="overflow-hidden relative shadow-[0px_1px_2px_rgba(0,0,0,0.04),_0px_4px_12px_rgba(0,0,0,0.06)] bg-white border border-gray-200 rounded-2xl p-6 lg:p-8">
- <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
- <KeyRound size={20} className="text-blue-600" />
- Security &amp; PIN
- </h3>
+ <Card data-testid="user-profile-card-10" variant="flat" className="overflow-hidden relative shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] bg-white border border-slate-100 rounded-[28px] sm:rounded-[32px] p-6 lg:p-8">
+  <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+  <KeyRound size={18} className="text-slate-700" />
+  Security &amp; PIN
+  </h3>
 
- <div className="space-y-4">
- {pinChangeStep === 'idle' ? (
- <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-white rounded-xl border border-gray-200">
- <div className="flex-1 min-w-0">
- <p className="font-semibold text-gray-900">Change Secure PIN</p>
- <p className="text-sm text-gray-500 mt-0.5">Use your current PIN to update your 6-digit access PIN</p>
- </div>
- <Button
- onClick={() => setPinChangeStep('set-new-pin')}
- disabled={isPinLoading}
- data-testid="profile-change-pin-button"
- className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-6 shrink-0 whitespace-nowrap"
- >
- {isPinLoading ? 'Updating...' : 'Change PIN'}
- </Button>
- </div>
- ) : (
- <form data-testid="user-profile-form"
-  onSubmit={(e) => {
-    e.preventDefault();
-    if (!isPinLoading && currentPin.length === 6 && newPin.length === 6 && newPin === confirmNewPin && !isPinWeak) {
-      handleSetNewPin();
-    }
-  }}
-  className="p-4 bg-green-50 rounded-xl border border-green-100 space-y-4"
-  >
-  <div className="flex items-center justify-between">
-  <p className="font-semibold text-green-900">Set New PIN</p>
-  <button type="button" onClick={resetPinFlow} data-testid="profile-cancel-pin-button" className="text-xs text-green-600 hover:underline">Cancel</button>
+  <div className="space-y-4">
+  {pinChangeStep === 'idle' ? (
+  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 bg-slate-50/60 rounded-2xl border border-slate-100">
+  <div className="flex-1 min-w-0">
+  <p className="font-bold text-slate-900">Change Secure PIN</p>
+  <p className="text-xs text-slate-500 mt-0.5">Use your current PIN to update your 6-digit access PIN</p>
   </div>
-
-  <div className="space-y-3">
-  <div className="relative">
-  <input
-  type={showNewPin ? 'text' : 'password'}
-  placeholder="Enter current 6-digit PIN"
-  value={currentPin}
-  onChange={(e) => setCurrentPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
-  autoComplete="new-password"
-  data-testid="profile-current-pin-input"
-  className="w-full px-4 py-2.5 rounded-xl border border-green-200 focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none text-center font-mono text-lg tracking-widest"
-  />
-  </div>
-
-  <div className="relative">
-  <input
-  type={showNewPin ? 'text' : 'password'}
-  placeholder="Enter new 6-digit PIN"
-  value={newPin}
-  onChange={(e) => setNewPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
-  autoComplete="new-password"
-  data-testid="profile-new-pin-input"
-  className={`w-full px-4 py-2.5 rounded-xl border outline-none text-center font-mono text-lg tracking-widest transition-all ${
-    isPinWeak
-      ? 'border-red-300 focus:border-red-500 focus:ring-2 focus:ring-red-100 bg-red-50/30'
-      : 'border-green-200 focus:border-green-500 focus:ring-2 focus:ring-green-100 bg-white'
-  }`}
-  />
-  <button data-testid="user-profile-button"
-  type="button"
-  onClick={() => setShowNewPin(!showNewPin)}
-  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-  >
-  {showNewPin ? <EyeOff size={18} /> : <Eye size={18} />}
-  </button>
-  </div>
-
-  {isPinWeak && (
-  <p className="text-xs text-red-600 font-semibold flex items-center justify-center gap-1.5 animate-in fade-in slide-in-from-top-1 duration-200">
-  <ShieldAlert size={14} className="shrink-0" />
-  PIN is too weak. Avoid sequential or repeating patterns.
-  </p>
-  )}
-
-  <input
-  type={showNewPin ? 'text' : 'password'}
-  placeholder="Confirm new PIN"
-  value={confirmNewPin}
-  onChange={(e) => setConfirmNewPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
-  autoComplete="new-password"
-  data-testid="profile-confirm-pin-input"
-  className="w-full px-4 py-2.5 rounded-xl border border-green-200 focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none text-center font-mono text-lg tracking-widest"
-  />
-
   <Button
-  type="submit"
-  data-testid="profile-update-pin-button"
-  className="w-full bg-green-600 hover:bg-green-700 text-white rounded-xl py-3 mt-2"
-  disabled={isPinLoading || currentPin.length !== 6 || newPin.length !== 6 || newPin !== confirmNewPin || isPinWeak}
+  onClick={() => setPinChangeStep('set-new-pin')}
+  disabled={isPinLoading}
+  data-testid="profile-change-pin-button"
+  className="bg-slate-900 hover:bg-black text-white rounded-full px-6 py-2.5 shrink-0 whitespace-nowrap font-bold text-xs sm:text-sm shadow-xs cursor-pointer active:scale-95 transition-all"
   >
-  {isPinLoading ? 'Updating Secure PIN...' : 'Update Secure PIN'}
+  {isPinLoading ? 'Updating...' : 'Change PIN'}
   </Button>
   </div>
-  </form>
- )}
- </div>
- </Card>
+  ) : (
+  <form data-testid="user-profile-form"
+   onSubmit={(e) => {
+     e.preventDefault();
+     if (!isPinLoading && currentPin.length === 6 && newPin.length === 6 && newPin === confirmNewPin && !isPinWeak) {
+       handleSetNewPin();
+     }
+   }}
+   className="p-5 bg-slate-50/60 rounded-2xl border border-slate-200/80 space-y-4"
+   >
+   <div className="flex items-center justify-between">
+   <p className="font-bold text-slate-900">Set New PIN</p>
+   <button type="button" onClick={resetPinFlow} data-testid="profile-cancel-pin-button" className="text-xs font-bold text-slate-500 hover:text-slate-800 cursor-pointer">Cancel</button>
+   </div>
+
+   <div className="space-y-3">
+   <div className="relative">
+   <input
+   type={showNewPin ? 'text' : 'password'}
+   placeholder="Enter current 6-digit PIN"
+   value={currentPin}
+   onChange={(e) => setCurrentPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
+   autoComplete="new-password"
+   data-testid="profile-current-pin-input"
+   className="w-full px-4 py-2.5 rounded-2xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-slate-900/10 text-center font-mono text-lg tracking-widest"
+   />
+   </div>
+
+   <div className="relative">
+   <input
+   type={showNewPin ? 'text' : 'password'}
+   placeholder="Enter new 6-digit PIN"
+   value={newPin}
+   onChange={(e) => setNewPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
+   autoComplete="new-password"
+   data-testid="profile-new-pin-input"
+   className={`w-full px-4 py-2.5 rounded-2xl border outline-none text-center font-mono text-lg tracking-widest transition-all ${
+     isPinWeak
+       ? 'border-rose-300 focus:border-rose-500 focus:ring-2 focus:ring-rose-100 bg-rose-50/30'
+       : 'border-slate-200 focus:ring-2 focus:ring-slate-900/10 bg-white'
+   }`}
+   />
+   <button data-testid="user-profile-button"
+   type="button"
+   onClick={() => setShowNewPin(!showNewPin)}
+   className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+   >
+   {showNewPin ? <EyeOff size={18} /> : <Eye size={18} />}
+   </button>
+   </div>
+
+   {isPinWeak && (
+   <p className="text-xs text-rose-600 font-bold flex items-center justify-center gap-1.5 animate-in fade-in slide-in-from-top-1 duration-200">
+   <ShieldAlert size={14} className="shrink-0" />
+   PIN is too weak. Avoid sequential or repeating patterns.
+   </p>
+   )}
+
+   <input
+   type={showNewPin ? 'text' : 'password'}
+   placeholder="Confirm new PIN"
+   value={confirmNewPin}
+   onChange={(e) => setConfirmNewPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
+   autoComplete="new-password"
+   data-testid="profile-confirm-pin-input"
+   className="w-full px-4 py-2.5 rounded-2xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-slate-900/10 text-center font-mono text-lg tracking-widest"
+   />
+
+   <Button
+   type="submit"
+   data-testid="profile-update-pin-button"
+   className="w-full bg-slate-900 hover:bg-black text-white rounded-full py-3.5 mt-2 font-bold shadow-xs cursor-pointer active:scale-95"
+   disabled={isPinLoading || currentPin.length !== 6 || newPin.length !== 6 || newPin !== confirmNewPin || isPinWeak}
+   >
+   {isPinLoading ? 'Updating Secure PIN...' : 'Update Secure PIN'}
+   </Button>
+   </div>
+   </form>
+  )}
+  </div>
+  </Card>
  </motion.div>
 
  {/* Advisor Role Section */}
@@ -1923,11 +1923,11 @@ export const UserProfile: React.FC = () => {
 
  {/* Delete Account Modal (Popup) */}
  {isDeleteModalOpen && (
- <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 animate-in fade-in duration-200">
+ <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
  <motion.div
  initial={{ scale: 0.95, opacity: 0 }}
  animate={{ scale: 1, opacity: 1 }}
- className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden relative"
+ className="bg-white rounded-[28px] sm:rounded-[36px] shadow-2xl w-full max-w-md overflow-hidden relative border border-slate-100"
  >
  <div className="bg-gradient-to-br from-red-600 to-rose-700 p-6 text-white relative">
  <button
@@ -1939,22 +1939,22 @@ export const UserProfile: React.FC = () => {
  aria-label="Close delete account dialog"
  title="Close delete account dialog"
  data-testid="profile-delete-close-button"
- className="absolute top-4 right-4 bg-white/20 hover:bg-white/30 p-1.5 rounded-full transition-colors"
+ className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white transition-all cursor-pointer active:scale-95"
  >
- <X size={20} />
+ <X size={18} />
  </button>
- <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mb-4">
+ <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mb-4 backdrop-blur-xs">
  <Trash2 size={24} className="text-white" />
  </div>
- <h3 className="text-xl font-bold">Delete Account</h3>
- <p className="text-red-100 text-sm mt-1">
- You are about to permanently delete your KANAKUaccount.
+ <h3 className="text-xl font-bold tracking-tight">Delete Account</h3>
+ <p className="text-red-100 text-sm mt-1 leading-relaxed">
+ You are about to permanently delete your KANAKU account.
  All your tracked accounts, transactions, and data will be erased.
  </p>
  </div>
 
  <div className="p-6">
- <label className="block text-sm font-medium text-gray-700 mb-2">
+ <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
  Verify your password to continue
  </label>
  <input
@@ -1963,14 +1963,14 @@ export const UserProfile: React.FC = () => {
  value={deletePassword}
  onChange={(e) => setDeletePassword(e.target.value)}
  data-testid="profile-delete-password-input"
- className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 mb-6"
+ className="w-full px-4 py-3.5 border border-slate-200 rounded-2xl bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 mb-6 text-sm text-slate-800 transition-all placeholder:text-slate-400"
  />
 
  <div className="flex gap-3">
  <button
  onClick={() => setIsDeleteModalOpen(false)}
  data-testid="profile-delete-cancel-button"
- className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-900 py-3 rounded-xl font-medium transition-colors"
+ className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-3 rounded-full font-bold text-sm transition-all active:scale-95"
  >
  Cancel
  </button>
@@ -1978,7 +1978,7 @@ export const UserProfile: React.FC = () => {
  onClick={handleDeleteAccount}
  disabled={isDeleting || !deletePassword}
  data-testid="profile-delete-confirm-button"
- className="flex-1 bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center"
+ className="flex-1 bg-rose-600 hover:bg-rose-700 text-white py-3 rounded-full font-bold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center active:scale-95 shadow-xs"
  >
  {isDeleting ? 'Deleting...' : 'Delete Permanently'}
  </button>
@@ -2004,17 +2004,17 @@ export const UserProfile: React.FC = () => {
     className="fixed bottom-[calc(72px+env(safe-area-inset-bottom,0px)+16px)] left-0 right-0 z-50 flex justify-center px-4 pointer-events-none"
    >
     <div
-     className="pointer-events-auto w-full max-w-sm flex items-center gap-3 px-4 py-3 rounded-[20px] shadow-2xl bg-white/[0.88] backdrop-blur-[20px] border border-white/60"
+     className="pointer-events-auto w-full max-w-sm flex items-center gap-3 px-4 py-3 rounded-full shadow-[0_12px_36px_rgba(0,0,0,0.12)] bg-white/95 backdrop-blur-xl border border-slate-100"
     >
      {/* Unsaved changes indicator */}
-     <div className="flex-1 flex items-center gap-2 min-w-0">
+     <div className="flex-1 flex items-center gap-2 min-w-0 pl-1">
       {hasDirtyChanges && (
        <motion.div
         initial={{ scale: 0.6, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         className="flex items-center gap-1.5 flex-shrink-0"
        >
-        <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse flex-shrink-0" />
+        <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse flex-shrink-0" />
         <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest whitespace-nowrap">Unsaved Changes</span>
        </motion.div>
       )}
@@ -2029,9 +2029,9 @@ export const UserProfile: React.FC = () => {
       onClick={handleDiscard}
       disabled={isLoading}
       data-testid="profile-floating-discard-button"
-      className="flex items-center gap-1.5 px-4 py-2.5 rounded-[14px] text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 active:scale-95 transition-all disabled:opacity-50 flex-shrink-0"
+      className="flex items-center gap-1.5 px-4 py-2.5 rounded-full text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 active:scale-95 transition-all disabled:opacity-50 flex-shrink-0 cursor-pointer"
      >
-      <RotateCcw size={12} />
+      <RotateCcw size={13} />
       Discard
      </button>
 
@@ -2041,12 +2041,12 @@ export const UserProfile: React.FC = () => {
       onClick={handleSaveProfile}
       disabled={isLoading}
       data-testid="profile-floating-save-button"
-      className={`flex items-center gap-1.5 px-5 py-2.5 rounded-[14px] text-xs font-bold text-white active:scale-95 transition-all disabled:opacity-60 flex-shrink-0 shadow-[0_4px_12px_rgba(79,70,229,0.35)] ${isLoading ? 'bg-blue-400/60' : 'bg-gradient-to-br from-blue-500 to-indigo-600'}`}
+      className={`flex items-center gap-1.5 px-5 py-2.5 rounded-full text-xs font-bold text-white active:scale-95 transition-all disabled:opacity-60 flex-shrink-0 shadow-xs cursor-pointer ${isLoading ? 'bg-indigo-400' : 'bg-slate-900 hover:bg-black'}`}
      >
       {isLoading ? (
        <div className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
       ) : (
-       <Save size={12} />
+       <Save size={13} />
       )}
       {isLoading ? 'Saving...' : 'Save Changes'}
      </button>
@@ -2059,6 +2059,4 @@ export const UserProfile: React.FC = () => {
  );
 };
 
-
-
-
+export default UserProfile;

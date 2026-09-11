@@ -267,12 +267,12 @@ export const FriendsList: React.FC = () => {
         </div>
 
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
           <input data-testid="friends-list-search-friends-by-name"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search friends by name or email"
-            className="w-full bg-slate-50 border-none rounded-xl py-3 pl-10 pr-4 text-sm font-medium text-slate-900"
+            className="w-full bg-slate-50 border border-slate-200/60 rounded-full py-3 pl-10 pr-4 text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-300 transition-all"
           />
         </div>
 
@@ -281,11 +281,11 @@ export const FriendsList: React.FC = () => {
             <Loader2 className="animate-spin" size={28} />
           </div>
         ) : filtered.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-gray-300 bg-white px-4 py-12 text-center">
-            <p className="text-sm text-gray-500">No friends found.</p>
+          <div className="rounded-[28px] sm:rounded-[32px] border border-dashed border-slate-200 bg-white px-4 py-16 text-center">
+            <p className="text-sm text-slate-500">No friends found.</p>
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-3">
             {filtered.map((friend) => {
               const key = friend.cloudId ?? `local-${friend.localId}`;
               const isEditing = friend.localId != null && editingLocalId === friend.localId;
@@ -293,41 +293,41 @@ export const FriendsList: React.FC = () => {
               return (
                 <div
                   key={key}
-                  className={`rounded-2xl border bg-white p-4 shadow-sm transition-shadow ${friend.isPendingSync ? 'border-amber-200' : 'border-gray-200 hover:shadow-md'}`}
+                  className={`rounded-[24px] sm:rounded-[28px] border bg-white p-4 sm:p-5 transition-all ${friend.isPendingSync ? 'border-amber-200 shadow-xs' : 'border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] hover:shadow-md'}`}
                 >
                   {isEditing ? (
                     /* ── Inline edit form for local-only friends ── */
-                    <div className="space-y-3">
+                    <div className="space-y-3.5">
                       <p className="text-xs font-bold text-amber-600 uppercase tracking-wide">
                         Add contact info to sync this friend
                       </p>
-                      <div className="grid gap-2">
+                      <div className="grid gap-2.5">
                         <input
                           value={editForm.name}
                           onChange={(e) => setEditForm((p) => ({ ...p, name: e.target.value }))}
                           placeholder="Full name"
-                          className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-violet-400"
+                          className="w-full rounded-2xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
                         />
                         <input
                           value={editForm.email}
                           onChange={(e) => setEditForm((p) => ({ ...p, email: e.target.value }))}
                           placeholder="Email (optional)"
                           type="email"
-                          className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-violet-400"
+                          className="w-full rounded-2xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
                         />
                         <input
                           value={editForm.phone}
                           onChange={(e) => setEditForm((p) => ({ ...p, phone: e.target.value }))}
                           placeholder="Phone (optional)"
                           type="tel"
-                          className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-violet-400"
+                          className="w-full rounded-2xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
                         />
                       </div>
                       <div className="flex gap-2">
                         <Button
                           onClick={() => void handleSaveLocalFriend(friend.localId!)}
                           disabled={savingLocal}
-                          className="flex-1 h-9 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-sm flex items-center justify-center gap-1.5"
+                          className="flex-1 h-10 rounded-full bg-slate-900 hover:bg-black text-white font-bold text-sm flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
                         >
                           {savingLocal ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
                           Save
@@ -335,7 +335,7 @@ export const FriendsList: React.FC = () => {
                         <Button
                           variant="secondary"
                           onClick={() => setEditingLocalId(null)}
-                          className="h-9 px-4 rounded-xl border border-gray-200 text-gray-600 font-bold text-sm flex items-center gap-1"
+                          className="h-10 px-5 rounded-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 font-bold text-sm flex items-center gap-1 cursor-pointer"
                         >
                           <X size={14} /> Cancel
                         </Button>
@@ -347,43 +347,43 @@ export const FriendsList: React.FC = () => {
                       <button data-testid={`friends-list-button-3-${key}`}
                         type="button"
                         onClick={() => openFriendProfile(friend)}
-                        className="flex flex-1 items-center gap-3 text-left min-w-0"
+                        className="flex flex-1 items-center gap-3.5 text-left min-w-0 cursor-pointer"
                       >
-                        <Avatar className="h-12 w-12 shrink-0">
+                        <Avatar className="h-12 w-12 shrink-0 rounded-2xl shadow-xs">
                           <AvatarImage src={undefined} alt={friend.name} />
-                          <AvatarFallback className={`${getToneClass(friend.name)} font-bold`}>
+                          <AvatarFallback className={`${getToneClass(friend.name)} font-bold rounded-2xl`}>
                             {friend.name.charAt(0).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
                         <div className="min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <p className="font-semibold text-gray-900 truncate">{friend.name}</p>
+                            <p className="font-bold text-slate-900 truncate">{friend.name}</p>
                             {friend.isPendingSync ? (
-                              <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-700">
+                              <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-0.5 text-[10px] font-bold text-amber-700">
                                 <AlertCircle size={11} /> Not synced
                               </span>
                             ) : friend.isRegistered ? (
-                              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
+                              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700">
                                 <ShieldCheck size={11} /> Kanaku User
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-bold text-gray-500">
+                              <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] font-bold text-slate-500">
                                 <UserCircle2 size={11} /> Guest
                               </span>
                             )}
                           </div>
-                          <p className="text-xs text-gray-500 truncate">
+                          <p className="text-xs text-slate-500 truncate mt-0.5">
                             {friend.isPendingSync
                               ? (friend.email || friend.phone || 'Tap to add email / phone')
                               : (friend.email || friend.phone || 'No contact info')}
                           </p>
                         </div>
                       </button>
-                      <div className="flex items-center gap-4 shrink-0">
+                      <div className="flex items-center gap-3 sm:gap-4 shrink-0">
                         {!friend.isPendingSync && (
                           <div className="text-right">
-                            <p className="text-xs text-gray-400">{friend.totalExpenses} expense{friend.totalExpenses === 1 ? '' : 's'}</p>
-                            <p className={`text-sm font-bold ${friend.outstandingAmount > 0 ? 'text-rose-600' : 'text-gray-400'}`}>
+                            <p className="text-xs text-slate-400">{friend.totalExpenses} expense{friend.totalExpenses === 1 ? '' : 's'}</p>
+                            <p className={`text-sm font-bold ${friend.outstandingAmount > 0 ? 'text-rose-600' : 'text-slate-400'}`}>
                               {friend.outstandingAmount > 0 ? formatCurrency(friend.outstandingAmount) : 'Settled'}
                             </p>
                           </div>
@@ -392,9 +392,9 @@ export const FriendsList: React.FC = () => {
                           type="button"
                           onClick={() => setDeleteTarget(friend)}
                           title="Remove friend"
-                          className="p-2 text-gray-300 hover:text-rose-500 transition-colors"
+                          className="w-9 h-9 rounded-full bg-slate-50 hover:bg-rose-50 text-slate-400 hover:text-rose-500 border border-slate-100 flex items-center justify-center transition-all cursor-pointer"
                         >
-                          <Trash2 size={16} />
+                          <Trash2 size={15} />
                         </button>
                       </div>
                     </div>

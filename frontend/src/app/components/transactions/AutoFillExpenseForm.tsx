@@ -229,227 +229,238 @@ export const AutoFillExpenseForm: React.FC<AutoFillExpenseFormProps> = ({
  return <X className="w-4 h-4" />;
  };
 
- return (
- <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
- <motion.div
- initial={{ opacity: 0, scale: 0.9 }}
- animate={{ opacity: 1, scale: 1 }}
- exit={{ opacity: 0, scale: 0.9 }}
- className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl"
- >
- {/* Header */}
- <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-4 text-white">
- <div className="flex items-center justify-between">
- <div className="flex items-center space-x-2">
- <Brain className="w-5 h-5" />
- <h3 className="font-semibold">KANAKUAI</h3>
- </div>
- <button data-testid="auto-fill-expense-form-button"
- onClick={onClose}
- className="p-1 hover:bg-white/20 rounded-lg transition-colors"
- >
- <X className="w-5 h-5" />
- </button>
- </div>
- <p className="text-blue-100 text-sm mt-1">
- Instant expense entry with AI-powered auto-fill
- </p>
- </div>
+  return (
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.9 }}
+        className="bg-white rounded-[28px] sm:rounded-[36px] w-full max-w-md overflow-hidden shadow-2xl border border-slate-100"
+      >
+        {/* Header */}
+        <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+          <div className="flex items-center space-x-2.5">
+            <div className="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600">
+              <Brain className="w-4 h-4" />
+            </div>
+            <h3 className="font-bold text-slate-900 text-base">KANAKUAI</h3>
+          </div>
+          <button
+            data-testid="auto-fill-expense-form-button"
+            onClick={onClose}
+            className="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200/80 transition-colors flex items-center justify-center text-slate-700 cursor-pointer"
+            aria-label="Close"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
 
- {/* Tabs */}
- <div className="flex border-b border-gray-200">
- <button data-testid="auto-fill-expense-form-camera"
- onClick={() => setActiveTab('camera')}
- className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${activeTab === 'camera'
- ? 'text-blue-600 border-b-2 border-blue-600'
- : 'text-gray-600 hover:text-gray-900'
- }`}
- >
- <Camera className="w-4 h-4 inline mr-2" />
- Camera
- </button>
- {voiceEnabled && (
-    <button data-testid="auto-fill-expense-form-voice"
-    onClick={() => setActiveTab('voice')}
-    className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${activeTab === 'voice'
-    ? 'text-blue-600 border-b-2 border-blue-600'
-    : 'text-gray-600 hover:text-gray-900'
-    }`}
-    >
-    <Mic className="w-4 h-4 inline mr-2" />
-    Voice
-    </button>
-  )}
- <button data-testid="auto-fill-expense-form-upload"
- onClick={() => setActiveTab('upload')}
- className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${activeTab === 'upload'
- ? 'text-blue-600 border-b-2 border-blue-600'
- : 'text-gray-600 hover:text-gray-900'
- }`}
- >
- <Upload className="w-4 h-4 inline mr-2" />
- Upload
- </button>
- </div>
+        {/* Tabs */}
+        <div className="px-6 pt-4 pb-1">
+          <div className="flex p-1 bg-slate-100/90 rounded-full gap-1">
+            <button
+              data-testid="auto-fill-expense-form-camera"
+              onClick={() => setActiveTab('camera')}
+              className={`flex-1 py-2 px-3 text-xs font-bold rounded-full transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                activeTab === 'camera'
+                  ? 'bg-white text-slate-900 shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Camera className="w-3.5 h-3.5" />
+              Camera
+            </button>
+            {voiceEnabled && (
+              <button
+                data-testid="auto-fill-expense-form-voice"
+                onClick={() => setActiveTab('voice')}
+                className={`flex-1 py-2 px-3 text-xs font-bold rounded-full transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                  activeTab === 'voice'
+                    ? 'bg-white text-slate-900 shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <Mic className="w-3.5 h-3.5" />
+                Voice
+              </button>
+            )}
+            <button
+              data-testid="auto-fill-expense-form-upload"
+              onClick={() => setActiveTab('upload')}
+              className={`flex-1 py-2 px-3 text-xs font-bold rounded-full transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                activeTab === 'upload'
+                  ? 'bg-white text-slate-900 shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Upload className="w-3.5 h-3.5" />
+              Upload
+            </button>
+          </div>
+        </div>
 
- {/* Content */}
- <div className="p-6">
- {error && (
- <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
- <p className="text-red-600 text-sm">{error}</p>
- </div>
- )}
+        {/* Content */}
+        <div className="p-6">
+          {error && (
+            <div className="mb-4 p-3.5 bg-rose-50 border border-rose-200 rounded-2xl">
+              <p className="text-rose-600 text-xs font-semibold">{error}</p>
+            </div>
+          )}
 
- {isProcessing ? (
- <div className="text-center py-8">
- <div className="inline-flex items-center space-x-3">
- <Zap className="w-6 h-6 text-blue-600 animate-pulse" />
- <span className="text-gray-600">Processing with KANAKUAI...</span>
- </div>
- </div>
- ) : extractedData ? (
- <div className="space-y-4">
- {/* Confidence Indicator */}
- <div className="flex items-center justify-between p-3 bg-white rounded-lg">
- <div className="flex items-center space-x-2">
- <span className={`inline-flex items-center ${getConfidenceColor(confidence)}`}>
- {getConfidenceIcon(confidence)}
- </span>
- <span className="text-sm font-medium">
- {(confidence * 100).toFixed(1)}% Confidence
- </span>
- </div>
- <span className="text-sm text-gray-600">
- {confidence > 0.8 ? 'High' : confidence > 0.6 ? 'Medium' : 'Low'}
- </span>
- </div>
+          {isProcessing ? (
+            <div className="text-center py-8">
+              <div className="inline-flex items-center space-x-3">
+                <Zap className="w-6 h-6 text-indigo-600 animate-pulse" />
+                <span className="text-slate-600 font-semibold text-sm">Processing with KANAKUAI...</span>
+              </div>
+            </div>
+          ) : extractedData ? (
+            <div className="space-y-4">
+              {/* Confidence Indicator */}
+              <div className="flex items-center justify-between p-3.5 bg-slate-50/80 rounded-2xl border border-slate-100">
+                <div className="flex items-center space-x-2">
+                  <span className={`inline-flex items-center ${getConfidenceColor(confidence)}`}>
+                    {getConfidenceIcon(confidence)}
+                  </span>
+                  <span className="text-xs font-bold text-slate-900">
+                    {(confidence * 100).toFixed(1)}% Confidence
+                  </span>
+                </div>
+                <span className="text-xs font-semibold text-slate-500">
+                  {confidence > 0.8 ? 'High' : confidence > 0.6 ? 'Medium' : 'Low'}
+                </span>
+              </div>
 
- {/* Extracted Data */}
- <div className="space-y-3">
- <div className="flex justify-between items-center py-2 border-b border-gray-100">
- <span className="text-sm text-gray-600">Amount</span>
- <span className="font-semibold">
- INR{extractedData.amount?.toLocaleString('en-IN') || 'Not detected'}
- </span>
- </div>
+              {/* Extracted Data */}
+              <div className="space-y-3 rounded-2xl border border-slate-100 bg-slate-50/40 p-4">
+                <div className="flex justify-between items-center py-1.5 border-b border-slate-100">
+                  <span className="text-xs text-slate-500 font-medium">Amount</span>
+                  <span className="text-sm font-bold text-slate-900">
+                    INR {extractedData.amount?.toLocaleString('en-IN') || 'Not detected'}
+                  </span>
+                </div>
 
- <div className="flex justify-between items-center py-2 border-b border-gray-100">
- <span className="text-sm text-gray-600">Category</span>
- <span className="font-semibold">
- {extractedData.category || 'Not detected'}
- </span>
- </div>
+                <div className="flex justify-between items-center py-1.5 border-b border-slate-100">
+                  <span className="text-xs text-slate-500 font-medium">Category</span>
+                  <span className="text-sm font-bold text-slate-900">
+                    {extractedData.category || 'Not detected'}
+                  </span>
+                </div>
 
- <div className="flex justify-between items-center py-2 border-b border-gray-100">
- <span className="text-sm text-gray-600">Description</span>
- <span className="font-semibold text-right max-w-[200px] truncate">
- {isVoiceExpenseResult(extractedData)
- ? extractedData.description
- : extractedData.merchant || `${extractedData.rawText?.substring(0, 50) || 'Expense from receipt'}...`}
- </span>
- </div>
+                <div className="flex justify-between items-center py-1.5 border-b border-slate-100">
+                  <span className="text-xs text-slate-500 font-medium">Description</span>
+                  <span className="text-sm font-bold text-slate-900 text-right max-w-[200px] truncate">
+                    {isVoiceExpenseResult(extractedData)
+                      ? extractedData.description
+                      : extractedData.merchant || `${extractedData.rawText?.substring(0, 50) || 'Expense from receipt'}...`}
+                  </span>
+                </div>
 
- {('date' in extractedData && extractedData.date) && (
- <div className="flex justify-between items-center py-2">
- <span className="text-sm text-gray-600">Date</span>
- <span className="font-semibold">{extractedData.date}</span>
- </div>
- )}
- </div>
+                {('date' in extractedData && extractedData.date) && (
+                  <div className="flex justify-between items-center py-1.5">
+                    <span className="text-xs text-slate-500 font-medium">Date</span>
+                    <span className="text-sm font-bold text-slate-900">{extractedData.date}</span>
+                  </div>
+                )}
+              </div>
 
- {/* Action Buttons */}
- <div className="flex space-x-3 pt-4">
- {confidence > 0.7 ? (
- <button data-testid="auto-fill-expense-form-auto-fill-expense"
- onClick={handleConfirmData}
- className="flex-1 bg-green-600 text-white py-3 rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center justify-center space-x-2"
- >
- <Check className="w-4 h-4" />
- Auto-Fill Expense
- </button>
- ) : (
- <>
- <button data-testid="auto-fill-expense-form-edit-manually"
- onClick={() => handleFeedback(false)}
- className="flex-1 bg-red-600 text-white py-3 rounded-lg font-medium hover:bg-red-700 transition-colors"
- >
- Edit Manually
- </button>
- <button data-testid="auto-fill-expense-form-looks-correct"
- onClick={() => handleFeedback(true)}
- className="flex-1 bg-green-600 text-white py-3 rounded-lg font-medium hover:bg-green-700 transition-colors"
- >
- Looks Correct
- </button>
- </>
- )}
- </div>
- </div>
- ) : (
- <div className="text-center py-8">
- {/* Camera Tab */}
- {activeTab === 'camera' && (
- <div>
- <Camera className="w-12 h-12 text-gray-400 mx-auto mb-4" />
- <p className="text-gray-600 mb-4">Take a photo of your receipt</p>
- <input data-testid="auto-fill-expense-form-input"
- type="file"
- accept="image/*"
- capture="environment"
- onChange={handleFileUpload}
- className="hidden"
- id="camera-input"
- />
- <label
- htmlFor="camera-input"
- className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors cursor-pointer"
- >
- Open Camera
- </label>
- </div>
- )}
+              {/* Action Buttons */}
+              <div className="flex space-x-3 pt-2">
+                {confidence > 0.7 ? (
+                  <button
+                    data-testid="auto-fill-expense-form-auto-fill-expense"
+                    onClick={handleConfirmData}
+                    className="flex-1 bg-emerald-600 text-white py-3 rounded-full font-bold hover:bg-emerald-700 transition-colors flex items-center justify-center space-x-2 cursor-pointer shadow-xs"
+                  >
+                    <Check className="w-4 h-4" />
+                    <span>Auto-Fill Expense</span>
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      data-testid="auto-fill-expense-form-edit-manually"
+                      onClick={() => handleFeedback(false)}
+                      className="flex-1 bg-slate-100 text-slate-700 py-3 rounded-full font-bold hover:bg-slate-200 transition-colors cursor-pointer"
+                    >
+                      Edit Manually
+                    </button>
+                    <button
+                      data-testid="auto-fill-expense-form-looks-correct"
+                      onClick={() => handleFeedback(true)}
+                      className="flex-1 bg-emerald-600 text-white py-3 rounded-full font-bold hover:bg-emerald-700 transition-colors cursor-pointer shadow-xs"
+                    >
+                      Looks Correct
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              {/* Camera Tab */}
+              {activeTab === 'camera' && (
+                <div>
+                  <Camera className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                  <p className="text-slate-600 text-sm font-medium mb-4">Take a photo of your receipt</p>
+                  <input
+                    data-testid="auto-fill-expense-form-input"
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                    id="camera-input"
+                  />
+                  <label
+                    htmlFor="camera-input"
+                    className="inline-flex items-center px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-full font-bold text-sm transition-colors cursor-pointer shadow-xs"
+                  >
+                    Open Camera
+                  </label>
+                </div>
+              )}
 
- {/* Voice Tab */}
- {activeTab === 'voice' && (
- <div>
- <Mic className="w-12 h-12 text-gray-400 mx-auto mb-4" />
- <p className="text-gray-600 mb-4">Speak your expense details</p>
- <button data-testid="auto-fill-expense-form-start-recording"
- onClick={handleVoiceInput}
- className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center space-x-2"
- >
- <Mic className="w-4 h-4" />
- Start Recording
- </button>
- </div>
- )}
+              {/* Voice Tab */}
+              {activeTab === 'voice' && (
+                <div>
+                  <Mic className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                  <p className="text-slate-600 text-sm font-medium mb-4">Speak your expense details</p>
+                  <button
+                    data-testid="auto-fill-expense-form-start-recording"
+                    onClick={handleVoiceInput}
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-full font-bold text-sm transition-colors cursor-pointer shadow-xs"
+                  >
+                    <Mic className="w-4 h-4" />
+                    <span>Start Recording</span>
+                  </button>
+                </div>
+              )}
 
- {/* Upload Tab */}
- {activeTab === 'upload' && (
- <div>
- <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
- <p className="text-gray-600 mb-4">Upload receipt or invoice</p>
- <input data-testid="auto-fill-expense-form-input-2"
- type="file"
- accept="image/*,.pdf"
- onChange={handleFileUpload}
- className="hidden"
- id="file-input"
- />
- <label
- htmlFor="file-input"
- className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors cursor-pointer"
- >
- Choose File
- </label>
- </div>
- )}
- </div>
- )}
- </div>
- </motion.div>
- </div>
- );
+              {/* Upload Tab */}
+              {activeTab === 'upload' && (
+                <div>
+                  <Upload className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                  <p className="text-slate-600 text-sm font-medium mb-4">Upload receipt or invoice</p>
+                  <input
+                    data-testid="auto-fill-expense-form-input-2"
+                    type="file"
+                    accept="image/*,.pdf"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                    id="file-input"
+                  />
+                  <label
+                    htmlFor="file-input"
+                    className="inline-flex items-center px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-full font-bold text-sm transition-colors cursor-pointer shadow-xs"
+                  >
+                    Choose File
+                  </label>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </motion.div>
+    </div>
+  );
 };
-
-

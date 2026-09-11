@@ -277,29 +277,27 @@ export const ReceiptScanner: React.FC<ReceiptScannerProps> = ({
  : <ScanLine size={17} className="text-white" />;
 
  return (
- <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 p-3 backdrop-blur-sm sm:p-4">
- <div className="flex max-h-[88vh] w-full max-w-xl flex-col overflow-hidden rounded-[28px] bg-white shadow-2xl sm:rounded-3xl">
+    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 p-3 backdrop-blur-sm sm:p-4">
+      <div className="flex max-h-[88vh] w-full max-w-xl flex-col overflow-hidden rounded-[28px] sm:rounded-[36px] bg-white shadow-2xl border border-slate-100">
 
- {/* Header */}
- <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4 shrink-0">
- <div className="flex items-center gap-3">
- <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-black">
- {headerIcon}
- </div>
- <div>
- <h2 className="font-display text-base font-bold text-gray-900">{headerTitle}</h2>
- <p className="text-xs text-gray-400">{headerSubtitle}</p>
- </div>
- </div>
- <button data-testid="receipt-scanner-close"
- type="button"
- onClick={handleClose}
- className="flex h-8 w-8 items-center justify-center rounded-xl transition-colors hover:bg-gray-100"
- aria-label="Close"
- >
- <X size={18} className="text-gray-500" />
- </button>
- </div>
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4.5 shrink-0">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-900 shrink-0">
+              {headerIcon}
+            </div>
+            <h2 className="font-display text-base sm:text-lg font-bold text-slate-900 truncate">{headerTitle}</h2>
+          </div>
+          <button
+            data-testid="receipt-scanner-close"
+            type="button"
+            onClick={handleClose}
+            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-slate-100 hover:bg-slate-200/80 transition-colors flex items-center justify-center shrink-0 cursor-pointer text-slate-700"
+            aria-label="Close"
+          >
+            <X size={18} />
+          </button>
+        </div>
 
  {/* Body */}
  <div className="flex-1 space-y-5 overflow-y-auto p-5">

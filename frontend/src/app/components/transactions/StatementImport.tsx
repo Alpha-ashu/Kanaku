@@ -220,134 +220,124 @@ export const StatementImport: React.FC<StatementImportProps> = ({
  });
  };
 
- const getTransactionTypeColor = (type: string) => {
- switch (type) {
- case 'income': return 'text-green-600';
- case 'expense': return 'text-red-600';
- default: return 'text-gray-600';
- }
- };
+  const getTransactionTypeColor = (type: string) => {
+    switch (type) {
+      case 'income': return 'text-emerald-600';
+      case 'expense': return 'text-rose-600';
+      default: return 'text-slate-600';
+    }
+  };
 
- return (
- <div data-testid="statement-import-div" 
- className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4"
- onClick={(e) => e.target === e.currentTarget && onCancel?.()}
- >
- <motion.div data-testid="statement-import-div-2"
- initial={{ opacity: 0, y: 20, scale: 0.95 }}
- animate={{ opacity: 1, y: 0, scale: 1 }}
- exit={{ opacity: 0, scale: 0.95 }}
- onClick={(e) => e.stopPropagation()}
- className="bg-white/95 backdrop-blur-2xl border border-white/20 rounded-[2rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] w-[95%] max-w-lg max-h-[85vh] overflow-hidden flex flex-col relative z-[101] pointer-events-auto"
- >
- {/* Hidden file input */}
- <input data-testid="statement-import-input"
- type="file"
- ref={fileInputRef}
- onChange={handleFileSelect}
- accept=".pdf,.csv,.xlsx"
- className="hidden"
- />
+  return (
+    <div data-testid="statement-import-div" 
+      onClick={(e) => { e.stopPropagation(); onCancel?.(); }}
+      className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+    >
+      <div 
+        onClick={(e) => e.stopPropagation()}
+        className="bg-white border border-slate-100 rounded-[28px] sm:rounded-[36px] shadow-2xl w-[95%] max-w-lg max-h-[85vh] overflow-hidden flex flex-col relative z-[101] pointer-events-auto"
+      >
+        {/* Hidden file input */}
+        <input data-testid="statement-import-input"
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileSelect}
+          accept=".pdf,.csv,.xlsx"
+          className="hidden"
+        />
 
- {/* Decorative background glow */}
- <div className="absolute top-0 left-1/4 w-1/2 h-1 bg-gradient-to-r from-transparent via-blue-400 to-transparent blur-md opacity-50" />
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100">
+          <div>
+            <h2 className="text-xl font-black text-slate-900 tracking-tight">
+              Import Statement
+            </h2>
+            <div className="flex items-center gap-2 mt-0.5">
+              <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse" />
+              <p className="text-xs font-semibold text-slate-400">Account: <span className="text-slate-900 font-bold">{accountName}</span></p>
+            </div>
+          </div>
+          <button data-testid="statement-import-cancel-statement-import"
+            onClick={(e) => { e.stopPropagation(); onCancel?.(); }}
+            className="w-9 h-9 rounded-full bg-slate-50 hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-700 transition-all cursor-pointer"
+            aria-label="Cancel statement import"
+          >
+            <XCircle size={20} />
+          </button>
+        </div>
 
- {/* Header */}
- <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
- <div>
- <h2 className="text-xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 tracking-tight">
- Import Statement
- </h2>
- <div className="flex items-center gap-2 mt-1">
- <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
- <p className="text-sm font-medium text-gray-500">Account: <span className="text-gray-900">{accountName}</span></p>
- </div>
- </div>
- <button data-testid="statement-import-cancel-statement-import"
- onClick={(e) => { e.stopPropagation(); onCancel?.(); }}
- className="p-2.5 bg-white hover:bg-gray-100 rounded-2xl transition-all duration-200 group active:scale-95 touch-manipulation"
- aria-label="Cancel statement import"
- >
- <XCircle size={22} className="text-gray-400 group-hover:text-gray-600 group-hover:rotate-90 transition-all" />
- </button>
- </div>
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto custom-scrollbar">
+          <AnimatePresence mode="wait">
+            {importState === 'idle' && (
+              <motion.div 
+                key="idle"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="p-6 md:p-8"
+              >
+                <div 
+                  className={`relative group border-2 border-dashed rounded-[24px] sm:rounded-[28px] transition-all duration-300 p-8 md:p-10 text-center ${
+                    file ? 'border-purple-300 bg-purple-50/40' : 'border-slate-200/80 hover:border-slate-300 hover:bg-slate-50/50'
+                  }`}
+                  onDragOver={(e) => { e.preventDefault(); e.currentTarget.classList.add('border-purple-500', 'bg-purple-50/50'); }}
+                  onDragLeave={(e) => { e.preventDefault(); e.currentTarget.classList.remove('border-purple-500', 'bg-purple-50/50'); }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    const droppedFile = e.dataTransfer.files[0];
+                    if (droppedFile) {
+                      const event = { target: { files: [droppedFile] } } as any;
+                      handleFileSelect(event);
+                    }
+                  }}
+                >
+                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4 transition-transform duration-300 group-hover:scale-105 ${
+                    file ? 'bg-[#18181B] text-white shadow-md' : 'bg-slate-100 text-slate-400'
+                  }`}>
+                    {getFileIcon()}
+                  </div>
+                  
+                  <h3 className="text-lg font-black text-slate-900 mb-2 tracking-tight">
+                    {file ? file.name : 'Select Statement File'}
+                  </h3>
+                  <p className="text-xs text-slate-400 mb-6 max-w-sm mx-auto leading-relaxed">
+                    Drop your bank statement here or click to browse. We support PDF, CSV, and Excel exports.
+                  </p>
+                  
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+                    <Button data-testid="statement-import-button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="rounded-full px-6 h-10 bg-white border border-slate-200/80 text-slate-700 hover:bg-slate-50 shadow-xs font-bold text-xs cursor-pointer"
+                    >
+                      <Upload size={15} className="mr-2" />
+                      {file ? 'Change File' : 'Browse Files'}
+                    </Button>
+                    
+                    {file && (
+                      <Button data-testid="statement-import-analyze-statement"
+                        onClick={handleUpload}
+                        className="rounded-full px-6 h-10 bg-[#18181B] text-white hover:bg-black shadow-xs font-bold text-xs cursor-pointer animate-in fade-in zoom-in duration-200"
+                      >
+                        <Eye size={15} className="mr-2" />
+                        Analyze Statement
+                      </Button>
+                    )}
+                  </div>
 
- {/* Content */}
- <div className="flex-1 overflow-y-auto custom-scrollbar">
- <AnimatePresence mode="wait">
- {importState === 'idle' && (
- <motion.div 
- key="idle"
- initial={{ opacity: 0, y: 10 }}
- animate={{ opacity: 1, y: 0 }}
- exit={{ opacity: 0, y: -10 }}
- className="p-6 md:p-8"
- >
- <div 
- className={`relative group border-2 border-dashed rounded-3xl transition-all duration-300 p-8 md:p-10 text-center ${
- file ? 'border-blue-200 bg-blue-50/30' : 'border-gray-200 hover:border-blue-400 hover:bg-gray-50'
- }`}
- onDragOver={(e) => { e.preventDefault(); e.currentTarget.classList.add('border-blue-500', 'bg-blue-50/50'); }}
- onDragLeave={(e) => { e.preventDefault(); e.currentTarget.classList.remove('border-blue-500', 'bg-blue-50/50'); }}
- onDrop={(e) => {
- e.preventDefault();
- const droppedFile = e.dataTransfer.files[0];
- if (droppedFile) {
- const event = { target: { files: [droppedFile] } } as any;
- handleFileSelect(event);
- }
- }}
- >
- <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6 transition-transform duration-500 group-hover:scale-110 ${
- file ? 'bg-blue-600 text-white shadow-xl shadow-blue-200' : 'bg-gray-100 text-gray-400'
- }`}>
- {getFileIcon()}
- </div>
- 
- <h3 className="text-2xl font-bold text-gray-900 mb-3 tracking-tight">
- {file ? file.name : 'Select Statement File'}
- </h3>
- <p className="text-gray-500 mb-8 max-w-sm mx-auto leading-relaxed">
- Drop your bank statement here or click to browse. We support PDF, CSV, and Excel exports.
- </p>
- 
- <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
- <Button data-testid="statement-import-button"
- onClick={() => fileInputRef.current?.click()}
- className="rounded-2xl px-8 h-12 bg-white border border-gray-200 text-gray-900 hover:bg-gray-50 hover:shadow-md transition-all font-semibold"
- >
- <Upload size={18} className="mr-2" />
- {file ? 'Change File' : 'Browse Files'}
- </Button>
- 
- {file && (
- <Button data-testid="statement-import-analyze-statement"
- onClick={handleUpload}
- className="rounded-2xl px-8 h-12 bg-blue-600 text-white hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-200 transition-all font-semibold animate-in fade-in zoom-in duration-300"
- >
- <Eye size={18} className="mr-2" />
- Analyze Statement
- </Button>
- )}
- </div>
- 
- <div className="mt-8 pt-8 border-t border-gray-100/50 flex justify-center gap-8 opacity-60">
- <div className="flex items-center gap-2 text-xs font-medium text-gray-400">
- <div className="w-1.5 h-1.5 rounded-full bg-gray-300" />
- PDF SUPPORTED
- </div>
- <div className="flex items-center gap-2 text-xs font-medium text-gray-400">
- <div className="w-1.5 h-1.5 rounded-full bg-gray-300" />
- CSV & EXCEL
- </div>
- <div className="flex items-center gap-2 text-xs font-medium text-gray-400">
- <div className="w-1.5 h-1.5 rounded-full bg-gray-300" />
- ENCRYPTED (NO PASS)
- </div>
- </div>
- </div>
- </motion.div>
- )}
+                  <div className="mt-6 pt-6 border-t border-slate-100 flex justify-center gap-6 opacity-70">
+                    <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-400">
+                      <div className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+                      PDF SUPPORTED
+                    </div>
+                    <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-400">
+                      <div className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+                      CSV & EXCEL
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
 
  {(importState === 'uploading' || importState === 'processing') && (
  <motion.div 
@@ -609,8 +599,7 @@ export const StatementImport: React.FC<StatementImportProps> = ({
  )}
  </AnimatePresence>
  </div>
- </motion.div>
+ </div>
  </div>
  );
 };
-

@@ -80,7 +80,7 @@ export const QuickActionSettingsSection: React.FC = () => {
           <button
             type="button"
             onClick={handleResetDefaults}
-            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold text-slate-600 hover:text-blue-600 hover:bg-blue-50 border border-slate-200 hover:border-blue-200 transition-all cursor-pointer shadow-2xs"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-slate-200/80 transition-all cursor-pointer shadow-xs active:scale-95"
             title="Reset to default 15 items"
           >
             <RotateCcw size={12} strokeWidth={2.2} />
@@ -90,8 +90,8 @@ export const QuickActionSettingsSection: React.FC = () => {
       </div>
 
       {/* Feature Selection Card */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden divide-y divide-slate-100">
-        <div className="p-3 bg-gradient-to-r from-blue-50/70 to-indigo-50/50 border-b border-blue-100/60 flex items-start gap-2.5 text-xs text-blue-900">
+      <div className="bg-white rounded-[28px] sm:rounded-[32px] border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] overflow-hidden divide-y divide-slate-100">
+        <div className="p-3.5 bg-blue-50/50 border-b border-blue-100/60 flex items-start gap-2.5 text-xs text-blue-900">
           <Info size={15} className="text-blue-600 shrink-0 mt-0.5" />
           <p className="leading-relaxed">
             Check the shortcuts you want in your bottom navigation Quick Action popup.
@@ -99,7 +99,7 @@ export const QuickActionSettingsSection: React.FC = () => {
           </p>
         </div>
 
-        <div className="p-2.5 sm:p-3.5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+        <div className="p-3 sm:p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
           {ALL_QUICK_ACTIONS.map((action: QuickActionDefinition) => {
             const isChecked = activeSet.has(action.id);
             const slotIndex = isChecked ? selectedIds.indexOf(action.id) + 1 : null;
@@ -111,17 +111,17 @@ export const QuickActionSettingsSection: React.FC = () => {
                 type="button"
                 onClick={() => handleToggle(action.id)}
                 className={cn(
-                  "flex items-center justify-between p-2.5 rounded-xl border transition-all duration-150 text-left cursor-pointer select-none group",
+                  "flex items-center justify-between p-3 rounded-[20px] sm:rounded-[22px] border transition-all duration-150 text-left cursor-pointer select-none group",
                   isChecked
-                    ? "bg-blue-50/50 border-blue-300 shadow-2xs"
-                    : "bg-slate-50/50 border-slate-200/70 hover:border-slate-300 hover:bg-white opacity-70 hover:opacity-100"
+                    ? "bg-blue-50/50 border-blue-300 shadow-xs"
+                    : "bg-slate-50/50 border-slate-200/70 hover:border-slate-300 hover:bg-white opacity-75 hover:opacity-100"
                 )}
               >
                 <div className="flex items-center gap-2.5 min-w-0">
                   {/* Squircle with vibrant gradient matching the popup */}
                   <div
                     className={cn(
-                      "w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105",
+                      "w-9 h-9 rounded-2xl flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105 shadow-xs",
                       action.colorClass
                     )}
                   >
@@ -134,7 +134,7 @@ export const QuickActionSettingsSection: React.FC = () => {
                         {action.label}
                       </p>
                       {slotIndex && (
-                        <span className="text-[9.5px] font-bold text-blue-600 bg-blue-100/70 px-1.5 py-0.2 rounded-md shrink-0">
+                        <span className="text-[9.5px] font-bold text-blue-600 bg-blue-100/70 px-1.5 py-0.2 rounded-full shrink-0">
                           #{slotIndex}
                         </span>
                       )}
@@ -148,9 +148,9 @@ export const QuickActionSettingsSection: React.FC = () => {
                 {/* Checkbox indicator */}
                 <div
                   className={cn(
-                    "w-5 h-5 rounded-md flex items-center justify-center shrink-0 ml-2 border transition-all duration-150",
+                    "w-5 h-5 rounded-lg flex items-center justify-center shrink-0 ml-2 border transition-all duration-150",
                     isChecked
-                      ? "bg-blue-600 border-blue-600 text-white shadow-2xs"
+                      ? "bg-blue-600 border-blue-600 text-white shadow-xs"
                       : "border-slate-300 bg-white group-hover:border-blue-400"
                   )}
                 >

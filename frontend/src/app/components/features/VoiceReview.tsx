@@ -384,27 +384,29 @@ export const VoiceReview: React.FC = () => {
  return (
  <CenteredLayout>
  <div className="space-y-6">
- <div className="flex items-center gap-3">
+ <div className="flex items-center justify-between gap-3 w-full">
+ <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
  <button
  onClick={() => setCurrentPage('voice-input')}
- className="rounded-lg p-2 transition-colors hover:bg-gray-100 md:!hidden"
+ className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200/80 hover:bg-slate-50 active:scale-95 shadow-xs flex items-center justify-center text-slate-700 transition-all shrink-0 cursor-pointer"
  aria-label="Go back to voice input"
+ title="Go back"
  data-testid="voice-review-back-button"
  >
- <ChevronLeft size={24} className="text-gray-600" />
+ <ChevronLeft size={20} className="text-slate-700" />
  </button>
- <div>
- <h2 className="text-2xl font-bold text-gray-900">Review Voice Transactions</h2>
- <p className="mt-1 text-gray-500">Edit, verify, and save the items we heard from your voice entry</p>
+ <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none truncate">
+ Review Voice Transactions
+ </h1>
  </div>
  </div>
 
- <div className="rounded-xl border border-gray-200 bg-white p-4">
- <label className="mb-2 block text-sm font-medium text-gray-700">Apply to Account</label>
+ <div className="bg-white rounded-[28px] sm:rounded-[32px] p-5 sm:p-6 border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)]">
+ <label className="mb-2 block text-xs font-bold text-slate-400 uppercase tracking-wider">Apply to Account</label>
  <select
  value={accountId}
  onChange={(event) => setAccountId(Number(event.target.value))}
- className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+ className="w-full rounded-2xl border border-slate-200/80 bg-slate-50 px-4 py-3 font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
  aria-label="Select account for transactions"
  data-testid="voice-review-account-select"
  >
@@ -418,7 +420,7 @@ export const VoiceReview: React.FC = () => {
  </div>
 
  {items.length === 0 ? (
- <div className="rounded-xl border border-gray-200 bg-white p-6 text-center text-gray-500">
+ <div className="rounded-[28px] sm:rounded-[32px] border border-dashed border-slate-200 bg-white p-8 text-center text-slate-400">
  No transactions to review.
  </div>
  ) : (
@@ -435,7 +437,7 @@ export const VoiceReview: React.FC = () => {
  initial={{ opacity: 0, y: 10 }}
  animate={{ opacity: 1, y: 0 }}
  exit={{ opacity: 0, y: -10 }}
- className="rounded-xl border border-gray-200 bg-white p-5"
+ className="bg-white rounded-[28px] sm:rounded-[32px] p-5 sm:p-6 border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] space-y-4"
  >
  <div className="flex flex-wrap items-center justify-between gap-3">
  <div className="flex flex-wrap items-center gap-2">
@@ -618,19 +620,20 @@ export const VoiceReview: React.FC = () => {
  </AnimatePresence>
  )}
 
- <div className="flex flex-wrap items-center justify-between gap-3">
- <p className="text-sm text-gray-500">
- {standardItems.length} income/expense, {otherItems.length} other
- </p>
- <button
- onClick={handleSave}
- disabled={isSaving || (standardItems.length === 0 && actionableGoalItems.length === 0)}
- className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-3 font-medium text-white hover:bg-blue-700 disabled:bg-gray-300"
- data-testid="voice-review-save-button"
- >
- <Check size={18} /> {isSaving ? 'Saving...' : 'Save Transactions'}
- </button>
- </div>
+  <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+  <p className="text-xs font-semibold text-slate-400">
+  {standardItems.length} income/expense, {otherItems.length} other
+  </p>
+  <button
+  onClick={handleSave}
+  disabled={isSaving || (standardItems.length === 0 && actionableGoalItems.length === 0)}
+  className="inline-flex items-center gap-2 rounded-full bg-[#18181B] hover:bg-black px-6 py-3 text-xs font-bold text-white transition-all active:scale-95 disabled:bg-slate-200 disabled:text-slate-400 shadow-xs cursor-pointer"
+  data-testid="voice-review-save-button"
+  >
+  <Check size={16} />
+  <span>{isSaving ? 'Saving...' : 'Save Transactions'}</span>
+  </button>
+  </div>
  </div>
  </CenteredLayout>
  );

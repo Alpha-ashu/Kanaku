@@ -417,23 +417,23 @@ export const AIInsightsPage: React.FC = () => {
               const Icon = insight.icon;
               return (
                 <motion.div key={insight.id} variants={itemVariants}>
-                  <Card data-testid={`aiinsights-page-card-${insight.id}`} variant="glass" className="h-full border-white/40 flex flex-col p-8 hover:shadow-xl transition-shadow duration-300">
-                    <div className="flex items-center justify-between mb-6">
+                  <div data-testid={`aiinsights-page-card-${insight.id}`} className="bg-white rounded-[28px] sm:rounded-[32px] p-6 sm:p-8 border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] flex flex-col h-full hover:shadow-md transition-all">
+                    <div className="flex items-center justify-between mb-5">
                       <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${insight.color}`}>
                         <Icon size={22} />
                       </div>
-                      <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${insight.impactColor}`}>
+                      <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${insight.impactColor}`}>
                         {insight.impact}
                       </span>
                     </div>
-                    <h4 className="text-lg font-black text-gray-900 mb-2 tracking-tight">{insight.title}</h4>
-                    <p className="text-gray-500 text-sm font-medium leading-relaxed flex-1">
+                    <h4 className="text-base sm:text-lg font-black text-slate-900 mb-2 tracking-tight">{insight.title}</h4>
+                    <p className="text-slate-500 text-xs sm:text-sm font-medium leading-relaxed flex-1">
                       {insight.description}
                     </p>
                     <span className="mt-4 text-[10px] font-black uppercase tracking-widest text-slate-400">
                       {insight.source === 'server' ? 'AI engine' : 'On-device analysis'}
                     </span>
-                  </Card>
+                  </div>
                 </motion.div>
               );
             })}

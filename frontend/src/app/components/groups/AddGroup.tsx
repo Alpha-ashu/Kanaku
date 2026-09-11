@@ -238,68 +238,68 @@ export const AddGroup: React.FC = () => {
  {/* Left Column: context & types (lg:col-7) */}
  <div className="lg:col-span-7 flex flex-col gap-4">
  
- <div className="premium-glass-card p-4 sm:p-6 space-y-4 sm:space-y-6">
- <div className="space-y-1">
- <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Group / Expense Name</label>
- <div className="relative">
- <Tag className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
- <input data-testid="add-group-e-g-weekend-trip" 
- type="text" 
- value={formData.name} 
- onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))} 
- className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-300 text-xs" 
- placeholder="e.g. Weekend Trip to Goa" 
- />
- </div>
- </div>
+        <div className="bg-white rounded-[28px] sm:rounded-[32px] p-6 sm:p-8 border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] space-y-5">
+          <div className="space-y-1.5">
+            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Group / Expense Name</label>
+            <div className="relative">
+              <Tag className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={15} />
+              <input data-testid="add-group-e-g-weekend-trip" 
+                type="text" 
+                value={formData.name} 
+                onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))} 
+                className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 pl-10 pr-3.5 font-bold text-slate-900 text-xs focus:bg-white focus:border-violet-500 outline-none" 
+                placeholder="e.g. Weekend Trip to Goa" 
+              />
+            </div>
+          </div>
 
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
- <div className="space-y-2">
- <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Category</label>
- <SearchableDropdown testId="add-group-category"
- options={groupCategoryOptions}
- value={formData.category}
- onChange={val => setFormData(prev => ({ ...prev, category: val }))}
- placeholder="Category"
- triggerClassName="bg-slate-50 border-none rounded-xl h-12 font-bold text-xs shadow-none"
- />
- </div>
- <div className="space-y-2">
- <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Date</label>
- <div className="relative group">
- <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-violet-500 transition-colors z-10" size={14} />
- <div className="w-full bg-slate-50 border border-transparent rounded-xl py-2.5 pl-9 pr-3 font-bold text-xs text-slate-900 group-hover:bg-slate-100/50 group-hover:border-slate-200 transition-all flex items-center min-h-[40px]">
- {(() => {
- if (!formData.date) return 'Select Date';
- const date = new Date(formData.date);
- const day = String(date.getDate()).padStart(2, '0');
- const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
- return `${day}-${months[date.getMonth()]}-${date.getFullYear()}`;
- })()}
- </div>
- <input data-testid="add-group-expense-date"
- type="date"
- value={formData.date}
- onChange={e => setFormData(prev => ({ ...prev, date: e.target.value }))}
- aria-label="Expense date"
- className="absolute inset-0 opacity-0 cursor-pointer z-20"
- />
- </div>
- </div>
- </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Category</label>
+              <SearchableDropdown testId="add-group-category"
+                options={groupCategoryOptions}
+                value={formData.category}
+                onChange={val => setFormData(prev => ({ ...prev, category: val }))}
+                placeholder="Category"
+                triggerClassName="bg-slate-50 border border-slate-200 rounded-2xl h-12 font-bold text-xs shadow-none"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Date</label>
+              <div className="relative group">
+                <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-violet-500 transition-colors z-10" size={15} />
+                <div className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 pl-10 pr-3.5 font-bold text-xs text-slate-900 group-hover:bg-slate-100/50 transition-all flex items-center min-h-[48px]">
+                  {(() => {
+                    if (!formData.date) return 'Select Date';
+                    const date = new Date(formData.date);
+                    const day = String(date.getDate()).padStart(2, '0');
+                    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                    return `${day}-${months[date.getMonth()]}-${date.getFullYear()}`;
+                  })()}
+                </div>
+                <input data-testid="add-group-expense-date"
+                  type="date"
+                  value={formData.date}
+                  onChange={e => setFormData(prev => ({ ...prev, date: e.target.value }))}
+                  aria-label="Expense date"
+                  className="absolute inset-0 opacity-0 cursor-pointer z-20"
+                />
+              </div>
+            </div>
+          </div>
 
- <div className="space-y-1">
- <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Description (Optional)</label>
- <div className="relative">
- <AlignLeft className="absolute left-2.5 top-3 text-slate-300" size={14} />
- <textarea data-testid="add-group-what-was-this-for" 
- value={formData.description} 
- onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))} 
- className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-300 text-xs min-h-[60px] resize-none" 
- placeholder="What was this for?" 
- />
- </div>
- </div>
+          <div className="space-y-1.5">
+            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Description (Optional)</label>
+            <div className="relative">
+              <AlignLeft className="absolute left-3.5 top-3.5 text-slate-400" size={15} />
+              <textarea data-testid="add-group-what-was-this-for" 
+                value={formData.description} 
+                onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))} 
+                className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 pl-10 pr-3.5 font-medium text-slate-900 text-xs min-h-[70px] resize-none focus:bg-white focus:border-violet-500 outline-none" 
+                placeholder="What was this for?" 
+              />
+            </div>
+          </div>
 
  {/* Participants Section */}
  <div className="space-y-4 pt-4 border-t border-slate-100">
@@ -413,118 +413,118 @@ export const AddGroup: React.FC = () => {
  {/* Right Column: Financials (lg:col-5) */}
  <div className="lg:col-span-5 flex flex-col gap-4">
  
- {/* Total Amount Input Card */}
- <div className="premium-glass-card p-8 bg-white relative overflow-hidden flex flex-col items-center">
- <div className="absolute -top-24 -left-24 w-64 h-64 bg-violet-500/5 blur-[80px] rounded-full pointer-events-none z-0" />
- <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-indigo-500/5 blur-[80px] rounded-full pointer-events-none z-0" />
- 
- <div className="relative z-10 flex flex-col items-center w-full">
- <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4">Total Group Bill</span>
- 
- <div className="flex items-center justify-center w-full my-4">
- {/* Left Side: Currency */}
- <div className="w-20 sm:w-28 flex justify-end pr-2 sm:pr-4">
- <span className="text-2xl sm:text-4xl font-black text-slate-200 select-none tracking-tighter">{currency}</span>
- </div>
- 
- {/* Center: Input */}
- <input data-testid="add-group-0"
- type="number"
- name="totalAmount"
- value={amountStr}
- onChange={e => { setAmountStr(e.target.value); setFormData(prev => ({ ...prev, totalAmount: parseFloat(e.target.value) || 0 })); }}
- className="bg-transparent text-5xl sm:text-6xl font-black text-slate-900 outline-none w-[160px] sm:w-[220px] text-center tracking-tighter placeholder:text-slate-100 p-0 m-0"
- placeholder="0"
- autoFocus
- />
- 
- {/* Right Side: Clear Button */}
- <div className="w-20 sm:w-28 flex justify-start pl-2 sm:pl-4">
- {amountStr && (
- <button data-testid="add-group-clear-amount"
- onClick={() => { setAmountStr(''); setFormData(prev => ({ ...prev, totalAmount: 0 })); }}
- title="Clear amount"
- className="p-2 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-full transition-all animate-in fade-in zoom-in-50"
- >
- <X size={28} strokeWidth={3} />
- </button>
- )}
- </div>
- </div>
+        {/* Total Amount Input Card */}
+        <div className="bg-white rounded-[28px] sm:rounded-[32px] p-8 border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] relative overflow-hidden flex flex-col items-center">
+          <div className="absolute -top-24 -left-24 w-64 h-64 bg-violet-500/5 blur-[80px] rounded-full pointer-events-none z-0" />
+          <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-indigo-500/5 blur-[80px] rounded-full pointer-events-none z-0" />
+          
+          <div className="relative z-10 flex flex-col items-center w-full">
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4">Total Group Bill</span>
+            
+            <div className="flex items-center justify-center w-full my-4">
+              {/* Left Side: Currency */}
+              <div className="w-20 sm:w-28 flex justify-end pr-2 sm:pr-4">
+                <span className="text-2xl sm:text-4xl font-black text-slate-200 select-none tracking-tighter">{currency}</span>
+              </div>
+              
+              {/* Center: Input */}
+              <input data-testid="add-group-0"
+                type="number"
+                name="totalAmount"
+                value={amountStr}
+                onChange={e => { setAmountStr(e.target.value); setFormData(prev => ({ ...prev, totalAmount: parseFloat(e.target.value) || 0 })); }}
+                className="bg-transparent text-5xl sm:text-6xl font-black text-slate-900 outline-none w-[160px] sm:w-[220px] text-center tracking-tighter placeholder:text-slate-200 p-0 m-0"
+                placeholder="0"
+                autoFocus
+              />
+              
+              {/* Right Side: Clear Button */}
+              <div className="w-20 sm:w-28 flex justify-start pl-2 sm:pl-4">
+                {amountStr && (
+                  <button data-testid="add-group-clear-amount"
+                    onClick={() => { setAmountStr(''); setFormData(prev => ({ ...prev, totalAmount: 0 })); }}
+                    title="Clear amount"
+                    className="p-2 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-full transition-all animate-in fade-in zoom-in-50 cursor-pointer"
+                  >
+                    <X size={28} strokeWidth={3} />
+                  </button>
+                )}
+              </div>
+            </div>
 
- <div className="flex flex-wrap justify-center gap-3 mt-8 max-w-sm">
- {[100, 500, 1000, 2000, 5000].map(amt => (
- <button data-testid={`add-group-button-2-${amt}`} 
- key={amt} 
- type="button"
- onClick={() => { 
- const current = Number(formData.totalAmount) || 0;
- const next = current + amt;
- setAmountStr(String(next));
- setFormData(prev => ({ ...prev, totalAmount: next }));
- }} 
- className="px-6 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-[11px] font-black text-slate-500 hover:bg-slate-900 hover:text-white hover:border-slate-900 hover:shadow-2xl hover:shadow-slate-200 transition-all active:scale-90 select-none"
- >
- +{currency}{amt}
- </button>
- ))}
- </div>
- </div>
- </div>
+            <div className="flex flex-wrap justify-center gap-2.5 mt-8 max-w-sm">
+              {[100, 500, 1000, 2000, 5000].map(amt => (
+                <button data-testid={`add-group-button-2-${amt}`} 
+                  key={amt} 
+                  type="button"
+                  onClick={() => { 
+                    const current = Number(formData.totalAmount) || 0;
+                    const next = current + amt;
+                    setAmountStr(String(next));
+                    setFormData(prev => ({ ...prev, totalAmount: next }));
+                  }} 
+                  className="px-5 py-2.5 bg-slate-50 border border-slate-200/80 rounded-full text-xs font-black text-slate-600 hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all active:scale-95 select-none cursor-pointer shadow-2xs"
+                >
+                  +{currency}{amt}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
 
- <div className="premium-glass-card p-4 sm:p-6 space-y-5">
- <div className="flex items-center justify-between">
- <div>
- <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Split Calculation</p>
- <p className="text-xs font-bold text-slate-700">Equally between {validParticipants.length + 1} people</p>
- </div>
- <div className="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center text-violet-600">
- <Calculator size={20} />
- </div>
- </div>
+        <div className="bg-white rounded-[28px] sm:rounded-[32px] p-6 sm:p-7 border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] space-y-5">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Split Calculation</p>
+              <p className="text-xs font-bold text-slate-700">Equally between {validParticipants.length + 1} people</p>
+            </div>
+            <div className="w-10 h-10 rounded-2xl bg-violet-50 flex items-center justify-center text-violet-600">
+              <Calculator size={18} />
+            </div>
+          </div>
 
- <div className="p-4 bg-slate-900 rounded-2xl text-white relative overflow-hidden">
- <div className="absolute -top-6 -right-6 w-20 h-20 bg-white/5 blur-[20px] rounded-full" />
- <p className="text-[9px] font-black text-white/40 uppercase tracking-widest mb-1">Your Share</p>
- <div className="flex items-baseline gap-2">
- <span className="text-sm sm:text-lg font-black text-white/20">{currency}</span>
- <span className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tighter">{perPerson.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
- </div>
- <div className="mt-4 flex items-center gap-3">
- <div className="flex -space-x-2">
- <div className="w-6 h-6 rounded-full bg-violet-500 border-2 border-slate-900 flex items-center justify-center text-[7px] font-black">YOU</div>
- {validParticipants.slice(0, 3).map((p, i) => (
- <div key={i} className="w-6 h-6 rounded-full bg-slate-700 border-2 border-slate-900 flex items-center justify-center text-[7px] font-black uppercase">{p[0] || '?'}</div>
- ))}
- {validParticipants.length > 3 && <div className="w-6 h-6 rounded-full bg-slate-800 border-2 border-slate-900 flex items-center justify-center text-[7px] font-black">+{validParticipants.length - 3}</div>}
- </div>
- <span className="text-[10px] font-black text-white/40 uppercase tracking-tight">Total {validParticipants.length + 1} People</span>
- </div>
- </div>
- </div>
+          <div className="p-5 bg-slate-900 rounded-[24px] text-white relative overflow-hidden">
+            <div className="absolute -top-6 -right-6 w-20 h-20 bg-white/5 blur-[20px] rounded-full" />
+            <p className="text-[9px] font-black text-white/40 uppercase tracking-widest mb-1">Your Share</p>
+            <div className="flex items-baseline gap-2">
+              <span className="text-sm sm:text-lg font-black text-white/30">{currency}</span>
+              <span className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tighter">{perPerson.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+            </div>
+            <div className="mt-4 flex items-center gap-3">
+              <div className="flex -space-x-2">
+                <div className="w-6 h-6 rounded-full bg-violet-500 border-2 border-slate-900 flex items-center justify-center text-[7px] font-black">YOU</div>
+                {validParticipants.slice(0, 3).map((p, i) => (
+                  <div key={i} className="w-6 h-6 rounded-full bg-slate-700 border-2 border-slate-900 flex items-center justify-center text-[7px] font-black uppercase">{p[0] || '?'}</div>
+                ))}
+                {validParticipants.length > 3 && <div className="w-6 h-6 rounded-full bg-slate-800 border-2 border-slate-900 flex items-center justify-center text-[7px] font-black">+{validParticipants.length - 3}</div>}
+              </div>
+              <span className="text-[10px] font-black text-white/40 uppercase tracking-tight">Total {validParticipants.length + 1} People</span>
+            </div>
+          </div>
+        </div>
 
- <div className="mt-auto p-4 bg-indigo-50 border border-indigo-100 rounded-2xl flex items-center gap-3">
- <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center shrink-0"><Sparkles size={16} className="text-white" /></div>
- <div>
- <p className="text-[8px] font-black text-indigo-600 uppercase tracking-widest">Smart Split Tip</p>
- <p className="text-[10px] font-bold text-slate-700">Add group name for better expense tracking.</p>
- </div>
- </div>
+        <div className="mt-auto p-4 bg-indigo-50/80 border border-indigo-100 rounded-2xl flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center shrink-0"><Sparkles size={16} className="text-white" /></div>
+          <div>
+            <p className="text-[9px] font-black text-indigo-700 uppercase tracking-widest">Smart Split Tip</p>
+            <p className="text-xs font-medium text-slate-700">Add group name for better expense tracking.</p>
+          </div>
+        </div>
 
- {/* Final Summary Card */}
- <div className="p-5 bg-violet-600 rounded-2xl text-white flex items-center justify-between shadow-xl shadow-violet-100 mt-auto">
- <div className="flex items-center gap-3">
- <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center"><Users size={20} className="text-white" /></div>
- <div>
- <p className="text-[9px] font-black text-white/60 uppercase tracking-widest">Group Summary</p>
- <p className="text-xs font-black truncate max-w-[140px]">{formData.name || 'New Group bill'}</p>
- </div>
- </div>
- <div className="text-right">
- <p className="text-[9px] font-black text-white/60 uppercase tracking-widest">Total Bill</p>
- <p className="text-xl sm:text-2xl font-black tracking-tighter">{currency} {totalNum.toLocaleString()}</p>
- </div>
- </div>
+        {/* Final Summary Card */}
+        <div className="p-5 bg-violet-600 rounded-[24px] text-white flex items-center justify-between shadow-xl shadow-violet-600/20 mt-auto">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center"><Users size={20} className="text-white" /></div>
+            <div>
+              <p className="text-[9px] font-black text-white/70 uppercase tracking-widest">Group Summary</p>
+              <p className="text-xs font-black truncate max-w-[140px]">{formData.name || 'New Group bill'}</p>
+            </div>
+          </div>
+          <div className="text-right">
+            <p className="text-[9px] font-black text-white/70 uppercase tracking-widest">Total Bill</p>
+            <p className="text-xl sm:text-2xl font-black tracking-tighter">{currency} {totalNum.toLocaleString()}</p>
+          </div>
+        </div>
  </div>
  </main>
  <FloatingSaveBar

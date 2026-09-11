@@ -488,22 +488,21 @@ export function VoiceInput() {
 
       {/* ── Header ─────────────────────────────────────────── */}
       <div className="flex items-center justify-between px-6 pt-6 pb-2 shrink-0">
-        <div>
-          <div className="flex items-center gap-2 mb-0.5">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-600 to-fuchsia-500 flex items-center justify-center shadow-md shadow-violet-200">
-              <Sparkles size={14} className="text-white" />
-            </div>
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight">Voice AI</h1>
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-600 to-fuchsia-500 flex items-center justify-center shadow-md shadow-violet-200 shrink-0">
+            <Sparkles size={15} className="text-white" />
           </div>
-          <p className="text-slate-400 text-sm pl-9">Financial Assistant · Multi-intent</p>
+          <h1 className="text-2xl font-black text-slate-900 tracking-tight leading-none">Voice AI</h1>
         </div>
         <div className="flex items-center gap-2">
           <StatusPill mode={state.mode} fallback={state.fallbackReason} />
           <button data-testid="voice-input-button"
             onClick={() => dispatch({ type: 'TOGGLE_MANUAL' })}
-            className="w-10 h-10 rounded-xl bg-white shadow border flex items-center justify-center hover:bg-violet-50 transition-colors"
+            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200/80 hover:bg-slate-50 active:scale-95 shadow-xs flex items-center justify-center text-slate-700 transition-all shrink-0 cursor-pointer"
+            aria-label="Toggle keyboard"
+            title="Manual Input"
           >
-            <Keyboard size={18} className="text-slate-600" />
+            <Keyboard size={17} className="text-slate-700" />
           </button>
         </div>
       </div>

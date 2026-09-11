@@ -133,50 +133,50 @@ export const FriendProfile: React.FC = () => {
           <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none truncate">Friend Profile</h1>
         </div>
 
-        <div className="rounded-[28px] border border-gray-200 bg-white p-5 shadow-sm flex items-center gap-4">
-          <Avatar className="h-16 w-16">
-            <AvatarFallback className="bg-sky-100 text-sky-700 text-lg font-bold">
+        <div className="rounded-[28px] sm:rounded-[32px] border border-slate-100 bg-white p-5 sm:p-6 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] flex items-center gap-4 sm:gap-5">
+          <Avatar className="h-16 w-16 rounded-2xl shadow-xs shrink-0">
+            <AvatarFallback className="bg-sky-100 text-sky-700 text-lg font-bold rounded-2xl">
               {friend.name.charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <p className="text-lg font-bold text-gray-900 truncate">{friend.name}</p>
+              <p className="text-lg font-bold text-slate-900 truncate">{friend.name}</p>
               {friend.isRegistered ? (
-                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700">
                   <ShieldCheck size={11} /> Kanaku User
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-bold text-gray-500">
+                <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] font-bold text-slate-500">
                   <UserCircle2 size={11} /> Guest
                 </span>
               )}
             </div>
-            <p className="text-sm text-gray-500">{friend.email || friend.phone || 'No contact info'}</p>
+            <p className="text-sm text-slate-500 mt-0.5">{friend.email || friend.phone || 'No contact info'}</p>
           </div>
-          <Button data-testid="friend-profile-edit" variant="secondary" onClick={() => setEditing((v) => !v)} className="h-9 px-3 rounded-xl">
-            <Pencil size={14} className="mr-1" /> Edit
+          <Button data-testid="friend-profile-edit" variant="secondary" onClick={() => setEditing((v) => !v)} className="h-9 px-4 rounded-full border border-slate-200/80 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs sm:text-sm shadow-xs cursor-pointer active:scale-95 transition-all">
+            <Pencil size={13} className="mr-1" /> Edit
           </Button>
         </div>
 
         {editing && (
-          <div className="rounded-3xl border border-gray-200 bg-white p-5 shadow-sm space-y-3">
-            <div className="space-y-1">
+          <div className="rounded-[28px] sm:rounded-[32px] border border-slate-100 bg-white p-5 sm:p-6 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] space-y-4">
+            <div className="space-y-1.5">
               <label className="text-xs font-bold text-slate-400 uppercase tracking-wide">Name</label>
-              <input id="friend-edit-name" name="name" aria-label="Friend name" data-testid="friend-profile-input" value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} className="w-full bg-slate-50 rounded-xl py-2.5 px-3 text-sm font-medium" />
+              <input id="friend-edit-name" name="name" aria-label="Friend name" data-testid="friend-profile-input" value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} className="w-full bg-slate-50/50 border border-slate-200 rounded-2xl py-2.5 px-3.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-slate-900/10" />
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-400 uppercase tracking-wide">Email</label>
-                <input id="friend-edit-email" name="email" aria-label="Friend email" data-testid="friend-profile-input-2" value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} className="w-full bg-slate-50 rounded-xl py-2.5 px-3 text-sm font-medium" />
+                <input id="friend-edit-email" name="email" aria-label="Friend email" data-testid="friend-profile-input-2" value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} className="w-full bg-slate-50/50 border border-slate-200 rounded-2xl py-2.5 px-3.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-slate-900/10" />
               </div>
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-400 uppercase tracking-wide">Phone</label>
-                <input id="friend-edit-phone" name="phone" aria-label="Friend phone" data-testid="friend-profile-input-3" value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} className="w-full bg-slate-50 rounded-xl py-2.5 px-3 text-sm font-medium" />
+                <input id="friend-edit-phone" name="phone" aria-label="Friend phone" data-testid="friend-profile-input-3" value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} className="w-full bg-slate-50/50 border border-slate-200 rounded-2xl py-2.5 px-3.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-slate-900/10" />
               </div>
             </div>
             <p className="text-xs text-slate-400">Changes update across all expenses this friend is part of.</p>
-            <Button data-testid="friend-profile-save-changes" onClick={handleSave} disabled={saving} className="bg-gray-900 hover:bg-gray-800 text-white h-10 px-4 rounded-xl font-bold flex items-center gap-2">
+            <Button data-testid="friend-profile-save-changes" onClick={handleSave} disabled={saving} className="bg-slate-900 hover:bg-black text-white h-10 px-5 rounded-full font-bold flex items-center gap-2 shadow-xs cursor-pointer active:scale-95 transition-all">
               {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} Save Changes
             </Button>
           </div>
@@ -193,42 +193,42 @@ export const FriendProfile: React.FC = () => {
         />
 
         {activeTab === 'overview' && (
-          <div className="grid grid-cols-2 gap-3">
-            <div className="rounded-2xl border border-gray-200 bg-white p-4">
-              <p className="text-xs text-gray-400 flex items-center gap-1"><Mail size={12} /> Email</p>
-              <p className="text-sm font-semibold text-gray-900 mt-1">{friend.email || '—'}</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div className="rounded-[24px] sm:rounded-[28px] border border-slate-100 bg-white p-4 sm:p-5 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)]">
+              <p className="text-xs text-slate-400 flex items-center gap-1.5"><Mail size={13} /> Email</p>
+              <p className="text-sm font-bold text-slate-900 mt-1.5">{friend.email || '—'}</p>
             </div>
-            <div className="rounded-2xl border border-gray-200 bg-white p-4">
-              <p className="text-xs text-gray-400 flex items-center gap-1"><Phone size={12} /> Phone</p>
-              <p className="text-sm font-semibold text-gray-900 mt-1">{friend.phone || '—'}</p>
+            <div className="rounded-[24px] sm:rounded-[28px] border border-slate-100 bg-white p-4 sm:p-5 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)]">
+              <p className="text-xs text-slate-400 flex items-center gap-1.5"><Phone size={13} /> Phone</p>
+              <p className="text-sm font-bold text-slate-900 mt-1.5">{friend.phone || '—'}</p>
             </div>
-            <div className="rounded-2xl border border-rose-100 bg-rose-50 p-4">
-              <p className="text-xs text-rose-500">Total Pending</p>
-              <p className="text-lg font-bold text-rose-700 mt-1">{formatCurrency(friend.totalOutstanding)}</p>
+            <div className="rounded-[24px] sm:rounded-[28px] border border-rose-100 bg-rose-50/60 p-4 sm:p-5">
+              <p className="text-xs font-bold text-rose-500 uppercase tracking-wide">Total Pending</p>
+              <p className="text-lg font-black text-rose-700 mt-1.5">{formatCurrency(friend.totalOutstanding)}</p>
             </div>
-            <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-4">
-              <p className="text-xs text-emerald-500">Total Paid</p>
-              <p className="text-lg font-bold text-emerald-700 mt-1">{formatCurrency(friend.totalPaid)}</p>
+            <div className="rounded-[24px] sm:rounded-[28px] border border-emerald-100 bg-emerald-50/60 p-4 sm:p-5">
+              <p className="text-xs font-bold text-emerald-500 uppercase tracking-wide">Total Paid</p>
+              <p className="text-lg font-black text-emerald-700 mt-1.5">{formatCurrency(friend.totalPaid)}</p>
             </div>
           </div>
         )}
 
         {activeTab === 'expenses' && (
-          <div className="space-y-2">
+          <div className="space-y-3">
             {friend.expenses.length === 0 ? (
-              <div className="rounded-3xl border border-dashed border-gray-300 bg-white px-4 py-12 text-center">
-                <p className="text-sm text-gray-500">No expenses with this friend yet.</p>
+              <div className="rounded-[28px] sm:rounded-[32px] border border-dashed border-slate-200 bg-white px-4 py-16 text-center">
+                <p className="text-sm text-slate-500">No expenses with this friend yet.</p>
               </div>
             ) : (
               friend.expenses.map((expense) => (
-                <div key={expense.groupExpenseId} className="flex items-center justify-between rounded-2xl border border-gray-200 bg-white p-4">
+                <div key={expense.groupExpenseId} className="flex items-center justify-between rounded-[22px] sm:rounded-[26px] border border-slate-100 bg-white p-4 sm:p-5 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] hover:border-slate-200 transition-all">
                   <div className="min-w-0">
-                    <p className="font-semibold text-gray-900 truncate">{expense.name}</p>
-                    <p className="text-xs text-gray-400">{formatDate(expense.date)}{expense.category ? ` · ${expense.category}` : ''}</p>
+                    <p className="font-bold text-slate-900 truncate">{expense.name}</p>
+                    <p className="text-xs text-slate-400 mt-0.5">{formatDate(expense.date)}{expense.category ? ` · ${expense.category}` : ''}</p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="font-bold text-gray-900">{formatCurrency(expense.shareAmount)}</p>
-                    <span className={`text-[10px] font-bold uppercase ${expense.status === 'paid' ? 'text-emerald-600' : 'text-amber-600'}`}>
+                    <p className="font-black text-slate-900">{formatCurrency(expense.shareAmount)}</p>
+                    <span className={`text-[10px] font-bold uppercase tracking-wider ${expense.status === 'paid' ? 'text-emerald-600' : 'text-amber-600'}`}>
                       {expense.status}
                     </span>
                   </div>
@@ -239,13 +239,13 @@ export const FriendProfile: React.FC = () => {
         )}
 
         {activeTab === 'activity' && (
-          <div className="rounded-3xl border border-gray-200 bg-white p-6 space-y-3">
-            <p className="text-sm text-gray-600">
+          <div className="rounded-[28px] sm:rounded-[32px] border border-slate-100 bg-white p-6 sm:p-8 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] space-y-3">
+            <p className="text-sm text-slate-600 leading-relaxed">
               {friend.isRegistered
                 ? `${friend.name} has a Kanaku account and receives in-app + email notifications when added to a new expense.`
                 : `${friend.name} is not yet registered with Kanaku. They receive an email invite each time they're added to an expense.`}
             </p>
-            <p className="text-xs text-gray-400">{friend.totalExpenses} total expense{friend.totalExpenses === 1 ? '' : 's'} shared so far.</p>
+            <p className="text-xs text-slate-400 font-medium">{friend.totalExpenses} total expense{friend.totalExpenses === 1 ? '' : 's'} shared so far.</p>
           </div>
         )}
       </div>

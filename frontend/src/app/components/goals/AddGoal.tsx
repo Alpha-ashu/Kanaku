@@ -243,59 +243,59 @@ export const AddGoal: React.FC = () => {
  {/* Left Column: context & types (lg:col-7) */}
  <div className="lg:col-span-7 flex flex-col gap-3 lg:overflow-y-auto">
  
- {/* Goal Type Selector */}
- <div className="premium-glass-card p-1 flex gap-1">
- {[
- { id: 'individual', label: 'Individual', icon: <Target size={12} /> },
- { id: 'group', label: 'Group Goal', icon: <Users size={12} /> }
- ].map(m => (
- <button key={m.id} onClick={() => setFormData(prev => ({ ...prev, goalType: m.id as any }))} data-testid={`goals-create-type-${m.id}-button`} className={cn("flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg font-black text-[8px] uppercase tracking-wider transition-all", formData.goalType === m.id ?"bg-white text-slate-900 shadow-sm" :"text-slate-400 hover:text-slate-600")}>
- {m.icon} {m.label}
- </button>
- ))}
- </div>
+  {/* Goal Type Selector */}
+  <div className="p-1 bg-slate-100 rounded-full flex gap-1">
+  {[
+  { id: 'individual', label: 'Individual', icon: <Target size={13} /> },
+  { id: 'group', label: 'Group Goal', icon: <Users size={13} /> }
+  ].map(m => (
+  <button key={m.id} onClick={() => setFormData(prev => ({ ...prev, goalType: m.id as any }))} data-testid={`goals-create-type-${m.id}-button`} className={cn("flex-1 flex items-center justify-center gap-2 py-2 rounded-full font-bold text-xs uppercase tracking-wider transition-all cursor-pointer", formData.goalType === m.id ?"bg-white text-slate-900 shadow-xs" :"text-slate-500 hover:text-slate-700")}>
+  {m.icon} {m.label}
+  </button>
+  ))}
+  </div>
 
- {/* Goal Summary Display */}
- <div className="p-4 bg-indigo-600 rounded-2xl text-white flex items-center justify-between shadow-xl shadow-indigo-100">
- <div className="flex items-center gap-3">
- <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center"><Target size={16} className="text-white" /></div>
- <div>
- <p className="text-[8px] font-black text-white/60 uppercase">Goal Summary</p>
- <p className="text-[10px] font-black truncate max-w-[120px]">{formData.name || 'New Goal'}</p>
- </div>
- </div>
- <div className="text-right">
- <p className="text-[8px] font-black text-white/60 uppercase">Target</p>
- <p className="text-lg font-black tracking-tighter">{currency} {formData.targetAmount.toLocaleString()}</p>
- </div>
- </div>
+  {/* Goal Summary Display */}
+  <div className="p-4 bg-indigo-600 rounded-[24px] text-white flex items-center justify-between shadow-xl shadow-indigo-100">
+  <div className="flex items-center gap-3">
+  <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center"><Target size={16} className="text-white" /></div>
+  <div>
+  <p className="text-[8px] font-black text-white/60 uppercase">Goal Summary</p>
+  <p className="text-[10px] font-black truncate max-w-[120px]">{formData.name || 'New Goal'}</p>
+  </div>
+  </div>
+  <div className="text-right">
+  <p className="text-[8px] font-black text-white/60 uppercase">Target</p>
+  <p className="text-lg font-black tracking-tighter">{currency} {formData.targetAmount.toLocaleString()}</p>
+  </div>
+  </div>
 
- <div className="premium-glass-card p-4 space-y-4">
- <div className="space-y-1">
- <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Goal Name</label>
- <div className="relative">
- <Target className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
- <input id="goal-name" name="name" aria-label="Goal name" type="text" value={formData.name} onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))} data-testid="goals-create-name-input" className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-300 text-xs" placeholder="e.g. New Macbook Pro" />
- </div>
- </div>
+  <div className="bg-white rounded-[28px] sm:rounded-[32px] p-5 sm:p-6 border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] space-y-4">
+  <div className="space-y-1">
+  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Goal Name</label>
+  <div className="relative">
+  <Target className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
+  <input id="goal-name" name="name" aria-label="Goal name" type="text" value={formData.name} onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))} data-testid="goals-create-name-input" className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-900 text-xs" placeholder="e.g. New Macbook Pro" />
+  </div>
+  </div>
 
- <div className="space-y-3">
- <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Category</label>
- <GoalCategoryGrid selectedCategory={formData.category} onSelect={cat => setFormData(prev => ({ ...prev, category: cat }))} />
- </div>
+  <div className="space-y-3">
+  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Category</label>
+  <GoalCategoryGrid selectedCategory={formData.category} onSelect={cat => setFormData(prev => ({ ...prev, category: cat }))} />
+  </div>
 
- <div className="space-y-1">
- <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Description / Note</label>
- <div className="relative">
- <AlignLeft className="absolute left-2.5 top-3 text-slate-300" size={14} />
- <textarea id="goal-description" name="description" aria-label="Goal description or note" value={formData.description} onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))} data-testid="goals-create-description-textarea" className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-300 text-xs min-h-[60px] resize-none" placeholder="What is this for?" />
- </div>
- </div>
- </div>
+  <div className="space-y-1">
+  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Description / Note</label>
+  <div className="relative">
+  <AlignLeft className="absolute left-2.5 top-3 text-slate-300" size={14} />
+  <textarea id="goal-description" name="description" aria-label="Goal description or note" value={formData.description} onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))} data-testid="goals-create-description-textarea" className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-900 text-xs min-h-[60px] resize-none" placeholder="What is this for?" />
+  </div>
+  </div>
+  </div>
 
   {/* Group Members Section */}
   {formData.goalType === 'group' && (
-  <div className="premium-glass-card p-4 space-y-4 animate-in slide-in-from-bottom-2 duration-300">
+  <div className="bg-white rounded-[28px] sm:rounded-[32px] p-5 sm:p-6 border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] space-y-4 animate-in slide-in-from-bottom-2 duration-300">
   <div className="flex items-center justify-between">
   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
   Collaborators ({members.length})
@@ -442,7 +442,7 @@ export const AddGoal: React.FC = () => {
  <div className="lg:col-span-5 flex flex-col gap-3 lg:overflow-y-auto">
  
   {/* Target Amount Display - Premium & High Density */}
-  <div className="premium-glass-card p-8 bg-white relative overflow-hidden flex flex-col items-center">
+  <div className="bg-white rounded-[28px] sm:rounded-[32px] p-6 sm:p-8 border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] relative overflow-hidden flex flex-col items-center">
   <div className="absolute -top-24 -left-24 w-64 h-64 bg-indigo-500/5 blur-[80px] rounded-full animate-pulse pointer-events-none z-0" />
   <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-violet-500/5 blur-[80px] rounded-full animate-pulse pointer-events-none z-0 [animation-delay:1s]" />
 
@@ -470,35 +470,23 @@ export const AddGoal: React.FC = () => {
   />
   </div>
 
-  {/* Right Side: Clear Button */}
-  <div className="flex-1 flex justify-start">
-  {amountStr && (
-  <button
-  onClick={() => { setAmountStr(''); setFormData(prev => ({ ...prev, targetAmount: 0 })); }}
-  title="Clear amount"
-  data-testid="goals-create-target-amount-clear-button"
-  className="p-1 sm:p-2 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-full transition-all animate-in fade-in zoom-in-50"
-  >
-  <X size={20} className="sm:w-7 sm:h-7" strokeWidth={3} />
-  </button>
-  )}
-  </div>
+  {/* Right Side: Empty to balance */}
+  <div className="flex-1" />
   </div>
 
-  {/* Preset Pills */}
-  <div className="flex flex-wrap justify-center gap-3 mt-8 max-w-sm">
-  {[100, 500, 1000, 2000, 5000].map(amt => (
+  {/* Quick Preset Buttons */}
+  <div className="flex flex-wrap items-center justify-center gap-2 mt-2 w-full">
+  {[1000, 5000, 10000, 25000].map(amt => (
   <button
   key={amt}
   type="button"
   onClick={() => {
-  const current = Number(formData.targetAmount) || 0;
-  const next = current + amt;
+  const next = (formData.targetAmount || 0) + amt;
   setAmountStr(String(next));
   setFormData(prev => ({ ...prev, targetAmount: next }));
   }}
   data-testid={`goals-create-preset-${amt}-button`}
-  className="px-6 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-[11px] font-black text-slate-500 hover:bg-slate-900 hover:text-white hover:border-slate-900 hover:shadow-2xl hover:shadow-slate-200 transition-all active:scale-90 select-none"
+  className="px-5 py-2.5 bg-slate-50 border border-slate-100 rounded-full text-xs font-bold text-slate-600 hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all active:scale-95 cursor-pointer shadow-2xs"
   >
   +{currency}{amt}
   </button>
@@ -507,7 +495,7 @@ export const AddGoal: React.FC = () => {
   </div>
   </div>
 
-  <div className="premium-glass-card p-4 space-y-4">
+  <div className="bg-white rounded-[28px] sm:rounded-[32px] p-5 sm:p-6 border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] space-y-4">
   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
   <div className="space-y-1">
   <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Initial Deposit</label>

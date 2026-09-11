@@ -401,7 +401,7 @@ export const ToDoListDetail: React.FC = () => {
                 type="button"
                 onClick={() => { setShowAddForm(false); resetAddForm(); }}
                 data-testid="tododetail-add-form-cancel-button"
-                className="px-5 py-2.5 border-2 border-slate-200 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-50 transition-all"
+                className="px-5 py-2.5 border border-slate-200/80 rounded-full text-xs font-bold text-slate-700 hover:bg-slate-50 transition-all cursor-pointer"
               >
                 Cancel
               </button>
@@ -411,11 +411,11 @@ export const ToDoListDetail: React.FC = () => {
                 disabled={isAdding || !newTitle.trim()}
                 data-testid="tododetail-add-task-submit-button"
                 className={cn(
-                  'flex-1 py-2.5 text-white rounded-xl text-[10px] font-black uppercase tracking-widest active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2',
-                  isTogether ? 'bg-violet-600 hover:bg-violet-700' : 'bg-indigo-600 hover:bg-indigo-700'
+                  'flex-1 py-2.5 text-white rounded-full text-xs font-bold active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer shadow-xs',
+                  isTogether ? 'bg-violet-600 hover:bg-violet-700' : 'bg-[#18181B] hover:bg-black'
                 )}
               >
-                {isAdding ? 'Adding…' : <><Plus size={12} />Add Task</>}
+                {isAdding ? 'Adding…' : <><Plus size={14} /><span>Add Task</span></>}
               </button>
             </div>
           </div>
@@ -423,23 +423,25 @@ export const ToDoListDetail: React.FC = () => {
       )}
 
       {/* Filter tabs */}
-      <div className="px-4 lg:px-6 py-3 flex gap-1 border-b border-slate-50">
-        {(['all', 'active', 'done'] as const).map(f => (
-          <button
-            key={f}
-            type="button"
-            onClick={() => setFilter(f)}
-            data-testid={`tododetail-filter-${f}-button`}
-            className={cn(
-              'px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all',
-              filter === f
-                ? isTogether ? 'bg-violet-600 text-white shadow-sm' : 'bg-indigo-600 text-white shadow-sm'
-                : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'
-            )}
-          >
-            {f === 'all' ? `All (${items.length})` : f === 'active' ? `Active (${items.filter(i => !i.completed).length})` : `Done (${completedCount})`}
-          </button>
-        ))}
+      <div className="px-4 lg:px-6 py-3 border-b border-slate-100 flex items-center">
+        <div className="inline-flex p-1 bg-slate-100/80 rounded-full gap-1">
+          {(['all', 'active', 'done'] as const).map(f => (
+            <button
+              key={f}
+              type="button"
+              onClick={() => setFilter(f)}
+              data-testid={`tododetail-filter-${f}-button`}
+              className={cn(
+                'px-4 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer capitalize',
+                filter === f
+                  ? isTogether ? 'bg-violet-600 text-white shadow-xs' : 'bg-white text-slate-900 shadow-xs'
+                  : 'text-slate-500 hover:text-slate-700'
+              )}
+            >
+              {f === 'all' ? `All (${items.length})` : f === 'active' ? `Active (${items.filter(i => !i.completed).length})` : `Done (${completedCount})`}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Tasks */}
