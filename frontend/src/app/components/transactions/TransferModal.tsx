@@ -102,123 +102,129 @@ export const TransferModal: React.FC<TransferModalProps> = ({
  }
  };
 
- if (!isOpen) return null;
+  if (!isOpen) return null;
 
- return (
- <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
- <div className="bg-white rounded-xl p-6 w-full max-w-md">
- <div className="flex items-center gap-2 mb-4">
- <ArrowRightLeft className="text-blue-600" size={24} />
- <h3 className="text-xl font-bold">Transfer Money</h3>
- </div>
+  return (
+    <div className="fixed inset-0 bg-slate-950/45 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-[28px] sm:rounded-[36px] border border-slate-100 p-6 sm:p-7 w-full max-w-md shadow-2xl">
+        <div className="flex items-center gap-3 mb-5">
+          <div className="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center text-purple-600 shrink-0">
+            <ArrowRightLeft size={20} />
+          </div>
+          <h3 className="text-xl font-black text-slate-900 tracking-tight">Transfer Money</h3>
+        </div>
 
- <form data-testid="transfer-modal-form" onSubmit={handleSubmit} className="space-y-4">
- <div className="bg-blue-50 p-3 rounded-lg mb-4">
- <p className="text-sm text-blue-700 font-medium"> Transfer Between Your Own Accounts</p>
- </div>
+        <form data-testid="transfer-modal-form" onSubmit={handleSubmit} className="space-y-4">
+          <div className="bg-purple-50/70 border border-purple-100/80 p-3 rounded-2xl">
+            <p className="text-xs text-purple-700 font-semibold">Transfer Between Your Own Accounts</p>
+          </div>
 
- {/* From Account */}
- <div>
- <label className="block text-sm font-medium text-gray-700 mb-1">
- From Account
- </label>
- <select data-testid="transfer-modal-select"
- value={formData.fromAccountId}
- onChange={(e) =>
- setFormData({ ...formData, fromAccountId: parseInt(e.target.value) })
- }
- className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
- required
- >
- <option data-testid="transfer-modal-select-source-account" value={0}>Select source account</option>
- {activeAccounts.map((account: Account) => (
- <option data-testid={`transfer-modal-option-${account.id}`} key={account.id} value={account.id}>
- {account.name} ({currency} {account.balance.toFixed(2)})
- </option>
- ))}
- </select>
- </div>
+          {/* From Account */}
+          <div>
+            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+              From Account
+            </label>
+            <select
+              data-testid="transfer-modal-select"
+              value={formData.fromAccountId}
+              onChange={(e) =>
+                setFormData({ ...formData, fromAccountId: parseInt(e.target.value) })
+              }
+              className="w-full px-4 py-2.5 bg-slate-50/60 border border-slate-200/80 rounded-2xl text-xs sm:text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all"
+              required
+            >
+              <option data-testid="transfer-modal-select-source-account" value={0}>Select source account</option>
+              {activeAccounts.map((account: Account) => (
+                <option data-testid={`transfer-modal-option-${account.id}`} key={account.id} value={account.id}>
+                  {account.name} ({currency} {account.balance.toFixed(2)})
+                </option>
+              ))}
+            </select>
+          </div>
 
- {/* To Account */}
- <div>
- <label className="block text-sm font-medium text-gray-700 mb-1">
- To Account
- </label>
- <select data-testid="transfer-modal-select-2"
- value={formData.toAccountId}
- onChange={(e) =>
- setFormData({ ...formData, toAccountId: parseInt(e.target.value) })
- }
- className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
- required
- >
- <option data-testid="transfer-modal-select-destination-account" value={0}>Select destination account</option>
- {activeAccounts
- .filter((acc: Account) => acc.id !== formData.fromAccountId)
- .map((account: Account) => (
- <option data-testid={`transfer-modal-option-2-${account.id}`} key={account.id} value={account.id}>
- {account.name} ({currency} {account.balance.toFixed(2)})
- </option>
- ))}
- </select>
- </div>
+          {/* To Account */}
+          <div>
+            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+              To Account
+            </label>
+            <select
+              data-testid="transfer-modal-select-2"
+              value={formData.toAccountId}
+              onChange={(e) =>
+                setFormData({ ...formData, toAccountId: parseInt(e.target.value) })
+              }
+              className="w-full px-4 py-2.5 bg-slate-50/60 border border-slate-200/80 rounded-2xl text-xs sm:text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all"
+              required
+            >
+              <option data-testid="transfer-modal-select-destination-account" value={0}>Select destination account</option>
+              {activeAccounts
+                .filter((acc: Account) => acc.id !== formData.fromAccountId)
+                .map((account: Account) => (
+                  <option data-testid={`transfer-modal-option-2-${account.id}`} key={account.id} value={account.id}>
+                    {account.name} ({currency} {account.balance.toFixed(2)})
+                  </option>
+                ))}
+            </select>
+          </div>
 
- {/* Amount */}
- <div>
- <label className="block text-sm font-medium text-gray-700 mb-1">
- Amount
- </label>
- <div className="flex items-center">
- <span className="text-gray-600 mr-2">{currency}</span>
- <input data-testid="transfer-modal-0-00"
- type="number"
- step="0.01"
- value={formData.amount}
- onChange={(e) =>
- setFormData({ ...formData, amount: parseFloat(e.target.value) || 0 })
- }
- className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
- placeholder="0.00"
- required
- />
- </div>
- </div>
+          {/* Amount */}
+          <div>
+            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+              Amount
+            </label>
+            <div className="relative flex items-center">
+              <span className="absolute left-4 text-slate-400 font-bold text-xs sm:text-sm">{currency}</span>
+              <input
+                data-testid="transfer-modal-0-00"
+                type="number"
+                step="0.01"
+                value={formData.amount || ''}
+                onChange={(e) =>
+                  setFormData({ ...formData, amount: parseFloat(e.target.value) || 0 })
+                }
+                className="w-full pl-12 pr-4 py-2.5 bg-slate-50/60 border border-slate-200/80 rounded-2xl text-xs sm:text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all"
+                placeholder="0.00"
+                required
+              />
+            </div>
+          </div>
 
- {/* Description */}
- <div>
- <label className="block text-sm font-medium text-gray-700 mb-1">
- Description (Optional)
- </label>
- <input data-testid="transfer-modal-e-g-monthly-transfer"
- type="text"
- value={formData.description}
- onChange={(e) =>
- setFormData({ ...formData, description: e.target.value })
- }
- className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
- placeholder="e.g., Monthly transfer"
- />
- </div>
+          {/* Description */}
+          <div>
+            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+              Description (Optional)
+            </label>
+            <input
+              data-testid="transfer-modal-e-g-monthly-transfer"
+              type="text"
+              value={formData.description}
+              onChange={(e) =>
+                setFormData({ ...formData, description: e.target.value })
+              }
+              className="w-full px-4 py-2.5 bg-slate-50/60 border border-slate-200/80 rounded-2xl text-xs sm:text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all"
+              placeholder="e.g., Monthly transfer"
+            />
+          </div>
 
- {/* Buttons */}
- <div className="flex gap-3 pt-4">
- <button data-testid="transfer-modal-cancel"
- type="button"
- onClick={onClose}
- className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
- >
- Cancel
- </button>
- <button data-testid="transfer-modal-transfer"
- type="submit"
- className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
- >
- Transfer
- </button>
- </div>
- </form>
- </div>
- </div>
- );
+          {/* Buttons */}
+          <div className="flex gap-2.5 pt-3">
+            <button
+              data-testid="transfer-modal-cancel"
+              type="button"
+              onClick={onClose}
+              className="flex-1 h-10 px-4 rounded-full border border-slate-200/80 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs sm:text-sm active:scale-95 transition-all cursor-pointer shadow-xs"
+            >
+              Cancel
+            </button>
+            <button
+              data-testid="transfer-modal-transfer"
+              type="submit"
+              className="flex-1 h-10 px-4 rounded-full bg-[#18181B] hover:bg-black text-white font-bold text-xs sm:text-sm active:scale-95 transition-all cursor-pointer shadow-xs"
+            >
+              Transfer
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>);
 };
-

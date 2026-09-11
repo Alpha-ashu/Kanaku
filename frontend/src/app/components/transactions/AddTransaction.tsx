@@ -960,19 +960,20 @@ if (linkedDocId) {
  <header className="bg-white border-b border-slate-100 sticky top-0 z-30">
 
  {/* Row 1: Back + Title + Save */}
- <div className="flex items-center justify-between px-4 lg:px-6 py-3 h-14">
- <div className="flex items-center gap-2 min-w-0">
- <button
- onClick={() => { clearQuickStorage(); setCurrentPage(returnPage); }}
- title="Back"
- data-testid="transaction-back-button"
- className="p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all shrink-0"
- >
- <ArrowLeft size={18} />
- </button>
- <h1 className="text-base font-black text-slate-900 tracking-tight leading-none uppercase">{editingTransactionId ? 'Edit Transaction' : 'Add Transaction'}</h1>
- </div>
- </div>
+  <div className="flex items-center justify-between px-4 lg:px-6 py-3 h-14">
+  <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+  <button
+  onClick={() => { clearQuickStorage(); setCurrentPage(returnPage); }}
+  title="Back"
+  aria-label="Back"
+  data-testid="transaction-back-button"
+  className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200/80 hover:bg-slate-50 active:scale-95 shadow-xs flex items-center justify-center text-slate-700 transition-all shrink-0 cursor-pointer"
+  >
+  <ArrowLeft size={18} className="text-slate-700" />
+  </button>
+  <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none truncate">{editingTransactionId ? 'Edit Transaction' : 'Add Transaction'}</h1>
+  </div>
+  </div>
 
   {/* Row 2: Type Tabs centered and compact pill */}
   <div className="px-4 lg:px-6 pb-3 flex justify-center">

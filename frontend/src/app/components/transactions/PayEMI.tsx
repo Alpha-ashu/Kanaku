@@ -118,7 +118,6 @@ export const PayEMI: React.FC = () => {
  <div className="space-y-6">
  <PageHeader
  title="Pay EMI"
- subtitle="Make scheduled EMI payments"
  icon={<CreditCard size={20} className="sm:w-6 sm:h-6" />}
  showBack
  backTo="dashboard"
