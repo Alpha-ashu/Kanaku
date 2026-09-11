@@ -108,7 +108,7 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({
                       type="button"
                       onClick={() => handleAction(action.id)}
                       data-testid={`quickaction-${action.id}-button`}
-                      className="flex flex-col items-center justify-center p-2 sm:p-2.5 rounded-2xl bg-white border border-slate-200/80 hover:border-blue-400 hover:bg-blue-50/20 hover:shadow-md hover:shadow-blue-500/8 transition-all active:scale-[0.95] group text-center cursor-pointer min-h-[82px] sm:min-h-[86px]"
+                      className="flex flex-col items-center justify-center p-2 sm:p-2.5 rounded-2xl bg-white border border-slate-200/80 hover:border-purple-300 hover:bg-purple-50/30 hover:shadow-md hover:shadow-purple-500/8 transition-all active:scale-[0.95] group text-center cursor-pointer min-h-[82px] sm:min-h-[86px]"
                     >
                       {/* Vibrant Squircle Icon */}
                       <div
@@ -121,7 +121,7 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({
                       </div>
 
                       {/* Label */}
-                      <span className="text-[11.5px] sm:text-xs font-bold text-slate-800 group-hover:text-blue-600 transition-colors truncate w-full px-0.5 leading-tight">
+                      <span className="text-[11.5px] sm:text-xs font-bold text-slate-800 group-hover:text-purple-700 transition-colors truncate w-full px-0.5 leading-tight">
                         {action.shortLabel || action.label}
                       </span>
 
@@ -140,7 +140,7 @@ export const QuickActionModal: React.FC<QuickActionModalProps> = ({
               <button
                 type="button"
                 onClick={handleOpenSettings}
-                className="text-blue-600 hover:text-blue-700 hover:underline font-bold text-xs cursor-pointer flex items-center gap-1 ml-auto"
+                className="text-purple-600 hover:text-purple-800 hover:underline font-bold text-xs cursor-pointer flex items-center gap-1 ml-auto"
                 title="Customize in Settings"
               >
                 <span>Customize</span>

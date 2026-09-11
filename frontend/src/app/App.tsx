@@ -1396,11 +1396,11 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <div className="w-full min-h-screen flex overflow-x-hidden app-container relative bg-gradient-to-b from-[#ECE7FE]/75 via-[#F5F4FE]/60 to-[#F6F7FA] text-slate-900 selection:bg-indigo-500 selection:text-white">
+    <div className="w-full min-h-screen flex overflow-x-hidden app-container relative bg-gradient-to-b from-[#EDE9FE]/80 via-[#F5F4FE]/60 to-[#F8F9FD] text-slate-900 selection:bg-purple-500 selection:text-white">
       {/* Subtle Ambient Background Mesh Lighting (Matching Reference Design Atmosphere) */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden" aria-hidden="true">
-        <div className="absolute -top-[10%] -right-[5%] w-[500px] h-[500px] rounded-full bg-gradient-to-br from-purple-200/40 via-indigo-100/30 to-transparent blur-3xl" />
-        <div className="absolute top-[25%] -left-[10%] w-[450px] h-[450px] rounded-full bg-gradient-to-tr from-blue-100/30 via-indigo-50/25 to-transparent blur-3xl" />
+        <div className="absolute -top-[5%] left-1/2 -translate-x-1/2 w-[750px] h-[380px] rounded-full bg-gradient-to-b from-purple-300/40 via-purple-200/25 to-transparent blur-3xl" />
+        <div className="absolute top-[20%] -right-[10%] w-[450px] h-[450px] rounded-full bg-gradient-to-bl from-purple-200/25 via-indigo-100/20 to-transparent blur-3xl" />
       </div>
 
       {/* OfflineBanner is fixed-position - stays outside document flow, never disrupts the flex row */}

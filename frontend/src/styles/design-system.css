@@ -18,10 +18,11 @@
   /* Radius Tokens */
   --radius-xs: 0.5rem;
   --radius-sm: 0.75rem;
-  --radius-md: 1rem;
-  --radius-lg: 1.5rem;
-  --radius-xl: 2.5rem;
-  /* 40px */
+  --radius-md: 1.25rem;
+  --radius-lg: 1.75rem;
+  /* 28px */
+  --radius-xl: 2rem;
+  /* 32px */
   --radius-full: 9999px;
 
   /* Height Tokens */
@@ -41,40 +42,40 @@
   /* Do NOT hardcode backdrop-filter, background, or border values inline.      */
 
   /* Base glass — light background with subtle blur */
-  --glass-bg: rgba(255, 255, 255, 0.82);
+  --glass-bg: rgba(255, 255, 255, 0.88);
   --glass-blur: blur(20px);
-  --glass-border: 1px solid rgba(255, 255, 255, 0.35);
-  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --glass-border: 1px solid rgba(255, 255, 255, 0.6);
+  --glass-shadow: 0 10px 30px -4px rgba(112, 144, 176, 0.08), 0 2px 6px rgba(0, 0, 0, 0.02);
 
   /* Card glass — slightly more opaque for readability */
-  --glass-card-bg: rgba(255, 255, 255, 0.88);
+  --glass-card-bg: rgba(255, 255, 255, 0.95);
   --glass-card-blur: blur(16px);
-  --glass-card-border: 1px solid rgba(255, 255, 255, 0.4);
-  --glass-card-shadow: 0 4px 20px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+  --glass-card-border: 1px solid rgba(241, 245, 249, 0.85);
+  --glass-card-shadow: 0 10px 30px -4px rgba(112, 144, 176, 0.08), 0 2px 6px rgba(0, 0, 0, 0.02);
 
   /* Modal glass — more opaque so content is readable over blurred backgrounds */
-  --glass-modal-bg: rgba(255, 255, 255, 0.95);
+  --glass-modal-bg: rgba(255, 255, 255, 0.98);
   --glass-modal-blur: blur(24px);
-  --glass-modal-border: 1px solid rgba(255, 255, 255, 0.25);
-  --glass-modal-shadow: 0 24px 64px rgba(0, 0, 0, 0.15), 0 8px 24px rgba(0, 0, 0, 0.08);
+  --glass-modal-border: 1px solid rgba(241, 245, 249, 0.9);
+  --glass-modal-shadow: 0 24px 64px rgba(15, 23, 42, 0.12), 0 8px 24px rgba(124, 58, 237, 0.06);
 
   /* Dropdown glass — very opaque so options are always readable */
-  --glass-dropdown-bg: rgba(255, 255, 255, 0.97);
+  --glass-dropdown-bg: rgba(255, 255, 255, 0.98);
   --glass-dropdown-blur: blur(12px);
   --glass-dropdown-border: 1px solid rgba(226, 232, 240, 0.8);
-  --glass-dropdown-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+  --glass-dropdown-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
 
   /* Elevated pill / floating header glass */
-  --glass-elevated-bg: rgba(255, 255, 255, 0.92);
+  --glass-elevated-bg: rgba(255, 255, 255, 0.94);
   --glass-elevated-blur: blur(28px);
-  --glass-elevated-border: 1px solid rgba(255, 255, 255, 0.5);
-  --glass-elevated-shadow: 0 12px 40px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.06);
+  --glass-elevated-border: 1px solid rgba(255, 255, 255, 0.85);
+  --glass-elevated-shadow: 0 12px 40px -4px rgba(124, 58, 237, 0.08), 0 2px 6px rgba(0, 0, 0, 0.03);
 
   /* Bottom sheet glass */
-  --glass-sheet-bg: rgba(255, 255, 255, 0.96);
+  --glass-sheet-bg: rgba(255, 255, 255, 0.98);
   --glass-sheet-blur: blur(20px);
-  --glass-sheet-border: 1px solid rgba(226, 232, 240, 0.6);
-  --glass-sheet-shadow: 0 -8px 32px rgba(0, 0, 0, 0.08);
+  --glass-sheet-border: 1px solid rgba(241, 245, 249, 0.85);
+  --glass-sheet-shadow: 0 -8px 32px rgba(0, 0, 0, 0.06);
 }
 
 

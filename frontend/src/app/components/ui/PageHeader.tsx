@@ -41,8 +41,8 @@ export const PageHeaderCard: React.FC<PageHeaderProps> = ({
 
   return (
     <header className={cn('relative mb-6 sm:mb-8 w-full', className)}>
-      <div className="flex flex-row flex-wrap items-center justify-between gap-3 sm:gap-4 w-full">
-        <div className="flex items-center gap-3 sm:gap-3.5 min-w-0">
+      <div className="flex items-center justify-between gap-3 sm:gap-4 w-full">
+        <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
           {shouldShowBack && (
             <button
               data-testid="page-header-go-back"
@@ -61,20 +61,13 @@ export const PageHeaderCard: React.FC<PageHeaderProps> = ({
             </div>
           )}
 
-          <div className="min-w-0">
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-slate-900 tracking-tight leading-tight truncate">
-              {title}
-            </h1>
-            {subtitle && (
-              <p className="text-xs sm:text-sm text-slate-400 font-medium mt-0.5 truncate">
-                {subtitle}
-              </p>
-            )}
-          </div>
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 tracking-tight leading-none truncate">
+            {title}
+          </h1>
         </div>
 
         {children && (
-          <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap shrink-0">
+          <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
             {children}
           </div>
         )}
@@ -115,7 +108,7 @@ export const SegmentedTabs = ({
           className={cn(
             'flex items-center justify-center gap-1.5 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer',
             isActive
-              ? 'bg-slate-900 text-white shadow-xs'
+              ? 'bg-[#18181B] text-white shadow-xs'
               : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100/60'
           )}
         >
@@ -151,7 +144,7 @@ export const PrimaryActionButton = ({
       className={cn(
         'flex items-center justify-center gap-1.5 sm:gap-2 px-4 sm:px-6 py-2 sm:py-2.5 rounded-full font-bold transition-all active:scale-95 whitespace-nowrap text-xs sm:text-sm shadow-xs cursor-pointer shrink-0',
         variant === 'primary'
-          ? 'bg-slate-950 text-white hover:bg-slate-800'
+          ? 'bg-[#18181B] text-white hover:bg-black'
           : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50',
         className
       )}
@@ -196,7 +189,7 @@ export const SearchHeader = ({
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
-      className="w-full h-10 sm:h-11 pl-10 pr-4 bg-white border border-slate-200/80 rounded-full focus:ring-2 focus:ring-blue-500/20 text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 transition-all shadow-2xs"
+      className="w-full h-10 sm:h-11 pl-10 pr-4 bg-white border border-slate-200/80 rounded-full focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 transition-all shadow-2xs"
     />
   </div>
 );

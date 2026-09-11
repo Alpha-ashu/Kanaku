@@ -633,8 +633,8 @@ export const Accounts: React.FC = () => {
                                             className={cn(
                                                 "appearance-none border-0 outline-none shadow-none rounded-full transition-all duration-300 cursor-pointer flex-shrink-0 m-0 p-0 min-w-0 min-h-0 leading-none",
                                                 selectedAccountId === account.id
-                                                    ? "!w-10 !h-2.5 bg-gradient-to-r from-pink-500 to-rose-500"
-                                                    : "!w-2.5 !h-2.5 bg-gray-300 hover:bg-gray-400"
+                                                    ? "!w-8 !h-2.5 bg-[#8B5CF6]"
+                                                    : "!w-2.5 !h-2.5 bg-slate-200 hover:bg-slate-300"
                                             )}
                                             type="button"
                                             aria-label={`Go to account ${account.name}`}

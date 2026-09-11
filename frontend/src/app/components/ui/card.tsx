@@ -9,10 +9,10 @@ interface CardProps extends HTMLMotionProps<"div"> {
 
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
  ({ className, variant = 'default', noPadding = false, children, ...props }, ref) => {
- const shadowClass = 'bg-white shadow-[0_8px_30px_rgba(0,0,0,0.03),0_1px_3px_rgba(0,0,0,0.02)] border border-slate-100/90';
+ const shadowClass = 'bg-white shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08),0_2px_6px_rgba(0,0,0,0.02)] border border-slate-100/70';
  const variants = {
  default: shadowClass,
- glass: 'bg-white/95 backdrop-blur-xl shadow-[0_8px_30px_rgba(0,0,0,0.03),0_1px_3px_rgba(0,0,0,0.02)] border border-slate-100/80',
+ glass: 'bg-white/95 backdrop-blur-xl shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08),0_2px_6px_rgba(0,0,0,0.02)] border border-slate-100/60',
  'mesh-pink': 'bg-mesh-pink text-white shadow-colored-pink border-none',
  'mesh-green': 'bg-mesh-green text-white shadow-colored-green border-none',
  'mesh-purple': 'bg-mesh-purple text-white shadow-colored-purple border-none',
@@ -27,7 +27,7 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
  animate={{ opacity: 1, y: 0 }}
  transition={{ duration: 0.3, ease: 'easeOut' }}
  className={cn(
- 'rounded-[24px] sm:rounded-[28px] overflow-hidden relative',
+ 'rounded-[28px] sm:rounded-[32px] overflow-hidden relative',
  variants[variant],
  !noPadding && 'p-4 sm:p-6',
  className

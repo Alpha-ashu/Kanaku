@@ -46,7 +46,7 @@ export const CenteredLayout: React.FC<CenteredLayoutProps> = ({
   );
 
   return (
-    <div className={cn('w-full min-h-screen bg-white overflow-x-hidden flex flex-col justify-start items-center', containerClassName)}>
+    <div className={cn('w-full min-h-screen bg-transparent overflow-x-hidden flex flex-col justify-start items-center', containerClassName)}>
       {enablePullToRefresh ? (
         <PullToRefresh onRefresh={handleDefaultRefresh} className="flex-1 flex flex-col w-full">
           {content}

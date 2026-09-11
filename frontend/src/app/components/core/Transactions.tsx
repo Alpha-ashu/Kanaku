@@ -1,10 +1,10 @@
-import React, { useState, useMemo, useEffect, useDeferredValue } from 'react';
+import React, { useState, useMemo, useEffect, useDeferredValue, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useApp, useSubFeature } from '@/contexts/AppContext';
 import { db, type DocumentRecord } from '@/lib/database';
 import { deleteTransactionWithBackendSync, queueRecordUpsertSync } from '@/lib/auth-sync-integration';
 import { applyAccountBalanceDeltas, buildTransactionAggregation, getTransactionAccountDeltas } from '@/lib/transactionAggregation';
-import { Plus, TrendingUp, TrendingDown, Search, Camera, Edit2, Trash2, ArrowUpRight, ArrowDownLeft, Repeat2, Wallet, Receipt, Layers, Eye, X, ChevronRight, FileText, Paperclip, ArrowLeft } from 'lucide-react';
+import { Plus, TrendingUp, TrendingDown, Search, Camera, Edit2, Trash2, ArrowUpRight, ArrowDownLeft, Repeat2, Wallet, Receipt, Layers, Eye, X, ChevronLeft, ChevronRight, FileText, Paperclip, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { DeleteConfirmModal } from '@/app/components/shared/DeleteConfirmModal';
 import { ReceiptScanner } from '@/app/components/transactions/ReceiptScanner';
@@ -18,7 +18,7 @@ import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { InfiniteScrollFooter } from '@/app/components/ui/InfiniteScrollFooter';
 import { backendSyncService } from '@/lib/backend-sync-service';
-
+import { AppDateStrip } from '@/app/components/ui/AppDateStrip';
 import { TimeFilter, TimeFilterPeriod, filterByTimePeriod, getPeriodLabel } from '@/app/components/ui/TimeFilter';
 import { formatLocalDate, parseDateInputValue, toLocalDateKey } from '@/lib/dateUtils';
 import { backendService } from '@/lib/backend-api';
@@ -103,7 +103,7 @@ export const Transactions: React.FC = () => {
  const canImport = useSubFeature('transactions', 'importStatement');
  const [filterType, setFilterType] = useState<'all' | 'expense' | 'income'>('all');
  const [searchQuery, setSearchQuery] = useState('');
- const [timePeriod, setTimePeriod] = useState<TimeFilterPeriod>('monthly');
+ const [timePeriod, setTimePeriod] = useState<TimeFilterPeriod>('daily');
  const [showTransactionTypeModal, setShowTransactionTypeModal] = useState(false);
  const [showScanModal, setShowScanModal] = useState(false);
  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -156,6 +156,62 @@ export const Transactions: React.FC = () => {
  });
  }, [timeFilteredTransactions, filterType, normalizedSearch]);
 
+  const currentTxIndex = useMemo(() => {
+    if (!selectedTransaction) return -1;
+    return filteredTransactions.findIndex((t) => {
+      if (selectedTransaction.id != null && t.id != null) {
+        return t.id === selectedTransaction.id;
+      }
+      if (selectedTransaction.cloudId != null && t.cloudId != null) {
+        return t.cloudId === selectedTransaction.cloudId;
+      }
+      return t === selectedTransaction;
+    });
+  }, [filteredTransactions, selectedTransaction]);
+
+  const hasPrevTx = currentTxIndex > 0;
+  const hasNextTx = currentTxIndex >= 0 && currentTxIndex < filteredTransactions.length - 1;
+
+  const handlePrevTx = useCallback(() => {
+    if (currentTxIndex > 0) {
+      setSelectedTransaction(filteredTransactions[currentTxIndex - 1]);
+    }
+  }, [currentTxIndex, filteredTransactions]);
+
+  const handleNextTx = useCallback(() => {
+    if (currentTxIndex >= 0 && currentTxIndex < filteredTransactions.length - 1) {
+      setSelectedTransaction(filteredTransactions[currentTxIndex + 1]);
+    }
+  }, [currentTxIndex, filteredTransactions]);
+
+  useEffect(() => {
+    if (!selectedTransaction) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement ||
+        (e.target as HTMLElement)?.isContentEditable
+      ) {
+        return;
+      }
+
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        handlePrevTx();
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        handleNextTx();
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        setSelectedTransaction(null);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedTransaction, handlePrevTx, handleNextTx]);
+
  const stats = useMemo(() => {
  const aggregation = buildTransactionAggregation(timeFilteredTransactions);
  return {
@@ -186,54 +242,6 @@ export const Transactions: React.FC = () => {
  }
  };
  }, [previewUrl]);
-
- const scrollRef = React.useRef<HTMLDivElement>(null);
-
- const dateRange = useMemo(() => {
- const dates: Date[] = [];
- const baseDate = filterReferenceDate;
- 
- if (timePeriod === 'daily' || timePeriod === 'weekly') {
- // 30 days range
- for (let i = -15; i <= 15; i++) {
- const d = new Date(baseDate);
- d.setDate(baseDate.getDate() + i);
- dates.push(d);
- }
- } else if (timePeriod === 'monthly') {
- // 12 months range
- for (let i = -6; i <= 6; i++) {
- const d = new Date(baseDate);
- d.setMonth(baseDate.getMonth() + i);
- dates.push(d);
- }
- } else if (timePeriod === 'yearly') {
- // 5 years range
- for (let i = -2; i <= 2; i++) {
- const d = new Date(baseDate);
- d.setFullYear(baseDate.getFullYear() + i);
- dates.push(d);
- }
- }
- return dates;
- }, [timePeriod, filterReferenceDate]);
-
- useEffect(() => {
-    let timeoutId: any;
-    if (scrollRef.current) {
-      timeoutId = setTimeout(() => {
-        if (scrollRef.current) {
-          const activeElement = scrollRef.current.querySelector('[data-selected="true"]');
-          if (activeElement) {
-            activeElement.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-          }
-        }
-      }, 50);
-    }
-    return () => {
-      if (timeoutId) clearTimeout(timeoutId);
-    };
-  }, [selectedDate, timePeriod, dateRange]);
 
   const {
     visibleItems: visibleTransactions,
@@ -396,8 +404,8 @@ export const Transactions: React.FC = () => {
     >
  <div className="space-y-6 sm:space-y-8">
  
-  <div className="flex flex-row flex-wrap items-center justify-between gap-3 w-full">
-    <div className="flex items-center gap-3">
+  <div className="flex items-center justify-between gap-3 w-full">
+    <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
       <button
         type="button"
         onClick={() => setCurrentPage('dashboard')}
@@ -408,18 +416,15 @@ export const Transactions: React.FC = () => {
       >
         <ArrowLeft size={18} className="text-slate-700" />
       </button>
-      <div>
-        <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight leading-none">Transactions</h1>
-        <p className="text-xs sm:text-sm text-slate-400 font-medium mt-0.5">Track and categorize your cash flow</p>
-      </div>
+      <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none truncate">Transactions</h1>
     </div>
-    <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap sm:flex-nowrap">
+    <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
       {canImport && (
         <Button
           data-testid="transactions-scan-bill-button"
           variant="secondary"
           onClick={() => setShowScanModal(true)}
-          className="shadow-2xs border border-slate-200/90 bg-white hover:bg-slate-50 text-slate-700 h-9 sm:h-10 px-3.5 sm:px-4 rounded-full font-bold text-xs sm:text-sm"
+          className="shadow-2xs border border-slate-200/90 bg-white hover:bg-slate-50 text-slate-800 h-9 sm:h-10 px-3.5 sm:px-4 rounded-full font-bold text-xs sm:text-sm"
         >
           <Camera size={16} className="mr-1.5" />
           <span>Scan Bill</span>
@@ -438,136 +443,84 @@ export const Transactions: React.FC = () => {
     </div>
   </div>
 
-  {/* Floating Scrollable Date Selector (Reference 2 Screen 1 Design) */}
-  <div className="max-w-2xl mx-auto w-full bg-white/95 backdrop-blur-xl rounded-2xl sm:rounded-full p-1.5 sm:p-2 shadow-[0_8px_30px_rgba(0,0,0,0.03)] border border-slate-200/80 overflow-hidden relative group">
-    <div 
-      ref={scrollRef} 
-      className={cn(
-        "flex items-center overflow-x-auto gap-1.5 sm:gap-2.5 scrollbar-hide snap-x px-2 py-1 w-full",
-        dateRange.length <= 7 ? "justify-center" : "justify-start"
-      )}
-    >
-      {dateRange.length === 0 && (
-        <p className="text-slate-400 text-center py-3 font-bold text-xs w-full">Loading...</p>
-      )}
-      {dateRange.map((date, idx) => {
-        let isSelected = false;
-        let label = '';
-        let subLabel = '';
-        let isWeekend = false;
-
-        if (timePeriod === 'daily' || timePeriod === 'weekly') {
-          isSelected = toLocalDateKey(date) === toLocalDateKey(selectedDate);
-          const dayNameRaw = date.toLocaleDateString('en-US', { weekday: 'short' });
-          subLabel = dayNameRaw;
-          label = date.getDate().toString();
-          isWeekend = date.getDay() === 0 || date.getDay() === 6;
-        } else if (timePeriod === 'monthly') {
-          isSelected = date.getMonth() === selectedDate.getMonth() && date.getFullYear() === selectedDate.getFullYear();
-          label = date.toLocaleDateString('en-US', { month: 'short' });
-          subLabel = date.getFullYear().toString();
-        } else if (timePeriod === 'yearly') {
-          isSelected = date.getFullYear() === selectedDate.getFullYear();
-          label = date.getFullYear().toString();
-          subLabel = 'Year';
-        }
-
-        return (
-          <button
-            data-testid={`transactions-button-${idx}`}
-            key={idx}
-            type="button"
-            data-selected={isSelected}
-            onClick={() => setSelectedDate(date)}
-            className="flex flex-col items-center justify-center p-1 rounded-2xl transition-all snap-center relative shrink-0 cursor-pointer min-w-[42px] sm:min-w-[48px]"
-          >
-            <span className={cn(
-              'text-[9px] sm:text-[10px] font-semibold tracking-tight mb-1',
-              isSelected ? 'text-blue-600 font-bold' : isWeekend ? 'text-rose-500' : 'text-slate-400'
-            )}>
-              {subLabel}
-            </span>
-            <div className={cn(
-              "w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold transition-all shadow-2xs",
-              isSelected
-                ? 'bg-blue-600 text-white shadow-blue-500/25'
-                : 'bg-white text-slate-700 border border-slate-200/80 hover:bg-slate-100/80'
-            )}>
-              {label}
-            </div>
-          </button>
-        );
-      })}
+  {/* Horizontal Calendar Date Strip & Period Filter (Reference Image Style) */}
+  <div className="bg-white rounded-[28px] sm:rounded-[32px] p-5 sm:p-6 border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] flex flex-col items-center gap-5 sm:gap-6">
+    <AppDateStrip
+      selectedDate={selectedDate}
+      onSelectDate={setSelectedDate}
+      period={timePeriod}
+    />
+    <div className="flex justify-center w-full">
+      <TimeFilter value={timePeriod} onChange={setTimePeriod} testId="transactions-time-filter" />
     </div>
   </div>
 
- {/* Filter Bar */}
- <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
- <TimeFilter testId="transactions-time-filter" value={timePeriod} onChange={setTimePeriod} />
- </div>
+  {/* Stats Board - Soft rounded reference style with pastel badges */}
+  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+    <Card data-testid="transactions-card" variant="default" className="p-5 sm:p-6 bg-white dark:bg-card border border-slate-100 dark:border-border/60 rounded-[28px] sm:rounded-[32px] shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)] relative overflow-hidden group">
+      <div className="relative z-10">
+        <div className="flex items-center justify-between gap-2 mb-3">
+          <span className="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200/50">
+            Total Income
+          </span>
+          <div className="w-8 h-8 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 flex items-center justify-center">
+            <ArrowDownLeft size={16} />
+          </div>
+        </div>
+        <p className="text-2xl sm:text-3xl font-display font-bold text-slate-900 dark:text-white tracking-tight">{formatCurrency(stats.income)}</p>
+      </div>
+    </Card>
 
- {/* Stats Board */}
- <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
- <Card data-testid="transactions-card" variant="mesh-green" className="p-4 sm:p-6 relative overflow-hidden group">
- <div className="relative z-10">
- <div className="flex items-center gap-2 mb-2 sm:mb-3 text-white/80">
- <div className="p-1 sm:p-1.5 bg-white/20 rounded-lg backdrop-blur-md">
- <ArrowDownLeft size={14} className="sm:w-4 sm:h-4" />
- </div>
- <span className="font-semibold text-xs sm:text-sm">Total Income</span>
- </div>
- <p className="text-2xl sm:text-3xl font-display font-bold text-white tracking-tight">{formatCurrency(stats.income)}</p>
- </div>
- <div className="absolute -bottom-4 -right-4 w-24 h-24 sm:w-32 sm:h-32 bg-white/20 rounded-full blur-2xl group-hover:scale-110 transition-transform" />
- </Card>
+    <Card data-testid="transactions-card-2" variant="default" className="p-5 sm:p-6 bg-white dark:bg-card border border-slate-100 dark:border-border/60 rounded-[28px] sm:rounded-[32px] shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)] relative overflow-hidden group">
+      <div className="relative z-10">
+        <div className="flex items-center justify-between gap-2 mb-3">
+          <span className="px-3 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 border border-rose-200/50">
+            Total Expense
+          </span>
+          <div className="w-8 h-8 rounded-full bg-rose-50 dark:bg-rose-950/50 text-rose-600 flex items-center justify-center">
+            <ArrowUpRight size={16} />
+          </div>
+        </div>
+        <p className="text-2xl sm:text-3xl font-display font-bold text-slate-900 dark:text-white tracking-tight">{formatCurrency(stats.expenses)}</p>
+      </div>
+    </Card>
 
- <Card data-testid="transactions-card-2" variant="mesh-pink" className="p-4 sm:p-6 relative overflow-hidden group">
- <div className="relative z-10">
- <div className="flex items-center gap-2 mb-2 sm:mb-3 text-white/80">
- <div className="p-1 sm:p-1.5 bg-white/20 rounded-lg backdrop-blur-md">
- <ArrowUpRight size={14} className="sm:w-4 sm:h-4" />
- </div>
- <span className="font-semibold text-xs sm:text-sm">Total Expense</span>
- </div>
- <p className="text-2xl sm:text-3xl font-display font-bold text-white tracking-tight">{formatCurrency(stats.expenses)}</p>
- </div>
- <div className="absolute -bottom-4 -right-4 w-24 h-24 sm:w-32 sm:h-32 bg-white/20 rounded-full blur-2xl group-hover:scale-110 transition-transform" />
- </Card>
-
- <Card data-testid="transactions-card-3" variant="default" className="p-4 sm:p-6 bg-transparent border-white/60 relative overflow-hidden">
- <div className="relative z-10">
- <div className="flex items-center gap-2 mb-2 sm:mb-3 text-gray-500">
- <div className="p-1 sm:p-1.5 bg-gray-100 rounded-lg">
- <TrendingUp size={14} className={cn("sm:w-4 sm:h-4", stats.netFlow >= 0 ?"text-emerald-500" :"text-red-500")} />
- </div>
- <span className="font-semibold text-xs sm:text-sm">Net Flow</span>
- </div>
- <p className={cn(
-"text-2xl sm:text-3xl font-display font-bold tracking-tight",
- stats.netFlow >= 0 ?"text-emerald-600" :"text-red-600"
- )}>
- {stats.netFlow > 0 ? '+' : ''}{formatCurrency(stats.netFlow)}
- </p>
- </div>
- </Card>
- </div>
+    <Card data-testid="transactions-card-3" variant="default" className="p-5 sm:p-6 bg-white dark:bg-card border border-slate-100 dark:border-border/60 rounded-[28px] sm:rounded-[32px] shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)] relative overflow-hidden">
+      <div className="relative z-10">
+        <div className="flex items-center justify-between gap-2 mb-3">
+          <span className="px-3 py-1 rounded-full text-xs font-semibold bg-purple-50 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300 border border-purple-200/50">
+            Net Flow
+          </span>
+          <div className="w-8 h-8 rounded-full bg-purple-50 dark:bg-purple-950/50 text-purple-600 flex items-center justify-center">
+            <TrendingUp size={16} className={cn(stats.netFlow >= 0 ? "text-emerald-500" : "text-rose-500")} />
+          </div>
+        </div>
+        <p className={cn(
+          "text-2xl sm:text-3xl font-display font-bold tracking-tight",
+          stats.netFlow >= 0 ? "text-slate-900 dark:text-white" : "text-rose-600"
+        )}>
+          {stats.netFlow > 0 ? '+' : ''}{formatCurrency(stats.netFlow)}
+        </p>
+      </div>
+    </Card>
+  </div>
 
   {/* Tax Summary Card */}
-  <div className="rounded-2xl border border-orange-100 bg-gradient-to-br from-orange-50/80 via-amber-50/60 to-orange-50/40 p-4 sm:p-5 shadow-xs">
+  <div className="rounded-[28px] border border-purple-100/70 bg-white/90 dark:bg-card p-5 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)]">
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
       <div className="flex items-center gap-2.5">
-        <div className="p-2 bg-orange-500/10 text-orange-600 rounded-xl">
+        <div className="w-10 h-10 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center">
           <Receipt size={18} />
         </div>
         <div>
-          <h3 className="text-sm font-bold text-slate-900">Tax Summary</h3>
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white">Tax Summary</h3>
           <p className="text-xs text-slate-500">Taxes recorded across verified receipts & transactions</p>
         </div>
       </div>
       <button
         type="button"
         onClick={() => setCurrentPage('receipt-scanner')}
-        className="inline-flex items-center gap-1.5 text-xs font-bold text-orange-700 hover:text-orange-900 bg-orange-100/70 hover:bg-orange-100 px-3 py-1.5 rounded-xl transition-colors cursor-pointer self-start sm:self-auto"
+        className="inline-flex items-center gap-1.5 text-xs font-bold text-purple-700 hover:text-purple-900 bg-purple-50 hover:bg-purple-100 px-3.5 py-1.5 rounded-full transition-colors cursor-pointer self-start sm:self-auto"
       >
         <Camera size={13} />
         <span>Receipt Scanner</span>
@@ -576,58 +529,58 @@ export const Transactions: React.FC = () => {
     </div>
 
     <div className="grid grid-cols-3 gap-2 sm:gap-3">
-      <div className="rounded-xl bg-white/80 border border-orange-100 p-2.5 sm:p-3">
+      <div className="rounded-2xl bg-slate-50/70 dark:bg-muted/40 border border-slate-100 dark:border-border/40 p-3">
         <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">Total Tax</span>
-        <p className="text-sm sm:text-base font-black text-slate-900">{formatCurrency(taxSummary.totalTax)}</p>
+        <p className="text-sm sm:text-base font-black text-slate-900 dark:text-white">{formatCurrency(taxSummary.totalTax)}</p>
       </div>
-      <div className="rounded-xl bg-white/80 border border-orange-100 p-2.5 sm:p-3">
+      <div className="rounded-2xl bg-slate-50/70 dark:bg-muted/40 border border-slate-100 dark:border-border/40 p-3">
         <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">This Week</span>
-        <p className="text-sm sm:text-base font-black text-orange-700">{formatCurrency(taxSummary.weeklyTax)}</p>
+        <p className="text-sm sm:text-base font-black text-purple-700">{formatCurrency(taxSummary.weeklyTax)}</p>
       </div>
-      <div className="rounded-xl bg-white/80 border border-orange-100 p-2.5 sm:p-3">
+      <div className="rounded-2xl bg-slate-50/70 dark:bg-muted/40 border border-slate-100 dark:border-border/40 p-3">
         <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">This Month</span>
-        <p className="text-sm sm:text-base font-black text-slate-900">{formatCurrency(taxSummary.monthlyTax)}</p>
+        <p className="text-sm sm:text-base font-black text-slate-900 dark:text-white">{formatCurrency(taxSummary.monthlyTax)}</p>
       </div>
     </div>
   </div>
 
- {/* Filters & Search */}
- <div className="flex flex-col gap-3 sm:gap-4">
- <div className="relative">
- <Search className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
- <input
- data-testid="transactions-search-input"
- type="text"
- value={searchQuery}
- onChange={(e) => setSearchQuery(e.target.value)}
- placeholder="Search transactions..."
- className="w-full pl-9 sm:pl-11 pr-3 sm:pr-4 py-2 sm:py-3 bg-white/80 backdrop-blur-md border border-white/40 shadow-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-black/5 text-xs sm:text-sm"
- />
- </div>
-  <div className="flex bg-slate-100 p-1.5 rounded-2xl border border-slate-200/80 shadow-inner w-full">
-    {(['all', 'income', 'expense'] as const).map((type) => {
-      const isActive = filterType === type;
-      return (
-        <button
-          key={type}
-          data-testid={`transactions-filter-${type}`}
-          onClick={() => setFilterType(type)}
-          className={cn(
-            'flex-1 flex items-center justify-center py-2.5 px-3 rounded-xl transition-all duration-150 font-bold capitalize text-xs select-none',
-            isActive
-              ? 'bg-slate-900 text-white shadow-md'
-              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
-          )}
-        >
-          <span>{type === 'all' ? 'All' : type === 'income' ? 'Income' : 'Expense'}</span>
-        </button>
-      );
-    })}
+  {/* Filters & Search */}
+  <div className="flex flex-col gap-3 sm:gap-4">
+    <div className="relative">
+      <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4 sm:w-5 sm:h-5" />
+      <input
+        data-testid="transactions-search-input"
+        type="text"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        placeholder="Search transactions..."
+        className="w-full pl-11 pr-4 py-2.5 sm:py-3 bg-white/90 backdrop-blur-md border border-slate-200/80 shadow-xs rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-300 text-xs sm:text-sm text-slate-900"
+      />
+    </div>
+    <div className="flex bg-slate-100/90 dark:bg-muted p-1.5 rounded-full border border-slate-200/60 shadow-inner w-full">
+      {(['all', 'income', 'expense'] as const).map((type) => {
+        const isActive = filterType === type;
+        return (
+          <button
+            key={type}
+            data-testid={`transactions-filter-${type}`}
+            onClick={() => setFilterType(type)}
+            className={cn(
+              'flex-1 flex items-center justify-center py-2 px-3 rounded-full transition-all duration-150 font-semibold capitalize text-xs select-none',
+              isActive
+                ? 'bg-[#18181B] text-white shadow-sm'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
+            )}
+          >
+            <span>{type === 'all' ? 'All' : type === 'income' ? 'Income' : 'Expense'}</span>
+          </button>
+        );
+      })}
+    </div>
   </div>
- </div>
 
- {/* Transaction List */}
- <Card data-testid="transactions-card-4" variant="glass" className="overflow-hidden !p-0 min-h-[400px]">
+  {/* Transaction List */}
+  <Card data-testid="transactions-card-4" variant="glass" className="overflow-hidden !p-0 min-h-[400px] rounded-[28px] sm:rounded-[32px] border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)] bg-white/95">
 
  {/* DESKTOP TABLE (lg+): all 4 columns */}
  <div className="hidden lg:block overflow-x-auto">
@@ -654,7 +607,12 @@ export const Transactions: React.FC = () => {
  transition: { delay: Math.min(i, 12) * 0.02 },
  } : undefined;
  return (
- <RowComponent key={transaction.id} {...(animationProps ?? {})} className="group hover:bg-gray-50/80 transition-colors">
+  <RowComponent
+    key={transaction.id}
+    {...(animationProps ?? {})}
+    onClick={() => setSelectedTransaction(transaction)}
+    className="group hover:bg-slate-50/80 transition-colors cursor-pointer"
+  >
  {/* Details */}
  <td className="px-6 py-4 pl-8">
  <div className="flex items-center gap-3">
@@ -672,12 +630,12 @@ export const Transactions: React.FC = () => {
  </div>
  </div>
  </td>
- {/* Category */}
- <td className="px-6 py-4">
- <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-gray-100 text-gray-600 border border-gray-200">
- {transaction.category}
- </span>
- </td>
+  {/* Category */}
+  <td className="px-6 py-4">
+  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200/60">
+  {transaction.category}
+  </span>
+  </td>
  {/* Account */}
  <td className="px-6 py-4 text-sm font-medium text-gray-500">{account?.name}</td>
  {/* Amount */}
@@ -687,7 +645,7 @@ export const Transactions: React.FC = () => {
  </span>
  </td>
  {/* Actions always visible Eye when bill attached, edit/delete on hover */}
- <td className="px-4 py-4 text-right">
+ <td className="px-4 py-4 text-right" onClick={(e) => e.stopPropagation()}>
  <div className="flex justify-end items-center gap-1">
  {attachedDocumentId && (
  <Button data-testid={`transactions-view-bill-${transaction.id}`} variant="ghost" size="icon"
@@ -783,7 +741,7 @@ export const Transactions: React.FC = () => {
   )}
  </Card>
 
-  {/* MOBILE TRANSACTION DETAIL SHEET */}
+  {/* PROPER TRANSACTION DETAIL POPUP SCREEN */}
   {selectedTransaction && typeof document !== 'undefined' && createPortal(
     (() => {
       const tx = selectedTransaction;
@@ -792,100 +750,197 @@ export const Transactions: React.FC = () => {
       const attachedDocumentId = getDocumentIdFromTransaction(tx);
       const attachedTaxAmount = parseMetadataNumber(tx.importMetadata?.['Tax Amount']);
       return (
-        <div className="fixed inset-0 z-[120] lg:hidden flex flex-col justify-end">
-          <div data-testid="transactions-div" className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedTransaction(null)} />
-          <motion.div
-            initial={{ y: '100%' }}
-            animate={{ y: 0 }}
-            exit={{ y: '100%' }}
-            transition={{ type: 'spring', stiffness: 400, damping: 40 }}
-            className="relative bg-white rounded-t-[32px] overflow-hidden shadow-2xl max-h-[90vh] flex flex-col z-[121]"
-          >
-            {/* Sheet handle */}
-            <div className="flex justify-center pt-3 pb-1 shrink-0">
-              <div className="w-10 h-1 rounded-full bg-gray-200" />
-            </div>
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-3.5 sm:p-6 overflow-y-auto">
+          {/* Backdrop blur overlay */}
+          <div
+            data-testid="transactions-div"
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-md"
+            onClick={() => setSelectedTransaction(null)}
+          />
 
-            {/* Sheet header */}
-            <div className="flex items-start justify-between gap-3 px-6 pt-4 pb-4 border-b border-gray-100 shrink-0">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-white border border-gray-100 shadow-xs">
+          {/* Proper Popup Modal Dialog */}
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0, y: 16 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.95, opacity: 0, y: 16 }}
+            transition={{ type: 'spring', damping: 26, stiffness: 360 }}
+            className="relative bg-white rounded-[28px] sm:rounded-[36px] overflow-hidden shadow-[0_25px_50px_-12px_rgba(15,23,42,0.25)] border border-slate-100 w-full max-w-lg max-h-[calc(100dvh-2.5rem)] flex flex-col z-[121] my-auto"
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between gap-3 px-5 sm:px-6 py-4 sm:py-5 border-b border-slate-100 bg-white shrink-0">
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-slate-50 border border-slate-100/80 shadow-xs shrink-0">
                   {getCategoryCartoonIcon(tx.category || 'Miscellaneous', 26)}
                 </div>
-                <div>
-                  <p className="font-black text-gray-900 text-base leading-tight">{tx.description || tx.category}</p>
-                  <p className="text-xs text-gray-400 font-medium mt-0.5">{formatLocalDate(tx.date, 'en-US')}</p>
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-black text-slate-900 text-base sm:text-lg leading-tight truncate">
+                    {tx.description || tx.category}
+                  </h3>
+                  <div className="flex items-center gap-2 mt-1 flex-wrap">
+                    <p className="text-xs text-slate-400 font-medium">
+                      {formatLocalDate(tx.date, 'en-US')}
+                    </p>
+                    {attachedDocumentId && (
+                      <button
+                        type="button"
+                        data-testid="transactions-header-view-bill"
+                        onClick={() => { handlePreviewBill(tx); setSelectedTransaction(null); }}
+                        className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200/70 text-[11px] font-bold shadow-xs transition-all active:scale-95 cursor-pointer"
+                        title="View attached bill"
+                      >
+                        <Paperclip size={11} className="shrink-0" />
+                        <span>Bill attached</span>
+                        <Eye size={11} className="shrink-0 text-purple-600 ml-0.5" />
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
-              <button data-testid="transactions-button-5" onClick={() => setSelectedTransaction(null)} className="p-2 rounded-xl hover:bg-gray-100 transition-colors text-gray-400">
-                <X size={18} />
-              </button>
+
+              {/* Header navigation pill & close button */}
+              <div className="flex items-center gap-1.5 shrink-0">
+                <div className="inline-flex items-center bg-slate-100/90 rounded-full p-1 border border-slate-200/60 shadow-xs">
+                  <button
+                    data-testid="transactions-header-prev-btn"
+                    onClick={handlePrevTx}
+                    disabled={!hasPrevTx}
+                    className="w-7 h-7 rounded-full bg-white flex items-center justify-center text-slate-700 shadow-xs hover:bg-slate-50 disabled:opacity-30 disabled:pointer-events-none transition-all active:scale-95 cursor-pointer"
+                    title="Previous transaction (Left Arrow)"
+                  >
+                    <ChevronLeft size={15} />
+                  </button>
+                  <span className="text-[11px] font-bold text-slate-600 px-2 min-w-[44px] text-center select-none">
+                    {currentTxIndex >= 0 ? `${currentTxIndex + 1}/${filteredTransactions.length}` : ''}
+                  </span>
+                  <button
+                    data-testid="transactions-header-next-btn"
+                    onClick={handleNextTx}
+                    disabled={!hasNextTx}
+                    className="w-7 h-7 rounded-full bg-white flex items-center justify-center text-slate-700 shadow-xs hover:bg-slate-50 disabled:opacity-30 disabled:pointer-events-none transition-all active:scale-95 cursor-pointer"
+                    title="Next transaction (Right Arrow)"
+                  >
+                    <ChevronRight size={15} />
+                  </button>
+                </div>
+
+                <button
+                  data-testid="transactions-button-5"
+                  onClick={() => setSelectedTransaction(null)}
+                  className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200/80 flex items-center justify-center text-slate-400 hover:text-slate-800 transition-all active:scale-95 cursor-pointer ml-1"
+                  title="Close (Esc)"
+                >
+                  <X size={16} />
+                </button>
+              </div>
             </div>
 
-            {/* Sheet body */}
-            <div className="overflow-y-auto flex-1 custom-scrollbar">
-              {/* Amount hero */}
-              <div className="px-6 py-5 flex items-center justify-between bg-white/60">
+            {/* Scrollable Body */}
+            <div className="overflow-y-auto flex-1 p-5 sm:p-6 space-y-4 custom-scrollbar">
+              {/* Amount hero card */}
+              <div className="p-4 sm:p-5 rounded-[24px] bg-slate-50/90 border border-slate-100 flex items-center justify-between">
                 <div>
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Amount</p>
-                  <p className={cn('text-3xl font-black tracking-tight mt-0.5', displayType === 'income' ? 'text-emerald-600' : 'text-gray-900')}>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Amount</p>
+                  <p className={cn('text-3xl sm:text-4xl font-black tracking-tight mt-0.5', displayType === 'income' ? 'text-emerald-600' : 'text-slate-900')}>
                     {displayType === 'income' ? '+' : '-'}{formatCurrency(tx.amount)}
                   </p>
                 </div>
                 <span className={cn(
-                  'px-3 py-1.5 rounded-xl text-xs font-black uppercase tracking-wide',
-                  displayType === 'income' ? 'bg-emerald-100 text-emerald-700' :
-                  tx.type === 'transfer' ? 'bg-blue-100 text-blue-700' : 'bg-rose-100 text-rose-700'
+                  'px-3.5 py-1.5 rounded-full text-xs font-black uppercase tracking-wider border shadow-xs',
+                  displayType === 'income' ? 'bg-emerald-50 text-emerald-700 border-emerald-200/70' :
+                  tx.type === 'transfer' ? 'bg-purple-50 text-purple-700 border-purple-200/70' : 'bg-rose-50 text-rose-700 border-rose-200/70'
                 )}>
-                  {displayType === 'income' ? ' Income' : tx.type === 'transfer' ? ' Transfer' : ' Expense'}
+                  {displayType === 'income' ? 'Income' : tx.type === 'transfer' ? 'Transfer' : 'Expense'}
                 </span>
               </div>
 
-              {/* Detail rows */}
-              <div className="px-6 py-4 space-y-3">
+              {/* Detail fields card */}
+              <div className="bg-white rounded-[24px] border border-slate-100 divide-y divide-slate-100/80 overflow-hidden shadow-xs">
                 {[
                   { label: 'Category', value: tx.category },
-                  { label: 'Account', value: account?.name || '' },
+                  { label: 'Account', value: account?.name || 'Account' },
                   { label: 'Date', value: formatLocalDate(tx.date, 'en-US') },
                   ...(attachedTaxAmount > 0 ? [{ label: 'Tax Amount', value: formatCurrency(attachedTaxAmount) }] : []),
                   ...(tx.notes ? [{ label: 'Notes', value: tx.notes }] : []),
                 ].map(({ label, value }) => (
-                  <div key={label} className="flex items-center justify-between py-2.5 border-b border-gray-50">
-                    <span className="text-xs font-black text-gray-400 uppercase tracking-widest">{label}</span>
-                    <span className="text-sm font-bold text-gray-800 text-right max-w-[60%] truncate">{value}</span>
+                  <div key={label} className="flex items-center justify-between px-4 py-3 hover:bg-slate-50/50 transition-colors">
+                    <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">{label}</span>
+                    <span className="text-sm font-bold text-slate-800 text-right max-w-[65%] truncate">{value}</span>
                   </div>
                 ))}
+
+                {/* Attached Bill Row with smaller bill icon and eye icon */}
+                {attachedDocumentId && (
+                  <div className="flex items-center justify-between px-4 py-3 bg-purple-50/30 hover:bg-purple-50/60 transition-colors">
+                    <div className="flex items-center gap-2.5">
+                      <span className="w-7 h-7 rounded-xl bg-purple-100/90 text-purple-700 flex items-center justify-center shrink-0 shadow-xs">
+                        <Receipt size={14} />
+                      </span>
+                      <div>
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Attached Bill</p>
+                        <p className="text-xs font-bold text-purple-900 mt-0.5">Receipt document</p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      data-testid="transactions-view-attached-bill"
+                      onClick={() => { handlePreviewBill(tx); setSelectedTransaction(null); }}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white hover:bg-purple-100 border border-purple-200/80 text-purple-700 text-xs font-bold shadow-xs transition-all active:scale-95 cursor-pointer"
+                      title="View attached bill"
+                    >
+                      <Receipt size={12} className="shrink-0" />
+                      <span>View</span>
+                      <Eye size={12} className="shrink-0 text-purple-600" />
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Modal Footer with Previous / Next navigation and Action buttons */}
+            <div className="p-4 sm:p-5 border-t border-slate-100 bg-slate-50/60 flex flex-col gap-3 shrink-0">
+              {/* Previous & Next Transaction buttons */}
+              <div className="flex items-center gap-2.5">
+                <button
+                  data-testid="transactions-prev-button"
+                  onClick={handlePrevTx}
+                  disabled={!hasPrevTx}
+                  className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-full bg-white border border-slate-200/90 shadow-xs hover:bg-slate-50 text-slate-800 font-bold text-xs sm:text-sm disabled:opacity-35 disabled:pointer-events-none transition-all active:scale-[0.98] cursor-pointer"
+                >
+                  <ChevronLeft size={16} /> Previous
+                </button>
+                <button
+                  data-testid="transactions-next-button"
+                  onClick={handleNextTx}
+                  disabled={!hasNextTx}
+                  className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-full bg-white border border-slate-200/90 shadow-xs hover:bg-slate-50 text-slate-800 font-bold text-xs sm:text-sm disabled:opacity-35 disabled:pointer-events-none transition-all active:scale-[0.98] cursor-pointer"
+                >
+                  Next <ChevronRight size={16} />
+                </button>
               </div>
 
-              {/* View Bill button always visible when bill attached */}
-              {attachedDocumentId && (
-                <div className="px-6 pb-2">
-                  <button data-testid="transactions-view-attached-bill"
-                    onClick={() => { handlePreviewBill(tx); setSelectedTransaction(null); }}
-                    className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-orange-50 border border-orange-100 text-orange-600 font-black text-sm hover:bg-orange-100 active:scale-[0.98] transition-all"
-                  >
-                    <Eye size={16} /> View Attached Bill
-                  </button>
-                </div>
-              )}
-
-              {/* Action buttons */}
-              <div
-                className="px-6 pt-3 grid grid-cols-2 gap-3"
-                style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 2rem)' }}
-              >
+              {/* Edit & Delete Action buttons */}
+              <div className="flex items-center gap-2.5">
                 {canEdit && (
-                  <button data-testid="transactions-edit"
-                    onClick={() => { localStorage.setItem('editTransactionId', tx.id?.toString() || ''); setCurrentPage('add-transaction'); setSelectedTransaction(null); }}
-                    className="flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-blue-50 border border-blue-100 text-blue-600 font-black text-sm hover:bg-blue-100 active:scale-[0.98] transition-all cursor-pointer"
+                  <button
+                    data-testid="transactions-edit"
+                    onClick={() => {
+                      localStorage.setItem('editTransactionId', tx.id?.toString() || '');
+                      setCurrentPage('add-transaction');
+                      setSelectedTransaction(null);
+                    }}
+                    className="flex-1 flex items-center justify-center gap-2 py-3 rounded-full bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs sm:text-sm shadow-xs active:scale-[0.98] transition-all cursor-pointer"
                   >
                     <Edit2 size={15} /> Edit
                   </button>
                 )}
                 {canDelete && (
-                  <button data-testid="transactions-delete"
-                    onClick={() => { handleDeleteTransaction(tx.id!, tx.description); setSelectedTransaction(null); }}
-                    className="flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-rose-50 border border-rose-100 text-rose-600 font-black text-sm hover:bg-rose-100 active:scale-[0.98] transition-all cursor-pointer"
+                  <button
+                    data-testid="transactions-delete"
+                    onClick={() => {
+                      handleDeleteTransaction(tx.id!, tx.description);
+                      setSelectedTransaction(null);
+                    }}
+                    className="flex-1 flex items-center justify-center gap-2 py-3 rounded-full bg-rose-50 hover:bg-rose-100/90 border border-rose-200/70 text-rose-600 font-bold text-xs sm:text-sm shadow-xs active:scale-[0.98] transition-all cursor-pointer"
                   >
                     <Trash2 size={15} /> Delete
                   </button>

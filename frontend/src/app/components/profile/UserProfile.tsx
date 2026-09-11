@@ -935,7 +935,7 @@ export const UserProfile: React.FC = () => {
 
  return (
  <>
- <div className="w-full min-h-screen bg-white lg:pb-8" style={{ paddingBottom: 'calc(var(--bottom-reserved-space) + 8px)' }}>
+ <div className="w-full min-h-screen bg-transparent lg:pb-8" style={{ paddingBottom: 'calc(var(--bottom-reserved-space) + 8px)' }}>
  <div className="max-w-7xl mx-auto">
  {/* Header */}
  <div className="px-4 sm:px-6 lg:px-8 pt-6 lg:pt-10">
@@ -1863,60 +1863,60 @@ export const UserProfile: React.FC = () => {
  </motion.div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-stretch">
- {/* Sign Out */}
- <motion.div
- initial={{ opacity: 0, y: 20 }}
- animate={{ opacity: 1, y: 0 }}
- transition={{ delay: 0.4 }}
- >
- <Card data-testid="user-profile-card-11" className="bg-white border border-gray-200 rounded-2xl p-6 h-full flex flex-col justify-between">
- <div className="flex items-start gap-3 mb-5">
- <div className="w-9 h-9 bg-orange-50 rounded-full flex items-center justify-center shrink-0 mt-0.5">
- <LogOut size={15} className="text-orange-500" />
- </div>
- <div className="min-w-0">
- <p className="font-semibold text-gray-900 text-sm">Signed in as</p>
- <p className="text-xs text-gray-500 mt-0.5 truncate">{user?.email}</p>
- </div>
- </div>
- <button
- onClick={handleSignOut}
- disabled={isSigningOut}
- data-testid="profile-signout-button"
- className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-800 hover:bg-gray-700 text-white rounded-xl font-medium text-sm transition-colors active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
- >
- <LogOut size={15} />
- {isSigningOut ? 'Signing Out...' : 'Sign Out'}
- </button>
- </Card>
- </motion.div>
- {/* Danger Zone */}
- <motion.div
- initial={{ opacity: 0, y: 20 }}
- animate={{ opacity: 1, y: 0 }}
- transition={{ delay: 0.5 }}
- >
- <Card data-testid="user-profile-card-12" className="bg-red-50 border border-red-200 rounded-2xl p-6 h-full flex flex-col justify-between">
- <div className="flex items-start gap-3 mb-4">
- <div className="w-9 h-9 bg-red-100 rounded-full flex items-center justify-center shrink-0 mt-0.5">
- <ShieldAlert size={15} className="text-red-600" />
- </div>
- <div>
- <h3 className="font-semibold text-red-900 text-sm">Danger Zone</h3>
- <p className="text-xs text-red-700 mt-0.5 leading-relaxed">Permanently delete your account and all data. This cannot be undone.</p>
- </div>
- </div>
+  {/* Sign Out */}
+  <motion.div
+  initial={{ opacity: 0, y: 20 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ delay: 0.4 }}
+  >
+  <Card data-testid="user-profile-card-11" className="bg-white dark:bg-card border border-slate-100 dark:border-border/60 rounded-[28px] sm:rounded-[32px] p-6 h-full flex flex-col justify-between shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)]">
+  <div className="flex items-start gap-3 mb-5">
+  <div className="w-10 h-10 bg-slate-100 rounded-2xl flex items-center justify-center shrink-0 mt-0.5">
+  <LogOut size={16} className="text-slate-600" />
+  </div>
+  <div className="min-w-0">
+  <p className="font-bold text-slate-900 dark:text-white text-sm">Signed in as</p>
+  <p className="text-xs text-slate-400 mt-0.5 truncate">{user?.email}</p>
+  </div>
+  </div>
+  <button
+  onClick={handleSignOut}
+  disabled={isSigningOut}
+  data-testid="profile-signout-button"
+  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#18181B] hover:bg-black text-white rounded-full font-bold text-sm transition-colors active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-xs"
+  >
+  <LogOut size={15} />
+  {isSigningOut ? 'Signing Out...' : 'Sign Out'}
+  </button>
+  </Card>
+  </motion.div>
+  {/* Danger Zone */}
+  <motion.div
+  initial={{ opacity: 0, y: 20 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ delay: 0.5 }}
+  >
+  <Card data-testid="user-profile-card-12" className="bg-rose-50/50 border border-rose-100 rounded-[28px] sm:rounded-[32px] p-6 h-full flex flex-col justify-between shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)]">
+  <div className="flex items-start gap-3 mb-4">
+  <div className="w-10 h-10 bg-rose-100 rounded-2xl flex items-center justify-center shrink-0 mt-0.5">
+  <ShieldAlert size={16} className="text-rose-600" />
+  </div>
+  <div>
+  <h3 className="font-bold text-rose-900 text-sm">Danger Zone</h3>
+  <p className="text-xs text-rose-700 mt-0.5 leading-relaxed">Permanently delete your account and all data. This cannot be undone.</p>
+  </div>
+  </div>
 
- <button
- onClick={() => setIsDeleteModalOpen(true)}
- data-testid="profile-delete-account-button"
- className="flex items-center gap-2 px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl font-medium transition-colors"
- >
- <Trash2 size={18} />
- Delete Account
- </button>
- </Card>
- </motion.div>
+  <button
+  onClick={() => setIsDeleteModalOpen(true)}
+  data-testid="profile-delete-account-button"
+  className="flex items-center justify-center gap-2 px-5 py-3 bg-rose-600 hover:bg-rose-700 text-white rounded-full font-bold text-sm transition-colors shadow-xs"
+  >
+  <Trash2 size={16} />
+  Delete Account
+  </button>
+  </Card>
+  </motion.div>
  </div>{/* end 2-col bottom */}
  </div>{/* end right col */}
  </div>

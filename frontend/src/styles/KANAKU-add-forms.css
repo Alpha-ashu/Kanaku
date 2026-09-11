@@ -18,11 +18,11 @@
   --KANAKU-gold-start: #d97706;
   --KANAKU-gold-end: #b45309;
 
-  --KANAKU-page-bg: radial-gradient(ellipse at top left, #dbeafe 0%, #eef2ff 30%, #f8fafc 60%, #ffffff 100%);
-  --KANAKU-card-shadow: 0 20px 60px rgba(37, 99, 235, 0.08), 0 4px 16px rgba(0, 0, 0, 0.04);
+  --KANAKU-page-bg: radial-gradient(ellipse at top, #EDE9FE 0%, #F5F3FF 35%, #F8F9FD 70%, #F6F7FB 100%);
+  --KANAKU-card-shadow: 0 10px 30px -4px rgba(112, 144, 176, 0.08), 0 2px 6px rgba(0, 0, 0, 0.02);
   --KANAKU-card-radius: 1.75rem;
-  --KANAKU-input-radius: 0.875rem;
-  --KANAKU-section-radius: 1.25rem;
+  --KANAKU-input-radius: 1rem;
+  --KANAKU-section-radius: 1.5rem;
 
   --KANAKU-transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -70,19 +70,19 @@
   justify-content: center;
   width: 2.75rem;
   height: 2.75rem;
-  border-radius: 0.875rem;
+  border-radius: 9999px;
   background: #ffffff;
-  border: 1px solid #e5e7eb;
-  color: #374151;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  border: 1px solid #f1f5f9;
+  color: #111827;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
   transition: var(--KANAKU-transition);
   flex-shrink: 0;
   cursor: pointer;
 }
 
 .KANAKU-back-btn:hover {
-  background: #f3f4f6;
-  border-color: #d1d5db;
+  background: #f8fafc;
+  border-color: #e2e8f0;
   transform: translateX(-1px);
 }
 

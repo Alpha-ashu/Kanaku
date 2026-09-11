@@ -64,11 +64,11 @@ select,
   background-position: right 0.65rem center;
   background-size: 0.8rem 0.8rem;
   border: 1px solid #e2e8f0;
-  border-radius: 0.75rem;
-  padding: 0.4rem 1.85rem 0.4rem 0.75rem;
+  border-radius: 9999px;
+  padding: 0.45rem 2rem 0.45rem 0.95rem;
   font-size: 0.8125rem;
   font-weight: 700;
-  color: #0f172a;
+  color: #111827;
   transition: all 0.15s ease-in-out;
   cursor: pointer;
   outline: none;
@@ -83,9 +83,9 @@ select:hover,
 
 select:focus,
 .app-select:focus {
-  border-color: #6366f1;
+  border-color: #7c3aed;
   background-color: #ffffff;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
 }
 
 /* Sleek Compact Inline Dropdown Badge */
@@ -99,8 +99,8 @@ select:focus,
   background-position: right 0.5rem center;
   background-size: 0.7rem 0.7rem;
   border: 1px solid #e2e8f0;
-  border-radius: 0.625rem;
-  padding: 0.3rem 1.6rem 0.3rem 0.65rem;
+  border-radius: 9999px;
+  padding: 0.3rem 1.6rem 0.3rem 0.75rem;
   font-size: 0.75rem;
   font-weight: 700;
   color: #1e293b;
@@ -118,9 +118,9 @@ select:focus,
 }
 
 .app-select-compact:focus {
-  border-color: #6366f1;
+  border-color: #7c3aed;
   background-color: #ffffff;
-  box-shadow: 0 0 0 2.5px rgba(99, 102, 241, 0.15);
+  box-shadow: 0 0 0 2.5px rgba(124, 58, 237, 0.15);
 }
 
 /* Browser-compatibility base rules (Webhint P4). WebKit prefix is listed

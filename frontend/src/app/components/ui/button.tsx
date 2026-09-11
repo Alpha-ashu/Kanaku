@@ -5,16 +5,18 @@ import { Loader2 } from 'lucide-react';
 import { motion, HTMLMotionProps } from 'framer-motion';
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center font-medium transition-all duration-150 disabled:opacity-50 disabled:pointer-events-none font-display tracking-tight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/20 active:scale-[0.97]',
+  'inline-flex items-center justify-center font-medium transition-all duration-150 disabled:opacity-50 disabled:pointer-events-none font-display tracking-tight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500/25 active:scale-[0.97] cursor-pointer',
   {
     variants: {
       variant: {
-        primary: 'bg-slate-950 text-white hover:bg-slate-800 shadow-sm active:bg-slate-900',
-        secondary: 'bg-white border border-slate-200/90 text-slate-700 hover:bg-slate-50 shadow-2xs',
-        outline: 'border border-slate-200 bg-white shadow-2xs hover:bg-slate-50 hover:text-slate-900',
+        primary: 'bg-[#18181B] text-white hover:bg-black shadow-xs active:bg-slate-900',
+        purple: 'bg-[#7C3AED] text-white hover:bg-[#6D28D9] shadow-xs shadow-purple-500/20 active:bg-purple-800',
+        secondary: 'bg-slate-100/80 hover:bg-slate-200/70 text-slate-800 border border-slate-200/60 shadow-2xs',
+        lavender: 'bg-purple-50/90 hover:bg-purple-100 text-purple-700 border border-purple-100/80 shadow-2xs',
+        outline: 'border border-slate-200/80 bg-white shadow-2xs hover:bg-slate-50 hover:text-slate-900 text-slate-700',
         ghost: 'hover:bg-slate-100/80 hover:text-slate-900 text-slate-600',
-        glass: 'bg-white/80 backdrop-blur-xl border border-white/60 text-slate-800 hover:bg-white shadow-sm',
-        link: 'text-blue-600 underline-offset-4 hover:underline',
+        glass: 'bg-white/85 backdrop-blur-xl border border-white/70 text-slate-800 hover:bg-white shadow-xs',
+        link: 'text-purple-600 underline-offset-4 hover:underline',
         destructive: 'bg-rose-600 text-white hover:bg-rose-700 shadow-sm',
       },
       size: {

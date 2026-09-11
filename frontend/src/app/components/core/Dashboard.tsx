@@ -32,6 +32,9 @@ import { calculateAccountTotalBalance, calculateNetWorth, parseMonetary, roundTo
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { backendSyncService } from '@/lib/backend-sync-service';
 import { calculateTaxSummary } from '@/lib/taxService';
+import { AppArcGauge } from '@/app/components/ui/AppArcGauge';
+import { AppMiniGauge } from '@/app/components/ui/AppMiniGauge';
+import { AppDateStrip } from '@/app/components/ui/AppDateStrip';
 
 interface DashboardProps {
  setCurrentPage?: (page: string) => void;
@@ -100,7 +103,8 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
   const showQuickActions = useSubFeature('dashboard', 'quickActions');
   const showRecentActivity = useSubFeature('dashboard', 'recentActivity');
   const [activeTab, setActiveTab] = useState<'all' | 'bank' | 'card' | 'wallet' | 'cash'>('all');
-  const [timePeriod, setTimePeriod] = useState<TimeFilterPeriod>('monthly');
+  const [timePeriod, setTimePeriod] = useState<TimeFilterPeriod>('daily');
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [investmentQuotes, setInvestmentQuotes] = useState<Record<string, StockQuote | null>>({});
   const investmentPriceTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -124,8 +128,8 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
   }, [transactions]);
 
   const timeFilteredTransactions = useMemo(() =>
-    filterByTimePeriod(transactions, timePeriod, filterReferenceDate),
-    [transactions, timePeriod, filterReferenceDate],
+    filterByTimePeriod(transactions, timePeriod, selectedDate),
+    [transactions, timePeriod, selectedDate],
   );
 
   const filteredAccountIdSet = useMemo(
@@ -326,11 +330,11 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
 
   const SectionHeader = ({ title, onViewAll, viewLabel = 'View All' }: { title: string; onViewAll?: () => void; viewLabel?: string }) => (
     <div className="flex items-center justify-between mb-3 px-1">
-      <h3 className="font-bold text-gray-900 text-base">{title}</h3>
+      <h3 className="font-extrabold text-slate-900 text-base sm:text-lg tracking-tight">{title}</h3>
       {onViewAll && (
         <button
           onClick={onViewAll}
-          className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 flex items-center gap-1 cursor-pointer"
+          className="text-xs font-bold text-purple-600 hover:text-purple-700 flex items-center gap-1 cursor-pointer transition-colors"
         >
           {viewLabel} <ChevronRight size={14} />
         </button>
@@ -347,106 +351,155 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
 
   return (
     <CenteredLayout>
-      <div className="space-y-6">
-        {/* Page Header with TimeFilter Period Selector */}
-        <PageHeader
-          title="Dashboard"
-          subtitle="Here's what's happening with your money today."
-        >
-          <div className="flex items-center">
-            <TimeFilter value={timePeriod} onChange={setTimePeriod} />
+      <div className="space-y-6 sm:space-y-7">
+        {/* Top Header Row with Greeting */}
+        <div className="flex items-center justify-between gap-3 pt-1">
+          <div>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Welcome Back 👋</p>
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight leading-tight mt-0.5">
+              Stay On Track Today
+            </h1>
           </div>
-        </PageHeader>
+        </div>
 
-        {/* 1. Primary Hero: Dark Navy Total Net Worth Card */}
+        {/* Horizontal Calendar Date Strip & Period Filter (Reference Image Style) */}
+        <div className="bg-white rounded-[28px] sm:rounded-[32px] p-5 sm:p-6 border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] flex flex-col items-center gap-5 sm:gap-6">
+          <AppDateStrip
+            selectedDate={selectedDate}
+            onSelectDate={setSelectedDate}
+            period={timePeriod}
+          />
+          <div className="flex justify-center w-full">
+            <TimeFilter value={timePeriod} onChange={setTimePeriod} testId="dashboard-time-filter" />
+          </div>
+        </div>
+
+        {/* 1. Primary Hero: Financial Health & Net Worth Card (Reference Screen 1 Card Style) */}
         <motion.div {...fadeUp}>
           <div className="w-full">
             <Card
-              variant="glass"
-              className="p-6 relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-950 to-indigo-950 text-white border border-slate-800/80 shadow-2xl rounded-3xl"
+              className="p-6 sm:p-8 bg-white border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)] rounded-[28px] sm:rounded-[32px] relative overflow-hidden"
             >
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-bold uppercase tracking-wider text-indigo-300">Total Net Worth</span>
-                <div className="w-8 h-8 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-300">
-                  <Sparkles size={16} />
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+                {/* Left: Summary Metrics */}
+                <div className="md:col-span-7 flex flex-col justify-between space-y-4">
+                  <div>
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-50 text-purple-700 border border-purple-100/80 text-xs font-bold mb-3">
+                      <Sparkles size={13} className="text-purple-600" />
+                      <span>Total Net Worth</span>
+                    </div>
+                    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-slate-900">
+                      {formatCurrency(totalNetWorth)}
+                    </h2>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-3 pt-2">
+                    <div className="px-3.5 py-2 rounded-2xl bg-slate-50 border border-slate-100 text-xs text-slate-600">
+                      <span className="font-medium text-slate-400 block text-[10px] uppercase font-bold">Total Assets</span>
+                      <strong className="text-slate-900 font-bold text-sm">
+                        {formatCurrency(stats.totalBalance + investmentStats.currentValue)}
+                      </strong>
+                    </div>
+                    <div className="px-3.5 py-2 rounded-2xl bg-slate-50 border border-slate-100 text-xs text-slate-600">
+                      <span className="font-medium text-slate-400 block text-[10px] uppercase font-bold">Active Accounts</span>
+                      <strong className="text-slate-900 font-bold text-sm">{accounts.length}</strong>
+                    </div>
+                    {stats.savingsRate > 0 && (
+                      <div className="px-3.5 py-2 rounded-2xl bg-emerald-50 border border-emerald-100 text-xs text-emerald-800">
+                        <span className="font-medium text-emerald-600 block text-[10px] uppercase font-bold">Savings Rate</span>
+                        <strong className="text-emerald-700 font-bold text-sm">{stats.savingsRate}%</strong>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-              <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-4 text-white">
-                {formatCurrency(totalNetWorth)}
-              </h2>
-              <div className="flex flex-wrap items-center justify-between gap-3 text-xs sm:text-sm text-indigo-200/80 pt-4 border-t border-white/10">
-                <span>Total Assets: <strong className="text-white font-semibold">{formatCurrency(stats.totalBalance + investmentStats.currentValue)}</strong></span>
-                <span>Active Accounts: <strong className="text-white font-semibold">{accounts.length}</strong></span>
+
+                {/* Right: Circular Arc Progress Gauge (Reference Screen 1 Gauge Style) */}
+                <div className="md:col-span-5 flex justify-center md:justify-end pt-2 md:pt-0">
+                  <AppArcGauge
+                    value={stats.monthlyExpense}
+                    max={stats.monthlyIncome > 0 ? stats.monthlyIncome : (stats.monthlyExpense * 1.3 || 10000)}
+                    centerValue={formatCurrency(stats.monthlyExpense)}
+                    subtitle={stats.monthlyIncome > 0 ? `of ${formatCurrency(stats.monthlyIncome)}` : 'Expenses'}
+                    size={200}
+                    strokeWidth={15}
+                    strokeColor="#18181B"
+                    trackColor="#F1F5F9"
+                  />
+                </div>
               </div>
             </Card>
           </div>
         </motion.div>
 
-        {/* 2. Income & Expenses: Two Separate Vertical Cards */}
+        {/* 2. 3 Mini Metric Cards (Reference Screen 1 Protein/Carbs/Fat style) */}
         <motion.div {...fadeUp}>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Total Income Card */}
-            <Card variant="glass" className="p-5 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-3xl shadow-sm">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-emerald-600">Total Income</span>
-                <div className="w-8 h-8 rounded-full bg-emerald-50 dark:bg-emerald-950/40 flex items-center justify-center text-emerald-600">
-                  <TrendingUp size={18} />
-                </div>
-              </div>
-              <h3 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight mb-1">
-                {formatCurrency(stats.monthlyIncome)}
-              </h3>
-              <p className="text-xs text-slate-500 font-medium">From all income streams ({getPeriodLabel(timePeriod)})</p>
-            </Card>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 sm:gap-4">
+            {/* Total Expenses (Peach tone) */}
+            <AppMiniGauge
+              tone="peach"
+              label="Total Expenses"
+              value={formatCurrency(stats.monthlyExpense)}
+              subLabel={getPeriodLabel(timePeriod, selectedDate)}
+              progressPercent={stats.monthlyIncome > 0 ? Math.min(100, (stats.monthlyExpense / stats.monthlyIncome) * 100) : 50}
+              icon={<TrendingDown size={16} />}
+              onClick={() => setCurrentPage?.('transactions')}
+            />
 
-            {/* Total Expenses Card */}
-            <Card variant="glass" className="p-5 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-3xl shadow-sm">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-rose-600">Total Expenses</span>
-                <div className="w-8 h-8 rounded-full bg-rose-50 dark:bg-rose-950/40 flex items-center justify-center text-rose-600">
-                  <TrendingDown size={18} />
-                </div>
-              </div>
-              <h3 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight mb-1">
-                {formatCurrency(stats.monthlyExpense)}
-              </h3>
-              <p className="text-xs text-slate-500 font-medium">Total spending across all categories ({getPeriodLabel(timePeriod)})</p>
-            </Card>
+            {/* Total Income (Lavender tone) */}
+            <AppMiniGauge
+              tone="lavender"
+              label="Total Income"
+              value={formatCurrency(stats.monthlyIncome)}
+              subLabel={getPeriodLabel(timePeriod, selectedDate)}
+              progressPercent={100}
+              icon={<TrendingUp size={16} />}
+              onClick={() => setCurrentPage?.('transactions')}
+            />
+
+            {/* Net Balance / Surplus (Mint tone) */}
+            <AppMiniGauge
+              tone="mint"
+              label="Net Cashflow"
+              value={formatCurrency(stats.monthlyIncome - stats.monthlyExpense)}
+              subLabel={(stats.monthlyIncome - stats.monthlyExpense >= 0) ? 'Surplus' : 'Deficit'}
+              progressPercent={stats.monthlyIncome > 0 ? Math.min(100, Math.max(0, stats.savingsRate)) : 40}
+              icon={<Activity size={16} />}
+              onClick={() => setCurrentPage?.('reports')}
+            />
           </div>
         </motion.div>
 
-        {/* 3. Tax Summary: Dark Navy Interactive Card */}
+        {/* 3. Tax Summary: Soft Light Card */}
         <motion.div {...fadeUp}>
           <Card
-            variant="glass"
-            className="p-5 relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-950 to-indigo-950 text-white border border-slate-800/80 shadow-xl rounded-3xl hover:border-indigo-500/40 cursor-pointer transition-all duration-200 active:scale-[0.99] group"
+            className="p-5 bg-white border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] rounded-[28px] hover:border-purple-300/80 cursor-pointer transition-all duration-200 active:scale-[0.99] group"
             onClick={() => setCurrentPage?.('receipt-scanner')}
           >
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold">
-                  <Receipt size={20} />
+              <div className="flex items-center gap-3.5">
+                <div className="w-11 h-11 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold shrink-0 shadow-2xs">
+                  <Receipt size={22} />
                 </div>
                 <div>
                   <div className="flex items-center gap-1.5">
-                    <h4 className="text-sm font-bold text-white group-hover:text-indigo-300 transition-colors">Tax Summary</h4>
-                    <ChevronRight size={14} className="text-indigo-400 group-hover:translate-x-0.5 transition-transform" />
+                    <h4 className="text-sm font-bold text-slate-900 group-hover:text-purple-700 transition-colors">Tax Summary</h4>
+                    <ChevronRight size={14} className="text-purple-500 group-hover:translate-x-0.5 transition-transform" />
                   </div>
-                  <p className="text-xs text-indigo-200/70">Calculated from transactions & receipt scans · Tap for detailed breakdown</p>
+                  <p className="text-xs text-slate-400 font-medium">Calculated from transactions & receipts · Tap for breakdown</p>
                 </div>
               </div>
-              <div className="grid grid-cols-3 gap-4 sm:gap-6 text-center sm:text-right pt-3 sm:pt-0 border-t sm:border-t-0 border-white/10">
+              <div className="grid grid-cols-3 gap-4 sm:gap-6 text-center sm:text-right pt-3 sm:pt-0 border-t sm:border-t-0 border-slate-100">
                 <div>
-                  <p className="text-[10px] uppercase font-bold text-indigo-300">Total Tax</p>
-                  <p className="text-sm sm:text-base font-black text-amber-400">{formatCurrency(taxSummary.totalTax)}</p>
+                  <p className="text-[10px] uppercase font-bold text-slate-400">Total Tax</p>
+                  <p className="text-sm sm:text-base font-black text-amber-600">{formatCurrency(taxSummary.totalTax)}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] uppercase font-bold text-indigo-300">This Month</p>
-                  <p className="text-sm sm:text-base font-black text-white">{formatCurrency(taxSummary.monthlyTax)}</p>
+                  <p className="text-[10px] uppercase font-bold text-slate-400">This Month</p>
+                  <p className="text-sm sm:text-base font-black text-slate-900">{formatCurrency(taxSummary.monthlyTax)}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] uppercase font-bold text-indigo-300">This Week</p>
-                  <p className="text-sm sm:text-base font-black text-white">{formatCurrency(taxSummary.weeklyTax)}</p>
+                  <p className="text-[10px] uppercase font-bold text-slate-400">This Week</p>
+                  <p className="text-sm sm:text-base font-black text-slate-900">{formatCurrency(taxSummary.weeklyTax)}</p>
                 </div>
               </div>
             </div>
@@ -472,10 +525,10 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as typeof activeTab)}
                   className={cn(
-                    'px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer',
+                    'px-4 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap cursor-pointer',
                     activeTab === tab.id
-                      ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-sm'
-                      : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                      ? 'bg-[#18181B] text-white shadow-xs'
+                      : 'bg-slate-100/90 text-slate-600 hover:bg-slate-200/80 hover:text-slate-900'
                   )}
                 >
                   {tab.label}
@@ -553,34 +606,43 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
           </motion.div>
         )}
 
-        {/* 5. Lower Dashboard Section 2: Recent Transactions */}
+        {/* 5. Lower Dashboard Section 2: Recent Transactions (Reference Today's Meals Style) */}
         {visibleFeatures?.transactions !== false && (
           <motion.div {...fadeUp} className="mb-6 lg:mb-8">
             <SectionHeader title="Recent Transactions" onViewAll={() => setCurrentPage?.('transactions')} />
             {recentTransactions.length > 0 ? (
-              <Card data-testid="dashboard-card-3" variant="glass" className="divide-y divide-gray-100 no-padding overflow-hidden">
+              <Card data-testid="dashboard-card-3" className="divide-y divide-slate-100/90 !p-0 overflow-hidden bg-white rounded-[28px] border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)]">
                 {recentTransactions.map((transaction) => (
-                  <div data-testid={`dashboard-div-${transaction.id}`} key={transaction.id} className="p-4 flex items-center justify-between hover:bg-slate-50/50 transition-colors cursor-pointer" onClick={() => setCurrentPage?.('transactions')}>
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-white shadow-sm border border-slate-100">
+                  <div
+                    data-testid={`dashboard-div-${transaction.id}`}
+                    key={transaction.id}
+                    className="p-4 sm:p-4.5 flex items-center justify-between hover:bg-slate-50/70 transition-all cursor-pointer group"
+                    onClick={() => setCurrentPage?.('transactions')}
+                  >
+                    <div className="flex items-center gap-3 sm:gap-3.5">
+                      <div className="w-11 h-11 rounded-2xl flex items-center justify-center bg-slate-50/80 border border-slate-100/90 group-hover:scale-105 transition-transform shrink-0">
                         {getCategoryCartoonIcon(transaction.category || 'Miscellaneous', 24)}
                       </div>
                       <div>
-                        <p className="font-medium text-gray-900 text-sm">{transaction.description || transaction.category}</p>
-                        <p className="text-xs text-gray-500">{transaction.category}</p>
+                        <p className="font-bold text-slate-900 text-sm sm:text-[15px] leading-snug">
+                          {transaction.description || transaction.category}
+                        </p>
+                        <p className="text-xs text-slate-400 font-medium mt-0.5">{transaction.category}</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className={cn("font-semibold text-sm", transaction.type === 'income' ? "text-green-600" : "text-red-600")}>
+                      <p className={cn("font-black text-sm sm:text-base tracking-tight", transaction.type === 'income' ? "text-emerald-600" : "text-slate-900")}>
                         {transaction.type === 'income' ? '+' : '-'}{formatCurrency(transaction.amount)}
                       </p>
-                      <p className="text-xs text-gray-500">{formatLocalDate(transaction.date, 'en-IN', { day: 'numeric', month: 'short' })}</p>
+                      <p className="text-[11px] text-slate-400 font-medium mt-0.5">
+                        {formatLocalDate(transaction.date, 'en-IN', { day: 'numeric', month: 'short' })}
+                      </p>
                     </div>
                   </div>
                 ))}
               </Card>
             ) : (
-              <Card data-testid="dashboard-card-4" className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setCurrentPage?.('transactions')}>
+              <Card data-testid="dashboard-card-4" className="cursor-pointer hover:shadow-md transition-shadow rounded-[28px]" onClick={() => setCurrentPage?.('transactions')}>
                 <EmptyWidget icon={CreditCard} message="No transactions - tap to view activity" />
               </Card>
             )}
@@ -655,46 +717,46 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
           <motion.div {...fadeUp} className="mb-6 lg:mb-8">
             <SectionHeader title="Upcoming Events" onViewAll={() => setCurrentPage?.('calendar')} viewLabel="View Calendar" />
             {upcomingEvents.length > 0 ? (
-              <Card data-testid="dashboard-card-7" className="divide-y divide-gray-100 cursor-pointer hover:shadow-md transition-shadow" onClick={() => setCurrentPage?.('calendar')}>
+              <Card data-testid="dashboard-card-7" className="divide-y divide-slate-100/90 cursor-pointer hover:shadow-md transition-shadow rounded-[28px] bg-white border border-slate-100/80 !p-0 overflow-hidden shadow-2xs" onClick={() => setCurrentPage?.('calendar')}>
                 {upcomingEvents.map((event, i) => {
                   const timeBadge = {
-                    today: { label: 'Today', cls: 'bg-red-100 text-red-600' },
-                    week: { label: 'This Week', cls: 'bg-amber-100 text-amber-600' },
-                    month: { label: 'This Month', cls: 'bg-blue-100 text-blue-600' },
+                    today: { label: 'Today', cls: 'bg-red-50 text-red-600' },
+                    week: { label: 'This Week', cls: 'bg-amber-50 text-amber-600' },
+                    month: { label: 'This Month', cls: 'bg-purple-50 text-purple-600' },
                   }[event.timeCategory];
                   const typeIcon = event.type === 'emi'
                     ? <Landmark size={16} className="text-purple-600" />
                     : <AlertCircle size={16} className="text-orange-600" />;
                   const typeBg = event.type === 'emi' ? 'bg-purple-50' : 'bg-orange-50';
                   return (
-                    <div key={i} className="p-4 flex items-center justify-between hover:bg-transparent transition-colors">
+                    <div key={i} className="p-4 flex items-center justify-between hover:bg-slate-50/70 transition-colors">
                       <div className="flex items-center gap-3">
                         <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center", typeBg)}>
                           {typeIcon}
                         </div>
                         <div>
-                          <p className="font-medium text-gray-900 text-sm">{event.label}</p>
+                          <p className="font-bold text-slate-900 text-sm">{event.label}</p>
                           <div className="flex items-center gap-2 mt-0.5">
-                            <span className={cn("text-[10px] font-semibold px-2 py-0.5 rounded-full", timeBadge.cls)}>{timeBadge.label}</span>
-                            <span className="text-xs text-gray-500">
+                            <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full", timeBadge.cls)}>{timeBadge.label}</span>
+                            <span className="text-xs text-slate-400 font-medium">
                               {event.date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
                             </span>
                           </div>
                         </div>
                       </div>
                       {event.amount !== undefined && (
-                        <p className="font-semibold text-sm text-gray-900">{formatCurrency(event.amount)}</p>
+                        <p className="font-black text-sm text-slate-900">{formatCurrency(event.amount)}</p>
                       )}
                     </div>
                   );
                 })}
               </Card>
             ) : (
-              <Card data-testid="dashboard-card-8" className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setCurrentPage?.('calendar')}>
-                <div className="flex flex-col items-center justify-center py-8 text-gray-400">
+              <Card data-testid="dashboard-card-8" className="cursor-pointer hover:shadow-md transition-shadow rounded-[28px] bg-white border border-slate-100/80 shadow-2xs" onClick={() => setCurrentPage?.('calendar')}>
+                <div className="flex flex-col items-center justify-center py-8 text-slate-400">
                   <Calendar size={36} className="mb-2 opacity-40" />
-                  <p className="text-sm font-medium">No upcoming events this month</p>
-                  <p className="text-xs text-gray-400 mt-1">EMI due dates and bills appear here</p>
+                  <p className="text-sm font-bold text-slate-600">No upcoming events this month</p>
+                  <p className="text-xs text-slate-400 mt-1 font-medium">EMI due dates and bills appear here</p>
                 </div>
               </Card>
             )}
@@ -705,7 +767,7 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
         {(visibleFeatures?.groups !== false || visibleFeatures?.loans !== false) && (
           <motion.div {...fadeUp} className="mb-6 lg:mb-8">
             <SectionHeader title="Borrow, Lend & Groups" onViewAll={() => setCurrentPage?.('groups')} />
-            <Card data-testid="dashboard-card-9" variant="glass" className="cursor-pointer hover:shadow-xl transition-all border-white/20" onClick={() => setCurrentPage?.('groups')}>
+            <Card data-testid="dashboard-card-9" className="cursor-pointer hover:shadow-xl transition-all rounded-[28px] bg-white border border-slate-100/80 shadow-2xs" onClick={() => setCurrentPage?.('groups')}>
               {(groupStats.borrowed > 0 || groupStats.lent > 0 || groupStats.pendingSettlements > 0 || groupStats.activeGroups > 0) ? (
                 <div className="p-4">
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -762,54 +824,54 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
           <motion.div {...fadeUp} className="mb-6 lg:mb-8">
             <SectionHeader title="Investments" onViewAll={() => setCurrentPage?.('investments')} />
             {investmentStats.count > 0 ? (
-              <Card data-testid="dashboard-card-10" className="cursor-pointer hover:shadow-md transition-all" onClick={() => setCurrentPage?.('investments')}>
+              <Card data-testid="dashboard-card-10" className="cursor-pointer hover:shadow-md transition-all rounded-[28px] bg-white border border-slate-100/80 shadow-2xs" onClick={() => setCurrentPage?.('investments')}>
                 <div className="p-4">
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-                    <div className="bg-indigo-50 rounded-2xl p-3">
-                      <div className="flex items-center gap-1.5 mb-1">
-                        <Activity size={14} className="text-indigo-500" />
-                        <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-wide">Invested</span>
-                      </div>
-                      <p className="text-base font-bold text-gray-900">{formatCurrency(investmentStats.totalInvested)}</p>
-                    </div>
                     <div className="bg-purple-50 rounded-2xl p-3">
                       <div className="flex items-center gap-1.5 mb-1">
-                        <BarChart3 size={14} className="text-purple-500" />
-                        <span className="text-[10px] font-bold text-purple-500 uppercase tracking-wide">Current Value</span>
+                        <Activity size={14} className="text-purple-600" />
+                        <span className="text-[10px] font-bold text-purple-700 uppercase tracking-wide">Invested</span>
                       </div>
-                      <p className="text-base font-bold text-gray-900">{formatCurrency(investmentStats.currentValue)}</p>
+                      <p className="text-base font-bold text-slate-900">{formatCurrency(investmentStats.totalInvested)}</p>
                     </div>
-                    <div className={cn("rounded-2xl p-3", investmentStats.totalReturns >= 0 ? "bg-green-50" : "bg-red-50")}>
+                    <div className="bg-indigo-50 rounded-2xl p-3">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <BarChart3 size={14} className="text-indigo-600" />
+                        <span className="text-[10px] font-bold text-indigo-700 uppercase tracking-wide">Current Value</span>
+                      </div>
+                      <p className="text-base font-bold text-slate-900">{formatCurrency(investmentStats.currentValue)}</p>
+                    </div>
+                    <div className={cn("rounded-2xl p-3", investmentStats.totalReturns >= 0 ? "bg-emerald-50" : "bg-red-50")}>
                       <div className="flex items-center gap-1.5 mb-1">
                         {investmentStats.totalReturns >= 0
-                          ? <TrendingUp size={14} className="text-green-500" />
+                          ? <TrendingUp size={14} className="text-emerald-600" />
                           : <TrendingDown size={14} className="text-red-500" />}
-                        <span className={cn("text-[10px] font-bold uppercase tracking-wide", investmentStats.totalReturns >= 0 ? "text-green-500" : "text-red-500")}>Returns</span>
+                        <span className={cn("text-[10px] font-bold uppercase tracking-wide", investmentStats.totalReturns >= 0 ? "text-emerald-700" : "text-red-700")}>Returns</span>
                       </div>
-                      <p className={cn("text-base font-bold", investmentStats.totalReturns >= 0 ? "text-green-700" : "text-red-700")}>
+                      <p className={cn("text-base font-bold", investmentStats.totalReturns >= 0 ? "text-emerald-700" : "text-red-700")}>
                         {investmentStats.totalReturns >= 0 ? '+' : ''}{formatCurrency(investmentStats.totalReturns)}
                       </p>
                     </div>
-                    <div className="bg-transparent rounded-2xl p-3">
+                    <div className="bg-slate-50 rounded-2xl p-3">
                       <div className="flex items-center gap-1.5 mb-1">
-                        <BarChart3 size={14} className="text-gray-500" />
-                        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wide">Holdings</span>
+                        <BarChart3 size={14} className="text-slate-500" />
+                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Holdings</span>
                       </div>
-                      <p className="text-base font-bold text-gray-900">{investmentStats.count}</p>
+                      <p className="text-base font-bold text-slate-900">{investmentStats.count}</p>
                     </div>
                   </div>
-                  <div className="divide-y divide-gray-100">
+                  <div className="divide-y divide-slate-100">
                     {openInvestments.slice(0, 3).map((inv) => {
                       const metrics = getDashboardInvestmentMetrics(inv);
                       return (
                         <div key={inv.id} className="flex items-center justify-between py-2.5">
                           <div>
-                            <p className="text-sm font-semibold text-gray-900">{getInvestmentDisplayName(inv.assetName)}</p>
-                            <p className="text-xs text-gray-400 capitalize">{inv.assetType} {metrics.assetCurrency}</p>
+                            <p className="text-sm font-semibold text-slate-900">{getInvestmentDisplayName(inv.assetName)}</p>
+                            <p className="text-xs text-slate-400 capitalize">{inv.assetType} {metrics.assetCurrency}</p>
                           </div>
                           <div className="text-right">
-                            <p className="text-sm font-bold text-gray-900">{formatCurrency(metrics.currentValue)}</p>
-                            <p className={cn("text-xs font-semibold", metrics.profitLoss >= 0 ? "text-green-600" : "text-red-500")}>
+                            <p className="text-sm font-bold text-slate-900">{formatCurrency(metrics.currentValue)}</p>
+                            <p className={cn("text-xs font-semibold", metrics.profitLoss >= 0 ? "text-emerald-600" : "text-red-500")}>
                               {metrics.profitLoss >= 0 ? '+' : ''}{formatCurrency(metrics.profitLoss)}
                             </p>
                           </div>
@@ -817,14 +879,14 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
                       );
                     })}
                   </div>
-                  <div className="flex items-center justify-end mt-2 text-xs text-gray-400 gap-1">
+                  <div className="flex items-center justify-end mt-2 text-xs text-purple-600 font-bold gap-1">
                     <span>View all investments</span>
                     <ChevronRight size={12} />
                   </div>
                 </div>
               </Card>
             ) : (
-              <Card data-testid="dashboard-card-11" className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setCurrentPage?.('investments')}>
+              <Card data-testid="dashboard-card-11" className="cursor-pointer hover:shadow-md transition-shadow rounded-[28px] bg-white border border-slate-100/80 shadow-2xs" onClick={() => setCurrentPage?.('investments')}>
                 <EmptyWidget icon={BarChart3} message="No investments added yet - click to add" />
               </Card>
             )}
@@ -839,24 +901,24 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
               {activeGoals.map((goal) => {
                 const progress = Math.min((goal.currentAmount / goal.targetAmount) * 100, 100);
                 return (
-                  <Card data-testid={`dashboard-card-12-${goal.id}`} key={goal.id} className="p-4 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setCurrentPage?.('goals')}>
+                  <Card data-testid={`dashboard-card-12-${goal.id}`} key={goal.id} className="p-4.5 cursor-pointer hover:shadow-lg transition-all rounded-[28px] bg-white border border-slate-100/80 shadow-2xs" onClick={() => setCurrentPage?.('goals')}>
                     <div className="flex items-center justify-between mb-3">
-                      <h4 className="font-medium text-gray-900 truncate text-sm">{goal.name}</h4>
-                      <Target size={16} className="text-pink-400 flex-shrink-0" />
+                      <h4 className="font-bold text-slate-900 truncate text-sm">{goal.name}</h4>
+                      <Target size={16} className="text-purple-500 flex-shrink-0" />
                     </div>
                     <div className="mb-3">
-                      <div className="flex justify-between text-xs text-gray-500 mb-1.5">
+                      <div className="flex justify-between text-xs text-slate-400 font-medium mb-1.5">
                         <span>{formatCurrency(goal.currentAmount)}</span>
                         <span>{formatCurrency(goal.targetAmount)}</span>
                       </div>
-                      <div className="w-full bg-gray-100 rounded-full h-2">
+                      <div className="w-full bg-slate-100 rounded-full h-2">
                         <div
-                          className="bg-gradient-to-r from-pink-500 to-rose-500 h-2 rounded-full transition-all duration-500"
+                          className="bg-gradient-to-r from-purple-600 to-indigo-600 h-2 rounded-full transition-all duration-500"
                           style={{ width: `${progress}%` }}
                         />
                       </div>
                     </div>
-                    <p className="text-xs font-semibold text-pink-600">{progress.toFixed(0)}% Complete</p>
+                    <p className="text-xs font-bold text-purple-600">{progress.toFixed(0)}% Complete</p>
                   </Card>
                 );
               })}

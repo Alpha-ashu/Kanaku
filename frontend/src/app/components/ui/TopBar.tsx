@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useApp } from '@/contexts/AppContext';
-import { Search, Bell, Menu, GripVertical, Wallet, LogOut, Receipt, ArrowLeft } from 'lucide-react';
+import { Search, Bell, Menu, GripVertical, Wallet, LogOut, Receipt } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from '@/app/components/ui/sheet';
 import { NavigationItem, headerMenuItems } from '@/app/constants/navigation';
 import { NotificationPopup } from '@/app/components/ui/NotificationPopup';
@@ -45,7 +45,7 @@ const DraggablePageMenuItem: React.FC<DraggablePageMenuItemProps> = ({
         }`}
       >
         {isActive && (
-          <div className="absolute left-1.5 top-1/2 -translate-y-1/2 w-1 h-5 bg-indigo-500 rounded-full" />
+          <div className="absolute left-1.5 top-1/2 -translate-y-1/2 w-1 h-5 bg-[#7C3AED] rounded-full" />
         )}
         <div
           className={`cursor-grab active:cursor-grabbing touch-none p-1 -ml-1.5 rounded transition-colors ${
@@ -55,7 +55,7 @@ const DraggablePageMenuItem: React.FC<DraggablePageMenuItemProps> = ({
         >
           <GripVertical size={15} />
         </div>
-        <Icon size={18} className={`transition-transform duration-200 group-hover:scale-105 ${isActive ? 'text-indigo-400' : 'text-slate-500 group-hover:text-slate-800'}`} />
+        <Icon size={18} className={`transition-transform duration-200 group-hover:scale-105 ${isActive ? 'text-purple-400' : 'text-slate-500 group-hover:text-slate-800'}`} />
         <span className="text-sm tracking-wide">{item.label}</span>
       </button>
     </Reorder.Item>
@@ -325,7 +325,7 @@ export const TopBar: React.FC = () => {
  // agreement rather than opening a gap.
   return (
     <header
-      className="fixed top-[calc(env(safe-area-inset-top,0px)+0.75rem)] left-[calc(env(safe-area-inset-left,0px)+0.75rem)] right-[calc(env(safe-area-inset-right,0px)+0.75rem)] lg:top-4 lg:left-[112px] lg:right-6 z-[60] bg-white/80 backdrop-blur-2xl border border-slate-100 rounded-3xl shadow-lg shadow-slate-100/40 transition-shadow duration-150 transform-gpu will-change-transform mobile-topbar-stable"
+      className="fixed top-[calc(env(safe-area-inset-top,0px)+0.75rem)] left-[calc(env(safe-area-inset-left,0px)+0.75rem)] right-[calc(env(safe-area-inset-right,0px)+0.75rem)] lg:top-4 lg:left-[112px] lg:right-6 z-[60] bg-white/90 backdrop-blur-2xl border border-white/80 rounded-[28px] shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)] transition-shadow duration-150 transform-gpu will-change-transform mobile-topbar-stable"
       style={{
         WebkitTransform: 'translate3d(0, 0, 0)',
         transform: 'translate3d(0, 0, 0)',
@@ -345,19 +345,6 @@ export const TopBar: React.FC = () => {
  <div className="flex items-center justify-between px-4 lg:px-6 h-16 w-full">
   {/* Left: Menu and Search */}
   <div className="flex items-center gap-2 md:gap-3 lg:gap-4 flex-1 max-w-2xl">
-  {/* Back Button (shown when not on dashboard) */}
-  {currentPage !== 'dashboard' && (
-    <button
-      type="button"
-      onClick={goBack}
-      className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white shadow-xs border border-slate-200/80 hover:bg-slate-50 active:scale-95 transition-all flex items-center justify-center text-slate-800 cursor-pointer shrink-0"
-      aria-label="Go back"
-      title="Go back"
-      data-testid="top-bar-go-back-button"
-    >
-      <ArrowLeft size={18} className="text-slate-800" />
-    </button>
-  )}
 
   {/* Mobile Menu Button */}
   <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
@@ -511,12 +498,12 @@ export const TopBar: React.FC = () => {
  )}
  {isSearchPending && searchQuery.trim() && (
  <span className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4">
- <span className="animate-spin block w-3.5 h-3.5 border-2 border-slate-200 border-t-indigo-500 rounded-full" />
+ <span className="animate-spin block w-3.5 h-3.5 border-2 border-slate-200 border-t-purple-600 rounded-full" />
  </span>
  )}
 
   {isSearchOpen && searchQuery.trim() && (
-    <div className="absolute top-[calc(100%+8px)] left-0 right-0 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[24px] shadow-2xl overflow-hidden z-50 overflow-y-auto scrollbar-hide py-3 animate-in fade-in slide-in-from-top-2 duration-200" style={{ maxHeight: 'min(400px, 60vh)' }}>
+    <div className="absolute top-[calc(100%+8px)] left-0 right-0 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-[28px] shadow-2xl overflow-hidden z-50 overflow-y-auto scrollbar-hide py-3 animate-in fade-in slide-in-from-top-2 duration-200" style={{ maxHeight: 'min(400px, 60vh)' }}>
       {searchResults.length > 0 ? (
  <div className="space-y-4">
  <div className="px-4 pb-1 flex items-center justify-between">
@@ -553,7 +540,7 @@ export const TopBar: React.FC = () => {
                         }`}
                       >
                         <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
-                          type === 'page' ? 'bg-indigo-50 text-indigo-600' :
+                          type === 'page' ? 'bg-purple-50 text-purple-600' :
                           type === 'account' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'
                         }`}>
                           <Icon size={16} />

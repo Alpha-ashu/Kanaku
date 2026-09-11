@@ -86,7 +86,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ onQuickAdd }) => {
                 title="Quick Action"
                 aria-label="Quick Action"
                 data-testid="nav-quick-action-button"
-                className="relative flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 md:w-11 md:h-11 rounded-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white shadow-md shadow-blue-500/25 shrink-0 mx-0.5 sm:mx-1 border-2 border-white cursor-pointer focus:outline-none z-20 transition-all"
+                className="relative flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 md:w-11 md:h-11 rounded-full bg-[#7C3AED] hover:bg-[#6D28D9] active:bg-purple-800 text-white shadow-md shadow-purple-500/30 shrink-0 mx-0.5 sm:mx-1 border-2 border-white cursor-pointer focus:outline-none z-20 transition-all"
               >
                 <Icon className="w-4.5 h-4.5 sm:w-5 sm:h-5 text-white" strokeWidth={2.4} />
               </motion.button>
@@ -115,11 +115,11 @@ export const BottomNav: React.FC<BottomNavProps> = ({ onQuickAdd }) => {
                   : "w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 text-slate-400 hover:text-slate-700 hover:bg-slate-100/80 active:scale-95"
               )}
             >
-              {/* Active Morphing Blue Pill Background */}
+              {/* Active Morphing Dark Pill Background */}
               {isActive && (
                 <motion.div
                   layoutId="activeNavPill"
-                  className="absolute inset-0 rounded-full bg-blue-600 shadow-sm shadow-blue-500/25"
+                  className="absolute inset-0 rounded-full bg-[#18181B] shadow-sm"
                   transition={{
                     type: 'spring',
                     stiffness: 450,

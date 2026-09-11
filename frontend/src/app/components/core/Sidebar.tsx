@@ -39,9 +39,9 @@ const DraggableSidebarItem: React.FC<DraggableSidebarItemProps> = ({
  data-nav-id={item.id}
  data-testid={`nav-${item.id}-button`}
  className={cn(
- "w-10 h-10 flex items-center justify-center rounded-xl transition-all relative group cursor-pointer",
+ "w-10 h-10 flex items-center justify-center rounded-full transition-all relative group cursor-pointer",
  isActive
- ?"bg-black text-white shadow-md shadow-slate-900/10"
+ ?"bg-[#18181B] text-white shadow-md shadow-slate-900/10"
  :"text-slate-400 hover:bg-slate-50 hover:text-slate-900"
  )}
  whileHover={{ scale: 1.05 }}
@@ -51,7 +51,7 @@ const DraggableSidebarItem: React.FC<DraggableSidebarItemProps> = ({
  {isActive && (
  <motion.div
  layoutId="activeTab"
- className="absolute inset-0 bg-black rounded-xl z-0"
+ className="absolute inset-0 bg-[#18181B] rounded-full z-0"
  transition={{ type:"spring", stiffness: 300, damping: 30 }}
  />
  )}
@@ -83,7 +83,7 @@ export const Sidebar: React.FC = () => {
  animate={{ x: 0, opacity: 1 }}
  className="py-4 pl-4 pr-2 flex flex-col z-50 fixed h-fit top-0 left-0 bottom-0 m-auto"
  >
- <div className="bg-white/85 backdrop-blur-2xl border border-slate-100 shadow-lg rounded-[24px] flex flex-col items-center py-4 w-20 max-h-[92vh]">
+ <div className="bg-white/90 backdrop-blur-2xl border border-white/80 shadow-[0_12px_40px_-4px_rgba(112,144,176,0.08)] rounded-[28px] flex flex-col items-center py-4 w-20 max-h-[92vh]">
  <div className="mb-4">
  <KANAKULogo className="w-10 h-10 drop-shadow-sm" />
  </div>

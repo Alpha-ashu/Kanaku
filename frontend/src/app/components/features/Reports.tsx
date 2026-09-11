@@ -29,7 +29,7 @@ import { calculateAccountTotalBalance, calculateNetWorth } from '@/lib/financial
 import { isClosedInvestment } from '@/lib/investmentUtils';
 import { AIInsightsCard } from '@/app/components/shared/AIInsightsCard';
 
-const chartColors = ['#2563EB', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#22C55E', '#0EA5E9', '#F97316'];
+const chartColors = ['#8B5CF6', '#10B981', '#F59E0B', '#EF4444', '#7C3AED', '#34D399', '#0EA5E9', '#F97316'];
 
 const ForecastSection: React.FC<{ transactions: any[]; accounts: any[]; currency: string; formatCurrency: (v: number) => string }> = ({ transactions, accounts, currency, formatCurrency }) => {
   const forecastData = useMemo(() => {
@@ -89,24 +89,24 @@ const ForecastSection: React.FC<{ transactions: any[]; accounts: any[]; currency
 
   return (
     <div className="space-y-4">
-      <p className="text-xs text-gray-500 font-medium leading-relaxed">
+      <p className="text-xs text-slate-500 font-medium leading-relaxed">
         Based on your historical spending habits, here is a 6-month prediction of your wealth trajectory:
       </p>
       <div className="h-[220px] w-full">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={forecastData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
-            <XAxis dataKey="month" stroke="#9ca3af" fontSize={11} />
-            <YAxis stroke="#9ca3af" fontSize={11} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+            <XAxis dataKey="month" stroke="#94a3b8" fontSize={11} />
+            <YAxis stroke="#94a3b8" fontSize={11} />
             <Tooltip formatter={(value) => formatCurrency(Number(value))} />
             <Legend wrapperStyle={{ fontSize: 11 }} />
             <Line type="monotone" dataKey="Optimistic" stroke="#10B981" strokeWidth={2} strokeDasharray="5 5" dot={false} />
-            <Line type="monotone" dataKey="Expected" stroke="#2563EB" strokeWidth={2.5} dot={{ r: 3 }} />
+            <Line type="monotone" dataKey="Expected" stroke="#8B5CF6" strokeWidth={2.5} dot={{ r: 3 }} />
             <Line type="monotone" dataKey="Conservative" stroke="#EF4444" strokeWidth={2} strokeDasharray="5 5" dot={false} />
           </LineChart>
         </ResponsiveContainer>
       </div>
-      <div className="bg-blue-50/50 border border-blue-100 rounded-xl p-3 text-[11px] font-medium text-blue-800">
+      <div className="bg-purple-50/60 border border-purple-100 rounded-2xl p-3 text-[11px] font-medium text-purple-900">
         ⚡ <strong>Insight:</strong> Keep your monthly expenses below average to track closer to the <strong>Optimistic</strong> trajectory.
       </div>
     </div>
@@ -443,8 +443,8 @@ export const Reports: React.FC = () => {
  return (
  <CenteredLayout>
  <div className="space-y-6 sm:space-y-8">
-  <div className="flex flex-row flex-wrap items-center justify-between gap-3 w-full">
-    <div className="flex items-center gap-3">
+  <div className="flex items-center justify-between gap-3 w-full">
+    <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
       <button
         type="button"
         onClick={() => setCurrentPage('dashboard')}
@@ -455,197 +455,202 @@ export const Reports: React.FC = () => {
       >
         <ArrowLeft size={18} className="text-slate-700" />
       </button>
-      <div>
-        <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight leading-none">Reports & Analytics</h1>
-        <p className="text-xs sm:text-sm text-slate-400 font-medium mt-0.5">Visualize your financial performance</p>
-      </div>
+      <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none truncate">Reports & Analytics</h1>
     </div>
- <div className="flex flex-wrap gap-2">
- {canPdf && (
- <Button
- onClick={() => {
- pulseExportAction('download');
- void downloadPDF();
- }}
- data-testid="reports-download-pdf-button"
- aria-label="Download PDF"
- title="Download PDF"
- className={`shadow-lg h-11 px-4 rounded-2xl font-semibold transition-all active:scale-95 flex items-center gap-2 ${
- activeExportAction === 'download' 
- ? 'bg-gray-900 text-white ring-2 ring-offset-2 ring-gray-900/20' 
- : 'bg-white text-gray-900 border border-gray-100 hover:bg-gray-50'
- }`}
- >
- <Download size={18} />
- <span className="hidden sm:inline">Download PDF</span>
- </Button>
- )}
- {canPdf && (
- <Button
- onClick={() => {
- pulseExportAction('share');
- void sharePDF();
- }}
- data-testid="reports-share-button"
- aria-label="Share report"
- title="Share report"
- className={`shadow-lg h-11 px-4 rounded-2xl font-semibold transition-all active:scale-95 flex items-center gap-2 ${
- activeExportAction === 'share'
- ? 'bg-gray-900 text-white ring-2 ring-offset-2 ring-gray-900/20'
- : 'bg-white text-gray-900 border border-gray-100 hover:bg-gray-50'
- }`}
- >
- <Share2 size={18} />
- <span className="hidden sm:inline">Share Report</span>
- </Button>
- )}
- {canCsv && (
- <Button
- onClick={() => {
- pulseExportAction('csv');
- void exportCSV();
- }}
- data-testid="reports-export-csv-button"
- aria-label="Export report as CSV"
- title="Export CSV"
- className={`shadow-lg h-11 px-4 rounded-2xl font-semibold transition-all active:scale-95 flex items-center gap-2 ${
- activeExportAction === 'csv'
- ? 'bg-gray-900 text-white ring-2 ring-offset-2 ring-gray-900/20'
- : 'bg-white text-gray-900 border border-gray-100 hover:bg-gray-50'
- }`}
- >
- <FileText size={18} />
- <span className="hidden sm:inline">Export CSV</span>
- </Button>
- )}
- {canExcel && (
- <Button
- onClick={() => {
- pulseExportAction('excel');
- void exportExcel();
- }}
- data-testid="reports-export-excel-button"
- aria-label="Export report as Excel"
- title="Export Excel"
- className={`shadow-lg h-11 px-4 rounded-2xl font-semibold transition-all active:scale-95 flex items-center gap-2 ${
- activeExportAction === 'excel'
- ? 'bg-gray-900 text-white ring-2 ring-offset-2 ring-gray-900/20'
- : 'bg-white text-gray-900 border border-gray-100 hover:bg-gray-50'
- }`}
- >
- <FileSpreadsheet size={18} />
- <span className="hidden sm:inline">Export Excel</span>
- </Button>
- )}
- <Button
- onClick={() => {
- pulseExportAction('more');
- setCurrentPage('export-reports');
- }}
- data-testid="reports-more-export-button"
- aria-label="Open more export options"
- title="More Export Options"
- className={`shadow-lg h-11 px-4 rounded-2xl font-semibold transition-all active:scale-95 flex items-center gap-2 ${
- activeExportAction === 'more'
- ? 'bg-gray-900 text-white ring-2 ring-offset-2 ring-gray-900/20'
- : 'bg-white text-gray-900 border border-gray-100 hover:bg-gray-50'
- }`}
- >
- <MoreHorizontal size={18} />
- <span className="hidden sm:inline">More</span>
- </Button>
- </div>
- </div>
+    <div className="flex items-center gap-2 shrink-0">
+  {canPdf && (
+  <Button
+  onClick={() => {
+  pulseExportAction('download');
+  void downloadPDF();
+  }}
+  data-testid="reports-download-pdf-button"
+  aria-label="Download PDF"
+  title="Download PDF"
+  className={`shadow-xs h-10 px-4 rounded-full font-semibold text-xs sm:text-sm transition-all active:scale-95 flex items-center gap-2 ${
+  activeExportAction === 'download' 
+  ? 'bg-[#18181B] text-white' 
+  : 'bg-white text-slate-800 border border-slate-200/80 hover:bg-slate-50'
+  }`}
+  >
+  <Download size={16} />
+  <span className="hidden sm:inline">Download PDF</span>
+  </Button>
+  )}
+  {canPdf && (
+  <Button
+  onClick={() => {
+  pulseExportAction('share');
+  void sharePDF();
+  }}
+  data-testid="reports-share-button"
+  aria-label="Share report"
+  title="Share report"
+  className={`shadow-xs h-10 px-4 rounded-full font-semibold text-xs sm:text-sm transition-all active:scale-95 flex items-center gap-2 ${
+  activeExportAction === 'share'
+  ? 'bg-[#18181B] text-white'
+  : 'bg-white text-slate-800 border border-slate-200/80 hover:bg-slate-50'
+  }`}
+  >
+  <Share2 size={16} />
+  <span className="hidden sm:inline">Share Report</span>
+  </Button>
+  )}
+  {canCsv && (
+  <Button
+  onClick={() => {
+  pulseExportAction('csv');
+  void exportCSV();
+  }}
+  data-testid="reports-export-csv-button"
+  aria-label="Export report as CSV"
+  title="Export CSV"
+  className={`shadow-xs h-10 px-4 rounded-full font-semibold text-xs sm:text-sm transition-all active:scale-95 flex items-center gap-2 ${
+  activeExportAction === 'csv'
+  ? 'bg-[#18181B] text-white'
+  : 'bg-white text-slate-800 border border-slate-200/80 hover:bg-slate-50'
+  }`}
+  >
+  <FileText size={16} />
+  <span className="hidden sm:inline">Export CSV</span>
+  </Button>
+  )}
+  {canExcel && (
+  <Button
+  onClick={() => {
+  pulseExportAction('excel');
+  void exportExcel();
+  }}
+  data-testid="reports-export-excel-button"
+  aria-label="Export report as Excel"
+  title="Export Excel"
+  className={`shadow-xs h-10 px-4 rounded-full font-semibold text-xs sm:text-sm transition-all active:scale-95 flex items-center gap-2 ${
+  activeExportAction === 'excel'
+  ? 'bg-[#18181B] text-white'
+  : 'bg-white text-slate-800 border border-slate-200/80 hover:bg-slate-50'
+  }`}
+  >
+  <FileSpreadsheet size={16} />
+  <span className="hidden sm:inline">Export Excel</span>
+  </Button>
+  )}
+  <Button
+  onClick={() => {
+  pulseExportAction('more');
+  setCurrentPage('export-reports');
+  }}
+  data-testid="reports-more-export-button"
+  aria-label="Open more export options"
+  title="More Export Options"
+  className={`shadow-xs h-10 px-4 rounded-full font-semibold text-xs sm:text-sm transition-all active:scale-95 flex items-center gap-2 ${
+  activeExportAction === 'more'
+  ? 'bg-[#18181B] text-white'
+  : 'bg-white text-slate-800 border border-slate-200/80 hover:bg-slate-50'
+  }`}
+  >
+  <MoreHorizontal size={16} />
+  <span className="hidden sm:inline">More</span>
+  </Button>
+  </div>
+  </div>
 
- <div className="flex flex-col gap-3">
- <div className="flex flex-wrap items-center gap-2">
- {(['daily', 'weekly', 'monthly', 'yearly', 'custom'] as TimeRange[]).map((range) => (
- <button
- key={range}
- data-testid={`reports-range-${range}`}
- onClick={() => setTimeRange(range)}
- className={`px-3 py-1.5 rounded-full text-xs sm:text-sm font-semibold transition-all ${
- timeRange === range
- ? 'bg-black text-white shadow-sm'
- : 'text-gray-600 hover:bg-gray-100'
- }`}
- >
- {range === 'daily' && 'Daily'}
- {range === 'weekly' && 'Weekly'}
- {range === 'monthly' && 'Monthly'}
- {range === 'yearly' && 'Yearly'}
- {range === 'custom' && 'Custom'}
- </button>
- ))}
- </div>
- {timeRange === 'custom' && (
- <div className="flex flex-wrap gap-3">
- <div className="flex items-center gap-2">
- <Calendar size={16} className="text-gray-500" />
- <input
- type="date"
- value={customRange.start}
- onChange={(e) => setCustomRange((prev) => ({ ...prev, start: e.target.value }))}
- data-testid="reports-custom-start-input"
- aria-label="Custom report start date"
- title="Custom report start date"
- className="px-3 py-2 border border-gray-200 rounded-lg"
- />
- </div>
- <div className="flex items-center gap-2">
- <Calendar size={16} className="text-gray-500" />
- <input
- type="date"
- value={customRange.end}
- onChange={(e) => setCustomRange((prev) => ({ ...prev, end: e.target.value }))}
- data-testid="reports-custom-end-input"
- aria-label="Custom report end date"
- title="Custom report end date"
- className="px-3 py-2 border border-gray-200 rounded-lg"
- />
- </div>
- </div>
- )}
- </div>
+  <div className="flex flex-col gap-3">
+  <div className="flex flex-wrap items-center gap-1.5 bg-slate-100/90 dark:bg-muted p-1 rounded-full border border-slate-200/60 w-fit">
+  {(['daily', 'weekly', 'monthly', 'yearly', 'custom'] as TimeRange[]).map((range) => (
+  <button
+  key={range}
+  data-testid={`reports-range-${range}`}
+  onClick={() => setTimeRange(range)}
+  className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all ${
+  timeRange === range
+  ? 'bg-[#18181B] text-white shadow-xs'
+  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
+  }`}
+  >
+  {range === 'daily' && 'Daily'}
+  {range === 'weekly' && 'Weekly'}
+  {range === 'monthly' && 'Monthly'}
+  {range === 'yearly' && 'Yearly'}
+  {range === 'custom' && 'Custom'}
+  </button>
+  ))}
+  </div>
+  {timeRange === 'custom' && (
+  <div className="flex flex-wrap gap-3">
+  <div className="flex items-center gap-2">
+  <Calendar size={16} className="text-slate-400" />
+  <input
+  type="date"
+  value={customRange.start}
+  onChange={(e) => setCustomRange((prev) => ({ ...prev, start: e.target.value }))}
+  data-testid="reports-custom-start-input"
+  aria-label="Custom report start date"
+  title="Custom report start date"
+  className="px-3.5 py-2 border border-slate-200 rounded-full text-xs"
+  />
+  </div>
+  <div className="flex items-center gap-2">
+  <Calendar size={16} className="text-slate-400" />
+  <input
+  type="date"
+  value={customRange.end}
+  onChange={(e) => setCustomRange((prev) => ({ ...prev, end: e.target.value }))}
+  data-testid="reports-custom-end-input"
+  aria-label="Custom report end date"
+  title="Custom report end date"
+  className="px-3.5 py-2 border border-slate-200 rounded-full text-xs"
+  />
+  </div>
+  </div>
+  )}
+  </div>
 
- <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
- <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
- <Card data-testid="reports-card" variant="glass" className="p-4 sm:p-6">
- <p className="text-gray-500 font-medium mb-0.5 sm:mb-1 text-xs sm:text-sm uppercase tracking-wide">Total Income</p>
- <p className="text-xl sm:text-2xl font-display font-bold text-green-600">{formatCurrency(summaryStats.totalIncome)}</p>
- </Card>
- </motion.div>
- <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
- <Card data-testid="reports-card-2" variant="glass" className="p-4 sm:p-6">
- <p className="text-gray-500 font-medium mb-0.5 sm:mb-1 text-xs sm:text-sm uppercase tracking-wide">Total Expenses</p>
- <p className="text-xl sm:text-2xl font-display font-bold text-red-600">{formatCurrency(summaryStats.totalExpenses)}</p>
- </Card>
- </motion.div>
- <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
- <Card data-testid="reports-card-3" variant="glass" className="p-4 sm:p-6">
- <p className="text-gray-500 font-medium mb-0.5 sm:mb-1 text-xs sm:text-sm uppercase tracking-wide">Total Savings</p>
- <p className={`text-xl sm:text-2xl font-display font-bold ${summaryStats.netSavings >= 0 ? 'text-green-600' : 'text-red-600'}`}>
- {formatCurrency(summaryStats.netSavings)}
- </p>
- </Card>
- </motion.div>
- <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
- <Card data-testid="reports-card-4" variant="glass" className="p-4 sm:p-6">
- <p className="text-gray-500 font-medium mb-0.5 sm:mb-1 text-xs sm:text-sm uppercase tracking-wide">Savings Rate</p>
- <p className={`text-xl sm:text-2xl font-display font-bold ${summaryStats.savingsRate >= 20 ? 'text-green-600' : 'text-orange-600'}`}>
- {summaryStats.savingsRate.toFixed(1)}%
- </p>
- </Card>
- </motion.div>
- </div>
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+  <Card data-testid="reports-card" variant="default" className="p-5 sm:p-6 bg-white dark:bg-card border border-slate-100 dark:border-border/60 rounded-[28px] sm:rounded-[32px] shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)]">
+  <div className="flex items-center justify-between gap-2 mb-2">
+  <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/50">Total Income</span>
+  </div>
+  <p className="text-2xl font-display font-bold text-slate-900 dark:text-white tracking-tight mt-2">{formatCurrency(summaryStats.totalIncome)}</p>
+  </Card>
+  </motion.div>
+  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+  <Card data-testid="reports-card-2" variant="default" className="p-5 sm:p-6 bg-white dark:bg-card border border-slate-100 dark:border-border/60 rounded-[28px] sm:rounded-[32px] shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)]">
+  <div className="flex items-center justify-between gap-2 mb-2">
+  <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200/50">Total Expenses</span>
+  </div>
+  <p className="text-2xl font-display font-bold text-slate-900 dark:text-white tracking-tight mt-2">{formatCurrency(summaryStats.totalExpenses)}</p>
+  </Card>
+  </motion.div>
+  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+  <Card data-testid="reports-card-3" variant="default" className="p-5 sm:p-6 bg-white dark:bg-card border border-slate-100 dark:border-border/60 rounded-[28px] sm:rounded-[32px] shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)]">
+  <div className="flex items-center justify-between gap-2 mb-2">
+  <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-200/50">Total Savings</span>
+  </div>
+  <p className="text-2xl font-display font-bold text-slate-900 dark:text-white tracking-tight mt-2">
+  {formatCurrency(summaryStats.netSavings)}
+  </p>
+  </Card>
+  </motion.div>
+  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
+  <Card data-testid="reports-card-4" variant="default" className="p-5 sm:p-6 bg-white dark:bg-card border border-slate-100 dark:border-border/60 rounded-[28px] sm:rounded-[32px] shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)]">
+  <div className="flex items-center justify-between gap-2 mb-2">
+  <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200/50">Savings Rate</span>
+  </div>
+  <p className="text-2xl font-display font-bold text-slate-900 dark:text-white tracking-tight mt-2">
+  {summaryStats.savingsRate.toFixed(1)}%
+  </p>
+  </Card>
+  </motion.div>
+  </div>
 
   {/* Advanced Reports Section */}
   {(canAiInsights || canForecasting) && (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {canAiInsights && (
-        <Card data-testid="reports-card-5" variant="glass" className="p-6 overflow-hidden flex flex-col">
-          <h3 className="text-lg font-display font-bold text-gray-900 mb-4 flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
+        <Card data-testid="reports-card-5" variant="default" className="p-6 bg-white dark:bg-card border border-slate-100 dark:border-border/60 rounded-[28px] sm:rounded-[32px] shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)] overflow-hidden flex flex-col">
+          <h3 className="text-lg font-display font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-purple-600 animate-pulse" />
             AI Intelligence Insights
           </h3>
           <div className="flex-1">
@@ -654,8 +659,8 @@ export const Reports: React.FC = () => {
         </Card>
       )}
       {canForecasting && (
-        <Card data-testid="reports-card-6" variant="glass" className="p-6 overflow-hidden flex flex-col">
-          <h3 className="text-lg font-display font-bold text-gray-900 mb-4 flex items-center gap-2">
+        <Card data-testid="reports-card-6" variant="default" className="p-6 bg-white dark:bg-card border border-slate-100 dark:border-border/60 rounded-[28px] sm:rounded-[32px] shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)] overflow-hidden flex flex-col">
+          <h3 className="text-lg font-display font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             Smart Financial Forecasting
           </h3>
@@ -667,156 +672,156 @@ export const Reports: React.FC = () => {
     </div>
   )}
 
- <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
- <Card data-testid="reports-card-7" variant="glass" className="p-6">
- <h3 className="text-lg font-display font-bold text-gray-900 mb-4">Expense Breakdown</h3>
- {expenseBreakdown.length === 0 ? (
- <p className="text-sm text-gray-500">No expenses found for this range.</p>
- ) : (
- <ResponsiveContainer key={timeRange} width="100%" height={280}>
-  <PieChart>
-  <Pie
-    data={expenseBreakdown}
-    dataKey="value"
-    nameKey="name"
-    outerRadius={100}
-    isAnimationActive={true}
-    animationBegin={0}
-    animationDuration={800}
-    animationEasing="ease-out"
+  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <Card data-testid="reports-card-7" variant="default" className="p-6 bg-white dark:bg-card border border-slate-100 dark:border-border/60 rounded-[28px] sm:rounded-[32px] shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)]">
+  <h3 className="text-lg font-display font-bold text-slate-900 dark:text-white mb-4">Expense Breakdown</h3>
+  {expenseBreakdown.length === 0 ? (
+  <p className="text-sm text-slate-400">No expenses found for this range.</p>
+  ) : (
+  <ResponsiveContainer key={timeRange} width="100%" height={280}>
+   <PieChart>
+   <Pie
+     data={expenseBreakdown}
+     dataKey="value"
+     nameKey="name"
+     outerRadius={100}
+     isAnimationActive={true}
+     animationBegin={0}
+     animationDuration={800}
+     animationEasing="ease-out"
+   >
+   {expenseBreakdown.map((entry, index) => (
+   <Cell key={`cell-${entry.name}`} fill={chartColors[index % chartColors.length]} />
+   ))}
+   </Pie>
+   <Tooltip formatter={(value) => formatCurrency(Number(value))} />
+   <Legend />
+   </PieChart>
+   </ResponsiveContainer>
+  )}
+  </Card>
+
+  <Card data-testid="reports-card-8" variant="default" className="p-6 bg-white dark:bg-card border border-slate-100 dark:border-border/60 rounded-[28px] sm:rounded-[32px] shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)]">
+  <h3 className="text-lg font-display font-bold text-slate-900 dark:text-white mb-4">Category-wise Spending</h3>
+  {expenseBreakdown.length === 0 ? (
+  <p className="text-sm text-slate-400">No expenses found for this range.</p>
+  ) : (
+  <ResponsiveContainer key={timeRange} width="100%" height={280}>
+   <BarChart data={expenseBreakdown.slice(0, 8)}>
+   <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+   <XAxis dataKey="name" angle={-20} textAnchor="end" height={70} stroke="#94a3b8" />
+   <YAxis stroke="#94a3b8" />
+   <Tooltip formatter={(value) => formatCurrency(Number(value))} />
+   <Bar
+     dataKey="value"
+     fill="#18181B"
+     radius={[10, 10, 0, 0]}
+     isAnimationActive={true}
+     animationBegin={0}
+     animationDuration={800}
+     animationEasing="ease-out"
+   />
+   </BarChart>
+   </ResponsiveContainer>
+  )}
+  </Card>
+  </div>
+
+  <Card data-testid="reports-card-9" variant="default" className="p-6 bg-white dark:bg-card border border-slate-100 dark:border-border/60 rounded-[28px] sm:rounded-[32px] shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)]">
+  <h3 className="text-lg font-display font-bold text-slate-900 dark:text-white mb-4">Monthly Cash Flow</h3>
+  {cashFlowMonthly.length === 0 ? (
+  <p className="text-sm text-slate-400">No cash flow data available.</p>
+  ) : (
+  <ResponsiveContainer key={timeRange} width="100%" height={300}>
+   <BarChart data={cashFlowMonthly}>
+   <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+   <XAxis dataKey="month" stroke="#94a3b8" />
+   <YAxis stroke="#94a3b8" />
+   <Tooltip formatter={(value) => formatCurrency(Number(value))} />
+   <Legend />
+   <Bar dataKey="income" fill="#10B981" name="Income" radius={[8, 8, 0, 0]} isAnimationActive={true} animationBegin={0} animationDuration={900} animationEasing="ease-out" />
+   <Bar dataKey="expense" fill="#EF4444" name="Expense" radius={[8, 8, 0, 0]} isAnimationActive={true} animationBegin={100} animationDuration={900} animationEasing="ease-out" />
+   </BarChart>
+   </ResponsiveContainer>
+  )}
+  </Card>
+
+  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <Card data-testid="reports-card-10" variant="default" className="p-6 bg-white dark:bg-card border border-slate-100 dark:border-border/60 rounded-[28px] sm:rounded-[32px] shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)]">
+  <h3 className="text-lg font-display font-bold text-slate-900 dark:text-white mb-4">Savings Growth</h3>
+  {savingsGrowth.length === 0 ? (
+  <p className="text-sm text-slate-400">No savings data available.</p>
+  ) : (
+  <ResponsiveContainer key={timeRange} width="100%" height={280}>
+   <LineChart data={savingsGrowth}>
+   <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+   <XAxis dataKey="date" stroke="#94a3b8" />
+   <YAxis stroke="#94a3b8" />
+   <Tooltip formatter={(value) => formatCurrency(Number(value))} />
+   <Line
+     type="monotone"
+     dataKey="savings"
+     stroke="#8B5CF6"
+     strokeWidth={2.5}
+     dot={false}
+     isAnimationActive={true}
+     animationBegin={0}
+     animationDuration={1000}
+     animationEasing="ease-out"
+   />
+   </LineChart>
+   </ResponsiveContainer>
+  )}
+  </Card>
+
+  <Card data-testid="reports-card-11" variant="default" className="p-6 bg-white dark:bg-card border border-slate-100 dark:border-border/60 rounded-[28px] sm:rounded-[32px] shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)]">
+  <h3 className="text-lg font-display font-bold text-slate-900 dark:text-white mb-4">Income vs Expense</h3>
+  <ResponsiveContainer key={timeRange} width="100%" height={280}>
+   <BarChart data={incomeExpenseData}>
+   <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+   <XAxis dataKey="name" stroke="#94a3b8" />
+   <YAxis stroke="#94a3b8" />
+   <Tooltip formatter={(value) => formatCurrency(Number(value))} />
+   <Bar dataKey="value" fill="#18181B" radius={[10, 10, 0, 0]} isAnimationActive={true} animationBegin={0} animationDuration={800} animationEasing="ease-out" />
+   </BarChart>
+   </ResponsiveContainer>
+  </Card>
+  </div>
+
+  <Card data-testid="reports-card-12" variant="default" className="p-6 bg-white dark:bg-card border border-slate-100 dark:border-border/60 rounded-[28px] sm:rounded-[32px] shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)]">
+  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+  <div>
+  <h3 className="text-lg font-display font-bold text-slate-900 dark:text-white">Transactions</h3>
+  <p className="text-sm text-slate-400">Search and filter detailed activity.</p>
+  </div>
+  <div className="flex flex-wrap gap-2">
+  {canPdf && <Button data-testid="reports-download-pdf" onClick={() => void downloadPDF()} className="rounded-full px-4 py-2 text-xs bg-[#18181B] text-white hover:bg-black shadow-xs">Download PDF</Button>}
+  {canCsv && <Button data-testid="reports-export-csv" onClick={exportCSV} className="rounded-full px-4 py-2 text-xs bg-white border border-slate-200 text-slate-800 hover:bg-slate-50 shadow-xs">Export CSV</Button>}
+  {canExcel && <Button data-testid="reports-export-excel" onClick={exportExcel} className="rounded-full px-4 py-2 text-xs bg-white border border-slate-200 text-slate-800 hover:bg-slate-50 shadow-xs">Export Excel</Button>}
+  </div>
+  </div>
+
+  <div className="flex flex-col md:flex-row md:items-center gap-3 mb-4">
+  <label htmlFor="reports-search-transactions" className="sr-only">Search transactions</label>
+  <input data-testid="reports-search-transactions"
+  id="reports-search-transactions"
+  type="text"
+  value={searchQuery}
+  onChange={(e) => setSearchQuery(e.target.value)}
+  placeholder="Search transactions"
+  aria-label="Search transactions"
+  title="Search transactions"
+  className="flex-1 px-4 py-2.5 border border-slate-200 rounded-full text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20"
+  />
+  <label htmlFor="reports-category-filter" className="sr-only">Filter transactions by category</label>
+  <select data-testid="reports-filter-transactions-by-category"
+  id="reports-category-filter"
+  value={categoryFilter}
+  onChange={(e) => setCategoryFilter(e.target.value)}
+  aria-label="Filter transactions by category"
+  title="Filter transactions by category"
+  className="px-4 py-2.5 border border-slate-200 rounded-full text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20"
   >
-  {expenseBreakdown.map((entry, index) => (
-  <Cell key={`cell-${entry.name}`} fill={chartColors[index % chartColors.length]} />
-  ))}
-  </Pie>
-  <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-  <Legend />
-  </PieChart>
-  </ResponsiveContainer>
- )}
- </Card>
-
- <Card data-testid="reports-card-8" variant="glass" className="p-6">
- <h3 className="text-lg font-display font-bold text-gray-900 mb-4">Category-wise Spending</h3>
- {expenseBreakdown.length === 0 ? (
- <p className="text-sm text-gray-500">No expenses found for this range.</p>
- ) : (
- <ResponsiveContainer key={timeRange} width="100%" height={280}>
-  <BarChart data={expenseBreakdown.slice(0, 8)}>
-  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-  <XAxis dataKey="name" angle={-20} textAnchor="end" height={70} stroke="#9ca3af" />
-  <YAxis stroke="#9ca3af" />
-  <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-  <Bar
-    dataKey="value"
-    fill="#111827"
-    radius={[8, 8, 0, 0]}
-    isAnimationActive={true}
-    animationBegin={0}
-    animationDuration={800}
-    animationEasing="ease-out"
-  />
-  </BarChart>
-  </ResponsiveContainer>
- )}
- </Card>
- </div>
-
- <Card data-testid="reports-card-9" variant="glass" className="p-6">
- <h3 className="text-lg font-display font-bold text-gray-900 mb-4">Monthly Cash Flow</h3>
- {cashFlowMonthly.length === 0 ? (
- <p className="text-sm text-gray-500">No cash flow data available.</p>
- ) : (
- <ResponsiveContainer key={timeRange} width="100%" height={300}>
-  <BarChart data={cashFlowMonthly}>
-  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-  <XAxis dataKey="month" stroke="#9ca3af" />
-  <YAxis stroke="#9ca3af" />
-  <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-  <Legend />
-  <Bar dataKey="income" fill="#10B981" name="Income" radius={[6, 6, 0, 0]} isAnimationActive={true} animationBegin={0} animationDuration={900} animationEasing="ease-out" />
-  <Bar dataKey="expense" fill="#EF4444" name="Expense" radius={[6, 6, 0, 0]} isAnimationActive={true} animationBegin={100} animationDuration={900} animationEasing="ease-out" />
-  </BarChart>
-  </ResponsiveContainer>
- )}
- </Card>
-
- <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
- <Card data-testid="reports-card-10" variant="glass" className="p-6">
- <h3 className="text-lg font-display font-bold text-gray-900 mb-4">Savings Growth</h3>
- {savingsGrowth.length === 0 ? (
- <p className="text-sm text-gray-500">No savings data available.</p>
- ) : (
- <ResponsiveContainer key={timeRange} width="100%" height={280}>
-  <LineChart data={savingsGrowth}>
-  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-  <XAxis dataKey="date" stroke="#9ca3af" />
-  <YAxis stroke="#9ca3af" />
-  <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-  <Line
-    type="monotone"
-    dataKey="savings"
-    stroke="#2563EB"
-    strokeWidth={2.5}
-    dot={false}
-    isAnimationActive={true}
-    animationBegin={0}
-    animationDuration={1000}
-    animationEasing="ease-out"
-  />
-  </LineChart>
-  </ResponsiveContainer>
- )}
- </Card>
-
- <Card data-testid="reports-card-11" variant="glass" className="p-6">
- <h3 className="text-lg font-display font-bold text-gray-900 mb-4">Income vs Expense</h3>
- <ResponsiveContainer key={timeRange} width="100%" height={280}>
-  <BarChart data={incomeExpenseData}>
-  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-  <XAxis dataKey="name" stroke="#9ca3af" />
-  <YAxis stroke="#9ca3af" />
-  <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-  <Bar dataKey="value" fill="#0F172A" radius={[8, 8, 0, 0]} isAnimationActive={true} animationBegin={0} animationDuration={800} animationEasing="ease-out" />
-  </BarChart>
-  </ResponsiveContainer>
- </Card>
- </div>
-
- <Card data-testid="reports-card-12" variant="glass" className="p-6">
- <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
- <div>
- <h3 className="text-lg font-display font-bold text-gray-900">Transactions</h3>
- <p className="text-sm text-gray-500">Search and filter detailed activity.</p>
- </div>
- <div className="flex flex-wrap gap-2">
- {canPdf && <Button data-testid="reports-download-pdf" onClick={() => void downloadPDF()} className="rounded-full px-4 py-2 text-xs bg-black text-white hover:bg-gray-900">Download PDF</Button>}
- {canCsv && <Button data-testid="reports-export-csv" onClick={exportCSV} className="rounded-full px-4 py-2 text-xs bg-white border border-gray-200 text-gray-900 hover:bg-gray-50">Export CSV</Button>}
- {canExcel && <Button data-testid="reports-export-excel" onClick={exportExcel} className="rounded-full px-4 py-2 text-xs bg-white border border-gray-200 text-gray-900 hover:bg-gray-50">Export Excel</Button>}
- </div>
- </div>
-
- <div className="flex flex-col md:flex-row md:items-center gap-3 mb-4">
- <label htmlFor="reports-search-transactions" className="sr-only">Search transactions</label>
- <input data-testid="reports-search-transactions"
- id="reports-search-transactions"
- type="text"
- value={searchQuery}
- onChange={(e) => setSearchQuery(e.target.value)}
- placeholder="Search transactions"
- aria-label="Search transactions"
- title="Search transactions"
- className="flex-1 px-3 py-2 border border-gray-200 rounded-lg"
- />
- <label htmlFor="reports-category-filter" className="sr-only">Filter transactions by category</label>
- <select data-testid="reports-filter-transactions-by-category"
- id="reports-category-filter"
- value={categoryFilter}
- onChange={(e) => setCategoryFilter(e.target.value)}
- aria-label="Filter transactions by category"
- title="Filter transactions by category"
- className="px-3 py-2 border border-gray-200 rounded-lg"
- >
  <option data-testid="reports-all-categories" value="all">All Categories</option>
  {categoryOptions.map((category) => (
  <option data-testid={`reports-option-${category}`} key={category} value={category}>{category}</option>
@@ -862,35 +867,35 @@ export const Reports: React.FC = () => {
  </Card>
 
  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
- <Card data-testid="reports-card-13" variant="glass" className="p-6">
- <h3 className="text-lg font-display font-bold text-gray-900 mb-4">Financial Summary</h3>
- <div className="space-y-3">
- <div className="p-4 bg-white rounded-xl hover:bg-gray-100 transition-colors">
- <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Total Active Debt</p>
- <p className="text-xl font-display font-bold text-gray-900 mt-1">{formatCurrency(summaryStats.totalDebt)}</p>
- </div>
- <div className="p-4 bg-white rounded-xl hover:bg-gray-100 transition-colors">
- <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Goals Progress</p>
- <p className="text-xl font-display font-bold text-gray-900 mt-1">{formatCurrency(summaryStats.totalGoalsProgress)}</p>
- </div>
- <div className="p-4 bg-white rounded-xl hover:bg-gray-100 transition-colors">
- <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Total Invested</p>
- <p className="text-xl font-display font-bold text-gray-900 mt-1">{formatCurrency(summaryStats.totalInvested)}</p>
- </div>
- </div>
- </Card>
+  <Card data-testid="reports-card-13" variant="default" className="p-6 bg-white dark:bg-card border border-slate-100 dark:border-border/60 rounded-[28px] sm:rounded-[32px] shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)]">
+  <h3 className="text-lg font-display font-bold text-slate-900 dark:text-white mb-4">Financial Summary</h3>
+  <div className="space-y-3">
+  <div className="p-4 bg-slate-50/70 dark:bg-muted/40 rounded-2xl border border-slate-100 dark:border-border/40 transition-colors">
+  <p className="text-xs text-slate-400 font-semibold uppercase tracking-wide">Total Active Debt</p>
+  <p className="text-xl font-display font-bold text-slate-900 dark:text-white mt-1">{formatCurrency(summaryStats.totalDebt)}</p>
+  </div>
+  <div className="p-4 bg-slate-50/70 dark:bg-muted/40 rounded-2xl border border-slate-100 dark:border-border/40 transition-colors">
+  <p className="text-xs text-slate-400 font-semibold uppercase tracking-wide">Goals Progress</p>
+  <p className="text-xl font-display font-bold text-slate-900 dark:text-white mt-1">{formatCurrency(summaryStats.totalGoalsProgress)}</p>
+  </div>
+  <div className="p-4 bg-slate-50/70 dark:bg-muted/40 rounded-2xl border border-slate-100 dark:border-border/40 transition-colors">
+  <p className="text-xs text-slate-400 font-semibold uppercase tracking-wide">Total Invested</p>
+  <p className="text-xl font-display font-bold text-slate-900 dark:text-white mt-1">{formatCurrency(summaryStats.totalInvested)}</p>
+  </div>
+  </div>
+  </Card>
 
- <Card data-testid="reports-card-14" variant="glass" className="p-6">
- <h3 className="text-lg font-display font-bold text-gray-900 mb-4">Net Worth Snapshot</h3>
- <div className="p-5 bg-black/5 rounded-2xl border border-black/10">
- <p className="text-xs text-gray-600 font-medium uppercase tracking-wide">Net Worth</p>
- <p className="text-2xl font-display font-bold text-gray-900 mt-2">
- {formatCurrency(authoritativeNetWorth)}
- </p>
- <p className="text-xs text-gray-500 mt-2">Authoritative calculation: Total Liquid Assets + Investments + Lent Loans - Outstanding Debt.</p>
- </div>
- </Card>
- </div>
+  <Card data-testid="reports-card-14" variant="default" className="p-6 bg-white dark:bg-card border border-slate-100 dark:border-border/60 rounded-[28px] sm:rounded-[32px] shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)]">
+  <h3 className="text-lg font-display font-bold text-slate-900 dark:text-white mb-4">Net Worth Snapshot</h3>
+  <div className="p-5 bg-purple-50/50 dark:bg-purple-950/20 rounded-2xl border border-purple-100/60">
+  <p className="text-xs text-purple-700 dark:text-purple-300 font-semibold uppercase tracking-wide">Net Worth</p>
+  <p className="text-3xl font-display font-bold text-slate-900 dark:text-white mt-2">
+  {formatCurrency(authoritativeNetWorth)}
+  </p>
+  <p className="text-xs text-slate-400 mt-2">Authoritative calculation: Total Liquid Assets + Investments + Lent Loans - Outstanding Debt.</p>
+  </div>
+  </Card>
+  </div>
  </div>
  </CenteredLayout>
  );

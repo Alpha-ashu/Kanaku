@@ -290,95 +290,95 @@ export const GoalDetail: React.FC = () => {
  return null;
  }
 
- return (
- <CenteredLayout>
- <div className="space-y-6">
- 
- <div className="flex items-center justify-between pb-4 border-b border-gray-100">
- <div className="flex items-center gap-4">
- <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">
- {goal.name}
- </h1>
- </div>
- <button
- onClick={() => setCurrentPage('goals')}
- data-testid="goals-detail-back-button"
- className="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold rounded-2xl transition-colors"
- >
- Back to Goals
- </button>
- </div>
+  return (
+  <CenteredLayout>
+  <div className="space-y-6">
+  
+  <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+  <div className="flex items-center gap-4">
+  <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">
+  {goal.name}
+  </h1>
+  </div>
+  <button
+  onClick={() => setCurrentPage('goals')}
+  data-testid="goals-detail-back-button"
+  className="px-6 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-sm font-semibold rounded-full transition-colors"
+  >
+  Back to Goals
+  </button>
+  </div>
 
- <div className="space-y-6">
- <div className="bg-white rounded-[32px] p-6 lg:p-8 ring-1 ring-gray-100 shadow-[0_8px_40px_-12px_rgba(0,0,0,0.05)] space-y-6">
- <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
- <div>
- <p className="text-xs font-bold text-gray-400 tracking-wider uppercase mb-1">Target</p>
- <p className="text-2xl font-bold text-gray-900">{formatCurrency(goal.targetAmount)}</p>
- </div>
- <div>
- <p className="text-xs font-bold text-gray-400 tracking-wider uppercase mb-1">Saved</p>
- <p className="text-2xl font-bold text-gray-900">{formatCurrency(goal.currentAmount)}</p>
- </div>
- <div>
- <p className="text-xs font-bold text-gray-400 tracking-wider uppercase mb-1">Remaining</p>
- <p className="text-2xl font-bold text-gray-900">{formatCurrency(Math.max(0, goal.targetAmount - goal.currentAmount))}</p>
- </div>
- <div>
- <p className="text-xs font-bold text-gray-400 tracking-wider uppercase mb-1">Goal Type</p>
- <p className="text-2xl font-bold text-gray-900">{goal.isGroupGoal ? 'Group' : 'Individual'}</p>
- </div>
- </div>
+  <div className="space-y-6">
+  <div className="bg-white dark:bg-card rounded-[28px] sm:rounded-[32px] p-6 lg:p-8 border border-slate-100/80 dark:border-border/60 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)] space-y-6">
+  <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+  <div className="p-4 rounded-2xl bg-slate-50/70 dark:bg-muted/40 border border-slate-100 dark:border-border/40">
+  <p className="text-xs font-semibold text-slate-400 tracking-wider uppercase mb-1">Target</p>
+  <p className="text-2xl font-bold text-slate-900 dark:text-white">{formatCurrency(goal.targetAmount)}</p>
+  </div>
+  <div className="p-4 rounded-2xl bg-slate-50/70 dark:bg-muted/40 border border-slate-100 dark:border-border/40">
+  <p className="text-xs font-semibold text-slate-400 tracking-wider uppercase mb-1">Saved</p>
+  <p className="text-2xl font-bold text-slate-900 dark:text-white">{formatCurrency(goal.currentAmount)}</p>
+  </div>
+  <div className="p-4 rounded-2xl bg-slate-50/70 dark:bg-muted/40 border border-slate-100 dark:border-border/40">
+  <p className="text-xs font-semibold text-slate-400 tracking-wider uppercase mb-1">Remaining</p>
+  <p className="text-2xl font-bold text-slate-900 dark:text-white">{formatCurrency(Math.max(0, goal.targetAmount - goal.currentAmount))}</p>
+  </div>
+  <div className="p-4 rounded-2xl bg-slate-50/70 dark:bg-muted/40 border border-slate-100 dark:border-border/40">
+  <p className="text-xs font-semibold text-slate-400 tracking-wider uppercase mb-1">Goal Type</p>
+  <p className="text-2xl font-bold text-slate-900 dark:text-white">{goal.isGroupGoal ? 'Group' : 'Individual'}</p>
+  </div>
+  </div>
 
- <div>
- <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
- <div className={`h-3 bg-gray-900 rounded-full transition-all duration-1000 ${getWidthClass(progress)}`} />
- </div>
- <p className="text-sm mt-3 text-gray-600 font-medium">{progress.toFixed(0)}% completed</p>
- {milestone && <p className="text-sm font-bold text-emerald-600 mt-1">{milestone} </p>}
- </div>
+  <div>
+  <div className="w-full h-3 bg-slate-100 dark:bg-muted rounded-full overflow-hidden">
+  <div className={`h-3 bg-gradient-to-r from-[#8B5CF6] to-[#7C3AED] rounded-full transition-all duration-1000 ${getWidthClass(progress)}`} />
+  </div>
+  <p className="text-sm mt-3 text-slate-600 dark:text-slate-300 font-semibold">{progress.toFixed(0)}% completed</p>
+  {milestone && <p className="text-sm font-bold text-emerald-600 mt-1">{milestone} </p>}
+  </div>
 
- <div className="rounded-2xl bg-white border border-gray-100 p-4 flex items-start gap-3">
- <Target className="w-5 h-5 text-gray-400 shrink-0 mt-0.5" />
- <div>
- <p className="text-sm font-medium text-gray-900">Suggested Saving</p>
- <p className="text-sm text-gray-500">{formatCurrency(monthlySuggestion.monthlyAmount)} / month for {monthlySuggestion.months} month(s)</p>
- </div>
- </div>
+  <div className="rounded-2xl bg-purple-50/60 dark:bg-purple-950/20 border border-purple-100/60 p-4 flex items-start gap-3">
+  <Target className="w-5 h-5 text-purple-600 shrink-0 mt-0.5" />
+  <div>
+  <p className="text-sm font-semibold text-slate-900 dark:text-white">Suggested Saving</p>
+  <p className="text-sm text-slate-500">{formatCurrency(monthlySuggestion.monthlyAmount)} / month for {monthlySuggestion.months} month(s)</p>
+  </div>
+  </div>
 
- <div className="rounded-2xl border border-gray-100 bg-white p-4">
- <p className="text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-2">Timeline Insights</p>
- <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-gray-600">
- <span className="flex items-center gap-2">
- <div className="w-1.5 h-1.5 rounded-full bg-gray-300" />
- Last contribution: {lastContributionDate
- ? lastContributionDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
- : 'No contribution yet'}
- </span>
- {completedOnDate && (
- <span className="flex items-center gap-2 font-semibold text-emerald-600">
- <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
- Completed on: {completedOnDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
- </span>
- )}
- </div>
- </div>
- </div>
+  <div className="rounded-2xl border border-slate-100 dark:border-border/40 bg-slate-50/50 dark:bg-muted/20 p-4">
+  <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-2">Timeline Insights</p>
+  <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-slate-600">
+  <span className="flex items-center gap-2">
+  <div className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+  Last contribution: {lastContributionDate
+  ? lastContributionDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+  : 'No contribution yet'}
+  </span>
+  {completedOnDate && (
+  <span className="flex items-center gap-2 font-semibold text-emerald-600">
+  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+  Completed on: {completedOnDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+  </span>
+  )}
+  </div>
+  </div>
+  </div>
 
- <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
- <div className="space-y-6">
-        <div className="bg-white rounded-[32px] p-6 lg:p-8 ring-1 ring-gray-100 shadow-[0_8px_40px_-12px_rgba(0,0,0,0.05)]">
+  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <div className="space-y-6">
+        <div className="bg-white dark:bg-card rounded-[28px] sm:rounded-[32px] p-6 lg:p-8 border border-slate-100/80 dark:border-border/60 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)]">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-xl font-bold text-gray-900">
+            <h3 className="text-xl font-bold text-slate-900 dark:text-white">
               {activeTab === 'contribute' ? 'Add Contribution' : 'Withdraw Funds'}
             </h3>
-            <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-xl">
+            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-full">
               <button
                 type="button"
                 onClick={() => setActiveTab('contribute')}
                 className={cn(
-                  'px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5',
-                  activeTab === 'contribute' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'
+                  'px-3.5 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5',
+                  activeTab === 'contribute' ? 'bg-[#18181B] text-white shadow-xs' : 'text-slate-500 hover:text-slate-900'
                 )}
               >
                 <Plus size={13} /> Add
@@ -387,8 +387,8 @@ export const GoalDetail: React.FC = () => {
                 type="button"
                 onClick={() => setActiveTab('withdraw')}
                 className={cn(
-                  'px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5',
-                  activeTab === 'withdraw' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'
+                  'px-3.5 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5',
+                  activeTab === 'withdraw' ? 'bg-[#18181B] text-white shadow-xs' : 'text-slate-500 hover:text-slate-900'
                 )}
               >
                 <ArrowDownLeft size={13} /> Withdraw
@@ -399,25 +399,25 @@ export const GoalDetail: React.FC = () => {
           {activeTab === 'contribute' ? (
             <form data-testid="goal-detail-form" onSubmit={addContribution} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Amount</label>
+                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Amount</label>
                 <input
                   type="number"
                   step="0.01"
                   value={amount || ''}
                   onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
                   data-testid="goals-detail-amount-input"
-                  className="w-full bg-white border-0 rounded-2xl px-4 py-3.5 text-gray-900 font-medium text-lg placeholder-gray-400 focus:ring-2 focus:ring-gray-900 focus:bg-white transition-all"
+                  className="w-full bg-slate-50/70 border border-slate-200/80 rounded-2xl px-4 py-3.5 text-slate-900 font-semibold text-lg placeholder-slate-400 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-300 transition-all"
                   placeholder="0.00"
                   required
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">From Account</label>
+                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">From Account</label>
                 <select
                   value={accountId}
                   onChange={(e) => setAccountId(parseInt(e.target.value, 10))}
                   data-testid="goals-detail-account-select"
-                  className="w-full bg-white border-0 rounded-2xl px-4 py-3.5 text-gray-900 font-medium focus:ring-2 focus:ring-gray-900 focus:bg-white transition-all appearance-none"
+                  className="w-full bg-slate-50/70 border border-slate-200/80 rounded-2xl px-4 py-3.5 text-slate-900 font-medium focus:ring-2 focus:ring-purple-500/20 focus:border-purple-300 transition-all appearance-none"
                 >
                   {accounts.map((account) => (
                     <option data-testid={`goal-detail-option-${account.id}`} key={account.id} value={account.id}>{account.name}</option>
@@ -426,12 +426,12 @@ export const GoalDetail: React.FC = () => {
               </div>
               {goal.isGroupGoal && (
                 <div>
-                  <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Group Member</label>
+                  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Group Member</label>
                   <select
                     value={memberName}
                     onChange={(e) => setMemberName(e.target.value)}
                     data-testid="goals-detail-member-select"
-                    className="w-full bg-white border-0 rounded-2xl px-4 py-3.5 text-gray-900 font-medium focus:ring-2 focus:ring-gray-900 focus:bg-white transition-all appearance-none"
+                    className="w-full bg-slate-50/70 border border-slate-200/80 rounded-2xl px-4 py-3.5 text-slate-900 font-medium focus:ring-2 focus:ring-purple-500/20 focus:border-purple-300 transition-all appearance-none"
                   >
                     {(goal.members || []).map((member) => (
                       <option data-testid={`goal-detail-option-2-${member.name}`} key={member.name} value={member.name}>{member.name}</option>
@@ -440,12 +440,12 @@ export const GoalDetail: React.FC = () => {
                 </div>
               )}
               <div>
-                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Notes</label>
+                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Notes</label>
                 <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   data-testid="goals-detail-notes-textarea"
-                  className="w-full resize-none rounded-2xl bg-white px-4 py-3.5 text-sm font-medium text-gray-900 placeholder-gray-400 transition-all focus:bg-white focus:ring-2 focus:ring-gray-900"
+                  className="w-full resize-none rounded-2xl bg-slate-50/70 border border-slate-200/80 px-4 py-3.5 text-sm font-medium text-slate-900 placeholder-slate-400 transition-all focus:ring-2 focus:ring-purple-500/20 focus:border-purple-300"
                   rows={3}
                   placeholder="Optional note for this contribution"
                 />
@@ -454,7 +454,7 @@ export const GoalDetail: React.FC = () => {
                 type="submit"
                 disabled={isSubmitting}
                 data-testid="goals-detail-submit-button"
-                className="w-full py-4 rounded-2xl bg-gray-900 hover:bg-gray-800 disabled:opacity-50 text-white font-bold text-sm transition-all flex items-center justify-center gap-2 mt-2"
+                className="w-full py-3.5 rounded-full bg-[#18181B] hover:bg-black disabled:opacity-50 text-white font-bold text-sm transition-all flex items-center justify-center gap-2 mt-2 shadow-xs"
               >
                 <Plus size={18} /> Add Contribution
               </button>
@@ -506,7 +506,7 @@ export const GoalDetail: React.FC = () => {
                 type="submit"
                 disabled={isSubmitting || goal.currentAmount <= 0}
                 data-testid="goals-detail-withdraw-submit-button"
-                className="w-full py-4 rounded-2xl bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white font-bold text-sm transition-all flex items-center justify-center gap-2 mt-2"
+                className="w-full py-3.5 rounded-full bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white font-bold text-sm transition-all flex items-center justify-center gap-2 mt-2 shadow-xs"
               >
                 <ArrowDownLeft size={18} /> Withdraw Funds
               </button>
@@ -514,59 +514,58 @@ export const GoalDetail: React.FC = () => {
           )}
         </div>
 
- {goal.isGroupGoal && (
- <div className="bg-white rounded-[32px] p-6 lg:p-8 ring-1 ring-gray-100 shadow-[0_8px_40px_-12px_rgba(0,0,0,0.05)]">
- <div className="flex items-center justify-between mb-6">
- <h3 className="text-xl font-bold text-gray-900">Group Members</h3>
- <button data-testid="goal-detail-chat" className="text-sm font-medium text-gray-500 hover:text-gray-900 flex items-center gap-2">
- <MessageSquare size={16} /> Chat
- </button>
- </div>
- <div className="space-y-4">
- {memberRows.map((row) => (
- <div key={row.name} className="flex items-center justify-between p-4 rounded-2xl bg-white border border-gray-100">
- <div className="flex items-center gap-3">
- <div className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-600 font-bold">
- {row.name.charAt(0).toUpperCase()}
- </div>
- <div>
- <p className="font-bold text-gray-900 text-sm">{row.name}</p>
- <p className="text-xs text-gray-500">{row.status === 'paid' ? 'Contributed' : 'Pending'}</p>
- </div>
- </div>
- <span className="font-bold text-gray-900">{formatCurrency(row.amount)}</span>
- </div>
- ))}
- </div>
- </div>
- )}
- </div>
+  {goal.isGroupGoal && (
+  <div className="bg-white dark:bg-card rounded-[28px] sm:rounded-[32px] p-6 lg:p-8 border border-slate-100/80 dark:border-border/60 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)]">
+  <div className="flex items-center justify-between mb-6">
+  <h3 className="text-xl font-bold text-slate-900 dark:text-white">Group Members</h3>
+  <button data-testid="goal-detail-chat" className="text-sm font-semibold text-purple-600 hover:text-purple-800 flex items-center gap-2">
+  <MessageSquare size={16} /> Chat
+  </button>
+  </div>
+  <div className="space-y-4">
+  {memberRows.map((row) => (
+  <div key={row.name} className="flex items-center justify-between p-4 rounded-2xl bg-slate-50/70 dark:bg-muted/40 border border-slate-100 dark:border-border/40">
+  <div className="flex items-center gap-3">
+  <div className="w-10 h-10 rounded-full bg-white dark:bg-card border border-slate-200 flex items-center justify-center text-slate-700 font-bold">
+  {row.name.charAt(0).toUpperCase()}
+  </div>
+  <div>
+  <p className="font-bold text-slate-900 dark:text-white text-sm">{row.name}</p>
+  <p className="text-xs text-slate-400">{row.status === 'paid' ? 'Contributed' : 'Pending'}</p>
+  </div>
+  </div>
+  <span className="font-bold text-slate-900 dark:text-white">{formatCurrency(row.amount)}</span>
+  </div>
+  ))}
+  </div>
+  </div>
+  )}
+  </div>
 
- <div className="bg-white rounded-[32px] p-6 lg:p-8 ring-1 ring-gray-100 shadow-[0_8px_40px_-12px_rgba(0,0,0,0.05)] h-fit">
- <h3 className="text-xl font-bold text-gray-900 mb-6">Contribution History</h3>
- <div className="space-y-4">
- {timeline.length === 0 && (
- <div className="text-center py-12">
- <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-3">
- <Target className="w-8 h-8 text-gray-300" />
- </div>
- <p className="text-sm text-gray-500 font-medium">No contributions yet</p>
- </div>
- )}
- {timeline.map((item) => (
- <div key={item.month} className="flex items-center gap-4 group">
- <div className="w-12 text-xs font-bold text-gray-400 uppercase tracking-wider">{item.month}</div>
- <div className="flex-1 h-3 bg-white rounded-full overflow-hidden border border-gray-100">
- <div 
- className={`h-full bg-gray-900 rounded-full transition-all group-hover:bg-gray-800 ${getWidthClass((item.total / Math.max(goal.targetAmount, 1)) * 100)}`} 
- />
- </div>
- <div className="w-24 text-right font-bold text-gray-900 text-sm">{formatCurrency(item.total)}</div>
- </div>
- ))}
- </div>
- </div>
- </div>
+  <div className="bg-white dark:bg-card rounded-[28px] sm:rounded-[32px] p-6 lg:p-8 border border-slate-100/80 dark:border-border/60 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)] h-fit">
+  <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-6">Contribution History</h3>
+  <div className="space-y-4">
+  {timeline.length === 0 && (
+  <div className="text-center py-12">
+  <div className="w-16 h-16 bg-purple-50 text-purple-600 rounded-full flex items-center justify-center mx-auto mb-3">
+  <Target className="w-8 h-8" />
+  </div>
+  <p className="text-sm text-slate-400 font-medium">No contributions yet</p>
+  </div>
+  )}
+  {timeline.map((item) => (
+  <div key={item.month} className="flex items-center gap-4 group">
+  <div className="w-12 text-xs font-semibold text-slate-400 uppercase tracking-wider">{item.month}</div>
+  <div className="flex-1 h-3 bg-slate-100 dark:bg-muted rounded-full overflow-hidden border border-slate-100">
+  <div 
+  className={`h-full bg-[#8B5CF6] rounded-full transition-all group-hover:bg-[#7C3AED] ${getWidthClass((item.total / Math.max(goal.targetAmount, 1)) * 100)}`} 
+  />
+  </div>
+  <div className="w-24 text-right font-bold text-slate-900 dark:text-white text-sm">{formatCurrency(item.total)}</div>
+  </div>
+  ))}
+  </div>
+  </div></div>
  </div>
  </div>
  </CenteredLayout>
