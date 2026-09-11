@@ -371,7 +371,6 @@ export const Accounts: React.FC = () => {
                 <div className="pb-4 lg:pb-6">
                     <PageHeader
                         title="Accounts"
-                        subtitle="Manage your wallets and payment sources"
                     >
                         {canCreate && (
                         <Button data-testid="accounts-button"

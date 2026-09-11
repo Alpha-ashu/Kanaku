@@ -120,11 +120,17 @@ export const FriendProfile: React.FC = () => {
   return (
     <CenteredLayout>
       <div className="space-y-6">
-        <div className="flex items-center gap-3">
-          <button data-testid="friend-profile-back" onClick={() => setCurrentPage('friends')} title="Back" className="p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all">
-            <ArrowLeft size={20} />
+        <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+          <button
+            data-testid="friend-profile-back"
+            onClick={() => setCurrentPage('friends')}
+            title="Back to Friends"
+            aria-label="Back to Friends"
+            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200/80 hover:bg-slate-50 active:scale-95 shadow-xs flex items-center justify-center text-slate-700 transition-all shrink-0 cursor-pointer"
+          >
+            <ArrowLeft size={18} className="text-slate-700" />
           </button>
-          <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">Friend Profile</h1>
+          <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none truncate">Friend Profile</h1>
         </div>
 
         <div className="rounded-[28px] border border-gray-200 bg-white p-5 shadow-sm flex items-center gap-4">

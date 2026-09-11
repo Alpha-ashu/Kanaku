@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useApp, useSubFeature, useAICapability } from '@/contexts/AppContext';
 import { db } from '@/lib/database';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { Plus, DollarSign, TrendingUp, AlertCircle, Edit2, Trash2, Home, Users, ScanLine, Paperclip, ChevronDown, ExternalLink, FileText, Check, X } from 'lucide-react';
+import { Plus, DollarSign, TrendingUp, AlertCircle, Edit2, Trash2, Home, Users, ScanLine, Paperclip, ChevronDown, ExternalLink, FileText, Check, X, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { DeleteConfirmModal } from '@/app/components/shared/DeleteConfirmModal';
 import { Card } from '@/app/components/ui/card';
@@ -301,116 +301,118 @@ export const Loans: React.FC = () => {
  <CenteredLayout>
  <div className="space-y-6 sm:space-y-8">
  
- <div className="flex flex-row flex-wrap items-center justify-between gap-4 w-full">
- <div className="flex items-center gap-4">
- <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">Loans & EMIs</h1>
- </div>
-  <div className="flex items-center gap-3">
-    {canAddLoan && (
-      <Button
-        onClick={() => {
-          localStorage.setItem('quickFormType', 'expense');
-          localStorage.setItem('quickExpenseMode', 'loan');
-          localStorage.setItem('quickBackPage', 'loans');
-          setCurrentPage('add-transaction');
-        }}
-        data-testid="loans-add-loan-button"
-        className="shadow-lg bg-gray-900 hover:bg-gray-800 text-white h-12 px-6 rounded-2xl font-bold flex items-center gap-2"
+  <div className="flex items-center justify-between gap-3 w-full">
+    <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+      <button
+        type="button"
+        onClick={() => setCurrentPage('dashboard')}
+        className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200/80 hover:bg-slate-50 active:scale-95 shadow-xs flex items-center justify-center text-slate-700 transition-all shrink-0 cursor-pointer"
+        aria-label="Go to dashboard"
+        title="Go to dashboard"
+        data-testid="loans-go-back-button"
       >
-        <Plus size={18} />
-        <span>Add Loan</span>
-      </Button>
-    )}
+        <ArrowLeft size={18} className="text-slate-700" />
+      </button>
+      <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none truncate">Loans & EMIs</h1>
+    </div>
+    <div className="flex items-center gap-2 shrink-0">
+      {canAddLoan && (
+        <Button
+          onClick={() => {
+            localStorage.setItem('quickFormType', 'expense');
+            localStorage.setItem('quickExpenseMode', 'loan');
+            localStorage.setItem('quickBackPage', 'loans');
+            setCurrentPage('add-transaction');
+          }}
+          data-testid="loans-add-loan-button"
+          className="shadow-xs bg-[#18181B] hover:bg-black text-white h-10 px-4 sm:px-5 rounded-full font-bold text-xs sm:text-sm flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer"
+        >
+          <Plus size={16} />
+          <span>Add Loan</span>
+        </Button>
+      )}
+    </div>
   </div>
- </div>
 
- {/* Stats */}
- <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
- <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
- <Card data-testid="loans-card" variant="glass" className="p-4 sm:p-6 relative overflow-hidden group border-none bg-white shadow-xl shadow-slate-200/50">
- <div className="absolute -top-12 -right-12 w-32 h-32 bg-red-500/10 rounded-full blur-2xl group-hover:bg-red-500/20 transition-all duration-500" />
- <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-rose-500/5 rounded-full blur-xl" />
- <div className="relative z-10">
- <div className="w-10 h-10 sm:w-12 sm:h-12 bg-red-600 rounded-2xl flex items-center justify-center mb-2 sm:mb-4 shadow-lg shadow-red-200">
- <Home className="text-white sm:w-5 sm:h-5" size={18} />
- </div>
- <p className="text-slate-400 font-black mb-1 text-[10px] uppercase tracking-[0.2em]">Total Borrowed</p>
- <h3 className="text-2xl font-black text-slate-900 tracking-tighter">
- {formatCurrency(loanStats.totalBorrowed)}
- </h3>
- </div>
- </Card>
- </motion.div>
+  {/* Stats */}
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+  <Card data-testid="loans-card" variant="default" className="p-5 sm:p-6 bg-white dark:bg-card border border-slate-100 dark:border-border/60 rounded-[28px] sm:rounded-[32px] shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)] relative overflow-hidden">
+  <div className="relative z-10">
+  <div className="w-10 h-10 sm:w-11 sm:h-11 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center mb-3 shadow-xs">
+  <Home className="sm:w-5 sm:h-5" size={18} />
+  </div>
+  <p className="text-slate-400 font-semibold mb-1 text-xs uppercase tracking-wider">Total Borrowed</p>
+  <h3 className="text-2xl sm:text-3xl font-display font-bold text-slate-900 dark:text-white tracking-tight">
+  {formatCurrency(loanStats.totalBorrowed)}
+  </h3>
+  </div>
+  </Card>
+  </motion.div>
 
- <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
- <Card data-testid="loans-card-2" variant="glass" className="p-6 relative overflow-hidden group border-none bg-white shadow-xl shadow-slate-200/50">
- <div className="absolute -top-12 -right-12 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl group-hover:bg-emerald-500/20 transition-all duration-500" />
- <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-green-500/5 rounded-full blur-xl" />
- <div className="relative z-10">
- <div className="w-12 h-12 bg-emerald-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-emerald-200">
- <Users className="text-white" size={20} />
- </div>
- <p className="text-slate-400 font-black mb-1 text-[10px] uppercase tracking-[0.2em]">Total Lent</p>
- <h3 className="text-2xl font-black text-slate-900 tracking-tighter">
- {formatCurrency(loanStats.totalLent)}
- </h3>
- </div>
- </Card>
- </motion.div>
+  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+  <Card data-testid="loans-card-2" variant="default" className="p-5 sm:p-6 bg-white dark:bg-card border border-slate-100 dark:border-border/60 rounded-[28px] sm:rounded-[32px] shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)] relative overflow-hidden">
+  <div className="relative z-10">
+  <div className="w-10 h-10 sm:w-11 sm:h-11 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mb-3 shadow-xs">
+  <Users className="sm:w-5 sm:h-5" size={18} />
+  </div>
+  <p className="text-slate-400 font-semibold mb-1 text-xs uppercase tracking-wider">Total Lent</p>
+  <h3 className="text-2xl sm:text-3xl font-display font-bold text-slate-900 dark:text-white tracking-tight">
+  {formatCurrency(loanStats.totalLent)}
+  </h3>
+  </div>
+  </Card>
+  </motion.div>
 
- <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
- <Card data-testid="loans-card-3" variant="glass" className="p-6 relative overflow-hidden group border-none bg-white shadow-xl shadow-slate-200/50">
- <div className="absolute -top-12 -right-12 w-32 h-32 bg-slate-500/10 rounded-full blur-2xl group-hover:bg-slate-500/20 transition-all duration-500" />
- <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-slate-500/5 rounded-full blur-xl" />
- <div className="relative z-10">
- <div className="w-12 h-12 bg-slate-900 rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-slate-200">
- <TrendingUp className="text-white" size={20} />
- </div>
- <p className="text-slate-400 font-black mb-1 text-[10px] uppercase tracking-[0.2em]">Monthly EMI</p>
- <h3 className="text-2xl font-black text-slate-900 tracking-tighter">
- {formatCurrency(loanStats.totalEMI)}
- </h3>
- </div>
- </Card>
- </motion.div>
+  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+  <Card data-testid="loans-card-3" variant="default" className="p-5 sm:p-6 bg-white dark:bg-card border border-slate-100 dark:border-border/60 rounded-[28px] sm:rounded-[32px] shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)] relative overflow-hidden">
+  <div className="relative z-10">
+  <div className="w-10 h-10 sm:w-11 sm:h-11 bg-purple-50 text-[#8B5CF6] rounded-2xl flex items-center justify-center mb-3 shadow-xs">
+  <TrendingUp className="sm:w-5 sm:h-5" size={18} />
+  </div>
+  <p className="text-slate-400 font-semibold mb-1 text-xs uppercase tracking-wider">Monthly EMI</p>
+  <h3 className="text-2xl sm:text-3xl font-display font-bold text-slate-900 dark:text-white tracking-tight">
+  {formatCurrency(loanStats.totalEMI)}
+  </h3>
+  </div>
+  </Card>
+  </motion.div>
 
- <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
- <Card data-testid="loans-card-4" variant="mesh-red" className="p-6 relative overflow-hidden group border-none shadow-xl shadow-red-200/40">
- <div className="absolute -top-12 -right-12 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-all duration-500" />
- <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-white/5 rounded-full blur-xl" />
- <div className="relative z-10">
- <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-white/10">
- <AlertCircle className="text-white" size={20} />
- </div>
- <p className="text-white/80 font-black mb-1 text-[10px] uppercase tracking-[0.2em]">Overdue</p>
- <h3 className="text-3xl font-black text-white tracking-tighter">
- {loanStats.overdueCount}
- </h3>
- </div>
- </Card>
- </motion.div>
- </div>
+  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
+  <Card data-testid="loans-card-4" variant="default" className="p-5 sm:p-6 bg-white dark:bg-card border border-slate-100 dark:border-border/60 rounded-[28px] sm:rounded-[32px] shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)] relative overflow-hidden">
+  <div className="relative z-10">
+  <div className="w-10 h-10 sm:w-11 sm:h-11 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center mb-3 shadow-xs">
+  <AlertCircle className="sm:w-5 sm:h-5" size={18} />
+  </div>
+  <p className="text-slate-400 font-semibold mb-1 text-xs uppercase tracking-wider">Overdue</p>
+  <h3 className="text-2xl sm:text-3xl font-display font-bold text-slate-900 dark:text-white tracking-tight">
+  {loanStats.overdueCount}
+  </h3>
+  </div>
+  </Card>
+  </motion.div>
+  </div>
 
- {loanStats.overdueCount > 0 && (
- <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
- <Card data-testid="loans-card-5" variant="glass" className="p-4 flex items-start gap-3 border-2 border-red-200">
- <AlertCircle className="text-red-600 flex-shrink-0 mt-1" size={20} />
- <div>
- <p className="font-display font-bold text-red-900">Overdue Payments</p>
- <p className="text-sm text-red-700 mt-1">
- You have {loanStats.overdueCount} overdue payment{loanStats.overdueCount > 1 ? 's' : ''}. Please make payments to avoid penalties.
- </p>
- </div>
- </Card>
- </motion.div>
- )}
+  {loanStats.overdueCount > 0 && (
+  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+  <Card data-testid="loans-card-5" variant="default" className="p-4 sm:p-5 flex items-start gap-3 bg-rose-50/70 border border-rose-200/60 rounded-[24px]">
+  <AlertCircle className="text-rose-600 flex-shrink-0 mt-0.5" size={20} />
+  <div>
+  <p className="font-display font-bold text-rose-900">Overdue Payments</p>
+  <p className="text-sm text-rose-700 mt-0.5">
+  You have {loanStats.overdueCount} overdue payment{loanStats.overdueCount > 1 ? 's' : ''}. Please make payments to avoid penalties.
+  </p>
+  </div>
+  </Card>
+  </motion.div>
+  )}
 
- {/* Loans Grid */}
- <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
- {['borrowed', 'lent', 'emi'].map((type, idx) => (
- <motion.div key={type} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.1 }}>
- <Card data-testid={`loans-card-6-${type}`} variant="glass" className="p-6">
- <h3 className="text-xl font-display font-bold text-gray-900 mb-4 capitalize">{type === 'emi' ? 'EMI Loans' : `${type} Loans`}</h3>
+  {/* Loans Grid */}
+  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  {['borrowed', 'lent', 'emi'].map((type, idx) => (
+  <motion.div key={type} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.1 }}>
+  <Card data-testid={`loans-card-6-${type}`} variant="default" className="p-5 sm:p-6 bg-white dark:bg-card border border-slate-100 dark:border-border/60 rounded-[28px] sm:rounded-[32px] shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)]">
+  <h3 className="text-lg font-display font-bold text-slate-900 dark:text-white mb-4 capitalize">{type === 'emi' ? 'EMI Loans' : `${type} Loans`}</h3>
  <div className="space-y-3">
  {loans
  .filter(l => l.type === type && isOpenLoan(l))

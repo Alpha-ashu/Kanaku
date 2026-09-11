@@ -198,19 +198,22 @@ export const AddAccount: React.FC = () => {
  <div className="flex flex-col min-h-screen bg-white">
 
  {/* Header - Stays at top with Glassmorphism */}
- <header className="flex-shrink-0 px-4 lg:px-10 py-5 bg-white/80 backdrop-blur-2xl border-b border-slate-100/50 z-30 sticky top-0 shadow-sm shadow-slate-200/30">
- <div className="flex flex-row flex-wrap items-center justify-between gap-4 w-full">
- <div className="flex items-center gap-3">
- <button onClick={() => setCurrentPage('accounts')} title="Back" data-testid="account-create-back-button" className="lg:!hidden p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all">
- <ArrowLeft size={20} />
- </button>
- <div className="flex flex-col">
- <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">New Account</h1>
- <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1 hidden sm:block">Configuration & Setup</p>
- </div>
- </div>
- </div>
- </header>
+  <header className="flex-shrink-0 px-4 lg:px-10 py-4 bg-white/95 backdrop-blur-2xl border-b border-slate-100 z-30 sticky top-0 shadow-xs">
+    <div className="flex items-center justify-between gap-3 w-full">
+      <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+        <button
+          onClick={() => setCurrentPage('accounts')}
+          title="Back to Accounts"
+          aria-label="Back to Accounts"
+          data-testid="account-create-back-button"
+          className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200/80 hover:bg-slate-50 active:scale-95 shadow-xs flex items-center justify-center text-slate-700 transition-all shrink-0 cursor-pointer"
+        >
+          <ArrowLeft size={18} className="text-slate-700" />
+        </button>
+        <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none truncate">New Account</h1>
+      </div>
+    </div>
+  </header>
 
  {/* Main Single-Page Content Area - Flexible and Scrollable */}
  <main className="flex-1 overflow-y-auto overflow-x-hidden p-3 md:p-4 xl:p-8 pb-48">

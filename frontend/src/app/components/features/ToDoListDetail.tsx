@@ -241,62 +241,50 @@ export const ToDoListDetail: React.FC = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
-
       {/* Header */}
       <header className="px-4 lg:px-6 py-4 bg-white border-b border-slate-100 sticky top-0 z-30">
         <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
             <button
               type="button"
               onClick={() => setCurrentPage('todo-lists')}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl font-bold text-xs transition-all active:scale-95 cursor-pointer"
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200/80 hover:bg-slate-50 active:scale-95 shadow-xs flex items-center justify-center text-slate-700 transition-all shrink-0 cursor-pointer"
               title="Back to To-Do Lists"
+              aria-label="Back to To-Do Lists"
               data-testid="tododetail-back-button"
             >
-              <ArrowLeft size={16} />
-              <span>Back</span>
+              <ArrowLeft size={18} className="text-slate-700" />
             </button>
 
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-base font-black text-slate-900 leading-none">{toDoList.name}</h1>
-                {isTogether && (
-                  <span className="text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-md bg-violet-50 text-violet-600 border border-violet-100 flex items-center gap-0.5">
-                    <Users size={8} />Together
-                  </span>
-                )}
-              </div>
-              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
-                {completedCount}/{items.length} done · {progress}%
-                {isTogether && shares.length > 0 && ` · ${shares.length + 1} members`}
-              </p>
+            <div className="flex items-center gap-2 min-w-0">
+              <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none truncate">{toDoList.name}</h1>
+              {isTogether && (
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200/50 flex items-center gap-1 shrink-0">
+                  <Users size={10} />Together
+                </span>
+              )}
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             {isTogether && (
               <button
                 type="button"
                 onClick={handleShare}
-                className="p-2.5 text-slate-500 hover:text-violet-600 hover:bg-violet-50 rounded-xl transition-all"
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200/80 hover:bg-slate-50 active:scale-95 shadow-xs flex items-center justify-center text-slate-700 transition-all cursor-pointer"
                 title="Manage collaborators"
                 data-testid="tododetail-share-button"
               >
-                <Share2 size={18} />
+                <Share2 size={16} />
               </button>
             )}
             <button
               type="button"
               onClick={() => { setShowAddForm(true); setEditingItemId(null); }}
               data-testid="tododetail-add-task-button"
-              className={cn(
-                'text-white px-4 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg hover:opacity-90 active:scale-95 transition-all flex items-center gap-2',
-                isTogether
-                  ? 'bg-violet-600 shadow-violet-100'
-                  : 'bg-indigo-600 shadow-indigo-100'
-              )}
+              className="bg-[#18181B] hover:bg-black text-white px-4 sm:px-5 h-9 sm:h-10 rounded-full font-bold text-xs sm:text-sm active:scale-95 transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
             >
-              <Plus size={14} />
-              Add Task
+              <Plus size={16} />
+              <span>Add Task</span>
             </button>
           </div>
         </div>

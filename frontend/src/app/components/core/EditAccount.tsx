@@ -120,22 +120,21 @@ export const EditAccount: React.FC<{ accountId?: number }> = ({ accountId: propA
 
  return (
  <div className="min-h-screen bg-white flex flex-col">
- {/* Header Section */}
- <div className="px-4 sm:px-6 lg:px-8 xl:px-12 pt-6 lg:pt-8 pb-4">
- <div className="flex items-center gap-4 mb-2">
- <button data-testid="edit-account-back"
- onClick={() => setCurrentPage('accounts')}
- title="Back"
- className="lg:!hidden p-2.5 hover:bg-white rounded-xl transition-all border border-transparent hover:border-slate-200 text-slate-600"
- >
- <ArrowLeft size={20} />
- </button>
- <div>
- <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Edit Account</h1>
- <p className="text-slate-500 font-medium text-sm sm:text-base">Update your payment source details</p>
- </div>
- </div>
- </div>
+  {/* Header Section */}
+  <div className="px-4 sm:px-6 lg:px-8 xl:px-12 pt-6 lg:pt-8 pb-4">
+    <div className="flex items-center gap-2.5 sm:gap-3">
+      <button
+        data-testid="edit-account-back"
+        onClick={() => setCurrentPage('accounts')}
+        title="Back"
+        aria-label="Back"
+        className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200/80 hover:bg-slate-50 active:scale-95 shadow-xs flex items-center justify-center text-slate-700 transition-all shrink-0 cursor-pointer"
+      >
+        <ArrowLeft size={18} className="text-slate-700" />
+      </button>
+      <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 tracking-tight leading-none truncate">Edit Account</h1>
+    </div>
+  </div>
 
  {/* Main Content - Scrollable Area */}
  <div className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 xl:px-12 pb-48">

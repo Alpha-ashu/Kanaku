@@ -601,17 +601,16 @@ export const Settings: React.FC = () => {
         {/* Header */}
         <PageHeader
           title="Settings"
-          subtitle="Preferences, security, backups & alerts"
           icon={<SettingsIcon className="text-slate-900" size={22} />}
         />
 
         {/* ─── Compact Native Profile Header ─────────────────────────────── */}
-        <div className="rounded-2xl sm:rounded-3xl bg-slate-900 text-white p-4 sm:p-5 shadow-lg border border-slate-800 flex items-center justify-between gap-3">
+        <div className="rounded-[24px] sm:rounded-[28px] bg-slate-900 text-white p-4 sm:p-5 shadow-lg border border-slate-800 flex items-center justify-between gap-3">
           <div
             onClick={() => setCurrentPage('user-profile')}
             className="flex items-center gap-3 min-w-0 flex-1 cursor-pointer group"
           >
-            <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 overflow-hidden shadow-md shrink-0 relative flex items-center justify-center border border-white/10">
+            <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 overflow-hidden shadow-md shrink-0 relative flex items-center justify-center border border-white/10">
               {profileData.avatarUrl ? (
                 <img
                   src={profileData.avatarUrl}
@@ -644,7 +643,7 @@ export const Settings: React.FC = () => {
             type="button"
             onClick={handleSignOut}
             disabled={isSigningOut}
-            className="p-2.5 rounded-xl bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 active:scale-95 transition-all shrink-0"
+            className="p-2.5 rounded-full bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 active:scale-95 transition-all shrink-0 cursor-pointer"
             title="Sign Out"
             data-testid="settings-sign-out-btn"
           >
@@ -664,13 +663,13 @@ export const Settings: React.FC = () => {
                 onClick={() => setSelectedCategory(tab.id)}
                 data-testid={`settings-pill-${tab.id}`}
                 className={cn(
-                  "flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap shrink-0 border",
+                  "flex items-center gap-1.5 px-3.5 py-1.5 sm:py-2 rounded-full text-xs font-bold transition-all whitespace-nowrap shrink-0 border cursor-pointer",
                   isSelected
-                    ? "bg-slate-900 text-white border-slate-900 shadow-sm"
+                    ? "bg-[#18181B] text-white border-[#18181B] shadow-xs"
                     : "bg-white text-slate-600 border-slate-200/80 hover:bg-slate-50"
                 )}
               >
-                <Icon size={13} className={isSelected ? "text-indigo-400" : "text-slate-400"} />
+                <Icon size={13} className={isSelected ? "text-indigo-300" : "text-slate-400"} />
                 <span>{tab.label}</span>
               </button>
             );

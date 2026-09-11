@@ -86,12 +86,18 @@ export const AddGold: React.FC = () => {
 
  {/* Header */}
  <header className="px-4 lg:px-6 py-4 bg-white border-b border-slate-100">
- <div className="flex flex-row flex-wrap items-center justify-between gap-4 w-full">
- <div className="flex items-center gap-3">
- <button data-testid="add-gold-back" onClick={() => setCurrentPage('investments')} title="Back" className="lg:!hidden p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all">
- <ArrowLeft size={20} />
+ <div className="flex items-center justify-between gap-3 w-full">
+ <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+ <button
+ data-testid="add-gold-back"
+ onClick={() => setCurrentPage('investments')}
+ title="Back to Portfolio"
+ aria-label="Back to Portfolio"
+ className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200/80 hover:bg-slate-50 active:scale-95 shadow-xs flex items-center justify-center text-slate-700 transition-all shrink-0 cursor-pointer"
+ >
+ <ArrowLeft size={18} className="text-slate-700" />
  </button>
- <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">Add Gold Asset</h1>
+ <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none truncate">Add Gold Asset</h1>
  </div>
  </div>
  </header>

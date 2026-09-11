@@ -225,53 +225,52 @@ export const Investments: React.FC = () => {
         await fetchLivePrices(true);
       }}
     >
- <div className="space-y-6 sm:space-y-8 investments-container portfolio-container" aria-label="Investments Portfolio">
- {/* Header */}
- <PageHeader
- title="Investments"
- subtitle="Track your investment portfolio"
- icon={<BarChart3 size={20} className="sm:w-6 sm:h-6" />}
- >
- {canAdd && (
- <Button
- onClick={() => setCurrentPage('add-investment')}
- className="shadow-lg bg-gray-900 hover:bg-gray-800 text-white h-12 px-6 rounded-2xl font-bold flex items-center gap-2"
- data-testid="investments-add-button"
- >
- <Plus size={18} />
- <span>Add Investment</span>
- </Button>
- )}
- </PageHeader>
+  <div className="space-y-6 sm:space-y-8 investments-container portfolio-container" aria-label="Investments Portfolio">
+  {/* Header */}
+  <PageHeader
+  title="Investments"
+  icon={<BarChart3 size={20} className="sm:w-6 sm:h-6" />}
+  >
+  {canAdd && (
+  <Button
+  onClick={() => setCurrentPage('add-investment')}
+  className="shadow-xs bg-[#18181B] hover:bg-black text-white h-9 sm:h-10 px-4 sm:px-5 rounded-full font-bold text-xs sm:text-sm flex items-center gap-1.5 active:scale-95 transition-all cursor-pointer"
+  data-testid="investments-add-button"
+  >
+  <Plus size={16} />
+  <span>Add Investment</span>
+  </Button>
+  )}
+  </PageHeader>
 
- {/* Live Market Ticker */}
- <div className="-mx-3 sm:-mx-4 md:-mx-6 lg:-mx-8">
- <LiveMarketTicker />
- </div>
+  {/* Live Market Ticker */}
+  <div className="-mx-3 sm:-mx-4 md:-mx-6 lg:-mx-8">
+  <LiveMarketTicker />
+  </div>
 
- {/* Tab switcher */}
- <div className="flex gap-1 p-1 bg-gray-100 rounded-2xl w-fit">
- {([
- { id: 'portfolio', label: 'My Portfolio', icon: BarChart3 },
- { id: 'market', label: 'Live Market', icon: Activity },
- { id: 'vault', label: 'Wealth Vault', icon: Gem },
- ] as const).map(({ id, label, icon: Icon }) => (
- <button
- key={id}
- onClick={() => setActiveTab(id)}
- className={cn(
- 'flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all duration-200',
- activeTab === id
- ? 'bg-white text-gray-900 shadow-sm'
- : 'text-gray-500 hover:text-gray-700'
- )}
- data-testid={`investments-tab-${id}-button`}
- >
- <Icon size={15} />
- {label}
- </button>
- ))}
- </div>
+  {/* Tab switcher */}
+  <div className="flex gap-1 p-1 bg-white/95 rounded-full border border-slate-200/80 shadow-xs w-fit">
+  {([
+  { id: 'portfolio', label: 'My Portfolio', icon: BarChart3 },
+  { id: 'market', label: 'Live Market', icon: Activity },
+  { id: 'vault', label: 'Wealth Vault', icon: Gem },
+  ] as const).map(({ id, label, icon: Icon }) => (
+  <button
+  key={id}
+  onClick={() => setActiveTab(id)}
+  className={cn(
+  'flex items-center gap-1.5 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs font-bold transition-all cursor-pointer',
+  activeTab === id
+  ? 'bg-[#18181B] text-white shadow-xs'
+  : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100/60'
+  )}
+  data-testid={`investments-tab-${id}-button`}
+  >
+  <Icon size={14} className={activeTab === id ? 'text-white' : 'text-slate-400'} />
+  <span>{label}</span>
+  </button>
+  ))}
+  </div>
 
  {/* LIVE MARKET TAB */}
  {activeTab === 'market' && (

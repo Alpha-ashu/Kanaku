@@ -5,7 +5,7 @@ import { db } from '@/lib/database';
 import { useLiveQuery } from 'dexie-react-hooks';
 import {
   Plus, Trash2, Archive, CheckCircle2, ListTodo, ChevronRight,
-  ArchiveRestore, X, Users, User, UserPlus, Check, Search
+  ArchiveRestore, X, Users, User, UserPlus, Check, Search, ArrowLeft
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { DeleteConfirmModal } from '@/app/components/shared/DeleteConfirmModal';
@@ -246,7 +246,7 @@ export const ToDoLists: React.FC = () => {
       <div data-testid="to-do-lists-div"
         key={list.id}
         onClick={() => handleOpenList(list.id!)}
-        className="premium-glass-card p-4 flex items-center gap-4 cursor-pointer hover:shadow-md transition-all group"
+        className="bg-white rounded-[24px] sm:rounded-[28px] p-4 sm:p-5 border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] flex items-center gap-4 cursor-pointer hover:shadow-md transition-all group"
       >
         <div className={cn(
           'w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors',
@@ -319,31 +319,33 @@ export const ToDoLists: React.FC = () => {
 
       {/* Header */}
       <header className="px-4 lg:px-6 py-4 bg-white border-b border-slate-100">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0">
-              <ListTodo size={18} className="text-indigo-600" />
-            </div>
-            <div>
-              <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">To-Do Lists</h1>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
-                {totalActive} active · {totalArchived} archived
-              </p>
-            </div>
+        <div className="flex items-center justify-between gap-3 w-full">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <button
+              type="button"
+              onClick={() => setCurrentPage('dashboard')}
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200/80 hover:bg-slate-50 active:scale-95 shadow-xs flex items-center justify-center text-slate-700 transition-all shrink-0 cursor-pointer"
+              aria-label="Go to dashboard"
+              title="Go to dashboard"
+              data-testid="todo-go-back-button"
+            >
+              <ArrowLeft size={18} className="text-slate-700" />
+            </button>
+            <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none truncate">To-Do Lists</h1>
           </div>
           <button
             type="button"
             onClick={() => setShowCreateModal(true)}
             data-testid="todo-new-list-button"
-            className="bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-indigo-100 hover:bg-indigo-700 active:scale-95 transition-all flex items-center gap-2"
+            className="bg-[#18181B] hover:bg-black text-white px-4 sm:px-5 h-9 sm:h-10 rounded-full font-bold text-xs sm:text-sm active:scale-95 transition-all shadow-xs flex items-center gap-1.5 shrink-0 cursor-pointer"
           >
-            <Plus size={14} />
-            New List
+            <Plus size={16} />
+            <span>New List</span>
           </button>
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 mt-4 p-1 bg-slate-100/60 rounded-xl">
+        <div className="flex gap-1 mt-4 p-1 bg-slate-100/80 rounded-full max-w-sm">
           {(['active', 'archived'] as const).map(tab => (
             <button
               key={tab}
@@ -351,10 +353,10 @@ export const ToDoLists: React.FC = () => {
               onClick={() => setActiveTab(tab)}
               data-testid={`todo-tab-${tab}-button`}
               className={cn(
-                'flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all',
+                'flex-1 py-1.5 sm:py-2 rounded-full text-xs font-bold transition-all cursor-pointer capitalize',
                 activeTab === tab
-                  ? 'bg-white text-indigo-700 shadow-sm'
-                  : 'text-slate-400 hover:text-slate-600'
+                  ? 'bg-white text-slate-900 shadow-xs'
+                  : 'text-slate-500 hover:text-slate-700'
               )}
             >
               {tab} ({tab === 'active' ? totalActive : totalArchived})

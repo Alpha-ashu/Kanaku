@@ -220,15 +220,22 @@ export const FriendsList: React.FC = () => {
   return (
     <CenteredLayout>
       <div className="space-y-6">
-        <div className="flex flex-row flex-wrap items-center justify-between gap-4 w-full">
-          <div className="flex items-center gap-3">
-            <button data-testid="friends-list-back" onClick={() => setCurrentPage('groups')} title="Back" className="p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all">
-              <ArrowLeft size={20} />
+        <div className="flex items-center justify-between gap-3 w-full">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <button
+              data-testid="friends-list-back"
+              onClick={() => setCurrentPage('groups')}
+              title="Back"
+              aria-label="Back"
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200/80 hover:bg-slate-50 active:scale-95 shadow-xs flex items-center justify-center text-slate-700 transition-all shrink-0 cursor-pointer"
+            >
+              <ArrowLeft size={18} className="text-slate-700" />
             </button>
-            <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">Manage Friends</h1>
+            <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none truncate">Manage Friends</h1>
           </div>
-          <div className="flex gap-2">
-            <input data-testid="friends-list-input"
+          <div className="flex items-center gap-2 shrink-0">
+            <input
+              data-testid="friends-list-input"
               ref={fileInputRef}
               type="file"
               accept=".csv,text/csv"
@@ -238,18 +245,20 @@ export const FriendsList: React.FC = () => {
                 if (file) void handleImportCsv(file);
               }}
             />
-            <Button data-testid="friends-list-button"
+            <Button
+              data-testid="friends-list-button"
               variant="secondary"
               disabled={importing}
               onClick={() => fileInputRef.current?.click()}
-              className="border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 h-11 px-4 rounded-xl font-bold flex items-center gap-2"
+              className="border border-slate-200/80 bg-white hover:bg-slate-50 text-slate-700 h-9 sm:h-10 px-3.5 sm:px-4 rounded-full font-bold text-xs sm:text-sm flex items-center gap-1.5 shadow-xs active:scale-95 transition-all cursor-pointer"
             >
-              {importing ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
-              <span>Import CSV</span>
+              {importing ? <Loader2 size={15} className="animate-spin" /> : <Upload size={15} />}
+              <span className="hidden sm:inline">Import CSV</span>
             </Button>
-            <Button data-testid="friends-list-button-2"
+            <Button
+              data-testid="friends-list-button-2"
               onClick={() => setCurrentPage('add-friends')}
-              className="bg-gray-900 hover:bg-gray-800 text-white h-11 px-4 rounded-xl font-bold flex items-center gap-2"
+              className="bg-[#18181B] hover:bg-black text-white h-9 sm:h-10 px-4 sm:px-5 rounded-full font-bold text-xs sm:text-sm flex items-center gap-1.5 shadow-xs active:scale-95 transition-all cursor-pointer"
             >
               <Plus size={16} />
               <span>Add Friend</span>

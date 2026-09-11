@@ -71,7 +71,8 @@ export const filterByTimePeriod = <T extends { date: Date | string }>(
       case 'weekly': {
         const itemDate = toLocalDate(item.date)!;
         const startOfWeek = new Date(now);
-        startOfWeek.setDate(now.getDate() - now.getDay());
+        const dayOffset = (now.getDay() + 6) % 7;
+        startOfWeek.setDate(now.getDate() - dayOffset);
         startOfWeek.setHours(0, 0, 0, 0);
         const endOfWeek = new Date(startOfWeek);
         endOfWeek.setDate(startOfWeek.getDate() + 7);
@@ -102,7 +103,8 @@ export const getPeriodLabel = (period: TimeFilterPeriod, referenceDate: Date = n
       return ref.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
     case 'weekly': {
       const startOfWeek = new Date(ref);
-      startOfWeek.setDate(ref.getDate() - ref.getDay());
+      const dayOffset = (ref.getDay() + 6) % 7;
+      startOfWeek.setDate(ref.getDate() - dayOffset);
       const endOfWeek = new Date(startOfWeek);
       endOfWeek.setDate(startOfWeek.getDate() + 6);
       return `${startOfWeek.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${endOfWeek.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;

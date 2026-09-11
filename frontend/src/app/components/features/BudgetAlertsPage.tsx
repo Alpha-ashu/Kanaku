@@ -218,15 +218,14 @@ export const BudgetAlertsPage: React.FC = () => {
         <div className="pb-4 lg:pb-6">
           <PageHeader
             title="Budget Alerts"
-            subtitle="Configure intelligent warning thresholds, notification mediums, and inspect breach reports"
             icon={<Bell className="text-rose-600" size={20} />}
           >
             <button data-testid="budget-alerts-page-add-budget"
               onClick={() => setShowAddModal(true)}
-              className="flex items-center gap-2 px-4 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition-colors font-medium text-xs font-black uppercase tracking-widest"
+              className="flex items-center gap-1.5 px-4 sm:px-5 h-9 sm:h-10 bg-[#18181B] hover:bg-black text-white rounded-full active:scale-95 transition-all font-bold text-xs sm:text-sm shadow-xs cursor-pointer"
             >
               <Plus size={16} />
-              Add Budget
+              <span>Add Budget</span>
             </button>
           </PageHeader>
         </div>

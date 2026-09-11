@@ -18,7 +18,7 @@ const getWeekdayLabel = (date: Date): string => {
     case 0: return 'SUN';
     case 1: return 'MON';
     case 2: return 'TUE';
-    case 3: return 'WEN'; // matches reference image exact spelling
+    case 3: return 'WED'; // Correct abbreviation for Wednesday
     case 4: return 'THU';
     case 5: return 'FRI';
     case 6: return 'SAT';
@@ -62,7 +62,7 @@ export const AppDateStrip: React.FC<AppDateStripProps> = ({
     onSelectDate(d);
   };
 
-  // 1. Daily items
+  // 1. Daily items: scrollable strip around selected date
   const dailyItems = useMemo(() => {
     const list: { key: string; date: Date; topLabel: string; mainLabel: string; isWeekend: boolean; isSelected: boolean }[] = [];
     const base = new Date(selectedDate || new Date());
@@ -83,12 +83,14 @@ export const AppDateStrip: React.FC<AppDateStripProps> = ({
     return list;
   }, [selectedDate?.getFullYear(), selectedDate?.getMonth(), selectedDate?.getDate()]);
 
-  // 2. Weekly items: Exactly 7 days date option (Sunday to Saturday) of the selected week
+  // 2. Weekly items: Exactly 7 days (Monday through Sunday) of the active week
   const weeklyItems = useMemo(() => {
     const list: { key: string; date: Date; topLabel: string; mainLabel: string; isWeekend: boolean; isSelected: boolean }[] = [];
     const base = new Date(selectedDate || new Date());
     const startOfWeek = new Date(base);
-    startOfWeek.setDate(base.getDate() - base.getDay());
+    // Standard Monday-start week: Monday = 0, Tuesday = 1, ... Sunday = 6
+    const dayOffset = (base.getDay() + 6) % 7;
+    startOfWeek.setDate(base.getDate() - dayOffset);
     startOfWeek.setHours(0, 0, 0, 0);
 
     for (let i = 0; i < 7; i++) {
@@ -160,8 +162,9 @@ export const AppDateStrip: React.FC<AppDateStripProps> = ({
     }
   }, [period, dailyItems, weeklyItems, monthlyItems, yearlyItems]);
 
-  // Auto scroll to selected date on mount or change
+  // Auto scroll to selected date on mount or change (except for weekly which fits all 7 days)
   useEffect(() => {
+    if (period === 'weekly') return;
     if (!scrollRef.current) return;
     const timeout = setTimeout(() => {
       const selectedEl = scrollRef.current?.querySelector('[data-selected="true"]');
@@ -172,87 +175,95 @@ export const AppDateStrip: React.FC<AppDateStripProps> = ({
     return () => clearTimeout(timeout);
   }, [selectedDate, period]);
 
+  const showChevrons = true;
+
   return (
     <div
       className={cn(
-        'w-full max-w-full overflow-hidden select-none py-1 flex items-center justify-center gap-1 sm:gap-2',
+        'w-full flex items-center justify-center select-none py-1',
         className
       )}
     >
-      {period === 'weekly' && (
-        <button
-          type="button"
-          onClick={handlePrev}
-          className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition-all shrink-0 active:scale-95 cursor-pointer"
-          title="Previous week"
-        >
-          <ChevronLeft size={18} />
-        </button>
-      )}
-
-      <div
-        ref={scrollRef}
-        className={cn(
-          'flex items-center gap-2 sm:gap-4 lg:gap-6 overflow-x-auto scrollbar-none snap-x px-1 py-2',
-          period === 'weekly' ? 'justify-center max-w-xl' : 'justify-between sm:justify-center w-full'
+      <div className="flex items-center justify-center gap-1.5 sm:gap-3 md:gap-4 max-w-full">
+        {showChevrons && (
+          <button
+            type="button"
+            onClick={handlePrev}
+            className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-800 hover:bg-slate-100/90 active:scale-90 transition-all shrink-0 cursor-pointer border border-slate-200/60 hover:border-slate-300 shadow-2xs"
+            title="Previous"
+            aria-label="Previous"
+          >
+            <ChevronLeft size={18} className="stroke-[2.5]" />
+          </button>
         )}
-      >
-        {items.map((item) => {
-          if (item.isSelected) {
+
+        <div
+          ref={scrollRef}
+          className={cn(
+            'flex items-center py-2 px-1',
+            period === 'weekly'
+              ? 'justify-center overflow-visible gap-1.5 sm:gap-3 md:gap-5'
+              : 'justify-start sm:justify-center overflow-x-auto scrollbar-none snap-x gap-2 sm:gap-4 lg:gap-6'
+          )}
+        >
+          {items.map((item) => {
+            if (item.isSelected) {
+              return (
+                <button
+                  key={item.key}
+                  type="button"
+                  data-selected="true"
+                  onClick={() => onSelectDate(item.date)}
+                  className="relative flex flex-col items-center justify-center bg-[#0F172A] rounded-[22px] sm:rounded-[24px] py-2.5 sm:py-3 px-3 sm:px-4 min-w-[48px] sm:min-w-[56px] shadow-xl shadow-slate-950/20 snap-center shrink-0 cursor-pointer transition-all duration-200 focus:outline-none z-10"
+                >
+                  <span className="text-[#FF2D78] font-black text-[10px] sm:text-xs tracking-wider uppercase leading-none">
+                    {item.topLabel}
+                  </span>
+                  <span className="text-white font-black text-base sm:text-lg leading-tight mt-1.5 whitespace-nowrap">
+                    {item.mainLabel}
+                  </span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#FF2D78] mt-1 shadow-xs shadow-pink-500/50" />
+                </button>
+              );
+            }
+
             return (
               <button
                 key={item.key}
                 type="button"
-                data-selected="true"
+                data-selected="false"
                 onClick={() => onSelectDate(item.date)}
-                className="relative flex flex-col items-center justify-center bg-[#0F172A] rounded-[20px] sm:rounded-[22px] py-2.5 sm:py-3.5 px-3.5 sm:px-4.5 min-w-[54px] sm:min-w-[64px] shadow-xl shadow-slate-900/15 snap-center shrink-0 cursor-pointer -translate-y-1 sm:-translate-y-1.5 transition-all focus:outline-none z-10"
+                className="flex flex-col items-center justify-center min-w-[38px] sm:min-w-[46px] py-2.5 sm:py-3 px-1.5 sm:px-2 rounded-[20px] cursor-pointer transition-all duration-150 snap-center shrink-0 hover:bg-slate-100/70 active:scale-95 focus:outline-none"
               >
-                <span className="text-[#FF2D78] font-black text-[11px] sm:text-xs tracking-wider uppercase leading-none">
+                <span
+                  className={cn(
+                    'font-black text-[10px] sm:text-xs tracking-wider uppercase leading-none transition-colors',
+                    item.isWeekend ? 'text-[#FF2D55]' : 'text-[#94A3B8]'
+                  )}
+                >
                   {item.topLabel}
                 </span>
-                <span className="text-white font-black text-base sm:text-xl leading-none mt-1.5 whitespace-nowrap">
+                <span className="text-[#64748B] font-bold text-base sm:text-lg leading-tight mt-1.5 tracking-tight whitespace-nowrap">
                   {item.mainLabel}
                 </span>
-                {/* Pinned bottom magenta dot indicator */}
-                <span className="w-1.5 h-1.5 rounded-full bg-[#FF2D78] absolute -bottom-1 left-1/2 -translate-x-1/2 shadow-xs shadow-pink-500/50" />
+                <span className="w-1.5 h-1.5 rounded-full bg-transparent mt-1" />
               </button>
             );
-          }
+          })}
+        </div>
 
-          return (
-            <button
-              key={item.key}
-              type="button"
-              data-selected="false"
-              onClick={() => onSelectDate(item.date)}
-              className="flex flex-col items-center justify-center min-w-[44px] sm:min-w-[50px] py-2 px-1 rounded-2xl cursor-pointer transition-all snap-center shrink-0 hover:opacity-80 active:scale-95 focus:outline-none"
-            >
-              <span
-                className={cn(
-                  'font-black text-[11px] sm:text-xs tracking-wider uppercase leading-none mb-1.5 transition-colors',
-                  item.isWeekend ? 'text-[#FF2D55]' : 'text-[#94A3B8]'
-                )}
-              >
-                {item.topLabel}
-              </span>
-              <span className="text-[#64748B] font-black text-sm sm:text-lg leading-none tracking-tight whitespace-nowrap">
-                {item.mainLabel}
-              </span>
-            </button>
-          );
-        })}
+        {showChevrons && (
+          <button
+            type="button"
+            onClick={handleNext}
+            className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-800 hover:bg-slate-100/90 active:scale-90 transition-all shrink-0 cursor-pointer border border-slate-200/60 hover:border-slate-300 shadow-2xs"
+            title="Next"
+            aria-label="Next"
+          >
+            <ChevronRight size={18} className="stroke-[2.5]" />
+          </button>
+        )}
       </div>
-
-      {period === 'weekly' && (
-        <button
-          type="button"
-          onClick={handleNext}
-          className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition-all shrink-0 active:scale-95 cursor-pointer"
-          title="Next week"
-        >
-          <ChevronRight size={18} />
-        </button>
-      )}
     </div>
   );
 };

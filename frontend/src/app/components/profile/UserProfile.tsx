@@ -52,7 +52,6 @@ const ProfileSkeleton: React.FC = () => {
         <div className="px-4 sm:px-6 lg:px-8 pt-6 lg:pt-10">
           <PageHeader
             title="User Profile"
-            subtitle="Manage your personal information"
             icon={<User size={20} className="sm:w-6 sm:h-6" />}
             showBack
             backTo="dashboard"
@@ -941,7 +940,6 @@ export const UserProfile: React.FC = () => {
  <div className="px-4 sm:px-6 lg:px-8 pt-6 lg:pt-10">
  <PageHeader
  title="User Profile"
- subtitle="Manage your personal information"
  icon={<User size={20} className="sm:w-6 sm:h-6" />}
  showBack
  backTo="dashboard"

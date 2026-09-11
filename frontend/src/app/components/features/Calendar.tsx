@@ -300,34 +300,33 @@ export const Calendar: React.FC = () => {
  const today = new Date();
  const isCurrentMonth = today.getMonth() === currentDate.getMonth() && today.getFullYear() === currentDate.getFullYear();
  const summaryAmountClass = 'w-full text-center text-[clamp(0.98rem,1.55vw,1.55rem)] font-bold tracking-[-0.03em] leading-tight tabular-nums break-words [overflow-wrap:anywhere]';
- const summaryCardClass = 'rounded-[20px] px-3 py-4 sm:px-4 sm:py-4.5 shadow-sm transition-transform hover:-translate-y-0.5 min-w-0';
+  const summaryCardClass = 'rounded-[24px] sm:rounded-[28px] px-3 py-4 sm:px-4 sm:py-4.5 border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] transition-transform hover:-translate-y-0.5 min-w-0';
 
- return (
- <div className="px-4 sm:px-6 lg:px-8 py-4 lg:py-6 w-full space-y-4 sm:space-y-5">
- {/* App Header */}
- <PageHeader
- title="Calendar"
- subtitle="Track activities, reminders & transactions"
- icon={<CalendarIcon size={20} className="sm:w-6 sm:h-6" />}
- >
- <div className="flex items-center gap-2 sm:gap-3">
- <Button data-testid="calendar-today"
- variant="secondary"
- onClick={handleToday}
- className="shadow-sm border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 text-xs sm:text-sm h-9 sm:h-10 px-3 sm:px-4"
- >
- Today
- </Button>
- <Button data-testid="calendar-button"
- onClick={() => setShowReminderModal(true)}
- className="shadow-lg bg-black text-white hover:bg-gray-900 text-xs sm:text-sm h-9 sm:h-10 px-3 sm:px-4"
- >
- <Plus size={14} className="sm:w-[18px] sm:h-[18px] mr-1 sm:mr-2" />
- <span className="hidden sm:inline">Add Reminder</span>
- <span className="inline sm:hidden">Add</span>
- </Button>
- </div>
- </PageHeader>
+  return (
+  <div className="px-4 sm:px-6 lg:px-8 py-4 lg:py-6 w-full space-y-4 sm:space-y-5">
+  {/* App Header */}
+  <PageHeader
+  title="Calendar"
+  icon={<CalendarIcon size={20} className="sm:w-6 sm:h-6" />}
+  >
+  <div className="flex items-center gap-2 sm:gap-2.5">
+  <Button data-testid="calendar-today"
+  variant="secondary"
+  onClick={handleToday}
+  className="shadow-xs border border-slate-200/80 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs sm:text-sm h-9 sm:h-10 px-4 rounded-full active:scale-95 transition-all cursor-pointer"
+  >
+  Today
+  </Button>
+  <Button data-testid="calendar-button"
+  onClick={() => setShowReminderModal(true)}
+  className="shadow-xs bg-[#18181B] text-white hover:bg-black font-bold text-xs sm:text-sm h-9 sm:h-10 px-4 sm:px-5 rounded-full active:scale-95 transition-all cursor-pointer"
+  >
+  <Plus size={15} className="mr-1.5" />
+  <span className="hidden sm:inline">Add Reminder</span>
+  <span className="inline sm:hidden">Add</span>
+  </Button>
+  </div>
+  </PageHeader>
 
  {/* Time Filter */}
  <div className="flex justify-start">
@@ -387,8 +386,8 @@ export const Calendar: React.FC = () => {
  </motion.div>
  </div>
 
- {/* Calendar Card */}
- <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden max-w-[980px] mx-auto">
+  {/* Calendar Card */}
+  <div className="bg-white rounded-[28px] sm:rounded-[32px] shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] border border-slate-100 overflow-hidden max-w-[980px] mx-auto">
  {/* Month & Year Navigation Header */}
  <div className="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 px-3 sm:px-5 py-3.5 flex items-center justify-between gap-2">
     {/* Left Controls: Previous Year & Previous Month */}

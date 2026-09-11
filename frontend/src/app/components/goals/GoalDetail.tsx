@@ -6,7 +6,7 @@ import { Button } from '@/app/components/ui/button';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { Card } from '@/app/components/ui/card';
 import { getGoalCategoryMeta, getGoalProgress, getMilestoneLabel, getMonthlySuggestion } from '@/lib/goal-utils';
-import { ArrowDownLeft, MessageSquare, Plus, Target } from 'lucide-react';
+import { ArrowDownLeft, MessageSquare, Plus, Target, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { takeVoiceDraft, VOICE_GOAL_DRAFT_KEY, type VoiceGoalDraft } from '@/lib/voiceDrafts';
 import { formatCurrencyAmount } from '@/lib/currencyUtils';
@@ -294,19 +294,22 @@ export const GoalDetail: React.FC = () => {
   <CenteredLayout>
   <div className="space-y-6">
   
-  <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-  <div className="flex items-center gap-4">
-  <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">
-  {goal.name}
-  </h1>
-  </div>
-  <button
-  onClick={() => setCurrentPage('goals')}
-  data-testid="goals-detail-back-button"
-  className="px-6 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-sm font-semibold rounded-full transition-colors"
-  >
-  Back to Goals
-  </button>
+  <div className="flex items-center justify-between gap-3 w-full">
+    <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+      <button
+        type="button"
+        onClick={() => setCurrentPage('goals')}
+        className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200/80 hover:bg-slate-50 active:scale-95 shadow-xs flex items-center justify-center text-slate-700 transition-all shrink-0 cursor-pointer"
+        aria-label="Back to Goals"
+        title="Back to Goals"
+        data-testid="goals-detail-back-button"
+      >
+        <ArrowLeft size={18} className="text-slate-700" />
+      </button>
+      <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none truncate">
+        {goal.name}
+      </h1>
+    </div>
   </div>
 
   <div className="space-y-6">

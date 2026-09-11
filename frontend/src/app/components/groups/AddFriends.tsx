@@ -128,31 +128,37 @@ export const AddFriends: React.FC = () => {
 
   {/* Header */}
   <header className="px-4 lg:px-6 py-4 bg-white border-b border-slate-100">
-  <div className="flex flex-row flex-wrap items-center justify-between gap-4 w-full">
-  <div className="flex items-center gap-3">
-  <button data-testid="add-friends-back" onClick={() => setCurrentPage('friends')} title="Back" className="lg:!hidden p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-all">
-  <ArrowLeft size={20} />
-  </button>
-  <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">Add Friends</h1>
-  </div>
-  <div className="flex items-center gap-2">
-    <input
-      type="file"
-      ref={vcfInputRef}
-      accept=".vcf,.csv,text/vcard,text/csv"
-      className="hidden"
-      onChange={handleContactFileChange}
-    />
-    <button
-      type="button"
-      onClick={handlePickContacts}
-      data-testid="add-friends-import-contacts"
-      className="flex items-center gap-1.5 px-3 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl text-xs font-bold transition-all border border-indigo-200"
-      title="Import contacts from device, .vcf, or .csv file"
-    >
-      <Contact size={15} />
-      <span>Import Contacts</span>
-    </button>
+    <div className="flex items-center justify-between gap-3 w-full">
+      <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+        <button
+          data-testid="add-friends-back"
+          onClick={() => setCurrentPage('friends')}
+          title="Back"
+          aria-label="Back"
+          className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200/80 hover:bg-slate-50 active:scale-95 shadow-xs flex items-center justify-center text-slate-700 transition-all shrink-0 cursor-pointer"
+        >
+          <ArrowLeft size={18} className="text-slate-700" />
+        </button>
+        <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none truncate">Add Friends</h1>
+      </div>
+      <div className="flex items-center gap-2 shrink-0">
+        <input
+          type="file"
+          ref={vcfInputRef}
+          accept=".vcf,.csv,text/vcard,text/csv"
+          className="hidden"
+          onChange={handleContactFileChange}
+        />
+        <button
+          type="button"
+          onClick={handlePickContacts}
+          data-testid="add-friends-import-contacts"
+          className="flex items-center gap-1.5 px-3.5 sm:px-4 py-1.5 sm:py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-full text-xs font-bold transition-all border border-purple-200/80 cursor-pointer"
+          title="Import contacts from device, .vcf, or .csv file"
+        >
+          <Contact size={14} />
+          <span>Import Contacts</span>
+        </button>
   </div>
   </div>
   </header>

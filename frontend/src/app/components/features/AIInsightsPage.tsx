@@ -358,7 +358,6 @@ export const AIInsightsPage: React.FC = () => {
         <div className="pb-4 lg:pb-6">
           <PageHeader
             title="AI Insights"
-            subtitle="Real-time spending analysis and personalized financial recommendations"
             icon={<Brain className="text-purple-600" size={20} />}
           />
         </div>
@@ -393,7 +392,7 @@ export const AIInsightsPage: React.FC = () => {
             </div>
             <button data-testid="aiinsights-page-refresh-analysis"
               onClick={() => setLastRefreshed(new Date())}
-              className="bg-white text-indigo-900 px-6 py-4 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-purple-50 active:scale-95 transition-all shadow-lg text-center shrink-0"
+              className="bg-white text-indigo-900 px-6 py-3.5 rounded-full text-xs font-black uppercase tracking-widest hover:bg-purple-50 active:scale-95 transition-all shadow-lg text-center shrink-0 cursor-pointer"
             >
               Refresh Analysis
             </button>
