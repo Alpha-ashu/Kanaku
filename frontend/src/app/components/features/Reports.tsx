@@ -15,7 +15,7 @@ import {
  ResponsiveContainer,
  Legend,
 } from 'recharts';
-import { Calendar, Download, FileSpreadsheet, FileText, MoreHorizontal, Share2, TrendingUp } from 'lucide-react';
+import { Calendar, Download, FileSpreadsheet, FileText, MoreHorizontal, Share2, TrendingUp, ArrowLeft } from 'lucide-react';
 import { Card } from '@/app/components/ui/card';
 import { Button } from '@/app/components/ui/button';
 import { PageHeader } from '@/app/components/ui/PageHeader';
@@ -443,10 +443,23 @@ export const Reports: React.FC = () => {
  return (
  <CenteredLayout>
  <div className="space-y-6 sm:space-y-8">
- <div className="flex flex-row flex-wrap items-center justify-between gap-4 w-full">
- <div className="flex items-center gap-4">
- <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">Reports & Analytics</h1>
- </div>
+  <div className="flex flex-row flex-wrap items-center justify-between gap-3 w-full">
+    <div className="flex items-center gap-3">
+      <button
+        type="button"
+        onClick={() => setCurrentPage('dashboard')}
+        className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200/80 hover:bg-slate-50 active:scale-95 shadow-xs flex items-center justify-center text-slate-700 transition-all shrink-0 cursor-pointer"
+        aria-label="Go to dashboard"
+        title="Go to dashboard"
+        data-testid="reports-go-back-button"
+      >
+        <ArrowLeft size={18} className="text-slate-700" />
+      </button>
+      <div>
+        <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight leading-none">Reports & Analytics</h1>
+        <p className="text-xs sm:text-sm text-slate-400 font-medium mt-0.5">Visualize your financial performance</p>
+      </div>
+    </div>
  <div className="flex flex-wrap gap-2">
  {canPdf && (
  <Button
@@ -660,17 +673,26 @@ export const Reports: React.FC = () => {
  {expenseBreakdown.length === 0 ? (
  <p className="text-sm text-gray-500">No expenses found for this range.</p>
  ) : (
- <ResponsiveContainer width="100%" height={280}>
- <PieChart>
- <Pie data={expenseBreakdown} dataKey="value" nameKey="name" outerRadius={100}>
- {expenseBreakdown.map((entry, index) => (
- <Cell key={`cell-${entry.name}`} fill={chartColors[index % chartColors.length]} />
- ))}
- </Pie>
- <Tooltip formatter={(value) => formatCurrency(Number(value))} />
- <Legend />
- </PieChart>
- </ResponsiveContainer>
+ <ResponsiveContainer key={timeRange} width="100%" height={280}>
+  <PieChart>
+  <Pie
+    data={expenseBreakdown}
+    dataKey="value"
+    nameKey="name"
+    outerRadius={100}
+    isAnimationActive={true}
+    animationBegin={0}
+    animationDuration={800}
+    animationEasing="ease-out"
+  >
+  {expenseBreakdown.map((entry, index) => (
+  <Cell key={`cell-${entry.name}`} fill={chartColors[index % chartColors.length]} />
+  ))}
+  </Pie>
+  <Tooltip formatter={(value) => formatCurrency(Number(value))} />
+  <Legend />
+  </PieChart>
+  </ResponsiveContainer>
  )}
  </Card>
 
@@ -679,15 +701,23 @@ export const Reports: React.FC = () => {
  {expenseBreakdown.length === 0 ? (
  <p className="text-sm text-gray-500">No expenses found for this range.</p>
  ) : (
- <ResponsiveContainer width="100%" height={280}>
- <BarChart data={expenseBreakdown.slice(0, 8)}>
- <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
- <XAxis dataKey="name" angle={-20} textAnchor="end" height={70} stroke="#9ca3af" />
- <YAxis stroke="#9ca3af" />
- <Tooltip formatter={(value) => formatCurrency(Number(value))} />
- <Bar dataKey="value" fill="#111827" radius={[8, 8, 0, 0]} />
- </BarChart>
- </ResponsiveContainer>
+ <ResponsiveContainer key={timeRange} width="100%" height={280}>
+  <BarChart data={expenseBreakdown.slice(0, 8)}>
+  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+  <XAxis dataKey="name" angle={-20} textAnchor="end" height={70} stroke="#9ca3af" />
+  <YAxis stroke="#9ca3af" />
+  <Tooltip formatter={(value) => formatCurrency(Number(value))} />
+  <Bar
+    dataKey="value"
+    fill="#111827"
+    radius={[8, 8, 0, 0]}
+    isAnimationActive={true}
+    animationBegin={0}
+    animationDuration={800}
+    animationEasing="ease-out"
+  />
+  </BarChart>
+  </ResponsiveContainer>
  )}
  </Card>
  </div>
@@ -697,17 +727,17 @@ export const Reports: React.FC = () => {
  {cashFlowMonthly.length === 0 ? (
  <p className="text-sm text-gray-500">No cash flow data available.</p>
  ) : (
- <ResponsiveContainer width="100%" height={300}>
- <BarChart data={cashFlowMonthly}>
- <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
- <XAxis dataKey="month" stroke="#9ca3af" />
- <YAxis stroke="#9ca3af" />
- <Tooltip formatter={(value) => formatCurrency(Number(value))} />
- <Legend />
- <Bar dataKey="income" fill="#10B981" name="Income" radius={[6, 6, 0, 0]} />
- <Bar dataKey="expense" fill="#EF4444" name="Expense" radius={[6, 6, 0, 0]} />
- </BarChart>
- </ResponsiveContainer>
+ <ResponsiveContainer key={timeRange} width="100%" height={300}>
+  <BarChart data={cashFlowMonthly}>
+  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+  <XAxis dataKey="month" stroke="#9ca3af" />
+  <YAxis stroke="#9ca3af" />
+  <Tooltip formatter={(value) => formatCurrency(Number(value))} />
+  <Legend />
+  <Bar dataKey="income" fill="#10B981" name="Income" radius={[6, 6, 0, 0]} isAnimationActive={true} animationBegin={0} animationDuration={900} animationEasing="ease-out" />
+  <Bar dataKey="expense" fill="#EF4444" name="Expense" radius={[6, 6, 0, 0]} isAnimationActive={true} animationBegin={100} animationDuration={900} animationEasing="ease-out" />
+  </BarChart>
+  </ResponsiveContainer>
  )}
  </Card>
 
@@ -717,29 +747,39 @@ export const Reports: React.FC = () => {
  {savingsGrowth.length === 0 ? (
  <p className="text-sm text-gray-500">No savings data available.</p>
  ) : (
- <ResponsiveContainer width="100%" height={280}>
- <LineChart data={savingsGrowth}>
- <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
- <XAxis dataKey="date" stroke="#9ca3af" />
- <YAxis stroke="#9ca3af" />
- <Tooltip formatter={(value) => formatCurrency(Number(value))} />
- <Line type="monotone" dataKey="savings" stroke="#2563EB" strokeWidth={2.5} />
- </LineChart>
- </ResponsiveContainer>
+ <ResponsiveContainer key={timeRange} width="100%" height={280}>
+  <LineChart data={savingsGrowth}>
+  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+  <XAxis dataKey="date" stroke="#9ca3af" />
+  <YAxis stroke="#9ca3af" />
+  <Tooltip formatter={(value) => formatCurrency(Number(value))} />
+  <Line
+    type="monotone"
+    dataKey="savings"
+    stroke="#2563EB"
+    strokeWidth={2.5}
+    dot={false}
+    isAnimationActive={true}
+    animationBegin={0}
+    animationDuration={1000}
+    animationEasing="ease-out"
+  />
+  </LineChart>
+  </ResponsiveContainer>
  )}
  </Card>
 
  <Card data-testid="reports-card-11" variant="glass" className="p-6">
  <h3 className="text-lg font-display font-bold text-gray-900 mb-4">Income vs Expense</h3>
- <ResponsiveContainer width="100%" height={280}>
- <BarChart data={incomeExpenseData}>
- <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
- <XAxis dataKey="name" stroke="#9ca3af" />
- <YAxis stroke="#9ca3af" />
- <Tooltip formatter={(value) => formatCurrency(Number(value))} />
- <Bar dataKey="value" fill="#0F172A" radius={[8, 8, 0, 0]} />
- </BarChart>
- </ResponsiveContainer>
+ <ResponsiveContainer key={timeRange} width="100%" height={280}>
+  <BarChart data={incomeExpenseData}>
+  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+  <XAxis dataKey="name" stroke="#9ca3af" />
+  <YAxis stroke="#9ca3af" />
+  <Tooltip formatter={(value) => formatCurrency(Number(value))} />
+  <Bar dataKey="value" fill="#0F172A" radius={[8, 8, 0, 0]} isAnimationActive={true} animationBegin={0} animationDuration={800} animationEasing="ease-out" />
+  </BarChart>
+  </ResponsiveContainer>
  </Card>
  </div>
 

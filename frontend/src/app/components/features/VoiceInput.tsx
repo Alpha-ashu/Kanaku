@@ -95,94 +95,131 @@ function reducer(s: VoiceState, a: VA): VoiceState {
   }
 }
 
-// ─── Waveform bars using Web Audio API ────────────────────────────────────────
+// ─── Waveform bars using canvas (no React state — avoids 60fps React re-renders) ─────────────────────
+// The previous implementation called setBars() on every rAF tick (60fps), causing
+// React to re-render VoiceInput's entire subtree at 60fps → layout recalculations
+// → scroll position jitter. Canvas draws directly to the DOM with zero React involvement.
 
 const Waveform = memo(({ active }: { active: boolean }) => {
   const BAR_COUNT = 28;
-  const [bars, setBars] = useState<number[]>(Array(BAR_COUNT).fill(4));
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const animRef = useRef<number | undefined>(undefined);
-  const analyserRef = useRef<AnalyserNode | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const activeRef = useRef(active);
+
+  // Keep ref in sync without re-mounting the effect
+  useEffect(() => {
+    activeRef.current = active;
+  }, [active]);
 
   useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx2d = canvas.getContext('2d');
+    if (!ctx2d) return;
+
+    // Draw bars directly onto canvas — zero React state, zero re-renders
+    const drawBars = (heights: number[]) => {
+      const W = canvas.width;
+      const H = canvas.height;
+      ctx2d.clearRect(0, 0, W, H);
+      const barW = 3;
+      const gap = 3;
+      const total = barW + gap;
+      const startX = Math.max(0, (W - heights.length * total) / 2);
+
+      heights.forEach((h, i) => {
+        const x = startX + i * total;
+        const y = (H - h) / 2;
+        if (activeRef.current) {
+          const grad = ctx2d.createLinearGradient(x, y + h, x, y);
+          grad.addColorStop(0, '#7c3aed'); // violet-600
+          grad.addColorStop(1, '#e879f9'); // fuchsia-400
+          ctx2d.fillStyle = grad;
+        } else {
+          ctx2d.fillStyle = '#e2e8f0'; // slate-200
+        }
+        const r = Math.min(1.5, h / 2);
+        ctx2d.beginPath();
+        if (ctx2d.roundRect) {
+          ctx2d.roundRect(x, y, barW, h, r);
+        } else {
+          ctx2d.rect(x, y, barW, h);
+        }
+        ctx2d.fill();
+      });
+    };
+
+    // Idle state: draw flat bars and stop
     if (!active) {
-      setBars(Array(BAR_COUNT).fill(4));
+      drawBars(Array(BAR_COUNT).fill(4));
       if (animRef.current) cancelAnimationFrame(animRef.current);
       streamRef.current?.getTracks().forEach(t => t.stop());
       return;
     }
 
-    // On native platforms (Android/iOS), do not call getUserMedia to avoid locking the microphone from native SpeechRecognizer
-    if (Capacitor.isNativePlatform()) {
+    // Random animation fallback (native platform or mic unavailable)
+    const startRandomAnimation = () => {
       const tick = () => {
-        setBars(prev => prev.map(() => active ? 8 + Math.random() * 38 : 4));
+        if (!activeRef.current) {
+          drawBars(Array(BAR_COUNT).fill(4));
+          return;
+        }
+        drawBars(Array.from({ length: BAR_COUNT }, () => 8 + Math.random() * 38));
         animRef.current = requestAnimationFrame(tick);
       };
-      tick();
-      return () => {
-        if (animRef.current) cancelAnimationFrame(animRef.current);
-      };
+      animRef.current = requestAnimationFrame(tick);
+    };
+
+    // On native (Android/iOS), skip getUserMedia to avoid locking the mic
+    if (Capacitor.isNativePlatform()) {
+      startRandomAnimation();
+      return () => { if (animRef.current) cancelAnimationFrame(animRef.current); };
     }
 
-    let ctx: AudioContext | undefined;
+    let audioCtx: AudioContext | undefined;
     if (typeof navigator !== 'undefined' && navigator.mediaDevices?.getUserMedia) {
       navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
         streamRef.current = stream;
-        ctx = new AudioContext();
-        const src = ctx.createMediaStreamSource(stream);
-        const analyser = ctx.createAnalyser();
+        audioCtx = new AudioContext();
+        const src = audioCtx.createMediaStreamSource(stream);
+        const analyser = audioCtx.createAnalyser();
         analyser.fftSize = 128;
         src.connect(analyser);
-        analyserRef.current = analyser;
         const data = new Uint8Array(analyser.frequencyBinCount);
 
         const tick = () => {
+          if (!activeRef.current) { drawBars(Array(BAR_COUNT).fill(4)); return; }
           analyser.getByteFrequencyData(data);
           const step = Math.floor(data.length / BAR_COUNT);
-          setBars(Array.from({ length: BAR_COUNT }, (_, i) => {
+          const heights = Array.from({ length: BAR_COUNT }, (_, i) => {
             const v = data[i * step] ?? 0;
             return Math.max(4, Math.min(52, (v / 255) * 52));
-          }));
+          });
+          drawBars(heights);
           animRef.current = requestAnimationFrame(tick);
         };
         tick();
-      }).catch(() => {
-        // mic access denied or in use — animate smoothly
-        const tick = () => {
-          setBars(prev => prev.map(() => active ? 8 + Math.random() * 32 : 4));
-          animRef.current = requestAnimationFrame(tick);
-        };
-        tick();
-      });
+      }).catch(startRandomAnimation);
     } else {
-      const tick = () => {
-        setBars(prev => prev.map(() => active ? 8 + Math.random() * 32 : 4));
-        animRef.current = requestAnimationFrame(tick);
-      };
-      tick();
+      startRandomAnimation();
     }
 
     return () => {
       if (animRef.current) cancelAnimationFrame(animRef.current);
       streamRef.current?.getTracks().forEach(t => t.stop());
-      ctx?.close().catch(() => undefined);
+      audioCtx?.close().catch(() => undefined);
     };
   }, [active]);
 
   return (
-    <div className="flex items-center justify-center gap-[3px] h-16">
-      {bars.map((h, i) => (
-        <motion.div
-          key={i}
-          animate={{ height: h }}
-          transition={{ duration: 0.05, ease: 'easeOut' }}
-          className={`w-[3px] rounded-full ${active
-            ? 'bg-gradient-to-t from-violet-600 to-fuchsia-400'
-            : 'bg-slate-200'}`}
-          style={{ minHeight: 4 }}
-        />
-      ))}
-    </div>
+    <canvas
+      ref={canvasRef}
+      width={BAR_COUNT * 6}
+      height={64}
+      className="block mx-auto"
+      aria-hidden="true"
+    />
   );
 });
 Waveform.displayName = 'Waveform';
@@ -415,10 +452,22 @@ export function VoiceInput() {
   const isListening  = state.mode === 'listening';
   const isProcessing = state.mode === 'processing';
 
-  // Auto-focus manual input when opened
+  // Auto-focus manual input when opened — also scrolls the input into view so
+  // it's always visible above the software keyboard on mobile
   useEffect(() => {
-    if (state.showManualInput) setTimeout(() => inputRef.current?.focus(), 100);
+    if (state.showManualInput) {
+      setTimeout(() => {
+        const el = inputRef.current;
+        if (el) {
+          el.focus();
+          // Hint to the browser to scroll the element into the visible viewport
+          // (important on iOS where the keyboard can otherwise hide the focused input)
+          el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      }, 120);
+    }
   }, [state.showManualInput]);
+
 
   const handleHintClick = (text: string) => {
     dispatch({ type: 'SET_MANUAL_INPUT', payload: text });
@@ -426,7 +475,16 @@ export function VoiceInput() {
   };
 
   return (
-    <div className="h-[calc(100dvh-4rem)] lg:h-[calc(100vh-4rem)] flex flex-col pb-[calc(env(safe-area-inset-bottom,0px)+6rem)] lg:pb-6 overflow-hidden">
+    <div
+      className="flex flex-col overflow-hidden"
+      style={{
+        // Original: calc(100dvh - 4rem) accounts for the top header height.
+        // Subtract --keyboard-height so the container shrinks when the keyboard
+        // opens (set by Capacitor listeners on native, VisualViewport on web).
+        height: 'calc(100dvh - 4rem - var(--keyboard-height, 0px))',
+        paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 6rem)',
+      }}
+    >
 
       {/* ── Header ─────────────────────────────────────────── */}
       <div className="flex items-center justify-between px-6 pt-6 pb-2 shrink-0">
@@ -619,16 +677,34 @@ export function VoiceInput() {
         </p>
       </div>
 
-      {/* ── Manual input sheet ─────────────────────────────── */}
+      {/* ── Manual input sheet — keyboard-aware with backdrop ──────────────── */}
       <AnimatePresence>
         {state.showManualInput && (
-          <motion.div
-            initial={{ opacity: 0, y: 40, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 40, scale: 0.95 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="absolute bottom-24 left-4 right-4 md:left-0 md:right-0 md:w-full md:max-w-lg mx-auto z-50 bg-white rounded-3xl shadow-[0_12px_40px_rgba(0,0,0,0.12)] border border-slate-100/80"
-          >
+          <>
+            {/* Dimmed backdrop — tap anywhere outside the sheet to close */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-40 bg-slate-900/30 backdrop-blur-[2px]"
+              onClick={() => dispatch({ type: 'TOGGLE_MANUAL', payload: false })}
+            />
+            <motion.div
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 40 }}
+              transition={{ type: 'spring', damping: 28, stiffness: 320 }}
+              // Fixed position above the bottom nav bar (~5rem) + safe area + keyboard.
+              // --keyboard-height is updated by Capacitor (native) and
+              // VisualViewport listener (web) in App.tsx.
+              className="fixed left-0 right-0 z-50 mx-4 bg-white rounded-3xl shadow-[0_-4px_40px_rgba(0,0,0,0.12)] border border-slate-100/80"
+              style={{
+                bottom: 'calc(var(--keyboard-height, 0px) + env(safe-area-inset-bottom, 0px) + 5.5rem)',
+                maxWidth: '32rem',
+                marginLeft: 'auto',
+                marginRight: 'auto',
+              }}
+            >
             <div className="p-5 space-y-4">
               <div className="flex items-center justify-between">
                 <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Type your transaction</p>
@@ -676,6 +752,7 @@ export function VoiceInput() {
               </div>
             </div>
           </motion.div>
+          </>
         )}
       </AnimatePresence>
 

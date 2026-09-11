@@ -1,0 +1,234 @@
+/* ==========================================================================
+   KANAKU Responsive Layout System
+   Viewport-safe containers, modal sizing, safe-area handling, scroll fixes.
+   Complements design-system.css and index.css.
+   ========================================================================== */
+
+/* --- Responsive Content Container ----------------------------------------- */
+.content-container {
+  width: 100%;
+  max-width: 100%;
+  padding-left: clamp(1rem, 4vw, 2.5rem);
+  padding-right: clamp(1rem, 4vw, 2.5rem);
+  margin-left: auto;
+  margin-right: auto;
+  box-sizing: border-box;
+}
+@media (min-width: 1280px) {
+  .content-container { max-width: 1280px; }
+}
+
+/* --- Centered Tab / Navigation Bar ---------------------------------------- */
+.centered-tabs-wrapper {
+  display: flex;
+  justify-content: flex-start;
+}
+@media (min-width: 640px) {
+  .centered-tabs-wrapper { justify-content: center; }
+}
+.centered-tabs-inner {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  padding-bottom: 0.25rem;
+  max-width: 100%;
+  flex-shrink: 0;
+}
+.centered-tabs-inner::-webkit-scrollbar { display: none; }
+
+/* --- Horizontal Scroll Card Rail ------------------------------------------ */
+.card-rail {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  padding-bottom: 1rem;
+  padding-top: 0.25rem;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}
+.card-rail::-webkit-scrollbar { display: none; }
+.card-rail > * {
+  scroll-snap-align: start;
+  flex-shrink: 0;
+}
+
+/* --- Overlay / Modal Backdrop ---------------------------------------------- */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  padding-top: calc(0.5rem + env(safe-area-inset-top, 0px));
+  padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px) + var(--keyboard-height, 0px));
+  padding-left: calc(0.5rem + env(safe-area-inset-left, 0px));
+  padding-right: calc(0.5rem + env(safe-area-inset-right, 0px));
+  box-sizing: border-box;
+}
+@media (min-width: 640px) {
+  .modal-backdrop {
+    padding: 1.5rem;
+    padding-top: calc(1.5rem + env(safe-area-inset-top, 0px));
+    padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px) + var(--keyboard-height, 0px));
+  }
+}
+
+/* --- Prevent Horizontal Overflow ------------------------------------------ */
+img, video, canvas, svg, iframe { max-width: 100%; }
+p, h1, h2, h3, h4, h5, h6, span, li, td {
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* --- Safe-Area Aware Page Content ----------------------------------------- */
+.page-safe-area {
+  padding-top: calc(var(--header-height, 80px) + 0.5rem);
+  padding-bottom: calc(var(--bottom-reserved-space, 80px) + 0.5rem);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+  min-height: 100dvh;
+  box-sizing: border-box;
+}
+
+/* --- Keyboard-Aware Fixed Bottom Elements ---------------------------------- */
+.keyboard-lift {
+  transition: bottom 0.2s ease;
+  bottom: calc(var(--keyboard-height, 0px) + env(safe-area-inset-bottom, 0px));
+}
+
+/* --- Fluid Typography ----------------------------------------------------- */
+.fluid-text-xs   { font-size: clamp(0.6875rem, 1.5vw, 0.75rem); }
+.fluid-text-sm   { font-size: clamp(0.75rem,   2vw,   0.875rem); }
+.fluid-text-base { font-size: clamp(0.875rem,  2.5vw, 1rem); }
+.fluid-text-lg   { font-size: clamp(1rem,      3vw,   1.125rem); }
+.fluid-text-xl   { font-size: clamp(1.125rem,  3.5vw, 1.25rem); }
+.fluid-text-2xl  { font-size: clamp(1.25rem,   4vw,   1.5rem); }
+.fluid-text-3xl  { font-size: clamp(1.5rem,    5vw,   2rem); }
+.fluid-text-4xl  { font-size: clamp(1.75rem,   6vw,   2.5rem); }
+.fluid-text-5xl  { font-size: clamp(2rem,      7vw,   3.5rem); }
+
+/* --- Responsive Card Grid ------------------------------------------------- */
+.card-grid {
+  display: grid;
+  gap: clamp(0.75rem, 2vw, 1.5rem);
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+}
+.card-grid-compact {
+  display: grid;
+  gap: clamp(0.5rem, 1.5vw, 1rem);
+  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+}
+.card-grid-2 {
+  display: grid;
+  gap: clamp(0.75rem, 2vw, 1.25rem);
+  grid-template-columns: repeat(2, 1fr);
+}
+@media (min-width: 1024px) {
+  .card-grid-2 { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* --- Responsive Spacing Utilities ----------------------------------------- */
+.fluid-px { padding-left: clamp(1rem, 4vw, 2rem); padding-right: clamp(1rem, 4vw, 2rem); }
+.fluid-py { padding-top: clamp(0.75rem, 2vw, 1.5rem); padding-bottom: clamp(0.75rem, 2vw, 1.5rem); }
+.fluid-p  { padding: clamp(0.75rem, 3vw, 1.5rem); }
+.fluid-gap-sm { gap: clamp(0.5rem, 2vw, 0.75rem); }
+.fluid-gap    { gap: clamp(0.75rem, 2.5vw, 1.25rem); }
+.fluid-gap-lg { gap: clamp(1rem, 3vw, 2rem); }
+
+/* --- Dropdown Viewport Positioning ---------------------------------------- */
+.dropdown-safe {
+  max-height: min(320px, 60dvh);
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  position: absolute;
+  z-index: 200;
+  min-width: max-content;
+  max-width: min(360px, calc(100vw - 2rem));
+}
+.dropdown-safe[data-align="top"]    { bottom: 100%; top: auto; margin-bottom: 0.25rem; }
+.dropdown-safe[data-align="bottom"] { top: 100%; bottom: auto; margin-top: 0.25rem; }
+
+/* --- Reference Design System Components --------------------------------- */
+.pill-capsule-bar {
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.03), 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.circular-btn {
+  border-radius: 9999px;
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+.circular-btn:hover {
+  background: #f8fafc;
+  border-color: rgba(203, 213, 225, 1);
+}
+.circular-btn:active {
+  transform: scale(0.95);
+}
+
+.badge-pill-dark {
+  border-radius: 9999px;
+  background: #0f172a;
+  color: #ffffff;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+/* Responsive Action Button Wrapping & Resizing */
+.responsive-btn {
+  height: clamp(2.25rem, 4vw, 2.75rem);
+  padding-left: clamp(0.75rem, 2.5vw, 1.25rem);
+  padding-right: clamp(0.75rem, 2.5vw, 1.25rem);
+  font-size: clamp(0.75rem, 1.8vw, 0.875rem);
+  border-radius: 9999px;
+  font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Fluid Hero Amount Typography (Never overflows card bounds) */
+.fluid-hero-amount {
+  font-size: clamp(1.625rem, 5.5vw, 2.75rem);
+  line-height: 1.15;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  word-break: break-all;
+}
+
+/* --- Reduced Motion -------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .keyboard-lift { transition: none !important; }
+}
+
+/* --- Print ----------------------------------------------------------------- */
+@media print {
+  .no-print, .modal-backdrop, .glass-sheet, .bottom-nav-container { display: none !important; }
+}
+

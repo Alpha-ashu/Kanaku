@@ -376,18 +376,18 @@ export const Accounts: React.FC = () => {
                         {canCreate && (
                         <Button data-testid="accounts-button"
                             onClick={() => setCurrentPage("add-account")}
-                            className="shadow-lg bg-gray-900 hover:bg-gray-800 text-white h-12 px-6 rounded-2xl font-bold flex items-center gap-2"
+                            className="shadow-sm bg-slate-950 hover:bg-slate-800 text-white h-9 sm:h-10 px-4 sm:px-5 rounded-full font-bold text-xs sm:text-sm flex items-center gap-1.5"
                         >
-                            <Plus size={18} />
+                            <Plus size={16} />
                             <span>Add Account</span>
                         </Button>
                         )}
                     </PageHeader>
                 </div>
 
-                {/* Tab Navigation */}
+                {/* Tab Navigation (Pill Capsule Bar) */}
                 <div className="w-full mb-6">
-                    <div className="flex w-full bg-gray-100/80 backdrop-blur-md p-1.5 rounded-2xl border border-white/40 shadow-sm">
+                    <div className="flex w-full bg-white/95 backdrop-blur-xl p-1 rounded-full border border-slate-200/80 shadow-xs overflow-x-auto scrollbar-hide gap-1">
                         {tabs.map((tab) => {
                             const Icon = tab.icon;
                             const isActive = activeTab === tab.id;
@@ -395,19 +395,20 @@ export const Accounts: React.FC = () => {
                             return (
                                 <button data-testid={`accounts-button-2-${tab.id}`}
                                     key={tab.id}
+                                    type="button"
                                     onClick={() => setActiveTab(tab.id as AssetType)}
                                     className={cn(
-                                        'flex-1 flex items-center justify-center gap-1.5 px-2 py-2 sm:py-2.5 rounded-xl transition-all duration-150 font-bold select-none text-xs sm:text-sm',
+                                        'flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 sm:py-2 rounded-full transition-all duration-150 font-bold select-none text-xs cursor-pointer whitespace-nowrap',
                                         isActive
-                                            ? 'bg-slate-900 text-white shadow-md'
-                                            : 'bg-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
+                                            ? 'bg-slate-900 text-white shadow-xs'
+                                            : 'bg-transparent text-slate-500 hover:text-slate-900 hover:bg-slate-100/60'
                                     )}
                                 >
                                     <Icon
                                         size={14}
-                                        className={isActive ? "text-white shrink-0" : "text-slate-500 shrink-0"}
+                                        className={isActive ? "text-white shrink-0" : "text-slate-400 shrink-0"}
                                     />
-                                    <span className={cn("font-bold text-[11px] sm:text-xs truncate", isActive ? "text-white" : "text-slate-600")}>
+                                    <span className={cn("font-bold text-xs truncate", isActive ? "text-white" : "text-slate-600")}>
                                         {tab.label}
                                     </span>
                                 </button>

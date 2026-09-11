@@ -4,7 +4,7 @@ import { useApp, useSubFeature } from '@/contexts/AppContext';
 import { db, type DocumentRecord } from '@/lib/database';
 import { deleteTransactionWithBackendSync, queueRecordUpsertSync } from '@/lib/auth-sync-integration';
 import { applyAccountBalanceDeltas, buildTransactionAggregation, getTransactionAccountDeltas } from '@/lib/transactionAggregation';
-import { Plus, TrendingUp, TrendingDown, Search, Camera, Edit2, Trash2, ArrowUpRight, ArrowDownLeft, Repeat2, Wallet, Receipt, Layers, Eye, X, ChevronRight, FileText, Paperclip } from 'lucide-react';
+import { Plus, TrendingUp, TrendingDown, Search, Camera, Edit2, Trash2, ArrowUpRight, ArrowDownLeft, Repeat2, Wallet, Receipt, Layers, Eye, X, ChevronRight, FileText, Paperclip, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { DeleteConfirmModal } from '@/app/components/shared/DeleteConfirmModal';
 import { ReceiptScanner } from '@/app/components/transactions/ReceiptScanner';
@@ -396,47 +396,59 @@ export const Transactions: React.FC = () => {
     >
  <div className="space-y-6 sm:space-y-8">
  
- <div className="flex flex-row flex-wrap items-center justify-between gap-4 w-full">
- <div className="flex items-center gap-4">
- <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none">Transactions</h1>
- </div>
- <div className="flex items-center gap-3">
- {canImport && (
- <Button
- data-testid="transactions-scan-bill-button"
- variant="secondary"
- onClick={() => setShowScanModal(true)}
- className="shadow-sm border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 h-12 px-5 rounded-2xl font-bold"
- >
- <Camera size={18} className="mr-2" />
- Scan Bill
- </Button>
- )}
- {canAdd && (
- <Button
- data-testid="transactions-add-button"
- onClick={() => setShowTransactionTypeModal(true)}
- className="shadow-lg bg-gray-900 hover:bg-gray-800 text-white h-12 px-5 rounded-2xl font-bold"
- >
- <Plus size={18} className="mr-2" />
- Add Transaction
- </Button>
- )}
- </div>
- </div>
+  <div className="flex flex-row flex-wrap items-center justify-between gap-3 w-full">
+    <div className="flex items-center gap-3">
+      <button
+        type="button"
+        onClick={() => setCurrentPage('dashboard')}
+        className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200/80 hover:bg-slate-50 active:scale-95 shadow-xs flex items-center justify-center text-slate-700 transition-all shrink-0 cursor-pointer"
+        aria-label="Go to dashboard"
+        title="Go to dashboard"
+        data-testid="transactions-go-back-button"
+      >
+        <ArrowLeft size={18} className="text-slate-700" />
+      </button>
+      <div>
+        <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight leading-none">Transactions</h1>
+        <p className="text-xs sm:text-sm text-slate-400 font-medium mt-0.5">Track and categorize your cash flow</p>
+      </div>
+    </div>
+    <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap sm:flex-nowrap">
+      {canImport && (
+        <Button
+          data-testid="transactions-scan-bill-button"
+          variant="secondary"
+          onClick={() => setShowScanModal(true)}
+          className="shadow-2xs border border-slate-200/90 bg-white hover:bg-slate-50 text-slate-700 h-9 sm:h-10 px-3.5 sm:px-4 rounded-full font-bold text-xs sm:text-sm"
+        >
+          <Camera size={16} className="mr-1.5" />
+          <span>Scan Bill</span>
+        </Button>
+      )}
+      {canAdd && (
+        <Button
+          data-testid="transactions-add-button"
+          onClick={() => setShowTransactionTypeModal(true)}
+          className="shadow-sm bg-slate-950 hover:bg-slate-800 text-white h-9 sm:h-10 px-4 sm:px-5 rounded-full font-bold text-xs sm:text-sm"
+        >
+          <Plus size={16} className="mr-1.5" />
+          <span>Add Transaction</span>
+        </Button>
+      )}
+    </div>
+  </div>
 
-  {/* Scrollable Date Selector */}
-  <div className="max-w-2xl mx-auto w-full bg-white/95 backdrop-blur-2xl rounded-2xl p-1.5 sm:p-2.5 shadow-[0_8px_25px_rgba(0,0,0,0.02)] border border-white/40 overflow-hidden relative group">
-    
+  {/* Floating Scrollable Date Selector (Reference 2 Screen 1 Design) */}
+  <div className="max-w-2xl mx-auto w-full bg-white/95 backdrop-blur-xl rounded-2xl sm:rounded-full p-1.5 sm:p-2 shadow-[0_8px_30px_rgba(0,0,0,0.03)] border border-slate-200/80 overflow-hidden relative group">
     <div 
       ref={scrollRef} 
       className={cn(
-        "flex items-center overflow-x-auto gap-1.5 sm:gap-2.5 scrollbar-hide snap-x px-3 py-1 w-full",
-        dateRange.length <= 5 ? "justify-center" : "justify-start"
+        "flex items-center overflow-x-auto gap-1.5 sm:gap-2.5 scrollbar-hide snap-x px-2 py-1 w-full",
+        dateRange.length <= 7 ? "justify-center" : "justify-start"
       )}
     >
       {dateRange.length === 0 && (
-        <p className="text-slate-400 text-center py-4 font-black uppercase tracking-widest text-[8px] sm:text-[10px] w-full">Loading...</p>
+        <p className="text-slate-400 text-center py-3 font-bold text-xs w-full">Loading...</p>
       )}
       {dateRange.map((date, idx) => {
         let isSelected = false;
@@ -446,44 +458,43 @@ export const Transactions: React.FC = () => {
 
         if (timePeriod === 'daily' || timePeriod === 'weekly') {
           isSelected = toLocalDateKey(date) === toLocalDateKey(selectedDate);
-          const dayNameRaw = date.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
-          subLabel = dayNameRaw === 'WED' ? 'WEN' : dayNameRaw;
+          const dayNameRaw = date.toLocaleDateString('en-US', { weekday: 'short' });
+          subLabel = dayNameRaw;
           label = date.getDate().toString();
           isWeekend = date.getDay() === 0 || date.getDay() === 6;
         } else if (timePeriod === 'monthly') {
           isSelected = date.getMonth() === selectedDate.getMonth() && date.getFullYear() === selectedDate.getFullYear();
-          label = date.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
+          label = date.toLocaleDateString('en-US', { month: 'short' });
           subLabel = date.getFullYear().toString();
         } else if (timePeriod === 'yearly') {
           isSelected = date.getFullYear() === selectedDate.getFullYear();
           label = date.getFullYear().toString();
-          subLabel = 'YEAR';
+          subLabel = 'Year';
         }
 
         return (
-          <button data-testid={`transactions-button-${idx}`}
+          <button
+            data-testid={`transactions-button-${idx}`}
             key={idx}
+            type="button"
             data-selected={isSelected}
             onClick={() => setSelectedDate(date)}
-            className={cn(
-              'flex flex-col items-center justify-center min-w-[38px] sm:min-w-[56px] h-[48px] sm:h-[64px] rounded-lg sm:rounded-2xl transition-all duration-500 snap-center relative shrink-0',
-              isSelected
-                ? 'bg-slate-900 text-white shadow-md scale-105 z-10'
-                : 'bg-white hover:bg-slate-100 text-slate-400 hover:text-slate-600'
-            )}
+            className="flex flex-col items-center justify-center p-1 rounded-2xl transition-all snap-center relative shrink-0 cursor-pointer min-w-[42px] sm:min-w-[48px]"
           >
             <span className={cn(
-              'text-[7px] sm:text-[9px] font-bold tracking-wider mb-0.5',
-              isSelected ? 'text-pink-400' : isWeekend ? 'text-rose-500' : 'text-slate-400'
+              'text-[9px] sm:text-[10px] font-semibold tracking-tight mb-1',
+              isSelected ? 'text-blue-600 font-bold' : isWeekend ? 'text-rose-500' : 'text-slate-400'
             )}>
               {subLabel}
             </span>
-            <span className="text-xs sm:text-base font-black tracking-tight">
+            <div className={cn(
+              "w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold transition-all shadow-2xs",
+              isSelected
+                ? 'bg-blue-600 text-white shadow-blue-500/25'
+                : 'bg-white text-slate-700 border border-slate-200/80 hover:bg-slate-100/80'
+            )}>
               {label}
-            </span>
-            {isSelected && (
-              <div className="absolute -bottom-0.5 w-1 h-1 bg-pink-500 rounded-full" />
-            )}
+            </div>
           </button>
         );
       })}

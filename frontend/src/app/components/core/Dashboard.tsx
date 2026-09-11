@@ -458,8 +458,9 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
           <motion.div {...fadeUp} className="mb-6 lg:mb-8">
             <SectionHeader title="Accounts & Wallets" onViewAll={() => setCurrentPage?.('accounts')} />
 
-            {/* Account Type Filters */}
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-none mb-3">
+            {/* Account Type Filters — centered on desktop, scrollable on mobile */}
+            <div className="flex justify-start sm:justify-center mb-3">
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-none max-w-full">
               {[
                 { id: 'all', label: 'All' },
                 { id: 'bank', label: 'Banks' },
@@ -480,6 +481,7 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
                   {tab.label}
                 </button>
               ))}
+              </div>
             </div>
 
             {filteredAccounts.length > 0 ? (

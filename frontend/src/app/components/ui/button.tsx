@@ -5,37 +5,37 @@ import { Loader2 } from 'lucide-react';
 import { motion, HTMLMotionProps } from 'framer-motion';
 
 const buttonVariants = cva(
- 'inline-flex items-center justify-center font-medium transition-colors disabled:opacity-50 disabled:pointer-events-none font-display tracking-tight focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
- {
- variants: {
- variant: {
- primary: 'bg-black text-white hover:bg-black/90 shadow-[0_4px_14px_0_rgba(0,0,0,0.39)]',
- secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
- outline: 'border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground',
- ghost: 'hover:bg-accent hover:text-accent-foreground',
- glass: 'bg-white/10 backdrop-blur-lg border border-white/20 text-white hover:bg-white/20 shadow-glass',
- link: 'text-primary underline-offset-4 hover:underline',
- destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-sm',
- },
- size: {
- default: 'h-9 px-4 py-2',
- sm: 'h-8 rounded-md px-3 text-xs',
- md: 'h-10 rounded-xl px-8',
- lg: 'h-12 rounded-2xl px-10 text-base',
- icon: 'h-9 w-9 p-0',
- },
- rounded: {
- default:"rounded-xl",
- full:"rounded-full",
- none:"rounded-none"
- }
- },
- defaultVariants: {
- variant: 'primary',
- size: 'md',
- rounded: 'default'
- },
- }
+  'inline-flex items-center justify-center font-medium transition-all duration-150 disabled:opacity-50 disabled:pointer-events-none font-display tracking-tight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/20 active:scale-[0.97]',
+  {
+    variants: {
+      variant: {
+        primary: 'bg-slate-950 text-white hover:bg-slate-800 shadow-sm active:bg-slate-900',
+        secondary: 'bg-white border border-slate-200/90 text-slate-700 hover:bg-slate-50 shadow-2xs',
+        outline: 'border border-slate-200 bg-white shadow-2xs hover:bg-slate-50 hover:text-slate-900',
+        ghost: 'hover:bg-slate-100/80 hover:text-slate-900 text-slate-600',
+        glass: 'bg-white/80 backdrop-blur-xl border border-white/60 text-slate-800 hover:bg-white shadow-sm',
+        link: 'text-blue-600 underline-offset-4 hover:underline',
+        destructive: 'bg-rose-600 text-white hover:bg-rose-700 shadow-sm',
+      },
+      size: {
+        default: 'h-9 px-3.5 sm:px-4 py-2 text-xs sm:text-sm',
+        sm: 'h-8 px-3 text-xs',
+        md: 'h-9 sm:h-10 md:h-11 px-3.5 sm:px-5 md:px-6 text-xs sm:text-sm font-bold',
+        lg: 'h-11 sm:h-12 px-5 sm:px-8 text-sm sm:text-base font-bold',
+        icon: 'h-9 w-9 sm:h-10 sm:w-10 p-0',
+      },
+      rounded: {
+        default: 'rounded-full',
+        full: 'rounded-full',
+        none: 'rounded-none',
+      },
+    },
+    defaultVariants: {
+      variant: 'primary',
+      size: 'md',
+      rounded: 'default',
+    },
+  }
 );
 
 export interface ButtonProps

@@ -4,11 +4,12 @@
 @import './design-system.css';
 @import './KANAKU-add-forms.css';
 @import './premium-transactions.css';
-
+@import './responsive-layout.css';
 
 
 /* Uncomment for debugging mobile issues: */
 /* @import './mobile-test-classes.css'; */
+
 
 /* Global spin animation — used by inline-styled loading spinners (Android WebView safe) */
 @keyframes spin {
@@ -288,6 +289,7 @@ button, a, [role="button"], input, select {
 
 .touch-scroll {
   overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch; /* iOS momentum scrolling */
 }
 
 /* Main content container - allow full viewport usage */
@@ -410,19 +412,27 @@ button, a, [role="button"], input, select {
   object-fit: cover;
 }
 
-/* Universal scrollbar hiding - Hide scrollbars from all elements */
+/* Universal scrollbar hiding - Hide scrollbars from all elements while keeping scroll functional */
 .scrollbar-hide {
-  -ms-overflow-style: none;
-  /* Internet Explorer 10+ */
+  -ms-overflow-style: none;  /* IE/Edge */
+  scrollbar-width: none;     /* Firefox */
 }
 
 .scrollbar-hide::-webkit-scrollbar {
-  display: none;
-  /* Safari and Chrome */
+  display: none;             /* Chrome/Safari/WebKit */
 }
 
-/* Hide scrollbars from all scrollable elements */
+/* Hide scrollbars globally — content remains scrollable */
+* {
+  /* Firefox: hide scrollbar track entirely */
+  scrollbar-width: none;
+  /* IE/Edge: hide scrollbar */
+  -ms-overflow-style: none;
+}
+
 *::-webkit-scrollbar {
+  /* Chrome/Safari/WebKit: zero-size scrollbar */
+  display: none;
   width: 0px;
   height: 0px;
   background: transparent;
@@ -436,17 +446,8 @@ button, a, [role="button"], input, select {
   background: transparent;
 }
 
-/* Cross-browser scrollbar hiding rules (WebKit/Safari/Chrome, IE/Edge) */
-* {
-  -ms-overflow-style: none;
-}
-
-
-*::-webkit-scrollbar {
-  display: none;
-  width: 0px;
-  height: 0px;
-}
+/* Prevent accidental bounce/chaining scroll — applied only to specific
+   scroll containers, NOT globally on html/body which would block all scroll */
 
 /* Disable zoom on iOS */
 html {
@@ -456,9 +457,11 @@ html {
   overflow-x: hidden;
 }
 
-/* Smooth scrolling */
-html {
-  scroll-behavior: smooth;
+/* Smooth scrolling — only apply when the user hasn't requested reduced motion */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
 /* High DPI displays */

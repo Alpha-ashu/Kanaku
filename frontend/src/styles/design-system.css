@@ -35,7 +35,48 @@
   /* Layout Tokens */
   --max-w-app: 1280px;
   --app-gutter: var(--space-lg);
+
+  /* ─── Glassmorphism Token System ─────────────────────────────────────────── */
+  /* Use these tokens on all glass surfaces for consistency across the app.     */
+  /* Do NOT hardcode backdrop-filter, background, or border values inline.      */
+
+  /* Base glass — light background with subtle blur */
+  --glass-bg: rgba(255, 255, 255, 0.82);
+  --glass-blur: blur(20px);
+  --glass-border: 1px solid rgba(255, 255, 255, 0.35);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+
+  /* Card glass — slightly more opaque for readability */
+  --glass-card-bg: rgba(255, 255, 255, 0.88);
+  --glass-card-blur: blur(16px);
+  --glass-card-border: 1px solid rgba(255, 255, 255, 0.4);
+  --glass-card-shadow: 0 4px 20px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+
+  /* Modal glass — more opaque so content is readable over blurred backgrounds */
+  --glass-modal-bg: rgba(255, 255, 255, 0.95);
+  --glass-modal-blur: blur(24px);
+  --glass-modal-border: 1px solid rgba(255, 255, 255, 0.25);
+  --glass-modal-shadow: 0 24px 64px rgba(0, 0, 0, 0.15), 0 8px 24px rgba(0, 0, 0, 0.08);
+
+  /* Dropdown glass — very opaque so options are always readable */
+  --glass-dropdown-bg: rgba(255, 255, 255, 0.97);
+  --glass-dropdown-blur: blur(12px);
+  --glass-dropdown-border: 1px solid rgba(226, 232, 240, 0.8);
+  --glass-dropdown-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+
+  /* Elevated pill / floating header glass */
+  --glass-elevated-bg: rgba(255, 255, 255, 0.92);
+  --glass-elevated-blur: blur(28px);
+  --glass-elevated-border: 1px solid rgba(255, 255, 255, 0.5);
+  --glass-elevated-shadow: 0 12px 40px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.06);
+
+  /* Bottom sheet glass */
+  --glass-sheet-bg: rgba(255, 255, 255, 0.96);
+  --glass-sheet-blur: blur(20px);
+  --glass-sheet-border: 1px solid rgba(226, 232, 240, 0.6);
+  --glass-sheet-shadow: 0 -8px 32px rgba(0, 0, 0, 0.08);
 }
+
 
 @media (min-width: 1025px) {
   :root {
@@ -253,3 +294,116 @@
 .segment-btn-inactive:hover {
   color: #64748B;
 }
+
+/* ─── Reusable Glassmorphism Classes ─────────────────────────────────────────
+   Use these classes for consistent glass treatment across the whole app.
+   All values come from the token system above — do not hardcode them in JSX.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+.glass-surface {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+.glass-card {
+  background: var(--glass-card-bg);
+  backdrop-filter: var(--glass-card-blur);
+  -webkit-backdrop-filter: var(--glass-card-blur);
+  border: var(--glass-card-border);
+  box-shadow: var(--glass-card-shadow);
+  border-radius: var(--radius-lg);
+}
+
+.glass-modal {
+  background: var(--glass-modal-bg);
+  backdrop-filter: var(--glass-modal-blur);
+  -webkit-backdrop-filter: var(--glass-modal-blur);
+  border: var(--glass-modal-border);
+  box-shadow: var(--glass-modal-shadow);
+  border-radius: var(--radius-xl);
+}
+
+.glass-dropdown {
+  background: var(--glass-dropdown-bg);
+  backdrop-filter: var(--glass-dropdown-blur);
+  -webkit-backdrop-filter: var(--glass-dropdown-blur);
+  border: var(--glass-dropdown-border);
+  box-shadow: var(--glass-dropdown-shadow);
+  border-radius: var(--radius-md);
+}
+
+.glass-sheet {
+  background: var(--glass-sheet-bg);
+  backdrop-filter: var(--glass-sheet-blur);
+  -webkit-backdrop-filter: var(--glass-sheet-blur);
+  border-top: var(--glass-sheet-border);
+  box-shadow: var(--glass-sheet-shadow);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+}
+
+.glass-elevated {
+  background: var(--glass-elevated-bg);
+  backdrop-filter: var(--glass-elevated-blur);
+  -webkit-backdrop-filter: var(--glass-elevated-blur);
+  border: var(--glass-elevated-border);
+  box-shadow: var(--glass-elevated-shadow);
+}
+
+/* ─── Viewport-Safe Modal / Sheet Sizing ────────────────────────────────────
+   Applied to any overlay that must stay within the visual viewport, accounting
+   for the soft keyboard (--keyboard-height) and device safe areas.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+/* Full-screen overlay that is always within the visible area */
+.viewport-safe-overlay {
+  position: fixed;
+  top: env(safe-area-inset-top, 0px);
+  left: env(safe-area-inset-left, 0px);
+  right: env(safe-area-inset-right, 0px);
+  bottom: calc(var(--keyboard-height, 0px) + env(safe-area-inset-bottom, 0px));
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Modal that respects safe areas and keyboard */
+.viewport-safe-modal {
+  max-height: calc(
+    90dvh
+    - var(--keyboard-height, 0px)
+    - env(safe-area-inset-top, 0px)
+    - env(safe-area-inset-bottom, 0px)
+  );
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Bottom sheet that lifts above the keyboard */
+.viewport-safe-sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--keyboard-height, 0px) + env(safe-area-inset-bottom, 0px));
+  max-height: calc(
+    80dvh
+    - var(--keyboard-height, 0px)
+    - env(safe-area-inset-top, 0px)
+  );
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Content scroller inside modals/sheets — momentum scroll on iOS */
+.modal-scroll-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}

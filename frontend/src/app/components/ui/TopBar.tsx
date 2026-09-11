@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useApp } from '@/contexts/AppContext';
-import { Search, Bell, Menu, GripVertical, Wallet, LogOut, Receipt } from 'lucide-react';
+import { Search, Bell, Menu, GripVertical, Wallet, LogOut, Receipt, ArrowLeft } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from '@/app/components/ui/sheet';
 import { NavigationItem, headerMenuItems } from '@/app/constants/navigation';
 import { NotificationPopup } from '@/app/components/ui/NotificationPopup';
@@ -63,7 +63,7 @@ const DraggablePageMenuItem: React.FC<DraggablePageMenuItemProps> = ({
 };
 
 export const TopBar: React.FC = () => {
-  const { setCurrentPage, visibleFeatures, accounts, transactions, currency } = useApp();
+  const { setCurrentPage, visibleFeatures, accounts, transactions, currency, goBack } = useApp();
   const { orderedItems, handleReorder, handleNavigate, currentPage } = useSharedMenu();
   const { role, user, signOut } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -343,20 +343,39 @@ export const TopBar: React.FC = () => {
 
  {/* Top Header Row - Menu, Search, Bell, Profile */}
  <div className="flex items-center justify-between px-4 lg:px-6 h-16 w-full">
- {/* Left: Menu and Search */}
- <div className="flex items-center gap-2 md:gap-3 lg:gap-4 flex-1 max-w-2xl">
- {/* Mobile Menu Button */}
- <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
- <SheetTrigger asChild>
-  <button data-testid="top-bar-open-navigation-menu" onClick={() => setMobileMenuOpen(true)} className="lg:hidden p-2 -ml-2 hover:bg-gray-200 rounded-lg transition-colors cursor-pointer" aria-label="Open navigation menu">
-  <Menu size={24} className="text-gray-900" />
-  </button>
- </SheetTrigger>
+  {/* Left: Menu and Search */}
+  <div className="flex items-center gap-2 md:gap-3 lg:gap-4 flex-1 max-w-2xl">
+  {/* Back Button (shown when not on dashboard) */}
+  {currentPage !== 'dashboard' && (
+    <button
+      type="button"
+      onClick={goBack}
+      className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white shadow-xs border border-slate-200/80 hover:bg-slate-50 active:scale-95 transition-all flex items-center justify-center text-slate-800 cursor-pointer shrink-0"
+      aria-label="Go back"
+      title="Go back"
+      data-testid="top-bar-go-back-button"
+    >
+      <ArrowLeft size={18} className="text-slate-800" />
+    </button>
+  )}
+
+  {/* Mobile Menu Button */}
+  <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+  <SheetTrigger asChild>
+   <button
+     data-testid="top-bar-open-navigation-menu"
+     onClick={() => setMobileMenuOpen(true)}
+     className="lg:hidden w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white shadow-xs border border-slate-200/80 hover:bg-slate-50 active:scale-95 transition-all flex items-center justify-center text-slate-800 cursor-pointer shrink-0"
+     aria-label="Open navigation menu"
+   >
+     <Menu size={18} className="text-slate-800" />
+   </button>
+  </SheetTrigger>
 
   {/* Logo & Name */}
-  <div className="flex items-center gap-2 sm:gap-3 mr-2 sm:mr-4 shrink-0 lg:hidden">
+  <div className="flex items-center gap-2 sm:gap-2.5 mr-1 sm:mr-3 shrink-0 lg:hidden">
     <KANAKULogo className="w-7 h-7 sm:w-8 sm:h-8" />
-    <span className="text-sm sm:text-xl font-bold font-display text-gray-900 tracking-tight">KANAKU</span>
+    <span className="text-sm sm:text-base font-bold font-display text-slate-900 tracking-tight">KANAKU</span>
   </div>
  {/* Sized with dvh, not vh: on mobile Safari `100vh` is the viewport with the
      browser chrome *retracted*, so the panel was taller than the screen —
@@ -572,11 +591,12 @@ export const TopBar: React.FC = () => {
 
           {/* Mobile Search Button */}
           <button data-testid="top-bar-search"
+            type="button"
             onClick={() => setIsMobileSearchOpen(true)}
-            className="md:hidden rounded-xl bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 shadow-sm w-10 h-10 shrink-0 flex items-center justify-center transition-colors cursor-pointer"
+            className="md:hidden w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200/80 text-slate-700 hover:bg-slate-50 shadow-xs shrink-0 flex items-center justify-center transition-all cursor-pointer active:scale-95"
             aria-label="Search"
           >
-            <Search size={20} />
+            <Search size={18} />
           </button>
 
           {/* Notification Bell */}
@@ -585,15 +605,15 @@ export const TopBar: React.FC = () => {
               whileTap={{ scale: 0.95 }}
               onClick={handleNotificationClick}
               aria-label="Notifications"
-              className="relative rounded-xl bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 shadow-sm w-10 h-10 shrink-0 flex items-center justify-center transition-colors cursor-pointer"
+              className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200/80 text-slate-700 hover:bg-slate-50 shadow-xs shrink-0 flex items-center justify-center transition-all cursor-pointer"
             >
-              <Bell size={20} />
+              <Bell size={18} />
               {/* Unread Badge */}
               {unreadNotificationsCount > 0 && (
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 rounded-full border-2 border-white shadow-sm flex items-center justify-center"
+                  className="absolute top-1 right-1 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-white shadow-xs"
                 />
               )}
             </motion.button>
@@ -605,7 +625,7 @@ export const TopBar: React.FC = () => {
               whileTap={{ scale: 0.95 }}
               onClick={handleProfileClick}
               aria-label="User profile"
-              className="w-10 h-10 rounded-xl bg-gray-200 overflow-hidden shadow-sm shrink-0 hover:shadow-md transition-shadow flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-bold text-sm cursor-pointer"
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full overflow-hidden shadow-xs shrink-0 hover:shadow-md transition-all flex items-center justify-center bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-bold text-xs sm:text-sm cursor-pointer border-2 border-white"
             >
               {(() => {
                 let initials = 'U';

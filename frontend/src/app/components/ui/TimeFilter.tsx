@@ -20,28 +20,35 @@ const filterOptions: { id: TimeFilterPeriod; label: string }[] = [
 ];
 
 export const TimeFilter: React.FC<TimeFilterProps> = ({ value, onChange, className, testId }) => {
- return (
- <div data-testid={testId} className={cn('flex items-center justify-center gap-1 sm:gap-2 p-1.5 bg-gray-100/80 backdrop-blur-sm rounded-2xl w-full max-w-md mx-auto overflow-x-auto scrollbar-hide', className)}>
-  {filterOptions.map((option) => {
-    const isActive = value === option.id;
-    return (
-      <button
-        data-testid={`time-filter-button-${option.id}`}
-        key={option.id}
-        onClick={() => onChange(option.id)}
-        className={cn(
-          'flex-1 flex items-center justify-center px-3 py-2 sm:px-5 sm:py-2 rounded-xl text-xs sm:text-sm font-bold transition-all duration-150 whitespace-nowrap select-none',
-          isActive
-            ? 'bg-slate-900 text-white shadow-md'
-            : 'text-slate-600 hover:bg-slate-200/60 active:bg-slate-300/60'
-        )}
-      >
-        <span>{option.label}</span>
-      </button>
-    );
-  })}
- </div>
- );
+  return (
+    <div
+      data-testid={testId}
+      className={cn(
+        'inline-flex items-center justify-center p-1 bg-white/95 backdrop-blur-xl border border-slate-200/80 rounded-full shadow-xs gap-1 max-w-full overflow-x-auto scrollbar-hide',
+        className
+      )}
+    >
+      {filterOptions.map((option) => {
+        const isActive = value === option.id;
+        return (
+          <button
+            data-testid={`time-filter-button-${option.id}`}
+            key={option.id}
+            type="button"
+            onClick={() => onChange(option.id)}
+            className={cn(
+              'px-3 sm:px-4 py-1.5 rounded-full text-xs font-bold transition-all duration-150 whitespace-nowrap select-none cursor-pointer',
+              isActive
+                ? 'bg-slate-900 text-white shadow-xs'
+                : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100/60'
+            )}
+          >
+            <span>{option.label}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
 };
 
 // Helper function to filter transactions by time period

@@ -39,8 +39,8 @@ test.describe('Quick Actions Navigation Test', () => {
     await screenshot(page, 'quick_actions_02_modal_open');
 
     // Verify modal is open (checks element containing quick actions list)
-    const modalTitle = page.getByText(/Quick Actions/i).first();
-    expect(await isElementVisible(modalTitle, 3000), 'Quick Actions Modal should be open').toBe(true);
+    const modalPopup = page.locator('[data-testid="quick-action-modal-popup"]').first();
+    expect(await isElementVisible(modalPopup, 3000), 'Quick Actions Modal should be open').toBe(true);
 
     // 3. Test "Expense" Quick Action (should navigate to add-transaction page)
     const expenseActionBtn = page.locator('[data-testid="quickaction-add-expense-button"], button:has-text("Expense")').first();

@@ -3,95 +3,59 @@ import {
   LayoutDashboard,
   Wallet,
   Receipt,
+  Users,
   TrendingUp,
-  Plus,
-  ShieldCheck,
-  Brain,
-  Shield,
-  Target,
   BarChart3,
-  ToggleRight,
-  Contact,
+  Plus,
 } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
-import { useAuth } from '@/contexts/AuthContext';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { Capacitor } from '@capacitor/core';
 import { cn } from '@/lib/utils';
-import { motion } from 'framer-motion';
-import { canAccessPage } from '@/lib/featureFlags';
+import { motion, AnimatePresence } from 'framer-motion';
+
+export interface BottomNavProps {
+  onQuickAdd: () => void;
+}
 
 interface NavigationItem {
   id: string;
   label: string;
-  icon: any;
+  icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
   isAction?: boolean;
 }
 
-const getNavigationItems = (role: string): NavigationItem[] => {
-  switch (role) {
-    case 'admin':
-      return [
-        { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-        { id: 'admin-feature-panel', label: 'Feature Panel', icon: ToggleRight },
-        { id: 'advisor-verification', label: 'Verification', icon: ShieldCheck },
-        { id: 'quick-add', label: '', icon: Plus, isAction: true },
-        { id: 'ai-management', label: 'AI Manage', icon: Brain },
-        { id: 'admin', label: 'Admin Console', icon: Shield },
-      ];
-    case 'manager':
-      return [
-        { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-        { id: 'quick-add', label: '', icon: Plus, isAction: true },
-        { id: 'advisor-verification', label: 'Verification', icon: ShieldCheck },
-      ];
-    case 'advisor':
-      return [
-        { id: 'dashboard', label: 'Home', icon: LayoutDashboard },
-        { id: 'accounts', label: 'Accounts', icon: Wallet },
-        { id: 'transactions', label: 'Activity', icon: Receipt },
-        { id: 'quick-add', label: '', icon: Plus, isAction: true },
-        { id: 'client-management', label: 'Clients', icon: Contact },
-        { id: 'investments', label: 'Invest', icon: TrendingUp },
-        { id: 'reports', label: 'Reports', icon: BarChart3 },
-      ];
-    case 'user':
-    default:
-      return [
-        { id: 'dashboard', label: 'Home', icon: LayoutDashboard },
-        { id: 'accounts', label: 'Accounts', icon: Wallet },
-        { id: 'transactions', label: 'Activity', icon: Receipt },
-        { id: 'quick-add', label: '', icon: Plus, isAction: true },
-        { id: 'goals', label: 'Goals', icon: Target },
-        { id: 'investments', label: 'Invest', icon: TrendingUp },
-        { id: 'reports', label: 'Reports', icon: BarChart3 },
-      ];
-  }
-};
-
-interface BottomNavProps {
-  onQuickAdd: () => void;
-}
-
 export const BottomNav: React.FC<BottomNavProps> = ({ onQuickAdd }) => {
-  const { currentPage, setCurrentPage, visibleFeatures } = useApp();
-  const { role } = useAuth();
+  const { currentPage, setCurrentPage } = useApp();
 
-  const filteredNavigationItems = React.useMemo(() => {
-    const items = getNavigationItems(role);
-    return items.filter(item => {
-      if (item.id === 'quick-add') return true;
-      return canAccessPage(item.id, visibleFeatures);
-    });
-  }, [role, visibleFeatures]);
+  // Exact 7 items in user-requested order with Quick Action button in the middle:
+  // 1. Dashboard, 2. Accounts, 3. Transaction, 4. Quick Action section (middle), 5. Group expense, 6. Investment, 7. Report
+  const navigationItems: NavigationItem[] = [
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'accounts', label: 'Accounts', icon: Wallet },
+    { id: 'transactions', label: 'Transaction', icon: Receipt },
+    { id: 'quick-action', label: 'Quick Action', icon: Plus, isAction: true },
+    { id: 'groups', label: 'Group expense', icon: Users },
+    { id: 'investments', label: 'Investment', icon: TrendingUp },
+    { id: 'reports', label: 'Report', icon: BarChart3 },
+  ];
 
-  const handleNavigation = (itemId: string) => {
-    // Non-blocking haptic feedback — never await native bridge on UI path
+  const isTabActive = (itemId: string) => {
+    if (currentPage === itemId) return true;
+    if (itemId === 'transactions' && (currentPage === 'add-transaction' || currentPage === 'transaction-detail')) return true;
+    if (itemId === 'accounts' && (currentPage === 'add-account' || currentPage === 'account-detail')) return true;
+    if (itemId === 'investments' && (currentPage === 'add-investment' || currentPage === 'portfolio')) return true;
+    if (itemId === 'groups' && (currentPage === 'add-group' || currentPage === 'group-detail')) return true;
+    if (itemId === 'reports' && (currentPage === 'analytics')) return true;
+    return false;
+  };
+
+  const handleNavigation = (itemId: string, isAction?: boolean) => {
     if (Capacitor.isNativePlatform()) {
       Haptics.impact({ style: ImpactStyle.Light }).catch(() => {});
     }
 
-    if (itemId === 'quick-add') {
+    if (isAction || itemId === 'quick-action') {
       onQuickAdd();
     } else {
       setCurrentPage(itemId);
@@ -100,59 +64,94 @@ export const BottomNav: React.FC<BottomNavProps> = ({ onQuickAdd }) => {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 lg:hidden pointer-events-none"
-      style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+      className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pointer-events-none pb-[max(12px,calc(env(safe-area-inset-bottom,0px)+8px))] px-2 sm:px-4 select-none"
+      role="navigation"
+      aria-label="Bottom Navigation"
     >
-      {/* The pill floats above the safe-area zone */}
-      <div className="mx-2 sm:mx-4 mb-2 sm:mb-3 bg-white/95 backdrop-blur-xl border border-blue-100/80 rounded-2xl shadow-2xl shadow-blue-950/10 pointer-events-auto flex items-center justify-between px-1.5 sm:px-2 h-16 relative overflow-visible">
-        {filteredNavigationItems.map((item, index) => {
+      {/* Sleek Minimalist Floating Frosted Capsule Bar */}
+      <div className="pointer-events-auto bg-white/90 backdrop-blur-2xl border border-white/70 rounded-full shadow-[0_12px_40px_rgba(0,0,0,0.08)] p-1 sm:p-1.5 flex items-center justify-center gap-0.5 sm:gap-1 transition-all max-w-[98vw] overflow-x-auto scrollbar-none">
+        {navigationItems.map((item) => {
           const Icon = item.icon;
-          const isActive = currentPage === item.id;
           const isAction = item.isAction;
+          const isActive = !isAction && isTabActive(item.id);
 
           if (isAction) {
             return (
-              <button
-                key={`${item.id}-${index}`}
+              <motion.button
+                key={item.id}
                 type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleNavigation(item.id);
-                }}
-                className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-600 active:from-blue-700 active:to-indigo-700 text-white rounded-full shadow-xl shadow-blue-500/35 active:scale-90 transition-transform shrink-0 mx-1 z-30 focus:outline-none -mt-3 border-2 border-white cursor-pointer"
-                title="Quick Add"
-                aria-label="Quick Add"
-                data-testid="nav-quick-add-button"
+                whileHover={{ scale: 1.06 }}
+                whileTap={{ scale: 0.94 }}
+                onClick={() => handleNavigation(item.id, true)}
+                title="Quick Action"
+                aria-label="Quick Action"
+                data-testid="nav-quick-action-button"
+                className="relative flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 md:w-11 md:h-11 rounded-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white shadow-md shadow-blue-500/25 shrink-0 mx-0.5 sm:mx-1 border-2 border-white cursor-pointer focus:outline-none z-20 transition-all"
               >
-                <Icon className="w-6 h-6 text-white" strokeWidth={2.5} />
-              </button>
+                <Icon className="w-4.5 h-4.5 sm:w-5 sm:h-5 text-white" strokeWidth={2.4} />
+              </motion.button>
             );
           }
 
           return (
-            <button
-              key={`${item.id}-${index}`}
+            <motion.button
+              key={item.id}
+              layout
               type="button"
               onClick={() => handleNavigation(item.id)}
               data-testid={`nav-${item.id}-button`}
+              aria-label={item.label}
+              aria-selected={isActive}
+              role="tab"
+              transition={{
+                type: 'spring',
+                stiffness: 450,
+                damping: 32,
+              }}
               className={cn(
-                "flex flex-col items-center justify-center h-[50px] flex-1 min-w-0 rounded-xl transition-all duration-200 relative py-1 px-1 focus:outline-none select-none cursor-pointer",
+                "relative flex items-center justify-center rounded-full transition-colors cursor-pointer select-none focus:outline-none shrink-0",
                 isActive
-                  ? "bg-blue-600 text-white shadow-md shadow-blue-500/25"
-                  : "text-slate-500 hover:text-blue-600 hover:bg-blue-50/50"
+                  ? "px-2.5 sm:px-3.5 py-1.5 sm:py-2 text-white"
+                  : "w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 text-slate-400 hover:text-slate-700 hover:bg-slate-100/80 active:scale-95"
               )}
             >
-              <Icon
-                className={cn("w-5 h-5 transition-transform duration-150 mb-0.5", isActive ? "scale-105 text-white" : "text-slate-500")}
-                strokeWidth={isActive ? 2.5 : 1.8}
-              />
-              <span className={cn(
-                "text-[10px] tracking-tight truncate max-w-full leading-tight",
-                isActive ? "font-bold text-white" : "font-medium text-slate-500"
-              )}>
-                {item.label}
-              </span>
-            </button>
+              {/* Active Morphing Blue Pill Background */}
+              {isActive && (
+                <motion.div
+                  layoutId="activeNavPill"
+                  className="absolute inset-0 rounded-full bg-blue-600 shadow-sm shadow-blue-500/25"
+                  transition={{
+                    type: 'spring',
+                    stiffness: 450,
+                    damping: 32,
+                  }}
+                />
+              )}
+
+              {/* Icon & Label */}
+              <div className="relative z-10 flex items-center gap-1.5">
+                <Icon
+                  className={cn(
+                    "w-4 h-4 sm:w-4.5 sm:h-4.5 transition-colors duration-150 shrink-0",
+                    isActive ? "text-white" : "text-slate-500 group-hover:text-slate-800"
+                  )}
+                  strokeWidth={isActive ? 2.3 : 1.8}
+                />
+                <AnimatePresence initial={false}>
+                  {isActive && (
+                    <motion.span
+                      initial={{ opacity: 0, scale: 0.9, width: 0 }}
+                      animate={{ opacity: 1, scale: 1, width: 'auto' }}
+                      exit={{ opacity: 0, scale: 0.9, width: 0 }}
+                      transition={{ duration: 0.18, ease: 'easeOut' }}
+                      className="text-white font-medium text-xs sm:text-[13px] tracking-tight whitespace-nowrap overflow-hidden"
+                    >
+                      {item.label}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </div>
+            </motion.button>
           );
         })}
       </div>

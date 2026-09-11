@@ -417,6 +417,39 @@ const AppContent: React.FC = () => {
       setupNativeFeatures();
     }
 
+    // Web-only: use the VisualViewport API to detect the soft keyboard height.
+    // This mirrors what the Capacitor keyboard listeners do on native platforms
+    // so the same CSS variable (--keyboard-height) and body class (keyboard-open)
+    // work uniformly across web, Android WebView, and iOS WKWebView.
+    // VisualViewport shrinks when the soft keyboard appears; the difference between
+    // window.innerHeight and the visual viewport height is the keyboard height.
+    if (!Capacitor.isNativePlatform() && window.visualViewport) {
+      const vv = window.visualViewport;
+      const onViewportResize = () => {
+        const keyboardHeight = Math.max(0, window.innerHeight - (vv.height ?? window.innerHeight));
+        document.documentElement.style.setProperty('--keyboard-height', `${keyboardHeight}px`);
+        if (keyboardHeight > 80) {
+          document.body.classList.add('keyboard-open');
+        } else {
+          document.body.classList.remove('keyboard-open');
+          // Reset with a tiny delay so closing animations finish cleanly
+          setTimeout(() => {
+            document.documentElement.style.setProperty('--keyboard-height', '0px');
+          }, 50);
+        }
+      };
+      vv.addEventListener('resize', onViewportResize);
+      // Also listen to scroll — on iOS the viewport can scroll when the keyboard opens
+      vv.addEventListener('scroll', onViewportResize);
+      // Store cleanup reference alongside deep-link cleanup
+      const origCleanup = nativeDeepLinkCleanupRef.current;
+      nativeDeepLinkCleanupRef.current = () => {
+        origCleanup?.();
+        vv.removeEventListener('resize', onViewportResize);
+        vv.removeEventListener('scroll', onViewportResize);
+      };
+    }
+
     const params = new URLSearchParams(window.location.search);
     if (params.get('action') === 'add-expense') {
       setShowQuickAction(true);
@@ -430,6 +463,7 @@ const AppContent: React.FC = () => {
       nativeDeepLinkCleanupRef.current = undefined;
     };
   }, []);
+
 
   // Recover from stale cached chunks (service worker or CDN mismatch)
   useEffect(() => {
@@ -1362,11 +1396,11 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <div className="w-full min-h-screen flex overflow-x-hidden app-container relative bg-slate-50/40 text-slate-900 selection:bg-indigo-500 selection:text-white">
-      {/* Subtle Ambient Background Mesh Lighting */}
+    <div className="w-full min-h-screen flex overflow-x-hidden app-container relative bg-gradient-to-b from-[#ECE7FE]/75 via-[#F5F4FE]/60 to-[#F6F7FA] text-slate-900 selection:bg-indigo-500 selection:text-white">
+      {/* Subtle Ambient Background Mesh Lighting (Matching Reference Design Atmosphere) */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden" aria-hidden="true">
-        <div className="absolute -top-[20%] right-[5%] w-[600px] h-[600px] rounded-full bg-gradient-to-br from-indigo-200/20 via-sky-100/20 to-transparent blur-3xl" />
-        <div className="absolute top-[40%] -left-[10%] w-[550px] h-[550px] rounded-full bg-gradient-to-tr from-emerald-100/20 via-teal-50/15 to-transparent blur-3xl" />
+        <div className="absolute -top-[10%] -right-[5%] w-[500px] h-[500px] rounded-full bg-gradient-to-br from-purple-200/40 via-indigo-100/30 to-transparent blur-3xl" />
+        <div className="absolute top-[25%] -left-[10%] w-[450px] h-[450px] rounded-full bg-gradient-to-tr from-blue-100/30 via-indigo-50/25 to-transparent blur-3xl" />
       </div>
 
       {/* OfflineBanner is fixed-position - stays outside document flow, never disrupts the flex row */}

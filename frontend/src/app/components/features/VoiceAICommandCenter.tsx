@@ -745,7 +745,17 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
   initial={{ y: 50, opacity: 0, scale: 0.95 }}
   animate={{ y: 0, opacity: 1, scale: 1 }}
   exit={{ y: 50, opacity: 0, scale: 0.95 }}
-  className={`relative w-[96%] md:w-full md:max-w-4xl bg-white/95 backdrop-blur-2xl rounded-[32px] md:rounded-[40px] shadow-2xl border border-white/20 flex flex-col ${activeTab === 'chat' ? 'h-[85vh] max-h-[85vh]' : 'max-h-[90vh]'} overflow-hidden`}
+  className={`relative w-[96%] md:w-full md:max-w-4xl bg-white/95 backdrop-blur-2xl rounded-[32px] md:rounded-[40px] shadow-2xl border border-white/20 flex flex-col overflow-hidden`}
+  style={{
+    // Viewport-safe modal height:
+    // - Uses dvh (dynamic viewport height) which is stable on mobile browsers
+    // - Subtracts the keyboard height when the soft keyboard is open
+    // - Subtracts safe area insets for notch / home indicator / gesture bar
+    // - Subtracts 2rem for the modal-to-edge padding
+    maxHeight: activeTab === 'chat'
+      ? 'calc(85dvh - var(--keyboard-height, 0px) - env(safe-area-inset-bottom, 0px))'
+      : 'calc(90dvh - var(--keyboard-height, 0px) - env(safe-area-inset-bottom, 0px) - env(safe-area-inset-top, 0px))',
+  }}
   >
   {/* Smart Insights Section */}
   {activeTab === 'actions' && realInsights.length > 0 && (
