@@ -1135,6 +1135,16 @@ async function syncLocalRecordToBackendAPI(table: SyncedTableName, localId: numb
   let response;
   const reqConfig = { showErrorToast: false, headers: { 'x-sync-mode': 'true' } };
   if (record.cloudId) {
+    // The server owns `balance` (balance = openingBalance + Σ ledger deltas) and
+    // already applied each transaction's delta when it was posted. Every local
+    // balance change also queues an account upsert via the Dexie hook, so sending
+    // the client's figure here would overwrite the authoritative one — and
+    // double-count whenever the server booked a side effect the client never saw
+    // (a loan disbursement, a group settlement, another device). A new account
+    // still POSTs its opening figure below; only this update drops it.
+    if (table === 'accounts') {
+      delete payload.balance;
+    }
     response = await apiClient.put(`${path}/${record.cloudId}`, payload, reqConfig);
   } else {
     if (table === 'to_do_list_shares') {
