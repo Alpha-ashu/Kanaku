@@ -417,7 +417,7 @@ const ConversationalAI: React.FC<ConversationalAIProps> = ({
                 ? "bg-red-500 text-white animate-pulse shadow-sm"
                 : "text-slate-400 hover:text-slate-700 hover:bg-slate-200/70"
             }`}
-            title={isRecording ? "Stop recording" : "Voice input"}
+            title={isRecording ? "Stop recording" : "Speak to Kai"}
           >
             {isRecording ? <MicOff size={15} /> : <Mic size={15} />}
           </button>

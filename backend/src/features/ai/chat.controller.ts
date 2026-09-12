@@ -358,7 +358,7 @@ export function classifyOffline(message: string): ClassifiedIntent {
     const end = new Date(now.getFullYear(), now.getMonth() + offset + 1, 0);
     return { intent: 'query', queryType: 'EXPENSE_REPORT', startDate: start.toISOString().slice(0, 10), endDate: end.toISOString().slice(0, 10) };
   }
-  if (/\b(how much|total spent|spending|spend this|spent this|expenses this)\b/.test(lower) && !/\b(spent|paid)\s+\d/.test(lower)) {
+  if (/\b(how much|total (?:spent|spend|spending|expense|expenses)|spending|spend this|spent this|expenses? (?:this|last|for|in))\b/.test(lower) && !/\b(spent|paid)\s+\d/.test(lower)) {
     return { intent: 'query', queryType: 'SUM_EXPENSES', category };
   }
   if (/\btop categor|\bbreakdown\b|\bwhere (?:is|did) my money\b/.test(lower)) return { intent: 'query', queryType: 'DATE_RANGE_SUMMARY' };

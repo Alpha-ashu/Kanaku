@@ -424,7 +424,9 @@ export function parseSpokenDate(text: string, today = new Date()): string | unde
   return new Date(Date.UTC(year, monthIdx, day)).toISOString().slice(0, 10);
 }
 
-function offlineActions(
+const SPLIT_CUE = /\b(split|share|shared|sharing|group|we|us|together|each|between|among)\b/i;
+
+export function offlineActions(
   cleaned: string,
   context: KaiSessionContext | undefined,
   threshold: number,
@@ -493,16 +495,19 @@ function offlineActions(
   const out: Array<Omit<KaiAction, 'actionId'>> = [];
   for (const a of voice) {
     const segmentAmount = a.entities.amount ?? parseIndianAmount(a.rawSegment);
-    const ambiguousPerson = a.type === 'expense' && /\bwith\s+[A-Z]/.test(a.rawSegment) && !(a.entities.members?.length);
+    // "spent 5000 with Jijo": one companion and no split cue — the regex calls it a
+    // group expense, but it may just as well be a personal spend. Ask.
+    const singleCompanion = a.type === 'group_expense' && (a.entities.members?.length ?? 0) === 1 && !SPLIT_CUE.test(a.rawSegment);
+    const ambiguousPerson = singleCompanion || (a.type === 'expense' && /\bwith\s+[A-Z]/.test(a.rawSegment) && !(a.entities.members?.length));
     if (ambiguousPerson) {
-      const who = a.rawSegment.match(/\bwith\s+([A-Z][a-z]+)/)?.[1] ?? 'them';
+      const who = a.entities.members?.[0] ?? a.rawSegment.match(/\bwith\s+([A-Z][a-z]+)/)?.[1] ?? 'them';
       out.push(clarifyAction(a.rawSegment,
         `Should I record this as a shared expense with ${who} or your personal expense?`,
         [
           { label: `Shared with ${who}`, patch: { kind: 'group_expense', members: [who] } },
           { label: 'My personal expense', patch: { kind: 'expense', expenseMode: 'individual' } },
         ],
-        { amount: segmentAmount, description: a.entities.description || stripIndianAmounts(a.rawSegment).slice(0, 60) }));
+        { amount: segmentAmount, description: /^[A-Z][a-z]+$/.test(a.entities.description ?? '') ? undefined : (a.entities.description || stripIndianAmounts(a.rawSegment).slice(0, 60)) }));
       continue;
     }
     const normalised = normaliseKaiAction({

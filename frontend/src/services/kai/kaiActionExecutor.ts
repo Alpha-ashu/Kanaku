@@ -273,7 +273,9 @@ async function createLoan(action: KaiAction, ctx: ExecutionContext): Promise<Exe
   const now = new Date();
   const isBorrow = action.kind === 'loan_borrow';
   const friend = await findOrCreateFriend(person, now);
-  const description = e.description || `${isBorrow ? 'Borrowed from' : 'Lent to'} ${person}`;
+  // Canonical label; the model's own phrasing ("that Prijith") is kept as a note.
+  const description = `${isBorrow ? 'Borrowed from' : 'Lent to'} ${friend?.name ?? person}`;
+  const note = e.description && e.description.toLowerCase() !== description.toLowerCase() ? e.description : undefined;
   const date = parseIso(e.date) ?? now;
 
   const { id: transactionId, deltas } = await createTransactionRecord(action, {
@@ -283,6 +285,7 @@ async function createLoan(action: KaiAction, ctx: ExecutionContext): Promise<Exe
     category: 'Loans',
     subcategory: isBorrow ? 'Loan Received' : 'Loan Disbursed',
     description,
+    notes: note,
     merchant: person,
     contactName: person,
     loanType: isBorrow ? 'borrowed' : 'lent',
@@ -301,6 +304,7 @@ async function createLoan(action: KaiAction, ctx: ExecutionContext): Promise<Exe
     status: 'active',
     contactPerson: friend?.name ?? person,
     friendId: friend?.id,
+    notes: note,
     loanDate: date,
     clientRequestId: deterministicUuid(`${action.actionId}:loan`),
     createdAt: now,

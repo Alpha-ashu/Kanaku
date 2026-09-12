@@ -599,7 +599,7 @@ export const Settings: React.FC = () => {
 
   return (
     <CenteredLayout>
-      <div className="space-y-4 sm:space-y-6 max-w-4xl mx-auto w-full px-2 sm:px-4">
+      <div className="space-y-4 sm:space-y-6 max-w-6xl mx-auto w-full px-2 sm:px-4">
         {/* Header */}
         <PageHeader
           title="Settings"
@@ -641,8 +641,8 @@ export const Settings: React.FC = () => {
           </div>
         </div>
 
-        {/* ─── Horizontal Filter Category Pills ──────────────────────────── */}
-        <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide py-1 -mx-2 px-2">
+        {/* ─── Mobile Horizontal Filter Category Pills (hidden on desktop) ─── */}
+        <div className="flex lg:hidden items-center gap-1.5 overflow-x-auto scrollbar-hide py-1 -mx-2 px-2">
           {categoryTabs.map((tab) => {
             const Icon = tab.icon;
             const isSelected = selectedCategory === tab.id;
@@ -666,8 +666,39 @@ export const Settings: React.FC = () => {
           })}
         </div>
 
-        {/* ─── Grouped Native Settings Sections ──────────────────────────── */}
-        <div className="space-y-5">
+        {/* ─── Desktop 2-Column Layout ──────────────────────────────────── */}
+        <div className="lg:grid lg:grid-cols-[240px_1fr] lg:gap-8 lg:items-start">
+          {/* Desktop Left Sidebar Category Navigation (hidden on mobile) */}
+          <aside className="hidden lg:block sticky top-24 space-y-1 bg-white rounded-[28px] p-3 border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)]">
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-3 py-2">Categories</p>
+            {categoryTabs.map((tab) => {
+              const Icon = tab.icon;
+              const isSelected = selectedCategory === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setSelectedCategory(tab.id)}
+                  data-testid={`settings-desktop-nav-${tab.id}`}
+                  className={cn(
+                    "w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer",
+                    isSelected
+                      ? "bg-[#18181B] text-white shadow-xs"
+                      : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                  )}
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <Icon size={15} className={isSelected ? "text-indigo-300" : "text-slate-400"} />
+                    <span className="truncate">{tab.label}</span>
+                  </div>
+                  <ChevronRight size={14} className={isSelected ? "text-white/60" : "text-slate-300"} />
+                </button>
+              );
+            })}
+          </aside>
+
+          {/* Right Main Settings Column */}
+          <div className="space-y-5 min-w-0">
           {/* BOTTOM NAVIGATION CUSTOMIZATION */}
           {shouldShowSection('bottom-nav') && (
             <BottomNavSettingsSection />
@@ -1197,6 +1228,7 @@ export const Settings: React.FC = () => {
               </div>
             </div>
           )}
+        </div>
         </div>
 
         {/* ─── Import Data Modal ─────────────────────────────────────────── */}

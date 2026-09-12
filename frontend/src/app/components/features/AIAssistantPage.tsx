@@ -359,7 +359,7 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.98 }}
           transition={{ duration: 0.22 }}
-          className="relative z-10 flex-1 flex flex-col justify-between max-w-md mx-auto w-full px-3 sm:px-4 pt-1 overflow-y-auto scrollbar-none"
+          className="relative z-10 flex-1 flex flex-col justify-between max-w-2xl sm:max-w-3xl lg:max-w-4xl mx-auto w-full px-4 sm:px-6 pt-2 overflow-y-auto scrollbar-none"
           ref={chatScrollContainerRef}
         >
           <div className="flex justify-center my-1.5 shrink-0">

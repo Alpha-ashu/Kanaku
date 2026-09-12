@@ -6,7 +6,7 @@
  */
 import { extractIndianAmounts, parseIndianAmount, stripIndianAmounts } from '../../../../backend/src/features/ai/indian-number';
 import { normaliseDateInput, toQueryParams } from '../../../../backend/src/features/ai/financial-query-engine';
-import { makeActionId, normaliseKaiAction, parseSpokenDate } from '../../../../backend/src/features/kai/kai.nlp';
+import { makeActionId, matchClarificationOption, normaliseKaiAction, offlineActions, parseSpokenDate } from '../../../../backend/src/features/kai/kai.nlp';
 import { buildKaiPrompt } from '../../../../backend/src/features/kai/kai.prompt';
 import type { KaiSessionContext } from '../../../../packages/shared';
 
@@ -51,6 +51,9 @@ describe('Indian amount parsing', () => {
 
   it('returns undefined when there is no amount', () => {
     expect(parseIndianAmount('remind me to pay bike insurance tomorrow')).toBeUndefined();
+    // English words that double as Hindi numerals must not become amounts.
+    expect(parseIndianAmount('How much do I owe Arun?')).toBeUndefined();
+    expect(parseIndianAmount('a teen char das')).toBeUndefined();
   });
 
   it('strips amount phrases for title extraction', () => {
@@ -152,6 +155,37 @@ describe('normaliseKaiAction', () => {
 
   it('drops unknown kinds into a clarify instead of guessing an expense', () => {
     expect(normaliseKaiAction({ kind: 'teleport', amount: 100 }, '…', undefined, THRESHOLD)?.kind).toBe('clarify');
+  });
+});
+
+describe('offline heuristics', () => {
+  it('asks before recording a single-companion spend', () => {
+    const [a] = offlineActions('I spent 5,000 with Jijo', undefined, THRESHOLD);
+    expect(a.kind).toBe('clarify');
+    expect(a.entities.amount).toBe(5000);
+    expect(a.entities.options?.map((o) => o.patch.kind)).toEqual(['group_expense', 'expense']);
+    expect(a.entities.options?.[0].patch.members).toEqual(['Jijo']);
+  });
+
+  it('keeps an explicit split as a group expense', () => {
+    const [a] = offlineActions('split 3000 with Arun', undefined, THRESHOLD);
+    expect(a.kind).toBe('group_expense');
+  });
+
+  it('answers questions as queries', () => {
+    expect(offlineActions('How much do I owe Arun?', undefined, THRESHOLD)[0]).toMatchObject({ kind: 'query', entities: { queryType: 'PERSON_BALANCE', person: 'Arun' } });
+    expect(offlineActions('What is my total expense this month?', undefined, THRESHOLD)[0]).toMatchObject({ kind: 'query', entities: { queryType: 'SUM_EXPENSES' } });
+  });
+
+  it('resolves a spoken answer to a pending question', () => {
+    const withPending: KaiSessionContext = {
+      ...context,
+      pendingClarification: { actionId: 'kai:s1:4:0', question: 'Shared or personal?', options: ['Shared with Jijo', 'My personal expense'] },
+    };
+    expect(offlineActions('shared', withPending, THRESHOLD)[0]).toMatchObject({ kind: 'update_previous', entities: { targetActionId: 'kai:s1:4:0', patch: { chosenOption: 1 } } });
+    expect(offlineActions('the second one', withPending, THRESHOLD)[0].entities.patch).toEqual({ chosenOption: 2 });
+    expect(matchClarificationOption('personal please', ['Shared with Jijo', 'My personal expense'])).toBe(1);
+    expect(matchClarificationOption('spent 200 on tea', ['Shared with Jijo', 'My personal expense'])).toBe(-1);
   });
 });
 

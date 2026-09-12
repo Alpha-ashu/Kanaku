@@ -625,6 +625,7 @@ export const getCategoryCartoonIcon = (categoryName: string, size: number = 32):
     'book advisor': <AdvisorIcon size={size} />,
     'book-advisor': <AdvisorIcon size={size} />,
     'advisor': <AdvisorIcon size={size} />,
+    'kai': <MicIcon size={size} />,
     'voice logging': <MicIcon size={size} />,
     'voice-logging': <MicIcon size={size} />,
     'receipt scanner': <ScannerIcon size={size} />,
