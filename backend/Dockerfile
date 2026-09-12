@@ -41,8 +41,11 @@ COPY --from=builder /app/backend/generated ./generated
 COPY --from=builder /app/backend/prisma    ./prisma
 COPY --from=builder /app/backend/scripts   ./scripts
 
-# Verify critical runtime dependencies exist in runner image
-RUN node -e "require('zod'); require('@prisma/client'); console.log('Runtime dependencies verified in container')"
+# Verify critical runtime dependencies exist in runner image.
+# The schema generates to backend/generated/prisma (see `generator client.output`),
+# so node_modules/.prisma/client is never populated — check what dist actually
+# requires (dist/db/prisma-client.js → ../../generated/prisma) instead.
+RUN node -e "require('zod'); const c = require('./generated/prisma'); if (!c.PrismaClient) throw new Error('PrismaClient missing from ./generated/prisma'); console.log('Runtime dependencies verified in container')"
 
 # Non-root user for security
 USER kanaku

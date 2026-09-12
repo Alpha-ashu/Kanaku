@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { SearchableDropdown } from '@/app/components/ui/SearchableDropdown';
 import { FloatingSaveBar } from '@/app/components/ui/FloatingSaveBar';
+import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { Button } from '@/app/components/ui/button';
 import { applyAccountBalanceDeltas } from '@/lib/transactionAggregation';
 import { queueRecordUpsertSync, processPendingSyncQueue } from '@/lib/auth-sync-integration';
@@ -319,39 +320,38 @@ export const AddInvestment: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-white text-slate-900 pb-28">
-      {/* Sticky Header with Title and Category Pill Bar (Matching AddTransaction) */}
-      <header className="bg-white border-b border-slate-100 sticky top-0 z-30">
-        {/* Row 1: Back Button & Title */}
-        <div className="flex items-center justify-between px-4 lg:px-6 py-3 h-14">
-          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-            <button
-              type="button"
-              onClick={() => setCurrentPage('investments')}
-              title="Back to Portfolio"
-              aria-label="Back to Portfolio"
-              data-testid="investments-create-back-button"
-              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200/80 hover:bg-slate-50 active:scale-95 shadow-xs flex items-center justify-center text-slate-700 transition-all shrink-0 cursor-pointer"
-            >
-              <ArrowLeft size={18} className="text-slate-700" />
-            </button>
-            <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none truncate">Add Investment</h1>
+    <CenteredLayout enablePullToRefresh={false} className="pb-32">
+      <div className="flex flex-col text-slate-900">
+        {/* Header with Title and Category Pill Bar */}
+        <header className="sticky top-0 z-30 pb-3">
+          <div className="flex items-center justify-between py-2 sm:py-3 mb-2">
+            <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+              <button
+                type="button"
+                onClick={() => setCurrentPage('investments')}
+                title="Back to Portfolio"
+                aria-label="Back to Portfolio"
+                data-testid="investments-create-back-button"
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200/80 hover:bg-slate-50 active:scale-95 shadow-xs flex items-center justify-center text-slate-700 transition-all shrink-0 cursor-pointer"
+              >
+                <ArrowLeft size={18} className="text-slate-700" />
+              </button>
+              <h1 className="font-page-title text-slate-900 tracking-tight leading-none truncate">Add Investment</h1>
+            </div>
           </div>
-        </div>
 
-        {/* Row 2: Category & Subcategory Selector Pills */}
-        <div className="px-4 lg:px-6 pb-3">
-          <InvestmentCategoryTabs
-            selectedCategory={selectedCategory}
-            selectedSubcategory={selectedSubcategory}
-            onSelectCategory={handleSelectCategory}
-            onSelectSubcategory={handleSelectSubcategory}
-          />
-        </div>
-      </header>
+          <div className="pb-2">
+            <InvestmentCategoryTabs
+              selectedCategory={selectedCategory}
+              selectedSubcategory={selectedSubcategory}
+              onSelectCategory={handleSelectCategory}
+              onSelectSubcategory={handleSelectSubcategory}
+            />
+          </div>
+        </header>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto w-full p-4 sm:p-6 lg:p-8 space-y-6">
+        {/* Main Content */}
+        <div className="w-full space-y-6">
         {/* Total Summary Banner (Below Header Section) */}
         <div className="p-6 sm:p-7 rounded-[28px] sm:rounded-[32px] bg-gradient-to-br from-slate-900 via-indigo-950 to-indigo-900 text-white shadow-xl border border-indigo-500/20">
           <div className="flex items-center justify-between">
@@ -564,19 +564,19 @@ export const AddInvestment: React.FC = () => {
               </div>
             </div>
           </div>
+          </div>
         </div>
-      </main>
 
-
-      {/* Floating Save Bar */}
-      <FloatingSaveBar
-        onSave={handleSubmit}
-        onDiscard={() => setCurrentPage('investments')}
-        isSaving={isSubmitting}
-        saveLabel="Add to Portfolio"
-        saveTestId="investments-create-save-button"
-        discardTestId="investments-create-discard-button"
-      />
-    </div>
+        {/* Floating Save Bar */}
+        <FloatingSaveBar
+          onSave={handleSubmit}
+          onDiscard={() => setCurrentPage('investments')}
+          isSaving={isSubmitting}
+          saveLabel="Add to Portfolio"
+          saveTestId="investments-create-save-button"
+          discardTestId="investments-create-discard-button"
+        />
+      </div>
+    </CenteredLayout>
   );
 };

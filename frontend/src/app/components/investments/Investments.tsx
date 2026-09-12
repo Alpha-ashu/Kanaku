@@ -229,6 +229,8 @@ export const Investments: React.FC = () => {
   {/* Header */}
   <PageHeader
   title="Investments"
+  showBack
+  backTo="dashboard"
   >
   {canAdd && (
   <Button
@@ -244,7 +246,7 @@ export const Investments: React.FC = () => {
   </PageHeader>
 
   {/* Live Market Ticker */}
-  <div className="-mx-3 sm:-mx-4 md:-mx-6 lg:-mx-8">
+  <div className="w-full overflow-hidden rounded-2xl">
   <LiveMarketTicker />
   </div>
 

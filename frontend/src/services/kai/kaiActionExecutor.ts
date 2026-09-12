@@ -363,7 +363,9 @@ async function createGroupExpense(action: KaiAction, ctx: ExecutionContext): Pro
     updatedAt: now,
   }, ctx);
 
-  const groupExpenseId = await db.groupExpenses.add({
+  // Suppressed: the Dexie creating-hook would queue its own POST /groups, which
+  // races the explicit one below and can create the bill twice.
+  const groupExpenseId = await runWithCloudSyncSuppressed(() => db.groupExpenses.add({
     name,
     totalAmount: amount,
     paidBy: ctx.accountId,
@@ -378,7 +380,7 @@ async function createGroupExpense(action: KaiAction, ctx: ExecutionContext): Pro
     syncStatus: 'pending',
     createdAt: now,
     updatedAt: now,
-  });
+  }));
 
   try {
     const account = await db.accounts.get(ctx.accountId);
@@ -401,9 +403,12 @@ async function createGroupExpense(action: KaiAction, ctx: ExecutionContext): Pro
     const cloudId = remote.id ?? remote.data?.id;
     if (cloudId) {
       await runWithCloudSyncSuppressed(() => db.groupExpenses.update(groupExpenseId as number, { cloudId: String(cloudId), syncStatus: 'synced' }));
+    } else {
+      queueRecordUpsertSync('group_expenses', groupExpenseId as number);
     }
   } catch {
-    // Stays pending; the sync queue retries it.
+    // Left pending — hand it to the sync queue, which retries it later.
+    queueRecordUpsertSync('group_expenses', groupExpenseId as number);
   }
 
   await db.transactions.update(transactionId, { groupExpenseId: groupExpenseId as number, groupName: name, updatedAt: now });

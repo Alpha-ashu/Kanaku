@@ -15,6 +15,7 @@ import {
   readStoredAppPreferences,
 } from '@/lib/userPreferences';
 import socketClient from '@/lib/socket-client';
+import { compareByRecency } from '@/lib/dateUtils';
 import { Capacitor } from '@capacitor/core';
 import { App as CapacitorApp } from '@capacitor/app';
 
@@ -160,7 +161,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     [manualRefreshToken]
   ) || [];
   const transactions = useLiveQuery(
-    () => db.transactions.orderBy('date').reverse().filter(txn => !txn.deletedAt).toArray(),
+    // Newest first. Ordering on `date` alone ties every entry made on the same
+    // day (a date picker yields midnight), so fall back to createdAt/id — that
+    // is what puts a just-added transaction at the top.
+    async () => (await db.transactions.filter(txn => !txn.deletedAt).toArray()).sort(compareByRecency),
     [manualRefreshToken]
   ) || [];
   const loans = useLiveQuery(

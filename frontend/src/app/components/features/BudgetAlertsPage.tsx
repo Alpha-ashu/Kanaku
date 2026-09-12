@@ -219,6 +219,8 @@ export const BudgetAlertsPage: React.FC = () => {
         <div className="pb-4 lg:pb-6">
           <PageHeader
             title="Budget Alerts"
+            showBack
+            backTo="dashboard"
           >
             <button data-testid="budget-alerts-page-add-budget"
               onClick={() => setShowAddModal(true)}

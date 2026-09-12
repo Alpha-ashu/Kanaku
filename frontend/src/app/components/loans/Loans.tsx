@@ -416,186 +416,186 @@ export const Loans: React.FC = () => {
   <h3 className="text-lg font-display font-bold text-slate-900 dark:text-white mb-4 capitalize">{type === 'emi' ? 'EMI Loans' : `${type} Loans`}</h3>
  <div className="space-y-3">
  {loans
- .filter(l => l.type === type && isOpenLoan(l))
- .map(loan => {
- const effectiveStatus = getEffectiveLoanStatus(loan);
- return (
- <motion.div key={loan.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition-all">
- <div className="flex items-start justify-between mb-3">
- <div className="flex-1">
- <h4 className="font-display font-bold text-gray-900 text-sm">{loan.name}</h4>
- {loan.contactPerson && (
- <p className="text-xs text-gray-500 mt-1">{loan.contactPerson}</p>
- )}
- </div>
- <div className="flex items-center gap-2">
- {canAddLoan && (
- <button
- onClick={() => handleEditClick(loan)}
- data-testid={`loans-edit-button-${loan.id}`}
- className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-600"
- title="Edit loan"
- >
- <Edit2 size={14} />
- </button>
- )}
- {canDelete && (
- <button
- onClick={() => handleDeleteLoan(loan.id!, loan.name)}
- data-testid={`loans-delete-button-${loan.id}`}
- className="p-1.5 hover:bg-red-100 rounded-lg transition-colors text-red-600"
- title="Delete loan"
- >
- <Trash2 size={14} />
- </button>
- )}
- <span className={cn("px-2 py-0.5 text-xs font-bold rounded-full", getLoanStatusColor(loan))}>
- {effectiveStatus}
- </span>
- </div>
- </div>
- 
- {editingLoanId === loan.id ? (
- <div className="space-y-2 mb-3">
- <input
- type="text"
- value={editFormData.name}
- onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
- placeholder="Loan name"
- aria-label="Loan name"
- data-testid="loans-edit-name-input"
- className="w-full px-2 py-1 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-black/10"
- />
- <input
- type="number"
- value={editFormData.principalAmount}
- onChange={(e) => setEditFormData({ ...editFormData, principalAmount: parseFloat(e.target.value) })}
- placeholder="Principal amount"
- aria-label="Principal amount"
- data-testid="loans-edit-principal-input"
- className="w-full px-2 py-1 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-black/10"
- />
- <input
- type="number"
- value={editFormData.outstandingBalance}
- onChange={(e) => setEditFormData({ ...editFormData, outstandingBalance: parseFloat(e.target.value) })}
- placeholder="Outstanding balance"
- aria-label="Outstanding balance"
- data-testid="loans-edit-outstanding-input"
- className="w-full px-2 py-1 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-black/10"
- />
- {editFormData.emiAmount !== undefined && (
- <input
- type="number"
- value={editFormData.emiAmount}
- onChange={(e) => setEditFormData({ ...editFormData, emiAmount: parseFloat(e.target.value) })}
- placeholder="EMI amount"
- aria-label="EMI amount"
- data-testid="loans-edit-emi-input"
- className="w-full px-2 py-1 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-black/10"
- />
- )}
- <input
- type="date"
- value={editFormData.dueDate ? new Date(editFormData.dueDate).toISOString().split('T')[0] : ''}
- onChange={(e) => setEditFormData({ ...editFormData, dueDate: e.target.value })}
- aria-label="Due date"
- title="Due date"
- data-testid="loans-edit-due-date-input"
- className="w-full px-2 py-1 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-black/10"
- />
- <div className="flex gap-2">
- <button
- onClick={handleSaveEdit}
- data-testid="loans-edit-save-button"
- className="flex-1 px-2 py-1 bg-black text-white rounded-lg text-xs font-bold hover:bg-gray-900"
- >
- Save
- </button>
- <button
- onClick={() => setEditingLoanId(null)}
- data-testid="loans-edit-cancel-button"
- className="flex-1 px-2 py-1 bg-gray-100 text-gray-700 rounded-lg text-xs font-bold hover:bg-gray-200"
- >
- Cancel
- </button>
- </div>
- </div>
- ) : (
- <>
- <div className="grid grid-cols-2 gap-3 mb-3">
- <div>
- <p className="text-xs text-gray-500 font-medium">Principal</p>
- <p className="font-display font-bold text-gray-900 text-sm">{formatCurrency(loan.principalAmount)}</p>
- </div>
- <div>
- <p className="text-xs text-gray-500 font-medium">Outstanding</p>
- <p className="font-display font-bold text-gray-900 text-sm">{formatCurrency(loan.outstandingBalance)}</p>
- </div>
- {loan.emiAmount && (
- <div>
- <p className="text-xs text-gray-500 font-medium">EMI Amount</p>
- <p className="font-display font-bold text-gray-900 text-sm">{formatCurrency(loan.emiAmount)}</p>
- </div>
- )}
- {loan.dueDate && (
- <div>
- <p className="text-xs text-gray-500 font-medium">Due Date</p>
- <p className="font-display font-bold text-gray-900 text-sm">
- {new Date(loan.dueDate).toLocaleDateString()}
- </p>
- </div>
- )}
- </div>
+                    .filter(l => l.type === type && isOpenLoan(l))
+                    .map(loan => {
+                      const effectiveStatus = getEffectiveLoanStatus(loan);
+                      return (
+                        <motion.div key={loan.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-slate-50/60 rounded-[24px] border border-slate-200/80 p-4 sm:p-5 hover:border-slate-300 hover:shadow-xs transition-all">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex-1">
+                              <h4 className="font-display font-bold text-slate-900 text-sm">{loan.name}</h4>
+                              {loan.contactPerson && (
+                                <p className="text-xs text-slate-500 mt-0.5">{loan.contactPerson}</p>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              {canAddLoan && (
+                                <button
+                                  onClick={() => handleEditClick(loan)}
+                                  data-testid={`loans-edit-button-${loan.id}`}
+                                  className="w-7 h-7 rounded-full hover:bg-slate-200/60 transition-colors text-slate-500 hover:text-slate-800 flex items-center justify-center cursor-pointer"
+                                  title="Edit loan"
+                                >
+                                  <Edit2 size={13} />
+                                </button>
+                              )}
+                              {canDelete && (
+                                <button
+                                  onClick={() => handleDeleteLoan(loan.id!, loan.name)}
+                                  data-testid={`loans-delete-button-${loan.id}`}
+                                  className="w-7 h-7 rounded-full hover:bg-rose-50 transition-colors text-slate-400 hover:text-rose-600 flex items-center justify-center cursor-pointer"
+                                  title="Delete loan"
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                              )}
+                              <span className={cn("px-2.5 py-0.5 text-xs font-bold rounded-full", getLoanStatusColor(loan))}>
+                                {effectiveStatus}
+                              </span>
+                            </div>
+                          </div>
+                          
+                          {editingLoanId === loan.id ? (
+                            <div className="space-y-2 mb-3">
+                              <input
+                                type="text"
+                                value={editFormData.name}
+                                onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                                placeholder="Loan name"
+                                aria-label="Loan name"
+                                data-testid="loans-edit-name-input"
+                                className="w-full px-3 py-2 bg-white border border-slate-200/80 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500"
+                              />
+                              <input
+                                type="number"
+                                value={editFormData.principalAmount}
+                                onChange={(e) => setEditFormData({ ...editFormData, principalAmount: parseFloat(e.target.value) })}
+                                placeholder="Principal amount"
+                                aria-label="Principal amount"
+                                data-testid="loans-edit-principal-input"
+                                className="w-full px-3 py-2 bg-white border border-slate-200/80 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500"
+                              />
+                              <input
+                                type="number"
+                                value={editFormData.outstandingBalance}
+                                onChange={(e) => setEditFormData({ ...editFormData, outstandingBalance: parseFloat(e.target.value) })}
+                                placeholder="Outstanding balance"
+                                aria-label="Outstanding balance"
+                                data-testid="loans-edit-outstanding-input"
+                                className="w-full px-3 py-2 bg-white border border-slate-200/80 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500"
+                              />
+                              {editFormData.emiAmount !== undefined && (
+                                <input
+                                  type="number"
+                                  value={editFormData.emiAmount}
+                                  onChange={(e) => setEditFormData({ ...editFormData, emiAmount: parseFloat(e.target.value) })}
+                                  placeholder="EMI amount"
+                                  aria-label="EMI amount"
+                                  data-testid="loans-edit-emi-input"
+                                  className="w-full px-3 py-2 bg-white border border-slate-200/80 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500"
+                                />
+                              )}
+                              <input
+                                type="date"
+                                value={editFormData.dueDate ? new Date(editFormData.dueDate).toISOString().split('T')[0] : ''}
+                                onChange={(e) => setEditFormData({ ...editFormData, dueDate: e.target.value })}
+                                aria-label="Due date"
+                                title="Due date"
+                                data-testid="loans-edit-due-date-input"
+                                className="w-full px-3 py-2 bg-white border border-slate-200/80 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500"
+                              />
+                              <div className="flex gap-2 pt-1">
+                                <button
+                                  onClick={handleSaveEdit}
+                                  data-testid="loans-edit-save-button"
+                                  className="flex-1 h-8 bg-[#18181B] hover:bg-black text-white rounded-full text-xs font-bold transition-all cursor-pointer"
+                                >
+                                  Save
+                                </button>
+                                <button
+                                  onClick={() => setEditingLoanId(null)}
+                                  data-testid="loans-edit-cancel-button"
+                                  className="flex-1 h-8 bg-white border border-slate-200/80 text-slate-700 rounded-full text-xs font-bold hover:bg-slate-50 transition-all cursor-pointer"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              <div className="grid grid-cols-2 gap-3 mb-3">
+                                <div>
+                                  <p className="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">Principal</p>
+                                  <p className="font-display font-bold text-slate-900 text-sm mt-0.5">{formatCurrency(loan.principalAmount)}</p>
+                                </div>
+                                <div>
+                                  <p className="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">Outstanding</p>
+                                  <p className="font-display font-bold text-slate-900 text-sm mt-0.5">{formatCurrency(loan.outstandingBalance)}</p>
+                                </div>
+                                {loan.emiAmount && (
+                                  <div>
+                                    <p className="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">EMI Amount</p>
+                                    <p className="font-display font-bold text-slate-900 text-sm mt-0.5">{formatCurrency(loan.emiAmount)}</p>
+                                  </div>
+                                )}
+                                {loan.dueDate && (
+                                  <div>
+                                    <p className="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">Due Date</p>
+                                    <p className="font-display font-bold text-slate-900 text-sm mt-0.5">
+                                      {new Date(loan.dueDate).toLocaleDateString()}
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
 
- <progress
- className="w-full h-2 mb-3 [&::-webkit-progress-bar]:rounded-full [&::-webkit-progress-value]:rounded-full [&::-webkit-progress-value]:bg-black [&::-moz-progress-bar]:rounded-full [&::-moz-progress-bar]:bg-black"
- value={Math.max(0, loan.principalAmount - loan.outstandingBalance)}
- max={Math.max(1, loan.principalAmount)}
- aria-label="Loan repayment progress"
- />
+                              <progress
+                                className="w-full h-2 mb-3 [&::-webkit-progress-bar]:rounded-full [&::-webkit-progress-value]:rounded-full [&::-webkit-progress-value]:bg-slate-900 [&::-moz-progress-bar]:rounded-full [&::-moz-progress-bar]:bg-slate-900"
+                                value={Math.max(0, loan.principalAmount - loan.outstandingBalance)}
+                                max={Math.max(1, loan.principalAmount)}
+                                aria-label="Loan repayment progress"
+                              />
 
- <div className="mb-3 rounded-lg border border-gray-200 bg-white px-2.5 py-2">
- <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-gray-500">Payment Info</p>
- <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-700">
- <span>
- Last paid: {loan.id && latestPaymentByLoan.get(loan.id)
- ? formatShortDate(latestPaymentByLoan.get(loan.id))
- : 'No payment yet'}
- </span>
- {loan.id && completionDateByLoan.get(loan.id) && (
- <span className="font-semibold text-green-700">
- Completed on: {formatShortDate(completionDateByLoan.get(loan.id))}
- </span>
- )}
- </div>
- </div>
+                              <div className="mb-3 rounded-2xl border border-slate-200/80 bg-white/80 px-3.5 py-2.5 shadow-2xs">
+                                <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Payment Info</p>
+                                <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-700">
+                                  <span>
+                                    Last paid: {loan.id && latestPaymentByLoan.get(loan.id)
+                                      ? formatShortDate(latestPaymentByLoan.get(loan.id))
+                                      : 'No payment yet'}
+                                  </span>
+                                  {loan.id && completionDateByLoan.get(loan.id) && (
+                                    <span className="font-bold text-emerald-700">
+                                      Completed on: {formatShortDate(completionDateByLoan.get(loan.id))}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
 
- <div className="flex gap-2">
- <button
- onClick={() => setShowPaymentModal(loan.id!)}
- data-testid={`loans-make-payment-button-${loan.id}`}
- className="flex-1 px-4 py-2.5 bg-black text-white rounded-xl hover:bg-gray-900 transition-all text-xs font-black uppercase tracking-widest shadow-sm active:scale-95"
- >
- Make Payment
- </button>
- {loanPayments.some(p => p.loanId === loan.id && p.documentId) && (
- <button
- onClick={() => handleViewBill(loan.id!)}
- data-testid={`loans-view-bill-button-${loan.id}`}
- className="px-4 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-all text-xs font-black uppercase tracking-widest shadow-sm flex items-center gap-2"
- title="View Bills"
- >
- <FileText size={14} />
- View Bill
- </button>
- )}
- </div>
- </>
- )}
- </motion.div>
- );
- })}
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => setShowPaymentModal(loan.id!)}
+                                  data-testid={`loans-make-payment-button-${loan.id}`}
+                                  className="flex-1 h-10 bg-[#18181B] hover:bg-black text-white rounded-full transition-all text-xs font-bold active:scale-95 shadow-xs flex items-center justify-center cursor-pointer"
+                                >
+                                  Make Payment
+                                </button>
+                                {loanPayments.some(p => p.loanId === loan.id && p.documentId) && (
+                                  <button
+                                    onClick={() => handleViewBill(loan.id!)}
+                                    data-testid={`loans-view-bill-button-${loan.id}`}
+                                    className="h-10 px-4 bg-white border border-slate-200/80 text-slate-700 rounded-full hover:bg-slate-50 transition-all text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer"
+                                    title="View Bills"
+                                  >
+                                    <FileText size={14} />
+                                    View Bill
+                                  </button>
+                                )}
+                              </div>
+                            </>
+                          )}
+                        </motion.div>
+                      );
+                    })}
  {loans.filter(l => l.type === type && isOpenLoan(l)).length === 0 && (
  <p className="text-gray-500 text-center py-8 text-sm">No open {type} loans</p>
  )}
@@ -769,154 +769,154 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ loanId, accounts, onClose }
  };
 
  return (
- <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
- <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
- <div className="p-6">
- <h3 className="text-xl font-black text-gray-900 mb-6 flex items-center gap-2">
- <DollarSign className="text-indigo-600" size={24} />
- Make Payment
- </h3>
- 
- <form data-testid="loans-form" onSubmit={handleSubmit} className="space-y-5">
- <div>
- <label htmlFor="loan-payment-amount" className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Amount</label>
- <div className="relative">
- <input
- id="loan-payment-amount"
- type="number"
- step="0.01"
- value={amount || ''}
- onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
- data-testid="loans-payment-amount-input"
- className="w-full px-4 py-3 bg-white border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:bg-white transition-all font-bold text-gray-900"
- placeholder="0.00"
- required
- />
- </div>
- </div>
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-[28px] sm:rounded-[32px] shadow-2xl border border-slate-100 w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+        <div className="p-6 sm:p-7">
+          <h3 className="text-xl font-black text-slate-900 mb-6 flex items-center gap-2">
+            <DollarSign className="text-purple-600" size={24} />
+            Make Payment
+          </h3>
+          
+          <form data-testid="loans-form" onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label htmlFor="loan-payment-amount" className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Amount</label>
+              <div className="relative">
+                <input
+                  id="loan-payment-amount"
+                  type="number"
+                  step="0.01"
+                  value={amount || ''}
+                  onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
+                  data-testid="loans-payment-amount-input"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200/80 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all font-bold text-slate-900"
+                  placeholder="0.00"
+                  required
+                />
+              </div>
+            </div>
 
- <div>
- <label htmlFor="loan-payment-account" className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Pay From</label>
- <select
- id="loan-payment-account"
- value={accountId}
- onChange={(e) => setAccountId(parseInt(e.target.value))}
- data-testid="loans-payment-account-select"
- className="w-full px-4 py-3 bg-white border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:bg-white transition-all font-bold text-gray-900 text-sm"
- >
- {accounts.map(acc => (
- <option data-testid={`loans-option-${acc.id}`} key={acc.id} value={acc.id}>{acc.name}</option>
- ))}
- </select>
- </div>
+            <div>
+              <label htmlFor="loan-payment-account" className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Pay From</label>
+              <select
+                id="loan-payment-account"
+                value={accountId}
+                onChange={(e) => setAccountId(parseInt(e.target.value))}
+                data-testid="loans-payment-account-select"
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200/80 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all font-bold text-slate-900 text-sm"
+              >
+                {accounts.map(acc => (
+                  <option data-testid={`loans-option-${acc.id}`} key={acc.id} value={acc.id}>{acc.name}</option>
+                ))}
+              </select>
+            </div>
 
- <div>
-  {/* Receipt Section */}
-  <div className="premium-glass-card p-4 space-y-3">
-    <div className="flex items-center justify-between">
-      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Receipt / Bill</label>
-      {documentId && (
-        <span className="flex items-center gap-1 text-[9px] font-black text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg uppercase tracking-wide">
-          <Check size={10} strokeWidth={3} /> Attached
-        </span>
-      )}
-    </div>
+            <div>
+              {/* Receipt Section */}
+              <div className="premium-glass-card p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Receipt / Bill</label>
+                  {documentId && (
+                    <span className="flex items-center gap-1 text-[9px] font-black text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg uppercase tracking-wide">
+                      <Check size={10} strokeWidth={3} /> Attached
+                    </span>
+                  )}
+                </div>
 
-    {documentId ? (
-      <div className="flex items-center gap-3 p-3 bg-emerald-50 rounded-xl border border-emerald-100">
-        <Paperclip size={16} className="text-emerald-600 shrink-0" />
-        <div className="flex-1">
-          <p className="text-[10px] font-black text-emerald-700 uppercase">Bill Attached</p>
-          <p className="text-[9px] font-semibold text-emerald-500">Document saved successfully</p>
+                {documentId ? (
+                  <div className="flex items-center gap-3 p-3 bg-emerald-50 rounded-xl border border-emerald-100">
+                    <Paperclip size={16} className="text-emerald-600 shrink-0" />
+                    <div className="flex-1">
+                      <p className="text-[10px] font-black text-emerald-700 uppercase">Bill Attached</p>
+                      <p className="text-[9px] font-semibold text-emerald-500">Document saved successfully</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setDocumentId(null)}
+                      data-testid="loans-payment-remove-bill-button"
+                      className="p-1.5 text-emerald-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
+                      title="Remove attachment"
+                    >
+                      <X size={13} strokeWidth={3} />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => { setScannerMode('scan'); setShowScanner(true); }}
+                      data-testid="loans-payment-scan-button"
+                      disabled={!isOcrEnabled}
+                      className={cn(
+                        "flex flex-col items-center gap-2 p-4 rounded-2xl active:scale-[0.97] transition-all shadow-lg",
+                        isOcrEnabled 
+                          ? "bg-slate-900 text-white hover:bg-slate-800 shadow-slate-200" 
+                          : "bg-slate-100 text-slate-400 border border-slate-200 shadow-none cursor-not-allowed"
+                      )}
+                    >
+                      <div className={cn(
+                        "w-9 h-9 rounded-xl flex items-center justify-center",
+                        isOcrEnabled ? "bg-white/10" : "bg-slate-200"
+                      )}>
+                        <ScanLine size={18} />
+                      </div>
+                      <div className="text-center">
+                        <p className="text-[10px] font-black uppercase tracking-wide leading-none">Scan Bill</p>
+                        <p className={cn("text-[9px] font-semibold mt-0.5 leading-none", isOcrEnabled ? "text-white/40" : "text-slate-400/60")}>OCR auto-fill</p>
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => { setScannerMode('attachment'); setShowScanner(true); }}
+                      data-testid="loans-payment-attach-button"
+                      className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-slate-50 text-slate-900 hover:bg-slate-100 active:scale-[0.97] transition-all border border-slate-100"
+                    >
+                      <div className="w-9 h-9 rounded-xl bg-slate-200 flex items-center justify-center">
+                        <Paperclip size={18} className="text-slate-600" />
+                      </div>
+                      <div className="text-center">
+                        <p className="text-[10px] font-black uppercase tracking-wide leading-none">Attach File</p>
+                      </div>
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="loan-payment-notes" className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Notes (Optional)</label>
+              <textarea
+                id="loan-payment-notes"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                data-testid="loans-payment-notes-textarea"
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200/80 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all font-bold text-slate-900 text-sm min-h-[80px]"
+                placeholder="Added payment details..."
+              />
+            </div>
+
+            <div className="flex gap-3 pt-4">
+              <button
+                type="button"
+                onClick={onClose}
+                data-testid="loans-payment-cancel-button"
+                className="flex-1 h-12 bg-white border border-slate-200/80 text-slate-700 rounded-full font-bold text-xs hover:bg-slate-50 transition-all active:scale-95 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                data-testid="loans-payment-submit-button"
+                className="flex-1 h-12 bg-[#18181B] hover:bg-black text-white rounded-full font-bold text-xs transition-all shadow-md active:scale-95 cursor-pointer"
+              >
+                Record Payment
+              </button>
+            </div>
+          </form>
         </div>
-        <button
-          type="button"
-          onClick={() => setDocumentId(null)}
-          data-testid="loans-payment-remove-bill-button"
-          className="p-1.5 text-emerald-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
-          title="Remove attachment"
-        >
-          <X size={13} strokeWidth={3} />
-        </button>
       </div>
-    ) : (
-      <div className="grid grid-cols-2 gap-3">
-        <button
-          type="button"
-          onClick={() => { setScannerMode('scan'); setShowScanner(true); }}
-          data-testid="loans-payment-scan-button"
-          disabled={!isOcrEnabled}
-          className={cn(
-            "flex flex-col items-center gap-2 p-4 rounded-2xl active:scale-[0.97] transition-all shadow-lg",
-            isOcrEnabled 
-              ? "bg-slate-900 text-white hover:bg-slate-800 shadow-slate-200" 
-              : "bg-slate-100 text-slate-400 border border-slate-200 shadow-none cursor-not-allowed"
-          )}
-        >
-          <div className={cn(
-            "w-9 h-9 rounded-xl flex items-center justify-center",
-            isOcrEnabled ? "bg-white/10" : "bg-slate-200"
-          )}>
-            <ScanLine size={18} />
-          </div>
-          <div className="text-center">
-            <p className="text-[10px] font-black uppercase tracking-wide leading-none">Scan Bill</p>
-            <p className={cn("text-[9px] font-semibold mt-0.5 leading-none", isOcrEnabled ? "text-white/40" : "text-slate-400/60")}>OCR auto-fill</p>
-          </div>
-        </button>
 
-        <button
-          type="button"
-          onClick={() => { setScannerMode('attachment'); setShowScanner(true); }}
-          data-testid="loans-payment-attach-button"
-          className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-slate-50 text-slate-900 hover:bg-slate-100 active:scale-[0.97] transition-all border border-slate-100"
-        >
-          <div className="w-9 h-9 rounded-xl bg-slate-200 flex items-center justify-center">
-            <Paperclip size={18} className="text-slate-600" />
-          </div>
-          <div className="text-center">
-            <p className="text-[10px] font-black uppercase tracking-wide leading-none">Attach File</p>
-          </div>
-        </button>
-      </div>
-    )}
-  </div>
- </div>
-
- <div>
- <label htmlFor="loan-payment-notes" className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Notes (Optional)</label>
- <textarea
- id="loan-payment-notes"
- value={notes}
- onChange={(e) => setNotes(e.target.value)}
- data-testid="loans-payment-notes-textarea"
- className="w-full px-4 py-3 bg-white border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:bg-white transition-all font-bold text-gray-900 text-sm min-h-[80px]"
- placeholder="Added payment details..."
- />
- </div>
-
- <div className="flex gap-3 pt-4">
- <button
- type="button"
- onClick={onClose}
- data-testid="loans-payment-cancel-button"
- className="flex-1 px-4 py-3 bg-gray-100 text-gray-600 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-gray-200 transition-all"
- >
- Cancel
- </button>
- <button
- type="submit"
- data-testid="loans-payment-submit-button"
- className="flex-1 px-4 py-3 bg-indigo-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all active:scale-[0.98]"
- >
- Record Payment
- </button>
- </div>
- </form>
- </div>
- </div>
-
- {showScanner && (
+      {showScanner && (
  <ReceiptScanner
  isOpen={showScanner}
  onClose={() => { setShowScanner(false); setScannerMode(null); }}

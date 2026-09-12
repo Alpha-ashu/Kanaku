@@ -183,6 +183,8 @@ export const RecurringTransactions: React.FC = () => {
         <div className="pb-4 lg:pb-6">
           <PageHeader
             title="Recurring Transactions"
+            showBack
+            backTo="dashboard"
           >
             <button
               onClick={() => setShowAddForm((v) => !v)}

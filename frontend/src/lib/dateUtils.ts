@@ -13,6 +13,37 @@ export const parseDateInputValue = (value?: string | null): Date | null => {
   return isValidDate(parsed) ? parsed : null;
 };
 
+const isSameLocalDay = (a: Date, b: Date) =>
+  a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+
+/**
+ * Stamp the clock time onto a date-only choice for today.
+ *
+ * A `<input type="date">` yields local midnight, so everything entered today
+ * shares one timestamp and lists can't tell which came first. Entries for today
+ * get the current time; a deliberately chosen past/future day keeps midnight and
+ * relies on the createdAt tie-break instead of pretending to know the hour.
+ */
+export const withEntryTime = (value?: Date | string | null, now: Date = new Date()): Date => {
+  const parsed = coerceDate(value) ?? now;
+  if (!isSameLocalDay(parsed, now)) return parsed;
+  const stamped = new Date(parsed);
+  stamped.setHours(now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds());
+  return stamped;
+};
+
+/** Newest first: by transaction date, then by when the row was actually created. */
+export const compareByRecency = (
+  a: { date?: Date | string | null; createdAt?: Date | string | null; id?: number },
+  b: { date?: Date | string | null; createdAt?: Date | string | null; id?: number },
+): number => {
+  const byDate = (coerceDate(b.date)?.getTime() ?? 0) - (coerceDate(a.date)?.getTime() ?? 0);
+  if (byDate !== 0) return byDate;
+  const byCreated = (coerceDate(b.createdAt)?.getTime() ?? 0) - (coerceDate(a.createdAt)?.getTime() ?? 0);
+  if (byCreated !== 0) return byCreated;
+  return (b.id ?? 0) - (a.id ?? 0);
+};
+
 export const coerceDate = (value?: Date | string | null): Date | null => {
   if (!value) return null;
   if (value instanceof Date) {

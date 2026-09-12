@@ -84,7 +84,9 @@ export class TransactionRepository {
     const defaultCategoryFilter = whereClause?.category !== undefined ? {} : { category: { not: 'Personal Share Offset' } };
     const txs = await prisma.transaction.findMany({
       where: { userId, deletedAt: null, ...defaultCategoryFilter, ...whereClause },
-      orderBy: { date: 'desc' },
+      // createdAt breaks the tie when several rows share a date (a date picker
+      // yields midnight), so the most recently recorded one comes first.
+      orderBy: [{ date: 'desc' }, { createdAt: 'desc' }],
       ...(limit !== undefined ? { take: limit } : {}),
       ...(skip !== undefined ? { skip } : {}),
     });

@@ -1037,13 +1037,13 @@ export const BookAdvisor: React.FC = () => {
                     <div className="grid grid-cols-2 gap-2 pt-4 mt-3 border-t border-slate-100">
                       <button
                         onClick={() => setViewingProfileAdvisor(adv)}
-                        className="py-2.5 px-3 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer shadow-xs"
+                        className="py-2.5 px-3 bg-white border border-slate-200/80 hover:bg-slate-50 text-slate-700 rounded-full text-xs font-bold transition-all cursor-pointer shadow-xs"
                       >
                         Profile
                       </button>
                       <button
                         onClick={() => handleOpenBookingModal(adv)}
-                        className="py-2.5 px-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-sm active:scale-95 cursor-pointer"
+                        className="py-2.5 px-3 bg-[#18181B] hover:bg-black text-white rounded-full text-xs font-bold transition-all shadow-xs active:scale-95 cursor-pointer"
                       >
                         Book
                       </button>
@@ -1758,7 +1758,7 @@ export const BookAdvisor: React.FC = () => {
                 <button
                   onClick={() => void handleSubmitBooking()}
                   disabled={isSubmittingBooking}
-                  className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black text-xs uppercase tracking-wider shadow-lg shadow-indigo-200 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                  className="w-full h-12 bg-[#18181B] hover:bg-black text-white rounded-full font-bold text-xs active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md disabled:opacity-50"
                 >
                   {isSubmittingBooking ? <Loader2 size={16} className="animate-spin" /> : <Calendar size={16} />}
                   <span>Submit Booking Request</span>

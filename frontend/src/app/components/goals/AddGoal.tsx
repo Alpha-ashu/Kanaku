@@ -19,6 +19,7 @@ import { SearchableDropdown } from '@/app/components/ui/SearchableDropdown';
 import { formatCurrencyAmount } from '@/lib/currencyUtils';
 
 import { FloatingSaveBar } from '@/app/components/ui/FloatingSaveBar';
+import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 
 // --- Helpers ---
 const formatCurrency = (v: number, currency: string) =>
@@ -217,28 +218,29 @@ export const AddGoal: React.FC = () => {
  };
 
  return (
- <div className="flex flex-col min-h-screen bg-white">
+    <CenteredLayout enablePullToRefresh={false} className="pb-32">
+      <div className="space-y-6 w-full">
+        {/* Header */}
+        <div className="flex items-center justify-between gap-3 w-full">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <button
+              type="button"
+              onClick={() => setCurrentPage('goals')}
+              title="Back to Goals"
+              aria-label="Back to Goals"
+              data-testid="goals-create-back-button"
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200/80 hover:bg-slate-50 active:scale-95 shadow-xs flex items-center justify-center text-slate-700 transition-all shrink-0 cursor-pointer"
+            >
+              <ArrowLeft size={18} className="text-slate-700" />
+            </button>
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 tracking-tight leading-none truncate">
+              New Saving Goal
+            </h1>
+          </div>
+        </div>
 
-  {/* Header */}
-  <header className="px-4 lg:px-6 py-4 bg-white border-b border-slate-100">
-    <div className="flex items-center justify-between gap-3 w-full">
-      <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-        <button
-          onClick={() => setCurrentPage('goals')}
-          title="Back to Goals"
-          aria-label="Back to Goals"
-          data-testid="goals-create-back-button"
-          className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200/80 hover:bg-slate-50 active:scale-95 shadow-xs flex items-center justify-center text-slate-700 transition-all shrink-0 cursor-pointer"
-        >
-          <ArrowLeft size={18} className="text-slate-700" />
-        </button>
-        <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none truncate">New Saving Goal</h1>
-      </div>
-    </div>
-  </header>
-
-  {/* Main Single-Page Content Area */}
-  <main className="flex-1 p-3 lg:p-5 grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-5 overflow-y-auto pb-48 no-scrollbar">
+        {/* Main Single-Page Content Area */}
+        <main className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 w-full pb-48 no-scrollbar">
  
  {/* Left Column: context & types (lg:col-7) */}
  <div className="lg:col-span-7 flex flex-col gap-3 lg:overflow-y-auto">
@@ -558,14 +560,15 @@ export const AddGoal: React.FC = () => {
  </div>
  </div>
  </main>
- <FloatingSaveBar
-   onSave={handleSubmit}
-   onDiscard={() => setCurrentPage('goals')}
-   isSaving={isSubmitting}
-   saveLabel="Create Goal"
-   saveTestId="goals-create-save-button"
-   discardTestId="goals-create-discard-button"
- />
- </div>
- );
+  <FloatingSaveBar
+    onSave={handleSubmit}
+    onDiscard={() => setCurrentPage('goals')}
+    isSaving={isSubmitting}
+    saveLabel="Create Goal"
+    saveTestId="goals-create-save-button"
+    discardTestId="goals-create-discard-button"
+  />
+      </div>
+    </CenteredLayout>
+  );
 };
