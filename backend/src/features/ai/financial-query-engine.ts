@@ -532,10 +532,26 @@ async function budgetStatus(userId: string, params: QueryParams): Promise<QueryR
   return { summary: `${head}${lines.join('\n')}`, meta: { budgets: items } };
 }
 
+/**
+ * LLM date math is occasionally off by a day ("last month" → Jul 31 – Aug 30).
+ * A window that is roughly one month long snaps to the calendar month it
+ * mostly covers; anything else is left alone.
+ */
+export function snapToCalendarMonth(start: Date, end: Date): { start: Date; end: Date } {
+  const days = (end.getTime() - start.getTime()) / 86_400_000;
+  if (days < 26 || days > 33) return { start, end };
+  const mid = new Date(start.getTime() + (end.getTime() - start.getTime()) / 2);
+  return {
+    start: new Date(mid.getFullYear(), mid.getMonth(), 1),
+    end: new Date(mid.getFullYear(), mid.getMonth() + 1, 0, 23, 59, 59),
+  };
+}
+
 async function expenseReport(userId: string, params: QueryParams): Promise<QueryResult> {
   const { startDate: defaultStart, endDate: defaultEnd } = currentPeriodBounds();
-  const start = params.startDate ?? defaultStart;
-  const end = params.endDate ?? defaultEnd;
+  const snapped = params.startDate && params.endDate ? snapToCalendarMonth(params.startDate, params.endDate) : null;
+  const start = snapped?.start ?? params.startDate ?? defaultStart;
+  const end = snapped?.end ?? params.endDate ?? defaultEnd;
   const base = { userId, deletedAt: null, date: { gte: start, lte: end } };
   const expenseWhere = { ...base, type: 'expense', category: { not: 'Personal Share Offset' } };
 

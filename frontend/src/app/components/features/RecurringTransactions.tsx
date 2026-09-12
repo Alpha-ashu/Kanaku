@@ -7,6 +7,7 @@ import { db, RecurringTransaction } from '@/lib/database';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useApp } from '@/contexts/AppContext';
 import { formatCurrencyAmount } from '@/lib/currencyUtils';
+import { FinancialAmount } from '@/app/components/ui/FinancialAmount';
 import { backendService } from '@/lib/backend-api';
 import { syncRecurringTransactions } from '@/services/featureSyncService';
 
@@ -338,75 +339,81 @@ export const RecurringTransactions: React.FC = () => {
             <p className="text-xs text-slate-400 mt-1">Add rent, subscriptions, salaries — anything that repeats.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {items.map((item) => (
-              <div data-testid={`recurring-transactions-card-2-${item.id}`}
+              <div
+                data-testid={`recurring-transactions-card-2-${item.id}`}
                 key={item.id}
-                className={`bg-white rounded-[24px] sm:rounded-[28px] p-5 sm:p-6 border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] flex flex-col md:flex-row md:items-center justify-between gap-5 sm:gap-6 transition-all ${item.status === 'paused' ? 'opacity-65' : ''}`}
+                className={`bg-white rounded-[24px] sm:rounded-[28px] p-5 sm:p-6 border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] hover:shadow-md hover:border-slate-200/80 transition-all flex flex-col justify-between gap-5 ${item.status === 'paused' ? 'opacity-65' : ''}`}
               >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 bg-slate-100 text-slate-700">
-                    <CreditCard size={20} />
-                  </div>
-                  <div>
-                    <h4 className="font-black text-slate-900 tracking-tight flex items-center gap-2">
-                      {item.name}
-                      {item.status === 'paused' && (
-                        <span className="px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase bg-slate-100 text-slate-400 tracking-wider">Paused</span>
-                      )}
-                      <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${
-                        item.type === 'income' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' :
-                        item.type === 'transfer' ? 'bg-sky-50 text-sky-700 border border-sky-100' :
-                        'bg-rose-50 text-rose-700 border border-rose-100'
-                      }`}>{item.type}</span>
-                    </h4>
-                    <div className="flex items-center gap-3 mt-1.5 flex-wrap">
-                      <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{item.category}</span>
-                      <span className="w-1.5 h-1.5 rounded-full bg-slate-200" />
-                      <span className="text-xs font-bold text-slate-500 capitalize">{item.frequency}</span>
-                      <span className="w-1.5 h-1.5 rounded-full bg-slate-200" />
-                      <span className="text-xs font-medium text-slate-500 flex items-center gap-1">
-                        <Calendar size={12} /> Next: {item.nextDueDate instanceof Date
-                          ? item.nextDueDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
-                          : String(item.nextDueDate).slice(0, 10)}
-                      </span>
-                      {item.syncStatus === 'pending' && (
-                        <span className="text-[9px] text-amber-600 font-bold uppercase">⏳ Pending sync</span>
-                      )}
+                <div>
+                  <div className="flex items-start justify-between gap-3 mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 bg-slate-100 text-slate-700 shadow-2xs">
+                        <CreditCard size={18} />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-base text-slate-900 tracking-tight flex items-center gap-2">
+                          {item.name}
+                          {item.status === 'paused' && (
+                            <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-slate-100 text-slate-400 tracking-wider">Paused</span>
+                          )}
+                          <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${
+                            item.type === 'income' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' :
+                            item.type === 'transfer' ? 'bg-sky-50 text-sky-700 border border-sky-100' :
+                            'bg-rose-50 text-rose-700 border border-rose-100'
+                          }`}>{item.type}</span>
+                        </h4>
+                        <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block mt-0.5">{item.category}</span>
+                      </div>
                     </div>
+
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        onClick={() => handleToggleStatus(item)}
+                        className={`px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                          item.status === 'active'
+                            ? 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                            : 'bg-[#18181B] hover:bg-black text-white'
+                        }`}
+                        data-testid={`recurring-card-toggle-${item.id}`}
+                      >
+                        {item.status === 'active' ? 'Pause' : 'Resume'}
+                      </button>
+                      <button
+                        onClick={() => handleDelete(item)}
+                        className="w-8 h-8 rounded-full bg-slate-100 hover:bg-rose-50 hover:text-rose-600 text-slate-500 flex items-center justify-center transition-all cursor-pointer"
+                        title="Delete"
+                        data-testid={`recurring-card-delete-${item.id}`}
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 mt-3 flex-wrap">
+                    <span className="text-xs font-bold text-slate-500 capitalize bg-slate-50 px-2.5 py-1 rounded-full border border-slate-100">{item.frequency}</span>
+                    <span className="text-xs font-medium text-slate-500 flex items-center gap-1">
+                      <Calendar size={12} className="text-slate-400" /> Next: {item.nextDueDate instanceof Date
+                        ? item.nextDueDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+                        : String(item.nextDueDate).slice(0, 10)}
+                    </span>
+                    {item.syncStatus === 'pending' && (
+                      <span className="text-[9px] text-amber-600 font-bold uppercase">⏳ Pending sync</span>
+                    )}
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between md:justify-end gap-5 sm:gap-6 border-t md:border-none pt-4 md:pt-0">
-                  <div className="text-left md:text-right">
-                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">
-                      {item.type === 'income' ? 'Income' : 'Liability'}
-                    </span>
-                    <p className={`text-lg font-black mt-0.5 ${item.type === 'income' ? 'text-emerald-700' : 'text-slate-900'}`}>
-                      {fc(item.amount)}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => handleToggleStatus(item)}
-                      className={`px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
-                        item.status === 'active'
-                          ? 'bg-slate-100 hover:bg-slate-200 text-slate-700'
-                          : 'bg-[#18181B] hover:bg-black text-white'
-                      }`}
-                      data-testid={`recurring-card-toggle-${item.id}`}
-                    >
-                      {item.status === 'active' ? 'Pause' : 'Resume'}
-                    </button>
-                    <button
-                      onClick={() => handleDelete(item)}
-                      className="w-9 h-9 rounded-full bg-slate-100 hover:bg-rose-50 hover:text-rose-600 text-slate-500 flex items-center justify-center transition-all cursor-pointer"
-                      title="Delete"
-                      data-testid={`recurring-card-delete-${item.id}`}
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
+                <div className="flex items-center justify-between pt-3 border-t border-slate-50">
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                    {item.type === 'income' ? 'Recurring Income' : 'Recurring Liability'}
+                  </span>
+                  <FinancialAmount
+                    value={item.amount}
+                    currency={currency}
+                    size="md"
+                    className={item.type === 'income' ? 'text-emerald-700 font-black' : 'text-slate-900 font-black'}
+                  />
                 </div>
               </div>
             ))}

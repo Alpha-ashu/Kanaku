@@ -468,7 +468,7 @@ export const QUICK_ACTIONS = [
   },
   {
     id: 'voice_input',
-    label: 'Voice Input',
+    label: 'Kai',
     icon: '',
     color: COLORS.secondary,
     route: 'voice-input',

@@ -26,7 +26,9 @@ function contextBlock(context: KaiSessionContext | undefined): string {
   if (context.pendingClarification) {
     const p = context.pendingClarification;
     lines.push(`PENDING QUESTION you asked about actionId "${p.actionId}": "${p.question}" — options: ${p.options.map((o, i) => `${i + 1}) ${o}`).join('  ')}`);
-    lines.push('If this statement answers that question, emit update_previous for that actionId with the chosen option\'s fields.');
+    lines.push('If this statement answers that question (by option number, by repeating an option, or in other words), emit');
+    lines.push(`  {"kind":"update_previous","targetActionId":"${p.actionId}","patch":{"chosenOption":<1-based option number>, ...any extra fields the user added}}`);
+    lines.push('Do NOT put the option text into description. A brand-new statement that ignores the question is handled normally.');
   }
   return `SESSION CONTEXT:\n${lines.join('\n')}`;
 }
@@ -101,7 +103,8 @@ RULES
    no date said → null (the app uses today).
 6. Destructive requests ("delete all my expenses", "remove everything from last month") → clarify with a single
    "Yes, delete" option; never emit a delete directly.
-7. Small talk / thanks with no financial content → return {"actions":[]}.
+7. Small talk / thanks with no financial content → return {"actions":[]}. But ANY question about the user's
+   money, spending, budgets, goals, loans, balances or reports is a query action — never an empty list.
 8. confidence < 0.6 on a money kind → make it a clarify instead.
 
 CATEGORIES (exact strings): Expenses: "Food & Dining", "Transport", "Housing", "Shopping", "Health",
@@ -134,6 +137,15 @@ EXAMPLES
 
 "What is my food budget for this week?" →
 {"actions":[{"kind":"query","queryType":"BUDGET_STATUS","category":"Food & Dining","confidence":0.95,"say":"Here's your food budget."}]}
+
+"What is my total expense this month?" →
+{"actions":[{"kind":"query","queryType":"SUM_EXPENSES","confidence":0.97,"say":"Here's what you've spent this month."}]}
+
+"How much do I owe Arun?" →
+{"actions":[{"kind":"query","queryType":"PERSON_BALANCE","person":"Arun","confidence":0.95,"say":"Here's where you stand with Arun."}]}
+
+(with a PENDING QUESTION "Shared with Jijo or personal?" options 1) Shared with Jijo 2) My personal expense) "shared" →
+{"actions":[{"kind":"update_previous","targetActionId":"<that actionId>","patch":{"chosenOption":1},"confidence":0.95,"say":"Got it — recorded as shared with Jijo."}]}
 
 "Give me last month's complete expense report" →
 {"actions":[{"kind":"query","queryType":"EXPENSE_REPORT","startDate":"<first day of last month>","endDate":"<last day of last month>","confidence":0.96,"say":"Here's last month's report."}]}

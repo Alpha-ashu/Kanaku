@@ -15,6 +15,7 @@ import { VoiceContextStore } from '@/services/voiceContextStore';
 import { KaiListener, type KaiListenerCallbacks } from './kaiListener';
 import { understandUtterance, type UnderstandResult } from './kaiUnderstandService';
 import {
+  actionOutflow,
   executeKaiAction,
   removeKaiAction,
   resolveDefaultAccount,
@@ -62,7 +63,7 @@ export interface KaiSessionDeps {
   execute: typeof executeKaiAction;
   update: typeof updateKaiAction;
   remove: typeof removeKaiAction;
-  resolveAccount: () => Promise<{ id?: number } | null>;
+  resolveAccount: (outflow?: number) => Promise<{ id?: number } | null>;
   speak: (text: string) => Promise<void>;
   isMuted: () => boolean;
   createListener: (callbacks: KaiListenerCallbacks) => Pick<KaiListener, 'begin' | 'end' | 'pause' | 'resume' | 'isActive'>;
@@ -75,6 +76,38 @@ export interface KaiSessionDeps {
 
 const STORAGE_KEY = 'KANAKU_kai_session';
 const CONTEXT_ACTIONS = 5;
+const ORDINALS = ['first', 'second', 'third', 'fourth'];
+
+/** Which clarification option (0-based) an utterance picks — by number, ordinal or by echoing the label. */
+export function matchOptionLabel(utterance: string, labels: string[]): number {
+  const lower = utterance.toLowerCase().trim();
+  for (let i = 0; i < labels.length; i += 1) {
+    if (new RegExp(`\\b(?:option\\s+)?${i + 1}\\b`).test(lower) || new RegExp(`\\b${ORDINALS[i]}\\b`).test(lower)) return i;
+  }
+  const scored = labels.map((label, i) => {
+    const words = label.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter((w) => w.length > 2 && !['with', 'the', 'and'].includes(w));
+    const hits = words.filter((w) => lower.includes(w)).length;
+    return { i, score: words.length ? hits / words.length : 0 };
+  }).sort((a, b) => b.score - a.score);
+  return scored[0] && scored[0].score >= 0.5 ? scored[0].i : -1;
+}
+
+/**
+ * A spoken answer to a pending clarification arrives as `chosenOption` (from
+ * the LLM or the offline heuristics) or as free text that echoes an option.
+ * Either way the option's own patch is what finalises the record — the model
+ * never has to reproduce it.
+ */
+function resolveOptionPatch(target: KaiExecutedAction, patch: KaiEntityPatch, utterance: string): KaiEntityPatch {
+  const options = target.entities.options ?? [];
+  if (target.status !== 'pending' || options.length === 0) return patch;
+  const { chosenOption, ...rest } = patch;
+  let index = typeof chosenOption === 'number' ? chosenOption - 1 : -1;
+  if (index < 0 && !rest.kind) index = matchOptionLabel(utterance, options.map((o) => o.label));
+  if (index < 0 || !options[index]) return rest;
+  const { description: _echo, ...extra } = rest;
+  return { ...options[index].patch, ...extra };
+}
 
 const newId = () =>
   typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
@@ -437,7 +470,7 @@ export class KaiSession {
         await this.say(say);
         return null;
       }
-      return this.applyUpdate(target, action.entities.patch, action.say);
+      return this.applyUpdate(target, resolveOptionPatch(target, action.entities.patch, action.rawSegment), action.say);
     }
 
     if (isRecordKind(action.kind)) {
@@ -446,8 +479,8 @@ export class KaiSession {
     return null;
   }
 
-  private async executionContext(): Promise<ExecutionContext> {
-    const account = await this.deps.resolveAccount();
+  private async executionContext(action: Pick<KaiAction, 'kind' | 'entities'>): Promise<ExecutionContext> {
+    const account = await this.deps.resolveAccount(actionOutflow(action));
     if (!account?.id) throw new Error('Add an account first so Kai knows where to record this.');
     return { userId: this.userId, accountId: account.id };
   }
@@ -459,7 +492,7 @@ export class KaiSession {
     this.upsertAction(shell);
     this.set({ state: 'executing' });
     try {
-      const outcome = await this.deps.execute(action, await this.executionContext());
+      const outcome = await this.deps.execute(action, await this.executionContext(action));
       const saved: KaiExecutedAction = {
         ...shell,
         entities: outcome.entities,
@@ -470,6 +503,7 @@ export class KaiSession {
         summary: describeAction({ kind: shell.kind, entities: outcome.entities, rawSegment: shell.rawSegment }),
       };
       this.upsertAction(saved);
+      if (saved.kind === 'goal_update') this.reflectGoalUpdate(saved);
       if (outcome.say) {
         this.set({ lastSay: outcome.say });
         await this.say(outcome.say);
@@ -485,6 +519,22 @@ export class KaiSession {
       this.set({ lastSay: failed.error ?? '' });
       return failed;
     }
+  }
+
+  /** A goal update also refreshes the earlier goal card so both show the new target. */
+  private reflectGoalUpdate(update: KaiExecutedAction): void {
+    const name = update.entities.goalName?.toLowerCase();
+    if (!name) return;
+    const actions = this.snapshot.actions.map((a) => {
+      if (a.kind !== 'goal' || a.status !== 'saved' || a.entities.goalName?.toLowerCase() !== name) return a;
+      const entities = {
+        ...a.entities,
+        ...(update.entities.targetDate ? { targetDate: update.entities.targetDate } : {}),
+        ...(update.entities.targetAmount ? { targetAmount: update.entities.targetAmount, amount: update.entities.targetAmount } : {}),
+      };
+      return { ...a, entities };
+    });
+    this.set({ actions });
   }
 
   /**
@@ -517,7 +567,7 @@ export class KaiSession {
     this.upsertAction({ ...target, status: 'saving' });
     this.set({ state: 'executing' });
     try {
-      const outcome = await this.deps.update(target, patch, await this.executionContext());
+      const outcome = await this.deps.update(target, patch, await this.executionContext(applyPatch(target, patch)));
       const next: KaiExecutedAction = {
         ...target,
         kind: patch.kind ?? target.kind,
@@ -548,7 +598,7 @@ export class KaiSession {
     const target = this.snapshot.actions.find((a) => a.actionId === actionId);
     const option = target?.entities.options?.[optionIndex];
     if (!target || !option) return;
-    await this.applyUpdate(target, option.patch, option.label);
+    await this.applyUpdate(target, option.patch);
     await this.finishUtterance();
   }
 

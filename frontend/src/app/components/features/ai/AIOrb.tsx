@@ -219,9 +219,13 @@ export const AIOrb: React.FC<AIOrbProps> = ({
                       ],
                     }
                   : {
+                      // Same keyframe count as the listening variant — framer
+                      // interpolates between the two arrays index-by-index and
+                      // logs an invalid "undefined" path when they differ.
                       d: [
                         'M 5 115 C 38 65, 80 148, 128 92 C 162 52, 185 88, 196 118 C 172 185, 75 198, 5 115 Z',
                         'M 5 110 C 42 72, 84 138, 132 86 C 165 48, 186 92, 196 120 C 170 188, 72 195, 5 110 Z',
+                        'M 5 112 C 40 68, 82 143, 130 89 C 163 50, 185 90, 196 119 C 171 186, 73 196, 5 112 Z',
                         'M 5 115 C 38 65, 80 148, 128 92 C 162 52, 185 88, 196 118 C 172 185, 75 198, 5 115 Z',
                       ],
                     }

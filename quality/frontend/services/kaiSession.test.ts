@@ -156,6 +156,59 @@ describe('KaiSession', () => {
     expect(session.getSnapshot().pending).toBeUndefined();
   });
 
+  it('resolves a spoken answer that only echoes an option label (no chosenOption from the model)', async () => {
+    scripted.set('spent 5000 with Jijo', [action('', {
+      kind: 'clarify',
+      entities: {
+        amount: 5000,
+        question: 'Shared or personal?',
+        options: [
+          { label: 'Shared with Jijo', patch: { kind: 'group_expense', members: ['Jijo'] } },
+          { label: 'My personal expense', patch: { kind: 'expense', expenseMode: 'individual' } },
+        ],
+      },
+    })]);
+    session.submitText('spent 5000 with Jijo');
+    await settled(session);
+    const pendingId = session.getSnapshot().pending!.actionId;
+
+    // The model echoed the label into description instead of picking the option.
+    scripted.set('shared with jijo please', [action('', { kind: 'update_previous', rawSegment: 'shared with jijo please', entities: { targetActionId: pendingId, patch: { description: 'Shared with Jijo' } } })]);
+    session.submitText('shared with jijo please');
+    await settled(session);
+
+    expect(d.execute).toHaveBeenCalledTimes(1);
+    expect(d.execute.mock.calls[0][0]).toMatchObject({ kind: 'group_expense', entities: { amount: 5000, members: ['Jijo'] } });
+    expect(d.execute.mock.calls[0][0].entities.description).toBeUndefined();
+  });
+
+  it('expands chosenOption into that option\'s patch', async () => {
+    scripted.set('spent 5000 with Jijo', [action('', {
+      kind: 'clarify',
+      entities: { amount: 5000, question: 'Shared or personal?', options: [{ label: 'Shared with Jijo', patch: { kind: 'group_expense', members: ['Jijo'] } }, { label: 'My personal expense', patch: { kind: 'expense', expenseMode: 'individual' } }] },
+    })]);
+    session.submitText('spent 5000 with Jijo');
+    await settled(session);
+    const pendingId = session.getSnapshot().pending!.actionId;
+
+    scripted.set('the second one', [action('', { kind: 'update_previous', rawSegment: 'the second one', entities: { targetActionId: pendingId, patch: { chosenOption: 2 } } })]);
+    session.submitText('the second one');
+    await settled(session);
+
+    expect(d.execute.mock.calls[0][0]).toMatchObject({ kind: 'expense', entities: { amount: 5000, expenseMode: 'individual' } });
+  });
+
+  it('refreshes the earlier goal card after a goal update', async () => {
+    scripted.set('create a bike goal for 150000', [action('', { kind: 'goal', entities: { goalName: 'Bike', targetAmount: 150000, amount: 150000 } })]);
+    scripted.set('set the target date to december 31st 2026', [action('', { kind: 'goal_update', entities: { goalName: 'Bike', targetDate: '2026-12-31' } })]);
+    session.submitText('create a bike goal for 150000');
+    session.submitText('set the target date to december 31st 2026');
+    await settled(session);
+    const [goal, update] = session.getSnapshot().actions;
+    expect(update).toMatchObject({ kind: 'goal_update', status: 'saved' });
+    expect(goal.entities.targetDate).toBe('2026-12-31');
+  });
+
   it('applies a spoken correction to the previous saved record', async () => {
     scripted.set('spent 5000 with Jijo personally', [action('', { kind: 'expense', entities: { amount: 5000, description: 'With Jijo' } })]);
     session.submitText('spent 5000 with Jijo personally');

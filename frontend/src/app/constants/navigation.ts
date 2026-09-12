@@ -75,7 +75,7 @@ export const sidebarMenuItems: NavigationItem[] = [
   { id: 'reports', label: 'Reports', icon: BarChart3, feature: 'reports' },
   { id: 'todo-lists', label: 'Todo Lists', icon: ListTodo, feature: 'todoLists' },
   { id: 'book-advisor', label: 'Book Advisor', icon: Handshake, feature: 'bookAdvisor', roles: ['admin', 'user'] },
-  { id: 'voice-input', label: 'Voice Logging', icon: Mic, feature: 'transactions' },
+  { id: 'voice-input', label: 'Kai', icon: Sparkles, feature: 'transactions' },
   { id: 'receipt-scanner', label: 'Receipt Scanner', icon: ScanLine, feature: 'transactions' },
   { id: 'notifications', label: 'Notifications', icon: Bell, feature: 'notifications' },
   // Advanced features — visible when enabled by admin

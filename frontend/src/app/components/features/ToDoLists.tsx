@@ -9,6 +9,8 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { DeleteConfirmModal } from '@/app/components/shared/DeleteConfirmModal';
+import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
+import { PageHeader } from '@/app/components/ui/PageHeader';
 import type { ToDoList, Friend } from '@/lib/database';
 import {
   saveToDoListWithBackendSync,
@@ -242,70 +244,80 @@ export const ToDoLists: React.FC = () => {
 
   const renderListCard = (list: ToDoList, isShared = false) => {
     const isTogether = list.listType === 'together';
-    return (
-      <div data-testid="to-do-lists-div"
-        key={list.id}
-        onClick={() => handleOpenList(list.id!)}
-        className="bg-white rounded-[24px] sm:rounded-[28px] p-4 sm:p-5 border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] flex items-center gap-4 cursor-pointer hover:shadow-md transition-all group"
-      >
-        <div className={cn(
-          'w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors',
-          isTogether
-            ? 'bg-violet-50 group-hover:bg-violet-100'
-            : 'bg-indigo-50 group-hover:bg-indigo-100'
-        )}>
-          {isTogether
-            ? <Users size={18} className="text-violet-600" />
-            : <ListTodo size={18} className="text-indigo-600" />
-          }
-        </div>
 
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <p className="text-sm font-black text-slate-900 truncate">{list.name}</p>
-            {isTogether && (
-              <span className="shrink-0 text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-md bg-violet-50 text-violet-600 border border-violet-100">
-                Together
-              </span>
-            )}
-            {isShared && (
-              <span className="shrink-0 text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-md bg-emerald-50 text-emerald-600 border border-emerald-100">
-                Shared
-              </span>
+    return (
+      <div
+        data-testid={`todo-list-card-${list.id}`}
+        onClick={() => handleOpenList(list.id!)}
+        className="bg-white rounded-[24px] sm:rounded-[28px] p-5 sm:p-6 border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] flex flex-col justify-between cursor-pointer hover:shadow-md hover:border-slate-200/80 transition-all group min-h-[140px]"
+      >
+        <div>
+          <div className="flex items-start justify-between gap-3 mb-3">
+            <div className={cn(
+              'w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 transition-colors shadow-2xs',
+              isTogether
+                ? 'bg-violet-50 group-hover:bg-violet-100'
+                : 'bg-indigo-50 group-hover:bg-indigo-100'
+            )}>
+              {isTogether
+                ? <Users size={18} className="text-violet-600" />
+                : <ListTodo size={18} className="text-indigo-600" />
+              }
+            </div>
+            <div className="flex items-center gap-1 shrink-0" onClick={e => e.stopPropagation()}>
+              {!isShared && (
+                <button
+                  type="button"
+                  onClick={e => handleArchiveList(e, list)}
+                  title={list.archived ? 'Restore list' : 'Archive list'}
+                  data-testid={`todo-list-${list.id}-archive-button`}
+                  className="p-1.5 text-slate-300 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-all"
+                >
+                  {list.archived ? <ArchiveRestore size={15} /> : <Archive size={15} />}
+                </button>
+              )}
+              {!isShared && (
+                <button
+                  type="button"
+                  onClick={e => { e.stopPropagation(); handleDeleteList(list.id!, list.name); }}
+                  title="Delete list"
+                  data-testid={`todo-list-${list.id}-delete-button`}
+                  className="p-1.5 text-slate-300 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                >
+                  <Trash2 size={15} />
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="space-y-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="text-base font-bold text-slate-900 group-hover:text-indigo-600 transition-colors line-clamp-1">{list.name}</h3>
+              {isTogether && (
+                <span className="shrink-0 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-violet-50 text-violet-600 border border-violet-100">
+                  Together
+                </span>
+              )}
+              {isShared && (
+                <span className="shrink-0 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100">
+                  Shared
+                </span>
+              )}
+            </div>
+            {list.description && (
+              <p className="text-xs text-slate-500 line-clamp-2 mt-1">{list.description}</p>
             )}
           </div>
-          {list.description && (
-            <p className="text-[11px] font-semibold text-slate-400 truncate mt-0.5">{list.description}</p>
-          )}
-          <p className="text-[9px] font-bold text-slate-300 uppercase tracking-widest mt-1">
-            {new Date(list.createdAt).toLocaleDateString('en', { day: 'numeric', month: 'short', year: 'numeric' })}
-          </p>
         </div>
 
-        <div className="flex items-center gap-1 shrink-0">
-          {!isShared && (
-            <button
-              type="button"
-              onClick={e => handleArchiveList(e, list)}
-              title={list.archived ? 'Restore list' : 'Archive list'}
-              data-testid={`todo-list-${list.id}-archive-button`}
-              className="p-2 text-slate-300 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-all"
-            >
-              {list.archived ? <ArchiveRestore size={15} /> : <Archive size={15} />}
-            </button>
-          )}
-          {!isShared && (
-            <button
-              type="button"
-              onClick={e => { e.stopPropagation(); handleDeleteList(list.id!, list.name); }}
-              title="Delete list"
-              data-testid={`todo-list-${list.id}-delete-button`}
-              className="p-2 text-slate-300 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
-            >
-              <Trash2 size={15} />
-            </button>
-          )}
-          <ChevronRight size={15} className="text-slate-200 ml-1" />
+        <div className="flex items-center justify-between pt-3 mt-3 border-t border-slate-50">
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+            {new Date(list.createdAt).toLocaleDateString('en', { day: 'numeric', month: 'short', year: 'numeric' })}
+          </span>
+          <div className="flex items-center text-xs font-bold text-slate-400 group-hover:text-indigo-600 transition-colors">
+            <span>View list</span>
+            <ChevronRight size={14} className="ml-0.5 group-hover:translate-x-0.5 transition-transform" />
+          </div>
         </div>
       </div>
     );
@@ -315,10 +327,9 @@ export const ToDoLists: React.FC = () => {
   const totalArchived = archivedMy.length + archivedShared.length;
 
   return (
-    <div className="flex flex-col min-h-screen bg-white">
-
-      {/* Header */}
-      <header className="px-4 lg:px-6 py-4 bg-white border-b border-slate-100">
+    <CenteredLayout maxWidth="max-w-7xl">
+      <div className="space-y-6">
+        {/* Standard Page Header */}
         <div className="flex items-center justify-between gap-3 w-full">
           <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
             <button
@@ -331,21 +342,23 @@ export const ToDoLists: React.FC = () => {
             >
               <ArrowLeft size={18} className="text-slate-700" />
             </button>
-            <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none truncate">To-Do Lists</h1>
+            <h1 className="font-page-title text-slate-900 tracking-tight leading-none truncate">To-Do Lists</h1>
           </div>
-          <button
-            type="button"
-            onClick={() => setShowCreateModal(true)}
-            data-testid="todo-new-list-button"
-            className="bg-[#18181B] hover:bg-black text-white px-4 sm:px-5 h-9 sm:h-10 rounded-full font-bold text-xs sm:text-sm active:scale-95 transition-all shadow-xs flex items-center gap-1.5 shrink-0 cursor-pointer"
-          >
-            <Plus size={16} />
-            <span>New List</span>
-          </button>
+          <div className="flex items-center gap-2.5 shrink-0">
+            <button
+              type="button"
+              onClick={() => setShowCreateModal(true)}
+              data-testid="todo-new-list-button"
+              className="bg-[#18181B] hover:bg-black text-white px-4 sm:px-5 h-9 sm:h-10 rounded-full font-bold text-xs sm:text-sm active:scale-95 transition-all shadow-xs flex items-center gap-1.5 shrink-0 cursor-pointer"
+            >
+              <Plus size={16} />
+              <span>New List</span>
+            </button>
+          </div>
         </div>
 
-        {/* Tabs */}
-        <div className="flex gap-1 mt-4 p-1 bg-slate-100/80 rounded-full max-w-sm">
+        {/* Standard Segmented Filter Tabs */}
+        <div className="flex gap-1 p-1 bg-slate-100/80 rounded-full max-w-xs border border-slate-200/60">
           {(['active', 'archived'] as const).map(tab => (
             <button
               key={tab}
@@ -363,7 +376,6 @@ export const ToDoLists: React.FC = () => {
             </button>
           ))}
         </div>
-      </header>
 
       {/* Create Modal */}
       {showCreateModal && (
@@ -631,66 +643,63 @@ export const ToDoLists: React.FC = () => {
         </div>
       )}
 
-      {/* List Content */}
-      <main className="flex-1 p-4 lg:p-6 pb-28 space-y-6">
+      {/* My Lists section */}
+      <section className="space-y-3">
+        <div className="flex items-center gap-2">
+          <User size={14} className="text-indigo-500" />
+          <h2 className="text-xs font-black text-slate-500 uppercase tracking-widest">My Lists</h2>
+          <span className="text-[10px] font-bold text-slate-400">({displayedMy.length})</span>
+        </div>
 
-        {/* My Lists section */}
-        <section>
-          <div className="flex items-center gap-2 mb-3">
-            <User size={13} className="text-indigo-400" />
-            <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">My Lists</h2>
-            <span className="text-[9px] font-black text-slate-300">({displayedMy.length})</span>
+        {displayedMy.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 text-center bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.04)]">
+            <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center mb-3">
+              <CheckCircle2 size={22} className="text-slate-300" />
+            </div>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+              {activeTab === 'active' ? 'No lists yet' : 'Nothing archived'}
+            </p>
+            {activeTab === 'active' && (
+              <button
+                type="button"
+                onClick={() => setShowCreateModal(true)}
+                data-testid="todo-create-first-list-button"
+                className="mt-4 px-5 py-2.5 bg-[#18181B] hover:bg-black text-white rounded-full font-bold text-xs active:scale-95 transition-all flex items-center gap-2 shadow-xs cursor-pointer"
+              >
+                <Plus size={14} />
+                <span>Create First List</span>
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+            {displayedMy.map(list => renderListCard(list, false))}
+          </div>
+        )}
+      </section>
+
+      {/* Shared Lists section */}
+      {(displayedShared.length > 0 || activeShared.length > 0 || archivedShared.length > 0) && (
+        <section className="space-y-3 pt-2">
+          <div className="flex items-center gap-2">
+            <Users size={14} className="text-violet-500" />
+            <h2 className="text-xs font-black text-slate-500 uppercase tracking-widest">Shared With Me</h2>
+            <span className="text-[10px] font-bold text-slate-400">({displayedShared.length})</span>
           </div>
 
-          {displayedMy.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-10 text-center bg-slate-50/50 rounded-2xl border border-slate-100">
-              <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center mb-3">
-                <CheckCircle2 size={22} className="text-slate-300" />
-              </div>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                {activeTab === 'active' ? 'No lists yet' : 'Nothing archived'}
+          {displayedShared.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-10 text-center bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.04)]">
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                {activeTab === 'active' ? 'No shared lists' : 'Nothing archived'}
               </p>
-              {activeTab === 'active' && (
-                <button
-                  type="button"
-                  onClick={() => setShowCreateModal(true)}
-                  data-testid="todo-create-first-list-button"
-                  className="mt-4 px-5 py-2.5 bg-indigo-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-700 active:scale-95 transition-all flex items-center gap-2"
-                >
-                  <Plus size={12} />Create First List
-                </button>
-              )}
             </div>
           ) : (
-            <div className="space-y-3">
-              {displayedMy.map(list => renderListCard(list, false))}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+              {displayedShared.map(list => renderListCard(list, true))}
             </div>
           )}
         </section>
-
-        {/* Shared Lists section */}
-        {(displayedShared.length > 0 || activeShared.length > 0 || archivedShared.length > 0) && (
-          <section>
-            <div className="flex items-center gap-2 mb-3">
-              <Users size={13} className="text-violet-400" />
-              <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Shared With Me</h2>
-              <span className="text-[9px] font-black text-slate-300">({displayedShared.length})</span>
-            </div>
-
-            {displayedShared.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-8 text-center bg-slate-50/50 rounded-2xl border border-slate-100">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                  {activeTab === 'active' ? 'No shared lists' : 'Nothing archived'}
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {displayedShared.map(list => renderListCard(list, true))}
-              </div>
-            )}
-          </section>
-        )}
-      </main>
+      )}
 
       <DeleteConfirmModal
         isOpen={deleteModalOpen}
@@ -702,5 +711,8 @@ export const ToDoLists: React.FC = () => {
         onCancel={() => { setDeleteModalOpen(false); setListToDelete(null); }}
       />
     </div>
+  </CenteredLayout>
   );
 };
+
+

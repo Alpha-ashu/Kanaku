@@ -99,6 +99,8 @@ export type KaiActionKind =
 /** Partial entity set applied to an earlier action (corrections, clarification answers). */
 export interface KaiEntityPatch extends Partial<VoiceActionEntities> {
   kind?: KaiActionKind;
+  /** 1-based index of the clarification option the user picked; the client expands it to that option's patch */
+  chosenOption?: number;
   title?: string;
   priority?: 'low' | 'medium' | 'high';
   dueDate?: string;

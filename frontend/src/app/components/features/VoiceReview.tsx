@@ -389,8 +389,8 @@ export const VoiceReview: React.FC = () => {
  <button
  onClick={() => setCurrentPage('voice-input')}
  className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200/80 hover:bg-slate-50 active:scale-95 shadow-xs flex items-center justify-center text-slate-700 transition-all shrink-0 cursor-pointer"
- aria-label="Go back to voice input"
- title="Go back"
+ aria-label="Go back to Kai"
+ title="Go back to Kai"
  data-testid="voice-review-back-button"
  >
  <ChevronLeft size={20} className="text-slate-700" />

@@ -18,6 +18,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { db } from '@/lib/database';
 import { applyTransactionAccountImpact } from '@/lib/transactionAggregation';
 import { queueRecordUpsertSync } from '@/lib/auth-sync-integration';
+import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 
 // ─── Interfaces ──────────────────────────────────────────────────────────────
 // Fields the backend has no column for are optional and are simply not rendered
@@ -800,10 +801,10 @@ export const BookAdvisor: React.FC = () => {
   const activeThread = chatThreads.find((thread) => thread.sessionId === activeSessionId) ?? null;
 
   return (
-    <div className="flex flex-col min-h-screen bg-white pb-28">
-      {/* Top Header Navigation */}
-      <header className="bg-white sticky top-0 z-30 border-b border-slate-100">
-        <div className="max-w-7xl mx-auto px-4 lg:px-8 py-4 flex flex-wrap items-center justify-between gap-4">
+    <CenteredLayout maxWidth="max-w-7xl">
+      <div className="space-y-6 w-full">
+        {/* Top Header Navigation */}
+        <div className="flex flex-wrap items-center justify-between gap-4 w-full">
           <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
             <button
               type="button"
@@ -815,11 +816,11 @@ export const BookAdvisor: React.FC = () => {
             >
               <ChevronLeft className="w-5 h-5 text-slate-700" />
             </button>
-            <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none truncate">Find an Advisor</h1>
+            <h1 className="font-page-title text-slate-900 tracking-tight leading-none truncate">Find an Advisor</h1>
           </div>
 
           {/* 5 Primary Navigation Tabs — Adaptive Responsive Navigation */}
-          <nav className="flex items-center justify-center gap-1 bg-white/95 backdrop-blur-xl p-1 rounded-full border border-slate-200/80 shadow-xs max-w-full overflow-x-auto scrollbar-hide shrink-0">
+          <nav className="flex items-center justify-center gap-1 bg-slate-100/80 backdrop-blur-xl p-1 rounded-full border border-slate-200/60 max-w-full overflow-x-auto scrollbar-hide shrink-0">
             {[
               { id: 'discover', label: 'Discover', icon: Search },
               { id: 'consultations', label: 'My Consultations', icon: Briefcase, badge: bookings.length },
@@ -861,10 +862,9 @@ export const BookAdvisor: React.FC = () => {
             })}
           </nav>
         </div>
-      </header>
 
-      {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 lg:p-6 bg-white">
+        {/* Main Content Area */}
+        <div className="w-full">
         
         {/* ─── TAB 1: DISCOVER ADVISORS ────────────────────────────────────────── */}
         {activeTab === 'discover' && (
@@ -979,7 +979,7 @@ export const BookAdvisor: React.FC = () => {
                   <motion.div
                     key={adv.id}
                     layoutId={adv.id}
-                    className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group"
+                    className="bg-white rounded-[24px] sm:rounded-[28px] p-5 sm:p-6 border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] hover:shadow-md hover:border-slate-200/80 transition-all flex flex-col justify-between group"
                   >
                     <div className="space-y-3">
                       <div className="flex items-start justify-between gap-2">
@@ -1525,7 +1525,7 @@ export const BookAdvisor: React.FC = () => {
           </div>
         )}
 
-      </main>
+      </div>
 
       {/* ─── MODAL 1: ADVISOR PROFILE MODAL (LIGHT BACKDROP - NO GREY OVERLAY) ─────── */}
       <AnimatePresence>
@@ -1903,6 +1903,7 @@ export const BookAdvisor: React.FC = () => {
       </AnimatePresence>
 
     </div>
+    </CenteredLayout>
   );
 };
 

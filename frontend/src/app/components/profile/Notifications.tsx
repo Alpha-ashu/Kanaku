@@ -163,7 +163,7 @@ export const Notifications: React.FC = () => {
         </PageHeader>
 
         {/* Filter Tabs */}
-        <div className="flex items-center gap-1 p-1 bg-white/95 backdrop-blur-xl rounded-full border border-slate-200/80 shadow-xs max-w-full overflow-x-auto scrollbar-hide shrink-0">
+        <div className="flex items-center gap-1 p-1 bg-slate-100/80 rounded-full border border-slate-200/60 max-w-full overflow-x-auto scrollbar-hide shrink-0">
           {filters.map((filter) => {
             const isActive = filterType === filter.value;
             return (
@@ -173,8 +173,8 @@ export const Notifications: React.FC = () => {
                 data-testid={`notifications-filter-tab-${filter.value}`}
                 className={`px-4 py-1.5 sm:py-2 rounded-full font-bold text-xs sm:text-sm transition-all cursor-pointer whitespace-nowrap ${
                   isActive
-                    ? 'bg-[#18181B] text-white shadow-xs'
-                    : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100/60'
+                    ? 'bg-white text-slate-900 shadow-xs'
+                    : 'text-slate-500 hover:text-slate-900'
                 }`}
               >
                 {filter.label}

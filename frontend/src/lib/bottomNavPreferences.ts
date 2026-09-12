@@ -56,9 +56,9 @@ export const ALL_BOTTOM_NAV_ITEMS: BottomNavItemDefinition[] = [
   },
   {
     id: 'ai-assistant',
-    label: 'AI Assistant',
-    shortLabel: 'AI',
-    description: 'Voice logger, conversational assistant & insights',
+    label: 'Kai',
+    shortLabel: 'Kai',
+    description: 'Your financial AI assistant & conversational insights',
     category: 'tools',
     icon: Sparkles,
     colorClass: 'from-fuchsia-500 to-purple-600',

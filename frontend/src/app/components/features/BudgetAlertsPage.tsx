@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { PageHeader } from '@/app/components/ui/PageHeader';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { Card } from '@/app/components/ui/card';
+import { FinancialAmount } from '@/app/components/ui/FinancialAmount';
 import { Bell, CheckCircle2, ShieldAlert, Sliders, Mail, Smartphone, MessageSquare, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { db } from '@/lib/database';
@@ -282,10 +283,12 @@ export const BudgetAlertsPage: React.FC = () => {
                         <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Alert Trigger: {limit.threshold}% limit</p>
                       </div>
                       <div className="text-right">
-                        <span className="text-xs font-bold text-slate-400 block">Spent / Cap</span>
-                        <p className="text-sm font-black text-slate-900 mt-0.5">
-                          {currencySymbol}{limit.spent.toLocaleString()} <span className="text-slate-400">/ {currencySymbol}{limit.limit.toLocaleString()}</span>
-                        </p>
+                        <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider block">Spent / Cap</span>
+                        <div className="flex items-center gap-1 mt-0.5 justify-end">
+                          <FinancialAmount value={limit.spent} currency={currency} size="sm" className="font-black text-slate-900" />
+                          <span className="text-slate-300 font-bold text-xs">/</span>
+                          <FinancialAmount value={limit.limit} currency={currency} size="sm" className="font-bold text-slate-400" />
+                        </div>
                       </div>
                     </div>
 

@@ -56,9 +56,9 @@ export const ALL_QUICK_ACTIONS: QuickActionDefinition[] = [
   },
   {
     id: 'voice-input',
-    label: 'Voice AI Logger',
-    shortLabel: 'Voice AI',
-    description: 'Speak to log',
+    label: 'Kai AI Assistant',
+    shortLabel: 'Kai',
+    description: 'Ask or log with Kai',
     category: 'create',
     icon: Mic,
     colorClass: 'bg-gradient-to-tr from-indigo-500 to-purple-600 text-white shadow-xs shadow-indigo-500/25',

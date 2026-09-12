@@ -141,6 +141,8 @@ function normalisePatch(v: unknown): KaiEntityPatch | undefined {
   if (typeof v !== 'object' || v === null) return undefined;
   const p = v as Record<string, unknown>;
   const patch: KaiEntityPatch = {};
+  const chosen = Number(p.chosenOption ?? p.option ?? p.optionIndex);
+  if (Number.isInteger(chosen) && chosen >= 1 && chosen <= 4) patch.chosenOption = chosen;
   const kind = oneOf(p.kind ?? p.type, ALL_KINDS);
   if (kind && kind !== 'update_previous' && kind !== 'clarify' && kind !== 'query') patch.kind = kind;
   const amount = num(p.amount);
@@ -372,6 +374,25 @@ function parseActions(text: string): RawKaiAction[] {
 
 // ─── Offline fallback ─────────────────────────────────────────────────────────
 
+const ORDINALS = ['first', 'second', 'third', 'fourth'];
+
+/** Which option (0-based) a spoken answer picks: by number, ordinal, or by echoing the label. -1 when none. */
+export function matchClarificationOption(utterance: string, options: string[]): number {
+  const lower = utterance.toLowerCase().trim();
+  for (let i = 0; i < options.length; i += 1) {
+    if (new RegExp(`\\b(?:option\\s+)?${i + 1}\\b`).test(lower) || new RegExp(`\\b${ORDINALS[i]}\\b`).test(lower)) return i;
+  }
+  const scored = options.map((label, i) => {
+    const words = label.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter((w) => w.length > 2 && !['with', 'the', 'and'].includes(w));
+    const hits = words.filter((w) => lower.includes(w)).length;
+    return { i, score: words.length ? hits / words.length : 0 };
+  }).sort((a, b) => b.score - a.score);
+  return scored[0] && scored[0].score >= 0.5 ? scored[0].i : -1;
+}
+
+const QUESTION_RE = /^(what|how|show|give|tell|when|which|where|who|do i|did i|am i|can you|is my|are my)\b|\?\s*$/i;
+export const looksLikeQuestion = (text: string): boolean => QUESTION_RE.test(text.trim());
+
 const MONTHS = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
 
 /** "December 31st 2026", "31 December", "tomorrow", "next monday" → YYYY-MM-DD */
@@ -426,15 +447,13 @@ function offlineActions(
 
   // Pending clarification answered by number or option words
   if (context?.pendingClarification) {
-    const opts = context.pendingClarification.options;
-    const idx = opts.findIndex((o, i) =>
-      lower.includes(o.toLowerCase()) || new RegExp(`\\b(?:option\\s+)?${i + 1}\\b|\\b(?:first|second|third)\\b`).test(lower));
+    const idx = matchClarificationOption(lower, context.pendingClarification.options);
     if (idx >= 0) {
       return [{
         kind: 'update_previous',
         rawSegment: cleaned,
-        entities: { targetActionId: context.pendingClarification.actionId, patch: { description: opts[idx] } },
-        confidence: 0.7,
+        entities: { targetActionId: context.pendingClarification.actionId, patch: { chosenOption: idx + 1 } },
+        confidence: 0.8,
         requiresReview: false,
       }];
     }
@@ -542,6 +561,13 @@ export async function understandKai(userId: string, input: KaiUnderstandInput): 
     normalised = offlineActions(cleaned, context, threshold);
     parser = 'regex';
     logger.info('Kai NLP: offline fallback', { count: normalised.length, kinds: normalised.map((a) => a.kind) });
+  } else if (normalised.length === 0 && looksLikeQuestion(cleaned)) {
+    // The LLM occasionally files a plain question under "small talk"; questions always deserve an answer.
+    const fallback = offlineActions(cleaned, context, threshold).filter((a) => a.kind === 'query');
+    if (fallback.length > 0) {
+      normalised = fallback;
+      logger.info('Kai NLP: LLM returned no action for a question — answered via heuristics');
+    }
   }
 
   // Learned corrections apply to money kinds exactly as they do for /voice/process.

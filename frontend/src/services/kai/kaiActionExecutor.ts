@@ -82,9 +82,46 @@ const mergeDeltas = (a: Record<string, number>, b: Record<string, number>): Reco
   return out;
 };
 
-/** First non-deleted account — the rule AddTransaction and the Command Center use. */
-export async function resolveDefaultAccount(): Promise<Account | null> {
-  return (await db.accounts.filter((a) => !a.deletedAt).first()) ?? null;
+const ALLOWS_NEGATIVE = new Set(['credit', 'credit-card', 'loan', 'overdraft']);
+
+const canCover = (account: Account, outflow: number): boolean =>
+  outflow <= 0 || ALLOWS_NEGATIVE.has(String(account.type ?? '').toLowerCase()) || Number(account.balance ?? 0) >= outflow;
+
+/**
+ * The account a spoken action posts to: the first active account (the rule
+ * AddTransaction and the Command Center use), preferring one that can cover
+ * the outflow so a voice entry doesn't bounce off the server's overdraw check.
+ */
+export async function resolveDefaultAccount(outflow = 0): Promise<Account | null> {
+  const accounts = await db.accounts.filter((a) => !a.deletedAt).toArray();
+  if (accounts.length === 0) return null;
+  return accounts.find((a) => canCover(a, outflow)) ?? accounts[0];
+}
+
+/** Outflow an action will post against its account (0 for income / non-money kinds). */
+export function actionOutflow(action: Pick<KaiAction, 'kind' | 'entities'>): number {
+  const amount = Number(action.entities.amount ?? 0);
+  if (!amount || amount <= 0) return 0;
+  switch (action.kind) {
+    case 'expense':
+    case 'subscription':
+    case 'transfer':
+    case 'investment':
+    case 'loan_lend':
+    case 'group_expense':
+      return amount;
+    default:
+      return 0;
+  }
+}
+
+async function assertAccountCanCover(accountId: number, outflow: number): Promise<void> {
+  if (outflow <= 0) return;
+  const account = await db.accounts.get(accountId);
+  if (!account) throw new Error('Add an account first so Kai knows where to record this.');
+  if (!canCover(account, outflow)) {
+    throw new Error(`${account.name} only has ${inr(Number(account.balance ?? 0))} — this needs ${inr(outflow)}. Add funds or edit the amount.`);
+  }
 }
 
 async function findOrCreateFriend(name: string, now: Date): Promise<Friend | undefined> {
@@ -493,6 +530,7 @@ async function createTodo(action: KaiAction, ctx: ExecutionContext): Promise<Exe
 
 /** Create the records for one understood action. Throws with a user-readable message on failure. */
 export async function executeKaiAction(action: KaiAction, ctx: ExecutionContext): Promise<ExecutionOutcome> {
+  await assertAccountCanCover(ctx.accountId, actionOutflow(action));
   switch (action.kind) {
     case 'expense':
     case 'income':
