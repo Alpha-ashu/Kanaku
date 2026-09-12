@@ -1,5 +1,6 @@
 // Backend API Service - Replaces local-only storage with cloud-based persistence
 import axios, { AxiosInstance } from 'axios';
+import type { KaiUnderstandRequest, KaiUnderstandResponse } from '@kanaku/shared';
 import RealtimeDataManager from './realtimeData';
 import { db } from './database';
 import { createNotificationRecord } from './notifications';
@@ -1406,6 +1407,15 @@ class BackendService {
     parser: 'gemini' | 'groq' | 'openrouter' | 'offline';
   }> {
     const response = await this.api.post('/ai/chat', { message, conversationId });
+    return response.data;
+  }
+
+  /**
+   * Kai voice session: session-aware understanding of one spoken utterance.
+   * Returns typed actions (with query answers already filled in).
+   */
+  async understandKai(payload: KaiUnderstandRequest): Promise<KaiUnderstandResponse> {
+    const response = await this.api.post('/kai/understand', payload);
     return response.data;
   }
 

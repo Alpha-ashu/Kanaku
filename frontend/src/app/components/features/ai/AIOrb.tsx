@@ -1,10 +1,14 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
+export type AIOrbState = 'idle' | 'listening' | 'processing' | 'executing' | 'completed';
+
 export interface AIOrbProps {
   size?: 'sm' | 'md' | 'lg' | number;
   isListening?: boolean;
   isProcessing?: boolean;
+  /** Overrides the two booleans when given; adds executing / completed visuals. */
+  state?: AIOrbState;
   onClick?: () => void;
   className?: string;
   showStatusGlow?: boolean;
@@ -12,12 +16,18 @@ export interface AIOrbProps {
 
 export const AIOrb: React.FC<AIOrbProps> = ({
   size = 'lg',
-  isListening = false,
-  isProcessing = false,
+  isListening: listeningProp = false,
+  isProcessing: processingProp = false,
+  state,
   onClick,
   className = '',
   showStatusGlow = true,
 }) => {
+  const isListening = state ? state === 'listening' : listeningProp;
+  const isProcessing = state ? state === 'processing' || state === 'executing' : processingProp;
+  const isExecuting = state === 'executing';
+  const isCompleted = state === 'completed';
+
   const pixelSize =
     typeof size === 'number'
       ? size
@@ -25,7 +35,7 @@ export const AIOrb: React.FC<AIOrbProps> = ({
       ? 38
       : size === 'md'
       ? 80
-      : 195;
+      : 155;
 
   const isInteractive = Boolean(onClick);
 
@@ -36,7 +46,7 @@ export const AIOrb: React.FC<AIOrbProps> = ({
         isInteractive ? 'cursor-pointer active:scale-95 transition-transform' : ''
       } ${className}`}
       style={{ width: pixelSize, height: pixelSize }}
-      aria-label="3D Iridescent AI Money Assistant Orb"
+      aria-label="3D Iridescent KAI Assistant Orb"
       role={isInteractive ? 'button' : undefined}
       tabIndex={isInteractive ? 0 : undefined}
     >
@@ -294,6 +304,51 @@ export const AIOrb: React.FC<AIOrbProps> = ({
           <circle cx="100" cy="100" r="96" fill="url(#rimFresnel)" />
         </svg>
       </motion.div>
+
+      {/* Executing: a rotating emerald ring means "saving into Kanaku" */}
+      {isExecuting && (
+        <motion.div
+          className="absolute rounded-full pointer-events-none"
+          style={{
+            width: pixelSize * 1.12,
+            height: pixelSize * 1.12,
+            border: `${Math.max(2, pixelSize * 0.03)}px solid transparent`,
+            borderTopColor: '#10B981',
+            borderRightColor: 'rgba(16, 185, 129, 0.35)',
+          }}
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1.1, repeat: Infinity, ease: 'linear' }}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Completed: one soft check pulse */}
+      {isCompleted && (
+        <motion.div
+          className="absolute rounded-full pointer-events-none flex items-center justify-center"
+          style={{
+            width: pixelSize * 1.12,
+            height: pixelSize * 1.12,
+            boxShadow: '0 0 0 3px rgba(16, 185, 129, 0.55)',
+          }}
+          initial={{ scale: 0.85, opacity: 0 }}
+          animate={{ scale: [0.85, 1.06, 1], opacity: [0, 1, 0.9] }}
+          transition={{ duration: 0.7, ease: 'easeOut' }}
+          aria-hidden="true"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            style={{ width: pixelSize * 0.26, height: pixelSize * 0.26 }}
+            fill="none"
+            stroke="#059669"
+            strokeWidth={3}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M5 13l4 4L19 7" />
+          </svg>
+        </motion.div>
+      )}
     </div>
   );
 };

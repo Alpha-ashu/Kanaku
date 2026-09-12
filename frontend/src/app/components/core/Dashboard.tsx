@@ -478,7 +478,7 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
               <div className="flex items-center gap-1.5">
                 <Sparkles size={14} className="text-purple-700" />
                 <h4 className="text-xs sm:text-sm font-extrabold text-purple-950 tracking-tight">
-                  AI Monty Assistant
+                  KAI Assistant
                 </h4>
               </div>
               <p className="text-xs sm:text-sm font-medium text-purple-900/80 leading-relaxed">

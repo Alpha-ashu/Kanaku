@@ -77,7 +77,7 @@ export function detectLanguage(transcript: string): SupportedLanguage {
 const FILLER_PATTERN =
   /\b(um+|uh+|err+|like|you know|actually|basically|so|well|i mean|i think|kind of|sort of|maybe|you see)\b/gi;
 
-function cleanTranscript(text: string): string {
+export function cleanTranscript(text: string): string {
   return text
     .replace(FILLER_PATTERN, '')
     .replace(/\s{2,}/g, ' ')
@@ -519,7 +519,7 @@ function regexExtractEntities(segment: string, type: FinancialActionType): Extra
   return entities;
 }
 
-function regexPipeline(transcript: string, threshold: number): FinancialAction[] {
+export function regexPipeline(transcript: string, threshold: number): FinancialAction[] {
   const segments = transcript
     .replace(/\s+/g, ' ')
     .trim()

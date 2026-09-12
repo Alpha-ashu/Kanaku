@@ -639,17 +639,6 @@ export const Settings: React.FC = () => {
             </div>
             <ChevronRight size={18} className="text-slate-500 group-hover:text-white transition-colors shrink-0" />
           </div>
-
-          <button
-            type="button"
-            onClick={handleSignOut}
-            disabled={isSigningOut}
-            className="p-2.5 rounded-full bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 active:scale-95 transition-all shrink-0 cursor-pointer"
-            title="Sign Out"
-            data-testid="settings-sign-out-btn"
-          >
-            <LogOut size={16} />
-          </button>
         </div>
 
         {/* ─── Horizontal Filter Category Pills ──────────────────────────── */}

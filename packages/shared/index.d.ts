@@ -85,6 +85,115 @@ export interface VoiceProcessResponse {
   requiresReview: boolean;
 }
 
+// ─── Kai voice session (POST /api/v1/kai/understand) ──────────────────────────
+
+/** Everything the voice NLP emits plus the session-aware kinds Kai adds. */
+export type KaiActionKind =
+  | VoiceActionType
+  | 'todo'
+  | 'goal_update'
+  | 'update_previous'
+  | 'clarify'
+  | 'query';
+
+/** Partial entity set applied to an earlier action (corrections, clarification answers). */
+export interface KaiEntityPatch extends Partial<VoiceActionEntities> {
+  kind?: KaiActionKind;
+  title?: string;
+  priority?: 'low' | 'medium' | 'high';
+  dueDate?: string;
+  expenseMode?: 'individual' | 'group' | 'loan';
+  targetDate?: string;
+  targetAmount?: number;
+  goalName?: string;
+}
+
+export interface KaiClarifyOption {
+  label: string;
+  patch: KaiEntityPatch;
+}
+
+export interface KaiActionEntities extends VoiceActionEntities {
+  expenseMode?: 'individual' | 'group' | 'loan';
+  /** todo */
+  title?: string;
+  dueDate?: string;
+  priority?: 'low' | 'medium' | 'high';
+  /** goal / goal_update */
+  goalName?: string;
+  targetDate?: string;
+  targetAmount?: number;
+  /** update_previous — which earlier action and what changes */
+  targetActionId?: string;
+  patch?: KaiEntityPatch;
+  /** clarify */
+  question?: string;
+  options?: KaiClarifyOption[];
+  /** query */
+  queryType?: string;
+  startDate?: string;
+  endDate?: string;
+  keyword?: string;
+  limit?: number;
+}
+
+export interface KaiAnswer {
+  summary: string;
+  meta?: Record<string, unknown>;
+  transactions?: Array<{ id: string; date: string; description: string; amount: number; category: string; type: string }>;
+}
+
+export interface KaiAction {
+  /** `kai:<sessionId>:<utteranceSeq>:<index>` — stable across retries, used as the idempotency key */
+  actionId: string;
+  kind: KaiActionKind;
+  rawSegment: string;
+  entities: KaiActionEntities;
+  confidence: number;
+  requiresReview: boolean;
+  /** Filled server-side for `query` actions */
+  answer?: KaiAnswer;
+  /** Kai's one-line conversational confirmation for this action */
+  say?: string;
+}
+
+export interface KaiContextAction {
+  actionId: string;
+  kind: KaiActionKind;
+  summary: string;
+  amount?: number;
+  person?: string;
+  goalName?: string;
+  date?: string;
+  status: 'saved' | 'pending';
+}
+
+export interface KaiSessionContext {
+  recentActions: KaiContextAction[];
+  knownGoals: string[];
+  knownContacts: string[];
+  pendingClarification?: { actionId: string; question: string; options: string[] };
+}
+
+export interface KaiUnderstandRequest {
+  transcript: string;
+  sessionId: string;
+  utteranceSeq: number;
+  context?: KaiSessionContext;
+}
+
+export type KaiParserSource = 'gemini' | 'groq' | 'openrouter' | 'regex';
+
+export interface KaiUnderstandResponse {
+  success: boolean;
+  sessionId: string;
+  utteranceSeq: number;
+  transcript: string;
+  language?: string;
+  parser: KaiParserSource;
+  actions: KaiAction[];
+}
+
 // ─── Bank statement import (POST /api/v1/import/statement, /import/confirm) ───
 
 export type StatementTransactionType = 'debit' | 'credit';

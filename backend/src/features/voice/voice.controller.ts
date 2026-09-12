@@ -12,7 +12,7 @@ import { audit } from '../../utils/auditLogger';
  * Persist a processed transcript. Fail-safe: a missing table (migration not
  * yet applied) or DB blip never breaks the user-facing response.
  */
-const storeTranscript = async (userId: string, transcript: string, actionsCount: number) => {
+export const storeTranscript = async (userId: string, transcript: string, actionsCount: number) => {
   try {
     await prisma.voiceTranscript.create({
       data: {

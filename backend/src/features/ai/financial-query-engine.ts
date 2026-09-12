@@ -13,6 +13,8 @@
  *   ACCOUNT_BALANCE       – balances across accounts
  *   RECENT_TRANSACTIONS   – last N transactions (capped at 20)
  *   CATEGORY_USAGE        – user's historically most-used categories
+ *   BUDGET_STATUS         – budgets (optionally one category) over their own period window
+ *   EXPENSE_REPORT        – period total + full category breakdown (for report cards)
  */
 
 import { prisma } from '../../db/prisma';
@@ -34,7 +36,14 @@ export type QueryIntent =
   | 'LOANS_SUMMARY'
   | 'INVESTMENT_SUMMARY'
   | 'BUDGET_STATUS'
-  | 'UPCOMING_RECURRING';
+  | 'UPCOMING_RECURRING'
+  | 'EXPENSE_REPORT';
+
+export const QUERY_TYPES: QueryIntent[] = [
+  'SUM_EXPENSES', 'DATE_RANGE_SUMMARY', 'MERCHANT_LOOKUP', 'PERSON_BALANCE', 'ACCOUNT_BALANCE',
+  'RECENT_TRANSACTIONS', 'CATEGORY_USAGE', 'INCOME_SUMMARY', 'GOALS_PROGRESS', 'LOANS_SUMMARY',
+  'INVESTMENT_SUMMARY', 'BUDGET_STATUS', 'UPCOMING_RECURRING', 'EXPENSE_REPORT',
+];
 
 export interface QueryParams {
   intent: QueryIntent;
@@ -84,6 +93,65 @@ function currentPeriodBounds(): { startDate: Date; endDate: Date } {
   const startDate = new Date(now.getFullYear(), now.getMonth(), 1);
   const endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
   return { startDate, endDate };
+}
+
+const TODAY_ISO = () => new Date().toISOString().slice(0, 10);
+
+/** "today" / "yesterday" / "tomorrow" / ISO date → YYYY-MM-DD, else undefined. */
+export function normaliseDateInput(v: unknown): string | undefined {
+  if (typeof v !== 'string') return undefined;
+  const t = v.trim().toLowerCase();
+  if (t === 'today') return TODAY_ISO();
+  if (t === 'yesterday' || t === 'tomorrow') {
+    const d = new Date();
+    d.setDate(d.getDate() + (t === 'tomorrow' ? 1 : -1));
+    return d.toISOString().slice(0, 10);
+  }
+  return /^\d{4}-\d{2}-\d{2}$/.test(t) && !Number.isNaN(new Date(t).getTime()) ? t : undefined;
+}
+
+export interface RawQueryFields {
+  queryType?: string | null;
+  category?: string | null;
+  person?: string | null;
+  keyword?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  limit?: number | null;
+}
+
+const cleanText = (v: unknown): string | undefined => {
+  if (typeof v !== 'string') return undefined;
+  const t = v.trim();
+  return t.length > 0 ? t.slice(0, 120) : undefined;
+};
+
+/** Turn loosely-typed LLM/regex output into validated QueryParams. */
+export function toQueryParams(raw: RawQueryFields): QueryParams {
+  const requested = String(raw.queryType ?? 'SUM_EXPENSES').toUpperCase() as QueryIntent;
+  const intent: QueryIntent = QUERY_TYPES.includes(requested) ? requested : 'SUM_EXPENSES';
+  const params: QueryParams = {
+    intent,
+    category: cleanText(raw.category),
+    person: cleanText(raw.person),
+    keyword: cleanText(raw.keyword),
+    limit: typeof raw.limit === 'number' && Number.isFinite(raw.limit) ? raw.limit : undefined,
+  };
+  const start = normaliseDateInput(raw.startDate);
+  const end = normaliseDateInput(raw.endDate);
+  if (start) params.startDate = new Date(start);
+  if (end) params.endDate = new Date(`${end}T23:59:59`);
+  return params;
+}
+
+function periodLabel(start: Date, end: Date): string {
+  const wholeMonth =
+    start.getDate() === 1 &&
+    start.getMonth() === end.getMonth() &&
+    start.getFullYear() === end.getFullYear() &&
+    end.getDate() === new Date(end.getFullYear(), end.getMonth() + 1, 0).getDate();
+  if (wholeMonth) return start.toLocaleString('en-IN', { month: 'long', year: 'numeric' });
+  return `${start.toDateString()} – ${end.toDateString()}`;
 }
 
 // ─── Query Handlers ───────────────────────────────────────────────────────────
@@ -138,22 +206,27 @@ async function dateRangeSummary(userId: string, params: QueryParams): Promise<Qu
   const { startDate, endDate } = params;
   const { startDate: defaultStart, endDate: defaultEnd } = currentPeriodBounds();
 
-  const rows = await prisma.transaction.groupBy({
-    by: ['category'],
-    where: {
-      userId,
-      deletedAt: null,
-      type: 'expense',
-      date: {
-        gte: startDate ?? defaultStart,
-        lte: endDate ?? defaultEnd,
-      },
+  const where = {
+    userId,
+    deletedAt: null,
+    type: 'expense',
+    date: {
+      gte: startDate ?? defaultStart,
+      lte: endDate ?? defaultEnd,
     },
-    _sum: { amount: true },
-    _count: { id: true },
-    orderBy: { _sum: { amount: 'desc' } },
-    take: 6,
-  });
+  };
+
+  const [rows, aggregate] = await Promise.all([
+    prisma.transaction.groupBy({
+      by: ['category'],
+      where,
+      _sum: { amount: true },
+      _count: { id: true },
+      orderBy: { _sum: { amount: 'desc' } },
+      take: 6,
+    }),
+    prisma.transaction.aggregate({ where, _sum: { amount: true } }),
+  ]);
 
   if (rows.length === 0) {
     return { summary: 'No expense transactions found for that period.', meta: {} };
@@ -162,7 +235,7 @@ async function dateRangeSummary(userId: string, params: QueryParams): Promise<Qu
   const lines = rows.map(
     r => `${r.category}: ${INR(Number(r._sum.amount ?? 0))} (${r._count.id} txns)`,
   );
-  const grandTotal = rows.reduce((s, r) => s + Number(r._sum.amount ?? 0), 0);
+  const grandTotal = Number(aggregate._sum.amount ?? 0);
   const period = startDate
     ? `${startDate.toDateString()} – ${(endDate ?? defaultEnd).toDateString()}`
     : 'this month';
@@ -396,17 +469,128 @@ async function investmentSummary(userId: string): Promise<QueryResult> {
   };
 }
 
-async function budgetStatus(userId: string): Promise<QueryResult> {
-  const { budgets } = await buildFinancialSnapshot(userId);
-  if (budgets.items.length === 0) return { summary: 'No budgets set. Say "set a food budget of ₹8,000" and I\'ll create one with alerts.' };
-  const lines = budgets.items.map((b) => {
-    const flag = b.status === 'exceeded' ? ' — over limit' : b.status === 'warning' ? ' — near limit' : '';
-    return `• ${b.category}: ${INR(b.spent)} of ${INR(b.limit)} (${b.pct}%)${flag}`;
+/** Same window rule as POST /budgets/:id/recalculate. */
+function budgetWindowStart(period: string, now: Date): Date {
+  if (period === 'weekly') {
+    const d = new Date(now);
+    d.setDate(now.getDate() - 7);
+    return d;
+  }
+  if (period === 'yearly') return new Date(now.getFullYear(), 0, 1);
+  return new Date(now.getFullYear(), now.getMonth(), 1);
+}
+
+async function budgetStatus(userId: string, params: QueryParams): Promise<QueryResult> {
+  const category = (params.category ?? '').trim();
+  const budgets = await prisma.budget.findMany({
+    where: {
+      userId,
+      deletedAt: null,
+      ...(category ? { category: { contains: category, mode: 'insensitive' } } : {}),
+    },
+    select: { category: true, amount: true, period: true, threshold: true },
   });
-  const head = budgets.breached > 0
-    ? `${budgets.breached} of ${budgets.items.length} budgets need attention:`
-    : `All ${budgets.items.length} budgets are within limits:`;
-  return { summary: `${head}\n${lines.join('\n')}`, meta: { budgets: budgets.items } };
+
+  if (budgets.length === 0) {
+    return {
+      summary: category
+        ? `No budget set for ${category}. Say "set a ${category} budget of ₹8,000" and I'll create one with alerts.`
+        : 'No budgets set. Say "set a food budget of ₹8,000" and I\'ll create one with alerts.',
+    };
+  }
+
+  const now = new Date();
+  const items = await Promise.all(budgets.map(async (b) => {
+    const agg = await prisma.transaction.aggregate({
+      where: {
+        userId,
+        deletedAt: null,
+        type: 'expense',
+        category: { equals: b.category, mode: 'insensitive' },
+        date: { gte: budgetWindowStart(b.period, now), lte: now },
+      },
+      _sum: { amount: true },
+    });
+    const limit = Number(b.amount ?? 0);
+    const spent = Number(agg._sum.amount ?? 0);
+    const pct = limit > 0 ? Math.round((spent / limit) * 100) : 0;
+    const threshold = b.threshold ?? 80;
+    const status = pct >= 100 ? 'exceeded' : pct >= threshold ? 'warning' : 'ok';
+    return { category: b.category, limit, spent, remaining: Math.max(0, limit - spent), pct, period: b.period, status };
+  }));
+
+  const lines = items.map((b) => {
+    const flag = b.status === 'exceeded' ? ' — over limit' : b.status === 'warning' ? ' — near limit' : '';
+    return `• ${b.category} (${b.period}): ${INR(b.spent)} of ${INR(b.limit)} (${b.pct}%), ${INR(b.remaining)} left${flag}`;
+  });
+  const breached = items.filter((b) => b.status !== 'ok').length;
+  const head = items.length === 1
+    ? ''
+    : breached > 0
+      ? `${breached} of ${items.length} budgets need attention:\n`
+      : `All ${items.length} budgets are within limits:\n`;
+  return { summary: `${head}${lines.join('\n')}`, meta: { budgets: items } };
+}
+
+async function expenseReport(userId: string, params: QueryParams): Promise<QueryResult> {
+  const { startDate: defaultStart, endDate: defaultEnd } = currentPeriodBounds();
+  const start = params.startDate ?? defaultStart;
+  const end = params.endDate ?? defaultEnd;
+  const base = { userId, deletedAt: null, date: { gte: start, lte: end } };
+  const expenseWhere = { ...base, type: 'expense', category: { not: 'Personal Share Offset' } };
+
+  const [rows, expenseAgg, incomeAgg] = await Promise.all([
+    prisma.transaction.groupBy({
+      by: ['category'],
+      where: expenseWhere,
+      _sum: { amount: true },
+      _count: { id: true },
+      orderBy: { _sum: { amount: 'desc' } },
+    }),
+    prisma.transaction.aggregate({ where: expenseWhere, _sum: { amount: true }, _count: { id: true } }),
+    prisma.transaction.aggregate({ where: { ...base, type: 'income' }, _sum: { amount: true } }),
+  ]);
+
+  const total = Number(expenseAgg._sum.amount ?? 0);
+  const count = expenseAgg._count.id;
+  const income = Number(incomeAgg._sum.amount ?? 0);
+  const label = periodLabel(start, end);
+  const categories = rows.map((r) => {
+    const amount = Number(r._sum.amount ?? 0);
+    return {
+      category: r.category || 'Uncategorised',
+      amount,
+      count: r._count.id,
+      pct: total > 0 ? Math.round((amount / total) * 100) : 0,
+    };
+  });
+
+  if (count === 0) {
+    return {
+      summary: `No expenses recorded for ${label}.`,
+      meta: { period: label, startDate: start.toISOString().slice(0, 10), endDate: end.toISOString().slice(0, 10), total: 0, count: 0, income, net: income, categories: [] },
+    };
+  }
+
+  const top = categories[0];
+  const summary =
+    `${label}: you spent ${INR(total)} across ${count} transaction${count !== 1 ? 's' : ''}` +
+    (income > 0 ? ` and earned ${INR(income)}` : '') +
+    `. ${top.category} was your biggest category at ${INR(top.amount)} (${top.pct}%).`;
+
+  return {
+    summary,
+    meta: {
+      period: label,
+      startDate: start.toISOString().slice(0, 10),
+      endDate: end.toISOString().slice(0, 10),
+      total,
+      count,
+      income,
+      net: income - total,
+      categories,
+    },
+  };
 }
 
 async function upcomingRecurring(userId: string): Promise<QueryResult> {
@@ -436,8 +620,9 @@ export async function executeFinancialQuery(
       case 'GOALS_PROGRESS':      return await goalsProgress(userId);
       case 'LOANS_SUMMARY':       return await loansSummary(userId);
       case 'INVESTMENT_SUMMARY':  return await investmentSummary(userId);
-      case 'BUDGET_STATUS':       return await budgetStatus(userId);
+      case 'BUDGET_STATUS':       return await budgetStatus(userId, params);
       case 'UPCOMING_RECURRING':  return await upcomingRecurring(userId);
+      case 'EXPENSE_REPORT':      return await expenseReport(userId, params);
       default:
         return { summary: 'Unsupported query type.' };
     }

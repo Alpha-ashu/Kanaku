@@ -277,6 +277,23 @@ export function getQuickActionPreferences(): string[] {
   return DEFAULT_QUICK_ACTION_IDS;
 }
 
+/**
+ * Called on first login / app load to seed defaults into localStorage for new
+ * users. Existing users who have already customised their preferences are
+ * unaffected because we only write when the storage key is absent.
+ */
+export function initializeDefaultQuickActions(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    const existing = localStorage.getItem(STORAGE_KEY);
+    if (!existing) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_QUICK_ACTION_IDS));
+    }
+  } catch {
+    // Non-fatal — in-memory default will still be used
+  }
+}
+
 export function setQuickActionPreferences(ids: string[]): void {
   if (typeof window === 'undefined') return;
   try {
@@ -313,4 +330,112 @@ export function useQuickActionPreferences(): [string[], (ids: string[]) => void]
   };
 
   return [selectedIds, save];
+}
+
+export function executeQuickAction(
+  action: string,
+  setCurrentPage: (page: string) => void,
+  incrementQuickActionKey?: () => void
+): void {
+  switch (action) {
+    case 'add-expense':
+      try {
+        localStorage.setItem('quickFormType', 'expense');
+        localStorage.setItem('quickExpenseMode', 'individual');
+        localStorage.setItem('quickBackPage', 'transactions');
+      } catch {}
+      setCurrentPage('add-transaction');
+      incrementQuickActionKey?.();
+      break;
+    case 'add-income':
+      try {
+        localStorage.setItem('quickFormType', 'income');
+        localStorage.removeItem('quickExpenseMode');
+        localStorage.setItem('quickBackPage', 'transactions');
+      } catch {}
+      setCurrentPage('add-transaction');
+      incrementQuickActionKey?.();
+      break;
+    case 'pay-emi':
+      setCurrentPage('pay-emi');
+      break;
+    case 'split-bill':
+      try {
+        localStorage.setItem('quickFormType', 'expense');
+        localStorage.setItem('quickExpenseMode', 'group');
+        localStorage.setItem('quickBackPage', 'groups');
+      } catch {}
+      setCurrentPage('add-transaction');
+      incrementQuickActionKey?.();
+      break;
+    case 'add-loan':
+    case 'loans':
+      setCurrentPage('loans');
+      break;
+    case 'add-account':
+      setCurrentPage('add-account');
+      break;
+    case 'add-goal':
+    case 'goals':
+      setCurrentPage('goals');
+      break;
+    case 'transfer':
+      try {
+        localStorage.setItem('quickFormType', 'transfer');
+        localStorage.removeItem('quickExpenseMode');
+        localStorage.setItem('quickBackPage', 'transactions');
+      } catch {}
+      setCurrentPage('add-transaction');
+      incrementQuickActionKey?.();
+      break;
+    case 'todo-lists':
+      setCurrentPage('todo-lists');
+      break;
+    case 'voice-entry':
+    case 'voice-input':
+      setCurrentPage('voice-input');
+      break;
+    case 'calendar':
+      setCurrentPage('calendar');
+      break;
+    case 'dashboard':
+      setCurrentPage('dashboard');
+      break;
+    case 'accounts':
+      setCurrentPage('accounts');
+      break;
+    case 'transactions':
+      setCurrentPage('transactions');
+      break;
+    case 'investments':
+      setCurrentPage('investments');
+      break;
+    case 'groups':
+      setCurrentPage('groups');
+      break;
+    case 'reports':
+      setCurrentPage('reports');
+      break;
+    case 'book-advisor':
+      setCurrentPage('book-advisor');
+      break;
+    case 'receipt-scanner':
+      setCurrentPage('receipt-scanner');
+      break;
+    case 'notifications':
+      setCurrentPage('notifications');
+      break;
+    case 'recurring-transactions':
+      setCurrentPage('recurring-transactions');
+      break;
+    case 'budget-alerts':
+      setCurrentPage('budget-alerts');
+      break;
+    case 'settings':
+      setCurrentPage('settings');
+      break;
+    default:
+      setCurrentPage(action);
+      break;
+  }
 }

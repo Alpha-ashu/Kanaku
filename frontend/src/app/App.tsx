@@ -21,7 +21,7 @@ import { syncBudgets, syncCategories, syncRecurringTransactions } from '@/servic
 import { Sidebar } from '@/app/components/core/Sidebar';
 import { TopBar } from '@/app/components/ui/TopBar';
 import { BottomNav } from '@/app/components/core/BottomNav';
-import { QuickActionModal } from '@/app/components/shared/QuickActionModal';
+import { executeQuickAction } from '@/lib/quickActionPreferences';
 import { PWAInstallPrompt } from '@/app/components/shared/PWAInstallPrompt';
 import { LimitedModeBanner } from '@/app/components/shared/LimitedModeBanner';
 import { OfflineBadge } from '@/app/components/shared/OfflineBadge';
@@ -272,7 +272,6 @@ const AppContent: React.FC = () => {
   // All hooks must be called before any conditional early returns (React Rules of Hooks)
   const currentPage = appContext?.currentPage ?? 'dashboard';
   const [isInitialized, setIsInitialized] = useState(true);
-  const [showQuickAction, setShowQuickAction] = useState(false);
 
   // Is the local store still empty? Reactive, so it flips to false the moment the first
   // accounts row lands and the content area swaps from the loader to the real page.
@@ -387,10 +386,7 @@ const AppContent: React.FC = () => {
   goBackRef.current = appContext?.goBack;
   setCurrentPageRef.current = setCurrentPage;
   isAuthenticatedRef.current = isAuthenticated;
-  closeOverlaysRef.current = () => {
-    if (showQuickAction) { setShowQuickAction(false); return true; }
-    return false;
-  };
+  closeOverlaysRef.current = () => false;
 
   // Show landing page only once we KNOW the user is not signed in (web only; native stays on signin)
   useEffect(() => {
@@ -452,8 +448,8 @@ const AppContent: React.FC = () => {
     }
 
     const params = new URLSearchParams(window.location.search);
-    if (params.get('action') === 'add-expense') {
-      setShowQuickAction(true);
+    if (params.get('action') === 'add-expense' && setCurrentPage) {
+      executeQuickAction('add-expense', setCurrentPage, () => setQuickActionKey((k) => k + 1));
     }
 
     registerServiceWorker();
@@ -982,60 +978,8 @@ const AppContent: React.FC = () => {
   };
 
   const handleQuickAction = (action: string) => {
-    switch (action) {
-      case 'add-expense':
-        localStorage.setItem('quickFormType', 'expense');
-        localStorage.setItem('quickExpenseMode', 'individual');
-        localStorage.setItem('quickBackPage', 'transactions');
-        setCurrentPage('add-transaction');
-        setQuickActionKey(k => k + 1);
-        break;
-      case 'add-income':
-        localStorage.setItem('quickFormType', 'income');
-        localStorage.removeItem('quickExpenseMode');
-        localStorage.setItem('quickBackPage', 'transactions');
-        setCurrentPage('add-transaction');
-        setQuickActionKey(k => k + 1);
-        break;
-      case 'pay-emi': setCurrentPage('pay-emi'); break;
-      case 'split-bill':
-        localStorage.setItem('quickFormType', 'expense');
-        localStorage.setItem('quickExpenseMode', 'group');
-        localStorage.setItem('quickBackPage', 'groups');
-        setCurrentPage('add-transaction');
-        setQuickActionKey(k => k + 1);
-        break;
-      case 'add-loan': setCurrentPage('loans'); break;
-      case 'add-account': setCurrentPage('add-account'); break;
-      case 'add-goal': setCurrentPage('add-goal'); break;
-      case 'transfer':
-        localStorage.setItem('quickFormType', 'transfer');
-        localStorage.removeItem('quickExpenseMode');
-        localStorage.setItem('quickBackPage', 'transactions');
-        setCurrentPage('add-transaction');
-        setQuickActionKey(k => k + 1);
-        break;
-      case 'todo-lists': setCurrentPage('todo-lists'); break;
-      case 'voice-entry':
-      case 'voice-input': setCurrentPage('voice-input'); break;
-      case 'calendar': setCurrentPage('calendar'); break;
-      case 'dashboard': setCurrentPage('dashboard'); break;
-      case 'accounts': setCurrentPage('accounts'); break;
-      case 'transactions': setCurrentPage('transactions'); break;
-      case 'investments': setCurrentPage('investments'); break;
-      case 'loans': setCurrentPage('loans'); break;
-      case 'goals': setCurrentPage('goals'); break;
-      case 'groups': setCurrentPage('groups'); break;
-      case 'reports': setCurrentPage('reports'); break;
-      case 'book-advisor': setCurrentPage('book-advisor'); break;
-      case 'receipt-scanner': setCurrentPage('receipt-scanner'); break;
-      case 'notifications': setCurrentPage('notifications'); break;
-      case 'recurring-transactions': setCurrentPage('recurring-transactions'); break;
-      case 'budget-alerts': setCurrentPage('budget-alerts'); break;
-      case 'settings': setCurrentPage('settings'); break;
-      default:
-        setCurrentPage(action);
-        break;
+    if (setCurrentPage) {
+      executeQuickAction(action, setCurrentPage, () => setQuickActionKey((k) => k + 1));
     }
   };
 
@@ -1400,7 +1344,7 @@ const AppContent: React.FC = () => {
   const isAiPage = currentPage === 'ai-assistant' || currentPage === 'voice-input';
 
   return (
-    <div className="w-full min-h-screen flex overflow-x-hidden app-container relative bg-gradient-to-b from-[#EDE9FE]/80 via-[#F5F4FE]/60 to-[#F8F9FD] text-slate-900 selection:bg-purple-500 selection:text-white">
+    <div className={`w-full ${isAiPage ? 'h-[100dvh] max-h-[100dvh] overflow-hidden' : 'min-h-screen'} flex overflow-x-hidden app-container relative bg-gradient-to-b from-[#EDE9FE]/80 via-[#F5F4FE]/60 to-[#F8F9FD] text-slate-900 selection:bg-purple-500 selection:text-white`}>
       {/* Subtle Ambient Background Mesh Lighting (Matching Reference Design Atmosphere) */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden" aria-hidden="true">
         <div className="absolute -top-[5%] left-1/2 -translate-x-1/2 w-[750px] h-[380px] rounded-full bg-gradient-to-b from-purple-300/40 via-purple-200/25 to-transparent blur-3xl" />
@@ -1419,11 +1363,14 @@ const AppContent: React.FC = () => {
       <TopBar />
 
       {/* Main Content Area - Center scaled for Desktop */}
-      <div className="flex-1 lg:ml-28 flex flex-col min-h-screen relative overflow-x-hidden z-10">
-        <div className="w-full max-w-[1600px] mx-auto flex flex-col flex-1 mobile-content relative px-2 sm:px-4 lg:px-8">
+      <div className={`flex-1 lg:ml-28 flex flex-col ${isAiPage ? 'h-full max-h-full overflow-hidden' : 'min-h-screen'} relative overflow-x-hidden z-10`}>
+        <div className={`w-full max-w-[1600px] mx-auto flex flex-col flex-1 ${isAiPage ? 'h-full overflow-hidden !px-0' : ''} mobile-content relative px-2 sm:px-4 lg:px-8`}>
           <LimitedModeBanner />
           <OfflineBadge />
-          <main className="w-full overflow-x-hidden mobile-safe-bottom mobile-main flex-1 bg-transparent flex flex-col justify-start">
+          <main
+            style={isAiPage ? { minHeight: 0, height: '100%', paddingBottom: 0 } : undefined}
+            className={`w-full overflow-x-hidden ${isAiPage ? 'h-full max-h-full overflow-hidden mobile-main flex flex-col min-h-0 !min-h-0 !pb-0' : 'mobile-safe-bottom mobile-main flex-1 bg-transparent flex flex-col justify-start'}`}
+          >
             {dataSyncError && (
               <div className="px-3 sm:px-6 pt-3 pb-2">
                 <div className="flex items-start gap-3.5 rounded-2xl border border-amber-200/80 bg-amber-50/90 backdrop-blur-md px-4 py-3.5 text-xs sm:text-sm text-amber-900 shadow-sm transition-all">
@@ -1450,7 +1397,7 @@ const AppContent: React.FC = () => {
               <Suspense fallback={<PageLoader />}>
                 <div
                   key={currentPage}
-                  className="page-view flex-1 flex flex-col w-full animate-in fade-in-50 duration-200 fill-mode-both"
+                  className={`page-view flex-1 flex flex-col w-full ${isAiPage ? 'h-full overflow-hidden' : ''} animate-in fade-in-50 duration-200 fill-mode-both`}
                 >
                   {renderPage()}
                 </div>
@@ -1462,14 +1409,9 @@ const AppContent: React.FC = () => {
 
       {/* Mobile Bottom Nav */}
       <div className="lg:hidden mobile-bottom-nav">
-        <BottomNav onQuickAdd={() => setShowQuickAction(true)} />
+        <BottomNav />
       </div>
 
-      <QuickActionModal
-        isOpen={showQuickAction}
-        onClose={() => setShowQuickAction(false)}
-        onAction={handleQuickAction}
-      />
       <PWAInstallPrompt />
     </div>
   );

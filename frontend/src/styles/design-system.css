@@ -76,6 +76,58 @@
   --glass-sheet-blur: blur(20px);
   --glass-sheet-border: 1px solid rgba(241, 245, 249, 0.85);
   --glass-sheet-shadow: 0 -8px 32px rgba(0, 0, 0, 0.06);
+
+  /* ─── Global Typography Scale ─────────────────────────────────────────────── */
+  /* One centralized scale — never hardcode font sizes on individual pages.      */
+  /* Use these tokens via the utility classes below or as CSS custom properties. */
+
+  /* Page-level typography */
+  --font-size-page-title:    clamp(1.375rem, 4vw, 1.625rem);  /* 22–26px: main page h1 */
+  --font-size-section-title: clamp(1rem, 3vw, 1.1875rem);     /* 16–19px: section headings */
+  --font-size-card-title:    0.9375rem;                         /* 15px: card headers */
+  --font-size-body:          0.875rem;                          /* 14px: standard body text */
+  --font-size-body-sm:       0.8125rem;                         /* 13px: dense body, list items */
+  --font-size-label:         0.6875rem;                         /* 11px: uppercase labels */
+  --font-size-caption:       0.625rem;                          /* 10px: timestamps, meta */
+  --font-size-watermark:     0.5625rem;                         /* 9px: watermarks, footer notes */
+
+  /* Financial number tiers — clamp() provides fluid scaling on all viewports */
+  --font-size-fin-xl:   clamp(2rem, 6vw, 2.75rem);        /* Hero net worth, large dashboard */
+  --font-size-fin-lg:   clamp(1.5rem, 4.5vw, 2rem);       /* Account balance headers */
+  --font-size-fin-md:   clamp(1.125rem, 3.5vw, 1.375rem); /* Card amounts, totals */
+  --font-size-fin-sm:   1rem;                               /* List row amounts */
+  --font-size-fin-xs:   0.875rem;                           /* Secondary amounts, deltas */
+  --font-size-fin-2xs:  0.75rem;                            /* Compact table amounts */
+
+  /* Font weights */
+  --fw-page-title:    800;
+  --fw-section-title: 700;
+  --fw-card-title:    700;
+  --fw-label:         700;
+  --fw-body:          500;
+  --fw-financial:     800;
+  --fw-financial-sm:  700;
+
+  /* Letter spacing */
+  --ls-heading:    -0.025em;
+  --ls-financial:  -0.02em;
+  --ls-label:       0.06em;
+  --ls-caption:     0.08em;
+
+  /* ─── Standard Page Layout Dimensions ─────────────────────────────────────── */
+  --page-gutter-mobile:  1rem;      /* 16px horizontal padding on mobile */
+  --page-gutter-tablet:  1.5rem;    /* 24px on tablet */
+  --page-gutter-desktop: 2rem;      /* 32px on desktop */
+  --page-max-w:          80rem;     /* 1280px max content width */
+
+  /* ─── Icon & Touch Target Sizes ───────────────────────────────────────────── */
+  --icon-back-button:     2.25rem;  /* 36px back-button circle (mobile) */
+  --icon-back-button-sm:  2.5rem;   /* 40px back-button circle (tablet+) */
+  --icon-size-sm:         0.875rem; /* 14px */
+  --icon-size-base:       1rem;     /* 16px */
+  --icon-size-lg:         1.25rem;  /* 20px */
+  --icon-size-xl:         1.5rem;   /* 24px */
+  --touch-target:         2.75rem;  /* 44px minimum touch target */
 }
 
 
@@ -245,13 +297,220 @@
   justify-content: center;
 }
 
-/* Header Specifics */
+/* ─── Global Typography Classes ──────────────────────────────────────────────
+   Every page should use these classes rather than raw Tailwind font-size
+   utilities.  Changing one token here updates every page that uses it.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+/* Page title — the main h1 of every feature page */
+.text-page-title {
+  font-size: var(--font-size-page-title);
+  font-weight: var(--fw-page-title);
+  letter-spacing: var(--ls-heading);
+  line-height: 1.2;
+  color: #0F172A;
+}
+
+/* Page subtitle — short description below the page title */
+.text-page-subtitle {
+  font-size: var(--font-size-body-sm);
+  font-weight: var(--fw-body);
+  color: #64748B;
+  line-height: 1.4;
+}
+
+/* Section heading inside a page */
+.text-section-title {
+  font-size: var(--font-size-section-title);
+  font-weight: var(--fw-section-title);
+  letter-spacing: var(--ls-heading);
+  line-height: 1.3;
+  color: #0F172A;
+}
+
+/* Card or widget header */
+.text-card-title {
+  font-size: var(--font-size-card-title);
+  font-weight: var(--fw-card-title);
+  color: #0F172A;
+  line-height: 1.3;
+}
+
+/* Standard body text */
+.text-body {
+  font-size: var(--font-size-body);
+  font-weight: var(--fw-body);
+  color: #334155;
+  line-height: 1.5;
+}
+
+/* Dense / secondary body text */
+.text-body-sm {
+  font-size: var(--font-size-body-sm);
+  font-weight: var(--fw-body);
+  color: #475569;
+  line-height: 1.5;
+}
+
+/* Uppercase label — used above inputs, card headers, category pills */
+.text-label {
+  font-size: var(--font-size-label);
+  font-weight: var(--fw-label);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: #64748B;
+  line-height: 1.4;
+}
+
+/* Metadata: timestamps, truncated IDs, helper text */
+.text-caption {
+  font-size: var(--font-size-caption);
+  font-weight: 600;
+  letter-spacing: var(--ls-caption);
+  color: #94A3B8;
+  line-height: 1.4;
+}
+
+/* Watermark / footer branding text */
+.text-watermark {
+  font-size: var(--font-size-watermark);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #CBD5E1;
+  line-height: 1.4;
+}
+
+/* ─── Financial Number Classes ───────────────────────────────────────────────
+   One class per size tier.  The FinancialAmount component picks from these.
+   All use negative letter-spacing for premium numeric rendering.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+/* Hero totals — net worth, portfolio value, dashboard banner */
+.text-fin-xl {
+  font-size: var(--font-size-fin-xl);
+  font-weight: var(--fw-financial);
+  letter-spacing: var(--ls-financial);
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Account balances, section totals */
+.text-fin-lg {
+  font-size: var(--font-size-fin-lg);
+  font-weight: var(--fw-financial);
+  letter-spacing: var(--ls-financial);
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Card amounts, individual loan balances, goal progress */
+.text-fin-md {
+  font-size: var(--font-size-fin-md);
+  font-weight: var(--fw-financial);
+  letter-spacing: var(--ls-financial);
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Transaction list amounts, notification amounts */
+.text-fin-sm {
+  font-size: var(--font-size-fin-sm);
+  font-weight: var(--fw-financial-sm);
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Secondary amounts: original price, delta change */
+.text-fin-xs {
+  font-size: var(--font-size-fin-xs);
+  font-weight: var(--fw-financial-sm);
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Compact table cells, inline balance pills */
+.text-fin-2xs {
+  font-size: var(--font-size-fin-2xs);
+  font-weight: var(--fw-financial-sm);
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─── Standard Back Button ───────────────────────────────────────────────────
+   One visual specification for every back button in the app.
+   ─────────────────────────────────────────────────────────────────────────── */
+.back-button {
+  width: var(--icon-back-button);
+  height: var(--icon-back-button);
+  border-radius: var(--radius-full);
+  background: #FFFFFF;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #334155;
+  transition: background 0.15s ease, transform 0.1s ease;
+  cursor: pointer;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+.back-button:hover { background: #F8FAFC; }
+.back-button:active { transform: scale(0.92); }
+
+@media (min-width: 640px) {
+  .back-button {
+    width: var(--icon-back-button-sm);
+    height: var(--icon-back-button-sm);
+  }
+}
+
+/* ─── Standard Page Wrapper ──────────────────────────────────────────────────
+   Use <AppPageLayout> in React, but these classes power it.
+   ─────────────────────────────────────────────────────────────────────────── */
+.app-page {
+  width: 100%;
+  min-height: 100dvh;
+  background-color: var(--background, #F8F9FD);
+  overflow-x: hidden;
+}
+
+.app-page-body {
+  width: 100%;
+  max-width: var(--page-max-w);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--page-gutter-mobile);
+  padding-right: var(--page-gutter-mobile);
+  padding-bottom: calc(var(--bottom-reserved-space, 80px) + 1rem);
+}
+
+@media (min-width: 640px) {
+  .app-page-body {
+    padding-left: var(--page-gutter-tablet);
+    padding-right: var(--page-gutter-tablet);
+  }
+}
+
+@media (min-width: 1025px) {
+  .app-page-body {
+    padding-left: var(--page-gutter-desktop);
+    padding-right: var(--page-gutter-desktop);
+    padding-bottom: 2.5rem;
+  }
+}
+
+/* Header Specifics (legacy — kept for backward compat) */
 
 .page-title {
-  font-size: 1.5rem;
-  font-weight: 900;
+  font-size: var(--font-size-page-title);
+  font-weight: var(--fw-page-title);
   color: #0F172A;
-  letter-spacing: -0.03em;
+  letter-spacing: var(--ls-heading);
   white-space: nowrap;
 }
 

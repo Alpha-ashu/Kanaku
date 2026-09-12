@@ -3555,6 +3555,74 @@ export async function saveGoalWithBackendSync(goal: any) {
   return { ...dbGoal, id: savedId };
 }
 
+/**
+ * Loan create — API-first with local fallback, like goals. Deliberately never
+ * sends `accountId`: POST /loans posts its own disbursement transaction when an
+ * account is attached, and callers that already recorded the cash movement as a
+ * transaction would end up counted twice on the server.
+ */
+export async function saveLoanWithBackendSync(loan: any) {
+  initializeBackendSync();
+
+  const activeClientRequestId = loan.clientRequestId || crypto.randomUUID();
+  const { accountId: _ignoredAccountId, ...loanRow } = loan;
+
+  if (isBackendFirstSyncMode()) {
+    try {
+      const friend = loan.friendId ? await db.friends.get(Number(loan.friendId)) : null;
+      const response = await apiClient.post('/loans', {
+        type: loan.type,
+        name: loan.name,
+        principalAmount: Number(loan.principalAmount ?? 0),
+        outstandingBalance: Number(loan.outstandingBalance ?? loan.principalAmount ?? 0),
+        contactPerson: loan.contactPerson ?? undefined,
+        friendId: friend?.cloudId ?? undefined,
+        dueDate: toIsoString(loan.dueDate) ?? undefined,
+        status: loan.status ?? 'active',
+        clientRequestId: activeClientRequestId,
+      }, {
+        showErrorToast: false,
+        idempotencyKey: activeClientRequestId,
+      });
+
+      const remote = (response.data as any)?.data ?? response.data;
+      const dbLoan = {
+        ...loanRow,
+        cloudId: remote?.id ? String(remote.id) : undefined,
+        clientRequestId: activeClientRequestId,
+        createdAt: toDate(remote?.createdAt) ?? loan.createdAt ?? new Date(),
+        updatedAt: toDate(remote?.updatedAt) ?? new Date(),
+        syncStatus: 'synced' as const,
+      };
+
+      const savedId = await runWithCloudSyncSuppressed(() => db.loans.add(dbLoan));
+      return { ...dbLoan, id: savedId };
+    } catch (backendError: any) {
+      console.warn(
+        '[saveLoanWithBackendSync] Backend error or unavailable – falling back to local save and queuing for sync.',
+        backendError?.code ?? backendError?.message,
+      );
+      if (backendError?.status === 503 || backendError?.code === 'DATABASE_UNAVAILABLE') {
+        markOptionalBackendUnavailable();
+      }
+    }
+  }
+
+  const now = new Date();
+  const dbLoan = {
+    ...loanRow,
+    clientRequestId: activeClientRequestId,
+    syncStatus: 'pending' as const,
+    createdAt: loan.createdAt ?? now,
+    updatedAt: now,
+  };
+
+  const savedId = await runWithCloudSyncSuppressed(() => db.loans.add(dbLoan));
+  queueRecordUpsertSync('loans', savedId, toNumber(loan?.remoteId));
+
+  return { ...dbLoan, id: savedId };
+}
+
 export async function checkBackendConnectivity(): Promise<boolean> {
   // Backend-managed auth: an authenticated session means we hold a backend JWT.
   return !!TokenManager.getAccessToken();
@@ -3714,7 +3782,7 @@ export async function deleteToDoListWithBackendSync(listId: number) {
   }
 }
 
-export async function saveToDoItemWithBackendSync(item: any) {
+export async function saveToDoItemWithBackendSync(item: any, opts: { idempotencyKey?: string } = {}) {
   initializeBackendSync();
 
   const numListId = typeof item.listId === 'string' ? parseInt(item.listId, 10) : item.listId;
@@ -3733,6 +3801,7 @@ export async function saveToDoItemWithBackendSync(item: any) {
         dueDate: item.dueDate ? toIsoString(item.dueDate) : undefined,
       }, {
         showErrorToast: false,
+        ...(opts.idempotencyKey ? { idempotencyKey: opts.idempotencyKey } : {}),
       });
 
       const remote = response.data?.data || response.data;

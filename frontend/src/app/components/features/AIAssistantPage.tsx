@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronLeft,
@@ -6,28 +6,19 @@ import {
   Plus,
   Send,
   Mic,
-  MicOff,
-  Sparkles,
-  Clock,
-  Target,
-  BarChart3,
   Receipt,
-  RotateCcw,
-  Camera,
   Image as ImageIcon,
-  TrendingDown,
-  TrendingUp,
   MessageSquare,
   Volume2,
+  Trash2,
+  Eraser,
 } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { AIOrb } from './ai/AIOrb';
 import { PendingBreakdownCard } from './ai/PendingBreakdownCard';
 import { NLQService, QueryResult } from '@/services/nlqService';
-import {
-  startSpeechRecognition,
-  SpeechSession,
-} from '@/services/speechRecognitionAdapter';
+import { KaiScreen } from './kai/KaiScreen';
+import { getKaiSession } from '@/services/kai/kaiSession';
 import { toast } from 'sonner';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -36,7 +27,7 @@ interface Message {
   id: string;
   role: 'user' | 'assistant';
   content: string;
-  timestamp: Date;
+  timestamp: string | Date;
   timeLabel?: string;
   showBreakdownCard?: boolean;
   transactions?: QueryResult['transactions'];
@@ -48,143 +39,77 @@ interface AIAssistantPageProps {
   defaultMode?: 'voice' | 'chat';
 }
 
+const STORAGE_KEY = 'KANAKU_kai_chat_history';
+
 function uid(): string {
   return Math.random().toString(36).slice(2, 10);
 }
 
-function formatTime(d: Date): string {
-  return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+function formatTime(d: Date | string): string {
+  const dateObj = typeof d === 'string' ? new Date(d) : d;
+  return dateObj.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 }
 
+const getInitialWelcomeMessage = (): Message => ({
+  id: 'kai-welcome',
+  role: 'assistant',
+  content: "Hello! I'm KAI, your financial assistant. How can I help you today?",
+  timestamp: new Date().toISOString(),
+  timeLabel: formatTime(new Date()),
+});
+
+const loadStoredMessages = (): Message[] => {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
+    }
+  } catch (e) {
+    console.warn('[KAI Chat] Could not load stored chat history:', e);
+  }
+  return [getInitialWelcomeMessage()];
+};
+
+/**
+ * Kai — the voice-first assistant (KaiScreen) with the text chat kept as a
+ * secondary mode behind the header switch. Spoken input never navigates into
+ * the chat; the whole voice workflow stays on the Kai screen.
+ */
 export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
   defaultMode = 'voice',
 }) => {
   const { setCurrentPage, currency } = useApp();
 
-  // Mode: 'voice' (AI Orb Hub - center reference screen) or 'chat' (Conversational - right reference screen)
   const [mode, setMode] = useState<'voice' | 'chat'>(defaultMode);
-
-  // Input state
+  const [messages, setMessages] = useState<Message[]>(loadStoredMessages);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isListening, setIsListening] = useState(false);
-  const [liveTranscript, setLiveTranscript] = useState('');
   const [showOptionsSheet, setShowOptionsSheet] = useState(false);
 
-  // Initial seed conversation matching the reference screen
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: 'seed-1',
-      role: 'user',
-      content: 'Hi Money AI, can you analyze my spending this month?',
-      timestamp: new Date(Date.now() - 1000 * 60 * 3),
-      timeLabel: '8:45 AM',
-    },
-    {
-      id: 'seed-2',
-      role: 'assistant',
-      content: "Hello! Sure, I've analyzed your spending for this month.",
-      timestamp: new Date(Date.now() - 1000 * 60 * 2),
-      timeLabel: '8:45 AM',
-    },
-    {
-      id: 'seed-3',
-      role: 'user',
-      content: 'Great! Show me where most of my money goes.',
-      timestamp: new Date(Date.now() - 1000 * 60 * 1),
-      timeLabel: '8:46 AM',
-    },
-    {
-      id: 'seed-4',
-      role: 'assistant',
-      content: "Here's your detailed spending breakdown for this month.",
-      timestamp: new Date(),
-      timeLabel: '8:47 AM',
-      showBreakdownCard: true,
-    },
-  ]);
-
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const speechSessionRef = useRef<SpeechSession | null>(null);
+  const chatScrollContainerRef = useRef<HTMLDivElement>(null);
   const chatInputRef = useRef<HTMLInputElement>(null);
 
-  // Auto-scroll chat to bottom
   useEffect(() => {
-    if (mode === 'chat') {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+    } catch (e) {
+      console.warn('[KAI Chat] Failed to save chat history:', e);
+    }
+  }, [messages]);
+
+  useEffect(() => {
+    if (mode === 'chat' && chatScrollContainerRef.current) {
+      chatScrollContainerRef.current.scrollTo({
+        top: chatScrollContainerRef.current.scrollHeight,
+        behavior: 'smooth',
+      });
     }
   }, [messages, mode, isLoading]);
 
-  // Clean up speech session on unmount
-  useEffect(() => {
-    return () => {
-      if (speechSessionRef.current) {
-        void speechSessionRef.current.stop();
-        speechSessionRef.current = null;
-      }
-    };
-  }, []);
-
-  // ─── Speech Recognition ───────────────────────────────────────────────────────
-
-  const stopListening = useCallback(async () => {
-    if (speechSessionRef.current) {
-      await speechSessionRef.current.stop();
-      speechSessionRef.current = null;
-    }
-    setIsListening(false);
-  }, []);
-
-  const handleSpeechFinal = useCallback(
-    (finalText: string) => {
-      const trimmed = finalText.trim();
-      if (!trimmed) return;
-      setLiveTranscript('');
-      // Switch to chat mode and process query
-      setMode('chat');
-      void executeQuery(trimmed);
-    },
-    [],
-  );
-
-  const startListening = useCallback(async () => {
-    if (isListening) {
-      await stopListening();
-      return;
-    }
-
-    try {
-      setIsListening(true);
-      setLiveTranscript('');
-
-      const session = await startSpeechRecognition({
-        onPartial: (partial) => {
-          setLiveTranscript(partial);
-        },
-        onFinal: (final) => {
-          handleSpeechFinal(final);
-        },
-        onEnd: () => {
-          setIsListening(false);
-        },
-        onError: (reason, message) => {
-          console.warn('[AI Assistant Speech Error]', reason, message);
-          setIsListening(false);
-          if (reason !== 'no-speech') {
-            toast.error(message || 'Speech recognition unavailable');
-          }
-        },
-      });
-
-      speechSessionRef.current = session;
-    } catch (err: any) {
-      console.error('[AI Assistant Speech Exception]', err);
-      setIsListening(false);
-      toast.error('Could not start microphone');
-    }
-  }, [isListening, stopListening, handleSpeechFinal]);
-
-  // ─── NLQ Query Execution ──────────────────────────────────────────────────────
+  // ─── Chat (text) mode ────────────────────────────────────────────────────────
 
   const executeQuery = async (queryText: string) => {
     const text = queryText.trim();
@@ -192,17 +117,16 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
 
     setInputText('');
 
-    // Append user message
+    const now = new Date();
     const userMsg: Message = {
       id: uid(),
       role: 'user',
       content: text,
-      timestamp: new Date(),
-      timeLabel: formatTime(new Date()),
+      timestamp: now.toISOString(),
+      timeLabel: formatTime(now),
     };
     setMessages((prev) => [...prev, userMsg]);
 
-    // Add typing placeholder
     const typingId = uid();
     setMessages((prev) => [
       ...prev,
@@ -210,14 +134,13 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
         id: typingId,
         role: 'assistant',
         content: '',
-        timestamp: new Date(),
+        timestamp: new Date().toISOString(),
         isTyping: true,
       },
     ]);
 
     setIsLoading(true);
 
-    // Detect if the user query is asking about spending / budget breakdown
     const isBreakdownQuery =
       /breakdown|where.*money|spending|category|categories|budget/i.test(text);
 
@@ -233,11 +156,12 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
                   result.answer ||
                   (isBreakdownQuery
                     ? "Here's your detailed spending breakdown for this month."
-                    : 'I have analyzed your financial activity.'),
+                    : 'I have analyzed your request.'),
                 showBreakdownCard: isBreakdownQuery,
                 transactions: result.transactions,
                 source: result.source,
                 isTyping: false,
+                timestamp: new Date().toISOString(),
                 timeLabel: formatTime(new Date()),
               }
             : m,
@@ -251,10 +175,11 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
                 ...m,
                 content: isBreakdownQuery
                   ? "Here's your detailed spending breakdown for this month."
-                  : 'I analyzed your recent activity.',
+                  : 'I analyzed your recent financial activity.',
                 showBreakdownCard: isBreakdownQuery,
                 isTyping: false,
                 source: 'local',
+                timestamp: new Date().toISOString(),
                 timeLabel: formatTime(new Date()),
               }
             : m,
@@ -267,32 +192,33 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
 
   const handleSend = () => {
     if (!inputText.trim()) return;
-    setMode('chat');
     void executeQuery(inputText);
   };
 
   const handleTopicChipClick = (promptText: string) => {
-    setMode('chat');
     void executeQuery(promptText);
   };
 
-  const handleResetChat = () => {
-    setMessages([
-      {
-        id: uid(),
-        role: 'assistant',
-        content:
-          "Hello! I'm your Smart AI Money Assistant. Ask me anything about your budget, spending breakdown, or log transactions.",
-        timestamp: new Date(),
-        timeLabel: formatTime(new Date()),
-      },
-    ]);
+  const handleClearHistory = () => {
+    const welcome = [getInitialWelcomeMessage()];
+    setMessages(welcome);
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(welcome));
+    } catch (e) {
+      console.warn('[KAI Chat] Failed to clear storage:', e);
+    }
     setShowOptionsSheet(false);
-    toast.success('Conversation reset');
+    toast.success('Chat history cleared');
+  };
+
+  const handleClearKaiSession = () => {
+    getKaiSession().clear();
+    setShowOptionsSheet(false);
+    toast.success("Kai's session cleared");
   };
 
   return (
-    <div className="relative w-full h-[calc(100dvh-9.5rem)] min-h-[550px] max-h-[750px] bg-gradient-to-b from-[#E7E2F8] via-[#F2EEF9] to-[#F8F6FD] text-slate-900 flex flex-col justify-between overflow-hidden select-none rounded-[28px] sm:rounded-[36px] border border-white/70 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] mb-20 sm:mb-24">
+    <div className="relative w-full h-full flex flex-col justify-between overflow-hidden bg-gradient-to-b from-[#E7E2F8] via-[#F2EEF9] to-[#F8F6FD] text-slate-900 select-none">
       {/* ── Soft Ambient Glow Background ── */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden" aria-hidden="true">
         <div className="absolute top-[8%] left-1/2 -translate-x-1/2 w-[340px] sm:w-[460px] h-[340px] sm:h-[460px] rounded-full bg-gradient-to-b from-purple-300/35 via-pink-200/25 to-transparent blur-3xl" />
@@ -300,8 +226,7 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
       </div>
 
       {/* ── Top Header Navigation ── */}
-      <header className="relative z-20 w-full max-w-md mx-auto px-4 pt-4 pb-2 flex items-center justify-between">
-        {/* Left: Back Button */}
+      <header className="relative z-20 w-full max-w-md mx-auto px-3 sm:px-4 pt-2.5 pb-1.5 flex items-center justify-between shrink-0">
         <button
           type="button"
           onClick={() => {
@@ -311,31 +236,25 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
               setCurrentPage('dashboard');
             }
           }}
-          className="w-10 h-10 rounded-full bg-white/80 backdrop-blur-md shadow-xs border border-white/60 hover:bg-white text-slate-700 flex items-center justify-center transition-all cursor-pointer active:scale-95 shrink-0"
-          aria-label={mode === 'chat' ? 'Back to Voice AI' : 'Back to Dashboard'}
+          className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/80 backdrop-blur-md shadow-xs border border-white/60 hover:bg-white text-slate-700 flex items-center justify-center transition-all cursor-pointer active:scale-95 shrink-0"
+          aria-label={mode === 'chat' ? 'Back to Kai' : 'Back to Dashboard'}
         >
-          <ChevronLeft size={20} strokeWidth={2.4} />
+          <ChevronLeft size={18} strokeWidth={2.4} />
         </button>
 
-        {/* Center: Title / Profile */}
         {mode === 'voice' ? (
           <div className="flex flex-col items-center">
-            <h1 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
-              Money AI
-            </h1>
+            <h1 className="text-sm sm:text-base font-black text-slate-900 tracking-tight">Kai</h1>
           </div>
         ) : (
-          <div className="flex items-center gap-2.5">
-            <div className="relative">
+          <div className="flex items-center gap-2">
+            <div className="relative shrink-0">
               <AIOrb size="sm" showStatusGlow={false} />
-              {/* Online Green Indicator Dot */}
               <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white ring-1 ring-emerald-400" />
             </div>
             <div className="flex flex-col">
-              <h1 className="text-sm sm:text-base font-black text-slate-900 leading-tight">
-                Money AI
-              </h1>
-              <span className="text-[10px] sm:text-[11px] font-semibold text-emerald-600 flex items-center gap-1">
+              <h1 className="text-xs sm:text-sm font-black text-slate-900 leading-tight">Kai</h1>
+              <span className="text-[9px] sm:text-[10px] font-semibold text-emerald-600 flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 Your Financial Assistant
               </span>
@@ -343,9 +262,7 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
           </div>
         )}
 
-        {/* Right: Manual Mode Switcher & Options */}
         <div className="flex items-center gap-1.5 shrink-0">
-          {/* Direct Manual Switch Pill */}
           <button
             type="button"
             onClick={() => setMode(mode === 'voice' ? 'chat' : 'voice')}
@@ -365,14 +282,13 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
             )}
           </button>
 
-          {/* More Options (...) Button */}
           <button
             type="button"
             onClick={() => setShowOptionsSheet(!showOptionsSheet)}
-            className="w-10 h-10 rounded-full bg-white/80 backdrop-blur-md shadow-xs border border-white/60 hover:bg-white text-slate-700 flex items-center justify-center transition-all cursor-pointer active:scale-95"
+            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/80 backdrop-blur-md shadow-xs border border-white/60 hover:bg-white text-slate-700 flex items-center justify-center transition-all cursor-pointer active:scale-95"
             aria-label="Options"
           >
-            <MoreHorizontal size={20} strokeWidth={2.4} />
+            <MoreHorizontal size={18} strokeWidth={2.4} />
           </button>
         </div>
       </header>
@@ -389,7 +305,7 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
               initial={{ opacity: 0, y: -10, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -10, scale: 0.95 }}
-              className="absolute top-16 right-4 z-40 w-52 bg-white/95 backdrop-blur-lg rounded-2xl shadow-xl border border-slate-100 p-2 space-y-1"
+              className="absolute top-14 right-4 z-40 w-52 bg-white/95 backdrop-blur-lg rounded-2xl shadow-xl border border-slate-100 p-2 space-y-1"
             >
               <button
                 type="button"
@@ -404,11 +320,19 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
               </button>
               <button
                 type="button"
-                onClick={handleResetChat}
+                onClick={handleClearKaiSession}
                 className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-100 transition-colors text-left cursor-pointer"
               >
-                <RotateCcw size={15} />
-                <span>Reset Conversation</span>
+                <Eraser size={15} />
+                <span>Clear Kai's actions</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleClearHistory}
+                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-rose-600 hover:bg-rose-50 transition-colors text-left cursor-pointer"
+              >
+                <Trash2 size={15} />
+                <span>Clear Chat History</span>
               </button>
               <button
                 type="button"
@@ -426,161 +350,25 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
         )}
       </AnimatePresence>
 
-      {/* ═══════════════════════════════════════════════════════════════════════ */}
-      {/* ── MODE 1: VOICE AI / ORB HUB (Center Reference Screen) ─────────────── */}
-      {/* ═══════════════════════════════════════════════════════════════════════ */}
       {mode === 'voice' ? (
-        <motion.main
-          key="voice-mode"
-          initial={{ opacity: 0, scale: 0.98 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.98 }}
-          transition={{ duration: 0.25 }}
-          className="relative z-10 flex-1 flex flex-col justify-between items-center px-4 max-w-md mx-auto w-full pt-1 pb-3 overflow-hidden h-full"
-        >
-          {/* Spacer / breathing room */}
-          <div className="h-4 sm:h-8" />
-
-          {/* Central 3D Iridescent Orb & Heading */}
-          <div className="flex flex-col items-center justify-center space-y-6 sm:space-y-8 my-auto">
-            {/* The 3D Orb */}
-            <div className="relative cursor-pointer group" onClick={startListening}>
-              <AIOrb
-                size="lg"
-                isListening={isListening}
-                isProcessing={isLoading}
-                showStatusGlow={true}
-              />
-            </div>
-
-            {/* Title */}
-            <div className="text-center px-4 space-y-2">
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight leading-tight">
-                Your Smart AI Money
-                <br />
-                Assistant
-              </h2>
-
-              {/* Status / Transcript Subtitle */}
-              <AnimatePresence mode="wait">
-                {isListening ? (
-                  <motion.div
-                    key="listening"
-                    initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -5 }}
-                    className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-purple-100/80 border border-purple-200 text-purple-800 text-xs font-bold shadow-xs"
-                  >
-                    <span className="w-2 h-2 rounded-full bg-purple-600 animate-ping" />
-                    <span>{liveTranscript || 'Listening... Speak now'}</span>
-                  </motion.div>
-                ) : (
-                  <motion.p
-                    key="idle"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="text-xs text-slate-500 font-medium"
-                  >
-                    Tap orb to speak or type below
-                  </motion.p>
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
-
-          {/* Bottom Area: Topic Pills + Floating Input Bar */}
-          <div className="w-full space-y-4 pt-4">
-            {/* 3 Quick Topic Pills matching the Reference: Budget Planner, Goal Tracker, Spending Insights */}
-            <div className="flex items-center justify-center gap-2 sm:gap-2.5 overflow-x-auto pb-1 scrollbar-none px-1">
-              <button
-                type="button"
-                onClick={() => handleTopicChipClick('Show my budget planner and limits')}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold bg-white/70 backdrop-blur-md hover:bg-white text-slate-700 hover:text-purple-700 border border-white/80 shadow-xs transition-all active:scale-95 cursor-pointer shrink-0"
-              >
-                <Clock size={13} className="text-slate-500" />
-                <span>Budget Planner</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleTopicChipClick('What are my active goals and progress?')}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold bg-white/70 backdrop-blur-md hover:bg-white text-slate-700 hover:text-purple-700 border border-white/80 shadow-xs transition-all active:scale-95 cursor-pointer shrink-0"
-              >
-                <Target size={13} className="text-slate-500" />
-                <span>Goal Tracker</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleTopicChipClick('Show detailed spending breakdown for this month')}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold bg-white/70 backdrop-blur-md hover:bg-white text-slate-700 hover:text-purple-700 border border-white/80 shadow-xs transition-all active:scale-95 cursor-pointer shrink-0"
-              >
-                <BarChart3 size={13} className="text-slate-500" />
-                <span>Spending Insights</span>
-              </button>
-            </div>
-
-            {/* Floating Bottom Input Capsule (matching Reference image middle screen) */}
-            <div className="relative w-full flex items-center bg-white/95 backdrop-blur-lg rounded-full px-2 py-1.5 border border-white shadow-[0_12px_32px_-4px_rgba(112,144,176,0.14)]">
-              {/* Plus (+) Button */}
-              <button
-                type="button"
-                onClick={() => setMode('chat')}
-                className="w-10 h-10 rounded-full hover:bg-slate-100 text-slate-600 flex items-center justify-center transition-colors cursor-pointer shrink-0"
-                aria-label="Open shortcuts"
-              >
-                <Plus size={20} strokeWidth={2.4} />
-              </button>
-
-              {/* Text Input */}
-              <input
-                type="text"
-                value={inputText}
-                onChange={(e) => setInputText(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    handleSend();
-                  }
-                }}
-                placeholder="Write here.."
-                className="flex-1 bg-transparent px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 font-medium outline-none"
-              />
-
-              {/* Purple Circular Send Button */}
-              <button
-                type="button"
-                onClick={handleSend}
-                className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#8B5CF6] to-[#7C3AED] hover:from-[#7C3AED] hover:to-[#6D28D9] text-white flex items-center justify-center shadow-md shadow-purple-500/25 transition-all cursor-pointer active:scale-95 shrink-0"
-                aria-label="Send message"
-              >
-                <Send size={16} strokeWidth={2.4} className="translate-x-0.5" />
-              </button>
-            </div>
-          </div>
-        </motion.main>
+        <KaiScreen />
       ) : (
-        /* ═══════════════════════════════════════════════════════════════════════ */
-        /* ── MODE 2: CONVERSATIONAL COMMAND / CHAT (Right Reference Screen) ──── */
-        /* ═══════════════════════════════════════════════════════════════════════ */
-        <motion.main
+        <motion.div
           key="chat-mode"
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.98 }}
-          transition={{ duration: 0.25 }}
-          className="relative z-10 flex-1 flex flex-col justify-between max-w-md mx-auto w-full px-4 pt-1 pb-3 overflow-hidden h-full"
+          transition={{ duration: 0.22 }}
+          className="relative z-10 flex-1 flex flex-col justify-between max-w-md mx-auto w-full px-3 sm:px-4 pt-1 overflow-y-auto scrollbar-none"
+          ref={chatScrollContainerRef}
         >
-          {/* Chat Stream */}
-          <div className="flex-1 overflow-y-auto space-y-4 pt-2 pb-6 scrollbar-none pr-1">
-            {/* "Today" Separator Pill */}
-            <div className="flex justify-center my-1">
-              <span className="text-[11px] font-semibold text-slate-500 bg-white/70 backdrop-blur-md px-3 py-1 rounded-full border border-white/60 shadow-2xs">
-                Today
-              </span>
-            </div>
+          <div className="flex justify-center my-1.5 shrink-0">
+            <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500 bg-white/70 backdrop-blur-md px-3 py-0.5 rounded-full border border-white/60 shadow-2xs">
+              Today
+            </span>
+          </div>
 
-            {/* Messages List */}
+          <div className="space-y-3.5 flex-1 pb-2">
             {messages.map((msg) => {
               const isUser = msg.role === 'user';
 
@@ -590,21 +378,19 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
                   className={`flex flex-col ${isUser ? 'items-end' : 'items-start'}`}
                 >
                   <div
-                    className={`flex items-start gap-2.5 max-w-[88%] sm:max-w-[82%] ${
+                    className={`flex items-start gap-2.5 max-w-[90%] sm:max-w-[85%] ${
                       isUser ? 'flex-row-reverse' : 'flex-row'
                     }`}
                   >
-                    {/* Mini Orb Avatar for Assistant */}
                     {!isUser && (
                       <div className="shrink-0 mt-1">
                         <AIOrb size="sm" showStatusGlow={false} />
                       </div>
                     )}
 
-                    {/* Bubble Content */}
                     <div className="flex flex-col space-y-2">
                       <div
-                        className={`px-4 py-3 text-sm font-medium leading-relaxed ${
+                        className={`px-4 py-2.5 text-xs sm:text-sm font-medium leading-relaxed ${
                           isUser
                             ? 'bg-[#EFEBFE] text-slate-900 rounded-2xl rounded-tr-xs shadow-2xs'
                             : 'bg-white text-slate-800 rounded-2xl rounded-tl-xs border border-slate-100/90 shadow-2xs'
@@ -630,14 +416,12 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
                         )}
                       </div>
 
-                      {/* Rich Inline Card: Pending Breakdown Bar Chart */}
                       {msg.showBreakdownCard && (
                         <div className="mt-1">
                           <PendingBreakdownCard />
                         </div>
                       )}
 
-                      {/* Inline Transactions (if returned by NLQ) */}
                       {msg.transactions && msg.transactions.length > 0 && (
                         <div className="space-y-1.5 mt-1">
                           {msg.transactions.slice(0, 3).map((tx, idx) => (
@@ -663,10 +447,9 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
                     </div>
                   </div>
 
-                  {/* Timestamp Label */}
                   {msg.timeLabel && (
                     <span
-                      className={`text-[10px] font-semibold text-slate-400 mt-1 px-1 ${
+                      className={`text-[10px] font-semibold text-slate-400 mt-0.5 px-1 ${
                         isUser ? 'mr-1' : 'ml-11'
                       }`}
                     >
@@ -676,51 +459,42 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
                 </div>
               );
             })}
-
-            <div ref={messagesEndRef} />
           </div>
 
-          {/* Floating Bottom Input Dock (matching Reference right screen) */}
-          <div className="w-full pb-1 pt-2 shrink-0">
-            <div className="relative w-full flex items-center bg-white/95 backdrop-blur-lg rounded-full px-2 py-1.5 border border-slate-100 shadow-[0_12px_32px_-4px_rgba(112,144,176,0.14)]">
-              {/* Shortcut (+) Button */}
+          <div
+            className="w-full pt-1 shrink-0 sticky bottom-0 z-20"
+            style={{ paddingBottom: 'calc(var(--bottom-nav-height, 50px) + 20px)' }}
+          >
+            <div className="relative w-full flex items-center bg-white/95 backdrop-blur-lg rounded-full px-2 py-1 border border-slate-100 shadow-[0_12px_32px_-4px_rgba(112,144,176,0.14)]">
               <button
                 type="button"
                 onClick={() =>
                   handleTopicChipClick('What are my total expenses this month by category?')
                 }
-                className="w-9 h-9 rounded-full hover:bg-slate-100 text-slate-600 flex items-center justify-center transition-colors cursor-pointer shrink-0"
+                className="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-600 flex items-center justify-center transition-colors cursor-pointer shrink-0"
                 aria-label="Quick insights"
               >
-                <Plus size={18} strokeWidth={2.4} />
+                <Plus size={16} strokeWidth={2.4} />
               </button>
 
-              {/* Receipt / Camera Icon */}
               <button
                 type="button"
                 onClick={() => setCurrentPage('receipt-scanner')}
-                className="w-9 h-9 rounded-full hover:bg-slate-100 text-slate-600 flex items-center justify-center transition-colors cursor-pointer shrink-0"
+                className="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-600 flex items-center justify-center transition-colors cursor-pointer shrink-0"
                 aria-label="Receipt scanner"
               >
-                <ImageIcon size={18} strokeWidth={2.2} />
+                <ImageIcon size={16} strokeWidth={2.2} />
               </button>
 
-              {/* Mic Icon (Tap to switch to voice or speak) */}
               <button
                 type="button"
-                onClick={() => {
-                  setMode('voice');
-                  void startListening();
-                }}
-                className={`w-9 h-9 rounded-full hover:bg-purple-50 text-slate-600 hover:text-purple-700 flex items-center justify-center transition-colors cursor-pointer shrink-0 ${
-                  isListening ? 'text-purple-600 bg-purple-50' : ''
-                }`}
-                aria-label="Switch to Voice AI"
+                onClick={() => setMode('voice')}
+                className="w-8 h-8 rounded-full hover:bg-purple-50 text-slate-600 hover:text-purple-700 flex items-center justify-center transition-colors cursor-pointer shrink-0"
+                aria-label="Switch to Kai voice"
               >
-                <Mic size={18} strokeWidth={2.2} />
+                <Mic size={16} strokeWidth={2.2} />
               </button>
 
-              {/* Input Field */}
               <input
                 ref={chatInputRef}
                 type="text"
@@ -733,22 +507,21 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
                   }
                 }}
                 placeholder="Ask me anything..."
-                className="flex-1 bg-transparent px-2.5 py-2 text-sm text-slate-900 placeholder:text-slate-400 font-medium outline-none"
+                className="min-w-0 flex-1 bg-transparent px-2.5 py-1.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 font-medium outline-none"
               />
 
-              {/* Purple Circular Send Button */}
               <button
                 type="button"
                 onClick={handleSend}
                 disabled={!inputText.trim() || isLoading}
-                className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#8B5CF6] to-[#7C3AED] hover:from-[#7C3AED] hover:to-[#6D28D9] disabled:opacity-40 disabled:cursor-not-allowed text-white flex items-center justify-center shadow-md shadow-purple-500/25 transition-all cursor-pointer active:scale-95 shrink-0"
+                className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#8B5CF6] to-[#7C3AED] hover:from-[#7C3AED] hover:to-[#6D28D9] disabled:opacity-40 disabled:cursor-not-allowed text-white flex items-center justify-center shadow-md shadow-purple-500/25 transition-all cursor-pointer active:scale-95 shrink-0"
                 aria-label="Send message"
               >
-                <Send size={16} strokeWidth={2.4} className="translate-x-0.5" />
+                <Send size={14} strokeWidth={2.4} className="translate-x-0.5" />
               </button>
             </div>
           </div>
-        </motion.main>
+        </motion.div>
       )}
     </div>
   );

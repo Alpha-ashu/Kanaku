@@ -22,6 +22,8 @@ import { pinService } from '@/services/pinService';
 import { disableBiometricUnlock } from '@/services/biometricAuthService';
 import { teardownPushNotifications } from '@/services/pushNotificationService';
 import socketClient from '@/lib/socket-client';
+import { initializeDefaultBottomNav } from '@/lib/bottomNavPreferences';
+import { initializeDefaultQuickActions } from '@/lib/quickActionPreferences';
 
 interface AuthContextType {
   user: User | null;
@@ -1019,6 +1021,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             }
 
             localStorage.setItem('auth_last_user_id', nextUser.id);
+
+            // Seed default navigation & quick-action preferences for new users
+            // (no-ops if the user already has customised preferences stored).
+            initializeDefaultBottomNav();
+            initializeDefaultQuickActions();
 
             // UNBLOCK UI INSTANTLY: Set provisional role and loading to false immediately
             if (isMounted) {

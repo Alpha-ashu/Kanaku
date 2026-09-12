@@ -30,7 +30,8 @@ import { logger } from '../../config/logger';
 import { sanitizeAIInput } from '../../utils/sanitize';
 import { incrementAIUsage } from '../../utils/aiUsageTracker';
 import { audit } from '../../utils/auditLogger';
-import { executeFinancialQuery, QueryIntent, QueryParams } from './financial-query-engine';
+import { executeFinancialQuery, normaliseDateInput, toQueryParams } from './financial-query-engine';
+import { parseIndianAmount } from './indian-number';
 import { suggestCategory, getUserTopCategories } from './category-suggester';
 import type { TransactionSummaryRow } from './financial-query-engine';
 import { buildFinancialSnapshot, renderOverview, offlineAdvice, snapshotForPrompt, INR } from './financial-snapshot';
@@ -152,12 +153,6 @@ const RECORD_INTENT_TO_TYPE: Record<string, string> = {
   record_subscription: 'subscription',
 };
 
-const QUERY_TYPES: QueryIntent[] = [
-  'SUM_EXPENSES', 'DATE_RANGE_SUMMARY', 'MERCHANT_LOOKUP', 'PERSON_BALANCE', 'ACCOUNT_BALANCE',
-  'RECENT_TRANSACTIONS', 'CATEGORY_USAGE', 'INCOME_SUMMARY', 'GOALS_PROGRESS', 'LOANS_SUMMARY',
-  'INVESTMENT_SUMMARY', 'BUDGET_STATUS', 'UPCOMING_RECURRING',
-];
-
 const TASK_TYPES: ChatTaskType[] = ['create_goal', 'create_budget', 'add_todo', 'create_recurring'];
 
 function buildClassificationPrompt(message: string, history: ChatMessage[]): string {
@@ -197,9 +192,11 @@ Respond with ONE JSON object (no markdown). Pick exactly one intent:
 2) Questions about the user's own data:
    {"intent":"query", "queryType": "SUM_EXPENSES" | "DATE_RANGE_SUMMARY" | "MERCHANT_LOOKUP" | "PERSON_BALANCE" |
     "ACCOUNT_BALANCE" | "RECENT_TRANSACTIONS" | "INCOME_SUMMARY" | "GOALS_PROGRESS" | "LOANS_SUMMARY" |
-    "INVESTMENT_SUMMARY" | "BUDGET_STATUS" | "UPCOMING_RECURRING",
+    "INVESTMENT_SUMMARY" | "BUDGET_STATUS" | "UPCOMING_RECURRING" | "EXPENSE_REPORT",
     "category":<string|null>, "person":<string|null>, "keyword":<string|null>,
     "startDate":<"YYYY-MM-DD"|null>, "endDate":<"YYYY-MM-DD"|null>, "limit":<number|null>}
+   - "expense report", "full breakdown for last month" → EXPENSE_REPORT with startDate/endDate of that month
+   - "what's my food budget this week" → BUDGET_STATUS with category "Food & Dining"
 
 3) A full picture / health check ("how am I doing", "summary", "overview", "where do I stand"):
    {"intent":"overview"}
@@ -281,16 +278,7 @@ const cleanAmount = (v: unknown): number | undefined => {
   return Number.isFinite(n) && n > 0 ? Math.round(n * 100) / 100 : undefined;
 };
 
-const cleanDate = (v: unknown): string | undefined => {
-  if (typeof v !== 'string') return undefined;
-  const t = v.trim().toLowerCase();
-  if (t === 'today') return TODAY();
-  if (t === 'yesterday') {
-    const d = new Date(); d.setDate(d.getDate() - 1);
-    return d.toISOString().slice(0, 10);
-  }
-  return /^\d{4}-\d{2}-\d{2}$/.test(t) && !Number.isNaN(new Date(t).getTime()) ? t : undefined;
-};
+const cleanDate = normaliseDateInput;
 
 /**
  * Offline heuristic classifier — used when no LLM provider is reachable.
@@ -299,15 +287,7 @@ const cleanDate = (v: unknown): string | undefined => {
  */
 export function classifyOffline(message: string): ClassifiedIntent {
   const lower = message.toLowerCase().trim();
-  const amountMatch = message.match(/(?:₹|rs\.?\s*|inr\s*)?\b(\d[\d,]*(?:\.\d{1,2})?)\s*(k|thousand|hazaar|hazar|lakh|lac|lacs|cr|crore)?\b/i);
-  let amount: number | undefined;
-  if (amountMatch) {
-    amount = parseFloat(amountMatch[1].replace(/,/g, ''));
-    const unit = (amountMatch[2] || '').toLowerCase();
-    if (/^(k|thousand|hazaar|hazar)$/.test(unit)) amount *= 1000;
-    if (/^(lakh|lac|lacs)$/.test(unit)) amount *= 100000;
-    if (/^(cr|crore)$/.test(unit)) amount *= 10000000;
-  }
+  const amount = parseIndianAmount(message);
   const dateHint = /\byesterday\b/.test(lower) ? cleanDate('yesterday') : /\btoday\b/.test(lower) ? TODAY() : undefined;
   const nameAfter = (re: RegExp, source = message) => source.match(re)?.[1]?.trim();
   // Titles are extracted from the message with amounts removed, so "track my
@@ -370,6 +350,13 @@ export function classifyOffline(message: string): ClassifiedIntent {
   if (/\b(owe|lent|borrowed)\b/.test(lower) && !amount) {
     const person = nameAfter(/\b(?:owe|lent|borrowed|from|to)\s+(?:by|to|from)?\s*([A-Z][a-z]+)/);
     return person ? { intent: 'query', queryType: 'PERSON_BALANCE', person } : { intent: 'query', queryType: 'LOANS_SUMMARY' };
+  }
+  if (/\b(expense report|spending report|full report|complete report|monthly report)\b/.test(lower)) {
+    const now = new Date();
+    const offset = /\blast month\b/.test(lower) ? -1 : 0;
+    const start = new Date(now.getFullYear(), now.getMonth() + offset, 1);
+    const end = new Date(now.getFullYear(), now.getMonth() + offset + 1, 0);
+    return { intent: 'query', queryType: 'EXPENSE_REPORT', startDate: start.toISOString().slice(0, 10), endDate: end.toISOString().slice(0, 10) };
   }
   if (/\b(how much|total spent|spending|spend this|spent this|expenses this)\b/.test(lower) && !/\b(spent|paid)\s+\d/.test(lower)) {
     return { intent: 'query', queryType: 'SUM_EXPENSES', category };
@@ -522,22 +509,7 @@ async function handleRecordIntent(userId: string, c: ClassifiedIntent): Promise<
 }
 
 async function handleQueryIntent(userId: string, c: ClassifiedIntent): Promise<Handled> {
-  const requested = String(c.queryType ?? 'SUM_EXPENSES').toUpperCase() as QueryIntent;
-  const intent: QueryIntent = QUERY_TYPES.includes(requested) ? requested : 'SUM_EXPENSES';
-
-  const params: QueryParams = {
-    intent,
-    category: clean(c.category),
-    person: clean(c.person),
-    keyword: clean(c.keyword),
-    limit: typeof c.limit === 'number' ? c.limit : undefined,
-  };
-  const start = cleanDate(c.startDate);
-  const end = cleanDate(c.endDate);
-  if (start) params.startDate = new Date(start);
-  if (end) params.endDate = new Date(`${end}T23:59:59`);
-
-  const result = await executeFinancialQuery(userId, params);
+  const result = await executeFinancialQuery(userId, toQueryParams(c));
   return {
     reply: result.summary,
     intent: 'query',

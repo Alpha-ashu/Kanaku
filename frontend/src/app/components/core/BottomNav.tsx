@@ -23,9 +23,16 @@ import {
   BottomNavItemDefinition,
 } from '@/lib/bottomNavPreferences';
 import { BottomNavSettingsSection } from '@/app/components/profile/BottomNavSettingsSection';
+import {
+  useQuickActionPreferences,
+  ALL_QUICK_ACTIONS,
+  executeQuickAction,
+  QuickActionDefinition,
+} from '@/lib/quickActionPreferences';
+import { QuickActionSettingsSection } from '@/app/components/profile/QuickActionSettingsSection';
 
 export interface BottomNavProps {
-  onQuickAdd: () => void;
+  onQuickAdd?: () => void;
 }
 
 // ── Custom Pixel-Perfect SVGs Matching User Reference Image ──────────────────
@@ -330,23 +337,14 @@ const getNavGlyph = (id: string): React.ReactNode => {
   }
 };
 
-// ── Secondary pages in the Explore popup ──────────────────────────────────
-const EXPLORE_ITEMS = [
-  { id: 'accounts', label: 'Accounts', icon: Wallet, color: 'from-blue-500 to-indigo-600' },
-  { id: 'investments', label: 'Investments', icon: TrendingUp, color: 'from-emerald-500 to-teal-600' },
-  { id: 'calendar', label: 'Calendar', icon: CalendarIcon, color: 'from-amber-500 to-orange-600' },
-  { id: 'recurring-transactions', label: 'Recurring', icon: Repeat, color: 'from-purple-500 to-violet-600' },
-  { id: 'budget-alerts', label: 'Budget Alerts', icon: BellRing, color: 'from-rose-500 to-pink-600' },
-  { id: 'loans', label: 'Loans & EMI', icon: HandCoins, color: 'from-cyan-500 to-blue-600' },
-  { id: 'groups', label: 'Groups & Friends', icon: Users, color: 'from-violet-500 to-purple-600' },
-  { id: 'settings', label: 'Settings', icon: SettingsIcon, color: 'from-slate-600 to-slate-800' },
-];
 
-export const BottomNav: React.FC<BottomNavProps> = ({ onQuickAdd }) => {
+export const BottomNav: React.FC<BottomNavProps> = () => {
   const { currentPage, setCurrentPage } = useApp();
   const [selectedNavIds] = useBottomNavPreferences();
+  const [selectedQuickActionIds] = useQuickActionPreferences();
   const [moreOpen, setMoreOpen] = useState(false);
   const [showCustomizeModal, setShowCustomizeModal] = useState(false);
+  const [customizeTab, setCustomizeTab] = useState<'quick-actions' | 'bottom-dock'>('quick-actions');
   const moreRef = useRef<HTMLDivElement>(null);
 
   // Close explore menu on click outside
@@ -376,7 +374,23 @@ export const BottomNav: React.FC<BottomNavProps> = ({ onQuickAdd }) => {
     return false;
   };
 
-  const isMoreActive = EXPLORE_ITEMS.some((item) => item.id === currentPage);
+  const activeQuickActions = React.useMemo(() => {
+    const actionMap = new Map<string, QuickActionDefinition>(
+      ALL_QUICK_ACTIONS.map((a) => [a.id, a])
+    );
+    const items: QuickActionDefinition[] = [];
+    const seen = new Set<string>();
+    for (const id of selectedQuickActionIds) {
+      const action = actionMap.get(id);
+      if (action && !seen.has(action.id)) {
+        seen.add(action.id);
+        items.push(action);
+      }
+    }
+    return items.length > 0 ? items : (ALL_QUICK_ACTIONS.slice(0, 8) as QuickActionDefinition[]);
+  }, [selectedQuickActionIds]);
+
+  const isMoreActive = activeQuickActions.some((item) => item.id === currentPage);
 
   const handleNavigation = (itemId: string) => {
     if (Capacitor.isNativePlatform()) {
@@ -384,6 +398,14 @@ export const BottomNav: React.FC<BottomNavProps> = ({ onQuickAdd }) => {
     }
     setCurrentPage(itemId);
     setMoreOpen(false);
+  };
+
+  const handleActionClick = (actionId: string) => {
+    if (Capacitor.isNativePlatform()) {
+      Haptics.impact({ style: ImpactStyle.Light }).catch(() => {});
+    }
+    setMoreOpen(false);
+    executeQuickAction(actionId, setCurrentPage);
   };
 
   // Resolve active items from preferences
@@ -425,9 +447,9 @@ export const BottomNav: React.FC<BottomNavProps> = ({ onQuickAdd }) => {
                   </div>
                   <div>
                     <h3 className="text-base font-black text-slate-900 tracking-tight">
-                      Customize Bottom Dock
+                      Navigation & Quick Actions
                     </h3>
-                    <p className="text-xs text-slate-500">Pick icons to display on your bottom bar</p>
+                    <p className="text-xs text-slate-500">Customize your bottom dock and quick actions popup</p>
                   </div>
                 </div>
                 <button
@@ -440,7 +462,39 @@ export const BottomNav: React.FC<BottomNavProps> = ({ onQuickAdd }) => {
                 </button>
               </div>
 
-              <BottomNavSettingsSection />
+              {/* Segmented Switcher between Quick Actions and Bottom Dock */}
+              <div className="flex items-center gap-1.5 mb-4 p-1 bg-slate-100/80 rounded-2xl">
+                <button
+                  type="button"
+                  onClick={() => setCustomizeTab('quick-actions')}
+                  className={cn(
+                    'flex-1 py-1.5 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer text-center',
+                    customizeTab === 'quick-actions'
+                      ? 'bg-white text-purple-700 shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  )}
+                >
+                  Quick Actions Popup
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCustomizeTab('bottom-dock')}
+                  className={cn(
+                    'flex-1 py-1.5 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer text-center',
+                    customizeTab === 'bottom-dock'
+                      ? 'bg-white text-purple-700 shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  )}
+                >
+                  Bottom Dock
+                </button>
+              </div>
+
+              {customizeTab === 'quick-actions' ? (
+                <QuickActionSettingsSection />
+              ) : (
+                <BottomNavSettingsSection />
+              )}
 
               <div className="pt-4 mt-4 border-t border-slate-100 flex justify-end">
                 <button
@@ -549,62 +603,19 @@ export const BottomNav: React.FC<BottomNavProps> = ({ onQuickAdd }) => {
                   transition={{ type: 'spring', stiffness: 450, damping: 30 }}
                   className="absolute bottom-[calc(100%+16px)] right-0 w-[290px] sm:w-[330px] max-w-[calc(100vw-20px)] bg-[#121216]/95 backdrop-blur-2xl rounded-[28px] sm:rounded-[32px] shadow-[0_24px_64px_rgba(0,0,0,0.65),0_0_0_1px_rgba(255,255,255,0.12)] p-4 sm:p-5 overflow-hidden z-50 text-white"
                 >
-                  {/* Header */}
-                  <div className="flex items-center justify-between pb-3 mb-3 border-b border-white/10">
-                    <div>
-                      <h4 className="text-sm sm:text-base font-black text-white tracking-tight">Explore KANAKU</h4>
-                      <p className="text-[11px] text-slate-400 font-medium">Quick access to all features</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setMoreOpen(false)}
-                      className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-slate-400 hover:text-white transition-colors cursor-pointer"
-                      aria-label="Close menu"
-                    >
-                      <X size={14} />
-                    </button>
-                  </div>
-
-                  {/* Actions Row: Add Transaction + Customize Bottom Nav */}
-                  <div className="grid grid-cols-2 gap-2 mb-3">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setMoreOpen(false);
-                        onQuickAdd();
-                      }}
-                      className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-black shadow-md shadow-purple-600/30 active:scale-[0.98] transition-all cursor-pointer select-none"
-                    >
-                      <PlusGlyph className="w-3.5 h-3.5" />
-                      <span>Add Tx</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setMoreOpen(false);
-                        setShowCustomizeModal(true);
-                      }}
-                      className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-2xl bg-white/10 hover:bg-white/15 text-white text-xs font-bold border border-white/10 active:scale-[0.98] transition-all cursor-pointer select-none"
-                    >
-                      <Sliders size={13} strokeWidth={2.4} />
-                      <span>Customize</span>
-                    </button>
-                  </div>
-
-                  {/* 2-Column Grid */}
-                  <div className="grid grid-cols-2 gap-2">
-                    {EXPLORE_ITEMS.map((item) => {
-                      const active = currentPage === item.id;
-                      const Icon = item.icon;
+                  {/* Quick Actions 2-Column Grid */}
+                  <div className="grid grid-cols-2 gap-2 max-h-[58vh] overflow-y-auto scrollbar-thin pr-0.5">
+                    {activeQuickActions.map((action) => {
+                      const active = currentPage === action.id;
+                      const Icon = action.icon;
                       return (
                         <motion.button
-                          key={item.id}
+                          key={action.id}
                           type="button"
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.96 }}
-                          onClick={() => handleNavigation(item.id)}
-                          data-testid={`nav-more-${item.id}-button`}
+                          onClick={() => handleActionClick(action.id)}
+                          data-testid={`nav-quickaction-${action.id}-button`}
                           className={cn(
                             'flex items-center gap-2.5 p-2 sm:p-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer select-none text-left',
                             active
@@ -615,17 +626,33 @@ export const BottomNav: React.FC<BottomNavProps> = ({ onQuickAdd }) => {
                           <div
                             className={cn(
                               'w-8 h-8 rounded-xl flex items-center justify-center shrink-0 shadow-xs',
-                              active
-                                ? 'bg-white/20 text-white'
-                                : cn('bg-gradient-to-br text-white', item.color)
+                              action.colorClass
                             )}
                           >
-                            <Icon size={16} strokeWidth={2.3} />
+                            <Icon className="w-4 h-4 text-white" strokeWidth={2.2} />
                           </div>
-                          <span className="truncate text-xs font-semibold">{item.label}</span>
+                          <span className="truncate text-xs font-semibold">{action.shortLabel || action.label}</span>
                         </motion.button>
                       );
                     })}
+                  </div>
+
+                  {/* Footer: Customize Link */}
+                  <div className="pt-2.5 mt-2.5 border-t border-white/10 flex items-center justify-end">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMoreOpen(false);
+                        setCustomizeTab('quick-actions');
+                        setShowCustomizeModal(true);
+                      }}
+                      className="flex items-center gap-1 text-xs font-bold text-purple-400 hover:text-purple-300 transition-colors cursor-pointer select-none"
+                      title="Customize Quick Actions"
+                      data-testid="nav-customize-quick-actions-button"
+                    >
+                      <span>Customize</span>
+                      <span aria-hidden="true">→</span>
+                    </button>
                   </div>
                 </motion.div>
               )}

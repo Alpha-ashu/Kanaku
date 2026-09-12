@@ -49,11 +49,11 @@ export const PageHeaderCard: React.FC<PageHeaderProps> = ({
             <button
               data-testid={backTestId || "page-header-go-back"}
               onClick={handleBackClick}
-              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200/80 hover:bg-slate-50 active:scale-95 shadow-xs flex items-center justify-center text-slate-700 transition-all shrink-0 cursor-pointer"
+              className="back-button shrink-0"
               aria-label="Go back"
               title="Go back"
             >
-              <ChevronLeft className="w-5 h-5 text-slate-700" />
+              <ChevronLeft className="w-5 h-5" />
             </button>
           )}
 
@@ -64,11 +64,11 @@ export const PageHeaderCard: React.FC<PageHeaderProps> = ({
           )}
 
           <div className="min-w-0">
-            <h1 className="font-page-title text-slate-900 tracking-tight leading-tight truncate">
+            <h1 className="text-page-title text-slate-900 truncate">
               {title}
             </h1>
             {subtitle && (
-              <p className="font-page-sub text-slate-500 mt-0.5 truncate">
+              <p className="text-page-subtitle mt-0.5 truncate">
                 {subtitle}
               </p>
             )}

@@ -25,6 +25,7 @@ import { billsRoutes } from '../features/bills/bills.routes';
 import { categorizationRoutes, learnRouter } from '../features/categorization/categorization.routes';
 import { avatarRoutes } from '../features/avatars/avatar.routes';
 import voiceRoutes from '../features/voice/voice.routes';
+import kaiRoutes from '../features/kai/kai.routes';
 import importRoutes from '../features/import/import.routes';
 import { otpRoutes } from '../features/otp/otp.routes';
 import { aaRoutes } from '../features/aa/aa.routes';
@@ -98,6 +99,7 @@ router.use('/groups', groupRoutes);
 router.use('/categorize', categorizationRoutes);
 router.use('/learn', learnRouter);
 router.use('/voice', voiceRoutes);
+router.use('/kai', kaiRoutes);
 router.use('/import', importRoutes);
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 router.use('/ai', lazyRoute(() => require('../features/ai/ai.routes'), 'aiRoutes'));

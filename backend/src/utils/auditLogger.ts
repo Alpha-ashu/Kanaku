@@ -57,6 +57,7 @@ export type AuditEventType =
   | 'ai.chat_request'
   | 'ai.voice_request'
   | 'ai.voice_stt'
+  | 'ai.kai_understand'
   | 'ai.voice_correction'
   | 'ai.statement_parse'
   | 'otp.generated'

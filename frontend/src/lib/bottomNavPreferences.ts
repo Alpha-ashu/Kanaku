@@ -184,6 +184,23 @@ export function getBottomNavPreferences(): string[] {
   return DEFAULT_BOTTOM_NAV_IDS;
 }
 
+/**
+ * Called on first login / app load to seed defaults into localStorage for new
+ * users. Existing users who have already customised their preferences are
+ * unaffected because we only write when the storage key is absent.
+ */
+export function initializeDefaultBottomNav(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    const existing = localStorage.getItem(STORAGE_KEY);
+    if (!existing) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_BOTTOM_NAV_IDS));
+    }
+  } catch {
+    // Non-fatal — in-memory default will still be used
+  }
+}
+
 export function setBottomNavPreferences(ids: string[]): void {
   if (typeof window === 'undefined') return;
   try {

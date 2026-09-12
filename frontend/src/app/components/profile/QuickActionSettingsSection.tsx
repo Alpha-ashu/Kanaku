@@ -54,7 +54,7 @@ export const QuickActionSettingsSection: React.FC = () => {
             </h3>
           </div>
           <p className="text-xs text-slate-500 mt-1">
-            Select up to 15 features to display in your 3 columns × 5 rows Quick Action popup.
+            Select shortcuts to display in your bottom navigation Quick Action popup.
           </p>
         </div>
 
@@ -74,7 +74,7 @@ export const QuickActionSettingsSection: React.FC = () => {
                 selectedCount === 15 ? "bg-blue-600" : "bg-amber-500 animate-pulse"
               )}
             />
-            {selectedCount} / 15 slots filled
+            {selectedCount} / 15 selected
           </span>
 
           <button
@@ -95,7 +95,7 @@ export const QuickActionSettingsSection: React.FC = () => {
           <Info size={15} className="text-blue-600 shrink-0 mt-0.5" />
           <p className="leading-relaxed">
             Check the shortcuts you want in your bottom navigation Quick Action popup.
-            Selected actions appear in order. Any unconfigured slots up to 15 show as <strong>+ Add Slot</strong>.
+            Selected actions appear in order when tapping the circular plus button.
           </p>
         </div>
 

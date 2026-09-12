@@ -226,3 +226,27 @@
     }
   }
 }
+
+/* ─── Additional Tailwind Theme Extensions ──────────────────────────────────
+   These expose our design-system CSS variables to Tailwind so they resolve
+   correctly when used as arbitrary-value utilities.
+   ─────────────────────────────────────────────────────────────────────────── */
+@theme {
+  /* Typography scale — mirrors design-system.css tokens */
+  --text-page-title:    clamp(1.375rem, 4vw, 1.625rem);
+  --text-section-title: clamp(1rem, 3vw, 1.1875rem);
+  --text-card-title:    0.9375rem;
+  --text-body:          0.875rem;
+  --text-body-sm:       0.8125rem;
+  --text-label-upper:   0.6875rem;
+  --text-caption:       0.625rem;
+  --text-watermark:     0.5625rem;
+
+  /* Financial number scale */
+  --text-fin-xl:   clamp(2rem, 6vw, 2.75rem);
+  --text-fin-lg:   clamp(1.5rem, 4.5vw, 2rem);
+  --text-fin-md:   clamp(1.125rem, 3.5vw, 1.375rem);
+  --text-fin-sm:   1rem;
+  --text-fin-xs:   0.875rem;
+  --text-fin-2xs:  0.75rem;
+}

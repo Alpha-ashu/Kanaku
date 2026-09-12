@@ -159,3 +159,85 @@ export function convertCurrencyAmount(
 ) {
   return amount * getConversionRateFromQuotes(fromCurrency, toCurrency, quotes);
 }
+
+// ─── Compact / Smart Formatting ─────────────────────────────────────────────
+
+/**
+ * Format a number in Indian crore/lakh compact notation for INR,
+ * or standard Intl compact notation for other currencies.
+ * Returned string does NOT include the currency symbol.
+ *
+ * Examples (INR):
+ *   125000          → "1.25L"
+ *   12500000        → "1.25Cr"
+ *   1234567890      → "12.35Cr"
+ *   999999999999    → "9,999.99Cr"
+ */
+export function formatAmountCompact(amount: number, currencyCode?: string): string {
+  const code = normalizeCurrencyCode(currencyCode);
+  const absVal = Math.abs(amount);
+
+  if (code === 'INR') {
+    if (absVal >= 1_00_00_00_000) {
+      const cr = absVal / 1_00_00_000;
+      return (cr >= 1000 ? cr.toFixed(0) : cr >= 100 ? cr.toFixed(1) : cr.toFixed(2)) + 'Cr';
+    }
+    if (absVal >= 1_00_00_000) {
+      const cr = absVal / 1_00_00_000;
+      return (cr >= 10 ? cr.toFixed(1) : cr.toFixed(2)) + 'Cr';
+    }
+    if (absVal >= 1_00_000) {
+      const l = absVal / 1_00_000;
+      return (l >= 10 ? l.toFixed(1) : l.toFixed(2)) + 'L';
+    }
+    // Below 1L: use Indian grouping
+    return new Intl.NumberFormat('en-IN', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    }).format(absVal);
+  }
+
+  // Non-INR: Intl compact
+  try {
+    return new Intl.NumberFormat(getCurrencyLocale(code), {
+      notation: 'compact',
+      maximumSignificantDigits: 3,
+    }).format(absVal);
+  } catch {
+    return absVal.toFixed(0);
+  }
+}
+
+/**
+ * Returns a short formatted amount string including the currency symbol.
+ * Suitable for badges, pills, and space-constrained displays.
+ *
+ * Examples:
+ *   formatAmountShort(125000, 'INR')  → "₹1.25L"
+ *   formatAmountShort(-5000, 'INR')   → "-₹5,000"
+ */
+export function formatAmountShort(amount: number, currencyCode?: string): string {
+  const code = normalizeCurrencyCode(currencyCode);
+  const symbol = getCurrencySymbol(code);
+  const prefix = amount < 0 ? '-' : '';
+  return `${prefix}${symbol}${formatAmountCompact(amount, code)}`;
+}
+
+/**
+ * Determine the appropriate FinancialAmount size tier based on number length.
+ * Useful when you need the tier value outside of the React component.
+ */
+export function getFinancialDisplaySize(
+  amount: number,
+  containerWidth?: number,
+): 'xl' | 'lg' | 'md' | 'sm' | 'xs' | '2xs' {
+  const w = containerWidth ?? 300;
+  const numLen = Math.abs(amount).toFixed(0).length;
+
+  if (numLen <= 7 && w >= 280) return 'xl';
+  if (numLen <= 9 && w >= 200) return 'lg';
+  if (numLen <= 11 && w >= 160) return 'md';
+  if (numLen <= 12 && w >= 120) return 'sm';
+  if (numLen <= 13) return 'xs';
+  return '2xs';
+}

@@ -98,23 +98,29 @@ async function createBudget(task: AssistantTask): Promise<string> {
   return `Budget set: ${inr(amount)}/${period.replace('ly', '')} for ${category}`;
 }
 
-async function addTodo(task: AssistantTask, ctx: TaskContext): Promise<string> {
-  const owner = ctx.userId || 'user-default';
+/** The list assistant-created reminders land in: the default list, else any individual list, else a new one. */
+export async function resolveAssistantTodoList(ownerId: string) {
   const now = new Date();
-
   let list = await db.toDoLists.filter((l) => !l.archived && l.name === DEFAULT_TODO_LIST).first();
   if (!list) list = await db.toDoLists.filter((l) => !l.archived && (l.listType ?? 'individual') === 'individual').first();
   if (!list) {
     list = await saveToDoListWithBackendSync({
       name: DEFAULT_TODO_LIST,
       description: 'Reminders created by the Kanaku assistant',
-      ownerId: owner,
+      ownerId,
       listType: 'individual',
       archived: false,
       createdAt: now,
     });
   }
   if (!list?.id) throw new Error('Could not find or create a to-do list');
+  return list;
+}
+
+async function addTodo(task: AssistantTask, ctx: TaskContext): Promise<string> {
+  const owner = ctx.userId || 'user-default';
+  const now = new Date();
+  const list = await resolveAssistantTodoList(owner);
 
   await saveToDoItemWithBackendSync({
     listId: list.id,
