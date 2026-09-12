@@ -503,20 +503,21 @@ export const Groups: React.FC = () => {
                       <div className="space-y-1.5 px-0.5">
                         <div className="flex items-center justify-between text-[11px] font-bold">
                           <div className="flex items-center gap-1.5 text-slate-500">
-                            <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-slate-100 text-[10px] font-black text-slate-600">
-                              {friendMembers.length}
-                            </span>
+                            <div className={cn(
+                              "h-2 w-2 rounded-full shrink-0",
+                              groupStatus === 'settled' ? "bg-emerald-500" : "bg-amber-500"
+                            )} />
                             <span>
                               {groupStatus === 'settled' 
                                 ? 'All friends settled' 
                                 : `${paidFriendsCount} of ${totalFriendsCount} friends settled`}
                             </span>
                           </div>
-                          <span className={groupStatus === 'settled' ? 'text-emerald-600' : 'text-slate-600'}>
+                          <span className={groupStatus === 'settled' ? 'text-emerald-600 font-black' : 'text-slate-600 font-black'}>
                             {paidPercent}%
                           </span>
                         </div>
-                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100/90">
                           <div
                             className={cn(
                               "h-full rounded-full transition-all duration-500",

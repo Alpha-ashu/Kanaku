@@ -556,3 +556,109 @@ export const syncRecurringTransactions = async (): Promise<FeatureSyncResult> =>
 
   return result;
 };
+
+// ─── Bills / attachments ──────────────────────────────────────────────────────
+
+interface BillApiRow {
+  id: string;
+  transactionId?: string | null;
+  fileName?: string;
+  fileType?: string;
+  fileSize?: number;
+  uploadedAt?: string;
+  downloadUrl?: string | null;
+}
+
+/**
+ * Pull the user's uploaded bills onto this device.
+ *
+ * `documents` is not in CORE_SYNC_TABLES, so a bill attached on one device was
+ * never hydrated on another: the binary reached the server, but the second
+ * device had no local `documents` row and no way to resolve the transaction's
+ * attachment pointer, so the bill simply did not appear there.
+ *
+ * Pull-only and metadata-only. The blob is left on the server and fetched on
+ * demand through `downloadUrl`, so logging in on a new device does not drag
+ * every receipt over the network. Upload stays with the offline upload queue.
+ */
+export const syncBills = async (): Promise<FeatureSyncResult> => {
+  let serverRows: BillApiRow[];
+  try {
+    const response = await apiClient.get<{ success: boolean; data: BillApiRow[] }>('/bills', {
+      showErrorToast: false,
+    });
+    serverRows = unwrapList<BillApiRow>(response.data);
+  } catch {
+    return { ...EMPTY_RESULT, offline: true };
+  }
+
+  const result: FeatureSyncResult = { pulled: 0, pushed: 0, removed: 0 };
+  const localDocs = await db.documents.toArray();
+  const byCloudId = new Map(localDocs.filter((d) => d.cloudId).map((d) => [d.cloudId!, d]));
+
+  for (const row of serverRows) {
+    const existing = byCloudId.get(row.id);
+    // The owning transaction is remembered on the row itself: on a fresh login
+    // bills can arrive before transactions finish hydrating, and without this
+    // the link would be lost rather than deferred to the next pass below.
+    const metadata = { ...(existing?.metadata ?? {}), ...(row.transactionId ? { remoteTransactionId: String(row.transactionId) } : {}) };
+
+    if (existing?.id) {
+      await db.documents.update(existing.id, {
+        // Signed URLs expire; keep the freshest pointer we were given.
+        downloadUrl: row.downloadUrl ?? existing.downloadUrl,
+        metadata,
+        updatedAt: new Date(),
+      });
+    } else {
+      await db.documents.add({
+        cloudId: row.id,
+        documentType: 'receipt',
+        fileName: row.fileName || `bill-${row.id}`,
+        fileType: row.fileType || 'application/octet-stream',
+        fileSize: Number(row.fileSize ?? 0),
+        downloadUrl: row.downloadUrl ?? undefined,
+        uploadDate: row.uploadedAt ? new Date(row.uploadedAt) : new Date(),
+        processingStatus: 'completed',
+        metadata,
+        syncStatus: 'synced',
+        createdAt: row.uploadedAt ? new Date(row.uploadedAt) : new Date(),
+        updatedAt: new Date(),
+      });
+      result.pulled += 1;
+    }
+  }
+
+  await relinkBillsToTransactions();
+  return result;
+};
+
+/**
+ * Attach every synced bill to its transaction, for the rows where both sides are
+ * now present locally. Runs after each bill pull and is safe to run at any time:
+ * whichever of the two syncs finishes second completes the link.
+ */
+export const relinkBillsToTransactions = async (): Promise<number> => {
+  const docs = await db.documents.filter((d) => Boolean(d.cloudId) && Boolean(d.metadata?.remoteTransactionId)).toArray();
+  if (docs.length === 0) return 0;
+
+  const transactions = await db.transactions.toArray();
+  const txByCloudId = new Map(transactions.filter((t) => t.cloudId).map((t) => [String(t.cloudId), t]));
+  let linked = 0;
+
+  for (const doc of docs) {
+    const tx = txByCloudId.get(String(doc.metadata!.remoteTransactionId));
+    if (!tx?.id || !doc.id) continue;
+
+    if (doc.linkedTransactionId !== tx.id) {
+      await db.documents.update(doc.id, { linkedTransactionId: tx.id, updatedAt: new Date() });
+    }
+    // A device that created the attachment holds `document:<localId>`, which
+    // means nothing on any other device — rewrite it to the cloud pointer.
+    if (tx.attachment !== `bill:${doc.cloudId}`) {
+      await db.transactions.update(tx.id, { attachment: `bill:${doc.cloudId}`, updatedAt: new Date() });
+    }
+    linked += 1;
+  }
+  return linked;
+};

@@ -14,7 +14,7 @@ import { canAccessPage } from '@/lib/featureFlags';
 import { ADMIN_UI_ENABLED } from '@/config/platform';
 
 import { syncUserDataFromCloud, SyncedTableName } from '@/lib/auth-sync-integration';
-import { syncBudgets, syncCategories, syncRecurringTransactions } from '@/services/featureSyncService';
+import { syncBills, syncBudgets, syncCategories, syncRecurringTransactions } from '@/services/featureSyncService';
 
 
 //  Shell components (always visible - eager load) 
@@ -664,6 +664,9 @@ const AppContent: React.FC = () => {
     void syncCategories();
     void syncBudgets();
     void syncRecurringTransactions();
+    // Attachments uploaded on another device: without this the bill exists on
+    // the server but never appears here.
+    void syncBills();
   }, [user, isAuthenticated, dataReady]);
 
   // SECURITY: re-sync the current page's tables when the network reconnects — only while

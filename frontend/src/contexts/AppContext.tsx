@@ -16,6 +16,7 @@ import {
 } from '@/lib/userPreferences';
 import socketClient from '@/lib/socket-client';
 import { compareByRecency } from '@/lib/dateUtils';
+import { relinkBillsToTransactions } from '@/services/featureSyncService';
 import { Capacitor } from '@capacitor/core';
 import { App as CapacitorApp } from '@capacitor/app';
 
@@ -167,6 +168,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     async () => (await db.transactions.filter(txn => !txn.deletedAt).toArray()).sort(compareByRecency),
     [manualRefreshToken]
   ) || [];
+  // Bills and transactions hydrate from the server independently, so whichever
+  // lands second has to complete the link — otherwise an attachment uploaded on
+  // another device shows up as a document with nothing pointing at it.
+  useEffect(() => {
+    if (transactions.length === 0) return;
+    void relinkBillsToTransactions();
+  }, [transactions.length]);
+
   const loans = useLiveQuery(
     () => db.loans.filter(loan => !loan.deletedAt).toArray(),
     [manualRefreshToken]
