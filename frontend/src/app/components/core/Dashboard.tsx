@@ -35,6 +35,7 @@ import { calculateTaxSummary } from '@/lib/taxService';
 import { AppArcGauge } from '@/app/components/ui/AppArcGauge';
 import { AppMiniGauge } from '@/app/components/ui/AppMiniGauge';
 import { AppDateStrip } from '@/app/components/ui/AppDateStrip';
+import { AIOrb } from '@/app/components/features/ai/AIOrb';
 
 interface DashboardProps {
  setCurrentPage?: (page: string) => void;
@@ -363,7 +364,7 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
         </div>
 
         {/* Horizontal Calendar Date Strip & Period Filter (Reference Image Style) */}
-        <div className="bg-white rounded-[28px] sm:rounded-[32px] p-5 sm:p-6 border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] flex flex-col items-center gap-5 sm:gap-6">
+        <div className="bg-white rounded-[28px] sm:rounded-[32px] px-3.5 sm:px-6 py-4 sm:py-6 border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] flex flex-col items-center gap-4 sm:gap-6">
           <AppDateStrip
             selectedDate={selectedDate}
             onSelectDate={setSelectedDate}
@@ -465,6 +466,29 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
               />
             </div>
           </Card>
+        </motion.div>
+
+        {/* AI Monty Assistant Banner Card (Matching Reference Image Phone 1) */}
+        <motion.div {...fadeUp}>
+          <div
+            onClick={() => setCurrentPage?.('ai-assistant')}
+            className="relative overflow-hidden rounded-[24px] sm:rounded-[28px] p-4 sm:p-5 bg-gradient-to-r from-purple-100/90 via-pink-100/80 to-purple-200/90 border border-purple-200/70 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)] cursor-pointer hover:shadow-md transition-all duration-200 active:scale-[0.99] group flex items-center justify-between"
+          >
+            <div className="space-y-1 z-10 max-w-[72%]">
+              <div className="flex items-center gap-1.5">
+                <Sparkles size={14} className="text-purple-700" />
+                <h4 className="text-xs sm:text-sm font-extrabold text-purple-950 tracking-tight">
+                  AI Monty Assistant
+                </h4>
+              </div>
+              <p className="text-xs sm:text-sm font-medium text-purple-900/80 leading-relaxed">
+                I've analyzed your spending and found higher dining costs.
+              </p>
+            </div>
+            <div className="relative shrink-0 z-10 translate-x-1">
+              <AIOrb size="md" showStatusGlow={false} />
+            </div>
+          </div>
         </motion.div>
 
         {/* 3. Tax Summary: Soft Light Card */}

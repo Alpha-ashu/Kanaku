@@ -5,7 +5,6 @@ import { invalidateUserSnapshotCache } from '../../middleware/auth';
 import { cacheDeleteByPrefix } from '../../cache/redis';
 import { approvalService } from './approval.service';
 import bcrypt from 'bcrypt';
-import { DEFAULT_CATEGORIES, DEFAULT_NOTIFICATION_PREFERENCES } from '../auth/registration.defaults';
 import { audit } from '../../utils/auditLogger';
 
 export interface ListDemoAccountsFilter {

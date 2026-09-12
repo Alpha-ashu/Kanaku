@@ -539,7 +539,7 @@ export async function processVoiceTranscript(transcript: string): Promise<VoiceP
       { transcript }
     );
     return response;
-  } catch (err) {
+  } catch {
     // Backend unavailable — use local parser
     console.info('[VoiceAI] Backend unavailable, using local parser');
     return parseTranscriptLocally(transcript);

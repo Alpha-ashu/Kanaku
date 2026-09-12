@@ -200,8 +200,6 @@ export const processDueRecurringTransactions = async (): Promise<void> => {
           continue;
         }
 
-        let createdTransactionId: string | null = null;
-
         try {
           if (item.autoProcess) {
             // Check for required fields for transaction creation
@@ -247,7 +245,6 @@ export const processDueRecurringTransactions = async (): Promise<void> => {
                     failureReason: null,
                   },
                 });
-                createdTransactionId = existing.id;
                 return;
               }
 
@@ -280,8 +277,6 @@ export const processDueRecurringTransactions = async (): Promise<void> => {
                   syncStatus: 'synced',
                 },
               });
-
-              createdTransactionId = createdTx.id;
 
               // Apply balance updates to related accounts
               for (const [accountId, delta] of deltas.entries()) {

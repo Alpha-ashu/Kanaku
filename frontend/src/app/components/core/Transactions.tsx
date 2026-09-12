@@ -446,7 +446,7 @@ export const Transactions: React.FC = () => {
   </div>
 
   {/* Horizontal Calendar Date Strip & Period Filter (Reference Image Style) */}
-  <div className="bg-white rounded-[28px] sm:rounded-[32px] p-5 sm:p-6 border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] flex flex-col items-center gap-5 sm:gap-6">
+  <div className="bg-white rounded-[28px] sm:rounded-[32px] px-3.5 sm:px-6 py-4 sm:py-6 border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] flex flex-col items-center gap-4 sm:gap-6">
     <AppDateStrip
       selectedDate={selectedDate}
       onSelectDate={setSelectedDate}

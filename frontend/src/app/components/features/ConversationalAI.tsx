@@ -22,7 +22,6 @@ import {
   User,
   TrendingDown,
   TrendingUp,
-  ArrowRight,
   Wifi,
   WifiOff,
 } from "lucide-react";

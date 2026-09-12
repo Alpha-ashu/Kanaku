@@ -89,6 +89,7 @@ const NewUserOnboarding = lazy(() => import('@/app/components/auth/onboarding/Ne
 const AppFeatureSlides = lazy(() => import('@/app/components/auth/onboarding/AppFeatureSlides').then(m => ({ default: m.AppFeatureSlides })));
 
 // Dynamic features pages
+const AIAssistantPage = lazy(() => import('@/app/components/features/AIAssistantPage').then(m => ({ default: m.AIAssistantPage })));
 const AIInsightsPage = lazy(() => import('@/app/components/features/AIInsightsPage').then(m => ({ default: m.AIInsightsPage })));
 const RecurringTransactions = lazy(() => import('@/app/components/features/RecurringTransactions').then(m => ({ default: m.RecurringTransactions })));
 const BudgetAlertsPage = lazy(() => import('@/app/components/features/BudgetAlertsPage').then(m => ({ default: m.BudgetAlertsPage })));
@@ -1384,6 +1385,7 @@ const AppContent: React.FC = () => {
       case 'advisor-verification':
       case 'manager-advisor-verification': return ManagerAdvisorVerification ? <ManagerAdvisorVerification /> : <Dashboard setCurrentPage={setCurrentPage} />;
       case 'advisor': return <AdvisorWorkspace />;
+      case 'ai-assistant': return <AIAssistantPage />;
       case 'voice-input': return <VoiceInput />;
       case 'voice-review': return <VoiceReview />;
       case 'pay-emi': return <PayEMI />;
@@ -1394,6 +1396,8 @@ const AppContent: React.FC = () => {
       default: return <Dashboard setCurrentPage={setCurrentPage} />;
     }
   };
+
+  const isAiPage = currentPage === 'ai-assistant' || currentPage === 'voice-input';
 
   return (
     <div className="w-full min-h-screen flex overflow-x-hidden app-container relative bg-gradient-to-b from-[#EDE9FE]/80 via-[#F5F4FE]/60 to-[#F8F9FD] text-slate-900 selection:bg-purple-500 selection:text-white">

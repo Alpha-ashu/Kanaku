@@ -8,9 +8,10 @@ import {
   Download, Check, AlertTriangle, Layers,
   LogOut, ChevronRight, User, KeyRound, BellRing,
   Sparkles, CheckCircle2, SlidersHorizontal, MessageSquare,
-  Monitor, Laptop, Tablet, X, Zap
+  Monitor, Laptop, Tablet, X, Zap, Sliders
 } from 'lucide-react';
 import { QuickActionSettingsSection } from '@/app/components/profile/QuickActionSettingsSection';
+import { BottomNavSettingsSection } from '@/app/components/profile/BottomNavSettingsSection';
 import { toast } from 'sonner';
 import { useApp } from '@/contexts/AppContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -56,7 +57,7 @@ import { runWithCloudSyncSuppressed } from '@/lib/auth-sync-integration';
 const CLEAR_DATA_TIMEOUT_MS = 180_000;
 const CLEAR_DATA_IDEMPOTENCY_STORAGE_KEY = 'KANAKU_clear_data_idempotency_key';
 
-type SettingsCategory = 'all' | 'quick-actions' | 'general' | 'security' | 'notifications' | 'data' | 'categories' | 'sms' | 'legal';
+type SettingsCategory = 'all' | 'bottom-nav' | 'quick-actions' | 'general' | 'security' | 'notifications' | 'data' | 'categories' | 'sms' | 'legal';
 
 export const Settings: React.FC = () => {
   const { currency, setCurrency, language, setLanguage, visibleFeatures, accounts, refreshData, setCurrentPage } = useApp();
@@ -581,6 +582,7 @@ export const Settings: React.FC = () => {
 
   const categoryTabs = [
     { id: 'all' as const, label: 'All', icon: SlidersHorizontal },
+    { id: 'bottom-nav' as const, label: 'Bottom Nav', icon: Sliders },
     { id: 'quick-actions' as const, label: 'Quick Actions', icon: Zap },
     { id: 'general' as const, label: 'Preferences', icon: Globe },
     { id: 'security' as const, label: 'Security', icon: Lock },
@@ -677,6 +679,11 @@ export const Settings: React.FC = () => {
 
         {/* ─── Grouped Native Settings Sections ──────────────────────────── */}
         <div className="space-y-5">
+          {/* BOTTOM NAVIGATION CUSTOMIZATION */}
+          {shouldShowSection('bottom-nav') && (
+            <BottomNavSettingsSection />
+          )}
+
           {/* QUICK ACTIONS CUSTOMIZATION */}
           {shouldShowSection('quick-actions') && (
             <QuickActionSettingsSection />

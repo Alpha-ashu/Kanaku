@@ -149,8 +149,8 @@ export function parseCsvContacts(csvText: string): DeviceContact[] {
 
   // Find column indices
   let nameIdx = headerLower.findIndex(h => h === 'name' || h === 'full name' || h.includes('display name'));
-  let givenNameIdx = headerLower.findIndex(h => h.includes('given name') || h.includes('first name'));
-  let familyNameIdx = headerLower.findIndex(h => h.includes('family name') || h.includes('last name'));
+  const givenNameIdx = headerLower.findIndex(h => h.includes('given name') || h.includes('first name'));
+  const familyNameIdx = headerLower.findIndex(h => h.includes('family name') || h.includes('last name'));
   let emailIdx = headerLower.findIndex(h => h.includes('email') || h.includes('e-mail'));
   let phoneIdx = headerLower.findIndex(h => h.includes('phone') || h.includes('mobile') || h.includes('tel'));
 

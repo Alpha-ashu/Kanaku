@@ -87,8 +87,8 @@ async function callOpenAICompatible(
     const body = await res.text().catch(() => '');
     throw new Error(`${provider.label} API error ${res.status}: ${body.slice(0, 200)}`);
   }
-  const data: any = await res.json();
-  const text: string = data?.choices?.[0]?.message?.content ?? '';
+  const data = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
+  const text = data?.choices?.[0]?.message?.content ?? '';
   if (!text.trim()) throw new Error(`${provider.label} returned an empty response`);
   return text;
 }
@@ -135,8 +135,10 @@ export async function completeWithLLM(
     try {
       const text = await withTimeout(provider.run(), timeoutMs, provider.parser);
       return { text, parser: provider.parser };
-    } catch (err: any) {
-      logger.warn(`Chat LLM: ${provider.parser} failed, trying next provider`, { error: err?.message ?? String(err) });
+    } catch (err) {
+      logger.warn(`Chat LLM: ${provider.parser} failed, trying next provider`, {
+        error: err instanceof Error ? err.message : String(err),
+      });
     }
   }
   return null;

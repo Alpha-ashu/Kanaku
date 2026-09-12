@@ -29,11 +29,11 @@ import {
 } from"lucide-react";
 import { motion, AnimatePresence } from"framer-motion";
 import { useApp } from"@/contexts/AppContext";
-import { db, Transaction, Loan, GroupExpense, Investment } from"@/lib/database";
+import { db, Loan } from"@/lib/database";
 import { toast } from"sonner";
 import { getActionTypeColor, getActionTypeLabel, FinancialAction, AssistantTask } from"@/services/voiceFinancialService";
 import { executeAssistantTask } from"@/services/aiTaskExecutor";
-import { BudgetCoachService, BudgetInsight } from"@/services/budgetCoachService";
+import { BudgetCoachService } from"@/services/budgetCoachService";
 import { NLQService } from"@/services/nlqService";
 import { VoiceContextStore } from"@/services/voiceContextStore";
 import { saveTransactionWithBackendSync, queueRecordUpsertSync } from"@/lib/auth-sync-integration";

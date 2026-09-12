@@ -699,7 +699,7 @@ export const parseSmsTextToTransaction = async (text: string): Promise<NativeSms
   const bankMatches = compact.match(/\b(HDFC|ICICI|SBI|AXIS|KOTAK|YESBANK|IDFC|HSBC|CHASE|CITI|AMEX|BOB|CANARA|PNB|FEDERAL|INDUSIND|UNION|BANDHAN|RBL|AUBANK|PAYTM|PHONEPE|GPAY|CRED|SLICE|FI|JUPITER|UPI)\b/i);
   const bankName = bankMatches ? bankMatches[1].toUpperCase() : undefined;
 
-  const accountMatch = compact.match(/(?:a\/c|acct|account|card)\s*(?:no\.?|number)?\s*[:\-]?\s*[xX*]{0,8}(\d{3,8})/i);
+  const accountMatch = compact.match(/(?:a\/c|acct|account|card)\s*(?:no\.?|number)?\s*[:-]?\s*[xX*]{0,8}(\d{3,8})/i);
   const accountLast4 = accountMatch ? accountMatch[1] : undefined;
 
   const sourceSmsId = `manual_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;

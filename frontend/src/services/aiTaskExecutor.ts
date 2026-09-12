@@ -5,7 +5,7 @@
  * hand, so a task created from chat syncs exactly like one created in the UI.
  */
 
-import { db } from '@/lib/database';
+import { db, type RecurringTransaction } from '@/lib/database';
 import { backendService } from '@/lib/backend-api';
 import {
   saveGoalWithBackendSync,
@@ -140,12 +140,16 @@ async function createRecurring(task: AssistantTask, ctx: TaskContext): Promise<s
   const accountId = ctx.accountId ?? (await db.accounts.filter((a) => !a.deletedAt).first())?.id ?? 0;
   const clientRequestId = newRequestId();
 
-  const localId = await db.recurringTransactions.add({
+  const category = task.category || (type === 'income' ? 'Salary' : 'Bills & Utilities');
+  // `clientRequestId` is the idempotency key the sync layer reads; it is not
+  // part of the Dexie row type, so the record is built as a variable (no
+  // excess-property check) exactly as RecurringTransactions.tsx does.
+  const record: RecurringTransaction & { clientRequestId: string } = {
     name: task.title,
     type,
     amount,
     accountId,
-    category: task.category || (type === 'income' ? 'Salary' : 'Bills & Utilities'),
+    category,
     frequency: interval,
     startDate: now,
     nextDueDate: nextDue,
@@ -155,21 +159,23 @@ async function createRecurring(task: AssistantTask, ctx: TaskContext): Promise<s
     clientRequestId,
     createdAt: now,
     updatedAt: now,
-  } as any);
+  };
+  const localId = await db.recurringTransactions.add(record);
 
   try {
-    const resp = await backendService.createRecurringTransaction({
+    const payload = {
       title: task.title,
       amount,
       type,
-      category: task.category || (type === 'income' ? 'Salary' : 'Bills & Utilities'),
+      category,
       interval,
       nextDueDate: nextDue.toISOString(),
       accountId: ctx.accountCloudId,
       description: task.notes,
       notes: task.notes,
       clientRequestId,
-    } as any);
+    };
+    const resp = await backendService.createRecurringTransaction(payload);
     if (resp?.id) {
       await db.recurringTransactions.update(localId as number, { cloudId: String(resp.id), syncStatus: 'synced' });
     }

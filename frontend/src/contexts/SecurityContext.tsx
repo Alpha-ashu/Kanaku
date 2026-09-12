@@ -35,10 +35,10 @@ const readStoredLockTimeout = (): number => {
 
 export const SecurityProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return sessionStorage.getItem('session_active') === 'true';
+    return sessionStorage.getItem('session_active') === 'true' || localStorage.getItem('session_active') === 'true';
   });
   const [encryptionKey, setEncryptionKey] = useState<string | null>(() => {
-    return sessionStorage.getItem('session_encryption_key');
+    return sessionStorage.getItem('session_encryption_key') || localStorage.getItem('session_encryption_key');
   });
   // Minutes of inactivity before the app auto-locks. 0 = disabled (only locks on close).
   const [lockTimeout, setLockTimeoutState] = useState<number>(readStoredLockTimeout);

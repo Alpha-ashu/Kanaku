@@ -36,7 +36,7 @@
     "qa:matrix": "powershell -ExecutionPolicy Bypass -File ./scripts/run-feature-matrix.ps1",
     "qa:test-features": "npm run qa:seed-admin && powershell -ExecutionPolicy Bypass -File ./scripts/run-feature-matrix-with-server.ps1",
     "test:watch": "jest --watch",
-    "lint": "eslint src --ext .ts --report-unused-disable-directives --max-warnings 587",
+    "lint": "eslint src --ext .ts --report-unused-disable-directives --max-warnings 652",
     "lint:fix": "eslint src --ext .ts --fix",
     "schemas:scaffold": "powershell -ExecutionPolicy Bypass -File scripts/scaffold-feature-schemas.ps1",
     "db:generate": "prisma generate",

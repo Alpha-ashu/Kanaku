@@ -1,5 +1,4 @@
 import { TokenManager } from '@/lib/api';
-import supabase from '@/utils/supabase/client';
 import type { OCRProgress, ReceiptCharge, ReceiptLineItem, ReceiptScanResult, TaxComponent, TotalValidationResult } from '@/types/receipt.types';
 import { getConfiguredApiBase } from '@/lib/apiBase';
 import { awaitPinUnlock, getPinUnlockToken, setPinUnlockToken } from '@/lib/pinUnlockCoordinator';

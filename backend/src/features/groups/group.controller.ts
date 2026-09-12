@@ -280,8 +280,6 @@ export const createGroup = async (req: AuthRequest, res: Response) => {
         }
       });
 
-      const currentUser = await tx.user.findUnique({ where: { id: userId } });
-
       // Parse and normalize members
       const rawMembers = body.members || [];
       const normalizedMembers = rawMembers.map((m: any) => {

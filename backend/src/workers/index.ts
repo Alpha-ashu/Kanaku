@@ -87,21 +87,6 @@ async function claimChannelDelivery(notificationId: string, channel: Channel): P
   return updated.count > 0;
 }
 
-async function isAlreadySent(notificationId: string, channel: Channel): Promise<boolean> {
-  const n = await prisma.notification.findUnique({
-    where: { id: notificationId },
-    select: { deliveryStatus: true },
-  });
-  if (!n) return false;
-  return parseDeliveryStatus(n.deliveryStatus)[channel] === 'sent';
-}
-
-async function setProcessing(notificationId: string): Promise<void> {
-  await prisma.notification
-    .update({ where: { id: notificationId }, data: { status: 'processing' } })
-    .catch(() => {/* bookkeeping must never fail the send */});
-}
-
 async function markChannel(
   notificationId: string,
   channel: Channel,
