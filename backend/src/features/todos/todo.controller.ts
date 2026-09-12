@@ -117,7 +117,7 @@ export const getTodoItems = async (req: AuthRequest, res: Response, next: NextFu
       return res.json({ success: true, data: cached });
     }
 
-    const items = await todoService.getTodoItems(parseInt(listId));
+    const items = await todoService.getTodoItems(parseInt(listId), userId);
     if (process.env.NODE_ENV !== 'test') {
       await cacheSetJson(cacheKey, items, 60);
     }
@@ -167,8 +167,9 @@ export const createTodoItem = async (req: AuthRequest, res: Response, next: Next
 
 export const updateTodoItem = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
+    const userId = getUserId(req);
     const { id } = req.params;
-    const item = await todoService.updateTodoItem(parseInt(id), req.body);
+    const item = await todoService.updateTodoItem(parseInt(id), userId, req.body);
     res.json({ success: true, data: item });
   } catch (error) {
     next(error);
@@ -177,8 +178,9 @@ export const updateTodoItem = async (req: AuthRequest, res: Response, next: Next
 
 export const deleteTodoItem = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
+    const userId = getUserId(req);
     const { id } = req.params;
-    await todoService.deleteTodoItem(parseInt(id));
+    await todoService.deleteTodoItem(parseInt(id), userId);
     res.json({ success: true, message: 'Todo item deleted successfully' });
   } catch (error) {
     next(error);

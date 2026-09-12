@@ -131,8 +131,8 @@ export class TodoService {
   }
 
   // Items
-  async getTodoItems(listId: number) {
-    return todoRepository.findListItems(listId);
+  async getTodoItems(listId: number, userId: string) {
+    return todoRepository.findListItems(listId, userId);
   }
 
   async getAllTodoItems(userId: string) {
@@ -171,6 +171,7 @@ export class TodoService {
 
   async updateTodoItem(
     id: number,
+    userId: string,
     data: {
       title?: string;
       description?: string;
@@ -181,6 +182,7 @@ export class TodoService {
   ) {
     const items = await todoRepository.updateItem(
       id,
+      userId,
       data.title,
       data.description,
       data.completed,
@@ -188,6 +190,9 @@ export class TodoService {
       data.dueDate
     );
 
+    // The UPDATE is itself scoped to lists this user owns or may edit, so an
+    // item belonging to someone else matches nothing and is reported as absent
+    // rather than confirming that the id exists.
     if (items.length === 0) {
       throw new AppError(404, 'NOT_FOUND', 'Todo item not found');
     }
@@ -202,15 +207,15 @@ export class TodoService {
     return item;
   }
 
-  async deleteTodoItem(id: number) {
-    const items = await todoRepository.findItemById(id);
+  async deleteTodoItem(id: number, userId: string) {
+    const items = await todoRepository.findItemById(id, userId);
     if (items.length === 0) {
       throw new AppError(404, 'NOT_FOUND', 'Todo item not found');
     }
 
     const item = items[0];
 
-    await todoRepository.deleteItem(id);
+    await todoRepository.deleteItem(id, userId);
 
     // Notify participants
     const shares = await todoRepository.findListShares(item.listId);

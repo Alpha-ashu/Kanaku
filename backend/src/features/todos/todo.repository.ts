@@ -156,12 +156,22 @@ export class TodoRepository {
     `;
   }
 
-  async findListItems(listId: number) {
+  /**
+   * Items of one list, scoped to lists the user owns or has been shared.
+   * `todo_items.id` is BIGSERIAL and therefore trivially enumerable, so the
+   * ownership predicate belongs in the query itself, not only in the service.
+   */
+  async findListItems(listId: number, userId: string) {
     await ensureTodoTablesExist();
     return prisma.$queryRaw<any[]>`
       SELECT id::INT, list_id::INT AS "listId", user_id AS "userId", title, description, completed, priority, due_date AS "dueDate", created_by AS "createdBy", created_at AS "createdAt", updated_at AS "updatedAt", completed_at AS "completedAt"
       FROM public.todo_items
       WHERE list_id = ${listId}::bigint
+        AND list_id IN (
+          SELECT id FROM public.todo_lists WHERE user_id = ${userId}::uuid
+          UNION
+          SELECT list_id FROM public.todo_list_shares WHERE shared_with_user_id = ${userId}::uuid
+        )
       ORDER BY created_at ASC
     `;
   }
@@ -190,7 +200,7 @@ export class TodoRepository {
   }
 
 
-  async updateItem(id: number, title?: string, description?: string, completed?: boolean, priority?: string, dueDate?: string) {
+  async updateItem(id: number, userId: string, title?: string, description?: string, completed?: boolean, priority?: string, dueDate?: string) {
     return prisma.$queryRaw<any[]>`
       UPDATE public.todo_items
       SET title = COALESCE(${title !== undefined ? title : null}, title),
@@ -201,19 +211,38 @@ export class TodoRepository {
           completed_at = CASE WHEN ${completed === true} THEN NOW() WHEN ${completed === false} THEN NULL ELSE completed_at END,
           updated_at = NOW()
       WHERE id = ${id}::bigint
+        AND list_id IN (
+          SELECT id FROM public.todo_lists WHERE user_id = ${userId}::uuid
+          UNION
+          SELECT list_id FROM public.todo_list_shares
+            WHERE shared_with_user_id = ${userId}::uuid AND permission = 'edit'
+        )
       RETURNING id::INT, list_id::INT AS "listId", user_id AS "userId", title, description, completed, priority, due_date AS "dueDate", created_by AS "createdBy", created_at AS "createdAt", updated_at AS "updatedAt", completed_at AS "completedAt"
     `;
   }
 
-  async findItemById(id: number) {
+  async findItemById(id: number, userId: string) {
     return prisma.$queryRaw<any[]>`
-      SELECT id, list_id::INT AS "listId" FROM public.todo_items WHERE id = ${id}::bigint
+      SELECT id, list_id::INT AS "listId" FROM public.todo_items
+      WHERE id = ${id}::bigint
+        AND list_id IN (
+          SELECT id FROM public.todo_lists WHERE user_id = ${userId}::uuid
+          UNION
+          SELECT list_id FROM public.todo_list_shares WHERE shared_with_user_id = ${userId}::uuid
+        )
     `;
   }
 
-  async deleteItem(id: number) {
+  async deleteItem(id: number, userId: string) {
     return prisma.$executeRaw`
-      DELETE FROM public.todo_items WHERE id = ${id}::bigint
+      DELETE FROM public.todo_items
+      WHERE id = ${id}::bigint
+        AND list_id IN (
+          SELECT id FROM public.todo_lists WHERE user_id = ${userId}::uuid
+          UNION
+          SELECT list_id FROM public.todo_list_shares
+            WHERE shared_with_user_id = ${userId}::uuid AND permission = 'edit'
+        )
     `;
   }
 

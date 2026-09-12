@@ -117,18 +117,28 @@ const evictionTimer = setInterval(() => {
 }, 10 * 60 * 1000);
 evictionTimer.unref?.();
 
-function getContext(conversationId: string): ChatMessage[] {
-  const entry = conversationStore.get(conversationId);
+/**
+ * Conversation history is keyed by user AND conversation id.
+ *
+ * `conversationId` arrives from the request body, so keying on it alone let any
+ * caller replay someone else's recent turns — amounts, merchants, balances —
+ * into their own prompt and answer simply by guessing or reusing an id.
+ */
+const contextKey = (userId: string, conversationId: string): string => `${userId}:${conversationId}`;
+
+function getContext(userId: string, conversationId: string): ChatMessage[] {
+  const entry = conversationStore.get(contextKey(userId, conversationId));
   if (!entry) return [];
   entry.lastAccess = Date.now();
   return entry.turns;
 }
 
-function appendContext(conversationId: string, message: ChatMessage): void {
-  let entry = conversationStore.get(conversationId);
+function appendContext(userId: string, conversationId: string, message: ChatMessage): void {
+  const key = contextKey(userId, conversationId);
+  let entry = conversationStore.get(key);
   if (!entry) {
     entry = { turns: [], lastAccess: Date.now() };
-    conversationStore.set(conversationId, entry);
+    conversationStore.set(key, entry);
   }
   entry.turns.push(message);
   if (entry.turns.length > CTX_MAX_TURNS * 2) {
@@ -643,7 +653,7 @@ export const handleChatMessage = async (req: AuthRequest, res: Response): Promis
   const conversationId = typeof incomingConvId === 'string' && incomingConvId.trim()
     ? incomingConvId.trim().slice(0, 80)
     : `${userId}-${Date.now()}`;
-  const history = getContext(conversationId);
+  const history = getContext(userId, conversationId);
 
   audit({ event: 'ai.chat_request', userId, meta: { conversationId } });
 
@@ -678,8 +688,8 @@ export const handleChatMessage = async (req: AuthRequest, res: Response): Promis
     };
   }
 
-  appendContext(conversationId, { role: 'user', content: cleanMessage, timestamp: Date.now() });
-  appendContext(conversationId, { role: 'assistant', content: payload.reply, timestamp: Date.now() });
+  appendContext(userId, conversationId, { role: 'user', content: cleanMessage, timestamp: Date.now() });
+  appendContext(userId, conversationId, { role: 'assistant', content: payload.reply, timestamp: Date.now() });
 
   const response: ChatResponse = { conversationId, parser, ...payload };
   res.json(response);
