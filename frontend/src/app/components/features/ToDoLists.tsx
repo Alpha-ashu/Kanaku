@@ -327,7 +327,7 @@ export const ToDoLists: React.FC = () => {
   const totalArchived = archivedMy.length + archivedShared.length;
 
   return (
-    <CenteredLayout maxWidth="max-w-7xl">
+    <CenteredLayout>
       <div className="space-y-6">
         {/* Standard Page Header */}
         <div className="flex items-center justify-between gap-3 w-full">
@@ -672,7 +672,7 @@ export const ToDoLists: React.FC = () => {
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
             {displayedMy.map(list => renderListCard(list, false))}
           </div>
         )}
@@ -694,7 +694,7 @@ export const ToDoLists: React.FC = () => {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
               {displayedShared.map(list => renderListCard(list, true))}
             </div>
           )}

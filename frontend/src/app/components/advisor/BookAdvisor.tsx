@@ -801,7 +801,7 @@ export const BookAdvisor: React.FC = () => {
   const activeThread = chatThreads.find((thread) => thread.sessionId === activeSessionId) ?? null;
 
   return (
-    <CenteredLayout maxWidth="max-w-7xl">
+    <CenteredLayout>
       <div className="space-y-6 w-full">
         {/* Top Header Navigation */}
         <div className="flex flex-wrap items-center justify-between gap-4 w-full">

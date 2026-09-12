@@ -599,7 +599,7 @@ export const Settings: React.FC = () => {
 
   return (
     <CenteredLayout>
-      <div className="space-y-4 sm:space-y-6 max-w-6xl mx-auto w-full px-2 sm:px-4">
+      <div className="space-y-4 sm:space-y-6 w-full">
         {/* Header */}
         <PageHeader
           title="Settings"

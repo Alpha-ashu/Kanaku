@@ -339,7 +339,7 @@ export const RecurringTransactions: React.FC = () => {
             <p className="text-xs text-slate-400 mt-1">Add rent, subscriptions, salaries — anything that repeats.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
             {items.map((item) => (
               <div
                 data-testid={`recurring-transactions-card-2-${item.id}`}

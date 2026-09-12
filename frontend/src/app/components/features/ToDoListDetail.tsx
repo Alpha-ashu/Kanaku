@@ -241,7 +241,7 @@ export const ToDoListDetail: React.FC = () => {
   }
 
   return (
-    <CenteredLayout maxWidth="max-w-4xl">
+    <CenteredLayout>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between gap-3 w-full">

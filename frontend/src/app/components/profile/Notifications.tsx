@@ -129,7 +129,7 @@ export const Notifications: React.FC = () => {
   };
 
   return (
-    <CenteredLayout maxWidth="max-w-4xl">
+    <CenteredLayout>
       <div className="space-y-6">
         {/* Header */}
         <PageHeader

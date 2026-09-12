@@ -47,7 +47,7 @@ interface VerificationState {
 const ProfileSkeleton: React.FC = () => {
   return (
     <div className="w-full min-h-screen bg-white lg:pb-8 animate-pulse" style={{ paddingBottom: 'calc(var(--bottom-reserved-space) + 8px)' }}>
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-[1920px] mx-auto">
         {/* Header */}
         <div className="px-4 sm:px-6 lg:px-8 pt-6 lg:pt-10">
           <PageHeader
@@ -935,7 +935,7 @@ export const UserProfile: React.FC = () => {
  return (
  <>
  <div className="w-full min-h-screen bg-transparent lg:pb-8" style={{ paddingBottom: 'calc(var(--bottom-reserved-space) + 8px)' }}>
- <div className="max-w-7xl mx-auto">
+ <div className="max-w-[1920px] mx-auto">
  {/* Header */}
  <div className="px-4 sm:px-6 lg:px-8 pt-6 lg:pt-10">
  <PageHeader

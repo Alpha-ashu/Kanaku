@@ -3,6 +3,7 @@ import { useApp } from '@/contexts/AppContext';
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Plus, X, Clock, CheckCircle2, AlertCircle, Calendar as CalendarIcon, RotateCcw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { PageHeader } from '@/app/components/ui/PageHeader';
 import { Button } from '@/app/components/ui/button';
 import { TimeFilter, TimeFilterPeriod, filterByTimePeriod } from '@/app/components/ui/TimeFilter';
@@ -303,7 +304,8 @@ export const Calendar: React.FC = () => {
   const summaryCardClass = 'rounded-[24px] sm:rounded-[28px] px-3 py-4 sm:px-4 sm:py-4.5 border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] transition-transform hover:-translate-y-0.5 min-w-0';
 
   return (
-  <div className="px-4 sm:px-6 lg:px-8 py-4 lg:py-6 w-full space-y-4 sm:space-y-5">
+    <CenteredLayout>
+      <div className="w-full space-y-4 sm:space-y-5">
   {/* App Header */}
   <PageHeader
   title="Calendar"
@@ -760,6 +762,7 @@ export const Calendar: React.FC = () => {
   </motion.div>
   )}
   </AnimatePresence>
- </div>
- );
+    </div>
+  </CenteredLayout>
+  );
 };

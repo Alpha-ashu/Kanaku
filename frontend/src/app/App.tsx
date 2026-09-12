@@ -1364,7 +1364,7 @@ const AppContent: React.FC = () => {
 
       {/* Main Content Area - Center scaled for Desktop */}
       <div className={`flex-1 lg:ml-28 flex flex-col ${isAiPage ? 'h-full max-h-full overflow-hidden' : 'min-h-screen'} relative overflow-x-hidden z-10`}>
-        <div className={`w-full max-w-[1600px] mx-auto flex flex-col flex-1 ${isAiPage ? 'h-full overflow-hidden !px-0' : ''} mobile-content relative px-2 sm:px-4 lg:px-8`}>
+        <div className={`w-full max-w-[1920px] mx-auto flex flex-col flex-1 ${isAiPage ? 'h-full overflow-hidden !px-0' : ''} mobile-content relative`}>
           <LimitedModeBanner />
           <OfflineBadge />
           <main

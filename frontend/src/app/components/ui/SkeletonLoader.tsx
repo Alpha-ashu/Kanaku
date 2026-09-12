@@ -34,7 +34,7 @@ export const Skeleton: React.FC<SkeletonProps> = ({
 
 export const DashboardSkeleton = () => {
  return (
- <div className="p-6 lg:p-10 max-w-[1600px] mx-auto space-y-8">
+ <div className="p-6 lg:p-10 max-w-[1920px] mx-auto space-y-8">
  {/* Header Skeleton */}
  <div className="flex justify-between items-center mb-8">
  <div className="space-y-2">
