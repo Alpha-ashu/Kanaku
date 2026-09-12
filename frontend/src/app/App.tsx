@@ -1341,10 +1341,8 @@ const AppContent: React.FC = () => {
     }
   };
 
-  const isAiPage = currentPage === 'ai-assistant' || currentPage === 'voice-input';
-
   return (
-    <div className={`w-full ${isAiPage ? 'h-[100dvh] max-h-[100dvh] overflow-hidden' : 'min-h-screen'} flex overflow-x-hidden app-container relative bg-gradient-to-b from-[#EDE9FE]/80 via-[#F5F4FE]/60 to-[#F8F9FD] text-slate-900 selection:bg-purple-500 selection:text-white`}>
+    <div className="w-full min-h-screen flex overflow-x-hidden app-container relative bg-gradient-to-b from-[#EDE9FE]/80 via-[#F5F4FE]/60 to-[#F8F9FD] text-slate-900 selection:bg-purple-500 selection:text-white">
       {/* Subtle Ambient Background Mesh Lighting (Matching Reference Design Atmosphere) */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden" aria-hidden="true">
         <div className="absolute -top-[5%] left-1/2 -translate-x-1/2 w-[750px] h-[380px] rounded-full bg-gradient-to-b from-purple-300/40 via-purple-200/25 to-transparent blur-3xl" />
@@ -1363,14 +1361,11 @@ const AppContent: React.FC = () => {
       <TopBar />
 
       {/* Main Content Area - Center scaled for Desktop */}
-      <div className={`flex-1 lg:ml-28 flex flex-col ${isAiPage ? 'h-full max-h-full overflow-hidden' : 'min-h-screen'} relative overflow-x-hidden z-10`}>
-        <div className={`w-full max-w-[1920px] mx-auto flex flex-col flex-1 ${isAiPage ? 'h-full overflow-hidden !px-0' : ''} mobile-content relative`}>
+      <div className="flex-1 lg:ml-28 flex flex-col min-h-screen relative overflow-x-hidden z-10">
+        <div className="w-full max-w-[1920px] mx-auto flex flex-col flex-1 mobile-content relative">
           <LimitedModeBanner />
           <OfflineBadge />
-          <main
-            style={isAiPage ? { minHeight: 0, height: '100%', paddingBottom: 0 } : undefined}
-            className={`w-full overflow-x-hidden ${isAiPage ? 'h-full max-h-full overflow-hidden mobile-main flex flex-col min-h-0 !min-h-0 !pb-0' : 'mobile-safe-bottom mobile-main flex-1 bg-transparent flex flex-col justify-start'}`}
-          >
+          <main className="mobile-safe-bottom mobile-main flex-1 bg-transparent flex flex-col justify-start w-full overflow-x-hidden">
             {dataSyncError && (
               <div className="px-3 sm:px-6 pt-3 pb-2">
                 <div className="flex items-start gap-3.5 rounded-2xl border border-amber-200/80 bg-amber-50/90 backdrop-blur-md px-4 py-3.5 text-xs sm:text-sm text-amber-900 shadow-sm transition-all">
@@ -1397,7 +1392,7 @@ const AppContent: React.FC = () => {
               <Suspense fallback={<PageLoader />}>
                 <div
                   key={currentPage}
-                  className={`page-view flex-1 flex flex-col w-full ${isAiPage ? 'h-full overflow-hidden' : ''} animate-in fade-in-50 duration-200 fill-mode-both`}
+                  className="page-view flex-1 flex flex-col w-full animate-in fade-in-50 duration-200 fill-mode-both"
                 >
                   {renderPage()}
                 </div>

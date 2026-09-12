@@ -19,6 +19,7 @@ import { PendingBreakdownCard } from './ai/PendingBreakdownCard';
 import { NLQService, QueryResult } from '@/services/nlqService';
 import { KaiScreen } from './kai/KaiScreen';
 import { getKaiSession } from '@/services/kai/kaiSession';
+import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { toast } from 'sonner';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -218,7 +219,7 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
   };
 
   return (
-    <div className="relative w-full h-full flex flex-col justify-between overflow-hidden bg-gradient-to-b from-[#E7E2F8] via-[#F2EEF9] to-[#F8F6FD] text-slate-900 select-none">
+    <CenteredLayout enablePullToRefresh={false} className="relative z-10 flex flex-col flex-1 pb-2 sm:pb-3 lg:pb-4 select-none">
       {/* ── Soft Ambient Glow Background ── */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden" aria-hidden="true">
         <div className="absolute top-[8%] left-1/2 -translate-x-1/2 w-[340px] sm:w-[460px] h-[340px] sm:h-[460px] rounded-full bg-gradient-to-b from-purple-300/35 via-pink-200/25 to-transparent blur-3xl" />
@@ -226,57 +227,62 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
       </div>
 
       {/* ── Top Header Navigation ── */}
-      <header className="relative z-20 w-full max-w-md mx-auto px-3 sm:px-4 pt-2.5 pb-1.5 flex items-center justify-between shrink-0">
-        <button
-          type="button"
-          onClick={() => {
-            if (mode === 'chat') {
-              setMode('voice');
-            } else {
-              setCurrentPage('dashboard');
-            }
-          }}
-          className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/80 backdrop-blur-md shadow-xs border border-white/60 hover:bg-white text-slate-700 flex items-center justify-center transition-all cursor-pointer active:scale-95 shrink-0"
-          aria-label={mode === 'chat' ? 'Back to Kai' : 'Back to Dashboard'}
-        >
-          <ChevronLeft size={18} strokeWidth={2.4} />
-        </button>
+      <header className="relative z-20 w-full flex items-center justify-between pb-3 sm:pb-4 shrink-0">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <button
+            type="button"
+            onClick={() => {
+              if (mode === 'chat') {
+                setMode('voice');
+              } else {
+                setCurrentPage('dashboard');
+              }
+            }}
+            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/80 backdrop-blur-md shadow-xs border border-white/60 hover:bg-white text-slate-700 flex items-center justify-center transition-all cursor-pointer active:scale-95 shrink-0"
+            aria-label={mode === 'chat' ? 'Back to Kai' : 'Back to Dashboard'}
+          >
+            <ChevronLeft size={18} strokeWidth={2.4} />
+          </button>
 
-        {mode === 'voice' ? (
-          <div className="flex flex-col items-center">
-            <h1 className="text-sm sm:text-base font-black text-slate-900 tracking-tight">Kai</h1>
-          </div>
-        ) : (
-          <div className="flex items-center gap-2">
-            <div className="relative shrink-0">
-              <AIOrb size="sm" showStatusGlow={false} />
-              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white ring-1 ring-emerald-400" />
-            </div>
-            <div className="flex flex-col">
-              <h1 className="text-xs sm:text-sm font-black text-slate-900 leading-tight">Kai</h1>
-              <span className="text-[9px] sm:text-[10px] font-semibold text-emerald-600 flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                Your Financial Assistant
+          {mode === 'voice' ? (
+            <div className="flex items-center gap-2">
+              <h1 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">Kai</h1>
+              <span className="text-[11px] font-bold text-purple-700 bg-purple-100/80 px-2.5 py-0.5 rounded-full border border-purple-200/60 hidden sm:inline-block">
+                Voice Assistant
               </span>
             </div>
-          </div>
-        )}
+          ) : (
+            <div className="flex items-center gap-2 sm:gap-2.5">
+              <div className="relative shrink-0">
+                <AIOrb size="sm" showStatusGlow={false} />
+                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white ring-1 ring-emerald-400" />
+              </div>
+              <div className="flex flex-col">
+                <h1 className="text-sm sm:text-base font-black text-slate-900 leading-tight">Kai</h1>
+                <span className="text-[10px] sm:text-xs font-semibold text-emerald-600 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  Your Financial Assistant
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
 
-        <div className="flex items-center gap-1.5 shrink-0">
+        <div className="relative flex items-center gap-1.5 sm:gap-2 shrink-0">
           <button
             type="button"
             onClick={() => setMode(mode === 'voice' ? 'chat' : 'voice')}
-            className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-white/80 backdrop-blur-md hover:bg-white text-purple-700 border border-purple-200/60 shadow-xs flex items-center gap-1 transition-all active:scale-95 cursor-pointer"
+            className="px-3 py-1.5 rounded-full text-xs font-bold bg-white/80 backdrop-blur-md hover:bg-white text-purple-700 border border-purple-200/60 shadow-xs flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer"
             title={mode === 'voice' ? 'Switch to Chat mode' : 'Switch to Voice mode'}
           >
             {mode === 'voice' ? (
               <>
-                <MessageSquare size={12} strokeWidth={2.4} />
+                <MessageSquare size={13} strokeWidth={2.4} />
                 <span>Chat</span>
               </>
             ) : (
               <>
-                <Volume2 size={12} strokeWidth={2.4} />
+                <Volume2 size={13} strokeWidth={2.4} />
                 <span>Voice</span>
               </>
             )}
@@ -290,65 +296,65 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
           >
             <MoreHorizontal size={18} strokeWidth={2.4} />
           </button>
+
+          {/* ── Options Dropdown Menu ── */}
+          <AnimatePresence>
+            {showOptionsSheet && (
+              <>
+                <div
+                  className="fixed inset-0 z-30 bg-slate-900/10 backdrop-blur-2xs"
+                  onClick={() => setShowOptionsSheet(false)}
+                />
+                <motion.div
+                  initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                  className="absolute top-12 right-0 z-40 w-52 bg-white/95 backdrop-blur-lg rounded-2xl shadow-xl border border-slate-100 p-2 space-y-1"
+                >
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMode(mode === 'voice' ? 'chat' : 'voice');
+                      setShowOptionsSheet(false);
+                    }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-purple-50 hover:text-purple-700 transition-colors text-left cursor-pointer"
+                  >
+                    {mode === 'voice' ? <MessageSquare size={15} /> : <Mic size={15} />}
+                    <span>{mode === 'voice' ? 'Switch to Chat mode' : 'Switch to Voice mode'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleClearKaiSession}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-100 transition-colors text-left cursor-pointer"
+                  >
+                    <Eraser size={15} />
+                    <span>Clear Kai's actions</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleClearHistory}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-rose-600 hover:bg-rose-50 transition-colors text-left cursor-pointer"
+                  >
+                    <Trash2 size={15} />
+                    <span>Clear Chat History</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCurrentPage('receipt-scanner');
+                      setShowOptionsSheet(false);
+                    }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-100 transition-colors text-left cursor-pointer"
+                  >
+                    <Receipt size={15} />
+                    <span>Receipt Scanner</span>
+                  </button>
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>
         </div>
       </header>
-
-      {/* ── Options Dropdown Menu ── */}
-      <AnimatePresence>
-        {showOptionsSheet && (
-          <>
-            <div
-              className="fixed inset-0 z-30 bg-slate-900/10 backdrop-blur-2xs"
-              onClick={() => setShowOptionsSheet(false)}
-            />
-            <motion.div
-              initial={{ opacity: 0, y: -10, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -10, scale: 0.95 }}
-              className="absolute top-14 right-4 z-40 w-52 bg-white/95 backdrop-blur-lg rounded-2xl shadow-xl border border-slate-100 p-2 space-y-1"
-            >
-              <button
-                type="button"
-                onClick={() => {
-                  setMode(mode === 'voice' ? 'chat' : 'voice');
-                  setShowOptionsSheet(false);
-                }}
-                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-purple-50 hover:text-purple-700 transition-colors text-left cursor-pointer"
-              >
-                {mode === 'voice' ? <MessageSquare size={15} /> : <Mic size={15} />}
-                <span>{mode === 'voice' ? 'Switch to Chat mode' : 'Switch to Voice mode'}</span>
-              </button>
-              <button
-                type="button"
-                onClick={handleClearKaiSession}
-                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-100 transition-colors text-left cursor-pointer"
-              >
-                <Eraser size={15} />
-                <span>Clear Kai's actions</span>
-              </button>
-              <button
-                type="button"
-                onClick={handleClearHistory}
-                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-rose-600 hover:bg-rose-50 transition-colors text-left cursor-pointer"
-              >
-                <Trash2 size={15} />
-                <span>Clear Chat History</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setCurrentPage('receipt-scanner');
-                  setShowOptionsSheet(false);
-                }}
-                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-100 transition-colors text-left cursor-pointer"
-              >
-                <Receipt size={15} />
-                <span>Receipt Scanner</span>
-              </button>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
 
       {mode === 'voice' ? (
         <KaiScreen />
@@ -359,16 +365,18 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.98 }}
           transition={{ duration: 0.22 }}
-          className="relative z-10 flex-1 flex flex-col justify-between max-w-2xl sm:max-w-3xl lg:max-w-4xl mx-auto w-full px-4 sm:px-6 pt-2 overflow-y-auto scrollbar-none"
-          ref={chatScrollContainerRef}
+          className="relative z-10 flex-1 flex flex-col min-h-0 max-w-3xl lg:max-w-4xl xl:max-w-5xl mx-auto w-full"
         >
-          <div className="flex justify-center my-1.5 shrink-0">
+          <div className="flex justify-center my-1 shrink-0">
             <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500 bg-white/70 backdrop-blur-md px-3 py-0.5 rounded-full border border-white/60 shadow-2xs">
               Today
             </span>
           </div>
 
-          <div className="space-y-3.5 flex-1 pb-2">
+          <div
+            ref={chatScrollContainerRef}
+            className="space-y-3.5 flex-1 min-h-0 pb-3 overflow-y-auto scrollbar-none max-h-[calc(100dvh-320px)] sm:max-h-[calc(100dvh-300px)]"
+          >
             {messages.map((msg) => {
               const isUser = msg.role === 'user';
 
@@ -461,11 +469,8 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
             })}
           </div>
 
-          <div
-            className="w-full pt-1 shrink-0 sticky bottom-0 z-20"
-            style={{ paddingBottom: 'calc(var(--bottom-nav-height, 50px) + 20px)' }}
-          >
-            <div className="relative w-full flex items-center bg-white/95 backdrop-blur-lg rounded-full px-2 py-1 border border-slate-100 shadow-[0_12px_32px_-4px_rgba(112,144,176,0.14)]">
+          <div className="w-full pt-2 pb-1 shrink-0 sticky bottom-0 z-30">
+            <div className="relative w-full flex items-center bg-white/95 backdrop-blur-lg rounded-full px-2.5 py-1.5 border border-purple-100/80 shadow-[0_12px_32px_-4px_rgba(112,144,176,0.14)]">
               <button
                 type="button"
                 onClick={() =>
@@ -514,7 +519,7 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
                 type="button"
                 onClick={handleSend}
                 disabled={!inputText.trim() || isLoading}
-                className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#8B5CF6] to-[#7C3AED] hover:from-[#7C3AED] hover:to-[#6D28D9] disabled:opacity-40 disabled:cursor-not-allowed text-white flex items-center justify-center shadow-md shadow-purple-500/25 transition-all cursor-pointer active:scale-95 shrink-0"
+                className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-tr from-[#8B5CF6] to-[#7C3AED] hover:from-[#7C3AED] hover:to-[#6D28D9] disabled:opacity-40 disabled:cursor-not-allowed text-white flex items-center justify-center shadow-md shadow-purple-500/25 transition-all cursor-pointer active:scale-95 shrink-0"
                 aria-label="Send message"
               >
                 <Send size={14} strokeWidth={2.4} className="translate-x-0.5" />
@@ -523,7 +528,7 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
           </div>
         </motion.div>
       )}
-    </div>
+    </CenteredLayout>
   );
 };
 

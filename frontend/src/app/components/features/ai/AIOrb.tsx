@@ -208,6 +208,9 @@ export const AIOrb: React.FC<AIOrbProps> = ({
               d="M 5 115 C 38 65, 80 148, 128 92 C 162 52, 185 88, 196 118 C 172 185, 75 198, 5 115 Z"
               fill="url(#liquidSwirlPrimary)"
               opacity="0.88"
+              // Without an explicit starting value motion has nothing to animate
+              // `d` from on the first frame and writes the string "undefined".
+              initial={{ d: 'M 5 115 C 38 65, 80 148, 128 92 C 162 52, 185 88, 196 118 C 172 185, 75 198, 5 115 Z' }}
               animate={
                 isListening
                   ? {
@@ -242,6 +245,7 @@ export const AIOrb: React.FC<AIOrbProps> = ({
               d="M 28 142 C 68 98, 122 152, 172 128 C 185 152, 150 186, 100 193 C 54 191, 30 172, 28 142 Z"
               fill="url(#liquidSwirlSecondary)"
               opacity="0.82"
+              initial={{ d: 'M 28 142 C 68 98, 122 152, 172 128 C 185 152, 150 186, 100 193 C 54 191, 30 172, 28 142 Z' }}
               animate={
                 isListening
                   ? {
