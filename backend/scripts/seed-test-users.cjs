@@ -166,21 +166,28 @@ async function upsertIdentity(spec, hashedPassword) {
 }
 
 // ── Mock data ────────────────────────────────────────────────────────────────
+// The seeded figures are OPENING balances. Both fields start equal, then
+// seedTransactions applies each transaction's delta, so the fixture satisfies
+// balance = openingBalance + ledger like real data does.
 async function seedAccounts(userId, spec) {
+  const savingsOpening = 60000 + spec.idx * 25000;
   const savings = await prisma.account.create({ data: {
     userId, name: `${spec.bank} Savings – ${spec.firstName}`, type: 'bank',
-    provider: spec.bank, country: 'India', balance: 60000 + spec.idx * 25000, currency: 'INR', isActive: true,
+    provider: spec.bank, country: 'India', balance: savingsOpening, openingBalance: savingsOpening, currency: 'INR', isActive: true,
   }});
+  const creditOpening = -(5000 + spec.idx * 2000);
   const credit = await prisma.account.create({ data: {
     userId, name: `${spec.bank} Credit Card`, type: 'credit',
-    provider: spec.bank, country: 'India', balance: -(5000 + spec.idx * 2000), currency: 'INR', isActive: true,
+    provider: spec.bank, country: 'India', balance: creditOpening, openingBalance: creditOpening, currency: 'INR', isActive: true,
   }});
+  const cashOpening = 2000 + spec.idx * 500;
   const cash = await prisma.account.create({ data: {
-    userId, name: 'Cash on Hand', type: 'cash', balance: 2000 + spec.idx * 500, currency: 'INR', isActive: true,
+    userId, name: 'Cash on Hand', type: 'cash', balance: cashOpening, openingBalance: cashOpening, currency: 'INR', isActive: true,
   }});
+  const walletOpening = 1000 + spec.idx * 300;
   const wallet = await prisma.account.create({ data: {
     userId, name: `${spec.wallet} Wallet`, type: 'wallet', provider: spec.wallet,
-    balance: 1000 + spec.idx * 300, currency: 'INR', isActive: true,
+    balance: walletOpening, openingBalance: walletOpening, currency: 'INR', isActive: true,
   }});
   return { savings: savings.id, credit: credit.id, cash: cash.id, wallet: wallet.id };
 }
@@ -224,7 +231,18 @@ async function seedTransactions(userId, spec, acc) {
   txns.push({ userId, accountId: acc.savings, type: 'income', amount: 8000 + spec.idx * 1000,
     category: 'Income', subcategory: 'Freelance', description: 'Side project payout', date: daysAgo(18) });
 
-  for (const t of txns) await prisma.transaction.create({ data: t });
+  // Direct creates bypass TransactionRepository, so book each account's net delta
+  // here; skipping it left every fixture account at its opening figure.
+  const netByAccount = new Map();
+  for (const t of txns) {
+    const delta = t.type === 'income' ? t.amount : -t.amount;
+    netByAccount.set(t.accountId, (netByAccount.get(t.accountId) ?? 0) + delta);
+  }
+  await prisma.$transaction([
+    ...txns.map((t) => prisma.transaction.create({ data: t })),
+    ...[...netByAccount].map(([id, net]) =>
+      prisma.account.update({ where: { id }, data: { balance: { increment: net } } })),
+  ]);
   return txns.length;
 }
 

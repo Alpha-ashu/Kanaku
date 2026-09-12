@@ -487,8 +487,13 @@ class SyncService {
     localTimestamp: Date,
     conflicts: any[]
   ) {
-    const allowed = ['name', 'type', 'provider', 'country', 'balance', 'currency', 'color', 'icon', 'syncStatus'];
+    const allowed = ['name', 'type', 'provider', 'country', 'currency', 'color', 'icon', 'syncStatus'];
     const sanitizedData = this.pickAllowedFields(data, allowed);
+    // A pushed balance is only meaningful as the opening figure of a NEW account.
+    // On an existing one the server owns it (openingBalance + ledger); accepting
+    // the device's copy let a stale device overwrite the real balance.
+    const openingFigure = Number.isFinite(Number(data?.balance)) ? Number(data.balance) : 0;
+    const createData = { ...sanitizedData, balance: openingFigure, openingBalance: openingFigure };
 
     if (operation === 'delete') {
       // Soft delete
@@ -506,7 +511,7 @@ class SyncService {
       await prisma.account.upsert({
         where: { id: entityId },
         create: {
-          ...sanitizedData,
+          ...createData,
           id: entityId,
           userId,
           deviceId,
@@ -525,7 +530,7 @@ class SyncService {
         // Account doesn't exist, create it
         await prisma.account.create({
           data: {
-            ...sanitizedData,
+            ...createData,
             id: entityId,
             userId,
             deviceId,

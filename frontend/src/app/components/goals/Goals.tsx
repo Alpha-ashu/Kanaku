@@ -183,60 +183,64 @@ export const Goals: React.FC = () => {
     </PageHeader>
 
   {/* Summary Stats */}
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 items-stretch">
-  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="h-full">
-  <Card data-testid="goals-card" variant="default" className="h-full p-5 sm:p-6 bg-white dark:bg-card border border-slate-100 dark:border-border/60 rounded-[28px] sm:rounded-[32px] shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)] relative overflow-hidden">
+  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5 items-stretch">
+  <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="h-full">
+  <Card data-testid="goals-card" variant="default" className="h-full p-4 sm:p-5 bg-white dark:bg-card border border-slate-100 dark:border-border/60 rounded-[24px] sm:rounded-[28px] shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] relative overflow-hidden">
   <div className="relative z-10">
-  <div className="w-10 h-10 sm:w-11 sm:h-11 bg-purple-50 dark:bg-purple-950/50 text-[#8B5CF6] rounded-2xl flex items-center justify-center mb-3 shadow-xs">
-  <Target className="sm:w-5 sm:h-5" size={18} />
+  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-purple-50 dark:bg-purple-950/50 text-[#8B5CF6] rounded-xl sm:rounded-2xl flex items-center justify-center mb-2.5 shadow-2xs">
+  <Target className="w-4 h-4 sm:w-5 sm:h-5" />
   </div>
-  <p className="text-slate-400 font-semibold mb-1 text-xs uppercase tracking-wider">Total Goals</p>
-  <h3 className="font-amount-md font-bold text-slate-900 dark:text-white tracking-tight">
+  <p className="text-slate-400 font-bold text-[10px] sm:text-xs uppercase tracking-wider mb-0.5 sm:mb-1">Total Goals</p>
+  <h3 className="font-amount-md font-bold text-slate-900 dark:text-white tracking-tight text-lg sm:text-2xl">
   {goals.length}
   </h3>
   </div>
   </Card>
   </motion.div>
 
-  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="h-full">
-  <Card data-testid="goals-card-2" variant="default" className="h-full p-5 sm:p-6 bg-white dark:bg-card border border-slate-100 dark:border-border/60 rounded-[28px] sm:rounded-[32px] shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)] relative overflow-hidden">
+  <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="h-full">
+  <Card data-testid="goals-card-2" variant="default" className="h-full p-4 sm:p-5 bg-white dark:bg-card border border-slate-100 dark:border-border/60 rounded-[24px] sm:rounded-[28px] shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] relative overflow-hidden">
   <div className="relative z-10">
-  <div className="w-10 h-10 sm:w-11 sm:h-11 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 rounded-2xl flex items-center justify-center mb-3 shadow-xs">
-  <TrendingUp className="sm:w-5 sm:h-5" size={18} />
+  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 rounded-xl sm:rounded-2xl flex items-center justify-center mb-2.5 shadow-2xs">
+  <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5" />
   </div>
-  <p className="text-slate-400 font-semibold mb-1 text-xs uppercase tracking-wider">Total Saved</p>
-  <h3 className="font-amount-md font-bold text-slate-900 dark:text-white tracking-tight">
+  <p className="text-slate-400 font-bold text-[10px] sm:text-xs uppercase tracking-wider mb-0.5 sm:mb-1">Total Saved</p>
+  <h3 className="font-amount-md font-bold text-slate-900 dark:text-white tracking-tight text-lg sm:text-2xl">
   {formatCurrency(totalSavedAmount)}
   </h3>
   </div>
   </Card>
   </motion.div>
 
-  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="h-full">
-  <Card data-testid="goals-card-3" variant="default" className="h-full p-5 sm:p-6 bg-white dark:bg-card border border-slate-100 dark:border-border/60 rounded-[28px] sm:rounded-[32px] shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)] relative overflow-hidden">
+  <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="h-full">
+  <Card data-testid="goals-card-3" variant="default" className="h-full p-4 sm:p-5 bg-white dark:bg-card border border-slate-100 dark:border-border/60 rounded-[24px] sm:rounded-[28px] shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] relative overflow-hidden">
   <div className="relative z-10">
-  <div className="w-10 h-10 sm:w-11 sm:h-11 bg-rose-50 dark:bg-rose-950/50 text-rose-600 rounded-2xl flex items-center justify-center mb-3 shadow-xs">
-  <Bell className="sm:w-5 sm:h-5" size={18} />
+  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-rose-50 dark:bg-rose-950/50 text-rose-600 rounded-xl sm:rounded-2xl flex items-center justify-center mb-2.5 shadow-2xs">
+  <Bell className="w-4 h-4 sm:w-5 sm:h-5" />
   </div>
-  <p className="text-slate-400 font-semibold mb-1 text-xs uppercase tracking-wider">Remaining</p>
-  <h3 className="font-amount-md font-bold text-slate-900 dark:text-white tracking-tight">
+  <p className="text-slate-400 font-bold text-[10px] sm:text-xs uppercase tracking-wider mb-0.5 sm:mb-1">Remaining</p>
+  <h3 className="font-amount-md font-bold text-slate-900 dark:text-white tracking-tight text-lg sm:text-2xl">
   {formatCurrency(totalRemainingAmount)}
   </h3>
   </div>
   </Card>
   </motion.div>
 
-  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="h-full">
-  <Card data-testid="goals-card-4" variant="default" className="h-full p-5 sm:p-6 bg-white dark:bg-card border border-slate-100 dark:border-border/60 rounded-[28px] sm:rounded-[32px] shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)] relative overflow-hidden">
+  <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="h-full">
+  <Card data-testid="goals-card-4" variant="default" className="h-full p-4 sm:p-5 bg-white dark:bg-card border border-slate-100 dark:border-border/60 rounded-[24px] sm:rounded-[28px] shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] relative overflow-hidden">
   <div className="relative z-10">
-  <div className="w-10 h-10 sm:w-11 sm:h-11 bg-purple-50 dark:bg-purple-950/50 text-[#8B5CF6] rounded-2xl flex items-center justify-center mb-3 shadow-xs">
-  <Sparkles className="sm:w-5 sm:h-5" size={18} />
+  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-purple-50 dark:bg-purple-950/50 text-[#8B5CF6] rounded-xl sm:rounded-2xl flex items-center justify-center mb-2.5 shadow-2xs">
+  <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
   </div>
-  <p className="text-slate-400 font-semibold mb-1 text-xs uppercase tracking-wider">Completed</p>
-  <h3 className="text-2xl sm:text-3xl font-display font-bold text-slate-900 dark:text-white tracking-tight">
+  <p className="text-slate-400 font-bold text-[10px] sm:text-xs uppercase tracking-wider mb-0.5 sm:mb-1">Completed</p>
+  <div className="flex items-baseline justify-between gap-1">
+  <h3 className="text-lg sm:text-2xl font-display font-bold text-slate-900 dark:text-white tracking-tight">
   {completedGoals}
   </h3>
-  <p className="text-purple-600 dark:text-purple-400 text-xs font-semibold mt-1">Progress {overallProgress.toFixed(0)}%</p>
+  <span className="text-[10px] sm:text-xs font-bold text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full">
+  {overallProgress.toFixed(0)}%
+  </span>
+  </div>
   </div>
   </Card>
   </motion.div>
@@ -263,42 +267,42 @@ export const Goals: React.FC = () => {
   transition={{ delay: index * 0.05 }}
   className="h-full"
   >
-  <Card data-testid={`goals-card-5-${goal.id}`} variant="default" className="h-full p-5 sm:p-6 bg-white dark:bg-card border border-slate-100 dark:border-border/60 rounded-[28px] sm:rounded-[32px] shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)] flex flex-col hover:shadow-xl transition-all duration-300">
+  <Card data-testid={`goals-card-5-${goal.id}`} variant="default" className="h-full p-5 sm:p-6 bg-white dark:bg-card border border-slate-100 dark:border-border/60 rounded-[28px] sm:rounded-[32px] shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] flex flex-col hover:shadow-xl transition-all duration-300">
   <div className="flex items-start justify-between mb-4">
-  <div className="flex items-center gap-3">
-  <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-purple-50 dark:bg-purple-950/40 border border-purple-100/60 shrink-0">
+  <div className="flex items-center gap-3 min-w-0">
+  <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center bg-purple-50 dark:bg-purple-950/40 border border-purple-100/60 shrink-0">
   <span className="text-xl">{getCategoryCartoonIcon(goal.category, 24)}</span>
   </div>
-  <div>
-  <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">{categoryMeta.label}</span>
-  <h3 className="text-lg font-bold text-slate-900 dark:text-white leading-tight">{goal.name}</h3>
+  <div className="min-w-0">
+  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">{categoryMeta.label}</span>
+  <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white leading-tight truncate">{goal.name}</h3>
   </div>
   </div>
-  <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+  <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
   {canEditGoal && (
   <button
   onClick={() => handleEditClick(goal)}
   data-testid={`goals-edit-button-${goal.id}`}
-  className="p-1.5 hover:bg-slate-100 rounded-full transition-colors text-slate-400 hover:text-slate-700"
+  className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center hover:bg-slate-100 rounded-full transition-colors text-slate-400 hover:text-slate-700 cursor-pointer"
   title="Edit goal"
   aria-label={`Edit goal ${goal.name}`}
   >
-  <Edit2 size={14} />
+  <Edit2 size={13} />
   </button>
   )}
   {canDeleteGoal && (
   <button
   onClick={() => handleDeleteGoal(goal.id!, goal.name)}
   data-testid={`goals-delete-button-${goal.id}`}
-  className="p-1.5 hover:bg-rose-50 rounded-full transition-colors text-slate-400 hover:text-rose-600"
+  className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center hover:bg-rose-50 rounded-full transition-colors text-slate-400 hover:text-rose-600 cursor-pointer"
   title="Delete goal"
   aria-label={`Delete goal ${goal.name}`}
   >
-  <Trash2 size={14} />
+  <Trash2 size={13} />
   </button>
   )}
   <span className={cn(
-  "px-3 py-1 rounded-full text-xs font-semibold shrink-0",
+  "px-2.5 py-1 rounded-full text-xs font-bold shrink-0",
   progress >= 100
   ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/50'
   : 'bg-purple-50 text-purple-700 border border-purple-200/50'
@@ -318,7 +322,7 @@ export const Goals: React.FC = () => {
   aria-label="Goal name"
   title="Goal name"
   data-testid="goals-edit-name-input"
-  className="w-full px-3 py-2 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20"
+  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200/80 rounded-2xl text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400"
   />
   <input
   type="number"
@@ -328,7 +332,7 @@ export const Goals: React.FC = () => {
   aria-label="Target amount"
   title="Target amount"
   data-testid="goals-edit-target-input"
-  className="w-full px-3 py-2 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20"
+  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200/80 rounded-2xl text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400"
   />
   <input
   type="number"
@@ -338,7 +342,7 @@ export const Goals: React.FC = () => {
   aria-label="Current amount"
   title="Current amount"
   data-testid="goals-edit-current-input"
-  className="w-full px-3 py-2 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20"
+  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200/80 rounded-2xl text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400"
   />
   <input
   type="date"
@@ -347,20 +351,20 @@ export const Goals: React.FC = () => {
   aria-label="Target date"
   title="Target date"
   data-testid="goals-edit-date-input"
-  className="w-full px-3 py-2 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20"
+  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200/80 rounded-2xl text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400"
   />
-  <div className="flex gap-2">
+  <div className="flex gap-2 pt-1">
   <button
   onClick={handleSaveEdit}
   data-testid="goals-edit-save-button"
-  className="flex-1 px-3 py-2 bg-[#18181B] text-white rounded-full text-sm font-semibold hover:bg-black transition-colors shadow-sm"
+  className="flex-1 py-2.5 bg-[#18181B] text-white rounded-full text-xs font-bold hover:bg-black transition-all shadow-xs cursor-pointer active:scale-95"
   >
   Save
   </button>
   <button
   onClick={() => setEditingGoalId(null)}
   data-testid="goals-edit-cancel-button"
-  className="flex-1 px-3 py-2 bg-slate-100 text-slate-700 rounded-full text-sm font-semibold hover:bg-slate-200 transition-colors"
+  className="flex-1 py-2.5 bg-slate-100 border border-slate-200/80 text-slate-700 rounded-full text-xs font-bold hover:bg-slate-200 transition-all cursor-pointer active:scale-95"
   >
   Cancel
   </button>
@@ -368,76 +372,79 @@ export const Goals: React.FC = () => {
   </div>
   ) : (
   <div className="flex-1 flex flex-col min-h-0">
-  <div className="space-y-3.5 mb-4 flex-1">
+  <div className="space-y-4 mb-4 flex-1">
+  {/* Amounts & Smooth Progress Bar */}
   <div>
-  <div className="flex justify-between text-sm mb-1.5">
-  <span className="text-slate-400 font-semibold text-xs">Saved Amount</span>
-  <span className="font-bold text-slate-900 dark:text-white">
-  {formatCurrency(goal.currentAmount)} / {formatCurrency(goal.targetAmount)}
+  <div className="flex items-baseline justify-between mb-1.5">
+  <div>
+  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Saved</span>
+  <span className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+  {formatCurrency(goal.currentAmount)}
   </span>
+  </div>
+  <div className="text-right">
+  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Target</span>
+  <span className="text-sm font-semibold text-slate-600 dark:text-slate-300">
+  {formatCurrency(goal.targetAmount)}
+  </span>
+  </div>
   </div>
   <div className="w-full bg-slate-100 dark:bg-muted rounded-full h-2 overflow-hidden">
   <div
-  className={cn(
-  "h-full rounded-full transition-all duration-700 ease-out bg-gradient-to-r from-[#8B5CF6] to-[#7C3AED]",
-  getProgressWidthClass(progress)
-  )}
+  className="h-full rounded-full transition-all duration-700 ease-out bg-gradient-to-r from-[#8B5CF6] via-[#7C3AED] to-[#6D28D9]"
+  style={{ width: `${Math.max(0, Math.min(100, progress))}%` }}
   />
   </div>
   </div>
 
-  <div className="flex items-center justify-between text-sm">
-  <span className="text-slate-400 font-medium">Remaining</span>
-  <span className="font-bold text-slate-900 dark:text-white">{formatCurrency(remainingAmount)}</span>
+  {/* High-density 3-stat strip */}
+  <div className="grid grid-cols-3 gap-2 p-3 bg-slate-50/70 dark:bg-muted/40 border border-slate-100 dark:border-border/40 rounded-2xl text-center">
+  <div>
+  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Remaining</p>
+  <p className="text-xs font-bold text-slate-900 dark:text-white truncate mt-0.5">{formatCurrency(remainingAmount)}</p>
+  </div>
+  <div>
+  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Due Date</p>
+  <p className="text-xs font-bold text-slate-900 dark:text-white truncate mt-0.5">
+  {new Date(goal.targetDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: '2-digit' })}
+  </p>
+  </div>
+  <div>
+  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Time Left</p>
+  <p className={cn("text-xs font-bold truncate mt-0.5", daysRemaining < 30 ? 'text-rose-600' : 'text-slate-900 dark:text-white')}>
+  {daysRemaining > 0 ? `${daysRemaining}d` : '0d'}
+  </p>
+  </div>
   </div>
 
-  <div className="flex items-center justify-between text-sm">
-  <div className="flex items-center gap-1.5 text-slate-400 font-medium">
-  <Calendar size={14} />
-  <span>Target Date</span>
-  </div>
-  <span className="font-bold text-slate-900 dark:text-white">
-  {new Date(goal.targetDate).toLocaleDateString()}
-  </span>
-  </div>
-
-  <div className="flex items-center justify-between text-sm">
-  <span className="text-slate-400 font-medium">Days Remaining</span>
-  <span className={cn("font-bold", daysRemaining < 30 ? 'text-rose-600' : 'text-slate-900 dark:text-white')}>
-  {daysRemaining > 0 ? daysRemaining : 0} days
-  </span>
-  </div>
-
-  <div className="flex items-center justify-between text-sm">
-  <span className="text-slate-400 font-medium">Goal Type</span>
-  <span className="font-bold text-slate-900 dark:text-white">{goal.isGroupGoal ? 'Group' : 'Individual'}</span>
-  </div>
-
+  {/* Group Indicator if Group Goal */}
   {goal.isGroupGoal && (
-  <div className="flex items-center justify-between text-sm">
-  <div className="flex items-center gap-1.5 text-slate-400 font-medium">
-  <Users size={14} />
-  <span>Members</span>
-  </div>
-  <span className="font-bold text-slate-900 dark:text-white">{membersCount}</span>
+  <div className="flex items-center justify-between text-xs px-3 py-1.5 rounded-xl bg-purple-50/40 text-purple-700 font-medium">
+  <span className="flex items-center gap-1.5"><Users size={13} /> Group Goal</span>
+  <span className="font-bold">{membersCount} Member{membersCount !== 1 ? 's' : ''}</span>
   </div>
   )}
 
+  {/* Monthly Suggestion Pill */}
   {progress < 100 && (
-  <div className="bg-slate-50 dark:bg-muted/40 border border-slate-100 dark:border-border/40 rounded-2xl p-3">
-  <p className="text-[10px] text-slate-400 mb-0.5 font-semibold uppercase tracking-wider">Required Monthly</p>
-  <p className="text-base font-bold text-slate-900 dark:text-white">{formatCurrency(monthlySuggestion.monthlyAmount || monthlyRequired)}</p>
+  <div className="flex items-center justify-between px-3 py-2 bg-purple-50/60 dark:bg-purple-950/30 border border-purple-100/60 rounded-xl">
+  <span className="text-[10px] font-bold text-purple-600 uppercase tracking-wider">Monthly Target</span>
+  <span className="text-xs font-bold text-purple-900 dark:text-purple-200">
+  {formatCurrency(monthlySuggestion.monthlyAmount || monthlyRequired)}
+  </span>
   </div>
   )}
 
   {milestone && (
-  <div className="rounded-full border border-emerald-200 bg-emerald-50 px-3.5 py-1.5 text-xs font-semibold text-emerald-700 text-center">
+  <div className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-bold text-emerald-700 text-center">
   {milestone} 
   </div>
   )}
 
   {progress >= 100 && (
-  <div className="text-center text-xs font-bold text-purple-600 py-1">Goal completed 🎉</div>
+  <div className="text-center text-xs font-bold text-emerald-600 py-1 flex items-center justify-center gap-1">
+  Goal achieved 🎉
+  </div>
   )}
   </div>
 
@@ -445,7 +452,7 @@ export const Goals: React.FC = () => {
   <button
   onClick={() => openContributionModal(goal.id!)}
   data-testid={`goals-contribute-button-${goal.id}`}
-  className="w-full px-3 py-2.5 bg-[#18181B] text-white rounded-full hover:bg-black transition-all font-semibold text-xs sm:text-sm shadow-xs active:scale-95"
+  className="w-full py-2.5 bg-[#18181B] text-white rounded-full hover:bg-black transition-all font-bold text-xs sm:text-sm shadow-xs active:scale-95 cursor-pointer"
   aria-label={`Add contribution to ${goal.name}`}
   title={`Add contribution to ${goal.name}`}
   >
@@ -454,7 +461,7 @@ export const Goals: React.FC = () => {
   <button
   onClick={() => openGoalDetail(goal.id!)}
   data-testid={`goals-detail-button-${goal.id}`}
-  className="w-full px-3 py-2.5 bg-slate-100 border border-slate-200/80 text-slate-800 rounded-full hover:bg-slate-200 transition-all font-semibold text-xs sm:text-sm"
+  className="w-full py-2.5 bg-slate-100 border border-slate-200/80 text-slate-800 rounded-full hover:bg-slate-200 transition-all font-bold text-xs sm:text-sm cursor-pointer active:scale-95"
   aria-label={`View details for ${goal.name}`}
   title={`View details for ${goal.name}`}
   >
@@ -470,276 +477,280 @@ export const Goals: React.FC = () => {
   </div>
   </AnimatePresence>
 
- {/* Empty State */}
- {goals.length === 0 && (
- <Card data-testid="goals-card-6" variant="glass" className="p-12 text-center border-2 border-dashed border-gray-300">
- <motion.div
- initial={{ opacity: 0, scale: 0.9 }}
- animate={{ opacity: 1, scale: 1 }}
- transition={{ duration: 0.3 }}
- >
- <div className="w-20 h-20 bg-black rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
- <Target className="text-white" size={32} />
- </div>
- <h3 className="text-2xl font-display font-bold text-gray-900 mb-2">No goals yet</h3>
- <p className="text-gray-500 mb-6 max-w-md mx-auto">Start planning for your financial future by creating your first savings goal</p>
- <Button data-testid="goals-add-goal"
- onClick={() => setCurrentPage('add-goal')}
- className="rounded-full h-11 px-6 shadow-lg bg-black text-white hover:bg-gray-900 transition-transform active:scale-95"
- aria-label="Add Goal"
- title="Add Goal"
- >
- <Plus size={18} className="mr-2" />
- Add Goal
- </Button>
- </motion.div>
- </Card>
- )}
+  {/* Empty State */}
+  {goals.length === 0 && (
+  <Card data-testid="goals-card-6" variant="glass" className="p-10 sm:p-12 text-center border-2 border-dashed border-slate-200 rounded-[28px] sm:rounded-[32px]">
+  <motion.div
+  initial={{ opacity: 0, scale: 0.95 }}
+  animate={{ opacity: 1, scale: 1 }}
+  transition={{ duration: 0.3 }}
+  >
+  <div className="w-16 h-16 sm:w-20 sm:h-20 bg-[#18181B] rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-lg">
+  <Target className="text-white" size={30} />
+  </div>
+  <h3 className="text-xl sm:text-2xl font-display font-bold text-slate-900 mb-2">No goals yet</h3>
+  <p className="text-slate-500 text-sm mb-6 max-w-sm mx-auto">Start planning for your financial future by creating your first savings goal.</p>
+  <Button data-testid="goals-add-goal"
+  onClick={() => setCurrentPage('add-goal')}
+  className="rounded-full h-10 sm:h-11 px-6 shadow-sm bg-[#18181B] text-white hover:bg-black transition-transform active:scale-95 font-bold text-xs sm:text-sm cursor-pointer"
+  aria-label="Add Goal"
+  title="Add Goal"
+  >
+  <Plus size={16} className="mr-1.5" />
+  Add Goal
+  </Button>
+  </motion.div>
+  </Card>
+  )}
 
- {/* Modals */}
- {showContributeModal && (
- <ContributeModal
- goalId={showContributeModal}
- accounts={accounts}
- initialAmount={activeContributionDraft?.amount}
- initialNotes={activeContributionDraft?.description}
- onClose={() => {
- setShowContributeModal(null);
- setActiveContributionDraft(null);
- }}
- />
- )}
+  {/* Modals */}
+  {showContributeModal && (
+  <ContributeModal
+  goalId={showContributeModal}
+  accounts={accounts}
+  currency={currency}
+  initialAmount={activeContributionDraft?.amount}
+  initialNotes={activeContributionDraft?.description}
+  onClose={() => {
+  setShowContributeModal(null);
+  setActiveContributionDraft(null);
+  }}
+  />
+  )}
 
- {showVoiceGoalPicker && pendingVoiceGoalDraft && (
- <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
- <motion.div
- initial={{ opacity: 0, scale: 0.96 }}
- animate={{ opacity: 1, scale: 1 }}
- exit={{ opacity: 0, scale: 0.96 }}
- className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl"
- >
- <h3 className="text-2xl font-bold text-gray-900">Apply Voice Goal Draft</h3>
- <p className="mt-2 text-sm text-gray-500">
- We heard {formatCurrency(pendingVoiceGoalDraft.amount)} for {pendingVoiceGoalDraft.description || 'goal contribution'}.
- Choose an existing goal to contribute to, or create a new one.
- </p>
+  {showVoiceGoalPicker && pendingVoiceGoalDraft && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+  <motion.div
+  initial={{ opacity: 0, scale: 0.96 }}
+  animate={{ opacity: 1, scale: 1 }}
+  exit={{ opacity: 0, scale: 0.96 }}
+  className="w-full max-w-lg rounded-[28px] sm:rounded-[32px] bg-white p-6 sm:p-7 shadow-2xl border border-slate-100"
+  >
+  <h3 className="text-xl sm:text-2xl font-bold text-slate-900">Apply Voice Goal Draft</h3>
+  <p className="mt-1.5 text-xs sm:text-sm text-slate-500">
+  We heard {formatCurrency(pendingVoiceGoalDraft.amount)} for {pendingVoiceGoalDraft.description || 'goal contribution'}.
+  Choose an existing goal to contribute to, or create a new one.
+  </p>
 
- <div className="mt-5 space-y-3 max-h-72 overflow-y-auto pr-1">
- {goals.map((goal) => (
- <button
- key={goal.id}
- type="button"
- onClick={() => handleUseVoiceDraftForGoal(goal.id!)}
- data-testid={`goals-voice-picker-goal-${goal.id}`}
- className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-left transition-colors hover:border-gray-300 hover:bg-gray-50"
- >
- <div className="flex items-center justify-between gap-3">
- <div>
- <p className="font-semibold text-gray-900">{goal.name}</p>
- <p className="text-xs text-gray-500">
- Saved {formatCurrency(goal.currentAmount)} of {formatCurrency(goal.targetAmount)}
- </p>
- </div>
- <span className="rounded-full bg-violet-50 px-2.5 py-1 text-xs font-semibold text-violet-700">
- Contribute
- </span>
- </div>
- </button>
- ))}
- </div>
+  <div className="mt-4 space-y-2.5 max-h-72 overflow-y-auto pr-1">
+  {goals.map((goal) => (
+  <button
+  key={goal.id}
+  type="button"
+  onClick={() => handleUseVoiceDraftForGoal(goal.id!)}
+  data-testid={`goals-voice-picker-goal-${goal.id}`}
+  className="w-full rounded-2xl border border-slate-200/80 bg-slate-50/50 px-4 py-3 text-left transition-colors hover:border-purple-300 hover:bg-purple-50/50 cursor-pointer"
+  >
+  <div className="flex items-center justify-between gap-3">
+  <div>
+  <p className="font-bold text-slate-900 text-sm">{goal.name}</p>
+  <p className="text-xs text-slate-500">
+  Saved {formatCurrency(goal.currentAmount)} of {formatCurrency(goal.targetAmount)}
+  </p>
+  </div>
+  <span className="rounded-full bg-purple-100 text-purple-700 px-3 py-1 text-xs font-bold">
+  Contribute
+  </span>
+  </div>
+  </button>
+  ))}
+  </div>
 
- <div className="mt-6 flex flex-wrap gap-3">
- <button
- type="button"
- onClick={handleCreateGoalFromVoiceDraft}
- data-testid="goals-voice-picker-new-button"
- className="rounded-2xl bg-black px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-gray-900"
- >
- Create New Goal
- </button>
- <button
- type="button"
- onClick={() => {
- setShowVoiceGoalPicker(false);
- setPendingVoiceGoalDraft(null);
- }}
- data-testid="goals-voice-picker-dismiss-button"
- className="rounded-2xl border border-gray-200 px-5 py-3 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
- >
- Dismiss
- </button>
- </div>
- </motion.div>
- </div>
- )}
+  <div className="mt-6 flex flex-wrap gap-2.5">
+  <button
+  type="button"
+  onClick={handleCreateGoalFromVoiceDraft}
+  data-testid="goals-voice-picker-new-button"
+  className="flex-1 rounded-full bg-[#18181B] px-5 py-3 text-xs sm:text-sm font-bold text-white transition-colors hover:bg-black cursor-pointer shadow-xs active:scale-95"
+  >
+  Create New Goal
+  </button>
+  <button
+  type="button"
+  onClick={() => {
+  setShowVoiceGoalPicker(false);
+  setPendingVoiceGoalDraft(null);
+  }}
+  data-testid="goals-voice-picker-dismiss-button"
+  className="rounded-full border border-slate-200/80 bg-slate-100 px-5 py-3 text-xs sm:text-sm font-bold text-slate-700 transition-colors hover:bg-slate-200 cursor-pointer active:scale-95"
+  >
+  Dismiss
+  </button>
+  </div>
+  </motion.div>
+  </div>
+  )}
 
- <DeleteConfirmModal
- isOpen={deleteModalOpen}
- title="Delete Goal"
- message="This goal will be permanently deleted. All contribution records will be lost."
- itemName={goalToDelete?.name}
- isLoading={isDeleting}
- onConfirm={confirmDeleteGoal}
- onCancel={() => {
- setDeleteModalOpen(false);
- setGoalToDelete(null);
- }}
- />
- </div>
- </CenteredLayout>
- );
+  <DeleteConfirmModal
+  isOpen={deleteModalOpen}
+  title="Delete Goal"
+  message="This goal will be permanently deleted. All contribution records will be lost."
+  itemName={goalToDelete?.name}
+  isLoading={isDeleting}
+  onConfirm={confirmDeleteGoal}
+  onCancel={() => {
+  setDeleteModalOpen(false);
+  setGoalToDelete(null);
+  }}
+  />
+  </div>
+  </CenteredLayout>
+  );
 };
 
 const ContributeModal: React.FC<{
- goalId: number;
- accounts: any[];
- initialAmount?: number;
- initialNotes?: string;
- onClose: () => void;
-}> = ({ goalId, accounts, initialAmount, initialNotes, onClose }) => {
- const [amount, setAmount] = useState(initialAmount || 0);
- const [accountId, setAccountId] = useState(accounts[0]?.id || 0);
- const [notes, setNotes] = useState(initialNotes || '');
+  goalId: number;
+  accounts: any[];
+  currency: string;
+  initialAmount?: number;
+  initialNotes?: string;
+  onClose: () => void;
+}> = ({ goalId, accounts, currency, initialAmount, initialNotes, onClose }) => {
+  const [amount, setAmount] = useState(initialAmount || 0);
+  const [accountId, setAccountId] = useState(accounts[0]?.id || 0);
+  const [notes, setNotes] = useState(initialNotes || '');
 
- useEffect(() => {
- setAmount(initialAmount || 0);
- setNotes(initialNotes || '');
- }, [initialAmount, initialNotes]);
+  useEffect(() => {
+  setAmount(initialAmount || 0);
+  setNotes(initialNotes || '');
+  }, [initialAmount, initialNotes]);
 
- const handleSubmit = async (e: React.FormEvent) => {
- e.preventDefault();
+  const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
- const goal = await db.goals.get(goalId);
- if (!goal) return;
+  const goal = await db.goals.get(goalId);
+  if (!goal) return;
 
- const account = accounts.find((item) => item.id === accountId);
- if (!account) {
- toast.error('Select an account for this contribution');
- return;
- }
+  const account = accounts.find((item) => item.id === accountId);
+  if (!account) {
+  toast.error('Select an account for this contribution');
+  return;
+  }
 
- if (account.balance < amount) {
- toast.error('Selected account does not have enough balance');
- return;
- }
+  if (account.balance < amount) {
+  toast.error('Selected account does not have enough balance');
+  return;
+  }
 
- if (goal.cloudId && account.cloudId && navigator.onLine) {
- try {
- await backendService.api.post(`/goals/${goal.cloudId}/contribute`, {
- amount,
- accountId: account.cloudId,
- notes: notes.trim() || undefined,
- });
- } catch (backendError) {
- console.warn('[Goals] Direct contribution sync failed; relying on sync queue', backendError);
- }
- }
+  if (goal.cloudId && account.cloudId && navigator.onLine) {
+  try {
+  await backendService.api.post(`/goals/${goal.cloudId}/contribute`, {
+  amount,
+  accountId: account.cloudId,
+  notes: notes.trim() || undefined,
+  });
+  } catch (backendError) {
+  console.warn('[Goals] Direct contribution sync failed; relying on sync queue', backendError);
+  }
+  }
 
- await db.goalContributions.add({
- goalId,
- amount,
- accountId,
- date: new Date(),
- notes: notes.trim() || undefined,
- });
+  await db.goalContributions.add({
+  goalId,
+  amount,
+  accountId,
+  date: new Date(),
+  notes: notes.trim() || undefined,
+  });
 
- await db.goals.update(goalId, {
- currentAmount: goal.currentAmount + amount,
- updatedAt: new Date(),
- });
+  await db.goals.update(goalId, {
+  currentAmount: goal.currentAmount + amount,
+  updatedAt: new Date(),
+  });
 
- await applyAccountBalanceDeltas(new Map([[accountId, -amount]]));
+  await applyAccountBalanceDeltas(new Map([[accountId, -amount]]));
 
- queueRecordUpsertSync('goals', goalId);
- queueRecordUpsertSync('accounts', accountId);
- void processPendingSyncQueue();
+  queueRecordUpsertSync('goals', goalId);
+  queueRecordUpsertSync('accounts', accountId);
+  void processPendingSyncQueue();
 
- toast.success('Contribution added successfully');
- onClose();
- };
+  toast.success('Contribution added successfully');
+  onClose();
+  };
 
- return (
- <div data-testid="goals-div" className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
- <motion.div data-testid="goals-div-2"
- initial={{ opacity: 0, scale: 0.95 }}
- animate={{ opacity: 1, scale: 1 }}
- exit={{ opacity: 0, scale: 0.95 }}
- onClick={(e) => e.stopPropagation()}
- className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl"
- >
- <h3 className="text-2xl font-display font-bold mb-6 text-gray-900">Add Contribution</h3>
- <form data-testid="goals-form" onSubmit={handleSubmit} className="space-y-4">
- <div>
- <label htmlFor="goal-contribution-amount" className="block text-sm font-bold text-gray-700 mb-2">Amount</label>
- <input
- id="goal-contribution-amount"
- type="number"
- step="0.01"
- value={amount || ''}
- onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
- data-testid="goals-contribution-amount-input"
- className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black/10 font-medium"
- required
- autoFocus
- aria-label="Contribution amount"
- title="Contribution amount"
- placeholder="Enter contribution amount"
- />
- </div>
+  return (
+  <div data-testid="goals-div" className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
+  <motion.div data-testid="goals-div-2"
+  initial={{ opacity: 0, scale: 0.95 }}
+  animate={{ opacity: 1, scale: 1 }}
+  exit={{ opacity: 0, scale: 0.95 }}
+  onClick={(e) => e.stopPropagation()}
+  className="bg-white rounded-[28px] sm:rounded-[32px] p-6 sm:p-7 w-full max-w-md shadow-2xl border border-slate-100"
+  >
+  <h3 className="text-xl sm:text-2xl font-bold mb-5 text-slate-900">Add Contribution</h3>
+  <form data-testid="goals-form" onSubmit={handleSubmit} className="space-y-4">
+  <div>
+  <label htmlFor="goal-contribution-amount" className="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">Amount</label>
+  <div className="relative">
+  <input
+  id="goal-contribution-amount"
+  type="number"
+  step="0.01"
+  value={amount || ''}
+  onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
+  data-testid="goals-contribution-amount-input"
+  className="w-full px-4 py-3 bg-slate-50 border border-slate-200/80 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 font-bold text-slate-900"
+  required
+  autoFocus
+  aria-label="Contribution amount"
+  title="Contribution amount"
+  placeholder="0.00"
+  />
+  </div>
+  </div>
 
- <div>
- <label htmlFor="goal-contribution-account" className="block text-sm font-bold text-gray-700 mb-2">From Account</label>
- <select
- id="goal-contribution-account"
- value={accountId}
- onChange={(e) => setAccountId(parseInt(e.target.value))}
- data-testid="goals-contribution-account-select"
- className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black/10 font-medium appearance-none bg-white"
- aria-label="Select account"
- title="Select account"
- >
- {accounts.map(acc => (
- <option data-testid={`goals-option-${acc.id}`} key={acc.id} value={acc.id}>{acc.name}</option>
- ))}
- </select>
- </div>
+  <div>
+  <label htmlFor="goal-contribution-account" className="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">From Account</label>
+  <select
+  id="goal-contribution-account"
+  value={accountId}
+  onChange={(e) => setAccountId(parseInt(e.target.value))}
+  data-testid="goals-contribution-account-select"
+  className="w-full px-4 py-3 bg-slate-50 border border-slate-200/80 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 font-bold text-slate-900 appearance-none text-sm"
+  aria-label="Select account"
+  title="Select account"
+  >
+  {accounts.map(acc => (
+  <option data-testid={`goals-option-${acc.id}`} key={acc.id} value={acc.id}>{acc.name} ({formatCurrencyAmount(acc.balance, currency)})</option>
+  ))}
+  </select>
+  </div>
 
- <div>
- <label htmlFor="goal-contribution-notes" className="block text-sm font-bold text-gray-700 mb-2">Notes</label>
- <textarea
- id="goal-contribution-notes"
- value={notes}
- onChange={(e) => setNotes(e.target.value)}
- data-testid="goals-contribution-notes-textarea"
- className="w-full rounded-xl border border-gray-200 px-4 py-3 font-medium focus:outline-none focus:ring-2 focus:ring-black/10"
- rows={3}
- placeholder="Optional note for this contribution"
- />
- </div>
+  <div>
+  <label htmlFor="goal-contribution-notes" className="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">Notes (Optional)</label>
+  <textarea
+  id="goal-contribution-notes"
+  value={notes}
+  onChange={(e) => setNotes(e.target.value)}
+  data-testid="goals-contribution-notes-textarea"
+  className="w-full rounded-2xl bg-slate-50 border border-slate-200/80 px-4 py-3 font-medium text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 min-h-[72px]"
+  rows={2}
+  placeholder="Added contribution details..."
+  />
+  </div>
 
- <div className="flex gap-3 pt-4">
- <button
- type="button"
- onClick={onClose}
- data-testid="goals-contribution-cancel-button"
- className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl hover:bg-gray-50 transition-all font-medium active:scale-95"
- aria-label="Cancel contribution"
- title="Cancel contribution"
- >
- Cancel
- </button>
- <button
- type="submit"
- data-testid="goals-contribution-submit-button"
- className="flex-1 px-4 py-3 bg-black text-white rounded-xl hover:bg-gray-900 transition-all font-medium shadow-sm active:scale-95"
- aria-label="Add contribution"
- title="Add contribution"
- >
- Add Contribution
- </button>
- </div>
- </form>
- </motion.div>
- </div>
- );
+  <div className="flex gap-2.5 pt-3">
+  <button
+  type="button"
+  onClick={onClose}
+  data-testid="goals-contribution-cancel-button"
+  className="flex-1 py-3 bg-white border border-slate-200/80 rounded-full hover:bg-slate-50 transition-all font-bold text-xs text-slate-700 cursor-pointer active:scale-95"
+  aria-label="Cancel contribution"
+  title="Cancel contribution"
+  >
+  Cancel
+  </button>
+  <button
+  type="submit"
+  data-testid="goals-contribution-submit-button"
+  className="flex-1 py-3 bg-[#18181B] text-white rounded-full hover:bg-black transition-all font-bold text-xs shadow-xs cursor-pointer active:scale-95"
+  aria-label="Add contribution"
+  title="Add contribution"
+  >
+  Add Contribution
+  </button>
+  </div>
+  </form>
+  </motion.div>
+  </div>
+  );
 };

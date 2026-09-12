@@ -306,311 +306,313 @@ export const Investments: React.FC = () => {
  animate={{ opacity: 1, y: 0 }}
  className="space-y-6 sm:space-y-8"
  >
- {/* Stats */}
- <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
- <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
- <Card data-testid="investments-card" className="p-5 sm:p-6 rounded-[28px] sm:rounded-[32px] bg-white border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] relative overflow-hidden">
- <div className="relative z-10">
- <div className="w-10 h-10 sm:w-12 sm:h-12 bg-slate-100 rounded-2xl flex items-center justify-center mb-2 sm:mb-4 text-slate-800">
- <TrendingUp size={18} />
- </div>
- <p className="text-slate-400 font-black mb-0.5 sm:mb-1 text-[11px] sm:text-xs uppercase tracking-wider">Total Invested</p>
- <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
- {formatCurrency(portfolioStats.totalInvested)}
- </h3>
- </div>
- </Card>
- </motion.div>
+        {/* Stats */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-5">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+            <Card data-testid="investments-card" className="p-4 sm:p-6 rounded-[24px] sm:rounded-[32px] bg-white border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] relative overflow-hidden">
+              <div className="relative z-10">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-slate-100 rounded-2xl flex items-center justify-center mb-2 sm:mb-3 text-slate-800">
+                  <TrendingUp size={18} />
+                </div>
+                <p className="text-slate-400 font-bold mb-0.5 sm:mb-1 text-[10px] sm:text-xs uppercase tracking-wider">Total Invested</p>
+                <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                  {formatCurrency(portfolioStats.totalInvested)}
+                </h3>
+              </div>
+            </Card>
+          </motion.div>
 
- <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
- <Card data-testid="investments-card-2" className="p-5 sm:p-6 rounded-[28px] sm:rounded-[32px] bg-white border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] relative overflow-hidden">
- <div className="relative z-10">
- <div className="w-10 h-10 sm:w-12 sm:h-12 bg-slate-100 rounded-2xl flex items-center justify-center mb-2 sm:mb-4 text-slate-800">
- <BarChart3 size={18} />
- </div>
- <p className="text-slate-400 font-black mb-0.5 sm:mb-1 text-[11px] sm:text-xs uppercase tracking-wider">Current Value</p>
- <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
- {formatCurrency(portfolioStats.currentValue)}
- </h3>
- </div>
- </Card>
- </motion.div>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+            <Card data-testid="investments-card-2" className="p-4 sm:p-6 rounded-[24px] sm:rounded-[32px] bg-white border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] relative overflow-hidden">
+              <div className="relative z-10">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-slate-100 rounded-2xl flex items-center justify-center mb-2 sm:mb-3 text-slate-800">
+                  <BarChart3 size={18} />
+                </div>
+                <p className="text-slate-400 font-bold mb-0.5 sm:mb-1 text-[10px] sm:text-xs uppercase tracking-wider">Current Value</p>
+                <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                  {formatCurrency(portfolioStats.currentValue)}
+                </h3>
+              </div>
+            </Card>
+          </motion.div>
 
- <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
- <Card data-testid="investments-card-3" className="p-5 sm:p-6 rounded-[28px] sm:rounded-[32px] bg-white border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] relative overflow-hidden">
- <div className="relative z-10">
- <div className={cn("w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center mb-2 sm:mb-4", portfolioStats.profitLoss >= 0 ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600")}>
- {portfolioStats.profitLoss >= 0
- ? <TrendingUp size={18} />
- : <TrendingDown size={18} />}
- </div>
- <p className="text-slate-400 font-black mb-0.5 sm:mb-1 text-[11px] sm:text-xs uppercase tracking-wider">Profit / Loss</p>
- <h3 className={cn("text-xl sm:text-2xl font-black tracking-tight", portfolioStats.profitLoss >= 0 ? "text-emerald-600" : "text-rose-600")}>
- {portfolioStats.profitLoss >= 0 ? '+' : ''}{formatCurrency(portfolioStats.profitLoss)}
- </h3>
- <p className={cn("text-xs sm:text-sm font-bold mt-0.5 sm:mt-1", portfolioStats.profitLoss >= 0 ? "text-emerald-600" : "text-rose-600")}>
- {portfolioStats.profitLoss >= 0 ? '+' : ''}{portfolioStats.profitLossPercent.toFixed(2)}%
- </p>
- </div>
- </Card>
- </motion.div>
- </div>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+            <Card data-testid="investments-card-3" className="p-4 sm:p-6 rounded-[24px] sm:rounded-[32px] bg-white border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] relative overflow-hidden">
+              <div className="relative z-10">
+                <div className={cn("w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center mb-2 sm:mb-3", portfolioStats.profitLoss >= 0 ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600")}>
+                  {portfolioStats.profitLoss >= 0
+                    ? <TrendingUp size={18} />
+                    : <TrendingDown size={18} />}
+                </div>
+                <p className="text-slate-400 font-bold mb-0.5 sm:mb-1 text-[10px] sm:text-xs uppercase tracking-wider">Profit / Loss</p>
+                <div className="flex items-baseline gap-2">
+                  <h3 className={cn("text-xl sm:text-2xl font-black tracking-tight", portfolioStats.profitLoss >= 0 ? "text-emerald-600" : "text-rose-600")}>
+                    {portfolioStats.profitLoss >= 0 ? '+' : ''}{formatCurrency(portfolioStats.profitLoss)}
+                  </h3>
+                  <span className={cn("text-xs font-bold", portfolioStats.profitLoss >= 0 ? "text-emerald-600" : "text-rose-600")}>
+                    ({portfolioStats.profitLoss >= 0 ? '+' : ''}{portfolioStats.profitLossPercent.toFixed(2)}%)
+                  </span>
+                </div>
+              </div>
+            </Card>
+          </motion.div>
+        </div>
 
- {/* Charts */}
- {openInvestments.length > 0 && (
- <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
- <Card data-testid="investments-card-4" className="p-6 rounded-[28px] sm:rounded-[32px] bg-white border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)]">
- <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight mb-4">Asset Allocation</h3>
- <ResponsiveContainer width="100%" height={250}>
- <PieChart>
- <Pie
- data={portfolioStats.chartData}
- cx="50%"
- cy="50%"
- labelLine={false}
- label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
- outerRadius={80}
- fill="#8884d8"
- dataKey="value"
- >
- {portfolioStats.chartData.map((_, index) => (
- <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
- ))}
- </Pie>
- <Tooltip formatter={(value) => formatCurrency(Number(value))} />
- </PieChart>
- </ResponsiveContainer>
- </Card>
+        {/* Charts */}
+        {openInvestments.length > 0 && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card data-testid="investments-card-4" className="p-5 sm:p-6 rounded-[28px] sm:rounded-[32px] bg-white border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)]">
+              <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight mb-4">Asset Allocation</h3>
+              <ResponsiveContainer width="100%" height={250}>
+                <PieChart>
+                  <Pie
+                    data={portfolioStats.chartData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {portfolioStats.chartData.map((_, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(value) => formatCurrency(Number(value))} />
+                </PieChart>
+              </ResponsiveContainer>
+            </Card>
 
- <Card data-testid="investments-card-5" className="p-6 rounded-[28px] sm:rounded-[32px] bg-white border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)]">
- <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight mb-4">Top Performers</h3>
- <div className="space-y-3">
- {[...openInvestments]
- .sort((a, b) => getMetrics(b).percentChange - getMetrics(a).percentChange)
- .slice(0, 5)
- .map(inv => {
- const metrics = getMetrics(inv);
- return (
- <div key={inv.id} className="flex items-center justify-between p-3 bg-slate-50/70 rounded-2xl border border-slate-100/80 hover:bg-slate-100/70 transition-colors">
- <div>
- <p className="font-bold text-slate-900 text-sm">{getInvestmentDisplayName(inv.assetName)}</p>
- <p className="text-xs text-slate-400 capitalize mt-0.5">{inv.assetType} {metrics.assetCurrency}</p>
- </div>
- <div className="text-right">
- <p className={`font-bold text-sm ${metrics.profitLoss >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
- {metrics.profitLoss >= 0 ? '+' : ''}{formatCurrency(metrics.profitLoss)}
- </p>
- <p className={`text-xs font-bold ${metrics.profitLoss >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
- {metrics.percentChange >= 0 ? '+' : ''}{metrics.percentChange.toFixed(2)}%
- </p>
- </div>
- </div>
- );
- })}
- </div>
- </Card>
- </div>
- )}
+            <Card data-testid="investments-card-5" className="p-5 sm:p-6 rounded-[28px] sm:rounded-[32px] bg-white border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)]">
+              <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight mb-4">Top Performers</h3>
+              <div className="space-y-3">
+                {[...openInvestments]
+                  .sort((a, b) => getMetrics(b).percentChange - getMetrics(a).percentChange)
+                  .slice(0, 5)
+                  .map(inv => {
+                    const metrics = getMetrics(inv);
+                    return (
+                      <div key={inv.id} className="flex items-center justify-between p-3.5 bg-slate-50/70 rounded-2xl border border-slate-100/80 hover:bg-slate-100/70 transition-colors">
+                        <div>
+                          <p className="font-bold text-slate-900 text-sm">{getInvestmentDisplayName(inv.assetName)}</p>
+                          <p className="text-xs text-slate-400 capitalize mt-0.5">{inv.assetType} {metrics.assetCurrency}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className={`font-bold text-sm ${metrics.profitLoss >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                            {metrics.profitLoss >= 0 ? '+' : ''}{formatCurrency(metrics.profitLoss)}
+                          </p>
+                          <p className={`text-xs font-bold ${metrics.profitLoss >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                            {metrics.percentChange >= 0 ? '+' : ''}{metrics.percentChange.toFixed(2)}%
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            </Card>
+          </div>
+        )}
 
- 
- {openInvestments.length > 0 && (
- <Card data-testid="investments-card-6" className="rounded-[28px] sm:rounded-[32px] bg-white border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] overflow-hidden hidden sm:block">
- <div className="flex items-center justify-between px-6 py-4 bg-white border-b border-slate-100">
- <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">
- Portfolio Holdings
- {Object.keys(liveQuotes).length > 0 && (
- <span className="ml-2 text-emerald-600 font-normal"> Live</span>
- )}
- </p>
- <button
- onClick={() => fetchLivePrices(true)}
- disabled={updatingPrices}
- className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-700 transition-colors disabled:opacity-40"
- data-testid="investments-refresh-prices-button"
- >
- <RefreshCw size={12} className={cn(updatingPrices && 'animate-spin')} />
- Update Prices
- </button>
- </div>
- <div className="overflow-x-auto">
- <table data-testid="investments-table" className="w-full">
- <thead className="bg-white/50">
- <tr>
- <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Asset</th>
- <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
- <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Qty</th>
- <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Buy Price</th>
- <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Current</th>
- <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Value</th>
- <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">P/L</th>
- <th className="px-6 py-3" />
- </tr>
- </thead>
- <tbody className="divide-y divide-gray-200">
- {openInvestments.map(inv => {
- const metrics = getMetrics(inv);
- return (
- <tr key={inv.id} className="hover:bg-gray-50">
- <td className="px-6 py-4 whitespace-nowrap">
- <div className="font-medium text-gray-900">{getInvestmentDisplayName(inv.assetName)}</div>
- <div className="text-sm text-gray-500">{inv.purchaseDate ? new Date(inv.purchaseDate).toLocaleDateString() : '—'}</div>
- </td>
- <td className="px-6 py-4 whitespace-nowrap">
- <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-700 capitalize">{inv.assetType}</span>
- </td>
- <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">{inv.quantity}</td>
- <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
- <div>{formatNativeMoney(metrics.nativeBuyPrice, metrics.assetCurrency)}</div>
- {metrics.assetCurrency !== currency && (
- <div className="text-xs text-gray-400">{formatCurrency(metrics.convertedBuyPrice)}</div>
- )}
- </td>
- <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
- <div className={cn(metrics.isLive && 'text-emerald-700 font-semibold')}>
- {formatNativeMoney(metrics.nativeCurrentPrice, metrics.assetCurrency)}
- {metrics.isLive && <span className="ml-1 text-[10px] text-emerald-500"></span>}
- </div>
- {metrics.assetCurrency !== currency && (
- <div className="text-xs text-gray-400">{formatCurrency(metrics.convertedCurrentPrice)}</div>
- )}
- </td>
- <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-semibold text-gray-900">{formatCurrency(metrics.currentValue)}</td>
- <td className={`px-6 py-4 whitespace-nowrap text-right text-sm font-semibold ${metrics.profitLoss >= 0 ? 'text-green-600' : 'text-red-600'}`}>
- <div className="flex items-center justify-end gap-1">
- {metrics.profitLoss >= 0 ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
- {metrics.profitLoss >= 0 ? '+' : ''}{formatCurrency(metrics.profitLoss)}
- </div>
- <div className="text-xs">
- {metrics.percentChange >= 0 ? '+' : ''}{metrics.percentChange.toFixed(2)}%
- </div>
- </td>
- <td className="px-6 py-4 whitespace-nowrap text-center">
- <div className="flex gap-2 justify-center">
- {canEdit && (
- <button
- onClick={() => { localStorage.setItem('editingInvestmentId', inv.id!.toString()); setCurrentPage('edit-investment'); }}
- className="text-gray-600 hover:text-gray-900 transition-colors p-1.5 hover:bg-gray-100 rounded-lg"
- title="Edit"
- data-testid={`investments-edit-button-${inv.id}`}
- >
- <Edit2 size={16} />
- </button>
- )}
- <button
- onClick={() => setClosingInvestment(inv)}
- className="px-3 py-1.5 rounded-lg bg-black text-white text-xs font-semibold hover:bg-gray-900 transition-colors"
- title="Complete Order"
- data-testid={`investments-complete-order-button-${inv.id}`}
- >
- Complete Order
- </button>
- {canDelete && (
- <button
- onClick={() => handleDeleteInvestment(inv.id!, inv.assetName)}
- className="text-red-600 hover:text-red-900 transition-colors p-1.5 hover:bg-red-100 rounded-lg"
- title="Delete"
- data-testid={`investments-delete-button-${inv.id}`}
- >
- <Trash2 size={16} />
- </button>
- )}
- </div>
- </td>
- </tr>
- );
- })}
- </tbody>
- </table>
- </div>
- </Card>
- )}
+        {openInvestments.length > 0 && (
+          <Card data-testid="investments-card-6" className="rounded-[28px] sm:rounded-[32px] bg-white border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] overflow-hidden hidden sm:block">
+            <div className="flex items-center justify-between px-6 py-4 bg-white border-b border-slate-100">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                Portfolio Holdings
+                {Object.keys(liveQuotes).length > 0 && (
+                  <span className="ml-2 text-emerald-600 font-normal"> Live</span>
+                )}
+              </p>
+              <button
+                onClick={() => fetchLivePrices(true)}
+                disabled={updatingPrices}
+                className="flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-slate-800 transition-colors disabled:opacity-40 cursor-pointer"
+                data-testid="investments-refresh-prices-button"
+              >
+                <RefreshCw size={12} className={cn(updatingPrices && 'animate-spin')} />
+                Update Prices
+              </button>
+            </div>
+            <div className="overflow-x-auto">
+              <table data-testid="investments-table" className="w-full">
+                <thead className="bg-slate-50/60">
+                  <tr>
+                    <th className="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Asset</th>
+                    <th className="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Type</th>
+                    <th className="px-6 py-3.5 text-right text-[11px] font-bold text-slate-500 uppercase tracking-wider">Qty</th>
+                    <th className="px-6 py-3.5 text-right text-[11px] font-bold text-slate-500 uppercase tracking-wider">Buy Price</th>
+                    <th className="px-6 py-3.5 text-right text-[11px] font-bold text-slate-500 uppercase tracking-wider">Current</th>
+                    <th className="px-6 py-3.5 text-right text-[11px] font-bold text-slate-500 uppercase tracking-wider">Value</th>
+                    <th className="px-6 py-3.5 text-right text-[11px] font-bold text-slate-500 uppercase tracking-wider">P/L</th>
+                    <th className="px-6 py-3.5" />
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {openInvestments.map(inv => {
+                    const metrics = getMetrics(inv);
+                    return (
+                      <tr key={inv.id} className="hover:bg-slate-50/70 transition-colors">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="font-bold text-slate-900 text-sm">{getInvestmentDisplayName(inv.assetName)}</div>
+                          <div className="text-xs text-slate-400">{inv.purchaseDate ? new Date(inv.purchaseDate).toLocaleDateString() : '—'}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-slate-100 text-slate-600 capitalize">{inv.assetType}</span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-slate-900">{inv.quantity}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-semibold text-slate-900">
+                          <div>{formatNativeMoney(metrics.nativeBuyPrice, metrics.assetCurrency)}</div>
+                          {metrics.assetCurrency !== currency && (
+                            <div className="text-xs text-slate-400">{formatCurrency(metrics.convertedBuyPrice)}</div>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-semibold text-slate-900">
+                          <div className={cn(metrics.isLive && 'text-emerald-700 font-bold')}>
+                            {formatNativeMoney(metrics.nativeCurrentPrice, metrics.assetCurrency)}
+                            {metrics.isLive && <span className="ml-1 text-[10px] text-emerald-500"></span>}
+                          </div>
+                          {metrics.assetCurrency !== currency && (
+                            <div className="text-xs text-slate-400">{formatCurrency(metrics.convertedCurrentPrice)}</div>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-slate-900">{formatCurrency(metrics.currentValue)}</td>
+                        <td className={`px-6 py-4 whitespace-nowrap text-right text-sm font-bold ${metrics.profitLoss >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                          <div className="flex items-center justify-end gap-1">
+                            {metrics.profitLoss >= 0 ? <TrendingUp size={15} /> : <TrendingDown size={15} />}
+                            {metrics.profitLoss >= 0 ? '+' : ''}{formatCurrency(metrics.profitLoss)}
+                          </div>
+                          <div className="text-xs font-semibold">
+                            {metrics.percentChange >= 0 ? '+' : ''}{metrics.percentChange.toFixed(2)}%
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-center">
+                          <div className="flex gap-2 justify-center items-center">
+                            {canEdit && (
+                              <button
+                                onClick={() => { localStorage.setItem('editingInvestmentId', inv.id!.toString()); setCurrentPage('edit-investment'); }}
+                                className="text-slate-400 hover:text-slate-800 transition-colors p-1.5 hover:bg-slate-100 rounded-full cursor-pointer"
+                                title="Edit"
+                                data-testid={`investments-edit-button-${inv.id}`}
+                              >
+                                <Edit2 size={15} />
+                              </button>
+                            )}
+                            <button
+                              onClick={() => setClosingInvestment(inv)}
+                              className="px-3.5 py-1.5 rounded-full bg-[#18181B] hover:bg-black text-white text-xs font-bold transition-all shadow-xs active:scale-95 cursor-pointer"
+                              title="Complete Order"
+                              data-testid={`investments-complete-order-button-${inv.id}`}
+                            >
+                              Complete Order
+                            </button>
+                            {canDelete && (
+                              <button
+                                onClick={() => handleDeleteInvestment(inv.id!, inv.assetName)}
+                                className="text-slate-400 hover:text-rose-600 transition-colors p-1.5 hover:bg-rose-50 rounded-full cursor-pointer"
+                                title="Delete"
+                                data-testid={`investments-delete-button-${inv.id}`}
+                              >
+                                <Trash2 size={15} />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        )}
 
- 
- {openInvestments.length > 0 && (
- <div className="sm:hidden space-y-3">
- {openInvestments.map(inv => {
- const metrics = getMetrics(inv);
- const isProfit = metrics.profitLoss >= 0;
- return (
- <Card data-testid={`investments-card-7-${inv.id}`} key={inv.id} className="p-4 sm:p-5 rounded-[24px] sm:rounded-[28px] bg-white border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)]">
- {/* Row 1: name + actions */}
- <div className="flex items-start justify-between gap-2 mb-3">
- <div className="min-w-0">
- <p className="font-black text-slate-900 text-base truncate tracking-tight">{getInvestmentDisplayName(inv.assetName)}</p>
- <div className="flex items-center gap-2 mt-0.5">
- <span className="px-2 py-0.5 text-xs font-bold rounded-full bg-slate-100 text-slate-600 capitalize">{inv.assetType}</span>
- <span className="text-xs text-slate-400">{inv.purchaseDate ? new Date(inv.purchaseDate).toLocaleDateString() : '—'}</span>
- </div>
- </div>
- <div className="flex gap-1.5 shrink-0">
- {canEdit && (
- <button
- onClick={() => { localStorage.setItem('editingInvestmentId', inv.id!.toString()); setCurrentPage('edit-investment'); }}
- className="text-gray-500 hover:text-gray-900 transition-colors p-2 hover:bg-gray-100 rounded-xl"
- title="Edit"
- data-testid={`investments-mobile-edit-button-${inv.id}`}
- >
- <Edit2 size={15} />
- </button>
- )}
- {canDelete && (
- <button
- onClick={() => handleDeleteInvestment(inv.id!, inv.assetName)}
- className="text-red-500 hover:text-red-700 transition-colors p-2 hover:bg-red-50 rounded-xl"
- title="Delete"
- data-testid={`investments-mobile-delete-button-${inv.id}`}
- >
- <Trash2 size={15} />
- </button>
- )}
- </div>
- </div>
+        {openInvestments.length > 0 && (
+          <div className="sm:hidden space-y-3">
+            {openInvestments.map(inv => {
+              const metrics = getMetrics(inv);
+              const isProfit = metrics.profitLoss >= 0;
+              return (
+                <Card data-testid={`investments-card-7-${inv.id}`} key={inv.id} className="p-4 sm:p-5 rounded-[24px] sm:rounded-[28px] bg-white border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)]">
+                  {/* Row 1: name + actions */}
+                  <div className="flex items-start justify-between gap-2 mb-3">
+                    <div className="min-w-0">
+                      <p className="font-black text-slate-900 text-base truncate tracking-tight">{getInvestmentDisplayName(inv.assetName)}</p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="px-2 py-0.5 text-xs font-bold rounded-full bg-slate-100 text-slate-600 capitalize">{inv.assetType}</span>
+                        <span className="text-xs text-slate-400">{inv.purchaseDate ? new Date(inv.purchaseDate).toLocaleDateString() : '—'}</span>
+                      </div>
+                    </div>
+                    <div className="flex gap-1 shrink-0">
+                      {canEdit && (
+                        <button
+                          onClick={() => { localStorage.setItem('editingInvestmentId', inv.id!.toString()); setCurrentPage('edit-investment'); }}
+                          className="text-slate-400 hover:text-slate-800 transition-colors p-2 hover:bg-slate-100 rounded-full cursor-pointer"
+                          title="Edit"
+                          data-testid={`investments-mobile-edit-button-${inv.id}`}
+                        >
+                          <Edit2 size={14} />
+                        </button>
+                      )}
+                      {canDelete && (
+                        <button
+                          onClick={() => handleDeleteInvestment(inv.id!, inv.assetName)}
+                          className="text-slate-400 hover:text-rose-600 transition-colors p-2 hover:bg-rose-50 rounded-full cursor-pointer"
+                          title="Delete"
+                          data-testid={`investments-mobile-delete-button-${inv.id}`}
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
 
- {/* Row 2: key numbers grid */}
- <div className="grid grid-cols-2 gap-2">
- <div className="bg-white rounded-xl p-3">
- <p className="text-xs text-gray-400 mb-0.5">Qty</p>
- <p className="text-sm font-bold text-gray-900">{inv.quantity}</p>
- </div>
- <div className="bg-white rounded-xl p-3">
- <p className="text-xs text-gray-400 mb-0.5">Buy Price</p>
- <p className="text-sm font-bold text-gray-900">{formatNativeMoney(metrics.nativeBuyPrice, metrics.assetCurrency)}</p>
- </div>
- <div className="bg-white rounded-xl p-3">
- <p className="text-xs text-gray-400 mb-0.5">Current Price {metrics.isLive && <span className="text-emerald-500"></span>}</p>
- <p className={cn("text-sm font-bold", metrics.isLive ?"text-emerald-700" :"text-gray-900")}>
- {formatNativeMoney(metrics.nativeCurrentPrice, metrics.assetCurrency)}
- </p>
- </div>
- <div className="bg-white rounded-xl p-3">
- <p className="text-xs text-gray-400 mb-0.5">Total Value</p>
- <p className="text-sm font-bold text-gray-900">{formatCurrency(metrics.currentValue)}</p>
- </div>
- </div>
+                  {/* Row 2: key numbers grid */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="bg-slate-50/80 border border-slate-100/80 rounded-2xl p-3">
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Qty</p>
+                      <p className="text-sm font-black text-slate-900">{inv.quantity}</p>
+                    </div>
+                    <div className="bg-slate-50/80 border border-slate-100/80 rounded-2xl p-3">
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Buy Price</p>
+                      <p className="text-sm font-black text-slate-900">{formatNativeMoney(metrics.nativeBuyPrice, metrics.assetCurrency)}</p>
+                    </div>
+                    <div className="bg-slate-50/80 border border-slate-100/80 rounded-2xl p-3">
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Current Price {metrics.isLive && <span className="text-emerald-500"></span>}</p>
+                      <p className={cn("text-sm font-black", metrics.isLive ? "text-emerald-700" : "text-slate-900")}>
+                        {formatNativeMoney(metrics.nativeCurrentPrice, metrics.assetCurrency)}
+                      </p>
+                    </div>
+                    <div className="bg-slate-50/80 border border-slate-100/80 rounded-2xl p-3">
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Total Value</p>
+                      <p className="text-sm font-black text-slate-900">{formatCurrency(metrics.currentValue)}</p>
+                    </div>
+                  </div>
 
- {/* Row 3: P/L badge */}
- <div className={`mt-3 flex items-center gap-1.5 px-3 py-2 rounded-xl ${isProfit ? 'bg-green-50' : 'bg-red-50'}`}>
- {isProfit ? <TrendingUp size={15} className="text-green-600" /> : <TrendingDown size={15} className="text-red-600" />}
- <span className={`text-sm font-bold ${isProfit ? 'text-green-700' : 'text-red-700'}`}>
- {isProfit ? '+' : ''}{formatCurrency(metrics.profitLoss)}
- </span>
- <span className={`text-xs font-medium ml-auto ${isProfit ? 'text-green-600' : 'text-red-600'}`}>
- {metrics.percentChange >= 0 ? '+' : ''}{metrics.percentChange.toFixed(2)}%
- </span>
- </div>
+                  {/* Row 3: P/L badge */}
+                  <div className={`mt-3 flex items-center justify-between px-3.5 py-2.5 rounded-2xl border ${isProfit ? 'bg-emerald-50 text-emerald-700 border-emerald-100/80' : 'bg-rose-50 text-rose-700 border-rose-100/80'}`}>
+                    <div className="flex items-center gap-1.5">
+                      {isProfit ? <TrendingUp size={15} className="text-emerald-600" /> : <TrendingDown size={15} className="text-rose-600" />}
+                      <span className="text-sm font-bold">
+                        {isProfit ? '+' : ''}{formatCurrency(metrics.profitLoss)}
+                      </span>
+                    </div>
+                    <span className="text-xs font-extrabold">
+                      {metrics.percentChange >= 0 ? '+' : ''}{metrics.percentChange.toFixed(2)}%
+                    </span>
+                  </div>
 
- <button
- onClick={() => setClosingInvestment(inv)}
- className="mt-3 w-full rounded-xl bg-black text-white py-2.5 text-sm font-semibold hover:bg-gray-900 transition-colors"
- data-testid={`investments-mobile-complete-order-button-${inv.id}`}
- >
- Complete Order
- </button>
- </Card>
- );
- })}
- </div>
- )}
+                  <button
+                    onClick={() => setClosingInvestment(inv)}
+                    className="mt-3 w-full h-10 rounded-full bg-[#18181B] hover:bg-black text-white text-xs font-bold transition-all shadow-xs active:scale-95 cursor-pointer"
+                    data-testid={`investments-mobile-complete-order-button-${inv.id}`}
+                  >
+                    Complete Order
+                  </button>
+                </Card>
+              );
+            })}
+          </div>
+        )}
 
  {openInvestments.length === 0 && completedInvestments.length > 0 && (
  <Card data-testid="investments-card-8" variant="glass" className="p-8 text-center">

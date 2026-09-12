@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { updateAccountWithBackendSync } from '@/lib/auth-sync-integration';
-import { setAccountTargetBalance } from '@/lib/transactionAggregation';
+import { setAccountTargetBalance, setAccountOpeningBalance } from '@/lib/transactionAggregation';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -39,6 +39,8 @@ const CARD_COLORS = [
 export const EditAccount: React.FC<{ accountId?: number }> = ({ accountId: propAccountId }) => {
  const { setCurrentPage, currency, refreshData, accounts } = useApp();
  const [account, setAccount] = useState<any>(null);
+ // Balance figures as loaded, so save can tell which one the user changed.
+ const [original, setOriginal] = useState<{ balance?: number; openingBalance?: number } | null>(null);
  const [loading, setLoading] = useState(true);
  const [saving, setSaving] = useState(false);
 
@@ -51,6 +53,7 @@ export const EditAccount: React.FC<{ accountId?: number }> = ({ accountId: propA
  }
  db.accounts.get(accountId).then((acc) => {
  setAccount(acc);
+ setOriginal(acc ? { balance: acc.balance, openingBalance: acc.openingBalance } : null);
  setLoading(false);
  });
 
@@ -70,16 +73,27 @@ export const EditAccount: React.FC<{ accountId?: number }> = ({ accountId: propA
 
  setSaving(true);
  try {
+ // Send only a balance figure the user actually changed. The form was filled
+ // from this device's copy, which can predate transactions posted on another
+ // device; echoing an untouched figure back overwrote the server's balance.
+ const openingChanged = original != null && account.openingBalance !== original.openingBalance;
+ const balanceChanged = original != null && account.balance !== original.balance;
  await updateAccountWithBackendSync(account.id, {
  name: account.name,
  type: account.type,
- balance: account.balance,
  subType: account.subType,
  colorId: account.colorId,
+ ...(openingChanged
+ ? { openingBalance: account.openingBalance }
+ : balanceChanged ? { targetBalance: account.balance } : {}),
  });
+ if (openingChanged) {
+ await setAccountOpeningBalance(account.id, Number(account.openingBalance));
+ } else if (balanceChanged) {
  // Balance is derived (openingBalance + ledger). Anchor the opening balance
  // so the entered "Current Balance" resolves exactly under the derived model.
  await setAccountTargetBalance(account.id, account.balance);
+ }
  toast.success('Account updated successfully!');
  refreshData();
  setCurrentPage('accounts');

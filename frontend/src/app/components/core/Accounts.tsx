@@ -112,6 +112,8 @@ export const Accounts: React.FC = () => {
     } | null>(null);
     const [isSavingEdit, setIsSavingEdit] = useState(false);
     const [editingAccountDelta, setEditingAccountDelta] = useState<number>(0);
+    // Balance figures as the modal opened, so save can tell which one the user changed.
+    const [editingAccountOriginal, setEditingAccountOriginal] = useState<{ balance: number; openingBalance?: number } | null>(null);
     const [isDesktop, setIsDesktop] = useState(false);
 
     React.useEffect(() => {
@@ -130,13 +132,15 @@ export const Accounts: React.FC = () => {
     const handleEditAccount = async (account: typeof accounts[0], e: React.MouseEvent) => {
         e.stopPropagation();
         const delta = await getAccountLedgerDelta(account.id!);
+        const openingBalance = account.openingBalance ?? Math.round((account.balance - delta) * 100) / 100;
         setEditingAccountDelta(delta);
+        setEditingAccountOriginal({ balance: account.balance, openingBalance });
         setEditingAccount({
             id: account.id!,
             name: account.name,
             type: account.type,
             balance: account.balance,
-            openingBalance: account.openingBalance ?? Math.round((account.balance - delta) * 100) / 100,
+            openingBalance,
             isActive: account.isActive ?? true,
             subType: account.subType,
             colorId: account.colorId,
@@ -149,6 +153,16 @@ export const Accounts: React.FC = () => {
         if (!editingAccount) return;
         setIsSavingEdit(true);
         try {
+            // Send only a balance figure the user actually changed. The form was
+            // filled from this device's copy, which can predate transactions posted
+            // on another device; echoing an untouched figure back overwrote the
+            // server's balance. The opening-balance input also moves the current
+            // balance, so it is checked first.
+            const openingChanged = editingAccountOriginal != null
+                && editingAccount.openingBalance !== editingAccountOriginal.openingBalance;
+            const balanceChanged = editingAccountOriginal != null
+                && editingAccount.balance !== editingAccountOriginal.balance;
+
             await updateAccountWithBackendSync(editingAccount.id, {
                 name: editingAccount.name,
                 type: editingAccount.type as any,
@@ -156,13 +170,14 @@ export const Accounts: React.FC = () => {
                 subType: editingAccount.subType,
                 colorId: editingAccount.colorId,
                 customColor: editingAccount.customColor,
-                balance: editingAccount.balance,
-                openingBalance: editingAccount.openingBalance,
+                ...(openingChanged
+                    ? { openingBalance: editingAccount.openingBalance }
+                    : balanceChanged ? { targetBalance: editingAccount.balance } : {}),
             });
 
-            if (editingAccount.openingBalance != null) {
+            if (openingChanged) {
                 await setAccountOpeningBalance(editingAccount.id, Number(editingAccount.openingBalance));
-            } else {
+            } else if (balanceChanged) {
                 await setAccountTargetBalance(editingAccount.id, editingAccount.balance);
             }
             toast.success('Account updated!');

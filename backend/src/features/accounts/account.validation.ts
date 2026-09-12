@@ -22,7 +22,11 @@ export const accountCreateSchema = z.object({
   clientRequestId: z.string().trim().optional(),
 });
 
-export const accountUpdateSchema = accountCreateSchema.partial().refine(
+// `balance` stays accepted so installed app builds that still send it do not
+// 400, but the service ignores it; `targetBalance` is the explicit edit.
+export const accountUpdateSchema = accountCreateSchema.partial().extend({
+  targetBalance: z.coerce.number().finite().optional(),
+}).refine(
   (data) => Object.keys(data).length > 0,
   { message: 'At least one field is required for update' }
 );

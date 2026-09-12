@@ -77,25 +77,6 @@ export const GoalDetail: React.FC = () => {
  const formatCurrency = (value: number) =>
     formatCurrencyAmount(value, currency);
 
- const getWidthClass = (value: number) => {
- const safe = Math.max(0, Math.min(100, value));
- const bucket = Math.round(safe / 10) * 10;
-
- switch (bucket) {
- case 0: return 'w-0';
- case 10: return 'w-[10%]';
- case 20: return 'w-[20%]';
- case 30: return 'w-[30%]';
- case 40: return 'w-[40%]';
- case 50: return 'w-1/2';
- case 60: return 'w-[60%]';
- case 70: return 'w-[70%]';
- case 80: return 'w-[80%]';
- case 90: return 'w-[90%]';
- default: return 'w-full';
- }
- };
-
  const progress = goal ? getGoalProgress(goal.currentAmount, goal.targetAmount) : 0;
  const category = getGoalCategoryMeta(goal?.category);
  const milestone = getMilestoneLabel(progress);
@@ -334,11 +315,16 @@ export const GoalDetail: React.FC = () => {
   </div>
 
   <div>
-  <div className="w-full h-3 bg-slate-100 dark:bg-muted rounded-full overflow-hidden">
-  <div className={`h-3 bg-gradient-to-r from-[#8B5CF6] to-[#7C3AED] rounded-full transition-all duration-1000 ${getWidthClass(progress)}`} />
-  </div>
-  <p className="text-sm mt-3 text-slate-600 dark:text-slate-300 font-semibold">{progress.toFixed(0)}% completed</p>
-  {milestone && <p className="text-sm font-bold text-emerald-600 mt-1">{milestone} </p>}
+    <div className="w-full h-3 bg-slate-100 dark:bg-muted rounded-full overflow-hidden">
+      <div
+        className="h-3 bg-gradient-to-r from-[#8B5CF6] to-[#7C3AED] rounded-full transition-all duration-700 ease-out"
+        style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
+      />
+    </div>
+    <div className="flex items-center justify-between text-xs sm:text-sm font-semibold mt-2.5">
+      <span className="text-slate-600 dark:text-slate-300">{progress.toFixed(0)}% completed</span>
+      {milestone && <span className="font-bold text-emerald-600">{milestone}</span>}
+    </div>
   </div>
 
   <div className="rounded-2xl bg-purple-50/60 dark:bg-purple-950/20 border border-purple-100/60 p-4 flex items-start gap-3">
@@ -556,17 +542,21 @@ export const GoalDetail: React.FC = () => {
   <p className="text-sm text-slate-400 font-medium">No contributions yet</p>
   </div>
   )}
-  {timeline.map((item) => (
-  <div key={item.month} className="flex items-center gap-4 group">
-  <div className="w-12 text-xs font-semibold text-slate-400 uppercase tracking-wider">{item.month}</div>
-  <div className="flex-1 h-3 bg-slate-100 dark:bg-muted rounded-full overflow-hidden border border-slate-100">
-  <div 
-  className={`h-full bg-[#8B5CF6] rounded-full transition-all group-hover:bg-[#7C3AED] ${getWidthClass((item.total / Math.max(goal.targetAmount, 1)) * 100)}`} 
-  />
-  </div>
-  <div className="w-24 text-right font-bold text-slate-900 dark:text-white text-sm">{formatCurrency(item.total)}</div>
-  </div>
-  ))}
+  {timeline.map((item) => {
+    const percent = Math.min(100, (item.total / Math.max(goal.targetAmount, 1)) * 100);
+    return (
+      <div key={item.month} className="flex items-center gap-3 sm:gap-4 group">
+        <div className="w-10 sm:w-12 text-[11px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider">{item.month}</div>
+        <div className="flex-1 h-2.5 sm:h-3 bg-slate-100 dark:bg-muted rounded-full overflow-hidden">
+          <div 
+            className="h-full bg-gradient-to-r from-[#8B5CF6] to-[#7C3AED] rounded-full transition-all group-hover:opacity-90"
+            style={{ width: `${Math.max(4, percent)}%` }}
+          />
+        </div>
+        <div className="w-24 text-right font-bold text-slate-900 dark:text-white text-xs sm:text-sm">{formatCurrency(item.total)}</div>
+      </div>
+    );
+  })}
   </div>
   </div></div>
  </div>

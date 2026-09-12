@@ -327,50 +327,64 @@ async function seedIdentity(identity, passwordHash) {
     const txCount = await prisma.transaction.count({ where: { userId: user.id } });
     if (txCount === 0) {
       const now = new Date();
-      await prisma.transaction.createMany({
-        data: [
-          {
-            userId: user.id,
-            accountId: primaryAcc.id,
-            amount: 150000,
-            type: 'income',
-            category: 'Salary',
-            description: 'Monthly Salary Credit',
-            date: new Date(now.getFullYear(), now.getMonth(), 1),
-            status: 'POSTED',
-          },
-          {
-            userId: user.id,
-            accountId: primaryAcc.id,
-            amount: 28000,
-            type: 'expense',
-            category: 'Housing & Rent',
-            description: 'Apartment Monthly Rent',
-            date: new Date(now.getFullYear(), now.getMonth(), 5),
-            status: 'POSTED',
-          },
-          {
-            userId: user.id,
-            accountId: primaryAcc.id,
-            amount: 6450,
-            type: 'expense',
-            category: 'Groceries & Food',
-            description: 'Supermarket weekly groceries',
-            date: new Date(now.getFullYear(), now.getMonth(), 8),
-            status: 'POSTED',
-          },
-          {
-            userId: user.id,
-            accountId: primaryAcc.id,
-            amount: 25000,
-            type: 'expense',
-            category: 'Investments',
-            description: 'Nifty 50 Index SIP',
-            date: new Date(now.getFullYear(), now.getMonth(), 10),
-            status: 'POSTED',
-          },
-        ],
-      });
+      const sampleTransactions = [
+        {
+          userId: user.id,
+          accountId: primaryAcc.id,
+          amount: 150000,
+          type: 'income',
+          category: 'Salary',
+          description: 'Monthly Salary Credit',
+          date: new Date(now.getFullYear(), now.getMonth(), 1),
+          status: 'POSTED',
+        },
+        {
+          userId: user.id,
+          accountId: primaryAcc.id,
+          amount: 28000,
+          type: 'expense',
+          category: 'Housing & Rent',
+          description: 'Apartment Monthly Rent',
+          date: new Date(now.getFullYear(), now.getMonth(), 5),
+          status: 'POSTED',
+        },
+        {
+          userId: user.id,
+          accountId: primaryAcc.id,
+          amount: 6450,
+          type: 'expense',
+          category: 'Groceries & Food',
+          description: 'Supermarket weekly groceries',
+          date: new Date(now.getFullYear(), now.getMonth(), 8),
+          status: 'POSTED',
+        },
+        {
+          userId: user.id,
+          accountId: primaryAcc.id,
+          amount: 25000,
+          type: 'expense',
+          category: 'Investments',
+          description: 'Nifty 50 Index SIP',
+          date: new Date(now.getFullYear(), now.getMonth(), 10),
+          status: 'POSTED',
+        },
+      ];
+
+      // createMany bypasses TransactionRepository, so apply the ledger delta to the
+      // balance here. Without it every demo account sat at its opening figure while
+      // holding these transactions — off by exactly their net (+90,550) and flagged
+      // by the reconciler.
+      const net = sampleTransactions.reduce(
+        (sum, t) => sum + (t.type === 'income' ? t.amount : -t.amount),
+        0,
+      );
+      await prisma.$transaction([
+        prisma.transaction.createMany({ data: sampleTransactions }),
+        prisma.account.update({
+          where: { id: primaryAcc.id },
+          data: { balance: { increment: net } },
+        }),
+      ]);
 
       // Sample Goal
       await prisma.goal.create({

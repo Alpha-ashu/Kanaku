@@ -226,8 +226,35 @@ function stockApiDevPlugin() {
   }
 }
 
-export default defineConfig(({ mode }) => {
+// Every VITE_* value is compiled into the JavaScript bundle and readable by
+// anyone who loads the app. These names are public by design; any other
+// VITE_ variable that looks like a credential fails a production build.
+const PUBLIC_BY_DESIGN_VITE_KEYS = new Set([
+  'VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY', // Supabase anon key — access is enforced by RLS
+  'VITE_SUPABASE_ANON_KEY',
+  'VITE_FIREBASE_API_KEY', // Firebase web config identifier, not a secret
+  'VITE_FIREBASE_VAPID_KEY', // Web Push *public* key
+])
+
+function assertNoSecretsInBundle(env: Record<string, string>) {
+  const exposed = Object.keys(env).filter(name =>
+    name.startsWith('VITE_') &&
+    /KEY|SECRET|TOKEN|PASSWORD|PRIVATE/.test(name) &&
+    !PUBLIC_BY_DESIGN_VITE_KEYS.has(name) &&
+    (env[name] ?? '').trim() !== '',
+  )
+  if (exposed.length > 0) {
+    throw new Error(
+      `Refusing to build: ${exposed.join(', ')} would be published in the JavaScript bundle. ` +
+      'Remove it from the build environment and call the provider from the backend instead ' +
+      '(market quotes already go through /api/v1/stocks).',
+    )
+  }
+}
+
+export default defineConfig(({ mode, command }) => {
   const env = loadEnv(mode, __dirname, '')
+  if (command === 'build') assertNoSecretsInBundle(env)
   const apiProxyTarget = env.VITE_API_PROXY_TARGET || 'http://localhost:3000'
 
   // Platform surface (Admin/Manager vs User/Advisor separation). Inlined as a

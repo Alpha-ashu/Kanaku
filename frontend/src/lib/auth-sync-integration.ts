@@ -3421,6 +3421,10 @@ export async function saveAccountWithBackendSync(account: any) {
 export async function updateAccountWithBackendSync(accountId: number, updates: any) {
   initializeBackendSync();
 
+  // `targetBalance` ("set the current balance to X") is an instruction for the
+  // server, not a Dexie column — keep it out of the local record.
+  const { targetBalance, ...localUpdates } = updates ?? {};
+
   const existing = await db.accounts.get(accountId);
   if (!existing) {
     throw new Error('Account not found');
@@ -3429,7 +3433,7 @@ export async function updateAccountWithBackendSync(accountId: number, updates: a
   if (isBackendFirstSyncMode()) {
 
     let nextUpdates = {
-      ...updates,
+      ...localUpdates,
       updatedAt: new Date(),
       syncStatus: 'synced' as const,
     };
@@ -3441,7 +3445,10 @@ export async function updateAccountWithBackendSync(accountId: number, updates: a
           type: updates.type,
           provider: updates.provider,
           country: updates.country,
-          balance: updates.balance,
+          // Never `balance`: the server owns it, and this device's copy may predate
+          // transactions posted elsewhere. Balance edits go as targetBalance or
+          // openingBalance, which the server applies as deltas to its own figures.
+          targetBalance,
           openingBalance: updates.openingBalance,
           currency: updates.currency,
           sub_type: updates.subType,
@@ -3455,7 +3462,7 @@ export async function updateAccountWithBackendSync(accountId: number, updates: a
         nextUpdates = {
           ...nextUpdates,
           cloudId: remote?.id ?? existing.cloudId,
-          balance: Number(remote?.balance ?? updates.balance ?? existing.balance),
+          balance: Number(remote?.balance ?? targetBalance ?? updates.balance ?? existing.balance),
           openingBalance: Number(remote?.openingBalance ?? updates.openingBalance ?? existing.openingBalance ?? 0),
           isActive: remote?.isActive ?? updates.isActive ?? existing.isActive,
           subType: remote?.sub_type ?? updates.subType ?? existing.subType,
@@ -3499,7 +3506,7 @@ export async function updateAccountWithBackendSync(accountId: number, updates: a
   }
 
   await db.accounts.update(accountId, {
-    ...updates,
+    ...localUpdates,
     syncStatus: 'pending' as const,
     updatedAt: new Date(),
   });

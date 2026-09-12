@@ -233,7 +233,7 @@ export const AddGoal: React.FC = () => {
             >
               <ArrowLeft size={18} className="text-slate-700" />
             </button>
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 tracking-tight leading-none truncate">
+            <h1 className="font-page-title text-slate-900 tracking-tight leading-none truncate">
               New Saving Goal
             </h1>
           </div>
@@ -242,55 +242,55 @@ export const AddGoal: React.FC = () => {
         {/* Main Single-Page Content Area */}
         <main className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 w-full pb-48 no-scrollbar">
  
- {/* Left Column: context & types (lg:col-7) */}
- <div className="lg:col-span-7 flex flex-col gap-3 lg:overflow-y-auto">
+  {/* Left Column: context & types (lg:col-7) */}
+  <div className="lg:col-span-7 flex flex-col gap-4 lg:overflow-y-auto">
  
   {/* Goal Type Selector */}
-  <div className="p-1 bg-slate-100 rounded-full flex gap-1">
+  <div className="p-1 bg-slate-100/90 rounded-full flex gap-1 border border-slate-200/60 shadow-2xs">
   {[
-  { id: 'individual', label: 'Individual', icon: <Target size={13} /> },
-  { id: 'group', label: 'Group Goal', icon: <Users size={13} /> }
+  { id: 'individual', label: 'Individual', icon: <Target size={14} /> },
+  { id: 'group', label: 'Group Goal', icon: <Users size={14} /> }
   ].map(m => (
-  <button key={m.id} onClick={() => setFormData(prev => ({ ...prev, goalType: m.id as any }))} data-testid={`goals-create-type-${m.id}-button`} className={cn("flex-1 flex items-center justify-center gap-2 py-2 rounded-full font-bold text-xs uppercase tracking-wider transition-all cursor-pointer", formData.goalType === m.id ?"bg-white text-slate-900 shadow-xs" :"text-slate-500 hover:text-slate-700")}>
+  <button key={m.id} onClick={() => setFormData(prev => ({ ...prev, goalType: m.id as any }))} data-testid={`goals-create-type-${m.id}-button`} className={cn("flex-1 flex items-center justify-center gap-2 py-2.5 rounded-full font-bold text-xs uppercase tracking-wider transition-all cursor-pointer", formData.goalType === m.id ?"bg-[#18181B] text-white shadow-xs" :"text-slate-500 hover:text-slate-800")}>
   {m.icon} {m.label}
   </button>
   ))}
   </div>
 
   {/* Goal Summary Display */}
-  <div className="p-4 bg-indigo-600 rounded-[24px] text-white flex items-center justify-between shadow-xl shadow-indigo-100">
+  <div className="p-5 sm:p-6 bg-gradient-to-br from-[#18181B] via-slate-900 to-indigo-950 rounded-[28px] sm:rounded-[32px] text-white flex items-center justify-between shadow-xl border border-indigo-500/20">
   <div className="flex items-center gap-3">
-  <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center"><Target size={16} className="text-white" /></div>
+  <div className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center backdrop-blur-sm"><Target size={18} className="text-purple-300" /></div>
   <div>
-  <p className="text-[8px] font-black text-white/60 uppercase">Goal Summary</p>
-  <p className="text-[10px] font-black truncate max-w-[120px]">{formData.name || 'New Goal'}</p>
+  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Goal Preview</p>
+  <p className="text-sm font-bold truncate max-w-[160px] sm:max-w-[200px] text-white">{formData.name || 'New Goal'}</p>
   </div>
   </div>
   <div className="text-right">
-  <p className="text-[8px] font-black text-white/60 uppercase">Target</p>
-  <p className="text-lg font-black tracking-tighter">{currency} {formData.targetAmount.toLocaleString()}</p>
+  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Target</p>
+  <p className="text-xl sm:text-2xl font-black tracking-tight text-white">{currency} {formData.targetAmount.toLocaleString()}</p>
   </div>
   </div>
 
   <div className="bg-white rounded-[28px] sm:rounded-[32px] p-5 sm:p-6 border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] space-y-4">
-  <div className="space-y-1">
-  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Goal Name</label>
+  <div className="space-y-1.5">
+  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Goal Name</label>
   <div className="relative">
-  <Target className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
-  <input id="goal-name" name="name" aria-label="Goal name" type="text" value={formData.name} onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))} data-testid="goals-create-name-input" className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-900 text-xs" placeholder="e.g. New Macbook Pro" />
+  <Target className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+  <input id="goal-name" name="name" aria-label="Goal name" type="text" value={formData.name} onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))} data-testid="goals-create-name-input" className="w-full bg-slate-50 border border-slate-200/80 rounded-2xl py-3 pl-10 pr-3.5 font-bold text-slate-900 text-sm focus:bg-white focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 outline-none transition-all" placeholder="e.g. New Macbook Pro" />
   </div>
   </div>
 
-  <div className="space-y-3">
-  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Category</label>
+  <div className="space-y-2">
+  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Category</label>
   <GoalCategoryGrid selectedCategory={formData.category} onSelect={cat => setFormData(prev => ({ ...prev, category: cat }))} />
   </div>
 
-  <div className="space-y-1">
-  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Description / Note</label>
+  <div className="space-y-1.5">
+  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Description / Note</label>
   <div className="relative">
-  <AlignLeft className="absolute left-2.5 top-3 text-slate-300" size={14} />
-  <textarea id="goal-description" name="description" aria-label="Goal description or note" value={formData.description} onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))} data-testid="goals-create-description-textarea" className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-900 text-xs min-h-[60px] resize-none" placeholder="What is this for?" />
+  <AlignLeft className="absolute left-3.5 top-3 text-slate-400" size={16} />
+  <textarea id="goal-description" name="description" aria-label="Goal description or note" value={formData.description} onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))} data-testid="goals-create-description-textarea" className="w-full bg-slate-50 border border-slate-200/80 rounded-2xl py-3 pl-10 pr-3.5 font-medium text-slate-900 text-sm min-h-[72px] resize-none focus:bg-white focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 outline-none transition-all" placeholder="What is this goal for?" />
   </div>
   </div>
   </div>
@@ -438,128 +438,119 @@ export const AddGoal: React.FC = () => {
   </div>
   </div>
   )}
- </div>
-
- {/* Right Column: Financials (lg:col-5) */}
- <div className="lg:col-span-5 flex flex-col gap-3 lg:overflow-y-auto">
- 
-  {/* Target Amount Display - Premium & High Density */}
-  <div className="bg-white rounded-[28px] sm:rounded-[32px] p-6 sm:p-8 border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] relative overflow-hidden flex flex-col items-center">
-  <div className="absolute -top-24 -left-24 w-64 h-64 bg-indigo-500/5 blur-[80px] rounded-full animate-pulse pointer-events-none z-0" />
-  <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-violet-500/5 blur-[80px] rounded-full animate-pulse pointer-events-none z-0 [animation-delay:1s]" />
-
-  <div className="relative z-10 flex flex-col items-center w-full">
-  <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4">Target Goal Amount</span>
-
-  <div className="flex items-center justify-center w-full my-2 sm:my-4 gap-1 sm:gap-4 overflow-hidden px-2">
-  {/* Left Side: Currency */}
-  <div className="flex-1 flex justify-end">
-  <span className="text-xl sm:text-4xl font-black text-slate-200 select-none tracking-tighter shrink-0">{currency}</span>
   </div>
 
-  {/* Center: Input */}
-  <div className="shrink-0 flex justify-center max-w-[60%]">
-  <input
-  id="goal-target-amount"
-  aria-label="Target amount"
-  type="number"
-  name="targetAmount"
-  value={amountStr}
-  onChange={e => { setAmountStr(e.target.value); setFormData(prev => ({ ...prev, targetAmount: parseFloat(e.target.value) || 0 })); }}
-  data-testid="goals-create-target-amount-input"
-  className="bg-transparent text-4xl min-[400px]:text-5xl sm:text-6xl font-black text-slate-900 outline-none w-full text-center tracking-tighter placeholder:text-slate-100 p-0 m-0"
-  placeholder="0"
-  />
+  {/* Right Column: Financials (lg:col-5) */}
+  <div className="lg:col-span-5 flex flex-col gap-4 lg:overflow-y-auto">
+  
+   {/* Target Amount Display - Premium & High Density */}
+   <div className="bg-white rounded-[28px] sm:rounded-[32px] p-6 sm:p-7 border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] relative overflow-hidden flex flex-col items-center">
+   <div className="absolute -top-24 -left-24 w-64 h-64 bg-purple-500/5 blur-[80px] rounded-full pointer-events-none z-0" />
+   <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-indigo-500/5 blur-[80px] rounded-full pointer-events-none z-0" />
+
+   <div className="relative z-10 flex flex-col items-center w-full">
+   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Target Goal Amount</span>
+
+   <div className="flex items-center justify-center w-full my-2 sm:my-3 gap-2 overflow-hidden px-2">
+   <span className="text-2xl sm:text-4xl font-extrabold text-slate-300 select-none tracking-tight shrink-0">{currency}</span>
+   <input
+   id="goal-target-amount"
+   aria-label="Target amount"
+   type="number"
+   name="targetAmount"
+   value={amountStr}
+   onChange={e => { setAmountStr(e.target.value); setFormData(prev => ({ ...prev, targetAmount: parseFloat(e.target.value) || 0 })); }}
+   data-testid="goals-create-target-amount-input"
+   className="bg-transparent text-4xl sm:text-5xl font-black text-slate-900 outline-none w-full text-center tracking-tighter placeholder:text-slate-200 p-0 m-0"
+   placeholder="0"
+   />
+   </div>
+
+   {/* Quick Preset Buttons */}
+   <div className="flex flex-wrap items-center justify-center gap-2 mt-3 w-full">
+   {[1000, 5000, 10000, 25000].map(amt => (
+   <button
+   key={amt}
+   type="button"
+   onClick={() => {
+   const next = (formData.targetAmount || 0) + amt;
+   setAmountStr(String(next));
+   setFormData(prev => ({ ...prev, targetAmount: next }));
+   }}
+   data-testid={`goals-create-preset-${amt}-button`}
+   className="px-4 py-2 bg-slate-50 border border-slate-200/80 rounded-full text-xs font-bold text-slate-700 hover:bg-[#18181B] hover:text-white hover:border-[#18181B] transition-all active:scale-95 cursor-pointer shadow-2xs"
+   >
+   +{currency}{amt.toLocaleString()}
+   </button>
+   ))}
+   </div>
+   </div>
+   </div>
+
+   <div className="bg-white rounded-[28px] sm:rounded-[32px] p-5 sm:p-6 border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] space-y-4">
+   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+   <div className="space-y-1.5">
+   <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Initial Deposit</label>
+   <div className="flex items-center w-full bg-slate-50 border border-slate-200/80 rounded-2xl h-11 px-3.5 focus-within:ring-2 focus-within:ring-purple-500/20 focus-within:border-purple-400 transition-all">
+   <span className="text-slate-400 text-xs font-bold select-none mr-1.5 shrink-0">{currency}</span>
+   <input id="goal-initial-deposit" name="initialDeposit" aria-label="Initial deposit" type="number" value={initialAmtStr} onChange={e => { setInitialAmtStr(e.target.value); setFormData(prev => ({ ...prev, currentAmount: parseFloat(e.target.value) || 0 })); }} data-testid="goals-create-initial-deposit-input" className="flex-1 bg-transparent border-none p-0 font-bold text-xs focus:ring-0 text-slate-900 placeholder:text-slate-300 outline-none" placeholder="0" />
+   </div>
+   </div>
+   <div className="space-y-1.5">
+   <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Target Date</label>
+   <div data-testid="goals-create-target-date-container" className="relative group cursor-pointer" onClick={(e) => {
+   const input = e.currentTarget.querySelector('input');
+   if (input) (input as any).showPicker();
+   }}>
+   <CalendarDays className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-purple-600 transition-colors z-10" size={15} />
+   <div className="w-full bg-slate-50 border border-slate-200/80 rounded-2xl pl-10 pr-3.5 font-bold text-xs text-slate-900 group-hover:bg-slate-100/60 transition-all flex items-center h-11">
+   {(() => {
+   if (!formData.deadline) return <span className="text-slate-400 font-medium">Select target date</span>;
+   const date = new Date(formData.deadline);
+   const day = String(date.getDate()).padStart(2, '0');
+   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+   return `${day} ${months[date.getMonth()]} ${date.getFullYear()}`;
+   })()}
+   </div>
+   <input data-testid="goals-create-target-date-input"
+   type="date"
+   value={formData.deadline}
+   onChange={e => setFormData(prev => ({ ...prev, deadline: e.target.value }))}
+   aria-label="Target date"
+   className="absolute inset-0 opacity-0 cursor-pointer z-20"
+   />
+   </div>
+   </div>
   </div>
 
-  {/* Right Side: Empty to balance */}
-  <div className="flex-1" />
-  </div>
-
-  {/* Quick Preset Buttons */}
-  <div className="flex flex-wrap items-center justify-center gap-2 mt-2 w-full">
-  {[1000, 5000, 10000, 25000].map(amt => (
-  <button
-  key={amt}
-  type="button"
-  onClick={() => {
-  const next = (formData.targetAmount || 0) + amt;
-  setAmountStr(String(next));
-  setFormData(prev => ({ ...prev, targetAmount: next }));
-  }}
-  data-testid={`goals-create-preset-${amt}-button`}
-  className="px-5 py-2.5 bg-slate-50 border border-slate-100 rounded-full text-xs font-bold text-slate-600 hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all active:scale-95 cursor-pointer shadow-2xs"
-  >
-  +{currency}{amt}
+   <div className="space-y-1.5">
+   <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Monthly Saving Plan</label>
+   <div className="flex gap-2.5">
+   <div className="flex-1 flex items-center bg-slate-50 border border-slate-200/80 rounded-2xl h-11 px-3.5 focus-within:ring-2 focus-within:ring-purple-500/20 focus-within:border-purple-400 transition-all">
+   <span className="text-slate-400 text-xs font-bold select-none mr-1.5 shrink-0">{currency}</span>
+   <input type="number" value={formData.monthlySavingPlan || ''} onChange={e => setFormData(prev => ({ ...prev, monthlySavingPlan: parseFloat(e.target.value) || 0 }))} aria-label="Monthly saving plan" data-testid="goals-create-monthly-plan-input" className="flex-1 bg-transparent border-none p-0 font-bold text-xs focus:ring-0 text-slate-900 placeholder:text-slate-300 outline-none" placeholder="0" />
+   </div>
+  {suggestion && (
+  <button type="button" onClick={() => setFormData(prev => ({ ...prev, monthlySavingPlan: Math.ceil(suggestion.monthlyAmount) }))} data-testid="goals-create-suggest-button" className="px-3.5 bg-purple-50 text-purple-700 border border-purple-200/60 rounded-2xl text-[10px] font-bold uppercase tracking-wider hover:bg-purple-100 transition-colors shrink-0 cursor-pointer">
+  Auto: {formatCurrency(suggestion.monthlyAmount, currency)}
   </button>
-  ))}
-  </div>
+  )}
   </div>
   </div>
 
-  <div className="bg-white rounded-[28px] sm:rounded-[32px] p-5 sm:p-6 border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] space-y-4">
-  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-  <div className="space-y-1">
-  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Initial Deposit</label>
-  <div className="flex items-center w-full bg-slate-50 border border-transparent rounded-xl h-10 px-3 focus-within:ring-2 focus-within:ring-indigo-500/20">
-  <span className="text-slate-300 text-[10px] font-black select-none mr-1.5 shrink-0">{currency}</span>
-  <input id="goal-initial-deposit" name="initialDeposit" aria-label="Initial deposit" type="number" value={initialAmtStr} onChange={e => { setInitialAmtStr(e.target.value); setFormData(prev => ({ ...prev, currentAmount: parseFloat(e.target.value) || 0 })); }} data-testid="goals-create-initial-deposit-input" className="flex-1 bg-transparent border-none p-0 font-bold text-xs focus:ring-0 text-slate-900 placeholder:text-slate-300" placeholder="0" />
+  {suggestion && (
+  <div className="p-3.5 bg-slate-900 rounded-2xl text-white flex items-center gap-3">
+  <div className="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center shrink-0"><Sparkles size={16} className="text-purple-400" /></div>
+  <div>
+  <p className="text-[9px] font-bold text-white/50 uppercase tracking-widest">Plan Estimate</p>
+  <p className="text-xs font-semibold text-slate-200">Achieve your goal in <span className="font-bold text-white">{suggestion.months} months</span> with this plan.</p>
   </div>
   </div>
-  <div className="space-y-1">
-  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Target Date</label>
-  <div data-testid="goals-create-target-date-container" className="relative group" onClick={(e) => {
-  const input = e.currentTarget.querySelector('input');
-  if (input) (input as any).showPicker();
-  }}>
-  <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-indigo-500 transition-colors z-10" size={14} />
-  <div className="w-full bg-slate-50 border border-transparent rounded-xl py-2.5 pl-9 pr-3 font-bold text-xs text-slate-900 group-hover:bg-slate-100/50 group-hover:border-slate-200 transition-all flex items-center h-10">
-  {(() => {
-  if (!formData.deadline) return 'Select Target Date';
-  const date = new Date(formData.deadline);
-  const day = String(date.getDate()).padStart(2, '0');
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  return `${day}-${months[date.getMonth()]}-${date.getFullYear()}`;
-  })()}
-  </div>
-  <input data-testid="goals-create-target-date-input"
-  type="date"
-  value={formData.deadline}
-  onChange={e => setFormData(prev => ({ ...prev, deadline: e.target.value }))}
-  aria-label="Target date"
-  className="absolute inset-0 opacity-0 cursor-pointer z-20"
-  />
+  )}
   </div>
   </div>
- </div>
+  </main>
 
-  <div className="space-y-1">
-  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Monthly Plan</label>
-  <div className="flex gap-3">
-  <div className="flex-1 flex items-center bg-slate-50 border border-transparent rounded-xl h-10 px-3 focus-within:ring-2 focus-within:ring-indigo-500/20">
-  <span className="text-slate-300 text-[10px] font-black select-none mr-1.5 shrink-0">{currency}</span>
-  <input type="number" value={formData.monthlySavingPlan} onChange={e => setFormData(prev => ({ ...prev, monthlySavingPlan: parseFloat(e.target.value) || 0 }))} aria-label="Monthly saving plan" data-testid="goals-create-monthly-plan-input" className="flex-1 bg-transparent border-none p-0 font-bold text-xs focus:ring-0 text-slate-900 placeholder:text-slate-300" />
-  </div>
- {suggestion && (
- <button onClick={() => setFormData(prev => ({ ...prev, monthlySavingPlan: Math.ceil(suggestion.monthlyAmount) }))} data-testid="goals-create-suggest-button" className="px-3 bg-indigo-50 text-indigo-600 rounded-xl text-[9px] font-black uppercase tracking-wider hover:bg-indigo-100 transition-colors shrink-0">
- Use Smart Suggest: {formatCurrency(suggestion.monthlyAmount, currency)}
- </button>
- )}
- </div>
- </div>
-
- {suggestion && (
- <div className="p-3 bg-slate-900 rounded-xl text-white flex items-center gap-3">
- <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center shrink-0"><Sparkles size={16} className="text-indigo-400" /></div>
- <div>
- <p className="text-[8px] font-black text-white/40 uppercase tracking-widest">Timeline Forecast</p>
- <p className="text-[10px] font-bold">Reach your goal in {suggestion.months} months with this plan.</p>
- </div>
- </div>
- )}
- </div>
- </div>
- </main>
   <FloatingSaveBar
     onSave={handleSubmit}
     onDiscard={() => setCurrentPage('goals')}

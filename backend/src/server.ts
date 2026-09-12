@@ -13,6 +13,7 @@ import { startAIBackgroundJobs, stopAIBackgroundJobs } from './features/ai/ai.en
 import { startNotificationOutbox, stopNotificationOutbox } from './workers/index';
 import { startCleanupWorker, stopCleanupWorker } from './workers/cleanup.worker';
 import { runWorkersInApiProcess } from './config/serviceRole';
+import { verifyStorageBucket } from './utils/storage';
 import './features/budgets/budget.listener';
 import { initializeLedgerSubscriptions } from './features/transactions/ledger.subscriber';
 
@@ -37,6 +38,7 @@ initializeSocket(server);
 // The old separate metrics server on :9091 (Fly-specific) has been removed.
 
 void initRedis();
+void verifyStorageBucket();
 
 // Background jobs (notification outbox, AI tasks, cleanup) run in THIS API
 // process only in single-machine / local mode. In the split Fly topology they

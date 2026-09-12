@@ -18,8 +18,34 @@ const getStorageClient = () => {
   return null;
 };
 
-export const STORAGE_BUCKET = process.env.SUPABASE_STORAGE_BUCKET || 'secure-uploads';
+// `expense-bills` is the bucket db/supabase/migrations/002_enable_rls.sql creates.
+// The old default, `secure-uploads`, never existed in the project, so every
+// upload failed: outside production that was masked by the local-disk fallback
+// below, and in production uploadBuffer throws.
+export const STORAGE_BUCKET = process.env.SUPABASE_STORAGE_BUCKET || 'expense-bills';
 export const SIGNED_URL_TTL = Number(process.env.SUPABASE_SIGNED_URL_TTL || 600);
+
+/**
+ * Boot-time probe that the configured bucket exists. Non-fatal on purpose —
+ * attachments are secondary to the money paths, so a bad bucket name must not
+ * block a deploy — but it must not be silent either: a missing bucket otherwise
+ * only surfaces as `downloadUrl: null` long after uploads started failing.
+ */
+export const verifyStorageBucket = async () => {
+  const client = getStorageClient();
+  if (!client) {
+    console.warn('[Storage] SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY not set — attachments use local disk, and uploads fail in production.');
+    return;
+  }
+  try {
+    const { error } = await client.storage.getBucket(STORAGE_BUCKET);
+    if (error) {
+      console.error(`[Storage] Bucket "${STORAGE_BUCKET}" is unusable (${error.message}) — every attachment upload will fail. Check SUPABASE_STORAGE_BUCKET.`);
+    }
+  } catch (err: any) {
+    console.error(`[Storage] Could not verify bucket "${STORAGE_BUCKET}": ${err?.message ?? err}`);
+  }
+};
 
 export const uploadBuffer = async (filePath: string, buffer: Buffer, contentType: string) => {
   try {
@@ -107,6 +133,9 @@ export const createSignedUrl = async (filePath: string, expiresIn = SIGNED_URL_T
 
     return data?.signedUrl || null;
   } catch (err: any) {
+    // Callers treat null as "no URL" and fall back to streaming, so this is the
+    // only place the storage error is visible.
+    console.warn(`Supabase signed URL failed for ${filePath}: ${err?.message ?? err}`);
     return null;
   }
 };

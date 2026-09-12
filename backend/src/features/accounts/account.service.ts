@@ -88,15 +88,24 @@ export class AccountService {
       throw AppError.notFound('Account');
     }
 
-    // Validate balance & openingBalance: must be finite when supplied
-    for (const field of ['balance', 'openingBalance'] as const) {
+    // Validate openingBalance & targetBalance: must be finite when supplied
+    for (const field of ['openingBalance', 'targetBalance'] as const) {
       if (data[field] !== undefined && !Number.isFinite(Number(data[field]))) {
         throw AppError.badRequest(`Account ${field} must be a finite number`, 'INVALID_BALANCE');
       }
     }
 
-    // Whitelist only permitted fields to prevent mass assignment
-    const allowedFields = ['name', 'type', 'provider', 'country', 'balance', 'openingBalance', 'currency', 'color', 'icon', 'syncStatus', 'isActive'] as const;
+    // Whitelist only permitted fields to prevent mass assignment.
+    //
+    // `balance` is deliberately absent: the server owns it (openingBalance + Σ
+    // ledger deltas, applied as each transaction posts). Clients used to send
+    // their local figure on every edit and sync echo, so a device that had not yet
+    // pulled recent transactions overwrote the correct balance with a stale one —
+    // seen in production on 2026-09-12, where a push restored a balance from
+    // before that day's two transactions. Installed app builds still send it; it
+    // is ignored.
+    // A deliberate "set current balance" edit is `targetBalance` below.
+    const allowedFields = ['name', 'type', 'provider', 'country', 'openingBalance', 'currency', 'color', 'icon', 'syncStatus', 'isActive'] as const;
     const updates: Record<string, any> = {};
     for (const field of allowedFields) {
       if (data[field] !== undefined) {
@@ -109,9 +118,14 @@ export class AccountService {
       }
     }
 
-    // Editing only the opening balance must shift the current balance by the
-    // same delta so the invariant balance = openingBalance + ledger holds.
-    if (data.openingBalance !== undefined && data.balance === undefined) {
+    // Both balance edits move balance and openingBalance by the same delta, so the
+    // invariant balance = openingBalance + ledger holds. Deltas are taken against
+    // the SERVER's figures, never the client's possibly-stale copy.
+    if (data.targetBalance !== undefined) {
+      const delta = Number(data.targetBalance) - Number(account.balance ?? 0);
+      updates.balance = Number(data.targetBalance);
+      updates.openingBalance = Number(account.openingBalance ?? 0) + delta;
+    } else if (data.openingBalance !== undefined) {
       const delta = Number(data.openingBalance) - Number(account.openingBalance ?? 0);
       updates.balance = Number(account.balance ?? 0) + delta;
     }
