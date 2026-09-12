@@ -1206,7 +1206,7 @@ if (linkedDocId) {
  <div className="premium-glass-card p-4 space-y-4 animate-in slide-in-from-bottom-2 duration-300">
  <div className="flex items-center justify-between">
  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
- {expenseMode === 'group' ? `PARTICIPANTS (${groupParticipants.length})` : 
+ {expenseMode === 'group' ? `PARTICIPANTS (${groupParticipants.length + 1})` : 
  expenseMode === 'loan' ? 'COUNTERPARTY' : 'WHO? / PERSON'}
  </label>
  
@@ -1216,16 +1216,16 @@ if (linkedDocId) {
  type="button"
  onClick={() => { setShowFriendPicker(p => !p); setShowNewPersonInput(false); }}
  data-testid="transaction-friends-picker-button"
- className="flex items-center gap-1 text-[9px] font-black text-violet-600 bg-violet-50 px-2.5 py-1.5 rounded-lg uppercase tracking-wide"
+ className="flex items-center gap-1 text-[9px] font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200/80 px-3 py-1 rounded-full uppercase tracking-wider transition-all cursor-pointer shadow-2xs"
  >
- <Users size={11} /> FRIENDS
+ <Users size={11} /> Friends
  </button>
  )}
  <button
  type="button"
  onClick={() => { setShowNewPersonInput(p => !p); setShowFriendPicker(false); }}
  data-testid="transaction-add-person-toggle-button"
- className="flex items-center gap-1 text-[9px] font-black text-indigo-600 bg-indigo-50 px-2.5 py-1.5 rounded-lg uppercase tracking-wide"
+ className="flex items-center gap-1 text-[9px] font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200/80 px-3 py-1 rounded-full uppercase tracking-wider transition-all cursor-pointer shadow-2xs"
  >
  <UserPlus size={11} /> New
  </button>
@@ -1240,17 +1240,17 @@ if (linkedDocId) {
  type="button"
  onClick={() => setShowFriendPicker(p => !p)}
  data-testid="transaction-person-picker-button"
- className="w-full flex items-center justify-between bg-slate-50 border border-slate-100 rounded-xl py-3 px-4 font-bold text-xs text-slate-700 hover:bg-slate-100 transition-all"
+ className="w-full flex items-center justify-between bg-slate-50 border border-slate-200/80 rounded-2xl py-3 px-4 font-bold text-xs text-slate-700 hover:bg-slate-100/60 transition-all cursor-pointer"
  >
  <div className="flex items-center gap-2">
  {formData.payee || loanDraft.contactName ? (
- <div className="w-6 h-6 rounded-full bg-indigo-600 flex items-center justify-center text-[10px] font-black text-white uppercase">
+ <div className="w-6 h-6 rounded-full bg-[#18181B] flex items-center justify-center text-[10px] font-black text-white uppercase">
  {(formData.payee || loanDraft.contactName)[0]}
  </div>
  ) : (
  <User size={14} className="text-slate-400" />
  )}
- <span className={formData.payee || loanDraft.contactName ? 'text-slate-900' : 'text-slate-300'}>
+ <span className={formData.payee || loanDraft.contactName ? 'text-slate-900' : 'text-slate-400'}>
  {formData.payee || loanDraft.contactName || 'Select Person'}
  </span>
  </div>
@@ -1262,16 +1262,17 @@ if (linkedDocId) {
 
  {/* Friends quick-add / Selection Panel */}
  {showFriendPicker && friends.length > 0 && (
- <div className="p-3 bg-violet-50/60 rounded-xl border border-violet-100 animate-in zoom-in-95 duration-200">
- <p className="text-[8px] font-black text-violet-400 uppercase tracking-widest mb-2">Tap to select</p>
- <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2">
+ <div className="p-3.5 bg-purple-50/70 rounded-2xl border border-purple-100/90 animate-in zoom-in-95 duration-200">
+ <p className="text-[9px] font-black text-purple-600 uppercase tracking-widest mb-2">Tap to select friend</p>
+ <div className="flex flex-wrap gap-2">
  {friends.map(f => {
  const isSelected = expenseMode === 'group' 
  ? groupParticipants.some(p => p.name.toLowerCase() === f.name.toLowerCase())
  : (formData.payee === f.name || loanDraft.contactName === f.name);
  
  return (
- <button data-testid={`add-transaction-button-3-${f.id}`}
+ <button
+ data-testid={`add-transaction-button-3-${f.id}`}
  key={f.id}
  type="button"
  onClick={() => {
@@ -1284,10 +1285,10 @@ if (linkedDocId) {
  }
  }}
  className={cn(
-"px-2.5 py-1.5 rounded-lg text-[9px] font-bold transition-all border",
+"px-3 py-1.5 rounded-full text-[10px] font-bold transition-all border cursor-pointer shadow-2xs",
  isSelected
- ?"bg-indigo-600 border-indigo-600 text-white shadow-md"
- :"bg-white border-violet-100 text-violet-700 hover:bg-violet-600 hover:text-white"
+ ? "bg-[#18181B] border-[#18181B] text-white shadow-xs"
+ : "bg-white border-purple-200 text-purple-700 hover:bg-purple-600 hover:text-white hover:border-purple-600"
  )}
  >
  {f.name}
@@ -1300,8 +1301,8 @@ if (linkedDocId) {
 
  {/* New Person Input */}
  {showNewPersonInput && (
- <div className="flex items-center gap-2 p-2.5 bg-indigo-50/60 rounded-xl border border-indigo-100 animate-in slide-in-from-top-2">
- <UserPlus size={14} className="text-indigo-400 shrink-0" />
+ <div className="flex items-center gap-2 p-3 bg-indigo-50/70 rounded-2xl border border-indigo-100/90 animate-in slide-in-from-top-2">
+ <UserPlus size={14} className="text-indigo-500 shrink-0" />
  <input
  type="text"
  value={newPersonName}
@@ -1318,7 +1319,7 @@ if (linkedDocId) {
  }}
  aria-label="New person name"
  data-testid="transaction-new-person-input"
- className="flex-1 bg-transparent border-none p-0 text-xs font-bold text-slate-900 focus:ring-0 placeholder:text-slate-300"
+ className="flex-1 bg-transparent border-none p-0 text-xs font-bold text-slate-900 focus:ring-0 placeholder:text-slate-400"
  placeholder="Enter name & press Enter"
  autoFocus
  />
@@ -1334,7 +1335,7 @@ if (linkedDocId) {
  }
  }}
  data-testid="transaction-new-person-confirm-button"
- className="p-1.5 bg-indigo-600 text-white rounded-lg"
+ className="p-1.5 bg-[#18181B] hover:bg-black text-white rounded-full transition-all cursor-pointer shadow-2xs"
  >
  <Check size={12} strokeWidth={3} />
  </button>
@@ -1343,33 +1344,66 @@ if (linkedDocId) {
 
  {/* Split Mode: Participant List Display */}
  {expenseMode === 'group' && (
- <div className="space-y-2">
- {groupParticipants.length === 0 ? (
- <p className="text-[10px] font-bold text-slate-300 text-center py-2">No participants added</p>
- ) : (
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[120px] overflow-y-auto pr-1">
+ <div className="space-y-3">
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[160px] overflow-y-auto pr-1 scrollbar-none">
+ {/* Fixed "You" */}
+ <div className="flex items-center gap-2.5 p-2.5 bg-slate-100/70 rounded-2xl border border-slate-100">
+ <div className="w-7 h-7 rounded-full bg-[#18181B] flex items-center justify-center text-[9px] font-black text-white shrink-0">ME</div>
+ <div className="flex-1 min-w-0">
+ <p className="text-xs font-black text-slate-900 truncate">You (Included)</p>
+ <p className="text-[8px] font-bold text-slate-400 uppercase">Payer / Equal share</p>
+ </div>
+ </div>
+
  {groupParticipants.map(p => (
- <div key={p.id} className="flex items-center gap-2 p-2 bg-slate-50 rounded-lg border border-slate-100 group">
- <div className="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center text-[10px] font-black text-indigo-600 uppercase">{p.name?.[0] || '?'}</div>
- <input data-testid={`add-transaction-participant-name-${p.id}`}
+ <div key={p.id} className="flex items-center gap-2 p-2.5 bg-white rounded-2xl border border-slate-100 group shadow-2xs hover:border-slate-200 transition-all">
+ <div className="w-7 h-7 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-[10px] font-black text-indigo-600 uppercase shrink-0">
+ {p.name?.[0] || '?'}
+ </div>
+ <input
+ data-testid={`add-transaction-participant-name-${p.id}`}
  type="text"
  value={p.name}
  onChange={e => setGroupParticipants(prev => prev.map(i => i.id === p.id ? { ...i, name: e.target.value } : i))}
  aria-label="Participant name"
  className="flex-1 bg-transparent border-none p-0 text-xs font-bold text-slate-900 focus:ring-0"
  />
- <button data-testid={`add-transaction-remove-participant-${p.id}`}
+ <button
+ data-testid={`add-transaction-remove-participant-${p.id}`}
  type="button"
  title="Remove participant"
  onClick={() => setGroupParticipants(prev => prev.filter(i => i.id !== p.id))}
- className="p-1 text-slate-300 hover:text-rose-500 transition-colors opacity-0 group-hover:opacity-100"
+ className="w-6 h-6 rounded-full flex items-center justify-center text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-all opacity-0 group-hover:opacity-100 cursor-pointer"
  >
- <Trash2 size={12} strokeWidth={3} />
+ <Trash2 size={12} strokeWidth={2.5} />
  </button>
  </div>
  ))}
  </div>
+
+ {/* Live Split Calculation Summary Card */}
+ <div className="p-4 bg-[#18181B] rounded-2xl text-white flex items-center justify-between shadow-md">
+ <div>
+ <p className="text-[9px] font-black text-white/50 uppercase tracking-widest">
+ Equal Split ({groupParticipants.length + 1} people)
+ </p>
+ <p className="text-xs font-bold text-white mt-0.5">
+ {formData.amount > 0 ? (
+ <>
+ <span className="text-white/40">{currency}</span> {(formData.amount / (groupParticipants.length + 1)).toFixed(2)} <span className="text-white/40 font-normal">/ head</span>
+ </>
+ ) : (
+ <span className="text-white/40">Enter amount above to view split</span>
  )}
+ </p>
+ </div>
+ <div className="text-right">
+ <p className="text-[9px] font-black text-white/50 uppercase tracking-widest">Your Share</p>
+ <p className="text-sm sm:text-base font-black text-purple-300">
+ {currency} {formData.amount > 0 ? (formData.amount / (groupParticipants.length + 1)).toFixed(2) : '0'}
+ </p>
+ </div>
+ </div>
  </div>
  )}
  </div>

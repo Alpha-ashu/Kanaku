@@ -334,16 +334,40 @@ export const createFriend = async (req: AuthRequest, res: Response, next: NextFu
       }
     }
 
-    // Create friend record for current user
-    const friend = await prisma.friend.create({
-      data: {
+    // Create friend record for current user.
+    //
+    // The findFirst above is a check-then-insert: two concurrent requests can both
+    // miss it and both insert (observed — two "Prijith" rows 3ms apart). The
+    // Friend_userId_name_ci_key unique index is what actually serialises this; the
+    // loser lands here as P2002 and is answered idempotently with the row that won,
+    // rather than a 500 the caller would retry into yet another attempt.
+    let friend;
+    try {
+      friend = await prisma.friend.create({
+        data: {
+          userId,
+          name: sanitize(name.trim()),
+          email: cleanEmail,
+          phone: cleanPhone,
+          syncStatus: 'synced',
+        },
+      });
+    } catch (err: unknown) {
+      const code = (err as { code?: string })?.code;
+      if (code !== 'P2002') throw err;
+      const winner = await prisma.friend.findFirst({
+        where: { userId, deletedAt: null, name: { equals: cleanName, mode: 'insensitive' } },
+      });
+      if (!winner) throw err;
+      logger.warn('[Duplicate prevented] Friend create lost a concurrent race', {
         userId,
-        name: sanitize(name.trim()),
-        email: cleanEmail,
-        phone: cleanPhone,
-        syncStatus: 'synced',
-      },
-    });
+        entity: 'Friend',
+        existingRecordId: winner.id,
+        detectionReason: 'unique index Friend_userId_name_ci_key',
+        action: 'returned existing record',
+      });
+      return res.status(200).json({ success: true, data: winner, deduplicated: true });
+    }
 
     // Auto-link any existing GroupExpenseMember rows that were created local-only (without friendId/email)
     await linkStaleGroupMembersForFriend(friend, userId);

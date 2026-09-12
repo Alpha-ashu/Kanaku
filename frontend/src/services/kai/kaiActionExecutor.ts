@@ -138,6 +138,24 @@ async function findOrCreateFriend(name: string, now: Date): Promise<Friend | und
   return db.friends.get(id as number);
 }
 
+/**
+ * Resolve several people to Friend rows.
+ *
+ * Deliberately sequential: findOrCreateFriend is a check-then-insert, so running
+ * it in parallel lets two calls for the same person both miss the check and both
+ * insert. Names are de-duplicated case-insensitively first, for the same reason.
+ */
+async function resolveFriends(names: string[], now: Date): Promise<Array<Friend | undefined>> {
+  const seen = new Map<string, Friend | undefined>();
+  const out: Array<Friend | undefined> = [];
+  for (const name of names) {
+    const key = name.trim().toLowerCase();
+    if (!seen.has(key)) seen.set(key, await findOrCreateFriend(name, now));
+    out.push(seen.get(key));
+  }
+  return out;
+}
+
 const requireAmount = (entities: KaiActionEntities): number => {
   const amount = Number(entities.amount ?? 0);
   if (!amount || amount <= 0) throw new Error('This action needs an amount');
@@ -332,7 +350,7 @@ async function createGroupExpense(action: KaiAction, ctx: ExecutionContext): Pro
     ? `${e.description} with ${memberNames.slice(0, 3).join(', ')}${memberNames.length > 3 ? '…' : ''}`
     : `Group expense with ${memberNames.slice(0, 3).join(', ')}${memberNames.length > 3 ? '…' : ''}`;
 
-  const friends = await Promise.all(memberNames.map((n) => findOrCreateFriend(n, now)));
+  const friends = await resolveFriends(memberNames, now);
   const participants: GroupMember[] = memberNames.map((n, i) => ({
     name: friends[i]?.name ?? n,
     share: perHead,
@@ -697,7 +715,7 @@ export async function updateKaiAction(
         const total = patch.amount ?? group.totalAmount;
         const names = e.members ?? group.members.filter((m) => !m.isCurrentUser).map((m) => m.name);
         const perHead = Number((total / (names.length + 1)).toFixed(2));
-        const friends = await Promise.all(names.map((n) => findOrCreateFriend(n, now)));
+        const friends = await resolveFriends(names, now);
         const members: GroupMember[] = [
           { name: 'You', share: perHead, paid: true, isCurrentUser: true, paidAmount: perHead, paymentStatus: 'paid' },
           ...names.map((n, i) => ({ name: friends[i]?.name ?? n, share: perHead, paid: false, isCurrentUser: false, paidAmount: 0, paymentStatus: 'pending' as const, friendId: friends[i]?.id })),
