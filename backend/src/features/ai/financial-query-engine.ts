@@ -75,7 +75,16 @@ export interface QueryResult {
 const INR = (n: number) =>
   `₹${n.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
 
-function toRow(t: any): TransactionSummaryRow {
+interface TransactionRowSource {
+  id: string;
+  date: Date | string;
+  description?: string | null;
+  amount?: unknown;
+  category?: string | null;
+  type?: string | null;
+}
+
+function toRow(t: TransactionRowSource): TransactionSummaryRow {
   return {
     id: t.id,
     date: t.date instanceof Date
@@ -285,16 +294,17 @@ async function personBalance(userId: string, params: QueryParams): Promise<Query
   const loans = await prisma.loan.findMany({
     where: {
       userId,
+      deletedAt: null,
       contactPerson: { contains: name, mode: 'insensitive' },
       status: 'active',
     },
     select: {
       id: true,
       type: true,
+      name: true,
       contactPerson: true,
-      originalAmount: true,
+      principalAmount: true,
       outstandingBalance: true,
-      description: true,
     },
   });
 
@@ -305,17 +315,15 @@ async function personBalance(userId: string, params: QueryParams): Promise<Query
   let netBalance = 0;
   const lines: string[] = [];
   for (const loan of loans) {
-    const outstanding = Number(loan.outstandingBalance ?? loan.originalAmount ?? 0);
+    const outstanding = Number(loan.outstandingBalance ?? loan.principalAmount ?? 0);
+    const person = loan.contactPerson || loan.name;
+    const label = loan.name && loan.name !== person ? ` (${loan.name})` : '';
     if (loan.type === 'lent') {
       netBalance += outstanding;
-      lines.push(
-        `${loan.contactPerson} owes you ${INR(outstanding)}${loan.description ? ` (${loan.description})` : ''}`,
-      );
+      lines.push(`${person} owes you ${INR(outstanding)}${label}`);
     } else {
       netBalance -= outstanding;
-      lines.push(
-        `You owe ${loan.contactPerson} ${INR(outstanding)}${loan.description ? ` (${loan.description})` : ''}`,
-      );
+      lines.push(`You owe ${person} ${INR(outstanding)}${label}`);
     }
   }
 

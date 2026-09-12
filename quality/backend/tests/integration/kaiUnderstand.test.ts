@@ -6,7 +6,8 @@
  */
 import { extractIndianAmounts, parseIndianAmount, stripIndianAmounts } from '../../../../backend/src/features/ai/indian-number';
 import { normaliseDateInput, toQueryParams } from '../../../../backend/src/features/ai/financial-query-engine';
-import { makeActionId, matchClarificationOption, normaliseKaiAction, offlineActions, parseSpokenDate } from '../../../../backend/src/features/kai/kai.nlp';
+import { makeActionId, matchClarificationOption, normaliseKaiAction, offlineActions, parseActions, parseSpokenDate } from '../../../../backend/src/features/kai/kai.nlp';
+import { isTransientLLMError } from '../../../../backend/src/features/ai/chat.llm';
 import { buildKaiPrompt } from '../../../../backend/src/features/kai/kai.prompt';
 import type { KaiSessionContext } from '../../../../packages/shared';
 
@@ -216,6 +217,22 @@ describe('buildKaiPrompt', () => {
 
   it('says so when there is no context', () => {
     expect(buildKaiPrompt('hi', undefined, '', '2026-09-12')).toContain('SESSION CONTEXT: (none');
+  });
+});
+
+describe('LLM output handling', () => {
+  it('parses fenced, wrapped, bare-array and prose-wrapped JSON', () => {
+    expect(parseActions('```json\n{"actions":[{"kind":"expense","amount":1}]}\n```')).toHaveLength(1);
+    expect(parseActions('[{"kind":"todo","title":"x"}]')).toHaveLength(1);
+    expect(parseActions('Sure! {"actions":[{"kind":"query","queryType":"SUM_EXPENSES"}]} Let me know.')).toHaveLength(1);
+    expect(parseActions('{"actions":[{"kind":"expense","amount":1,},]}')).toHaveLength(1);
+    expect(parseActions('not json at all')).toEqual([]);
+  });
+
+  it('recognises transient provider errors worth one retry', () => {
+    expect(isTransientLLMError('[503 ] This model is currently experiencing high demand.')).toBe(true);
+    expect(isTransientLLMError('Groq API error 429: rate limit')).toBe(true);
+    expect(isTransientLLMError('API key not valid')).toBe(false);
   });
 });
 

@@ -40,8 +40,8 @@ export const understand = async (req: AuthRequest, res: Response) => {
       actions: result.actions,
     };
     return res.json(response);
-  } catch (error: any) {
-    logger.error('Kai understand failed', { error: error.message });
+  } catch (error: unknown) {
+    logger.error('Kai understand failed', { error: error instanceof Error ? error.message : String(error) });
     return res.status(500).json({ error: 'Kai could not process that. Please try again.' });
   }
 };

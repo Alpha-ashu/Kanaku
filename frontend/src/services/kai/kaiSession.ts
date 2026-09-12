@@ -105,8 +105,12 @@ function resolveOptionPatch(target: KaiExecutedAction, patch: KaiEntityPatch, ut
   let index = typeof chosenOption === 'number' ? chosenOption - 1 : -1;
   if (index < 0 && !rest.kind) index = matchOptionLabel(utterance, options.map((o) => o.label));
   if (index < 0 || !options[index]) return rest;
-  const { description: _echo, ...extra } = rest;
+  const extra = omitKeys(rest, ['description']);
   return { ...options[index].patch, ...extra };
+}
+
+function omitKeys<T extends object>(obj: T, keys: string[]): Partial<T> {
+  return Object.fromEntries(Object.entries(obj).filter(([k]) => !keys.includes(k))) as Partial<T>;
 }
 
 const newId = () =>
@@ -543,7 +547,8 @@ export class KaiSession {
    */
   private async applyUpdate(target: KaiExecutedAction, patch: KaiEntityPatch, say?: string): Promise<KaiExecutedAction | null> {
     if (target.status === 'pending') {
-      const { question: _q, options: _o, patch: draftPatch, ...draftEntities } = target.entities;
+      const draftPatch = target.entities.patch;
+      const draftEntities = omitKeys(target.entities, ['question', 'options', 'patch']);
       const kind: KaiActionKind = patch.kind ?? draftPatch?.kind ?? 'expense';
       const draft: KaiAction = applyPatch(
         { actionId: target.actionId, kind, rawSegment: target.rawSegment, entities: draftEntities, confidence: target.confidence, requiresReview: false, say },

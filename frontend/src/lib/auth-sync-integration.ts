@@ -3561,11 +3561,31 @@ export async function saveGoalWithBackendSync(goal: any) {
  * account is attached, and callers that already recorded the cash movement as a
  * transaction would end up counted twice on the server.
  */
-export async function saveLoanWithBackendSync(loan: any) {
+export interface LoanSaveInput {
+  type: 'borrowed' | 'lent' | 'emi';
+  name: string;
+  principalAmount: number;
+  outstandingBalance: number;
+  status: 'active' | 'overdue' | 'completed';
+  contactPerson?: string;
+  friendId?: number;
+  notes?: string;
+  dueDate?: Date;
+  loanDate?: Date;
+  /** Accepted for caller convenience but never sent (see above) or stored. */
+  accountId?: number;
+  clientRequestId?: string;
+  remoteId?: number;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export async function saveLoanWithBackendSync(loan: LoanSaveInput) {
   initializeBackendSync();
 
   const activeClientRequestId = loan.clientRequestId || crypto.randomUUID();
-  const { accountId: _ignoredAccountId, ...loanRow } = loan;
+  // Never forward accountId (see the doc comment above).
+  const { accountId: _unusedAccountId, ...loanRow } = loan;
 
   if (isBackendFirstSyncMode()) {
     try {
@@ -3585,7 +3605,8 @@ export async function saveLoanWithBackendSync(loan: any) {
         idempotencyKey: activeClientRequestId,
       });
 
-      const remote = (response.data as any)?.data ?? response.data;
+      const raw = response.data as { data?: { id?: string; createdAt?: string; updatedAt?: string } } & { id?: string; createdAt?: string; updatedAt?: string };
+      const remote = raw?.data ?? raw;
       const dbLoan = {
         ...loanRow,
         cloudId: remote?.id ? String(remote.id) : undefined,
@@ -3597,7 +3618,8 @@ export async function saveLoanWithBackendSync(loan: any) {
 
       const savedId = await runWithCloudSyncSuppressed(() => db.loans.add(dbLoan));
       return { ...dbLoan, id: savedId };
-    } catch (backendError: any) {
+    } catch (error: unknown) {
+      const backendError = error as { code?: string; status?: number; message?: string };
       console.warn(
         '[saveLoanWithBackendSync] Backend error or unavailable – falling back to local save and queuing for sync.',
         backendError?.code ?? backendError?.message,

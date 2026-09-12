@@ -132,14 +132,27 @@ export async function completeWithLLM(
   }
 
   for (const provider of providers) {
-    try {
-      const text = await withTimeout(provider.run(), timeoutMs, provider.parser);
-      return { text, parser: provider.parser };
-    } catch (err) {
-      logger.warn(`Chat LLM: ${provider.parser} failed, trying next provider`, {
-        error: err instanceof Error ? err.message : String(err),
-      });
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      try {
+        const text = await withTimeout(provider.run(), timeoutMs, provider.parser);
+        return { text, parser: provider.parser };
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        // Capacity blips (503 "high demand", 429) usually clear within a second;
+        // one short retry avoids dropping to the regex fallback for nothing.
+        if (attempt === 0 && isTransientLLMError(message)) {
+          logger.warn(`Chat LLM: ${provider.parser} transient error, retrying once`, { error: message });
+          await new Promise((resolve) => setTimeout(resolve, TRANSIENT_RETRY_DELAY_MS));
+          continue;
+        }
+        logger.warn(`Chat LLM: ${provider.parser} failed, trying next provider`, { error: message });
+      }
     }
   }
   return null;
 }
+
+const TRANSIENT_RETRY_DELAY_MS = Number(process.env.AI_TRANSIENT_RETRY_MS || 1500);
+
+export const isTransientLLMError = (message: string): boolean =>
+  /\[(?:503|429|500)\b|\b(?:503|429)\b|high demand|overloaded|RESOURCE_EXHAUSTED|rate limit|try again later/i.test(message);

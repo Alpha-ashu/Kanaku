@@ -359,17 +359,55 @@ function withIds(actions: Array<Omit<KaiAction, 'actionId'>>, sessionId: string,
   return actions.map((a, i) => ({ actionId: makeActionId(sessionId, seq, i), ...a }));
 }
 
-function parseActions(text: string): RawKaiAction[] {
-  try {
-    const parsed = JSON.parse(stripJsonFence(text));
-    if (Array.isArray(parsed)) return parsed;
-    if (parsed && Array.isArray(parsed.actions)) return parsed.actions;
-    if (parsed && typeof parsed === 'object' && (parsed.kind || parsed.type)) return [parsed];
-    return [];
-  } catch {
-    logger.warn('Kai NLP: JSON parse failed', { text: text.slice(0, 200) });
-    return [];
+/** The first balanced {...} or [...] block in the text — tolerates prose around the JSON. */
+function extractJsonBlock(text: string): string | null {
+  const start = text.search(/[[{]/);
+  if (start < 0) return null;
+  const open = text[start];
+  const close = open === '{' ? '}' : ']';
+  let depth = 0;
+  let inString = false;
+  for (let i = start; i < text.length; i += 1) {
+    const ch = text[i];
+    if (inString) {
+      if (ch === '\\') i += 1;
+      else if (ch === '"') inString = false;
+      continue;
+    }
+    if (ch === '"') inString = true;
+    else if (ch === '{' || ch === '[') depth += 1;
+    else if (ch === '}' || ch === ']') {
+      depth -= 1;
+      if (depth === 0 && ch === close) return text.slice(start, i + 1);
+    }
   }
+  return null;
+}
+
+const toActionList = (parsed: unknown): RawKaiAction[] | null => {
+  if (Array.isArray(parsed)) return parsed as RawKaiAction[];
+  if (parsed && typeof parsed === 'object') {
+    const obj = parsed as { actions?: unknown; kind?: unknown; type?: unknown };
+    if (Array.isArray(obj.actions)) return obj.actions as RawKaiAction[];
+    if (obj.kind || obj.type) return [obj as RawKaiAction];
+  }
+  return null;
+};
+
+export function parseActions(text: string): RawKaiAction[] {
+  const cleaned = stripJsonFence(text);
+  const candidates = [cleaned, extractJsonBlock(cleaned), cleaned.replace(/,\s*([}\]])/g, '$1')];
+  for (const candidate of candidates) {
+    if (!candidate) continue;
+    try {
+      const list = toActionList(JSON.parse(candidate));
+      if (list) return list;
+    } catch {
+      // try the next repair
+    }
+  }
+  logger.warn('Kai NLP: JSON parse failed', { text: text.slice(0, 1500) });
+  return [];
 }
 
 // ─── Offline fallback ─────────────────────────────────────────────────────────
@@ -549,7 +587,7 @@ export async function understandKai(userId: string, input: KaiUnderstandInput): 
   if (config.voice.enabled && cleaned.length > 0) {
     const llm = await completeWithLLM(buildKaiPrompt(cleaned, context, learningBlock, TODAY()), {
       json: true,
-      maxTokens: 1024,
+      maxTokens: 1536,
       temperature: 0.1,
     });
     if (llm) {
