@@ -1,18 +1,19 @@
 import React from 'react';
 import {
- Upload,
- Camera,
- CheckCircle2,
- AlertCircle,
- AlertTriangle,
- Loader,
- ScanLine,
- RefreshCw,
- Globe,
- Receipt,
- Layers,
- Sparkles,
- Paperclip,
+  Upload,
+  Camera,
+  CheckCircle2,
+  AlertCircle,
+  AlertTriangle,
+  Loader,
+  ScanLine,
+  RefreshCw,
+  Globe,
+  Receipt,
+  Layers,
+  Sparkles,
+  Paperclip,
+  ArrowLeft,
 } from 'lucide-react';
 
 import { parseDateInputValue, toLocalDateKey } from '@/lib/dateUtils';
@@ -91,102 +92,104 @@ export const ModeSelectionView: React.FC<{
 // 
 
 export const SourcePickerView: React.FC<{
- mode: 'scan' | 'attachment';
- onCameraClick: () => void;
- onUploadClick: () => void;
- onBack: () => void;
-}> = ({ mode, onCameraClick, onUploadClick, onBack }) => (
- <div className="space-y-4 pt-2">
- <div className="flex items-center gap-2">
- <button data-testid="receipt-scanner-views-back"
- onClick={onBack}
- className="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-slate-700 transition-colors"
- >
- Back
- </button>
- <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">/</span>
- <span className="text-[10px] font-black text-slate-700 uppercase tracking-widest">
- {mode === 'scan' ? 'Scan Receipt' : 'Add Attachment'}
- </span>
- </div>
+  mode: 'scan' | 'attachment';
+  onCameraClick: () => void;
+  onUploadClick: () => void;
+  onBack: () => void;
+  canGoBack?: boolean;
+}> = ({ onCameraClick, onUploadClick, onBack, canGoBack = false }) => (
+  <div className="space-y-3.5 pt-1">
+    {canGoBack && (
+      <div className="flex items-center">
+        <button
+          data-testid="receipt-scanner-views-back"
+          onClick={onBack}
+          type="button"
+          className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-slate-900 transition-colors cursor-pointer"
+        >
+          <ArrowLeft size={13} />
+          <span>Back</span>
+        </button>
+      </div>
+    )}
 
- {mode === 'attachment' && (
- <div className="flex items-center gap-2 p-3 rounded-xl bg-amber-50 border border-amber-100">
- <Paperclip size={14} className="text-amber-500 shrink-0" />
- <p className="text-[11px] font-bold text-amber-700">File will be saved as-is. No OCR or data extraction.</p>
- </div>
- )}
-
- <div className="grid grid-cols-2 gap-4">
- <SelectionCard testId="receipt-scanner-views-card"
- onClick={onCameraClick}
- icon={<Camera size={24} />}
- label="Camera"
- sublabel="Take Photo"
- className="bg-slate-900 text-white hover:bg-slate-800 shadow-xl shadow-slate-200"
- />
- <SelectionCard testId="receipt-scanner-views-card-2"
- onClick={onUploadClick}
- icon={<Upload size={24} />}
- label="Gallery"
- sublabel="Files / Library"
- className="bg-slate-50 text-slate-900 hover:bg-slate-100"
- />
- </div>
- </div>
+    <div className="grid grid-cols-2 gap-3 sm:gap-4">
+      <SelectionCard
+        testId="receipt-scanner-views-card"
+        onClick={onCameraClick}
+        icon={<Camera size={22} className="text-indigo-600 group-hover:text-white transition-colors" />}
+        iconBg="bg-indigo-50 group-hover:bg-indigo-600"
+        label="Camera"
+        sublabel="Take Photo"
+      />
+      <SelectionCard
+        testId="receipt-scanner-views-card-2"
+        onClick={onUploadClick}
+        icon={<Upload size={22} className="text-blue-600 group-hover:text-white transition-colors" />}
+        iconBg="bg-blue-50 group-hover:bg-blue-600"
+        label="Gallery"
+        sublabel="Files / Library"
+      />
+    </div>
+  </div>
 );
 
 
 export const FileSelectionView: React.FC<{
- onFileSelect: (event: React.ChangeEvent<HTMLInputElement>) => void;
- onUploadClick: () => void;
- onCameraClick: () => void;
- onDeviceOnly: boolean;
- onDeviceOnlyChange: (value: boolean) => void;
+  onFileSelect: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onUploadClick: () => void;
+  onCameraClick: () => void;
+  onDeviceOnly: boolean;
+  onDeviceOnlyChange: (value: boolean) => void;
 }> = ({ onUploadClick, onCameraClick }) => (
- <div className="space-y-6 pt-2">
- <div className="grid grid-cols-2 gap-4">
- <SelectionCard testId="receipt-scanner-views-card-3"
- onClick={onUploadClick}
- icon={<Upload size={24} />}
- label="Upload"
- sublabel="Gallery/Files"
- className="bg-slate-50 text-slate-900 hover:bg-slate-100"
- />
- <SelectionCard testId="receipt-scanner-views-card-4"
- onClick={onCameraClick}
- icon={<Camera size={24} />}
- label="Camera"
- sublabel="Take Photo"
- className="bg-slate-900 text-white hover:bg-slate-800 shadow-xl shadow-slate-200"
- />
- </div>
- </div>
+  <div className="space-y-4 pt-1">
+    <div className="grid grid-cols-2 gap-3 sm:gap-4">
+      <SelectionCard
+        testId="receipt-scanner-views-card-3"
+        onClick={onUploadClick}
+        icon={<Upload size={22} className="text-blue-600 group-hover:text-white transition-colors" />}
+        iconBg="bg-blue-50 group-hover:bg-blue-600"
+        label="Gallery"
+        sublabel="Files / Library"
+      />
+      <SelectionCard
+        testId="receipt-scanner-views-card-4"
+        onClick={onCameraClick}
+        icon={<Camera size={22} className="text-indigo-600 group-hover:text-white transition-colors" />}
+        iconBg="bg-indigo-50 group-hover:bg-indigo-600"
+        label="Camera"
+        sublabel="Take Photo"
+      />
+    </div>
+  </div>
 );
 
 const SelectionCard: React.FC<{
- onClick: () => void;
- icon: React.ReactNode;
- label: string;
- sublabel: string;
- className?: string;
- testId?: string;
-}> = ({ onClick, icon, label, sublabel, className, testId }) => (
- <button data-testid={testId}
- onClick={onClick}
- className={cn(
-"flex flex-col items-center justify-center gap-3 rounded-[32px] p-8 transition-all active:scale-95 border border-transparent",
- className
- )}
- >
- <div className="w-12 h-12 flex items-center justify-center rounded-2xl bg-white/10 backdrop-blur-md">
- {icon}
- </div>
- <div className="text-center">
- <p className="text-sm font-black uppercase tracking-widest">{label}</p>
- <p className="text-[10px] font-bold opacity-40 uppercase tracking-tight">{sublabel}</p>
- </div>
- </button>
+  onClick: () => void;
+  icon: React.ReactNode;
+  iconBg?: string;
+  label: string;
+  sublabel: string;
+  className?: string;
+  testId?: string;
+}> = ({ onClick, icon, iconBg = 'bg-slate-100 group-hover:bg-slate-900', label, sublabel, className, testId }) => (
+  <button
+    data-testid={testId}
+    type="button"
+    onClick={onClick}
+    className={cn(
+      "flex flex-col items-center justify-center gap-2.5 sm:gap-3 rounded-2xl p-5 sm:p-6 border border-slate-200/80 bg-slate-50/70 hover:bg-white hover:border-slate-300 hover:shadow-md transition-all duration-200 active:scale-[0.98] cursor-pointer group text-slate-900 shadow-2xs",
+      className
+    )}
+  >
+    <div className={cn("w-12 h-12 flex items-center justify-center rounded-2xl transition-all duration-200 group-hover:scale-105 shadow-2xs", iconBg)}>
+      {icon}
+    </div>
+    <div className="text-center space-y-0.5">
+      <p className="text-xs sm:text-sm font-bold text-slate-900 tracking-tight">{label}</p>
+      <p className="text-[10px] sm:text-[11px] font-medium text-slate-400 group-hover:text-slate-500 transition-colors">{sublabel}</p>
+    </div>
+  </button>
 );
 
 

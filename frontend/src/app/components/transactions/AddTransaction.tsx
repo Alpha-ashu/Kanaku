@@ -958,8 +958,8 @@ if (linkedDocId) {
  return (
     <CenteredLayout enablePullToRefresh={false} className="pb-32">
       <div className="space-y-6 w-full">
-        {/* Header with circular back button and mode selectors */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full">
+        {/* Header with circular back button and page title */}
+        <div className="flex items-center justify-between gap-4 w-full">
           <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
             <button
               type="button"
@@ -975,9 +975,12 @@ if (linkedDocId) {
               {editingTransactionId ? 'Edit Transaction' : 'Add Transaction'}
             </h1>
           </div>
+        </div>
 
-          {/* Type Tabs centered pill */}
-          <div className="flex items-center bg-white/95 rounded-full p-1 border border-slate-200/80 shadow-xs gap-1 self-start sm:self-auto">
+        {/* Centered Mode Navigation Suite: Main Type Tabs + Sub-mode Selection */}
+        <div className="flex flex-col items-center justify-center gap-2.5 sm:gap-3 w-full mx-auto">
+          {/* Main Type Tabs (Expense / Income / Transfer) */}
+          <div className="flex items-center justify-center bg-white/95 rounded-full p-1 border border-slate-200/80 shadow-xs gap-1 mx-auto">
             {([
               { id: 'expense', label: 'Expense', icon: <ArrowUpRight size={13} /> },
               { id: 'income', label: 'Income', icon: <ArrowDownLeft size={13} /> },
@@ -1001,87 +1004,87 @@ if (linkedDocId) {
                 }}
                 data-testid={`transaction-type-${tab.id}-tab`}
                 className={cn(
-                  'flex items-center gap-1.5 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs font-bold transition-all cursor-pointer whitespace-nowrap',
+                  'flex items-center justify-center gap-1.5 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs font-bold transition-all cursor-pointer whitespace-nowrap select-none shrink-0',
                   formData.type === tab.id
                     ? 'bg-[#18181B] text-white shadow-xs'
                     : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100/60'
                 )}
               >
                 {tab.icon}
-                <span>{tab.label}</span>
+                <span className="whitespace-nowrap">{tab.label}</span>
               </button>
             ))}
           </div>
-        </div>
 
-        {/* Sub-mode & Transfer Method Selection */}
-        {(isExpense || isTransfer) && (
-          <div className="flex flex-row flex-wrap sm:flex-nowrap gap-2 sm:gap-3 items-center justify-center w-full mx-auto">
-            {/* Sub-mode Selection for Expense/Transfer */}
-            <div className={cn("p-1 flex gap-1 bg-white/90 rounded-full border border-slate-200/80 shadow-xs justify-center mx-auto sm:mx-0", isExpense ? "max-w-full sm:max-w-[300px]" : "max-w-full sm:max-w-[200px]")}>
-              {isExpense ? [
-                { id: 'individual', label: 'Individual', icon: <Tag size={11} /> },
-                { id: 'group', label: 'Split', icon: <Users size={11} /> },
-                { id: 'loan', label: 'Loan', icon: <Banknote size={11} /> }
-              ].map(m => (
-                <button
-                  key={m.id}
-                  type="button"
-                  onClick={() => setExpenseMode(m.id as any)}
-                  data-testid={`transaction-expense-mode-${m.id}-button`}
-                  className={cn(
-                    "flex-1 flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full font-bold text-[10px] sm:text-xs transition-all cursor-pointer",
-                    expenseMode === m.id ? "bg-[#18181B] text-white shadow-xs" : "text-slate-500 hover:text-slate-900 hover:bg-slate-100/60"
-                  )}
-                >
-                  {m.icon}
-                  <span>{m.label}</span>
-                </button>
-              )) : [
-                { id: 'self', label: 'Self', icon: <Wallet size={11} /> },
-                { id: 'others', label: 'Others', icon: <UserPlus size={11} /> }
-              ].map(m => (
-                <button
-                  key={m.id}
-                  type="button"
-                  onClick={() => setTransferSubType(m.id as any)}
-                  data-testid={`transaction-transfer-subtype-${m.id}-button`}
-                  className={cn(
-                    "flex-1 flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full font-bold text-[10px] sm:text-xs transition-all cursor-pointer",
-                    transferSubType === m.id ? "bg-[#18181B] text-white shadow-xs" : "text-slate-500 hover:text-slate-900 hover:bg-slate-100/60"
-                  )}
-                >
-                  {m.icon}
-                  <span>{m.label}</span>
-                </button>
-              ))}
-            </div>
-
-            {/* Transfer Method: Bank / Cash */}
-            {isTransfer && (
-              <div className="p-1 flex gap-1 bg-white/90 rounded-full border border-slate-200/80 shadow-xs animate-in fade-in zoom-in-95 duration-200 justify-center mx-auto sm:mx-0">
-                {([
-                  { id: 'bank', label: 'Bank Transfer', icon: <CreditCard size={11} /> },
-                  { id: 'cash', label: 'Cash Transfer', icon: <Banknote size={11} /> },
-                ] as { id: 'bank' | 'cash'; label: string; icon: React.ReactNode }[]).map(m => (
+          {/* Sub-mode & Transfer Method Selection */}
+          {(isExpense || isTransfer) && (
+            <div className="flex flex-row flex-wrap sm:flex-nowrap gap-2 sm:gap-3 items-center justify-center w-full mx-auto">
+              {/* Sub-mode Selection for Expense/Transfer */}
+              <div className="p-1 flex items-center justify-center gap-1 bg-white/90 rounded-full border border-slate-200/80 shadow-xs mx-auto">
+                {isExpense ? [
+                  { id: 'individual', label: 'Individual', icon: <Tag size={12} /> },
+                  { id: 'group', label: 'Split', icon: <Users size={12} /> },
+                  { id: 'loan', label: 'Loan', icon: <Banknote size={12} /> }
+                ].map(m => (
                   <button
                     key={m.id}
                     type="button"
-                    onClick={() => setTransferMethod(m.id)}
-                    data-testid={`transaction-transfer-method-${m.id}-button`}
+                    onClick={() => setExpenseMode(m.id as any)}
+                    data-testid={`transaction-expense-mode-${m.id}-button`}
                     className={cn(
-                      'flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full font-bold text-[10px] sm:text-xs transition-all cursor-pointer',
-                      transferMethod === m.id ? 'bg-[#18181B] text-white shadow-xs' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100/60'
+                      "flex items-center justify-center gap-1.5 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full font-bold text-xs transition-all cursor-pointer whitespace-nowrap select-none shrink-0",
+                      expenseMode === m.id ? "bg-[#18181B] text-white shadow-xs" : "text-slate-500 hover:text-slate-900 hover:bg-slate-100/60"
                     )}
                   >
                     {m.icon}
-                    <span>{m.label}</span>
+                    <span className="whitespace-nowrap">{m.label}</span>
+                  </button>
+                )) : [
+                  { id: 'self', label: 'Self', icon: <Wallet size={12} /> },
+                  { id: 'others', label: 'Others', icon: <UserPlus size={12} /> }
+                ].map(m => (
+                  <button
+                    key={m.id}
+                    type="button"
+                    onClick={() => setTransferSubType(m.id as any)}
+                    data-testid={`transaction-transfer-subtype-${m.id}-button`}
+                    className={cn(
+                      "flex items-center justify-center gap-1.5 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full font-bold text-xs transition-all cursor-pointer whitespace-nowrap select-none shrink-0",
+                      transferSubType === m.id ? "bg-[#18181B] text-white shadow-xs" : "text-slate-500 hover:text-slate-900 hover:bg-slate-100/60"
+                    )}
+                  >
+                    {m.icon}
+                    <span className="whitespace-nowrap">{m.label}</span>
                   </button>
                 ))}
               </div>
-            )}
-          </div>
-        )}
+
+              {/* Transfer Method: Bank / Cash */}
+              {isTransfer && (
+                <div className="p-1 flex items-center justify-center gap-1 bg-white/90 rounded-full border border-slate-200/80 shadow-xs animate-in fade-in zoom-in-95 duration-200 mx-auto">
+                  {([
+                    { id: 'bank', label: 'Bank Transfer', icon: <CreditCard size={12} /> },
+                    { id: 'cash', label: 'Cash Transfer', icon: <Banknote size={12} /> },
+                  ] as { id: 'bank' | 'cash'; label: string; icon: React.ReactNode }[]).map(m => (
+                    <button
+                      key={m.id}
+                      type="button"
+                      onClick={() => setTransferMethod(m.id)}
+                      data-testid={`transaction-transfer-method-${m.id}-button`}
+                      className={cn(
+                        'flex items-center justify-center gap-1.5 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full font-bold text-xs transition-all cursor-pointer whitespace-nowrap select-none shrink-0',
+                        transferMethod === m.id ? 'bg-[#18181B] text-white shadow-xs' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100/60'
+                      )}
+                    >
+                      {m.icon}
+                      <span className="whitespace-nowrap">{m.label}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
 
         {/* Main Single-Page Content Area */}
         <main className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 w-full pb-48 no-scrollbar">

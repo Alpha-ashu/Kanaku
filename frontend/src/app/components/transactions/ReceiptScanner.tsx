@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { X, ScanLine, Paperclip, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 import { useApp, useAICapability } from '@/contexts/AppContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useReceiptScanner } from '@/hooks/useReceiptScanner';
@@ -277,13 +278,16 @@ export const ReceiptScanner: React.FC<ReceiptScannerProps> = ({
  : <ScanLine size={17} className="text-white" />;
 
  return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 p-3 backdrop-blur-sm sm:p-4">
-      <div className="flex max-h-[88vh] w-full max-w-xl flex-col overflow-hidden rounded-[28px] sm:rounded-[36px] bg-white shadow-2xl border border-slate-100">
+    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 p-3 backdrop-blur-sm sm:p-4 animate-in fade-in duration-200">
+      <div className={cn(
+        "flex max-h-[88vh] w-full flex-col overflow-hidden rounded-[24px] sm:rounded-[32px] bg-white shadow-2xl border border-slate-100 transition-all duration-300",
+        step === 'results' ? "max-w-xl" : "max-w-sm sm:max-w-md"
+      )}>
 
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4.5 shrink-0">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-900 shrink-0">
+        <div className="flex items-center justify-between border-b border-slate-100 px-5 sm:px-6 py-4 shrink-0">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-900 shrink-0 text-white shadow-2xs">
               {headerIcon}
             </div>
             <h2 className="font-display text-base sm:text-lg font-bold text-slate-900 truncate">{headerTitle}</h2>
@@ -292,58 +296,60 @@ export const ReceiptScanner: React.FC<ReceiptScannerProps> = ({
             data-testid="receipt-scanner-close"
             type="button"
             onClick={handleClose}
-            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-slate-100 hover:bg-slate-200/80 transition-colors flex items-center justify-center shrink-0 cursor-pointer text-slate-700"
+            className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-slate-100 hover:bg-slate-200/80 transition-colors flex items-center justify-center shrink-0 cursor-pointer text-slate-600"
             aria-label="Close"
           >
-            <X size={18} />
+            <X size={16} />
           </button>
         </div>
 
- {/* Body */}
- <div className="flex-1 space-y-5 overflow-y-auto p-5">
+        {/* Body */}
+        <div className="flex-1 space-y-4 overflow-y-auto p-4 sm:p-5">
 
- {/* Step: Mode selection */}
- {step === 'mode' && (
- <ModeSelectionView
- onSelectMode={(mode) => setStep(mode === 'scan' ? 'source-scan' : 'source-attach')}
- isOcrEnabled={isOcrEnabled}
- />
- )}
+          {/* Step: Mode selection */}
+          {step === 'mode' && (
+            <ModeSelectionView
+              onSelectMode={(mode) => setStep(mode === 'scan' ? 'source-scan' : 'source-attach')}
+              isOcrEnabled={isOcrEnabled}
+            />
+          )}
 
- {/* Step: Source picker Scan mode */}
- {step === 'source-scan' && (
- <SourcePickerView
- mode="scan"
- onCameraClick={() => cameraInputRef.current?.click()}
- onUploadClick={() => fileInputRef.current?.click()}
- onBack={() => setStep('mode')}
- />
- )}
+          {/* Step: Source picker Scan mode */}
+          {step === 'source-scan' && (
+            <SourcePickerView
+              mode="scan"
+              onCameraClick={() => cameraInputRef.current?.click()}
+              onUploadClick={() => fileInputRef.current?.click()}
+              onBack={() => setStep('mode')}
+              canGoBack={initialMode === null}
+            />
+          )}
 
- {/* Step: Source picker Attachment mode */}
- {step === 'source-attach' && (
- <SourcePickerView
- mode="attachment"
- onCameraClick={() => attachCameraInputRef.current?.click()}
- onUploadClick={() => attachFileInputRef.current?.click()}
- onBack={() => setStep('mode')}
- />
- )}
+          {/* Step: Source picker Attachment mode */}
+          {step === 'source-attach' && (
+            <SourcePickerView
+              mode="attachment"
+              onCameraClick={() => attachCameraInputRef.current?.click()}
+              onUploadClick={() => attachFileInputRef.current?.click()}
+              onBack={() => setStep('mode')}
+              canGoBack={initialMode === null}
+            />
+          )}
 
- {/* Step: Preview (scan mode) */}
- {step === 'preview-scan' && selectedFile && !scanResult && (
- <div className="space-y-4">
- <PreviewView
- file={selectedFile}
- previewUrl={previewUrl}
- isScanning={isScanning}
- scanProgress={scanProgress}
- scanStatus={scanStatus}
- onScan={handleScanReceipt}
- onChange={() => { clearFile(); setStep('source-scan'); }}
- />
- </div>
- )}
+          {/* Step: Preview (scan mode) */}
+          {step === 'preview-scan' && selectedFile && !scanResult && (
+            <div className="space-y-4">
+              <PreviewView
+                file={selectedFile}
+                previewUrl={previewUrl}
+                isScanning={isScanning}
+                scanProgress={scanProgress}
+                scanStatus={scanStatus}
+                onScan={handleScanReceipt}
+                onChange={() => { clearFile(); setStep('source-scan'); }}
+              />
+            </div>
+          )}
 
  {/* Step: Results (OCR done) */}
  {step === 'results' && scanResult && (
