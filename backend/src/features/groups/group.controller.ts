@@ -4,6 +4,8 @@ import { AuthRequest, getUserId } from '../../middleware/auth';
 import { prisma } from '../../db/prisma';
 import { logger } from '../../config/logger';
 import { isDatabaseUnavailableError } from '../../utils/databaseAvailability';
+import { AppError } from '../../utils/AppError';
+import { createdAtKeysetOrder, createdAtPosition, readKeysetPage, sliceKeysetPage, withCreatedAtKeyset } from '../../utils/pagination';
 import { getSocketManager } from '../../sockets';
 import { sanitize } from '../../utils/sanitize';
 import { inviteParticipants } from '../collaboration/invitation.service';
@@ -111,7 +113,9 @@ export const getGroups = async (req: AuthRequest, res: Response) => {
 
     // Pagination — bounded page size so a user with many groups can't force an
     // unbounded response. Defaults keep the previous "all recent" behaviour for
-    // typical accounts (page 1, 100 rows).
+    // typical accounts (page 1, 100 rows). A request with `cursor` gets keyset
+    // pages instead (see utils/pagination) and skips the count.
+    const keyset = readKeysetPage(req.query);
     const page = Math.max(1, Number(req.query.page) || 1);
     const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 100));
 
@@ -124,15 +128,17 @@ export const getGroups = async (req: AuthRequest, res: Response) => {
       ],
     };
 
-    const [groups, total] = await Promise.all([
+    const [rows, total] = await Promise.all([
       prisma.groupExpense.findMany({
-        where,
-        orderBy: { createdAt: 'desc' },
-        skip: (page - 1) * limit,
-        take: limit,
+        where: withCreatedAtKeyset(where, keyset),
+        orderBy: keyset ? createdAtKeysetOrder() : { createdAt: 'desc' },
+        ...(keyset ? { take: keyset.limit + 1 } : { skip: (page - 1) * limit, take: limit }),
       }),
-      prisma.groupExpense.count({ where }),
+      keyset ? Promise.resolve(0) : prisma.groupExpense.count({ where }),
     ]);
+    const { items: groups, nextCursor } = keyset
+      ? sliceKeysetPage(rows, keyset, createdAtPosition)
+      : { items: rows, nextCursor: null };
 
     // Batch-load everything the assembler needs in a fixed number of queries
     // (was 3 queries PER group + the friends list re-fetched each iteration):
@@ -163,6 +169,9 @@ export const getGroups = async (req: AuthRequest, res: Response) => {
       assembleGroupResponse(g, userId, membersByGroup.get(g.id) ?? [], userFriends, creatorNameById.get(g.userId)),
     );
 
+    if (keyset) {
+      return res.json({ success: true, data: { items: data, nextCursor } });
+    }
     res.json({
       success: true,
       data,
@@ -172,6 +181,9 @@ export const getGroups = async (req: AuthRequest, res: Response) => {
     if (isDatabaseUnavailableError(error)) {
       logger.warn('Groups fallback: database unavailable, returning empty dataset.');
       return res.json({ success: true, data: [] });
+    }
+    if (error instanceof AppError) {
+      return res.status(error.statusCode).json({ success: false, error: error.message, code: error.code });
     }
 
     logger.error('Failed to fetch groups', { error });

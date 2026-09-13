@@ -4,6 +4,7 @@ import { prisma } from '../../db/prisma';
 import { AppError } from '../../utils/AppError';
 import { logger } from '../../config/logger';
 import { isDatabaseUnavailableError } from '../../utils/databaseAvailability';
+import { createdAtKeysetOrder, createdAtPosition, readKeysetPage, sliceKeysetPage, withCreatedAtKeyset } from '../../utils/pagination';
 
 /**
  * `alertChannels` is a Json column. Historically it was written with
@@ -36,15 +37,22 @@ export const getBudgets = async (req: AuthRequest, res: Response, next: NextFunc
     const userId = getUserId(req);
     const { period, category } = req.query;
 
+    const page = readKeysetPage(req.query);
+
     const where: Record<string, unknown> = { userId, deletedAt: null };
     if (period) where.period = period;
     if (category) where.category = category;
 
     const budgets = await prisma.budget.findMany({
-      where,
-      orderBy: { createdAt: 'desc' },
+      where: withCreatedAtKeyset(where, page),
+      orderBy: page ? createdAtKeysetOrder() : { createdAt: 'desc' },
+      ...(page ? { take: page.limit + 1 } : {}),
     });
 
+    if (page) {
+      const { items, nextCursor } = sliceKeysetPage(budgets, page, createdAtPosition);
+      return res.json({ success: true, data: { items: items.map(serializeBudget), nextCursor } });
+    }
     res.json({ success: true, data: budgets.map(serializeBudget) });
   } catch (error) {
     if (isDatabaseUnavailableError(error)) {

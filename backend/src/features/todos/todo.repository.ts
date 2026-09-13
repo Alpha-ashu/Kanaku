@@ -1,4 +1,17 @@
 import { prisma } from '../../db/prisma';
+import { Prisma } from '../../db/prisma-client';
+
+/** Optional id-keyset window for the list queries: rows after `afterId`, at most `take`. */
+export interface TodoPageWindow {
+  afterId: number | null;
+  take: number;
+}
+
+// Legacy (no window) keeps each query's original ORDER BY and returns every row.
+const windowFilter = (w?: TodoPageWindow) =>
+  w?.afterId != null ? Prisma.sql`AND id > ${w.afterId}` : Prisma.empty;
+const windowTail = (w: TodoPageWindow | undefined, legacyOrder: Prisma.Sql) =>
+  w ? Prisma.sql`ORDER BY id ASC LIMIT ${w.take}` : legacyOrder;
 
 let todoTablesEnsured = false;
 
@@ -94,15 +107,16 @@ export class TodoRepository {
   }
 
   // Shared Todo Lists
-  async findLists(userId: string) {
+  async findLists(userId: string, window?: TodoPageWindow) {
     await ensureTodoTablesExist();
     return prisma.$queryRaw<any[]>`
       SELECT id::INT, user_id AS "userId", name, description, archived, created_at AS "createdAt", updated_at AS "updatedAt"
       FROM public.todo_lists
-      WHERE user_id = ${userId}::uuid OR id IN (
+      WHERE (user_id = ${userId}::uuid OR id IN (
         SELECT list_id FROM public.todo_list_shares WHERE shared_with_user_id = ${userId}::uuid
-      )
-      ORDER BY created_at DESC
+      ))
+      ${windowFilter(window)}
+      ${windowTail(window, Prisma.sql`ORDER BY created_at DESC`)}
     `;
   }
 
@@ -176,7 +190,7 @@ export class TodoRepository {
     `;
   }
 
-  async findAllListItems(userId: string) {
+  async findAllListItems(userId: string, window?: TodoPageWindow) {
     await ensureTodoTablesExist();
     return prisma.$queryRaw<any[]>`
       SELECT id::INT, list_id::INT AS "listId", user_id AS "userId", title, description, completed, priority, due_date AS "dueDate", created_by AS "createdBy", created_at AS "createdAt", updated_at AS "updatedAt", completed_at AS "completedAt"
@@ -186,7 +200,8 @@ export class TodoRepository {
           SELECT list_id FROM public.todo_list_shares WHERE shared_with_user_id = ${userId}::uuid
         )
       )
-      ORDER BY created_at ASC
+      ${windowFilter(window)}
+      ${windowTail(window, Prisma.sql`ORDER BY created_at ASC`)}
     `;
   }
 
@@ -246,13 +261,15 @@ export class TodoRepository {
     `;
   }
 
-  async findShares(userId: string) {
+  async findShares(userId: string, window?: TodoPageWindow) {
     return prisma.$queryRaw<any[]>`
       SELECT id::INT, list_id::INT AS "listId", shared_with_user_id AS "sharedWithUserId", shared_by AS "sharedBy", permission, shared_at AS "sharedAt"
       FROM public.todo_list_shares
-      WHERE shared_with_user_id = ${userId}::uuid OR list_id IN (
+      WHERE (shared_with_user_id = ${userId}::uuid OR list_id IN (
         SELECT id FROM public.todo_lists WHERE user_id = ${userId}::uuid
-      )
+      ))
+      ${windowFilter(window)}
+      ${windowTail(window, Prisma.empty)}
     `;
   }
 

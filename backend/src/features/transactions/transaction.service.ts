@@ -7,6 +7,15 @@ import { Prisma } from '../../db/prisma-client';
 import { prisma } from '../../db/prisma';
 import { logger } from '../../config/logger';
 import { add, isPositive, neg, parseMoney, roundMoney, ZERO } from '../../utils/money';
+import { KeysetPage, LIST_PAGE_DEFAULT, LIST_PAGE_MAX, createdAtPosition, sliceKeysetPage } from '../../utils/pagination';
+
+/** Filters GET /transactions accepts, as raw query-string values. */
+interface TransactionListFilters {
+  accountId?: unknown;
+  category?: unknown;
+  startDate?: unknown;
+  endDate?: unknown;
+}
 
 export class TransactionService {
   /**
@@ -38,7 +47,7 @@ export class TransactionService {
     return deltas;
   }
 
-  async fetchTransactions(userId: string, query: any) {
+  private buildListWhere(query: TransactionListFilters) {
     const whereClause: any = {};
     if (query.accountId) {
       whereClause.accountId = query.accountId;
@@ -48,14 +57,22 @@ export class TransactionService {
     }
     if (query.startDate || query.endDate) {
       whereClause.date = {};
-      if (query.startDate) whereClause.date.gte = new Date(query.startDate);
-      if (query.endDate) whereClause.date.lte = new Date(query.endDate);
+      if (query.startDate) whereClause.date.gte = new Date(String(query.startDate));
+      if (query.endDate) whereClause.date.lte = new Date(String(query.endDate));
     }
+    return whereClause;
+  }
+
+  async fetchTransactions(userId: string, query: any) {
+    const whereClause = this.buildListWhere(query);
 
     const { limit, page } = query;
-    // Always paginate — never return unbounded result sets
-    const maxLimit = query.sync === 'true' || query.limit === 'all' ? 5000 : 100;
-    const parsedLimit = Math.min(maxLimit, Math.max(1, parseInt(limit as string) || 20));
+    // Always paginate — never return unbounded result sets. Sync pulls keep the
+    // 5000 ceiling: installed app builds fetch `limit=1000&sync=true` and treat
+    // the response as the complete set, so lowering it would delete rows on
+    // their devices. New clients page with `cursor` (fetchTransactionsPage).
+    const maxLimit = query.sync === 'true' || query.limit === 'all' ? 5000 : LIST_PAGE_MAX;
+    const parsedLimit = Math.min(maxLimit, Math.max(1, parseInt(limit as string) || LIST_PAGE_DEFAULT));
     const parsedPage  = Math.max(1, parseInt(page as string) || 1);
     const skip        = (parsedPage - 1) * parsedLimit;
 
@@ -70,6 +87,12 @@ export class TransactionService {
       page: parsedPage,
       limit: parsedLimit,
     };
+  }
+
+  /** Keyset page of the same filtered set as fetchTransactions, oldest-created first. */
+  async fetchTransactionsPage(userId: string, query: TransactionListFilters, page: KeysetPage) {
+    const rows = await transactionRepository.findPage(userId, this.buildListWhere(query), page);
+    return sliceKeysetPage(rows, page, createdAtPosition);
   }
 
   /**

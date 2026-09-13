@@ -6,6 +6,7 @@ import { AppError } from '../../utils/AppError';
 import { logger } from '../../config/logger';
 import { cacheDeleteByPrefix } from '../../cache/redis';
 import { isDatabaseUnavailableError } from '../../utils/databaseAvailability';
+import { createdAtKeysetOrder, createdAtPosition, readKeysetPage, sliceKeysetPage, withCreatedAtKeyset } from '../../utils/pagination';
 import { inviteParticipants } from '../collaboration/invitation.service';
 import { FinancialLedgerService } from '../transactions/ledger.service';
 import { FinancialEventDispatcher, GoalContributionEvent, GoalWithdrawalEvent } from '../transactions/dispatcher';
@@ -13,21 +14,22 @@ import { FinancialEventDispatcher, GoalContributionEvent, GoalWithdrawalEvent } 
 export const getGoals = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userId = getUserId(req);
+    const page = readKeysetPage(req.query);
     const limit = Math.min(200, Math.max(1, parseInt(req.query.limit as string) || 100));
 
     const goals = await prisma.goal.findMany({
-      where: {
+      where: withCreatedAtKeyset({
         deletedAt: null,
         OR: [
           { userId },
           { goalMembers: { some: { userId, deletedAt: null } } },
         ],
-      },
-      orderBy: { targetDate: 'asc' },
-      take: limit,
+      }, page),
+      orderBy: page ? createdAtKeysetOrder() : { targetDate: 'asc' },
+      take: page ? page.limit + 1 : limit,
     });
 
-    res.json({ success: true, data: goals });
+    res.json({ success: true, data: page ? sliceKeysetPage(goals, page, createdAtPosition) : goals });
   } catch (error) {
     if (isDatabaseUnavailableError(error)) {
       logger.warn('Goals fallback: database unavailable, returning empty dataset.');

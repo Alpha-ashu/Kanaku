@@ -5,6 +5,7 @@ import { sanitize } from '../../utils/sanitize';
 import { logger } from '../../config/logger';
 import { AppError } from '../../utils/AppError';
 import { isDatabaseUnavailableError } from '../../utils/databaseAvailability';
+import { createdAtKeysetOrder, createdAtPosition, readKeysetPage, sliceKeysetPage, withCreatedAtKeyset } from '../../utils/pagination';
 import { getSocketManager } from '../../sockets';
 import { inviteParticipants, resolveContactDetailsForFriend } from '../collaboration/invitation.service';
 import { dispatchNotification } from '../notifications/notification.dispatcher';
@@ -107,11 +108,16 @@ function resolveRegistration(map: Map<string, { id: string; name: string }>, ema
 export const getFriends = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userId = getUserId(req);
+    const page = readKeysetPage(req.query);
 
-    const friends = await prisma.friend.findMany({
-      where: { userId, deletedAt: null },
-      orderBy: { createdAt: 'desc' },
+    const rows = await prisma.friend.findMany({
+      where: withCreatedAtKeyset({ userId, deletedAt: null }, page),
+      orderBy: page ? createdAtKeysetOrder() : { createdAt: 'desc' },
+      ...(page ? { take: page.limit + 1 } : {}),
     });
+    // Enrich only the page being returned.
+    const paged = page ? sliceKeysetPage(rows, page, createdAtPosition) : null;
+    const friends = paged ? paged.items : rows;
 
     const registeredMap = await getRegisteredUserMap(friends.map(f => f.email!), friends.map(f => f.phone!));
 
@@ -152,7 +158,7 @@ export const getFriends = async (req: AuthRequest, res: Response, next: NextFunc
       };
     });
 
-    res.json({ success: true, data });
+    res.json({ success: true, data: paged ? { items: data, nextCursor: paged.nextCursor } : data });
   } catch (error) {
     if (isDatabaseUnavailableError(error)) {
       logger.warn('Friends fallback: database unavailable, returning empty dataset.');

@@ -5,22 +5,26 @@ import { sanitize } from '../../utils/sanitize';
 import { AppError } from '../../utils/AppError';
 import { logger } from '../../config/logger';
 import { isDatabaseUnavailableError } from '../../utils/databaseAvailability';
+import { createdAtKeysetOrder, createdAtPosition, readKeysetPage, sliceKeysetPage, withCreatedAtKeyset } from '../../utils/pagination';
 
 export const getRecurringTransactions = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userId = getUserId(req);
     const { status, interval } = req.query;
 
+    const page = readKeysetPage(req.query);
+
     const where: Record<string, unknown> = { userId, deletedAt: null };
     if (status) where.status = status;
     if (interval) where.interval = interval;
 
     const items = await prisma.recurringTransaction.findMany({
-      where,
-      orderBy: { nextDueDate: 'asc' },
+      where: withCreatedAtKeyset(where, page),
+      orderBy: page ? createdAtKeysetOrder() : { nextDueDate: 'asc' },
+      ...(page ? { take: page.limit + 1 } : {}),
     });
 
-    res.json({ success: true, data: items });
+    res.json({ success: true, data: page ? sliceKeysetPage(items, page, createdAtPosition) : items });
   } catch (error) {
     if (isDatabaseUnavailableError(error)) {
       logger.warn('RecurringTransactions fallback: database unavailable');

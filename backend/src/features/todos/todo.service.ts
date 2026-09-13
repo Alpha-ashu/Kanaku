@@ -4,6 +4,7 @@ import { getSocketManager } from '../../sockets';
 import { AppError } from '../../utils/AppError';
 import { inviteParticipants } from '../collaboration/invitation.service';
 import { cacheDeleteByPrefix } from '../../cache/redis';
+import { KeysetPage, idKeysetAfter, idPosition, sliceKeysetPage } from '../../utils/pagination';
 
 export class TodoService {
   private invalidateTodoCache(userIds: string[] | Set<string> | Iterable<string>) {
@@ -79,6 +80,11 @@ export class TodoService {
     return todoRepository.findLists(userId);
   }
 
+  async getTodoListsPage(userId: string, page: KeysetPage) {
+    const rows = await todoRepository.findLists(userId, { afterId: idKeysetAfter(page), take: page.limit + 1 });
+    return sliceKeysetPage(rows, page, idPosition);
+  }
+
   async createTodoList(userId: string, data: { name: string; description?: string }) {
     if (!data.name) {
       throw AppError.badRequest('Name is required', 'MISSING_NAME');
@@ -137,6 +143,11 @@ export class TodoService {
 
   async getAllTodoItems(userId: string) {
     return todoRepository.findAllListItems(userId);
+  }
+
+  async getAllTodoItemsPage(userId: string, page: KeysetPage) {
+    const rows = await todoRepository.findAllListItems(userId, { afterId: idKeysetAfter(page), take: page.limit + 1 });
+    return sliceKeysetPage(rows, page, idPosition);
   }
 
   async createTodoItem(
@@ -226,6 +237,11 @@ export class TodoService {
   // Shares
   async getTodoListShares(userId: string) {
     return todoRepository.findShares(userId);
+  }
+
+  async getTodoListSharesPage(userId: string, page: KeysetPage) {
+    const rows = await todoRepository.findShares(userId, { afterId: idKeysetAfter(page), take: page.limit + 1 });
+    return sliceKeysetPage(rows, page, idPosition);
   }
 
   async shareTodoList(

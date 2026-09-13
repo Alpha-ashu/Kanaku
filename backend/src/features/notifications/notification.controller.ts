@@ -2,12 +2,13 @@ import { Response } from 'express';
 import { AuthRequest, getUserId } from '../../middleware/auth';
 import { prisma } from '../../db/prisma';
 import { isDatabaseUnavailableError } from '../../utils/databaseAvailability';
+import { LIST_PAGE_DEFAULT, LIST_PAGE_MAX } from '../../utils/pagination';
 
 // Get user's notifications
 export const getNotifications = async (req: AuthRequest, res: Response) => {
   try {
     const userId = getUserId(req);
-    const { unread, limit = 20, page = 1 } = req.query;
+    const { unread, limit = LIST_PAGE_DEFAULT, page = 1 } = req.query;
 
     const where: any = { userId };
 
@@ -15,7 +16,7 @@ export const getNotifications = async (req: AuthRequest, res: Response) => {
       where.isRead = false;
     }
 
-    const parsedLimit = Math.min(100, Math.max(1, parseInt(limit as string) || 20));
+    const parsedLimit = Math.min(LIST_PAGE_MAX, Math.max(1, parseInt(limit as string) || LIST_PAGE_DEFAULT));
     const parsedPage = Math.max(1, parseInt(page as string) || 1);
     const skip = (parsedPage - 1) * parsedLimit;
 

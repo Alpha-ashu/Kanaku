@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useLiveQuery } from 'dexie-react-hooks';
 import { useApp, useAICapability } from '@/contexts/AppContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/database';
@@ -8,12 +7,12 @@ import { applyTransactionAccountImpact, applyAccountBalanceDeltas, getTransactio
 import { DocumentManagementService } from '@/services/documentManagementService';
 import { backendService } from '@/lib/backend-api';
 import {
- ChevronLeft, ArrowDownLeft, ArrowDownRight, Camera,
- CalendarDays, Wallet, Tag, AlignLeft, Store, Sparkles,
- CreditCard, Banknote, Smartphone,
- Zap, ChevronDown, Search, Check, Users, UserPlus, Mail, Phone, Trash2,
- Plus, Loader2, ArrowRightLeft, Menu, ArrowDown, Info, HelpCircle, Settings, ArrowLeft,
- ArrowUp, User, X, ScanLine, Paperclip, ArrowUpRight, AlertTriangle
+ ArrowDownLeft,
+ CalendarDays, Wallet, Tag, AlignLeft, Sparkles,
+ CreditCard, Banknote,
+ ChevronDown, Check, Users, UserPlus, Trash2,
+ Plus, ArrowRightLeft, ArrowDown, Info, ArrowLeft,
+ User, X, ScanLine, Paperclip, ArrowUpRight, AlertTriangle
 } from 'lucide-react';
 
 import { toast } from 'sonner';
@@ -28,7 +27,7 @@ import { createCategoryEverywhere } from '@/services/featureSyncService';
 import { ReceiptScanner, type ReceiptScanPayload } from '@/app/components/transactions/ReceiptScanner';
 import { getCategoryCartoonIcon } from '@/app/components/ui/CartoonCategoryIcons';
 import { SearchableDropdown } from '@/app/components/ui/SearchableDropdown';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { parseDateInputValue, toLocalDateKey, withEntryTime } from '@/lib/dateUtils';
 import {
@@ -159,7 +158,7 @@ const CategoryGrid = ({
     return onAddCustom ? [...categories, '__ADD_CUSTOM__'] : categories;
   }, [categories, onAddCustom]);
 
-  const itemsPerPage = 8;
+  const itemsPerPage = 20;
   const pages = useMemo(() => {
     const chunked: string[][] = [];
     for (let i = 0; i < allItems.length; i += itemsPerPage) {
@@ -188,7 +187,7 @@ const CategoryGrid = ({
         {pages.map((pageItems, pageIdx) => (
           <div 
             key={pageIdx} 
-            className="w-full shrink-0 snap-align-start grid grid-cols-4 grid-rows-2 gap-2"
+            className="w-full shrink-0 snap-align-start grid grid-cols-5 grid-rows-4 gap-1 sm:gap-1.5"
           >
             {pageItems.map(cat => {
               if (cat === '__ADD_CUSTOM__') {
@@ -197,12 +196,12 @@ const CategoryGrid = ({
                     data-testid="add-transaction-custom-category-tile"
                     key="__ADD_CUSTOM__"
                     onClick={onAddCustom}
-                    className="flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all cursor-pointer group bg-indigo-50/70 hover:bg-indigo-100/90 border-2 border-dashed border-indigo-300 active:scale-95 shadow-xs"
+                    className="flex flex-col items-center justify-center gap-1 p-1 sm:p-1.5 rounded-xl transition-all cursor-pointer group bg-indigo-50/70 hover:bg-indigo-100/90 border-2 border-dashed border-indigo-300 active:scale-95 shadow-xs"
                   >
-                    <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-indigo-600 text-white shadow-sm group-hover:scale-105 transition-transform">
-                      <Plus size={18} />
+                    <div className="w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center rounded-lg bg-indigo-600 text-white shadow-sm group-hover:scale-105 transition-transform">
+                      <Plus size={14} />
                     </div>
-                    <span className="text-[9px] font-black uppercase tracking-tight text-center leading-none text-indigo-700 w-full px-0.5 truncate">
+                    <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-tight text-center leading-none text-indigo-700 w-full px-0.5 truncate">
                       + Custom
                     </span>
                   </div>
@@ -214,21 +213,21 @@ const CategoryGrid = ({
                   key={cat}
                   onClick={() => onSelect(cat)}
                   className={cn(
-                    "flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all cursor-pointer group",
-                    selectedCategory === cat ? "bg-indigo-600 shadow-lg shadow-indigo-200" : "bg-slate-50 hover:bg-slate-100",
-                    aiSuggested === cat && !selectedCategory && "ring-2 ring-indigo-400 ring-offset-2 animate-pulse"
+                    "flex flex-col items-center justify-center gap-1 p-1 sm:p-1.5 rounded-xl transition-all cursor-pointer group",
+                    selectedCategory === cat ? "bg-indigo-600 shadow-md shadow-indigo-200" : "bg-slate-50 hover:bg-slate-100",
+                    aiSuggested === cat && !selectedCategory && "ring-2 ring-indigo-400 ring-offset-1 animate-pulse"
                   )}
                 >
-                  <div className={cn("w-8 h-8 flex items-center justify-center rounded-lg transition-colors", selectedCategory === cat ? "bg-white/20" : "bg-white group-hover:bg-slate-50")}>
-                    {getCategoryCartoonIcon(cat, 20)}
+                  <div className={cn("w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center rounded-lg transition-colors", selectedCategory === cat ? "bg-white/20" : "bg-white group-hover:bg-slate-50")}>
+                    {getCategoryCartoonIcon(cat, 16)}
                   </div>
-                  <span className={cn("text-[9px] font-black uppercase tracking-tight text-center leading-none truncate w-full px-0.5", selectedCategory === cat ? "text-white" : "text-slate-500")}>
+                  <span className={cn("text-[8px] sm:text-[9px] font-black uppercase tracking-tight text-center leading-none truncate w-full px-0.5", selectedCategory === cat ? "text-white" : "text-slate-500")}>
                     {cat.split(' ')[0]}
                   </span>
                 </div>
               );
             })}
-            {/* Pad the last page if it doesn't have 8 items to preserve the grid structure and spacing */}
+            {/* Pad the last page if it doesn't have 20 items to preserve the 5x4 grid structure */}
             {pageItems.length < itemsPerPage && 
               Array.from({ length: itemsPerPage - pageItems.length }).map((_, idx) => (
                 <div key={`empty-${idx}`} className="opacity-0 pointer-events-none" />
@@ -1017,13 +1016,13 @@ if (linkedDocId) {
 
         {/* Sub-mode & Transfer Method Selection */}
         {(isExpense || isTransfer) && (
-          <div className="flex flex-row flex-wrap sm:flex-nowrap gap-3 items-center w-full">
+          <div className="flex flex-row flex-wrap sm:flex-nowrap gap-2 sm:gap-3 items-center justify-center w-full mx-auto">
             {/* Sub-mode Selection for Expense/Transfer */}
-            <div className={cn("p-1 flex gap-1 bg-white/90 rounded-full border border-slate-200/80 shadow-xs", isExpense ? "max-w-[300px]" : "max-w-[200px]")}>
+            <div className={cn("p-1 flex gap-1 bg-white/90 rounded-full border border-slate-200/80 shadow-xs justify-center mx-auto sm:mx-0", isExpense ? "max-w-full sm:max-w-[300px]" : "max-w-full sm:max-w-[200px]")}>
               {isExpense ? [
-                { id: 'individual', label: 'Individual', icon: <Tag size={12} /> },
-                { id: 'group', label: 'Split', icon: <Users size={12} /> },
-                { id: 'loan', label: 'Loan', icon: <Banknote size={12} /> }
+                { id: 'individual', label: 'Individual', icon: <Tag size={11} /> },
+                { id: 'group', label: 'Split', icon: <Users size={11} /> },
+                { id: 'loan', label: 'Loan', icon: <Banknote size={11} /> }
               ].map(m => (
                 <button
                   key={m.id}
@@ -1031,7 +1030,7 @@ if (linkedDocId) {
                   onClick={() => setExpenseMode(m.id as any)}
                   data-testid={`transaction-expense-mode-${m.id}-button`}
                   className={cn(
-                    "flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full font-bold text-xs transition-all cursor-pointer",
+                    "flex-1 flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full font-bold text-[10px] sm:text-xs transition-all cursor-pointer",
                     expenseMode === m.id ? "bg-[#18181B] text-white shadow-xs" : "text-slate-500 hover:text-slate-900 hover:bg-slate-100/60"
                   )}
                 >
@@ -1039,8 +1038,8 @@ if (linkedDocId) {
                   <span>{m.label}</span>
                 </button>
               )) : [
-                { id: 'self', label: 'Self', icon: <Wallet size={12} /> },
-                { id: 'others', label: 'Others', icon: <UserPlus size={12} /> }
+                { id: 'self', label: 'Self', icon: <Wallet size={11} /> },
+                { id: 'others', label: 'Others', icon: <UserPlus size={11} /> }
               ].map(m => (
                 <button
                   key={m.id}
@@ -1048,7 +1047,7 @@ if (linkedDocId) {
                   onClick={() => setTransferSubType(m.id as any)}
                   data-testid={`transaction-transfer-subtype-${m.id}-button`}
                   className={cn(
-                    "flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full font-bold text-xs transition-all cursor-pointer",
+                    "flex-1 flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full font-bold text-[10px] sm:text-xs transition-all cursor-pointer",
                     transferSubType === m.id ? "bg-[#18181B] text-white shadow-xs" : "text-slate-500 hover:text-slate-900 hover:bg-slate-100/60"
                   )}
                 >
@@ -1060,10 +1059,10 @@ if (linkedDocId) {
 
             {/* Transfer Method: Bank / Cash */}
             {isTransfer && (
-              <div className="p-1 flex gap-1 bg-white/90 rounded-full border border-slate-200/80 shadow-xs animate-in fade-in zoom-in-95 duration-200">
+              <div className="p-1 flex gap-1 bg-white/90 rounded-full border border-slate-200/80 shadow-xs animate-in fade-in zoom-in-95 duration-200 justify-center mx-auto sm:mx-0">
                 {([
-                  { id: 'bank', label: 'Bank Transfer', icon: <CreditCard size={12} /> },
-                  { id: 'cash', label: 'Cash Transfer', icon: <Banknote size={12} /> },
+                  { id: 'bank', label: 'Bank Transfer', icon: <CreditCard size={11} /> },
+                  { id: 'cash', label: 'Cash Transfer', icon: <Banknote size={11} /> },
                 ] as { id: 'bank' | 'cash'; label: string; icon: React.ReactNode }[]).map(m => (
                   <button
                     key={m.id}
@@ -1071,7 +1070,7 @@ if (linkedDocId) {
                     onClick={() => setTransferMethod(m.id)}
                     data-testid={`transaction-transfer-method-${m.id}-button`}
                     className={cn(
-                      'flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full font-bold text-xs transition-all cursor-pointer',
+                      'flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full font-bold text-[10px] sm:text-xs transition-all cursor-pointer',
                       transferMethod === m.id ? 'bg-[#18181B] text-white shadow-xs' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100/60'
                     )}
                   >
@@ -1152,7 +1151,7 @@ if (linkedDocId) {
     onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))}
     aria-label="Description"
     data-testid="transaction-description-input"
-    className="w-full bg-slate-50 hover:bg-slate-100/60 border border-slate-200/90 rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-900 placeholder:text-slate-400 text-xs focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-xs"
+    className="w-full bg-slate-50 hover:bg-slate-100/60 border border-slate-200/90 rounded-xl py-2 sm:py-2.5 pl-8 sm:pl-9 pr-3 font-bold text-slate-900 placeholder:text-slate-400 text-[11px] sm:text-xs focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-xs text-center sm:text-left placeholder:text-center sm:placeholder:text-left"
     placeholder="e.g. Pani Puri & Pav Baji / Friends / Groceries"
   />
   </div>
@@ -1174,21 +1173,21 @@ if (linkedDocId) {
 
   {/* Unified Category Selector */}
   {!isTransfer && expenseMode !== 'loan' && (
-  <div className="space-y-3">
-  <div className="flex items-center justify-between">
-  <div className="flex items-center gap-2">
-    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Select Category</label>
+  <div className="space-y-2 sm:space-y-3">
+  <div className="flex items-center justify-between gap-2">
+  <div className="flex items-center gap-1.5 sm:gap-2">
+    <label className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest">Select Category</label>
     <button
       type="button"
       onClick={() => setShowAddCategoryModal(true)}
       data-testid="add-custom-category-header-btn"
-      className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase text-indigo-600 bg-indigo-50 hover:bg-indigo-100 transition-all border border-indigo-200/60 shadow-xs cursor-pointer active:scale-95"
+      className="flex items-center gap-1 px-1.5 sm:px-2 py-0.5 rounded-full text-[8px] sm:text-[9px] font-black uppercase text-indigo-600 bg-indigo-50 hover:bg-indigo-100 transition-all border border-indigo-200/60 shadow-xs cursor-pointer active:scale-95"
     >
       <Plus size={10} />
       <span>+ Custom</span>
     </button>
   </div>
-  <span className="text-[9px] font-bold text-indigo-500">Auto-Categorization Active</span>
+  <span className="text-[8px] sm:text-[9px] font-bold text-indigo-500 shrink-0">Auto-Categorization Active</span>
   </div>
   <CategoryGrid
   type={formData.type === 'income' ? 'income' : 'expense'}

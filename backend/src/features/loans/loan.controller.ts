@@ -6,6 +6,7 @@ import { AppError } from '../../utils/AppError';
 import { logger } from '../../config/logger';
 import { cacheDeleteByPrefix } from '../../cache/redis';
 import { isDatabaseUnavailableError } from '../../utils/databaseAvailability';
+import { createdAtKeysetOrder, createdAtPosition, readKeysetPage, sliceKeysetPage, withCreatedAtKeyset } from '../../utils/pagination';
 import { FinancialLedgerService } from '../transactions/ledger.service';
 import {
   FinancialEventDispatcher,
@@ -16,14 +17,16 @@ import {
 export const getLoans = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userId = getUserId(req);
+    const page = readKeysetPage(req.query);
 
     const loans = await prisma.loan.findMany({
-      where: { userId, deletedAt: null },
+      where: withCreatedAtKeyset({ userId, deletedAt: null }, page),
       include: { payments: { orderBy: { date: 'desc' } } },
-      orderBy: { createdAt: 'desc' },
+      orderBy: page ? createdAtKeysetOrder() : { createdAt: 'desc' },
+      ...(page ? { take: page.limit + 1 } : {}),
     });
 
-    res.json({ success: true, data: loans });
+    res.json({ success: true, data: page ? sliceKeysetPage(loans, page, createdAtPosition) : loans });
   } catch (error) {
     if (isDatabaseUnavailableError(error)) {
       logger.warn('Loans fallback: database unavailable, returning empty dataset.');

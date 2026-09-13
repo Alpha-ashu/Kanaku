@@ -2,6 +2,7 @@ import { Response, NextFunction } from 'express';
 import { AuthRequest, getUserId } from '../../middleware/auth';
 import { todoService } from './todo.service';
 import { cacheGetJson, cacheSetJson } from '../../cache/redis';
+import { readKeysetPage } from '../../utils/pagination';
 
 // Legacy single todo controllers
 export const getTodos = async (req: AuthRequest, res: Response, next: NextFunction) => {
@@ -59,6 +60,11 @@ export const deleteTodo = async (req: AuthRequest, res: Response, next: NextFunc
 export const getTodoLists = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userId = getUserId(req);
+    // Paged requests bypass the 60s cache, which holds only the full list.
+    const page = readKeysetPage(req.query);
+    if (page) {
+      return res.json({ success: true, data: await todoService.getTodoListsPage(userId, page) });
+    }
     const cacheKey = `todos:${userId}:lists`;
     const cached = process.env.NODE_ENV !== 'test' ? await cacheGetJson(cacheKey) : null;
     if (cached) {
@@ -130,6 +136,11 @@ export const getTodoItems = async (req: AuthRequest, res: Response, next: NextFu
 export const getAllTodoItems = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userId = getUserId(req);
+    // Paged requests bypass the 60s cache, which holds only the full list.
+    const page = readKeysetPage(req.query);
+    if (page) {
+      return res.json({ success: true, data: await todoService.getAllTodoItemsPage(userId, page) });
+    }
     const cacheKey = `todos:${userId}:items`;
     const cached = process.env.NODE_ENV !== 'test' ? await cacheGetJson(cacheKey) : null;
     if (cached) {
@@ -190,6 +201,10 @@ export const deleteTodoItem = async (req: AuthRequest, res: Response, next: Next
 export const getTodoListShares = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userId = getUserId(req);
+    const page = readKeysetPage(req.query);
+    if (page) {
+      return res.json({ success: true, data: await todoService.getTodoListSharesPage(userId, page) });
+    }
     const shares = await todoService.getTodoListShares(userId);
     res.json({ success: true, data: shares });
   } catch (error) {

@@ -20,6 +20,7 @@
  *     second as the first would wipe the user's local data.
  */
 import { apiClient } from '@/lib/api';
+import { fetchAllPages } from '@/lib/pagedFetch';
 import { db, type AppCategory, type Budget, type RecurringTransaction } from '@/lib/database';
 
 export interface FeatureSyncResult {
@@ -108,10 +109,8 @@ const budgetIdentity = (category: unknown, period: unknown): string =>
 export const syncBudgets = async (): Promise<FeatureSyncResult> => {
   let serverRows: BudgetApiRow[];
   try {
-    const response = await apiClient.get<{ success: boolean; data: BudgetApiRow[] }>('/budgets', {
-      showErrorToast: false,
-    });
-    serverRows = unwrapList<BudgetApiRow>(response.data);
+    // All pages or a throw — a partial list would remove budgets below.
+    serverRows = unwrapList<BudgetApiRow>(await fetchAllPages<BudgetApiRow>('/budgets'));
   } catch {
     return { ...EMPTY_RESULT, offline: true };
   }
@@ -455,11 +454,8 @@ const PUSHABLE_INTERVALS = new Set(['weekly', 'monthly', 'yearly']);
 export const syncRecurringTransactions = async (): Promise<FeatureSyncResult> => {
   let serverRows: RecurringApiRow[];
   try {
-    const response = await apiClient.get<{ success?: boolean; data?: RecurringApiRow[] } | RecurringApiRow[]>(
-      '/recurring',
-      { showErrorToast: false },
-    );
-    serverRows = unwrapList<RecurringApiRow>(response.data);
+    // All pages or a throw — a partial list would remove rules below.
+    serverRows = unwrapList<RecurringApiRow>(await fetchAllPages<RecurringApiRow>('/recurring'));
   } catch {
     return { ...EMPTY_RESULT, offline: true };
   }

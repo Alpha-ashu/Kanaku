@@ -4,6 +4,7 @@ import { transactionService } from './transaction.service';
 import { isDatabaseUnavailableError } from '../../utils/databaseAvailability';
 import { AppError } from '../../utils/AppError';
 import { logger } from '../../config/logger';
+import { readKeysetPage } from '../../utils/pagination';
 
 const handleTransactionDatabaseError = (error: unknown, next: NextFunction) => {
   if (isDatabaseUnavailableError(error)) {
@@ -16,6 +17,10 @@ const handleTransactionDatabaseError = (error: unknown, next: NextFunction) => {
 export const getTransactions = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userId = getUserId(req);
+    const keyset = readKeysetPage(req.query);
+    if (keyset) {
+      return res.json({ success: true, data: await transactionService.fetchTransactionsPage(userId, req.query, keyset) });
+    }
     const { transactions, totalCount, page, limit } = await transactionService.fetchTransactions(userId, req.query);
     res.setHeader('X-Total-Count', totalCount.toString());
     res.setHeader('X-Page', page.toString());

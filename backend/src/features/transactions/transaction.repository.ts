@@ -3,6 +3,7 @@ import { prisma } from '../../db/prisma';
 import { Prisma } from '../../db/prisma-client';
 import { AppError } from '../../utils/AppError';
 import { isOverdraw } from '../../utils/money';
+import { KeysetPage, createdAtKeysetOrder, withCreatedAtKeyset } from '../../utils/pagination';
 
 export type TransactionWithTags = {
   tags?: any;
@@ -89,6 +90,17 @@ export class TransactionRepository {
       orderBy: [{ date: 'desc' }, { createdAt: 'desc' }],
       ...(limit !== undefined ? { take: limit } : {}),
       ...(skip !== undefined ? { skip } : {}),
+    });
+    return txs.map(t => this.normalizeTransaction(t));
+  }
+
+  /** One keyset page (limit + 1 rows) of the same set findMany returns. */
+  async findPage(userId: string, whereClause: Prisma.TransactionWhereInput, page: KeysetPage) {
+    const defaultCategoryFilter = whereClause?.category !== undefined ? {} : { category: { not: 'Personal Share Offset' } };
+    const txs = await prisma.transaction.findMany({
+      where: withCreatedAtKeyset({ userId, deletedAt: null, ...defaultCategoryFilter, ...whereClause }, page),
+      orderBy: createdAtKeysetOrder(),
+      take: page.limit + 1,
     });
     return txs.map(t => this.normalizeTransaction(t));
   }

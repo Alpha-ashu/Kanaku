@@ -3,10 +3,16 @@ import { sanitize } from '../../utils/sanitize';
 import { AppError } from '../../utils/AppError';
 import { logger } from '../../config/logger';
 import { cacheDeleteByPrefix } from '../../cache/redis';
+import { KeysetPage, createdAtPosition, sliceKeysetPage } from '../../utils/pagination';
 
 export class AccountService {
   async fetchAccounts(userId: string) {
     return accountRepository.findMany(userId);
+  }
+
+  async fetchAccountsPage(userId: string, page: KeysetPage) {
+    const rows = await accountRepository.findPage(userId, page);
+    return sliceKeysetPage(rows, page, createdAtPosition);
   }
 
   async createAccount(userId: string, data: {

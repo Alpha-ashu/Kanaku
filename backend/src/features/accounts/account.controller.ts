@@ -7,10 +7,15 @@ import { transactionService } from '../transactions/transaction.service';
 import { prisma } from '../../db/prisma';
 import { AppError } from '../../utils/AppError';
 import { sanitize } from '../../utils/sanitize';
+import { readKeysetPage } from '../../utils/pagination';
 
 export const getAccounts = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userId = getUserId(req);
+    const page = readKeysetPage(req.query);
+    if (page) {
+      return res.json({ success: true, data: await accountService.fetchAccountsPage(userId, page) });
+    }
     const accounts = await accountService.fetchAccounts(userId);
     res.json({ success: true, data: accounts });
   } catch (error) {

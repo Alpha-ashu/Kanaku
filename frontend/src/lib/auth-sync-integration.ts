@@ -2,6 +2,7 @@ import type { RealtimeChannel } from '@supabase/supabase-js';
 import supabase from '@/utils/supabase/client';
 import { db } from '@/lib/database';
 import { apiClient, TokenManager, refreshAccessToken } from '@/lib/api';
+import { fetchAllPages } from '@/lib/pagedFetch';
 import { markOptionalBackendUnavailable, shouldSkipOptionalBackendRequests } from '@/lib/apiBase';
 import {
   applyTransactionAccountImpact,
@@ -1834,8 +1835,10 @@ async function fetchBackendRows(path: string) {
   }
 
   try {
-    const response = await apiClient.get<any[]>(path, { showErrorToast: false });
-    return toArray(response.data);
+    // Every page or nothing: mergeBackendTable deletes local rows missing from
+    // this result, so a partial list must never reach it. On failure the catch
+    // returns [], which the merge treats as "leave local data alone".
+    return toArray(await fetchAllPages<any>(path));
   } catch {
     markOptionalBackendUnavailable();
     return [];

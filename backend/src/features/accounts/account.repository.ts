@@ -1,4 +1,5 @@
 import { prisma } from '../../db/prisma';
+import { KeysetPage, createdAtKeysetOrder, withCreatedAtKeyset } from '../../utils/pagination';
 
 export class AccountRepository {
   async findMany(userId: string, limit = 100) {
@@ -6,6 +7,15 @@ export class AccountRepository {
       where: { userId, isActive: true },
       orderBy: { createdAt: 'desc' },
       take: limit,
+    });
+  }
+
+  /** One keyset page (limit + 1 rows) of the same set findMany returns. */
+  async findPage(userId: string, page: KeysetPage) {
+    return prisma.account.findMany({
+      where: withCreatedAtKeyset({ userId, isActive: true }, page),
+      orderBy: createdAtKeysetOrder(),
+      take: page.limit + 1,
     });
   }
 

@@ -4,6 +4,7 @@ import { prisma } from '../../db/prisma';
 import { AppError } from '../../utils/AppError';
 import { isDatabaseUnavailableError } from '../../utils/databaseAvailability';
 import { cacheDeleteByPrefix } from '../../cache/redis';
+import { createdAtKeysetOrder, createdAtPosition, readKeysetPage, sliceKeysetPage, withCreatedAtKeyset } from '../../utils/pagination';
 import { FinancialLedgerService } from '../transactions/ledger.service';
 import { FinancialEventDispatcher, InvestmentPurchasedEvent } from '../transactions/dispatcher';
 
@@ -16,13 +17,15 @@ const toDate = (value?: string) => {
 export const getInvestments = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userId = getUserId(req);
+    const page = readKeysetPage(req.query);
 
     const investments = await prisma.investment.findMany({
-      where: { userId, deletedAt: null },
-      orderBy: { purchaseDate: 'desc' },
+      where: withCreatedAtKeyset({ userId, deletedAt: null }, page),
+      orderBy: page ? createdAtKeysetOrder() : { purchaseDate: 'desc' },
+      ...(page ? { take: page.limit + 1 } : {}),
     });
 
-    res.json({ success: true, data: investments });
+    res.json({ success: true, data: page ? sliceKeysetPage(investments, page, createdAtPosition) : investments });
   } catch (error) {
     if (isDatabaseUnavailableError(error)) {
       return res.json({ success: true, data: [] });
