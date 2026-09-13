@@ -1123,7 +1123,7 @@ if (linkedDocId) {
  )}
  {expenseMode === 'loan' && (
  <div className="col-span-1 sm:col-span-2 space-y-2">
- <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Loan Category</label>
+ <label className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest">Loan Category</label>
  <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2">
  {(loanType === 'borrowed'
  ? ['Consumer Loan', 'Personal Loan', 'Home Loan', 'Vehicle Loan', 'Education Loan', 'Credit Card', 'Overdraft', 'Others']
@@ -1145,7 +1145,7 @@ if (linkedDocId) {
  </div>
  )}
   <div className="col-span-1 sm:col-span-2 space-y-1">
-  <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Description / Reason</label>
+  <label className="text-[8px] sm:text-[9px] font-black text-slate-500 uppercase tracking-widest">Description / Reason</label>
   <div className="relative">
   <AlignLeft className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
   <input
@@ -1154,7 +1154,7 @@ if (linkedDocId) {
     onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))}
     aria-label="Description"
     data-testid="transaction-description-input"
-    className="w-full bg-slate-50 hover:bg-slate-100/60 border border-slate-200/90 rounded-xl py-2 sm:py-2.5 pl-8 sm:pl-9 pr-3 font-bold text-slate-900 placeholder:text-slate-400 text-[11px] sm:text-xs focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-xs text-center sm:text-left placeholder:text-center sm:placeholder:text-left"
+    className="w-full bg-slate-50 hover:bg-slate-100/60 border border-slate-200/90 rounded-xl py-2 sm:py-2.5 pl-8 sm:pl-9 pr-3 font-semibold text-slate-900 placeholder:text-slate-400 placeholder:font-normal text-[10px] sm:text-[11px] md:text-xs placeholder:text-[10px] sm:placeholder:text-[11px] md:placeholder:text-xs focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-xs text-center sm:text-left placeholder:text-center sm:placeholder:text-left"
     placeholder="e.g. Pani Puri & Pav Baji / Friends / Groceries"
   />
   </div>
@@ -1207,7 +1207,7 @@ if (linkedDocId) {
  {showPersonCard && (
  <div className="premium-glass-card p-4 space-y-4 animate-in slide-in-from-bottom-2 duration-300">
  <div className="flex items-center justify-between">
- <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+ <label className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest">
  {expenseMode === 'group' ? `PARTICIPANTS (${groupParticipants.length + 1})` : 
  expenseMode === 'loan' ? 'COUNTERPARTY' : 'WHO? / PERSON'}
  </label>
@@ -1252,7 +1252,7 @@ if (linkedDocId) {
  ) : (
  <User size={14} className="text-slate-400" />
  )}
- <span className={formData.payee || loanDraft.contactName ? 'text-slate-900' : 'text-slate-400'}>
+ <span className={cn('text-[11px] sm:text-xs font-semibold', formData.payee || loanDraft.contactName ? 'text-slate-900' : 'text-slate-400')}>
  {formData.payee || loanDraft.contactName || 'Select Person'}
  </span>
  </div>
@@ -1321,7 +1321,7 @@ if (linkedDocId) {
  }}
  aria-label="New person name"
  data-testid="transaction-new-person-input"
- className="flex-1 bg-transparent border-none p-0 text-xs font-bold text-slate-900 focus:ring-0 placeholder:text-slate-400"
+ className="flex-1 bg-transparent border-none p-0 text-[11px] sm:text-xs font-semibold text-slate-900 focus:ring-0 placeholder:text-slate-400 placeholder:font-normal placeholder:text-[10px] sm:placeholder:text-[11px]"
  placeholder="Enter name & press Enter"
  autoFocus
  />
@@ -1386,7 +1386,7 @@ if (linkedDocId) {
  {/* Live Split Calculation Summary Card */}
  <div className="p-4 bg-[#18181B] rounded-2xl text-white flex items-center justify-between shadow-md">
  <div>
- <p className="text-[9px] font-black text-white/50 uppercase tracking-widest">
+ <p className="text-[8px] sm:text-[9px] font-black text-white/50 uppercase tracking-widest">
  Equal Split ({groupParticipants.length + 1} people)
  </p>
  <p className="text-xs font-bold text-white mt-0.5">
@@ -1400,7 +1400,7 @@ if (linkedDocId) {
  </p>
  </div>
  <div className="text-right">
- <p className="text-[9px] font-black text-white/50 uppercase tracking-widest">Your Share</p>
+ <p className="text-[8px] sm:text-[9px] font-black text-white/50 uppercase tracking-widest">Your Share</p>
  <p className="text-sm sm:text-base font-black text-purple-300">
  {currency} {formData.amount > 0 ? (formData.amount / (groupParticipants.length + 1)).toFixed(2) : '0'}
  </p>
@@ -1418,14 +1418,14 @@ if (linkedDocId) {
  <div className="space-y-4">
  {['Consumer Loan', 'Personal Loan', 'Home Loan', 'Vehicle Loan', 'Education Loan', 'Credit Card', 'Overdraft'].includes(loanDraft.category) && (
  <div className="space-y-2">
- <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Loan Provider</label>
+ <label className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest">Loan Provider</label>
  <SearchableDropdown testId="add-transaction-select-bank-nbfc"
  options={loanProviderOptions}
  value={loanDraft.bankName}
  onChange={handleBankChange}
  placeholder="Select Bank/NBFC"
  allowCustom={true}
- className="bg-slate-50 border-none rounded-xl h-10 font-bold text-xs"
+ className="bg-slate-50 border-none rounded-xl h-10 font-semibold text-[11px] sm:text-xs"
  />
  </div>
  )}
@@ -1435,29 +1435,29 @@ if (linkedDocId) {
  <div className="space-y-4">
  <div className="grid grid-cols-2 gap-4">
  <div className="space-y-1">
- <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Interest (%)</label>
- <input data-testid="add-transaction-interest-rate" type="number" value={loanDraft.interestRate} onChange={e => setLoanDraft(prev => ({ ...prev, interestRate: parseFloat(e.target.value) || 0 }))} aria-label="Interest rate" className="w-full bg-slate-50 border-none rounded-xl py-2.5 px-3 font-bold text-sm text-center" />
+ <label className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest">Interest (%)</label>
+ <input data-testid="add-transaction-interest-rate" type="number" value={loanDraft.interestRate} onChange={e => setLoanDraft(prev => ({ ...prev, interestRate: parseFloat(e.target.value) || 0 }))} aria-label="Interest rate" className="w-full bg-slate-50 border-none rounded-xl py-2 sm:py-2.5 px-3 font-semibold text-xs sm:text-sm text-center" />
  </div>
  <div className="space-y-1">
- <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Tenure (Months)</label>
- <input data-testid="add-transaction-tenure-in-months" type="number" value={loanDraft.tenureMonths} onChange={e => setLoanDraft(prev => ({ ...prev, tenureMonths: parseInt(e.target.value) || 0 }))} aria-label="Tenure in months" className="w-full bg-slate-50 border-none rounded-xl py-2.5 px-3 font-bold text-sm text-center" />
+ <label className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest">Tenure (Months)</label>
+ <input data-testid="add-transaction-tenure-in-months" type="number" value={loanDraft.tenureMonths} onChange={e => setLoanDraft(prev => ({ ...prev, tenureMonths: parseInt(e.target.value) || 0 }))} aria-label="Tenure in months" className="w-full bg-slate-50 border-none rounded-xl py-2 sm:py-2.5 px-3 font-semibold text-xs sm:text-sm text-center" />
  </div>
  </div>
 
  <div className="grid grid-cols-2 gap-4">
  <div className="space-y-1">
- <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">EMI Amount</label>
- <input data-testid="add-transaction-emi-amount" type="number" value={loanDraft.emiAmount} onChange={e => setLoanDraft(prev => ({ ...prev, emiAmount: parseFloat(e.target.value) || 0 }))} aria-label="EMI amount" className="w-full bg-slate-50 border-none rounded-xl py-2.5 px-3 font-bold text-sm text-center" />
+ <label className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest">EMI Amount</label>
+ <input data-testid="add-transaction-emi-amount" type="number" value={loanDraft.emiAmount} onChange={e => setLoanDraft(prev => ({ ...prev, emiAmount: parseFloat(e.target.value) || 0 }))} aria-label="EMI amount" className="w-full bg-slate-50 border-none rounded-xl py-2 sm:py-2.5 px-3 font-semibold text-xs sm:text-sm text-center" />
  </div>
  <div className="space-y-1">
- <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Down Payment</label>
- <input data-testid="add-transaction-down-payment" type="number" value={loanDraft.downPayment} onChange={e => setLoanDraft(prev => ({ ...prev, downPayment: parseFloat(e.target.value) || 0 }))} aria-label="Down payment" className="w-full bg-slate-50 border-none rounded-xl py-2.5 px-3 font-bold text-sm text-center" />
+ <label className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest">Down Payment</label>
+ <input data-testid="add-transaction-down-payment" type="number" value={loanDraft.downPayment} onChange={e => setLoanDraft(prev => ({ ...prev, downPayment: parseFloat(e.target.value) || 0 }))} aria-label="Down payment" className="w-full bg-slate-50 border-none rounded-xl py-2 sm:py-2.5 px-3 font-semibold text-xs sm:text-sm text-center" />
  </div>
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
  <div className="space-y-1">
- <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Received In</label>
+ <label className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest">Received In</label>
  <SearchableDropdown testId="add-transaction-select-account"
  options={accounts.map(a => ({ value: String(a.id), label: a.name, description: formatAccountBalance(a.balance, currency) }))}
  value={String(loanDraft.receivedAccount)}
@@ -1467,17 +1467,17 @@ if (linkedDocId) {
  setFormData(prev => ({ ...prev, accountId: accId }));
  }}
  placeholder="Select Account"
- className="bg-slate-50 border-none rounded-xl h-10 font-bold text-xs"
+ className="bg-slate-50 border-none rounded-xl h-10 font-semibold text-[11px] sm:text-xs"
  />
  </div>
  <div className="space-y-1">
- <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">EMI Deduction</label>
+ <label className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest">EMI Deduction</label>
  <SearchableDropdown testId="add-transaction-select-account-2"
  options={accounts.map(a => ({ value: String(a.id), label: a.name, description: formatAccountBalance(a.balance, currency) }))}
  value={String(loanDraft.emiDeductionAccount)}
  onChange={val => setLoanDraft(prev => ({ ...prev, emiDeductionAccount: parseInt(val) }))}
  placeholder="Select Account"
- className="bg-slate-50 border-none rounded-xl h-10 font-bold text-xs"
+ className="bg-slate-50 border-none rounded-xl h-10 font-semibold text-[11px] sm:text-xs"
  />
  </div>
  </div>
@@ -1486,7 +1486,7 @@ if (linkedDocId) {
  /* Simplified Borrowed View (e.g. from Friends/Cash) */
  <div className="space-y-4">
  <div className="space-y-2">
- <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Received Method</label>
+ <label className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest">Received Method</label>
  <div className="flex gap-2">
  {['bank', 'cash'].map((m) => (
  <button data-testid={`add-transaction-button-6-${m}`}
@@ -1513,7 +1513,7 @@ if (linkedDocId) {
 
  {loanDraft.transferMethod === 'bank' && (
  <div className="space-y-2 animate-in fade-in slide-in-from-top-1">
- <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Select Bank Account</label>
+ <label className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest">Select Bank Account</label>
  <SearchableDropdown testId="add-transaction-select-account-3"
  options={accounts.filter(a => !a.name.toLowerCase().includes('cash')).map(a => ({ value: String(a.id), label: a.name, description: formatAccountBalance(a.balance, currency) }))}
  value={String(loanDraft.receivedAccount)}
@@ -1523,7 +1523,7 @@ if (linkedDocId) {
  setFormData(prev => ({ ...prev, accountId: accId }));
  }}
  placeholder="Select Account"
- className="bg-slate-50 border-none rounded-xl h-10 font-bold text-xs"
+ className="bg-slate-50 border-none rounded-xl h-10 font-semibold text-[11px] sm:text-xs"
  />
  </div>
  )}
@@ -1536,7 +1536,7 @@ if (linkedDocId) {
  )}
 
  <div className="space-y-2">
- <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Return Date / Reminder</label>
+ <label className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest">Return Date / Reminder</label>
  <div data-testid="add-transaction-div-2" className="relative group" onClick={(e) => {
  const input = e.currentTarget.querySelector('input');
  if (input) (input as any).showPicker();
@@ -1567,7 +1567,7 @@ if (linkedDocId) {
  <div className="space-y-4">
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
  <div className="space-y-2">
- <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Lent From</label>
+ <label className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest">Lent From</label>
  <SearchableDropdown testId="add-transaction-select-account-4"
  options={accounts.map(a => ({ value: String(a.id), label: a.name, description: formatAccountBalance(a.balance, currency) }))}
  value={String(loanDraft.receivedAccount)}
@@ -1577,11 +1577,11 @@ if (linkedDocId) {
  setFormData(prev => ({ ...prev, accountId: accId }));
  }}
  placeholder="Select Account"
- className="bg-slate-50 border-none rounded-xl h-10 font-bold text-xs"
+ className="bg-slate-50 border-none rounded-xl h-10 font-semibold text-[11px] sm:text-xs"
  />
  </div>
  <div className="space-y-2">
- <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Due Date</label>
+ <label className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest">Due Date</label>
  <div data-testid="add-transaction-div-3" className="relative group" onClick={(e) => {
  const input = e.currentTarget.querySelector('input');
  if (input) (input as any).showPicker();
@@ -1621,7 +1621,7 @@ if (linkedDocId) {
  <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-violet-500/5 blur-[80px] rounded-full animate-pulse pointer-events-none z-0 [animation-delay:1s]" />
 
  <div className="relative z-10 flex flex-col items-center w-full">
- <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4">Transaction Amount</span>
+ <span className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-[0.25em] mb-3 sm:mb-4">Transaction Amount</span>
 
  <div className="flex items-center justify-center w-full my-2 sm:my-4 gap-1 sm:gap-4 overflow-hidden px-2">
  {/* Left Side: Currency */}
@@ -1682,7 +1682,7 @@ if (linkedDocId) {
 
  <div className="premium-glass-card p-4 sm:p-6 space-y-5">
  <div className="space-y-2">
- <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+ <label className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest">
  {isWithdrawal ? 'Withdraw From Account' : isTransfer ? 'From Account' : 'Account'}
  </label>
  <SearchableDropdown testId="add-transaction-account"
@@ -1695,7 +1695,7 @@ if (linkedDocId) {
  value={String(formData.accountId)}
  onChange={val => setFormData(prev => ({ ...prev, accountId: parseInt(val) }))}
  placeholder="Account"
- triggerClassName="h-12 border-none bg-slate-50 font-bold text-xs shadow-none"
+ triggerClassName="h-11 sm:h-12 border-none bg-slate-50 font-semibold text-[11px] sm:text-xs shadow-none"
  />
  </div>
 
@@ -1703,7 +1703,7 @@ if (linkedDocId) {
  {isTransfer && transferSubType === 'self' && transferMethod === 'bank' && (
  <div className="space-y-3 animate-in fade-in zoom-in-95 duration-200">
  <div className="flex justify-center"><ArrowDown size={14} className="text-slate-300" /></div>
- <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">To Account</label>
+ <label className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest">To Account</label>
  <SearchableDropdown testId="add-transaction-destination-account"
  options={accounts.filter(a => a.id !== formData.accountId).map(a => ({
  value: String(a.id),
@@ -1714,7 +1714,7 @@ if (linkedDocId) {
  value={String(formData.toAccountId)}
  onChange={val => setFormData(prev => ({ ...prev, toAccountId: parseInt(val) }))}
  placeholder="Destination Account"
- triggerClassName="h-12 border-none bg-slate-50 font-bold text-sm shadow-none"
+ triggerClassName="h-11 sm:h-12 border-none bg-slate-50 font-semibold text-[11px] sm:text-xs shadow-none"
  />
  </div>
  )}
@@ -1733,7 +1733,7 @@ if (linkedDocId) {
  {isWithdrawal && (
  <div className="space-y-3 animate-in fade-in zoom-in-95 duration-200">
  <div className="flex justify-center"><ArrowDown size={14} className="text-slate-300" /></div>
- <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Deposit To</label>
+ <label className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest">Deposit To</label>
  <SearchableDropdown testId="add-transaction-destination-account-2"
  options={accounts.filter(a => a.id !== formData.accountId).map(a => ({
  value: String(a.id),
@@ -1745,7 +1745,7 @@ if (linkedDocId) {
  onChange={val => setFormData(prev => ({ ...prev, toAccountId: parseInt(val) }))}
  placeholder="Destination Account"
  disabled={isWithdrawal}
- triggerClassName="h-12 border-none bg-slate-50 font-bold text-sm shadow-none"
+ triggerClassName="h-11 sm:h-12 border-none bg-slate-50 font-semibold text-[11px] sm:text-xs shadow-none"
  />
  </div>
  )}
@@ -1756,7 +1756,7 @@ if (linkedDocId) {
  <div className="flex justify-center"><ArrowDown size={14} className="text-slate-300" /></div>
  <div className="premium-glass-card p-4 space-y-4">
   <div className="flex items-center justify-between">
- <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">RECIPIENT</label>
+ <label className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest">RECIPIENT</label>
  {friends.length > 0 && (
  <button data-testid="add-transaction-friends"
  type="button"
@@ -1804,7 +1804,7 @@ if (linkedDocId) {
  onChange={e => setTransferRecipient(e.target.value)}
  aria-label="Recipient name or UPI"
  data-testid="transaction-recipient-input"
- className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-300 text-xs"
+ className="w-full bg-slate-50 hover:bg-slate-100/60 border border-slate-200/90 rounded-xl py-2 sm:py-2.5 pl-8 sm:pl-9 pr-3 font-semibold text-slate-900 placeholder:text-slate-400 placeholder:font-normal text-[10px] sm:text-[11px] md:text-xs placeholder:text-[10px] sm:placeholder:text-[11px] md:placeholder:text-xs focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-xs"
  placeholder="Name / UPI / Account"
  />
  {transferRecipient && (
@@ -1824,7 +1824,7 @@ if (linkedDocId) {
  )}
 
  <div className="space-y-2">
- <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+ <label className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest">
  {isWithdrawal || isTransfer ? 'Transfer Date' : 'Date'}
  </label>
  <div data-testid="add-transaction-div-4" className="relative group" onClick={(e) => {
@@ -1832,7 +1832,7 @@ if (linkedDocId) {
  if (input) (input as any).showPicker();
  }}>
  <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-indigo-500 transition-colors z-10" size={14} />
- <div className="w-full bg-slate-50 border border-transparent rounded-xl py-2.5 pl-9 pr-3 font-bold text-xs text-slate-900 group-hover:bg-slate-100/50 group-hover:border-slate-200 transition-all flex items-center min-h-[40px]">
+ <div className="w-full bg-slate-50 border border-transparent rounded-xl py-2 sm:py-2.5 pl-8 sm:pl-9 pr-3 font-semibold text-[11px] sm:text-xs text-slate-900 group-hover:bg-slate-100/50 group-hover:border-slate-200 transition-all flex items-center min-h-[38px] sm:min-h-[40px]">
  {(() => {
  if (!formData.date) return 'Select Date';
  const date = new Date(formData.date);
@@ -1852,14 +1852,14 @@ if (linkedDocId) {
  </div>
  </div>
 
- <div className="space-y-2">
- <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Reason / Notes</label>
+ <div className="space-y-1.5 sm:space-y-2">
+ <label className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest">Reason / Notes</label>
  <textarea
  value={formData.notes}
  onChange={e => setFormData(prev => ({ ...prev, notes: e.target.value }))}
  aria-label="Notes"
  data-testid="transaction-notes-textarea"
- className="w-full bg-slate-50 border-none rounded-xl p-3 font-bold text-slate-300 text-xs min-h-[60px] resize-none"
+ className="w-full bg-slate-50 hover:bg-slate-100/60 border border-slate-200/90 rounded-xl p-2.5 sm:p-3 font-semibold text-slate-900 placeholder:text-slate-400 placeholder:font-normal text-[10px] sm:text-[11px] md:text-xs placeholder:text-[10px] sm:placeholder:text-[11px] md:placeholder:text-xs min-h-[50px] sm:min-h-[58px] resize-none focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-xs"
  placeholder="ATM Withdrawal / Friend Transfer / etc..."
  />
  </div>
@@ -1867,7 +1867,7 @@ if (linkedDocId) {
  {/* Receipt Section */}
  <div className="premium-glass-card p-4 space-y-3">
  <div className="flex items-center justify-between">
- <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Receipt</label>
+ <label className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest">Receipt</label>
  {(scanDocumentId || attachmentDocumentId) && (
  <span className="flex items-center gap-1 text-[9px] font-black text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg uppercase tracking-wide">
  <Check size={10} strokeWidth={3} /> Attached
@@ -2024,7 +2024,7 @@ if (linkedDocId) {
 
         {/* Existing transaction preview */}
         <div className="bg-slate-50 rounded-2xl p-4 mb-4 space-y-2">
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Existing Transaction</p>
+          <p className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Existing Transaction</p>
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-600">Category</span>
             <span className="text-xs font-black text-slate-900">{pendingDuplicate.existingTx.category}</span>
@@ -2122,14 +2122,14 @@ if (linkedDocId) {
 
         <div className="space-y-3">
           <div>
-            <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">Category Name</label>
+            <label className="block text-[8px] sm:text-[9px] font-black uppercase tracking-wider text-slate-400 mb-1">Category Name</label>
             <input
               type="text"
               autoFocus
               value={newCatName}
               onChange={(e) => setNewCatName(e.target.value)}
               placeholder="e.g. Street Food, Pani Puri, Books..."
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600"
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 sm:px-3.5 py-2 sm:py-2.5 text-[10px] sm:text-[11px] md:text-xs font-semibold text-slate-900 placeholder:text-slate-400 placeholder:font-normal placeholder:text-[10px] sm:placeholder:text-[11px] md:placeholder:text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600"
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
                   e.preventDefault();
@@ -2140,7 +2140,7 @@ if (linkedDocId) {
           </div>
 
           <div>
-            <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">Color Tag</label>
+            <label className="block text-[8px] sm:text-[9px] font-black uppercase tracking-wider text-slate-400 mb-1.5">Color Tag</label>
             <div className="flex items-center gap-2">
               {['#6366F1', '#EC4899', '#F59E0B', '#10B981', '#3B82F6', '#EF4444', '#8B5CF6', '#14B8A6'].map((color) => (
                 <button

@@ -223,7 +223,7 @@ export const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
  )}
  >
  {selected?.icon && <span className="shrink-0 text-base flex items-center justify-center">{selected.icon}</span>}
- <span className={cn('flex-1 text-sm font-bold truncate', selected ? 'text-gray-900' : 'text-gray-400')}>
+ <span className={cn('flex-1 text-xs sm:text-sm font-semibold truncate', selected ? 'text-gray-900' : 'text-gray-400 font-normal')}>
  {selected?.label ?? placeholder}
  </span>
  <ChevronDown size={16} className={cn('shrink-0 text-gray-400 transition-transform duration-200', open && 'rotate-180')} />
