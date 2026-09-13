@@ -20,6 +20,13 @@ import path from 'node:path';
 import process from 'node:process';
 
 // 1. Ensure @capacitor-community/speech-recognition has a Package.swift
+//
+// The capacitor-swift-pm requirement must be a range (`from: "8.0.0"`, the same as
+// every official @capacitor/* plugin), never `exact:`. The Capacitor CLI pins
+// CapApp-SPM to the installed @capacitor/ios version, so an exact pin here fails
+// package resolution on every Capacitor patch bump (xcodebuild exit 74:
+// "capapp-spm depends on capacitor-swift-pm 8.5.2 and speech-recognition depends
+// on capacitor-swift-pm 8.5.0").
 const SPEECH_RECOGNITION_DIR = path.join('node_modules', '@capacitor-community', 'speech-recognition');
 const SPEECH_RECOGNITION_MANIFEST = path.join(SPEECH_RECOGNITION_DIR, 'Package.swift');
 
@@ -36,7 +43,7 @@ let package = Package(
             targets: ["SpeechRecognitionPlugin"])
     ],
     dependencies: [
-        .package(url: "https://github.com/ionic-team/capacitor-swift-pm.git", exact: "8.5.0")
+        .package(url: "https://github.com/ionic-team/capacitor-swift-pm.git", from: "8.0.0")
     ],
     targets: [
         .target(
