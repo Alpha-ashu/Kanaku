@@ -1854,12 +1854,13 @@ if (linkedDocId) {
 
  <div className="space-y-1.5 sm:space-y-2">
  <label className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest">Reason / Notes</label>
- <textarea
+ <input
+ type="text"
  value={formData.notes}
  onChange={e => setFormData(prev => ({ ...prev, notes: e.target.value }))}
  aria-label="Notes"
  data-testid="transaction-notes-textarea"
- className="w-full bg-slate-50 hover:bg-slate-100/60 border border-slate-200/90 rounded-xl p-2.5 sm:p-3 font-semibold text-slate-900 placeholder:text-slate-400 placeholder:font-normal text-[10px] sm:text-[11px] md:text-xs placeholder:text-[10px] sm:placeholder:text-[11px] md:placeholder:text-xs min-h-[50px] sm:min-h-[58px] resize-none focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-xs"
+ className="w-full bg-slate-50 hover:bg-slate-100/60 border border-slate-200/90 rounded-xl py-2 sm:py-2.5 px-3 sm:px-3.5 font-semibold text-slate-900 placeholder:text-slate-400 placeholder:font-normal text-[10px] sm:text-[11px] md:text-xs placeholder:text-[10px] sm:placeholder:text-[11px] md:placeholder:text-xs h-10 sm:h-11 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-xs"
  placeholder="ATM Withdrawal / Friend Transfer / etc..."
  />
  </div>
