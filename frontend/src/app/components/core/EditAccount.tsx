@@ -146,7 +146,7 @@ export const EditAccount: React.FC<{ accountId?: number }> = ({ accountId: propA
       >
         <ArrowLeft size={18} className="text-slate-700" />
       </button>
-      <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 tracking-tight leading-none truncate">Edit Account</h1>
+      <h1 className="font-page-title text-slate-900 tracking-tight leading-none truncate">Edit Account</h1>
     </div>
   </div>
 

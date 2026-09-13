@@ -972,7 +972,7 @@ if (linkedDocId) {
             >
               <ArrowLeft size={18} className="text-slate-700" />
             </button>
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 tracking-tight leading-none truncate">
+            <h1 className="font-page-title text-slate-900 tracking-tight leading-none truncate">
               {editingTransactionId ? 'Edit Transaction' : 'Add Transaction'}
             </h1>
           </div>

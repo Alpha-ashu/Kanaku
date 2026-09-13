@@ -124,10 +124,10 @@ p, h1, h2, h3, h4, h5, h6, span, li, td {
 /* To change a size globally, update the variable in design-system.css only.   */
 
 .font-page-title {
-  font-size: var(--font-size-page-title);
+  font-size: var(--font-size-page-title) !important;
   font-weight: var(--fw-page-title);
   letter-spacing: var(--ls-heading);
-  line-height: 1.2;
+  line-height: 1.25;
 }
 
 .font-page-sub {

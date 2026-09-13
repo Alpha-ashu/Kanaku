@@ -227,7 +227,7 @@ export const AddGroup: React.FC = () => {
         >
           <ArrowLeft size={18} className="text-slate-700" />
         </button>
-        <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none truncate">New Group Expense</h1>
+        <h1 className="font-page-title text-slate-900 tracking-tight leading-none truncate">New Group Expense</h1>
       </div>
     </div>
   </header>

@@ -183,7 +183,7 @@ export const AdminAdvisorVerification: React.FC = () => {
           <button data-testid="admin-advisor-verification-go-back" type="button" onClick={goBack} aria-label="Go back" className="p-2 hover:bg-gray-100 rounded-xl transition-colors md:!hidden">
             <ChevronLeft size={20} className="text-gray-600" />
           </button>
-          <h1 className="text-xl font-black text-slate-900 tracking-tight leading-none flex-1">
+          <h1 className="font-page-title text-slate-900 tracking-tight leading-none flex-1 truncate">
             Advisor Verification
           </h1>
           <button data-testid="admin-advisor-verification-refresh"

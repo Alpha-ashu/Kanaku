@@ -287,7 +287,7 @@ export const GoalDetail: React.FC = () => {
       >
         <ArrowLeft size={18} className="text-slate-700" />
       </button>
-      <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none truncate">
+      <h1 className="font-page-title text-slate-900 tracking-tight leading-none truncate">
         {goal.name}
       </h1>
     </div>

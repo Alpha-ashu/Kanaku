@@ -798,7 +798,7 @@ export const BookAdvisor: React.FC = () => {
             </button>
             <div>
               <h1 className="font-page-title text-slate-900 tracking-tight leading-none truncate">Book Advisor</h1>
-              <p className="text-xs text-slate-500 font-medium mt-1">Verified financial planners, chartered accountants & tax advisors</p>
+              <p className="text-[11px] sm:text-xs text-slate-500 font-medium mt-0.5 sm:mt-1 truncate max-w-[200px] sm:max-w-none">Verified financial planners & tax advisors</p>
             </div>
           </div>
 

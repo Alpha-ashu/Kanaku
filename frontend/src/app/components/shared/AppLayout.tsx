@@ -46,7 +46,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
         <header className="flex-shrink-0 bg-white/80 backdrop-blur-xl border-b border-slate-100">
           <div className="px-4 py-4">
             {title && (
-              <h1 className="text-xl font-bold text-slate-900">{title}</h1>
+              <h1 className="font-page-title text-slate-900 truncate">{title}</h1>
             )}
           </div>
         </header>

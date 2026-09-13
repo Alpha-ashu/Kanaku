@@ -291,7 +291,7 @@ export const AdvisorWorkspace: React.FC = () => {
         >
           <ChevronLeft className="w-5 h-5 text-slate-700" />
         </button>
-        <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none truncate">Advisor Workspace</h1>
+        <h1 className="font-page-title text-slate-900 tracking-tight leading-none truncate">Advisor Workspace</h1>
       </div>
       <button
         onClick={toggleAvailability}

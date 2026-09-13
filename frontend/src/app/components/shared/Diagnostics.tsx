@@ -134,7 +134,7 @@ export const Diagnostics: React.FC = () => {
       >
         <ChevronLeft className="w-5 h-5 text-slate-700" />
       </button>
-      <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none truncate">Diagnostics</h1>
+      <h1 className="font-page-title text-slate-900 tracking-tight leading-none truncate">Diagnostics</h1>
     </div>
 
  <div className="bg-white rounded-[2rem] border border-gray-100 p-8 space-y-6 shadow-sm">

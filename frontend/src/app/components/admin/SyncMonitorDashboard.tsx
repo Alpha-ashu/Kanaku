@@ -204,7 +204,7 @@ export const SyncMonitorDashboard: React.FC = () => {
       >
         <ChevronLeft className="w-5 h-5 text-slate-700" />
       </button>
-      <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none truncate">Sync Monitor</h1>
+      <h1 className="font-page-title text-slate-900 tracking-tight leading-none truncate">Sync Monitor</h1>
     </div>
   </div>
 

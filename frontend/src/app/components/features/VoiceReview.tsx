@@ -395,7 +395,7 @@ export const VoiceReview: React.FC = () => {
  >
  <ChevronLeft size={20} className="text-slate-700" />
  </button>
- <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none truncate">
+ <h1 className="font-page-title text-slate-900 tracking-tight leading-none truncate">
  Review Voice Transactions
  </h1>
  </div>

@@ -251,7 +251,7 @@ export const ManagerAdvisorVerification: React.FC = () => {
               <ShieldCheck size={24} />
             </div>
             <div>
-              <h1 className="text-2xl font-black text-slate-900 tracking-tight">Compliance Dashboard</h1>
+              <h1 className="font-page-title text-slate-900 tracking-tight leading-none truncate">Compliance Dashboard</h1>
               <p className="text-sm text-slate-500 font-medium">Advisor Verification & KYC Management</p>
             </div>
           </div>

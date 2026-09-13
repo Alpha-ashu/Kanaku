@@ -130,7 +130,7 @@ export const FriendProfile: React.FC = () => {
           >
             <ArrowLeft size={18} className="text-slate-700" />
           </button>
-          <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none truncate">Friend Profile</h1>
+          <h1 className="font-page-title text-slate-900 tracking-tight leading-none truncate">Friend Profile</h1>
         </div>
 
         <div className="rounded-[28px] sm:rounded-[32px] border border-slate-100 bg-white p-5 sm:p-6 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] flex items-center gap-4 sm:gap-5">
