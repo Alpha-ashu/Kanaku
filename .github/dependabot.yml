@@ -39,4 +39,13 @@ updates:
     groups:
       all-gradle:
         patterns: ["*"]
+    # The Android toolchain is pinned to AGP 8.13 / Gradle 8.14.3 until Capacitor
+    # supports AGP 9: under AGP 9 every @capacitor/* plugin module fails to
+    # configure ("Cannot add extension with name 'kotlin'"). Majors here are
+    # coupled to a Capacitor upgrade — see docs/release/MOBILE_RELEASE_GUIDE.md.
+    ignore:
+      - dependency-name: "gradle-wrapper"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "com.android.tools.build:gradle"
+        update-types: ["version-update:semver-major"]
 
