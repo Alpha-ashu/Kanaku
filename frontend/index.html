@@ -4,6 +4,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <script>
+    // iOS Safari / WKWebView zooms the page when a focused field's text is under 16px.
+    // maximum-scale=1 stops that auto-zoom without forcing every field to 16px; iOS
+    // still honours pinch-zoom, and other platforms never get this change.
+    (function () {
+      var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      var meta = document.querySelector('meta[name="viewport"]');
+      if (isIOS && meta && meta.content.indexOf('maximum-scale') === -1) {
+        meta.content += ', maximum-scale=1';
+      }
+    })();
+  </script>
   <meta name="description" content="KANAKU- Your Privacy-First Financial Life Management Platform" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />

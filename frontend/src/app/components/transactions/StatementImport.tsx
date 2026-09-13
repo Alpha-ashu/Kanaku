@@ -382,7 +382,7 @@ export const StatementImport: React.FC<StatementImportProps> = ({
  <div className={`p-1 rounded-md ${stat.color}`}>
  {stat.icon}
  </div>
- <span className="text-[9px] font-bold text-gray-400 uppercase tracking-tight truncate">{stat.label}</span>
+ <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-tight truncate">{stat.label}</span>
  </div>
  <p className="text-xs font-black text-gray-900 tracking-tighter truncate">{stat.value}</p>
  </div>
@@ -399,13 +399,13 @@ export const StatementImport: React.FC<StatementImportProps> = ({
  {importResult.statementMeta.accountNumber ? ` · ${importResult.statementMeta.accountNumber}` : ''}
  </p>
  {importResult.statementMeta.period?.from && (
- <p className="text-[10px] font-bold text-gray-400">
+ <p className="text-[10px] sm:text-[11px] font-bold text-slate-400">
  {importResult.statementMeta.period.from} → {importResult.statementMeta.period.to || '…'}
  </p>
  )}
  </div>
  {importResult.statementMeta.reconciled !== null && importResult.statementMeta.reconciled !== undefined && (
- <span data-testid="statement-import-reconciled" className={`shrink-0 px-2 py-1 rounded-full text-[9px] font-black uppercase tracking-wide ${
+ <span data-testid="statement-import-reconciled" className={`shrink-0 px-2 py-1 rounded-full text-[10px] sm:text-[11px] font-bold uppercase tracking-wide ${
  importResult.statementMeta.reconciled ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'
  }`}>
  {importResult.statementMeta.reconciled ? '✓ Balances reconcile' : '✗ Does not reconcile'}
@@ -497,10 +497,10 @@ export const StatementImport: React.FC<StatementImportProps> = ({
  <div className="flex-1 flex flex-row items-center justify-between gap-3 overflow-hidden">
  <div className="flex-1 min-w-0">
  <div className="flex items-center gap-2 mb-0.5">
- <p className="text-[9px] font-bold text-gray-400 uppercase whitespace-nowrap">
+ <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase whitespace-nowrap">
  {formatDate(transaction.transaction_date).split(' ')[1]} {formatDate(transaction.transaction_date).split(' ')[0]}
  </p>
- <span className="text-[8px] font-bold text-gray-300">
+ <span className="text-[10px] sm:text-[11px] font-bold text-slate-400">
  {formatDate(transaction.transaction_date).split(' ')[2]}
  </span>
  </div>
@@ -508,15 +508,15 @@ export const StatementImport: React.FC<StatementImportProps> = ({
  {transaction.cleaned_description}
  </p>
  <div className="flex items-center gap-1.5">
- <span className="px-1 py-0.25 bg-white text-gray-400 text-[8px] font-black rounded uppercase">
+ <span className="px-1.5 py-0.5 bg-slate-100 text-slate-600 text-[10px] sm:text-[11px] font-bold rounded uppercase">
  {transaction.payment_channel}
  </span>
  {transaction.isDuplicate && (
- <span className="px-1 py-0.25 bg-amber-50 text-amber-500 text-[8px] font-black rounded uppercase">
+ <span className="px-1.5 py-0.5 bg-amber-50 text-amber-600 text-[10px] sm:text-[11px] font-bold rounded uppercase">
  DUP
  </span>
  )}
- <span className="text-[8px] font-bold text-gray-300 uppercase truncate">
+ <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase truncate">
  {transaction.category || 'MISC'}
  </span>
  </div>

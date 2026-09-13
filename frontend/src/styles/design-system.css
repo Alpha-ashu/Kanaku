@@ -80,24 +80,41 @@
   /* ─── Global Typography Scale ─────────────────────────────────────────────── */
   /* One centralized scale — never hardcode font sizes on individual pages.      */
   /* Use these tokens via the utility classes below or as CSS custom properties. */
+  /* Sizes are px on purpose: index.css shrinks the root font to 14px on phones  */
+  /* for compact spacing, and rem-based text would shrink with it. The phone     */
+  /* values live in the (width < 40rem) block below.                             */
+
+  /* Tailwind text-* utilities resolve to these (tablet / desktop values) */
+  --text-xs:   12px;
+  --text-sm:   14px;
+  --text-base: 16px;
+  --text-lg:   18px;
+  --text-xl:   20px;
+  --text-2xl:  24px;
+  --text-3xl:  30px;
+  --text-4xl:  36px;
+  --text-5xl:  48px;
+
+  /* Standard text for every regular form field (input, select, textarea) */
+  --font-size-field: var(--text-sm);
 
   /* Page-level typography — device-aware scale: 18px mobile, 20-22px tablet, 24px desktop */
-  --font-size-page-title:    clamp(1.125rem, 1.2vw + 0.85rem, 1.5rem);
-  --font-size-section-title: clamp(1rem, 3vw, 1.1875rem);     /* 16–19px: section headings */
-  --font-size-card-title:    0.9375rem;                         /* 15px: card headers */
-  --font-size-body:          0.875rem;                          /* 14px: standard body text */
-  --font-size-body-sm:       0.8125rem;                         /* 13px: dense body, list items */
-  --font-size-label:         0.6875rem;                         /* 11px: uppercase labels */
-  --font-size-caption:       0.625rem;                          /* 10px: timestamps, meta */
-  --font-size-watermark:     0.5625rem;                         /* 9px: watermarks, footer notes */
+  --font-size-page-title:    18px;
+  --font-size-section-title: clamp(16px, 3vw, 19px);  /* 16–19px: section headings */
+  --font-size-card-title:    15px;                     /* card headers */
+  --font-size-body:          14px;                     /* standard body text */
+  --font-size-body-sm:       13px;                     /* dense body, list items */
+  --font-size-label:         11px;                     /* uppercase labels */
+  --font-size-caption:       10px;                     /* timestamps, meta */
+  --font-size-watermark:     9px;                      /* watermarks, footer notes */
 
   /* Financial number tiers — clamp() provides fluid scaling on all viewports */
-  --font-size-fin-xl:   clamp(2rem, 6vw, 2.75rem);        /* Hero net worth, large dashboard */
-  --font-size-fin-lg:   clamp(1.5rem, 4.5vw, 2rem);       /* Account balance headers */
-  --font-size-fin-md:   clamp(1.125rem, 3.5vw, 1.375rem); /* Card amounts, totals */
-  --font-size-fin-sm:   1rem;                               /* List row amounts */
-  --font-size-fin-xs:   0.875rem;                           /* Secondary amounts, deltas */
-  --font-size-fin-2xs:  0.75rem;                            /* Compact table amounts */
+  --font-size-fin-xl:   clamp(28px, 6vw, 44px);        /* Hero net worth, large dashboard */
+  --font-size-fin-lg:   clamp(21px, 4.5vw, 32px);      /* Account balance headers */
+  --font-size-fin-md:   clamp(17px, 3.5vw, 22px);      /* Card amounts, totals */
+  --font-size-fin-sm:   16px;                          /* List row amounts */
+  --font-size-fin-xs:   14px;                          /* Secondary amounts, deltas */
+  --font-size-fin-2xs:  12px;                          /* Compact table amounts */
 
   /* Font weights */
   --fw-page-title:    800;
@@ -130,26 +147,47 @@
   --touch-target:         2.75rem;  /* 44px minimum touch target */
 }
 
-/* ─── Responsive Page Title Device-Aware Scale ─────────────────────────────── */
-:root {
-  --font-size-page-title: 1.125rem; /* 18px on mobile (<640px) */
+/* ─── Phone Type Scale (below Tailwind's sm breakpoint) ─────────────────────── */
+/* Slightly tighter than tablet/desktop so dense mobile rows still fit, while   */
+/* keeping every step readable and in order (xs 11 < sm 13 < base 15 ...).     */
+@media (width < 40rem) {
+  :root {
+    --text-xs:   11px;
+    --text-sm:   13px;
+    --text-base: 15px;
+    --text-lg:   17px;
+    --text-xl:   19px;
+    --text-2xl:  22px;
+    --text-3xl:  26px;
+    --text-4xl:  30px;
+    --text-5xl:  36px;
+
+    --font-size-card-title: 14px;
+    --font-size-body:       13px;
+    --font-size-body-sm:    12px;
+    --font-size-label:      10px;
+    --font-size-fin-sm:     15px;
+    --font-size-fin-xs:     13px;
+    --font-size-fin-2xs:    11px;
+  }
 }
 
+/* ─── Responsive Page Title Device-Aware Scale ─────────────────────────────── */
 @media (min-width: 640px) {
   :root {
-    --font-size-page-title: 1.25rem; /* 20px on small tablets (sm) */
+    --font-size-page-title: 20px; /* small tablets (sm) */
   }
 }
 
 @media (min-width: 768px) {
   :root {
-    --font-size-page-title: 1.375rem; /* 22px on medium screens (md) */
+    --font-size-page-title: 22px; /* medium screens (md) */
   }
 }
 
 @media (min-width: 1024px) {
   :root {
-    --font-size-page-title: 1.5rem; /* 24px on desktop (lg+) */
+    --font-size-page-title: 24px; /* desktop (lg+) */
   }
 }
 
@@ -277,7 +315,7 @@
   height: 2.5rem;
   /* 40px */
   padding-left: 2.75rem;
-  font-size: 0.875rem;
+  font-size: var(--font-size-field);
   width: 100%;
   max-width: 480px;
   transition: all 0.2s ease;
@@ -689,4 +727,42 @@
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
-}
+}
+
+/* ─── Standard Form Field Typography ─────────────────────────────────────────
+   Every regular text field renders at --font-size-field, whatever small
+   text-* class a page happened to give it (text-xs, text-sm, text-base, ...).
+   Display inputs that use a large class (amounts, PIN/OTP digits) are left alone.
+
+   Both rules sit inside cascade layers on purpose. Tailwind v4 emits its
+   utilities in @layer utilities, and ANY unlayered rule beats every layered
+   rule regardless of specificity — an unlayered input { font-size } silently
+   overrides every text-* class on the page. Do not move these out of @layer.
+
+   iOS focus-zoom (fields under 16px) is handled by the viewport script in
+   index.html, not by forcing a 16px font here.
+   ─────────────────────────────────────────────────────────────────────────── */
+@layer base {
+  input,
+  textarea,
+  select {
+    font-size: var(--font-size-field);
+  }
+}
+
+@layer utilities {
+  :is(
+    input:not([type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"], [type="hidden"]),
+    textarea,
+    select
+  ):is(
+    .text-xs, .text-sm, .text-base,
+    .text-[10px], .text-[11px], .text-[12px], .text-[13px], .text-[14px], .text-[15px]
+  ):not(
+    .app-select-compact,
+    [class*="text-lg"], [class*="text-xl"], [class*="text-2xl"], [class*="text-3xl"],
+    [class*="text-4xl"], [class*="text-5xl"], [class*="text-6xl"], [class*="text-fin-"]
+  ) {
+    font-size: var(--font-size-field);
+  }
+}

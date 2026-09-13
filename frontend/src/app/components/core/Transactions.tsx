@@ -1266,7 +1266,7 @@ export const Transactions: React.FC = () => {
                     {/* Amount hero card */}
                     <div className="p-3.5 sm:p-5 rounded-[20px] sm:rounded-[24px] bg-slate-50/90 border border-slate-100 flex items-center justify-between">
                       <div>
-                        <p className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest">Amount</p>
+                        <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Amount</p>
                         <p className={cn(
                           'text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight mt-0.5',
                           tx.type === 'transfer' ? 'text-purple-600' : displayType === 'income' ? 'text-emerald-600' : 'text-slate-900'
@@ -1295,7 +1295,7 @@ export const Transactions: React.FC = () => {
                     <div className="bg-white rounded-[20px] sm:rounded-[24px] border border-slate-100 divide-y divide-slate-100/80 overflow-hidden shadow-xs text-xs sm:text-sm">
                       {/* Category & Subcategory */}
                       <div className="flex items-center justify-between px-3.5 sm:px-4 py-2.5 sm:py-3 hover:bg-slate-50/50 transition-colors">
-                        <span className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest">Category</span>
+                        <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Category</span>
                         <div className="flex items-center gap-1.5 text-right">
                           <span className="text-xs font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded-full">
                             {tx.category}
@@ -1308,9 +1308,9 @@ export const Transactions: React.FC = () => {
                         </div>
                       </div>
 
-                      {/* Account or Transfer Route */}
+                      {/* Account or Route */}
                       <div className="flex items-center justify-between px-3.5 sm:px-4 py-2.5 sm:py-3 hover:bg-slate-50/50 transition-colors">
-                        <span className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                        <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                           {tx.type === 'transfer' ? 'Route' : 'Account'}
                         </span>
                         {tx.type === 'transfer' && destAccount ? (
@@ -1334,7 +1334,7 @@ export const Transactions: React.FC = () => {
 
                       {/* Exact Date & Time */}
                       <div className="flex items-center justify-between px-3.5 sm:px-4 py-2.5 sm:py-3 hover:bg-slate-50/50 transition-colors">
-                        <span className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest">Date & Time</span>
+                        <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Date & Time</span>
                         <span className="text-xs font-bold text-slate-800 text-right">
                           {formattedDateTime}
                         </span>
@@ -1343,7 +1343,7 @@ export const Transactions: React.FC = () => {
                       {/* Merchant / Payee */}
                       {tx.merchant && (
                         <div className="flex items-center justify-between px-3.5 sm:px-4 py-2.5 sm:py-3 hover:bg-slate-50/50 transition-colors">
-                          <span className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest">Merchant</span>
+                          <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Merchant</span>
                           <span className="text-xs font-bold text-slate-800 text-right">
                             {tx.merchant}
                           </span>
@@ -1353,7 +1353,7 @@ export const Transactions: React.FC = () => {
                       {/* Group Expense Info */}
                       {(tx.groupName || tx.expenseMode === 'group') && (
                         <div className="flex items-center justify-between px-3.5 sm:px-4 py-2.5 sm:py-3 hover:bg-slate-50/50 transition-colors bg-indigo-50/30">
-                          <span className="text-[8px] sm:text-[9px] font-black text-indigo-500 uppercase tracking-widest flex items-center gap-1">
+                          <span className="text-[10px] sm:text-[11px] font-bold text-indigo-500 uppercase tracking-wider flex items-center gap-1">
                             <Users size={11} /> Group
                           </span>
                           <div className="text-right">
@@ -1372,7 +1372,7 @@ export const Transactions: React.FC = () => {
                       {/* Loan Info */}
                       {(tx.contactName || tx.loanType) && (
                         <div className="flex items-center justify-between px-3.5 sm:px-4 py-2.5 sm:py-3 hover:bg-slate-50/50 transition-colors bg-amber-50/30">
-                          <span className="text-[8px] sm:text-[9px] font-black text-amber-600 uppercase tracking-widest flex items-center gap-1">
+                          <span className="text-[10px] sm:text-[11px] font-bold text-amber-600 uppercase tracking-wider flex items-center gap-1">
                             <HandCoins size={11} /> Loan
                           </span>
                           <div className="text-right">
@@ -1391,7 +1391,7 @@ export const Transactions: React.FC = () => {
                       {/* Tags */}
                       {Array.isArray(tx.tags) && tx.tags.length > 0 && (
                         <div className="flex items-center justify-between px-3.5 sm:px-4 py-2.5 sm:py-3 hover:bg-slate-50/50 transition-colors">
-                          <span className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1">
+                          <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
                             <Tag size={11} /> Tags
                           </span>
                           <div className="flex items-center gap-1 flex-wrap justify-end">
@@ -1407,7 +1407,7 @@ export const Transactions: React.FC = () => {
                       {/* Notes */}
                       {tx.notes && (
                         <div className="px-3.5 sm:px-4 py-2.5 sm:py-3 hover:bg-slate-50/50 transition-colors">
-                          <span className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Notes</span>
+                          <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Notes</span>
                           <p className="text-xs text-slate-700 bg-slate-50 p-2 rounded-xl border border-slate-200/50 leading-relaxed italic">
                             "{tx.notes}"
                           </p>
@@ -1418,7 +1418,7 @@ export const Transactions: React.FC = () => {
                       {attachedTaxAmount > 0 && (
                         <div className="px-3.5 sm:px-4 py-2.5 sm:py-3 bg-purple-50/20">
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-[8px] sm:text-[9px] font-black text-purple-700 uppercase tracking-widest flex items-center gap-1">
+                            <span className="text-[10px] sm:text-[11px] font-bold text-purple-700 uppercase tracking-wider flex items-center gap-1">
                               <Receipt size={11} /> Tax Details
                             </span>
                             <span className="text-xs font-black text-purple-900">
@@ -1446,7 +1446,7 @@ export const Transactions: React.FC = () => {
                               <Receipt size={13} />
                             </span>
                             <div>
-                              <p className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Attached Bill</p>
+                              <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider leading-none">Attached Bill</p>
                               <p className="text-xs font-bold text-purple-900 mt-0.5">Receipt document verified</p>
                             </div>
                           </div>

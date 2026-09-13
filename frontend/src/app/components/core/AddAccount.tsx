@@ -223,22 +223,22 @@ export const AddAccount: React.FC = () => {
  <div className="xl:col-span-7 flex flex-col gap-6 order-2 xl:order-1 w-full">
  <div className="premium-glass-card p-4 space-y-4">
  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full">
- <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest shrink-0">1. Asset Type</label>
+ <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider shrink-0">1. Asset Type</label>
  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full md:w-auto">
  {accountTypes.map(t => (
  <button key={t.id} onClick={() => setFormData(prev => ({ ...prev, type: t.id as any }))} data-testid={`account-create-type-${t.id}-button`} className={cn("flex flex-col items-center gap-2 p-3 rounded-xl transition-all", formData.type === t.id ?"bg-indigo-600 text-white shadow-lg shadow-indigo-100" :"bg-slate-50 text-slate-400 hover:bg-slate-100")}>
  <t.icon size={20} />
- <span className="text-[9px] font-black uppercase">{t.label}</span>
+ <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider">{t.label}</span>
  </button>
  ))}
  </div>
  </div>
 
  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full">
-    <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest shrink-0">2. Custom Label (Optional)</label>
+    <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider shrink-0">2. Custom Label (Optional)</label>
     <div className="relative w-full md:max-w-md">
-      <Wallet className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={12} />
-      <input id="account-custom-label" name="accountName" aria-label="Custom account label" type="text" value={formData.name} onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))} data-testid="account-create-name-input" className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-300 text-xs" placeholder="e.g. My Savings" />
+      <Wallet className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+      <input id="account-custom-label" name="accountName" aria-label="Custom account label" type="text" value={formData.name} onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))} data-testid="account-create-name-input" className="w-full h-10 sm:h-11 bg-slate-50 border border-slate-200/80 rounded-xl pl-9 pr-3 text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all" placeholder="e.g. My Savings" />
     </div>
   </div>
 
@@ -247,7 +247,7 @@ export const AddAccount: React.FC = () => {
 
  {formData.type !== 'wallet' && (
  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full">
- <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest shrink-0">
+ <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider shrink-0">
   3. Institution / Provider
  </label>
 
@@ -264,22 +264,22 @@ export const AddAccount: React.FC = () => {
  searchPlaceholder="e.g. HDFC, SBI..."
  className="w-full"
  renderTrigger={(selected) => (
- <div className="relative w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-900 text-xs flex items-center gap-2 cursor-pointer hover:bg-slate-100 transition-colors">
- <Landmark className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
+ <div className="relative w-full h-10 sm:h-11 bg-slate-50 border border-slate-200/80 rounded-xl pl-9 pr-3 text-xs sm:text-sm font-semibold text-slate-900 flex items-center gap-2 cursor-pointer hover:bg-slate-100/80 transition-colors">
+ <Landmark className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
  {selected ? (
  <div className="flex items-center gap-2">
  {selected.icon}
  <span>{selected.label}</span>
  </div>
  ) : (
- <span className="text-slate-400">{formData.type === 'card' ? 'Select Issuing Bank' : 'Select Bank'}</span>
+ <span className="text-slate-400 font-normal">{formData.type === 'card' ? 'Select Issuing Bank' : 'Select Bank'}</span>
  )}
  </div>
  )}
  />
  ) : (
  <div className="relative">
- <Landmark className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
+ <Landmark className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
  <input
  id="account-provider"
  name="provider"
@@ -288,7 +288,7 @@ export const AddAccount: React.FC = () => {
  value={provider}
  onChange={e => setProvider(e.target.value)}
  data-testid="account-create-provider-input"
- className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-9 pr-3 font-bold text-slate-300 text-xs"
+ className="w-full h-10 sm:h-11 bg-slate-50 border border-slate-200/80 rounded-xl pl-9 pr-3 text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
  placeholder="Bank or Wallet Name"
  />
  </div>
@@ -298,7 +298,7 @@ export const AddAccount: React.FC = () => {
  )}
 
  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full pt-2">
- <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest shrink-0">
+ <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider shrink-0">
  4. {formData.type === 'card' ? 'Card Network' : formData.type === 'wallet' ? 'Select Wallet Brand' : 'Account Category'}
  </label>
 
@@ -329,17 +329,17 @@ export const AddAccount: React.FC = () => {
  </div>
  ) : (
  <div className="flex flex-wrap gap-2 w-full md:w-auto">
- {formData.type === 'card' ? (
+  {formData.type === 'card' ? (
  CARD_NETWORKS.map(net => (
  <button
  key={net.id}
  onClick={() => setFormData(prev => ({ ...prev, subType: net.id }))}
  data-testid={`account-create-network-${net.id}-button`}
  className={cn(
-"flex items-center gap-3 px-4 py-3 rounded-xl text-[10px] font-black transition-all border",
+"flex items-center gap-2.5 px-3.5 py-2 sm:py-2.5 rounded-xl text-[10px] sm:text-[11px] font-bold transition-all border",
  formData.subType === net.id
- ?"bg-indigo-50 border-indigo-200 text-indigo-600 shadow-sm"
- :"bg-white border-slate-100 text-slate-400 hover:border-slate-200"
+ ?"bg-indigo-50 border-indigo-200 text-indigo-600 shadow-xs"
+ :"bg-white border-slate-200/80 text-slate-500 hover:border-slate-300"
  )}
  >
  <CardNetworkLogo network={net.id} />
@@ -359,10 +359,10 @@ export const AddAccount: React.FC = () => {
  onClick={() => setFormData(prev => ({ ...prev, subType: st.id }))}
  data-testid={`account-create-subtype-${st.id}-button`}
  className={cn(
-"px-3 py-2 rounded-xl text-[10px] font-bold transition-all border",
+"px-3.5 py-2 sm:py-2.5 rounded-xl text-[10px] sm:text-[11px] font-bold transition-all border",
  formData.subType === st.id
- ?"bg-indigo-50 border-indigo-200 text-indigo-600 shadow-sm"
- :"bg-white border-slate-100 text-slate-400 hover:border-slate-200"
+ ?"bg-indigo-50 border-indigo-200 text-indigo-600 shadow-xs"
+ :"bg-white border-slate-200/80 text-slate-500 hover:border-slate-300"
  )}
  >
  {st.label}
@@ -451,8 +451,8 @@ export const AddAccount: React.FC = () => {
  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500 animate-pulse opacity-70" />
  )}
  
- <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full mb-6">
- <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest shrink-0">Choose Card Aesthetic</label>
+  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full mb-6">
+ <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider shrink-0">Choose Card Aesthetic</label>
  <div className="flex flex-wrap items-center gap-3 md:gap-4">
  {CARD_COLORS.map(color => (
  <button
@@ -476,7 +476,7 @@ export const AddAccount: React.FC = () => {
 
  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full">
  <div className="flex items-center justify-between w-full md:w-auto gap-4">
- <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Custom Spectrum</span>
+ <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">Custom Spectrum</span>
  <div
  ref={el => { if (el) el.style.backgroundColor = selectedColor.id === 'custom' ? (selectedColor.color ?? '#6366f1') : '#6366f1'; }}
  className="w-4 h-4 rounded-full shadow-sm border border-white shrink-0"
@@ -518,15 +518,15 @@ export const AddAccount: React.FC = () => {
  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-indigo-500/20 to-transparent" />
  <div className="absolute -top-12 -right-12 w-40 h-40 bg-indigo-500/5 blur-[50px] rounded-full group-hover:bg-indigo-500/10 transition-colors duration-700" />
 
- <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full mb-6">
+  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full mb-6">
  <div className="flex flex-col">
- <span className="text-[10px] font-black text-indigo-400/60 uppercase tracking-[0.3em]">Setup Initial Capital</span>
+ <span className="text-[10px] sm:text-[11px] font-bold text-indigo-400/80 uppercase tracking-wider">Setup Initial Capital</span>
  <h3 className="text-sm font-bold text-slate-800">Opening Balance</h3>
  </div>
  <div className="h-px flex-1 bg-slate-100 hidden md:block mx-4" />
  <div className="flex items-center gap-2 text-slate-400">
  <Info size={14} />
- <span className="text-[10px] font-bold uppercase tracking-wider">Starting Amount</span>
+ <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider">Starting Amount</span>
  </div>
  </div>
 
@@ -549,9 +549,9 @@ export const AddAccount: React.FC = () => {
 
  <div className="w-full mt-8 flex flex-col gap-3">
  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full">
- <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-400 shrink-0">Quick Balance Presets</p>
+ <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-400 shrink-0">Quick Balance Presets</p>
  <div className="flex-1 h-[1px] bg-slate-100 hidden md:block" />
- <div className="text-[10px] font-bold text-indigo-500/60 uppercase tracking-widest hidden md:block">Add to balance</div>
+ <div className="text-[10px] sm:text-[11px] font-bold text-indigo-500/80 uppercase tracking-wider hidden md:block">Add to balance</div>
  </div>
  <div className="flex justify-center gap-2">
  {QUICK_BALANCE_PRESETS.filter(p => p > 0).map(amt => (

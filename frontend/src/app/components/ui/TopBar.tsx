@@ -442,7 +442,7 @@ export const TopBar: React.FC = () => {
               <h3 className="text-xs font-black text-slate-800 truncate">{displayName}</h3>
               <p className="text-[10px] text-slate-400 truncate font-semibold text-left">{email}</p>
               <div className="text-left mt-0.5">
-                <span className="inline-flex px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider bg-slate-100 text-slate-500">
+                <span className="inline-flex px-1.5 py-0.5 rounded text-[10px] sm:text-[11px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600">
                   {roleName}
                 </span>
               </div>

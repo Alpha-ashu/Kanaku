@@ -217,7 +217,7 @@ export const ToDoListDetail: React.FC = () => {
       }}
       data-testid={testId}
       className={cn(
-        'w-full bg-slate-50 border-none rounded-xl py-2 px-3 font-bold text-slate-900 text-xs focus:ring-2 focus:ring-violet-200 outline-none',
+        'w-full h-10 sm:h-11 bg-slate-50 border border-slate-200 rounded-xl px-3 font-semibold text-slate-900 text-xs sm:text-sm focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 outline-none',
         className
       )}
     >
@@ -324,13 +324,13 @@ export const ToDoListDetail: React.FC = () => {
               aria-label="Task title"
               autoFocus
               data-testid="tododetail-new-title-input"
-              className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 font-bold text-slate-900 text-sm focus:ring-2 focus:ring-indigo-200 outline-none placeholder:text-slate-300"
+              className="w-full h-10 sm:h-11 bg-white border border-slate-200 rounded-xl px-4 font-semibold text-slate-900 text-xs sm:text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none placeholder:text-slate-400"
             />
 
             <div className="grid grid-cols-2 gap-3">
               {/* Priority */}
               <div className="space-y-1">
-                <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1"><Flag size={9} />Priority</label>
+                <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1"><Flag size={11} />Priority</label>
                 <div className="flex gap-1.5">
                   {(['low', 'medium', 'high'] as const).map(p => {
                     const cfg = PRIORITY_CONFIG[p];
@@ -341,7 +341,7 @@ export const ToDoListDetail: React.FC = () => {
                         onClick={() => setNewPriority(p)}
                         data-testid={`tododetail-new-priority-${p}-button`}
                         className={cn(
-                          'flex-1 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all',
+                          'flex-1 py-2 rounded-lg text-[10px] sm:text-[11px] font-bold uppercase tracking-wider transition-all',
                           newPriority === p ? `${cfg.bg} ${cfg.text}` : 'bg-white border border-slate-200 text-slate-400 hover:border-slate-300'
                         )}
                       >
@@ -354,14 +354,14 @@ export const ToDoListDetail: React.FC = () => {
 
               {/* Due Date */}
               <div className="space-y-1">
-                <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1"><Calendar size={9} />Due Date</label>
+                <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1"><Calendar size={11} />Due Date</label>
                 <input
                   type="date"
                   value={newDueDate}
                   onChange={e => setNewDueDate(e.target.value)}
                   aria-label="Due date"
                   data-testid="tododetail-new-due-date-input"
-                  className="w-full bg-white border border-slate-200 rounded-xl py-2 px-3 font-bold text-slate-900 text-xs focus:ring-2 focus:ring-indigo-200 outline-none"
+                  className="w-full h-10 sm:h-11 bg-white border border-slate-200 rounded-xl px-3 font-semibold text-slate-900 text-xs sm:text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none"
                 />
               </div>
             </div>
@@ -369,8 +369,8 @@ export const ToDoListDetail: React.FC = () => {
             {/* Assign To — Together lists only */}
             {isTogether && (
               <div className="space-y-1">
-                <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1">
-                  <UserCheck size={9} />Assign To
+                <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                  <UserCheck size={11} />Assign To
                 </label>
                 <AssigneeSelect
                   value={newAssignedTo}
@@ -383,7 +383,7 @@ export const ToDoListDetail: React.FC = () => {
 
             {/* Description */}
             <div className="space-y-1">
-              <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1"><AlignLeft size={9} />Notes</label>
+              <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1"><AlignLeft size={11} />Notes</label>
               <textarea
                 value={newDescription}
                 onChange={e => setNewDescription(e.target.value)}
@@ -391,7 +391,7 @@ export const ToDoListDetail: React.FC = () => {
                 aria-label="Notes"
                 rows={2}
                 data-testid="tododetail-new-notes-textarea"
-                className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-3 font-bold text-slate-900 text-xs resize-none focus:ring-2 focus:ring-indigo-200 outline-none placeholder:text-slate-300"
+                className="w-full bg-white border border-slate-200 rounded-xl p-3 font-semibold text-slate-900 text-xs sm:text-sm resize-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none placeholder:text-slate-400"
               />
             </div>
 
@@ -480,7 +480,7 @@ export const ToDoListDetail: React.FC = () => {
                     onChange={e => setEditTitle(e.target.value)}
                     aria-label="Task title"
                     data-testid="tododetail-edit-title-input"
-                    className="w-full bg-slate-50 border-none rounded-xl py-2.5 px-3 font-bold text-slate-900 text-sm focus:ring-2 focus:ring-indigo-200 outline-none"
+                    className="w-full h-10 sm:h-11 bg-slate-50 border border-slate-200 rounded-xl px-3 font-semibold text-slate-900 text-xs sm:text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none"
                     autoFocus
                   />
                   <div className="grid grid-cols-2 gap-3">
@@ -490,7 +490,7 @@ export const ToDoListDetail: React.FC = () => {
                         return (
                           <button key={p} type="button" onClick={() => setEditPriority(p)}
                             data-testid={`tododetail-edit-priority-${p}-button`}
-                            className={cn('flex-1 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-tight transition-all', editPriority === p ? `${cfg.bg} ${cfg.text}` : 'bg-slate-100 text-slate-400 hover:bg-slate-200')}
+                            className={cn('flex-1 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-bold uppercase tracking-wider transition-all', editPriority === p ? `${cfg.bg} ${cfg.text}` : 'bg-slate-100 text-slate-400 hover:bg-slate-200')}
                           >{cfg.label}</button>
                         );
                       })}
@@ -498,12 +498,12 @@ export const ToDoListDetail: React.FC = () => {
                     <input type="date" value={editDueDate} onChange={e => setEditDueDate(e.target.value)}
                       aria-label="Due date"
                       data-testid="tododetail-edit-due-date-input"
-                      className="bg-slate-50 border-none rounded-xl py-1.5 px-3 font-bold text-slate-900 text-xs outline-none" />
+                      className="h-10 sm:h-11 bg-slate-50 border border-slate-200 rounded-xl px-3 font-semibold text-slate-900 text-xs sm:text-sm outline-none" />
                   </div>
                   {isTogether && (
                     <div className="space-y-1">
-                      <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1">
-                        <UserCheck size={9} />Assign To
+                      <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                        <UserCheck size={11} />Assign To
                       </label>
                       <AssigneeSelect
                         value={editAssignedTo}
@@ -516,16 +516,16 @@ export const ToDoListDetail: React.FC = () => {
                   <textarea value={editDescription} onChange={e => setEditDescription(e.target.value)}
                     placeholder="Notes…" aria-label="Notes" rows={2}
                     data-testid="tododetail-edit-notes-textarea"
-                    className="w-full bg-slate-50 border-none rounded-xl py-2 px-3 text-xs font-semibold text-slate-700 resize-none outline-none" />
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs sm:text-sm font-semibold text-slate-700 resize-none outline-none" />
                   <div className="flex gap-2">
                     <button type="button" onClick={() => setEditingItemId(null)}
                       data-testid="tododetail-edit-cancel-button"
-                      className="flex-1 py-2 border border-slate-200 rounded-full text-[9px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-50 transition-all cursor-pointer">
+                      className="flex-1 py-2 border border-slate-200 rounded-full text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-600 hover:bg-slate-50 transition-all cursor-pointer">
                       Cancel
                     </button>
                     <button type="button" onClick={() => handleSaveEdit(item.id!)}
                       data-testid="tododetail-edit-save-button"
-                      className={cn('flex-1 py-2 text-white rounded-full text-[9px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-1 shadow-xs cursor-pointer', isTogether ? 'bg-violet-600 hover:bg-violet-700' : 'bg-[#18181B] hover:bg-black')}>
+                      className={cn('flex-1 py-2 text-white rounded-full text-[10px] sm:text-[11px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1 shadow-xs cursor-pointer', isTogether ? 'bg-violet-600 hover:bg-violet-700' : 'bg-[#18181B] hover:bg-black')}>
                       <Check size={11} />Save
                     </button>
                   </div>

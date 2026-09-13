@@ -66,13 +66,21 @@ select,
   border: 1px solid #e2e8f0;
   border-radius: 9999px;
   padding: 0.45rem 2rem 0.45rem 0.95rem;
-  font-size: 0.8125rem;
-  font-weight: 700;
   color: #111827;
   transition: all 0.15s ease-in-out;
   cursor: pointer;
   outline: none;
-  line-height: 1.25;
+}
+
+/* Typography defaults stay layered so a component's text-* / font-* classes win.
+   Field size itself comes from --font-size-field (design-system.css). */
+@layer components {
+  select,
+  .app-select {
+    font-size: var(--font-size-field);
+    font-weight: 700;
+    line-height: 1.25;
+  }
 }
 
 select:hover,
@@ -101,7 +109,7 @@ select:focus,
   border: 1px solid #e2e8f0;
   border-radius: 9999px;
   padding: 0.3rem 1.6rem 0.3rem 0.75rem;
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   font-weight: 700;
   color: #1e293b;
   height: 2rem;
@@ -190,13 +198,10 @@ html {
 
   /* Keep touch targets opt-in via utility classes (e.g., .tap-target) */
 
-  /* Fix text selection on mobile */
-  input,
-  textarea,
-  select {
-    font-size: 16px;
-    /* Prevents zoom on iOS */
-  }
+  /* No font-size rule for input/textarea/select here: an unlayered rule beats
+     every Tailwind text-* class (even under :where()). Field sizing lives in
+     design-system.css; iOS focus-zoom is prevented by the viewport script in
+     index.html. */
 
   /* Hide desktop elements */
   .desktop-only {

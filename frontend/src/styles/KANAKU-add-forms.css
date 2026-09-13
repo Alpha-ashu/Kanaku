@@ -1016,7 +1016,7 @@
 }
 
 .KANAKU-receipt-card__title {
-  font-size: 0.68rem;
+  font-size: var(--font-size-label);
   font-weight: 800;
   color: #64748b;
   text-transform: uppercase;
@@ -1065,7 +1065,7 @@
 
 .KANAKU-receipt-field p {
   margin-top: 0.25rem;
-  font-size: 0.68rem;
+  font-size: var(--font-size-label);
 }
 
 .KANAKU-receipt-side {

@@ -392,7 +392,7 @@ export const ToDoLists: React.FC = () => {
             <div className="overflow-y-auto flex-1 p-5 space-y-4">
               {/* List Type Selection */}
               <div className="space-y-2">
-                <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">List Type *</label>
+                <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">List Type *</label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
@@ -412,8 +412,8 @@ export const ToDoLists: React.FC = () => {
                       {listType === 'individual' && <div className="w-2 h-2 rounded-full bg-indigo-600" />}
                     </div>
                     <div>
-                      <p className={cn('text-[10px] font-black uppercase tracking-widest', listType === 'individual' ? 'text-indigo-700' : 'text-slate-600')}>Individual</p>
-                      <p className="text-[9px] text-slate-400 font-semibold mt-0.5">Only you</p>
+                      <p className={cn('text-[10px] sm:text-[11px] font-bold uppercase tracking-wider', listType === 'individual' ? 'text-indigo-700' : 'text-slate-600')}>Individual</p>
+                      <p className="text-[10px] sm:text-[11px] text-slate-400 font-medium mt-0.5">Only you</p>
                     </div>
                   </button>
 
@@ -435,8 +435,8 @@ export const ToDoLists: React.FC = () => {
                       {listType === 'together' && <div className="w-2 h-2 rounded-full bg-violet-600" />}
                     </div>
                     <div>
-                      <p className={cn('text-[10px] font-black uppercase tracking-widest', listType === 'together' ? 'text-violet-700' : 'text-slate-600')}>Together</p>
-                      <p className="text-[9px] text-slate-400 font-semibold mt-0.5">Collaborative</p>
+                      <p className={cn('text-[10px] sm:text-[11px] font-bold uppercase tracking-wider', listType === 'together' ? 'text-violet-700' : 'text-slate-600')}>Together</p>
+                      <p className="text-[10px] sm:text-[11px] text-slate-400 font-medium mt-0.5">Collaborative</p>
                     </div>
                   </button>
                 </div>
@@ -444,7 +444,7 @@ export const ToDoLists: React.FC = () => {
 
               {/* List Name */}
               <div className="space-y-1">
-                <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">List Name *</label>
+                <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">List Name *</label>
                 <input
                   type="text"
                   value={newListName}
@@ -453,20 +453,20 @@ export const ToDoLists: React.FC = () => {
                   placeholder="e.g., Weekly Tasks"
                   autoFocus
                   data-testid="todo-create-name-input"
-                  className="w-full bg-slate-50 border-none rounded-xl py-3 px-4 font-bold text-slate-900 text-sm focus:ring-2 focus:ring-indigo-200 outline-none"
+                  className="w-full h-10 sm:h-11 bg-slate-50 border border-slate-200 rounded-xl px-4 font-semibold text-slate-900 text-xs sm:text-sm placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none"
                 />
               </div>
 
               {/* Description */}
               <div className="space-y-1">
-                <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Description</label>
+                <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Description</label>
                 <textarea
                   value={newListDescription}
                   onChange={e => setNewListDescription(e.target.value)}
                   placeholder="Optional description"
                   rows={2}
                   data-testid="todo-create-description-textarea"
-                  className="w-full bg-slate-50 border-none rounded-xl py-3 px-4 font-bold text-slate-900 text-sm resize-none focus:ring-2 focus:ring-indigo-200 outline-none"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 font-semibold text-slate-900 text-xs sm:text-sm placeholder:text-slate-400 resize-none focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none"
                 />
               </div>
 
@@ -475,7 +475,7 @@ export const ToDoLists: React.FC = () => {
                 <div className="space-y-3 pt-1">
                   <div className="flex items-center gap-2">
                     <div className="h-px flex-1 bg-violet-100" />
-                    <span className="text-[8px] font-black text-violet-400 uppercase tracking-widest flex items-center gap-1">
+                    <span className="text-[10px] sm:text-[11px] font-bold text-violet-400 uppercase tracking-wider flex items-center gap-1">
                       <Users size={9} />Collaborators
                     </span>
                     <div className="h-px flex-1 bg-violet-100" />
@@ -584,7 +584,7 @@ export const ToDoLists: React.FC = () => {
                           type="button"
                           onClick={() => { setShowNewCollaboratorInput(false); setNewCollaboratorName(''); setNewCollaboratorEmail(''); }}
                           data-testid="todo-new-collaborator-cancel-button"
-                          className="flex-1 py-1.5 border border-slate-200 rounded-lg text-[9px] font-black uppercase tracking-widest text-slate-600"
+                          className="flex-1 py-1.5 border border-slate-200 rounded-lg text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-600"
                         >
                           Cancel
                         </button>
@@ -593,7 +593,7 @@ export const ToDoLists: React.FC = () => {
                           onClick={addNewCollaborator}
                           disabled={!newCollaboratorName.trim()}
                           data-testid="todo-new-collaborator-add-button"
-                          className="flex-1 py-1.5 bg-violet-600 text-white rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-violet-700 transition-all disabled:opacity-50"
+                          className="flex-1 py-1.5 bg-violet-600 text-white rounded-lg text-[10px] sm:text-[11px] font-bold uppercase tracking-wider hover:bg-violet-700 transition-all disabled:opacity-50"
                         >
                           Add
                         </button>
@@ -604,7 +604,7 @@ export const ToDoLists: React.FC = () => {
                       type="button"
                       onClick={() => setShowNewCollaboratorInput(true)}
                       data-testid="todo-add-new-collaborator-toggle-button"
-                      className="w-full flex items-center justify-center gap-2 py-2.5 border-2 border-dashed border-violet-200 rounded-xl text-[10px] font-black uppercase tracking-widest text-violet-500 hover:bg-violet-50 hover:border-violet-300 transition-all"
+                      className="w-full flex items-center justify-center gap-2 py-2.5 border-2 border-dashed border-violet-200 rounded-xl text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-violet-500 hover:bg-violet-50 hover:border-violet-300 transition-all"
                     >
                       <UserPlus size={13} />
                       Add New Friend

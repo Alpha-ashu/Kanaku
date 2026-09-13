@@ -240,14 +240,14 @@ export const AddGroup: React.FC = () => {
  
         <div className="bg-white rounded-[28px] sm:rounded-[32px] p-6 sm:p-8 border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] space-y-5">
           <div className="space-y-1.5">
-            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Group / Expense Name</label>
+            <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Group / Expense Name</label>
             <div className="relative">
               <Tag className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={15} />
               <input data-testid="add-group-e-g-weekend-trip" 
                 type="text" 
                 value={formData.name} 
                 onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))} 
-                className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 pl-10 pr-3.5 font-bold text-slate-900 text-xs focus:bg-white focus:border-violet-500 outline-none" 
+                className="w-full h-10 sm:h-11 bg-slate-50 border border-slate-200/80 rounded-xl pl-10 pr-3.5 font-semibold text-slate-900 text-xs sm:text-sm placeholder:text-slate-400 focus:bg-white focus:border-violet-500 outline-none transition-all" 
                 placeholder="e.g. Weekend Trip to Goa" 
               />
             </div>
@@ -255,20 +255,20 @@ export const AddGroup: React.FC = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Category</label>
+              <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Category</label>
               <SearchableDropdown testId="add-group-category"
                 options={groupCategoryOptions}
                 value={formData.category}
                 onChange={val => setFormData(prev => ({ ...prev, category: val }))}
                 placeholder="Category"
-                triggerClassName="bg-slate-50 border border-slate-200 rounded-2xl h-12 font-bold text-xs shadow-none"
+                triggerClassName="bg-slate-50 border border-slate-200/80 rounded-xl h-10 sm:h-11 font-semibold text-xs sm:text-sm shadow-none"
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Date</label>
+              <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Date</label>
               <div className="relative group">
                 <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-violet-500 transition-colors z-10" size={15} />
-                <div className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 pl-10 pr-3.5 font-bold text-xs text-slate-900 group-hover:bg-slate-100/50 transition-all flex items-center min-h-[48px]">
+                <div className="w-full bg-slate-50 border border-slate-200/80 rounded-xl pl-10 pr-3.5 font-semibold text-xs sm:text-sm text-slate-900 group-hover:bg-slate-100/50 transition-all flex items-center h-10 sm:h-11">
                   {(() => {
                     if (!formData.date) return 'Select Date';
                     const date = new Date(formData.date);
@@ -289,13 +289,13 @@ export const AddGroup: React.FC = () => {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Description (Optional)</label>
+            <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Description (Optional)</label>
             <div className="relative">
               <AlignLeft className="absolute left-3.5 top-3.5 text-slate-400" size={15} />
               <textarea data-testid="add-group-what-was-this-for" 
                 value={formData.description} 
                 onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))} 
-                className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 pl-10 pr-3.5 font-medium text-slate-900 text-xs min-h-[70px] resize-none focus:bg-white focus:border-violet-500 outline-none" 
+                className="w-full bg-slate-50 border border-slate-200/80 rounded-xl p-3 pl-10 pr-3.5 font-medium text-slate-900 text-xs sm:text-sm min-h-[70px] resize-none focus:bg-white focus:border-violet-500 outline-none transition-all" 
                 placeholder="What was this for?" 
               />
             </div>
@@ -304,7 +304,7 @@ export const AddGroup: React.FC = () => {
  {/* Participants Section */}
  <div className="space-y-4 pt-4 border-t border-slate-100">
  <div className="flex items-center justify-between">
- <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest">
+ <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">
  Split with Participants ({validParticipants.length + 1})
  </label>
  <div className="flex gap-2">
@@ -312,7 +312,7 @@ export const AddGroup: React.FC = () => {
  <button data-testid="add-group-friends" 
  type="button" 
  onClick={() => { setShowFriendPicker(!showFriendPicker); setShowNewPersonInput(false); }}
- className="text-[8px] font-black uppercase text-violet-600 bg-violet-50 px-2.5 py-1.5 rounded-lg flex items-center gap-1"
+ className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-violet-600 bg-violet-50 px-2.5 py-1.5 rounded-lg flex items-center gap-1"
  >
  <Users size={10} /> Friends
  </button>
@@ -320,7 +320,7 @@ export const AddGroup: React.FC = () => {
  <button data-testid="add-group-new-person" 
  type="button" 
  onClick={() => { setShowNewPersonInput(!showNewPersonInput); setShowFriendPicker(false); }}
- className="text-[8px] font-black uppercase text-indigo-600 bg-indigo-50 px-2.5 py-1.5 rounded-lg flex items-center gap-1"
+ className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2.5 py-1.5 rounded-lg flex items-center gap-1"
  >
  <UserPlus size={10} /> New Person
  </button>
@@ -330,7 +330,7 @@ export const AddGroup: React.FC = () => {
  {/* Friends quick-pick panel */}
  {showFriendPicker && friends.length > 0 && (
  <div className="p-3 bg-violet-50/60 rounded-xl border border-violet-100 animate-in slide-in-from-top-2">
- <p className="text-[8px] font-black text-violet-400 uppercase tracking-widest mb-2">Tap to add</p>
+ <p className="text-[10px] sm:text-[11px] font-bold text-violet-400 uppercase tracking-wider mb-2">Tap to add</p>
  <div className="flex flex-wrap gap-2">
  {friends.map(f => {
  const already = formData.participants.some(p => p.toLowerCase() === f.name.toLowerCase());
@@ -341,7 +341,7 @@ export const AddGroup: React.FC = () => {
  onClick={() => !already && addFriend(f.name)}
  disabled={already}
  className={cn(
-"px-2.5 py-1.5 rounded-lg text-[9px] font-bold transition-all",
+"px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all",
  already
  ?"bg-slate-100 text-slate-300 cursor-not-allowed line-through"
  :"bg-white border border-violet-100 text-violet-700 hover:bg-violet-600 hover:text-white shadow-sm"
@@ -382,8 +382,8 @@ export const AddGroup: React.FC = () => {
  <div className="flex items-center gap-2 p-2.5 bg-slate-100/50 rounded-xl border border-slate-100">
  <div className="w-8 h-8 rounded-full bg-violet-600 flex items-center justify-center text-[10px] font-black text-white">ME</div>
  <div className="flex-1">
- <p className="text-[10px] font-black text-slate-900">You (Included)</p>
- <p className="text-[8px] font-bold text-slate-400 uppercase">Always part of split</p>
+ <p className="text-xs font-bold text-slate-900">You (Included)</p>
+ <p className="text-[10px] sm:text-[11px] font-medium text-slate-400 uppercase">Always part of split</p>
  </div>
  </div>
 
@@ -419,7 +419,7 @@ export const AddGroup: React.FC = () => {
           <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-indigo-500/5 blur-[80px] rounded-full pointer-events-none z-0" />
           
           <div className="relative z-10 flex flex-col items-center w-full">
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4">Total Group Bill</span>
+            <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-4">Total Group Bill</span>
             
             <div className="flex items-center justify-center w-full my-4">
               {/* Left Side: Currency */}
@@ -475,7 +475,7 @@ export const AddGroup: React.FC = () => {
         <div className="bg-white rounded-[28px] sm:rounded-[32px] p-6 sm:p-7 border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] space-y-5">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Split Calculation</p>
+              <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Split Calculation</p>
               <p className="text-xs font-bold text-slate-700">Equally between {validParticipants.length + 1} people</p>
             </div>
             <div className="w-10 h-10 rounded-2xl bg-violet-50 flex items-center justify-center text-violet-600">
@@ -492,13 +492,13 @@ export const AddGroup: React.FC = () => {
             </div>
             <div className="mt-4 flex items-center gap-3">
               <div className="flex -space-x-2">
-                <div className="w-6 h-6 rounded-full bg-violet-500 border-2 border-slate-900 flex items-center justify-center text-[7px] font-black">YOU</div>
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-violet-500 border-2 border-slate-900 flex items-center justify-center text-[8px] sm:text-[9px] font-black">YOU</div>
                 {validParticipants.slice(0, 3).map((p, i) => (
-                  <div key={i} className="w-6 h-6 rounded-full bg-slate-700 border-2 border-slate-900 flex items-center justify-center text-[7px] font-black uppercase">{p[0] || '?'}</div>
+                  <div key={i} className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-700 border-2 border-slate-900 flex items-center justify-center text-[8px] sm:text-[9px] font-black uppercase">{p[0] || '?'}</div>
                 ))}
-                {validParticipants.length > 3 && <div className="w-6 h-6 rounded-full bg-slate-800 border-2 border-slate-900 flex items-center justify-center text-[7px] font-black">+{validParticipants.length - 3}</div>}
+                {validParticipants.length > 3 && <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-800 border-2 border-slate-900 flex items-center justify-center text-[8px] sm:text-[9px] font-black">+{validParticipants.length - 3}</div>}
               </div>
-              <span className="text-[10px] font-black text-white/40 uppercase tracking-tight">Total {validParticipants.length + 1} People</span>
+              <span className="text-[10px] sm:text-[11px] font-bold text-white/60 uppercase tracking-wider">Total {validParticipants.length + 1} People</span>
             </div>
           </div>
         </div>
