@@ -413,6 +413,31 @@ export const BottomNav: React.FC<BottomNavProps> = () => {
     .map((id) => ALL_BOTTOM_NAV_ITEMS.find((item) => item.id === id))
     .filter(Boolean) as BottomNavItemDefinition[];
 
+  // Dynamic width synchronization with FloatingSaveBar across all device screens
+  const navContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = navContainerRef.current;
+    if (!el) return;
+
+    const updateWidth = () => {
+      const rect = el.getBoundingClientRect();
+      if (rect.width > 0) {
+        document.documentElement.style.setProperty('--bottom-nav-width', `${Math.round(rect.width)}px`);
+      }
+    };
+
+    updateWidth();
+    const ro = new ResizeObserver(updateWidth);
+    ro.observe(el);
+    window.addEventListener('resize', updateWidth);
+
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', updateWidth);
+    };
+  }, [activeNavItems.length]);
+
   return (
     <>
       {/* Backdrop overlay when Explore menu is open */}
@@ -525,7 +550,7 @@ export const BottomNav: React.FC<BottomNavProps> = () => {
         />
 
         {/* Outer Flex Container: Dark Capsule + Separate White Plus Button */}
-        <div className="pointer-events-auto relative flex items-center gap-2 sm:gap-3 max-w-full">
+        <div ref={navContainerRef} className="pointer-events-auto relative flex items-center gap-2 sm:gap-3 max-w-full">
 
           {/* ── Dark Capsule Dock (Customized / Default: Dashboard, Accounts, Transactions, AI Assistant, Groups, Investments) ── */}
           <div

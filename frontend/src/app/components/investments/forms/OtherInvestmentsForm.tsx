@@ -63,21 +63,21 @@ export const OtherInvestmentsForm: React.FC<OtherInvestmentsFormProps> = ({
 
   if (subcategory === 'property') {
     return (
-      <div className="space-y-5">
+      <div className="space-y-3 sm:space-y-4">
         {/* Core Property Details */}
-        <div className="bg-slate-50/80 border border-slate-200/80 p-5 rounded-2xl space-y-4">
-          <div className="flex items-center gap-2 border-b border-slate-200/60 pb-3">
-            <Home size={16} className="text-emerald-600" />
-            <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Property Details</h3>
+        <div className="bg-slate-50/80 border border-slate-200/80 p-3.5 sm:p-5 rounded-2xl space-y-3 sm:space-y-4">
+          <div className="flex items-center gap-2 border-b border-slate-200/60 pb-2.5">
+            <Home size={15} className="text-emerald-600" />
+            <h3 className="text-[10px] sm:text-xs font-bold text-slate-700 uppercase tracking-wider">Property Details</h3>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-600">Property Type</label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+            <div className="space-y-1 sm:space-y-1.5">
+              <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Property Type</label>
               <select
                 value={propertyDetails.propertyType || 'residential'}
                 onChange={e => setPropertyDetails(prev => ({ ...prev, propertyType: e.target.value as PropertyType }))}
-                className="w-full h-11 bg-white border border-slate-200 rounded-xl px-3.5 text-sm font-semibold text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none cursor-pointer"
+                className="w-full h-10 sm:h-11 bg-white border border-slate-200/80 rounded-xl px-3 sm:px-3.5 text-xs sm:text-sm font-semibold text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none cursor-pointer"
               >
                 <option value="residential">Residential</option>
                 <option value="commercial">Commercial</option>
@@ -87,46 +87,46 @@ export const OtherInvestmentsForm: React.FC<OtherInvestmentsFormProps> = ({
               </select>
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-600">Location / City</label>
+            <div className="space-y-1 sm:space-y-1.5">
+              <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Location / City</label>
               <input
                 type="text"
                 value={propertyDetails.location || ''}
                 onChange={e => setPropertyDetails(prev => ({ ...prev, location: e.target.value }))}
-                className="w-full h-11 bg-white border border-slate-200 rounded-xl px-3.5 text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
+                className="w-full h-10 sm:h-11 bg-white border border-slate-200/80 rounded-xl px-3 sm:px-3.5 text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
                 placeholder="e.g. Bandra, Mumbai"
               />
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-600">Ownership (%)</label>
+            <div className="space-y-1 sm:space-y-1.5">
+              <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Ownership (%)</label>
               <input
                 type="number"
                 value={propertyDetails.ownershipPercentage || 100}
                 onChange={e => setPropertyDetails(prev => ({ ...prev, ownershipPercentage: parseFloat(e.target.value) || 0 }))}
-                className="w-full h-11 bg-white border border-slate-200 rounded-xl px-3.5 text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
+                className="w-full h-10 sm:h-11 bg-white border border-slate-200/80 rounded-xl px-3 sm:px-3.5 text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
                 min={0} max={100}
               />
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-600">Co-owner Name (if any)</label>
+            <div className="space-y-1 sm:space-y-1.5">
+              <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Co-owner Name (if any)</label>
               <input
                 type="text"
                 value={propertyDetails.coOwner || ''}
                 onChange={e => setPropertyDetails(prev => ({ ...prev, coOwner: e.target.value }))}
-                className="w-full h-11 bg-white border border-slate-200 rounded-xl px-3.5 text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
+                className="w-full h-10 sm:h-11 bg-white border border-slate-200/80 rounded-xl px-3 sm:px-3.5 text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
                 placeholder="Co-owner Name"
               />
             </div>
 
-            <div className="space-y-1.5 sm:col-span-2">
-              <label className="text-xs font-semibold text-slate-600">Area (sq.ft)</label>
+            <div className="space-y-1 sm:space-y-1.5 sm:col-span-2">
+              <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Area (sq.ft)</label>
               <input
                 type="number"
                 value={propertyDetails.areaSqft || ''}
                 onChange={e => setPropertyDetails(prev => ({ ...prev, areaSqft: parseFloat(e.target.value) || 0 }))}
-                className="w-full h-11 bg-white border border-slate-200 rounded-xl px-3.5 text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
+                className="w-full h-10 sm:h-11 bg-white border border-slate-200/80 rounded-xl px-3 sm:px-3.5 text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
                 placeholder="1200"
               />
             </div>
@@ -134,30 +134,30 @@ export const OtherInvestmentsForm: React.FC<OtherInvestmentsFormProps> = ({
         </div>
 
         {/* Rental Income Section */}
-        <div className="bg-emerald-50/60 border border-emerald-200/80 p-5 rounded-2xl space-y-4">
-          <div className="flex items-center justify-between">
+        <div className="bg-emerald-50/60 border border-emerald-200/80 p-3.5 sm:p-5 rounded-2xl space-y-3 sm:space-y-4">
+          <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <DollarSign size={18} className="text-emerald-700" />
+              <DollarSign size={16} className="text-emerald-700 shrink-0" />
               <div>
-                <h3 className="text-xs font-bold text-emerald-900 uppercase tracking-wider">Rental Income Integration</h3>
-                <p className="text-[11px] text-emerald-700 font-medium">Link this property to Income & Cash Flow</p>
+                <h3 className="text-[10px] sm:text-xs font-bold text-emerald-900 uppercase tracking-wider">Rental Income Integration</h3>
+                <p className="text-[9px] sm:text-[10px] text-emerald-700 font-medium">Link this property to Income & Cash Flow</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              <span className="text-xs font-bold text-slate-700">Rental Property?</span>
+            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+              <span className="text-[10px] sm:text-xs font-bold text-slate-700">Rental?</span>
               <button
                 type="button"
                 onClick={() => setPropertyDetails(prev => ({ ...prev, isRental: !prev.isRental }))}
                 className={cn(
-                  'relative w-12 h-6 rounded-full transition-colors duration-200 cursor-pointer',
+                  'relative w-11 h-5.5 sm:w-12 sm:h-6 rounded-full transition-colors duration-200 cursor-pointer',
                   propertyDetails.isRental ? 'bg-emerald-600' : 'bg-slate-300'
                 )}
               >
                 <span
                   className={cn(
-                    'absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform duration-200 shadow-xs',
-                    propertyDetails.isRental ? 'translate-x-6' : 'translate-x-0'
+                    'absolute top-0.5 left-0.5 w-4.5 h-4.5 sm:w-5 sm:h-5 rounded-full bg-white transition-transform duration-200 shadow-xs',
+                    propertyDetails.isRental ? 'translate-x-5.5 sm:translate-x-6' : 'translate-x-0'
                   )}
                 />
               </button>
@@ -165,9 +165,9 @@ export const OtherInvestmentsForm: React.FC<OtherInvestmentsFormProps> = ({
           </div>
 
           {propertyDetails.isRental && (
-            <div className="pt-3 border-t border-emerald-200/60 grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in fade-in zoom-in-95">
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-emerald-950">Monthly Rental Income ({currency})</label>
+            <div className="pt-2.5 sm:pt-3 border-t border-emerald-200/60 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 animate-in fade-in zoom-in-95">
+              <div className="space-y-1 sm:space-y-1.5">
+                <label className="text-[10px] sm:text-[11px] font-bold text-emerald-900 uppercase tracking-wider">Monthly Rental Income ({currency})</label>
                 <input
                   type="number"
                   value={propertyDetails.monthlyRentalIncome || ''}
@@ -175,39 +175,39 @@ export const OtherInvestmentsForm: React.FC<OtherInvestmentsFormProps> = ({
                     const m = parseFloat(e.target.value) || 0;
                     setPropertyDetails(prev => ({ ...prev, monthlyRentalIncome: m, annualRentalIncome: m * 12 }));
                   }}
-                  className="w-full h-11 bg-white border border-emerald-200 rounded-xl px-3.5 text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none"
+                  className="w-full h-10 sm:h-11 bg-white border border-emerald-200/80 rounded-xl px-3 sm:px-3.5 text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none"
                   placeholder="25000"
                 />
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-emerald-950">Annual Rental Income ({currency})</label>
+              <div className="space-y-1 sm:space-y-1.5">
+                <label className="text-[10px] sm:text-[11px] font-bold text-emerald-900 uppercase tracking-wider">Annual Rental Income ({currency})</label>
                 <input
                   type="number"
                   value={propertyDetails.annualRentalIncome || ''}
                   onChange={e => setPropertyDetails(prev => ({ ...prev, annualRentalIncome: parseFloat(e.target.value) || 0 }))}
-                  className="w-full h-11 bg-white border border-emerald-200 rounded-xl px-3.5 text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none"
+                  className="w-full h-10 sm:h-11 bg-white border border-emerald-200/80 rounded-xl px-3 sm:px-3.5 text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none"
                   placeholder="300000"
                 />
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-emerald-950">Tenant Since</label>
+              <div className="space-y-1 sm:space-y-1.5">
+                <label className="text-[10px] sm:text-[11px] font-bold text-emerald-900 uppercase tracking-wider">Tenant Since</label>
                 <input
                   type="date"
                   value={propertyDetails.tenantSince || ''}
                   onChange={e => setPropertyDetails(prev => ({ ...prev, tenantSince: e.target.value }))}
-                  className="w-full h-11 bg-white border border-emerald-200 rounded-xl px-3.5 text-sm font-semibold text-slate-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none"
+                  className="w-full h-10 sm:h-11 bg-white border border-emerald-200/80 rounded-xl px-3 sm:px-3.5 text-xs sm:text-sm font-semibold text-slate-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none"
                 />
               </div>
 
-              <div className="flex items-center justify-between sm:col-span-2 pt-2">
-                <span className="text-xs font-bold text-emerald-900">Automatically Create Recurring Rental Income?</span>
+              <div className="flex items-center justify-between sm:col-span-2 pt-1.5">
+                <span className="text-[10px] sm:text-xs font-bold text-emerald-900">Auto-create Recurring Rental Income?</span>
                 <button
                   type="button"
                   onClick={() => setPropertyDetails(prev => ({ ...prev, recurringIncomeEnabled: !prev.recurringIncomeEnabled }))}
                   className={cn(
-                    'px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer',
+                    'px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[10px] sm:text-xs font-bold transition-all cursor-pointer',
                     propertyDetails.recurringIncomeEnabled
                       ? 'bg-emerald-600 text-white shadow-xs'
                       : 'bg-white text-slate-700 border border-slate-300'
@@ -221,30 +221,30 @@ export const OtherInvestmentsForm: React.FC<OtherInvestmentsFormProps> = ({
         </div>
 
         {/* Property Loan Section */}
-        <div className="bg-indigo-50/60 border border-indigo-200/80 p-5 rounded-2xl space-y-4">
-          <div className="flex items-center justify-between">
+        <div className="bg-indigo-50/60 border border-indigo-200/80 p-3.5 sm:p-5 rounded-2xl space-y-3 sm:space-y-4">
+          <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <ShieldCheck size={18} className="text-indigo-700" />
+              <ShieldCheck size={16} className="text-indigo-700 shrink-0" />
               <div>
-                <h3 className="text-xs font-bold text-indigo-900 uppercase tracking-wider">Property Loan Integration</h3>
-                <p className="text-[11px] text-indigo-700 font-medium">Link this property to a Home Loan in Loans Module</p>
+                <h3 className="text-[10px] sm:text-xs font-bold text-indigo-900 uppercase tracking-wider">Property Loan Integration</h3>
+                <p className="text-[9px] sm:text-[10px] text-indigo-700 font-medium">Link this property to a Home Loan in Loans Module</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              <span className="text-xs font-bold text-slate-700">Is Property Financed?</span>
+            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+              <span className="text-[10px] sm:text-xs font-bold text-slate-700">Financed?</span>
               <button
                 type="button"
                 onClick={() => setPropertyDetails(prev => ({ ...prev, isFinanced: !prev.isFinanced }))}
                 className={cn(
-                  'relative w-12 h-6 rounded-full transition-colors duration-200 cursor-pointer',
+                  'relative w-11 h-5.5 sm:w-12 sm:h-6 rounded-full transition-colors duration-200 cursor-pointer',
                   propertyDetails.isFinanced ? 'bg-indigo-600' : 'bg-slate-300'
                 )}
               >
                 <span
                   className={cn(
-                    'absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform duration-200 shadow-xs',
-                    propertyDetails.isFinanced ? 'translate-x-6' : 'translate-x-0'
+                    'absolute top-0.5 left-0.5 w-4.5 h-4.5 sm:w-5 sm:h-5 rounded-full bg-white transition-transform duration-200 shadow-xs',
+                    propertyDetails.isFinanced ? 'translate-x-5.5 sm:translate-x-6' : 'translate-x-0'
                   )}
                 />
               </button>
@@ -252,47 +252,47 @@ export const OtherInvestmentsForm: React.FC<OtherInvestmentsFormProps> = ({
           </div>
 
           {propertyDetails.isFinanced && (
-            <div className="pt-3 border-t border-indigo-200/60 grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in fade-in zoom-in-95">
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-indigo-950">Mortgage Bank / Institution</label>
+            <div className="pt-2.5 sm:pt-3 border-t border-indigo-200/60 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 animate-in fade-in zoom-in-95">
+              <div className="space-y-1 sm:space-y-1.5">
+                <label className="text-[10px] sm:text-[11px] font-bold text-indigo-900 uppercase tracking-wider">Mortgage Bank / Institution</label>
                 <input
                   type="text"
                   value={propertyDetails.bankName || ''}
                   onChange={e => setPropertyDetails(prev => ({ ...prev, bankName: e.target.value }))}
-                  className="w-full h-11 bg-white border border-indigo-200 rounded-xl px-3.5 text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
+                  className="w-full h-10 sm:h-11 bg-white border border-indigo-200/80 rounded-xl px-3 sm:px-3.5 text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
                   placeholder="e.g. HDFC Home Loan, SBI"
                 />
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-indigo-950">Home Loan Amount ({currency})</label>
+              <div className="space-y-1 sm:space-y-1.5">
+                <label className="text-[10px] sm:text-[11px] font-bold text-indigo-900 uppercase tracking-wider">Home Loan Amount ({currency})</label>
                 <input
                   type="number"
                   value={propertyDetails.loanAmount || ''}
                   onChange={e => setPropertyDetails(prev => ({ ...prev, loanAmount: parseFloat(e.target.value) || 0 }))}
-                  className="w-full h-11 bg-white border border-indigo-200 rounded-xl px-3.5 text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
+                  className="w-full h-10 sm:h-11 bg-white border border-indigo-200/80 rounded-xl px-3 sm:px-3.5 text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
                   placeholder="0.00"
                 />
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-indigo-950">Interest Rate (%)</label>
+              <div className="space-y-1 sm:space-y-1.5">
+                <label className="text-[10px] sm:text-[11px] font-bold text-indigo-900 uppercase tracking-wider">Interest Rate (%)</label>
                 <input
                   type="number"
                   value={propertyDetails.interestRate || ''}
                   onChange={e => setPropertyDetails(prev => ({ ...prev, interestRate: parseFloat(e.target.value) || 0 }))}
-                  className="w-full h-11 bg-white border border-indigo-200 rounded-xl px-3.5 text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
+                  className="w-full h-10 sm:h-11 bg-white border border-indigo-200/80 rounded-xl px-3 sm:px-3.5 text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
                   placeholder="8.5"
                 />
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-indigo-950">Loan Start Date</label>
+              <div className="space-y-1 sm:space-y-1.5">
+                <label className="text-[10px] sm:text-[11px] font-bold text-indigo-900 uppercase tracking-wider">Loan Start Date</label>
                 <input
                   type="date"
                   value={propertyDetails.loanDate || formData.date || ''}
                   onChange={e => setPropertyDetails(prev => ({ ...prev, loanDate: e.target.value }))}
-                  className="w-full h-11 bg-white border border-indigo-200 rounded-xl px-3.5 text-sm font-semibold text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
+                  className="w-full h-10 sm:h-11 bg-white border border-indigo-200/80 rounded-xl px-3 sm:px-3.5 text-xs sm:text-sm font-semibold text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
                 />
               </div>
             </div>
@@ -300,18 +300,18 @@ export const OtherInvestmentsForm: React.FC<OtherInvestmentsFormProps> = ({
         </div>
 
         {/* Property Documents Section */}
-        <div className="bg-slate-50/80 border border-slate-200/80 p-5 rounded-2xl space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-200/60 pb-3">
+        <div className="bg-slate-50/80 border border-slate-200/80 p-3.5 sm:p-5 rounded-2xl space-y-3 sm:space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-200/60 pb-2.5">
             <div className="flex items-center gap-2">
-              <Paperclip size={16} className="text-slate-600" />
-              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Property Documents (Optional)</h3>
+              <Paperclip size={15} className="text-slate-600" />
+              <h3 className="text-[10px] sm:text-xs font-bold text-slate-700 uppercase tracking-wider">Property Documents (Optional)</h3>
             </div>
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] sm:text-xs font-bold transition-all shadow-xs cursor-pointer"
             >
-              <Upload size={14} /> Upload Document
+              <Upload size={13} /> Upload
             </button>
           </div>
 
@@ -325,20 +325,20 @@ export const OtherInvestmentsForm: React.FC<OtherInvestmentsFormProps> = ({
           />
 
           {documents.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
               {documents.map(doc => (
-                <div key={doc.id} className="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-xl">
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <FileText size={16} className="text-indigo-600 shrink-0" />
+                <div key={doc.id} className="flex items-center justify-between p-2.5 sm:p-3 bg-white border border-slate-200/80 rounded-xl">
+                  <div className="flex items-center gap-2 min-w-0 pr-2">
+                    <FileText size={15} className="text-indigo-600 shrink-0" />
                     <div className="min-w-0">
                       <p className="text-xs font-bold text-slate-800 truncate">{doc.documentName}</p>
-                      <p className="text-[10px] text-slate-500 uppercase font-semibold">{doc.documentType.replace('_', ' ')}</p>
+                      <p className="text-[9px] sm:text-[10px] text-slate-400 uppercase font-semibold">{doc.documentType.replace('_', ' ')}</p>
                     </div>
                   </div>
                   <button
                     type="button"
                     onClick={() => handleRemoveDoc(doc.id)}
-                    className="p-1 text-slate-400 hover:text-red-500 transition-colors"
+                    className="p-1 text-slate-400 hover:text-red-500 transition-colors cursor-pointer shrink-0"
                   >
                     <Trash2 size={14} />
                   </button>
@@ -346,8 +346,8 @@ export const OtherInvestmentsForm: React.FC<OtherInvestmentsFormProps> = ({
               ))}
             </div>
           ) : (
-            <div className="text-center py-4 border-2 border-dashed border-slate-200 rounded-xl">
-              <p className="text-xs font-semibold text-slate-500">Sale Deed, Tax Receipt, Registration Certificate, Valuation Reports</p>
+            <div className="text-center py-3.5 border-2 border-dashed border-slate-200/80 rounded-xl">
+              <p className="text-[10px] sm:text-xs font-medium text-slate-400">Sale Deed, Tax Receipt, Valuation Reports</p>
             </div>
           )}
         </div>
@@ -357,15 +357,15 @@ export const OtherInvestmentsForm: React.FC<OtherInvestmentsFormProps> = ({
 
   if (subcategory === 'business') {
     return (
-      <div className="space-y-4 bg-slate-50/80 border border-slate-200/80 p-5 rounded-2xl">
-        <div className="flex items-center gap-2 border-b border-slate-200/60 pb-3">
-          <Building2 size={16} className="text-emerald-600" />
-          <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Business Investment Details</h3>
+      <div className="space-y-3 sm:space-y-4 bg-slate-50/80 border border-slate-200/80 p-3.5 sm:p-5 rounded-2xl">
+        <div className="flex items-center gap-2 border-b border-slate-200/60 pb-2.5">
+          <Building2 size={15} className="text-emerald-600" />
+          <h3 className="text-[10px] sm:text-xs font-bold text-slate-700 uppercase tracking-wider">Business Investment Details</h3>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-600">Business Name</label>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+          <div className="space-y-1 sm:space-y-1.5">
+            <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Business Name</label>
             <input
               type="text"
               value={businessDetails.businessName || formData.name || ''}
@@ -374,36 +374,36 @@ export const OtherInvestmentsForm: React.FC<OtherInvestmentsFormProps> = ({
                 setBusinessDetails(prev => ({ ...prev, businessName: name }));
                 setFormData((prev: any) => ({ ...prev, name }));
               }}
-              className="w-full h-11 bg-white border border-slate-200 rounded-xl px-3.5 text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
+              className="w-full h-10 sm:h-11 bg-white border border-slate-200/80 rounded-xl px-3 sm:px-3.5 text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
               placeholder="e.g. Apex Retail Private Limited"
             />
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-600">Business Type / Industry</label>
+          <div className="space-y-1 sm:space-y-1.5">
+            <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Business Type / Industry</label>
             <input
               type="text"
               value={businessDetails.businessType || ''}
               onChange={e => setBusinessDetails(prev => ({ ...prev, businessType: e.target.value }))}
-              className="w-full h-11 bg-white border border-slate-200 rounded-xl px-3.5 text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
+              className="w-full h-10 sm:h-11 bg-white border border-slate-200/80 rounded-xl px-3 sm:px-3.5 text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
               placeholder="e.g. E-commerce, Retail, Tech"
             />
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-600">Ownership (%)</label>
+          <div className="space-y-1 sm:space-y-1.5">
+            <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Ownership (%)</label>
             <input
               type="number"
               value={businessDetails.ownershipPercentage || ''}
               onChange={e => setBusinessDetails(prev => ({ ...prev, ownershipPercentage: parseFloat(e.target.value) || 0 }))}
-              className="w-full h-11 bg-white border border-slate-200 rounded-xl px-3.5 text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
+              className="w-full h-10 sm:h-11 bg-white border border-slate-200/80 rounded-xl px-3 sm:px-3.5 text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
               placeholder="e.g. 25"
               min={0} max={100}
             />
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-600">Estimated Current Value ({currency})</label>
+          <div className="space-y-1 sm:space-y-1.5">
+            <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Estimated Current Value ({currency})</label>
             <input
               type="number"
               value={businessDetails.estimatedValue || formData.currentPrice || ''}
@@ -412,51 +412,51 @@ export const OtherInvestmentsForm: React.FC<OtherInvestmentsFormProps> = ({
                 setBusinessDetails(prev => ({ ...prev, estimatedValue: val }));
                 setFormData((prev: any) => ({ ...prev, currentPrice: val }));
               }}
-              className="w-full h-11 bg-white border border-slate-200 rounded-xl px-3.5 text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
+              className="w-full h-10 sm:h-11 bg-white border border-slate-200/80 rounded-xl px-3 sm:px-3.5 text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
               placeholder="500000"
             />
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-600">Annual Revenue ({currency})</label>
+          <div className="space-y-1 sm:space-y-1.5">
+            <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Annual Revenue ({currency})</label>
             <input
               type="number"
               value={businessDetails.annualRevenue || ''}
               onChange={e => setBusinessDetails(prev => ({ ...prev, annualRevenue: parseFloat(e.target.value) || 0 }))}
-              className="w-full h-11 bg-white border border-slate-200 rounded-xl px-3.5 text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
+              className="w-full h-10 sm:h-11 bg-white border border-slate-200/80 rounded-xl px-3 sm:px-3.5 text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
               placeholder="1200000"
             />
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-600">Annual Profit ({currency})</label>
+          <div className="space-y-1 sm:space-y-1.5">
+            <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Annual Profit ({currency})</label>
             <input
               type="number"
               value={businessDetails.annualProfit || ''}
               onChange={e => setBusinessDetails(prev => ({ ...prev, annualProfit: parseFloat(e.target.value) || 0 }))}
-              className="w-full h-11 bg-white border border-slate-200 rounded-xl px-3.5 text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
+              className="w-full h-10 sm:h-11 bg-white border border-slate-200/80 rounded-xl px-3 sm:px-3.5 text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
               placeholder="300000"
             />
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-600">GSTIN / Registration No. (Optional)</label>
+          <div className="space-y-1 sm:space-y-1.5">
+            <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">GSTIN / Registration No. (Optional)</label>
             <input
               type="text"
               value={businessDetails.gstNumber || ''}
               onChange={e => setBusinessDetails(prev => ({ ...prev, gstNumber: e.target.value }))}
-              className="w-full h-11 bg-white border border-slate-200 rounded-xl px-3.5 text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
+              className="w-full h-10 sm:h-11 bg-white border border-slate-200/80 rounded-xl px-3 sm:px-3.5 text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
               placeholder="22AAAAA0000A1Z5"
             />
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-600">Business PAN (Optional)</label>
+          <div className="space-y-1 sm:space-y-1.5">
+            <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Business PAN (Optional)</label>
             <input
               type="text"
               value={businessDetails.panNumber || ''}
               onChange={e => setBusinessDetails(prev => ({ ...prev, panNumber: e.target.value.toUpperCase() }))}
-              className="w-full h-11 bg-white border border-slate-200 rounded-xl px-3.5 text-sm font-semibold text-slate-900 uppercase placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
+              className="w-full h-10 sm:h-11 bg-white border border-slate-200/80 rounded-xl px-3 sm:px-3.5 text-xs sm:text-sm font-semibold text-slate-900 uppercase placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
               placeholder="ABCDE1234F"
             />
           </div>
@@ -466,14 +466,14 @@ export const OtherInvestmentsForm: React.FC<OtherInvestmentsFormProps> = ({
   }
 
   return (
-    <div className="space-y-4 bg-slate-50/80 border border-slate-200/80 p-5 rounded-2xl">
-      <div className="space-y-1.5">
-        <label className="text-xs font-semibold text-slate-600">Investment Name</label>
+    <div className="space-y-3 sm:space-y-4 bg-slate-50/80 border border-slate-200/80 p-3.5 sm:p-5 rounded-2xl">
+      <div className="space-y-1 sm:space-y-1.5">
+        <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Investment Name</label>
         <input
           type="text"
           value={formData.name || ''}
           onChange={e => setFormData((prev: any) => ({ ...prev, name: e.target.value }))}
-          className="w-full h-11 bg-white border border-slate-200 rounded-xl px-3.5 text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
+          className="w-full h-10 sm:h-11 bg-white border border-slate-200/80 rounded-xl px-3 sm:px-3.5 text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
           placeholder="e.g. Rare Art Collectible, Startup Equity"
         />
       </div>

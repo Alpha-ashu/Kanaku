@@ -41,24 +41,24 @@ export const PhysicalAssetsForm: React.FC<PhysicalAssetsFormProps> = ({
       ];
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-3 sm:space-y-4">
       {/* Physical Asset Specific Fields */}
-      <div className="bg-slate-50/80 border border-slate-200/80 p-5 rounded-2xl space-y-4">
-        <div className="flex items-center gap-2 border-b border-slate-200/60 pb-3">
-          <Gem size={16} className="text-amber-600" />
-          <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+      <div className="bg-slate-50/80 border border-slate-200/80 p-3.5 sm:p-5 rounded-2xl space-y-3 sm:space-y-4">
+        <div className="flex items-center gap-2 border-b border-slate-200/60 pb-2.5">
+          <Gem size={15} className="text-amber-600" />
+          <h3 className="text-[10px] sm:text-xs font-bold text-slate-700 uppercase tracking-wider">
             {isGold ? 'Gold Asset Details' : isSilver ? 'Silver Asset Details' : 'Physical Metal / Asset Details'}
           </h3>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           {/* Asset Type */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-600">Asset Type</label>
+          <div className="space-y-1 sm:space-y-1.5">
+            <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Asset Type</label>
             <select
               value={details.assetType || 'coins'}
               onChange={e => setDetails(prev => ({ ...prev, assetType: e.target.value as PhysicalAssetType }))}
-              className="w-full h-11 bg-white border border-slate-200 rounded-xl px-3.5 text-sm font-semibold text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none cursor-pointer"
+              className="w-full h-10 sm:h-11 bg-white border border-slate-200/80 rounded-xl px-3 sm:px-3.5 text-xs sm:text-sm font-semibold text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none cursor-pointer"
             >
               {assetTypeOptions.map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -67,8 +67,8 @@ export const PhysicalAssetsForm: React.FC<PhysicalAssetsFormProps> = ({
           </div>
 
           {/* Weight & Unit */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-600">Weight</label>
+          <div className="space-y-1 sm:space-y-1.5">
+            <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Weight</label>
             <div className="flex gap-2">
               <input
                 type="number"
@@ -78,13 +78,13 @@ export const PhysicalAssetsForm: React.FC<PhysicalAssetsFormProps> = ({
                   setDetails(prev => ({ ...prev, weight: w }));
                   setFormData((prev: any) => ({ ...prev, quantity: w }));
                 }}
-                className="w-2/3 h-11 bg-white border border-slate-200 rounded-xl px-3.5 text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
+                className="w-2/3 h-10 sm:h-11 bg-white border border-slate-200/80 rounded-xl px-3 sm:px-3.5 text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
                 placeholder="0.00"
               />
               <select
                 value={details.weightUnit || 'g'}
                 onChange={e => setDetails(prev => ({ ...prev, weightUnit: e.target.value as any }))}
-                className="w-1/3 h-11 bg-white border border-slate-200 rounded-xl px-3 text-xs font-bold text-slate-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none cursor-pointer"
+                className="w-1/3 h-10 sm:h-11 bg-white border border-slate-200/80 rounded-xl px-2.5 sm:px-3 text-xs font-bold text-slate-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none cursor-pointer"
               >
                 <option value="g">g</option>
                 <option value="tola">tola</option>
@@ -95,25 +95,25 @@ export const PhysicalAssetsForm: React.FC<PhysicalAssetsFormProps> = ({
           </div>
 
           {/* Purity */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-600">Purity / Fineness</label>
+          <div className="space-y-1 sm:space-y-1.5">
+            <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Purity / Fineness</label>
             <input
               type="text"
               value={details.purity || ''}
               onChange={e => setDetails(prev => ({ ...prev, purity: e.target.value }))}
-              className="w-full h-11 bg-white border border-slate-200 rounded-xl px-3.5 text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
+              className="w-full h-10 sm:h-11 bg-white border border-slate-200/80 rounded-xl px-3 sm:px-3.5 text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
               placeholder={isGold ? 'e.g. 24K (999), 22K (916)' : 'e.g. 999 Fine Silver'}
             />
           </div>
 
           {/* Storage Location */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-600">Storage Location</label>
+          <div className="space-y-1 sm:space-y-1.5">
+            <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Storage Location</label>
             <input
               type="text"
               value={details.storageLocation || ''}
               onChange={e => setDetails(prev => ({ ...prev, storageLocation: e.target.value }))}
-              className="w-full h-11 bg-white border border-slate-200 rounded-xl px-3.5 text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
+              className="w-full h-10 sm:h-11 bg-white border border-slate-200/80 rounded-xl px-3 sm:px-3.5 text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
               placeholder="e.g. SBI Locker, Home Safe"
             />
           </div>
@@ -121,32 +121,32 @@ export const PhysicalAssetsForm: React.FC<PhysicalAssetsFormProps> = ({
       </div>
 
       {/* Gold Loan Integration Section */}
-      <div className="bg-amber-50/60 border border-amber-200/80 p-5 rounded-2xl space-y-4">
-        <div className="flex items-center justify-between">
+      <div className="bg-amber-50/60 border border-amber-200/80 p-3.5 sm:p-5 rounded-2xl space-y-3 sm:space-y-4">
+        <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <ShieldAlert size={18} className="text-amber-700" />
+            <ShieldAlert size={16} className="text-amber-700 shrink-0" />
             <div>
-              <h3 className="text-xs font-bold text-amber-900 uppercase tracking-wider">Gold Loan Integration</h3>
-              <p className="text-[11px] text-amber-700 font-medium">Link this physical asset to the Loans Module</p>
+              <h3 className="text-[10px] sm:text-xs font-bold text-amber-900 uppercase tracking-wider">Gold Loan Integration</h3>
+              <p className="text-[9px] sm:text-[10px] text-amber-700 font-medium">Link this physical asset to the Loans Module</p>
             </div>
           </div>
 
           {/* Toggle */}
-          <div className="flex items-center gap-3">
-            <span className="text-xs font-bold text-slate-700">Is this Gold Pledged?</span>
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            <span className="text-[10px] sm:text-xs font-bold text-slate-700">Pledged?</span>
             <button
               type="button"
               onClick={() => setDetails(prev => ({ ...prev, isPledged: !prev.isPledged }))}
               data-testid="gold-loan-pledged-toggle"
               className={cn(
-                'relative w-12 h-6 rounded-full transition-colors duration-200 cursor-pointer',
+                'relative w-11 h-5.5 sm:w-12 sm:h-6 rounded-full transition-colors duration-200 cursor-pointer',
                 details.isPledged ? 'bg-amber-600' : 'bg-slate-300'
               )}
             >
               <span
                 className={cn(
-                  'absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform duration-200 shadow-xs',
-                  details.isPledged ? 'translate-x-6' : 'translate-x-0'
+                  'absolute top-0.5 left-0.5 w-4.5 h-4.5 sm:w-5 sm:h-5 rounded-full bg-white transition-transform duration-200 shadow-xs',
+                  details.isPledged ? 'translate-x-5.5 sm:translate-x-6' : 'translate-x-0'
                 )}
               />
             </button>
@@ -155,57 +155,57 @@ export const PhysicalAssetsForm: React.FC<PhysicalAssetsFormProps> = ({
 
         {/* Pledged Details Form */}
         {details.isPledged && (
-          <div className="pt-3 border-t border-amber-200/60 grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in fade-in zoom-in-95">
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-amber-950">Lending Bank / Institution</label>
+          <div className="pt-2.5 sm:pt-3 border-t border-amber-200/60 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 animate-in fade-in zoom-in-95">
+            <div className="space-y-1 sm:space-y-1.5">
+              <label className="text-[10px] sm:text-[11px] font-bold text-amber-900 uppercase tracking-wider">Lending Bank / Institution</label>
               <input
                 type="text"
                 value={details.bankName || ''}
                 onChange={e => setDetails(prev => ({ ...prev, bankName: e.target.value }))}
-                className="w-full h-11 bg-white border border-amber-200 rounded-xl px-3.5 text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none"
+                className="w-full h-10 sm:h-11 bg-white border border-amber-200/80 rounded-xl px-3 sm:px-3.5 text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none"
                 placeholder="e.g. Muthoot Finance, HDFC"
               />
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-amber-950">Loan Amount ({currency})</label>
+            <div className="space-y-1 sm:space-y-1.5">
+              <label className="text-[10px] sm:text-[11px] font-bold text-amber-900 uppercase tracking-wider">Loan Amount ({currency})</label>
               <input
                 type="number"
                 value={details.loanAmount || ''}
                 onChange={e => setDetails(prev => ({ ...prev, loanAmount: parseFloat(e.target.value) || 0 }))}
-                className="w-full h-11 bg-white border border-amber-200 rounded-xl px-3.5 text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none"
+                className="w-full h-10 sm:h-11 bg-white border border-amber-200/80 rounded-xl px-3 sm:px-3.5 text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none"
                 placeholder="0.00"
               />
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-amber-950">Interest Rate (%)</label>
+            <div className="space-y-1 sm:space-y-1.5">
+              <label className="text-[10px] sm:text-[11px] font-bold text-amber-900 uppercase tracking-wider">Interest Rate (%)</label>
               <input
                 type="number"
                 value={details.interestRate || ''}
                 onChange={e => setDetails(prev => ({ ...prev, interestRate: parseFloat(e.target.value) || 0 }))}
-                className="w-full h-11 bg-white border border-amber-200 rounded-xl px-3.5 text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none"
+                className="w-full h-10 sm:h-11 bg-white border border-amber-200/80 rounded-xl px-3 sm:px-3.5 text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none"
                 placeholder="e.g. 9.5"
               />
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-amber-950">Loan Date</label>
+            <div className="space-y-1 sm:space-y-1.5">
+              <label className="text-[10px] sm:text-[11px] font-bold text-amber-900 uppercase tracking-wider">Loan Date</label>
               <input
                 type="date"
                 value={details.loanDate || formData.date || ''}
                 onChange={e => setDetails(prev => ({ ...prev, loanDate: e.target.value }))}
-                className="w-full h-11 bg-white border border-amber-200 rounded-xl px-3.5 text-sm font-semibold text-slate-900 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none"
+                className="w-full h-10 sm:h-11 bg-white border border-amber-200/80 rounded-xl px-3 sm:px-3.5 text-xs sm:text-sm font-semibold text-slate-900 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none"
               />
             </div>
 
-            <div className="sm:col-span-2 space-y-1.5">
-              <label className="text-xs font-semibold text-amber-950">Loan Account Number</label>
+            <div className="sm:col-span-2 space-y-1 sm:space-y-1.5">
+              <label className="text-[10px] sm:text-[11px] font-bold text-amber-900 uppercase tracking-wider">Loan Account Number</label>
               <input
                 type="text"
                 value={details.loanAccountNumber || ''}
                 onChange={e => setDetails(prev => ({ ...prev, loanAccountNumber: e.target.value }))}
-                className="w-full h-11 bg-white border border-amber-200 rounded-xl px-3.5 text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none"
+                className="w-full h-10 sm:h-11 bg-white border border-amber-200/80 rounded-xl px-3 sm:px-3.5 text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none"
                 placeholder="Loan Account / Reference ID"
               />
             </div>

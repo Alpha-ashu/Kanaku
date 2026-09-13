@@ -323,8 +323,8 @@ export const AddInvestment: React.FC = () => {
     <CenteredLayout enablePullToRefresh={false} className="pb-32">
       <div className="flex flex-col text-slate-900">
         {/* Header with Title and Category Pill Bar */}
-        <header className="sticky top-0 z-30 pb-3">
-          <div className="flex items-center justify-between py-2 sm:py-3 mb-2">
+        <header className="sticky top-0 z-30 pb-2">
+          <div className="flex items-center justify-between py-2 sm:py-2.5 mb-1.5">
             <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
               <button
                 type="button"
@@ -332,15 +332,15 @@ export const AddInvestment: React.FC = () => {
                 title="Back to Portfolio"
                 aria-label="Back to Portfolio"
                 data-testid="investments-create-back-button"
-                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200/80 hover:bg-slate-50 active:scale-95 shadow-xs flex items-center justify-center text-slate-700 transition-all shrink-0 cursor-pointer"
+                className="w-8.5 h-8.5 sm:w-9.5 sm:h-9.5 rounded-full bg-white border border-slate-200/80 hover:bg-slate-50 active:scale-95 shadow-xs flex items-center justify-center text-slate-700 transition-all shrink-0 cursor-pointer"
               >
-                <ArrowLeft size={18} className="text-slate-700" />
+                <ArrowLeft size={16} className="text-slate-700" />
               </button>
-              <h1 className="font-page-title text-slate-900 tracking-tight leading-none truncate">Add Investment</h1>
+              <h1 className="text-base sm:text-lg md:text-xl font-black text-slate-900 tracking-tight leading-none truncate">Add Investment</h1>
             </div>
           </div>
 
-          <div className="pb-2">
+          <div className="pb-1.5">
             <InvestmentCategoryTabs
               selectedCategory={selectedCategory}
               selectedSubcategory={selectedSubcategory}
@@ -351,220 +351,227 @@ export const AddInvestment: React.FC = () => {
         </header>
 
         {/* Main Content */}
-        <div className="w-full space-y-6">
-        {/* Total Summary Banner (Below Header Section) */}
-        <div className="p-6 sm:p-7 rounded-[28px] sm:rounded-[32px] bg-gradient-to-br from-slate-900 via-indigo-950 to-indigo-900 text-white shadow-xl border border-indigo-500/20">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs font-bold text-white/70 uppercase tracking-wider">Asset</p>
-              <p className="text-base sm:text-lg font-extrabold text-white truncate max-w-[220px]">
-                {formData.name || `${selectedSubcategory.toUpperCase()}`}
-              </p>
-            </div>
-            <div className="text-right">
-              <p className="text-xs font-bold text-white/70 uppercase tracking-wider">Total Capital Required</p>
-              <p className="text-2xl sm:text-3xl font-black tracking-tight text-white">
-                {formatCurrencyAmount(calculatedTotalCapital, currency)}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
-          {/* Left Column: Dynamic Form */}
-          <div className="lg:col-span-7 space-y-6">
-            {/* Dynamic Form Component based on Category/Subcategory */}
-            <div className="bg-white rounded-[28px] sm:rounded-[32px] border border-slate-100 p-6 sm:p-8 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] space-y-6">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-                <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-                  <BarChart3 className="text-indigo-600" size={18} />
-                  {selectedSubcategory.replace('_', ' ').toUpperCase()} Specification
-                </h2>
-              </div>
-
-              {selectedCategory === 'market_assets' && (
-                <MarketAssetsForm
-                  subcategory={selectedSubcategory}
-                  formData={formData}
-                  setFormData={setFormData}
-                  fdDetails={fdDetails}
-                  setFdDetails={setFdDetails}
-                  currency={currency}
-                />
-              )}
-
-              {selectedCategory === 'physical_assets' && (
-                <PhysicalAssetsForm
-                  subcategory={selectedSubcategory}
-                  details={physicalDetails}
-                  setDetails={setPhysicalDetails}
-                  formData={formData}
-                  setFormData={setFormData}
-                  currency={currency}
-                />
-              )}
-
-              {selectedCategory === 'other_investments' && (
-                <OtherInvestmentsForm
-                  subcategory={selectedSubcategory}
-                  propertyDetails={propertyDetails}
-                  setPropertyDetails={setPropertyDetails}
-                  businessDetails={businessDetails}
-                  setBusinessDetails={setBusinessDetails}
-                  documents={documents}
-                  setDocuments={setDocuments}
-                  formData={formData}
-                  setFormData={setFormData}
-                  currency={currency}
-                />
-              )}
-
-              {/* Common Metadata Fields: Broker/Platform & Date */}
-              {selectedSubcategory !== 'fd' && selectedSubcategory !== 'rd' && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-slate-100">
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-600">Broker / Platform</label>
-                    <input
-                      type="text"
-                      value={formData.broker}
-                      onChange={e => setFormData(prev => ({ ...prev, broker: e.target.value }))}
-                      data-testid="investments-create-broker-input"
-                      className="w-full h-11 bg-slate-50 border border-slate-200 rounded-2xl px-4 text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
-                      placeholder="e.g. Zerodha, Groww, Bank"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-600">Purchase Date</label>
-                    <input
-                      type="date"
-                      value={formData.date}
-                      onChange={e => setFormData(prev => ({ ...prev, date: e.target.value }))}
-                      data-testid="investments-create-date-input"
-                      className="w-full h-11 bg-slate-50 border border-slate-200 rounded-2xl px-4 text-sm font-semibold text-slate-900 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
-                    />
-                  </div>
+        <div className="w-full space-y-4 sm:space-y-6">
+          {/* Total Summary Banner (Refined fintech overview card) */}
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-950 via-slate-900 to-indigo-950 text-white shadow-md border border-indigo-500/20 p-3 sm:p-4">
+            <div className="absolute -right-6 -top-6 w-24 h-24 bg-indigo-500/15 rounded-full blur-xl pointer-events-none" />
+            <div className="relative z-10 flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white/10 border border-white/10 text-[9px] sm:text-[10px] font-black text-indigo-200 uppercase tracking-wider">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span>{selectedSubcategory.replace('_', ' ').toUpperCase()}</span>
                 </div>
-              )}
-
-              {/* Notes */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-600">Notes / Strategy</label>
-                <textarea
-                  value={formData.description}
-                  onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                  data-testid="investments-create-notes-textarea"
-                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none min-h-[80px] resize-none"
-                  placeholder="Notes, portfolio strategy..."
-                />
+                <p className="text-sm sm:text-base md:text-lg font-black text-white truncate max-w-[160px] sm:max-w-[260px] mt-1 tracking-tight">
+                  {formData.name || `${selectedSubcategory.replace('_', ' ').toUpperCase()}`}
+                </p>
               </div>
-            </div>
-
-            {/* Payment Account */}
-            <div className="bg-white rounded-[28px] sm:rounded-[32px] border border-slate-100 p-6 sm:p-8 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] space-y-4">
-              <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-                <CreditCard className="text-indigo-600" size={18} />
-                <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Payment Account</h2>
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-600">Source Account</label>
-                <SearchableDropdown
-                  options={activeAccounts.map(a => ({
-                    value: String(a.id),
-                    label: a.name,
-                    description: formatCurrencyAmount(a.balance, currency),
-                    icon: (
-                      <div className="w-7 h-7 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-700 font-bold text-xs">
-                        {(a.type || 'BK').substring(0, 2).toUpperCase()}
-                      </div>
-                    ),
-                  }))}
-                  value={String(formData.fundingAccountId)}
-                  onChange={val => setFormData(prev => ({ ...prev, fundingAccountId: parseInt(val) }))}
-                  placeholder="Select Funding Account"
-                  testId="investments-create-account-dropdown"
-                  className="h-12 rounded-2xl border border-slate-200 bg-slate-50 font-semibold text-sm text-slate-900"
-                />
+              <div className="text-right shrink-0">
+                <p className="text-[9px] sm:text-[10px] font-bold text-indigo-300 uppercase tracking-widest">Total Capital Required</p>
+                <p className="text-lg sm:text-2xl md:text-3xl font-black tracking-tight text-white mt-0.5">
+                  {formatCurrencyAmount(calculatedTotalCapital, currency)}
+                </p>
               </div>
             </div>
           </div>
 
-          {/* Right Column: Financial Breakdown */}
-          <div className="lg:col-span-5 space-y-6 lg:sticky lg:top-20">
-            {/* Pricing & Quantity Card */}
-            <div className="bg-white rounded-[28px] sm:rounded-[32px] border border-slate-100 p-6 sm:p-8 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] space-y-6">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <div className="flex items-center gap-2">
-                  <TrendingUp className="text-indigo-600" size={18} />
-                  <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Financial Breakdown</h2>
-                </div>
-              </div>
-
-              {/* Quantity / Weight and Buy Price Inputs */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-center space-y-1.5 focus-within:bg-white focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all">
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
-                    {selectedCategory === 'physical_assets' ? `Weight (${physicalDetails.weightUnit})` : 'Quantity'}
-                  </span>
-                  {selectedCategory === 'physical_assets' ? (
-                    <input
-                      type="number"
-                      value={physicalDetails.weight || ''}
-                      onChange={e => setPhysicalDetails(prev => ({ ...prev, weight: parseFloat(e.target.value) || 0 }))}
-                      data-testid="investments-create-quantity-input"
-                      className="w-full text-center text-2xl sm:text-3xl font-extrabold text-slate-900 bg-transparent outline-none tracking-tight placeholder:text-slate-300"
-                      placeholder="0.00"
-                    />
-                  ) : (
-                    <input
-                      type="number"
-                      value={formData.quantity || ''}
-                      onChange={e => setFormData(prev => ({ ...prev, quantity: parseFloat(e.target.value) || 0 }))}
-                      data-testid="investments-create-quantity-input"
-                      className="w-full text-center text-2xl sm:text-3xl font-extrabold text-slate-900 bg-transparent outline-none tracking-tight placeholder:text-slate-300"
-                      placeholder="0.00"
-                    />
-                  )}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 lg:gap-8 items-start">
+            {/* Left Column: Dynamic Form */}
+            <div className="lg:col-span-7 space-y-4 sm:space-y-6">
+              {/* Dynamic Form Component based on Category/Subcategory */}
+              <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 p-4 sm:p-6 shadow-xs space-y-4 sm:space-y-5">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                  <h2 className="text-xs sm:text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                    <BarChart3 className="text-indigo-600" size={16} />
+                    {selectedSubcategory.replace('_', ' ').toUpperCase()} Specification
+                  </h2>
                 </div>
 
-                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-center space-y-1.5 focus-within:bg-white focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all">
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
-                    {selectedCategory === 'physical_assets' ? `Price per unit` : `Buy Price (${assetCurrencySymbol})`}
-                  </span>
-                  <input
-                    type="number"
-                    value={formData.purchasePrice || ''}
-                    onChange={e => setFormData(prev => ({ ...prev, purchasePrice: parseFloat(e.target.value) || 0 }))}
-                    data-testid="investments-create-price-input"
-                    className="w-full text-center text-2xl sm:text-3xl font-extrabold text-slate-900 bg-transparent outline-none tracking-tight placeholder:text-slate-300"
-                    placeholder="0.00"
+                {selectedCategory === 'market_assets' && (
+                  <MarketAssetsForm
+                    subcategory={selectedSubcategory}
+                    formData={formData}
+                    setFormData={setFormData}
+                    fdDetails={fdDetails}
+                    setFdDetails={setFdDetails}
+                    currency={currency}
+                  />
+                )}
+
+                {selectedCategory === 'physical_assets' && (
+                  <PhysicalAssetsForm
+                    subcategory={selectedSubcategory}
+                    details={physicalDetails}
+                    setDetails={setPhysicalDetails}
+                    formData={formData}
+                    setFormData={setFormData}
+                    currency={currency}
+                  />
+                )}
+
+                {selectedCategory === 'other_investments' && (
+                  <OtherInvestmentsForm
+                    subcategory={selectedSubcategory}
+                    propertyDetails={propertyDetails}
+                    setPropertyDetails={setPropertyDetails}
+                    businessDetails={businessDetails}
+                    setBusinessDetails={setBusinessDetails}
+                    documents={documents}
+                    setDocuments={setDocuments}
+                    formData={formData}
+                    setFormData={setFormData}
+                    currency={currency}
+                  />
+                )}
+
+                {/* Common Metadata Fields: Broker/Platform & Date */}
+                {selectedSubcategory !== 'fd' && selectedSubcategory !== 'rd' && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 pt-3 sm:pt-4 border-t border-slate-100">
+                    <div className="space-y-1 sm:space-y-1.5">
+                      <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Broker / Platform</label>
+                      <input
+                        type="text"
+                        value={formData.broker}
+                        onChange={e => setFormData(prev => ({ ...prev, broker: e.target.value }))}
+                        data-testid="investments-create-broker-input"
+                        className="w-full h-10 sm:h-11 bg-slate-50/80 border border-slate-200/80 rounded-xl px-3 sm:px-3.5 text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all outline-none"
+                        placeholder="e.g. Zerodha, Groww, Bank"
+                      />
+                    </div>
+
+                    <div className="space-y-1 sm:space-y-1.5">
+                      <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Purchase Date</label>
+                      <input
+                        type="date"
+                        value={formData.date}
+                        onChange={e => setFormData(prev => ({ ...prev, date: e.target.value }))}
+                        data-testid="investments-create-date-input"
+                        className="w-full h-10 sm:h-11 bg-slate-50/80 border border-slate-200/80 rounded-xl px-3 sm:px-3.5 text-xs sm:text-sm font-semibold text-slate-900 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all outline-none"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Notes */}
+                <div className="space-y-1 sm:space-y-1.5">
+                  <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Notes / Strategy</label>
+                  <textarea
+                    value={formData.description}
+                    onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                    data-testid="investments-create-notes-textarea"
+                    className="w-full p-2.5 sm:p-3 bg-slate-50/80 border border-slate-200/80 rounded-xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none min-h-[60px] sm:min-h-[72px] resize-none"
+                    placeholder="Notes, portfolio strategy..."
                   />
                 </div>
               </div>
 
-              {/* Fees and Subtotal Row */}
-              <div className="flex items-center justify-between gap-4 pt-4 border-t border-slate-100">
-                <div className="w-1/2 space-y-1">
-                  <label className="text-xs font-semibold text-slate-600">Fees ({currency})</label>
-                  <input
-                    type="number"
-                    value={formData.purchaseFees || ''}
-                    onChange={e => setFormData(prev => ({ ...prev, purchaseFees: parseFloat(e.target.value) || 0 }))}
-                    data-testid="investments-create-fees-input"
-                    className="w-full h-11 bg-slate-50 border border-slate-200 rounded-2xl px-4 text-sm font-semibold text-slate-900 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all outline-none"
-                    placeholder="0"
+              {/* Payment Account */}
+              <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 p-4 sm:p-6 shadow-xs space-y-3 sm:space-y-4">
+                <div className="flex items-center gap-2 border-b border-slate-100 pb-2.5">
+                  <CreditCard className="text-indigo-600" size={16} />
+                  <h2 className="text-xs sm:text-sm font-bold text-slate-900 uppercase tracking-wider">Payment Account</h2>
+                </div>
+                <div className="space-y-1 sm:space-y-1.5">
+                  <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Source Account</label>
+                  <SearchableDropdown
+                    options={activeAccounts.map(a => ({
+                      value: String(a.id),
+                      label: a.name,
+                      description: formatCurrencyAmount(a.balance, currency),
+                      icon: (
+                        <div className="w-6 h-6 rounded-md bg-indigo-50 flex items-center justify-center text-indigo-700 font-bold text-[10px]">
+                          {(a.type || 'BK').substring(0, 2).toUpperCase()}
+                        </div>
+                      ),
+                    }))}
+                    value={String(formData.fundingAccountId)}
+                    onChange={val => setFormData(prev => ({ ...prev, fundingAccountId: parseInt(val) }))}
+                    placeholder="Select Funding Account"
+                    testId="investments-create-account-dropdown"
+                    className="h-10 sm:h-11 rounded-xl border border-slate-200/80 bg-slate-50/80 font-semibold text-xs sm:text-sm text-slate-900"
                   />
                 </div>
-                <div className="w-1/2 text-right">
-                  <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Subtotal</p>
-                  <p className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight mt-0.5">
-                    {formatNativeMoney(calculatedSubtotal, assetCurrencyCode)}
-                  </p>
+              </div>
+            </div>
+
+            {/* Right Column: Financial Breakdown */}
+            <div className="lg:col-span-5 space-y-4 sm:space-y-6 lg:sticky lg:top-20">
+              {/* Pricing & Quantity Card */}
+              <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 p-4 sm:p-6 shadow-xs space-y-4 sm:space-y-5">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="text-indigo-600" size={16} />
+                    <h2 className="text-xs sm:text-sm font-bold text-slate-900 uppercase tracking-wider">Financial Breakdown</h2>
+                  </div>
+                </div>
+
+                {/* Quantity / Weight and Buy Price Inputs */}
+                <div className="grid grid-cols-2 gap-2.5 sm:gap-4">
+                  <div className="bg-slate-50/80 border border-slate-200/80 rounded-xl sm:rounded-2xl p-2.5 sm:p-4 text-center space-y-1 focus-within:bg-white focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all">
+                    <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider block truncate">
+                      {selectedCategory === 'physical_assets' ? `Weight (${physicalDetails.weightUnit})` : 'Quantity'}
+                    </span>
+                    {selectedCategory === 'physical_assets' ? (
+                      <input
+                        type="number"
+                        value={physicalDetails.weight || ''}
+                        onChange={e => setPhysicalDetails(prev => ({ ...prev, weight: parseFloat(e.target.value) || 0 }))}
+                        data-testid="investments-create-quantity-input"
+                        className="w-full text-center text-lg sm:text-2xl md:text-3xl font-black text-slate-900 bg-transparent outline-none tracking-tight placeholder:text-slate-300"
+                        placeholder="0.00"
+                      />
+                    ) : (
+                      <input
+                        type="number"
+                        value={formData.quantity || ''}
+                        onChange={e => setFormData(prev => ({ ...prev, quantity: parseFloat(e.target.value) || 0 }))}
+                        data-testid="investments-create-quantity-input"
+                        className="w-full text-center text-lg sm:text-2xl md:text-3xl font-black text-slate-900 bg-transparent outline-none tracking-tight placeholder:text-slate-300"
+                        placeholder="0.00"
+                      />
+                    )}
+                  </div>
+
+                  <div className="bg-slate-50/80 border border-slate-200/80 rounded-xl sm:rounded-2xl p-2.5 sm:p-4 text-center space-y-1 focus-within:bg-white focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all">
+                    <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider block truncate">
+                      {selectedCategory === 'physical_assets' ? `Price per unit` : `Buy Price (${assetCurrencySymbol})`}
+                    </span>
+                    <input
+                      type="number"
+                      value={formData.purchasePrice || ''}
+                      onChange={e => setFormData(prev => ({ ...prev, purchasePrice: parseFloat(e.target.value) || 0 }))}
+                      data-testid="investments-create-price-input"
+                      className="w-full text-center text-lg sm:text-2xl md:text-3xl font-black text-slate-900 bg-transparent outline-none tracking-tight placeholder:text-slate-300"
+                      placeholder="0.00"
+                    />
+                  </div>
+                </div>
+
+                {/* Fees and Subtotal Row */}
+                <div className="flex items-center justify-between gap-3 sm:gap-4 pt-3 sm:pt-4 border-t border-slate-100">
+                  <div className="w-1/2 space-y-1">
+                    <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Fees ({currency})</label>
+                    <input
+                      type="number"
+                      value={formData.purchaseFees || ''}
+                      onChange={e => setFormData(prev => ({ ...prev, purchaseFees: parseFloat(e.target.value) || 0 }))}
+                      data-testid="investments-create-fees-input"
+                      className="w-full h-10 sm:h-11 bg-slate-50/80 border border-slate-200/80 rounded-xl px-3 sm:px-3.5 text-xs sm:text-sm font-semibold text-slate-900 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all outline-none"
+                      placeholder="0"
+                    />
+                  </div>
+                  <div className="w-1/2 text-right">
+                    <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Subtotal</p>
+                    <p className="text-base sm:text-xl md:text-2xl font-black text-slate-900 tracking-tight mt-0.5">
+                      {formatNativeMoney(calculatedSubtotal, assetCurrencyCode)}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-          </div>
+
+          {/* Bottom clearance spacer to guarantee nothing is obscured behind FloatingSaveBar & BottomNav */}
+          <div className="h-28 sm:h-20 w-full shrink-0" aria-hidden="true" />
         </div>
 
         {/* Floating Save Bar */}

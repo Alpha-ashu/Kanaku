@@ -70,17 +70,17 @@ export const MarketAssetsForm: React.FC<MarketAssetsFormProps> = ({
 
   if (subcategory === 'fd' || subcategory === 'rd') {
     return (
-      <div className="space-y-4 bg-slate-50/80 border border-slate-200/80 p-5 rounded-2xl">
-        <div className="flex items-center gap-2 border-b border-slate-200/60 pb-3">
-          <Building2 size={16} className="text-indigo-600" />
-          <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+      <div className="space-y-3 sm:space-y-4 bg-slate-50/80 border border-slate-200/80 p-3.5 sm:p-5 rounded-2xl">
+        <div className="flex items-center gap-2 border-b border-slate-200/60 pb-2.5">
+          <Building2 size={15} className="text-indigo-600" />
+          <h3 className="text-[10px] sm:text-xs font-bold text-slate-700 uppercase tracking-wider">
             {subcategory === 'fd' ? 'Fixed Deposit Details' : 'Recurring Deposit Details'}
           </h3>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-600">Bank / Financial Institution</label>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+          <div className="space-y-1 sm:space-y-1.5">
+            <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Bank / Financial Institution</label>
             <input
               type="text"
               value={fdDetails.bankName || ''}
@@ -89,13 +89,13 @@ export const MarketAssetsForm: React.FC<MarketAssetsFormProps> = ({
                 setFdDetails(prev => ({ ...prev, bankName: bank }));
                 setFormData((prev: any) => ({ ...prev, name: `${bank} ${subcategory.toUpperCase()}`, broker: bank }));
               }}
-              className="w-full h-11 bg-white border border-slate-200 rounded-xl px-3.5 text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
+              className="w-full h-10 sm:h-11 bg-white border border-slate-200/80 rounded-xl px-3 sm:px-3.5 text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
               placeholder="e.g. HDFC Bank, SBI"
             />
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-600">Deposit Amount ({currency})</label>
+          <div className="space-y-1 sm:space-y-1.5">
+            <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Deposit Amount ({currency})</label>
             <input
               type="number"
               value={fdDetails.depositAmount || formData.purchasePrice || ''}
@@ -104,13 +104,13 @@ export const MarketAssetsForm: React.FC<MarketAssetsFormProps> = ({
                 setFdDetails(prev => ({ ...prev, depositAmount: val }));
                 setFormData((prev: any) => ({ ...prev, purchasePrice: val, quantity: 1, currentPrice: val }));
               }}
-              className="w-full h-11 bg-white border border-slate-200 rounded-xl px-3.5 text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
+              className="w-full h-10 sm:h-11 bg-white border border-slate-200/80 rounded-xl px-3 sm:px-3.5 text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
               placeholder="100000"
             />
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-600">Annual Interest Rate (%)</label>
+          <div className="space-y-1 sm:space-y-1.5">
+            <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Annual Interest Rate (%)</label>
             <input
               type="number"
               value={fdDetails.interestRate || ''}
@@ -118,17 +118,17 @@ export const MarketAssetsForm: React.FC<MarketAssetsFormProps> = ({
                 const rate = parseFloat(e.target.value) || 0;
                 setFdDetails(prev => ({ ...prev, interestRate: rate }));
               }}
-              className="w-full h-11 bg-white border border-slate-200 rounded-xl px-3.5 text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
+              className="w-full h-10 sm:h-11 bg-white border border-slate-200/80 rounded-xl px-3 sm:px-3.5 text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
               placeholder="e.g. 7.5"
             />
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-600">Compounding Type</label>
+          <div className="space-y-1 sm:space-y-1.5">
+            <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Compounding Type</label>
             <select
               value={fdDetails.compoundingType || 'quarterly'}
               onChange={e => setFdDetails(prev => ({ ...prev, compoundingType: e.target.value as any }))}
-              className="w-full h-11 bg-white border border-slate-200 rounded-xl px-3.5 text-sm font-semibold text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none cursor-pointer"
+              className="w-full h-10 sm:h-11 bg-white border border-slate-200/80 rounded-xl px-3 sm:px-3.5 text-xs sm:text-sm font-semibold text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none cursor-pointer"
             >
               <option value="quarterly">Quarterly</option>
               <option value="monthly">Monthly</option>
@@ -138,8 +138,8 @@ export const MarketAssetsForm: React.FC<MarketAssetsFormProps> = ({
             </select>
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-600">Start Date</label>
+          <div className="space-y-1 sm:space-y-1.5">
+            <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Start Date</label>
             <input
               type="date"
               value={fdDetails.startDate || formData.date || ''}
@@ -148,22 +148,22 @@ export const MarketAssetsForm: React.FC<MarketAssetsFormProps> = ({
                 setFdDetails(prev => ({ ...prev, startDate: d }));
                 setFormData((prev: any) => ({ ...prev, date: d }));
               }}
-              className="w-full h-11 bg-white border border-slate-200 rounded-xl px-3.5 text-sm font-semibold text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
+              className="w-full h-10 sm:h-11 bg-white border border-slate-200/80 rounded-xl px-3 sm:px-3.5 text-xs sm:text-sm font-semibold text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
             />
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-600">Maturity Date</label>
+          <div className="space-y-1 sm:space-y-1.5">
+            <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Maturity Date</label>
             <input
               type="date"
               value={fdDetails.maturityDate || ''}
               onChange={e => setFdDetails(prev => ({ ...prev, maturityDate: e.target.value }))}
-              className="w-full h-11 bg-white border border-slate-200 rounded-xl px-3.5 text-sm font-semibold text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
+              className="w-full h-10 sm:h-11 bg-white border border-slate-200/80 rounded-xl px-3 sm:px-3.5 text-xs sm:text-sm font-semibold text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
             />
           </div>
 
-          <div className="sm:col-span-2 space-y-1.5">
-            <label className="text-xs font-semibold text-slate-600">Estimated Maturity Amount ({currency})</label>
+          <div className="sm:col-span-2 space-y-1 sm:space-y-1.5">
+            <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Estimated Maturity Amount ({currency})</label>
             <input
               type="number"
               value={fdDetails.maturityAmount || ''}
@@ -171,7 +171,7 @@ export const MarketAssetsForm: React.FC<MarketAssetsFormProps> = ({
                 const amt = parseFloat(e.target.value) || 0;
                 setFdDetails(prev => ({ ...prev, maturityAmount: amt }));
               }}
-              className="w-full h-11 bg-white border border-slate-200 rounded-xl px-3.5 text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
+              className="w-full h-10 sm:h-11 bg-white border border-slate-200/80 rounded-xl px-3 sm:px-3.5 text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
               placeholder="e.g. 125000"
             />
           </div>
@@ -181,10 +181,10 @@ export const MarketAssetsForm: React.FC<MarketAssetsFormProps> = ({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 sm:space-y-4">
       {/* Symbol Search & Asset Name */}
-      <div className="space-y-1.5 relative">
-        <label className="text-xs font-semibold text-slate-700">
+      <div className="space-y-1 sm:space-y-1.5 relative">
+        <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">
           {subcategory === 'stocks' ? 'Search Company / Symbol' :
            subcategory === 'crypto' ? 'Search Crypto Coin' :
            subcategory === 'mutual_funds' ? 'Mutual Fund Name / Scheme' :
@@ -192,7 +192,7 @@ export const MarketAssetsForm: React.FC<MarketAssetsFormProps> = ({
            subcategory === 'commodities' ? 'Commodity Name' : 'Asset Search / Name'}
         </label>
         <div className="relative">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+          <Search className="absolute left-3 sm:left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={15} />
           <input
             type="text"
             value={formData.name || ''}
@@ -200,7 +200,7 @@ export const MarketAssetsForm: React.FC<MarketAssetsFormProps> = ({
               setFormData((prev: any) => ({ ...prev, name: e.target.value }));
               setShowSuggestions(true);
             }}
-            className="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-10 text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all outline-none"
+            className="w-full h-10 sm:h-11 bg-slate-50/80 border border-slate-200/80 rounded-xl pl-9 sm:pl-10 pr-9 sm:pr-10 text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all outline-none"
             placeholder={
               subcategory === 'stocks' ? 'Search Symbol (AAPL, RELIANCE, TCS...)' :
               subcategory === 'crypto' ? 'Search Coin (BTC, ETH, SOL...)' :
@@ -209,27 +209,27 @@ export const MarketAssetsForm: React.FC<MarketAssetsFormProps> = ({
               subcategory === 'commodities' ? 'e.g. Crude Oil, Copper' : 'Enter Asset Name'
             }
           />
-          {fetchingPrice && <Loader2 className="absolute right-3.5 top-1/2 -translate-y-1/2 animate-spin text-indigo-600" size={16} />}
+          {fetchingPrice && <Loader2 className="absolute right-3 sm:right-3.5 top-1/2 -translate-y-1/2 animate-spin text-indigo-600" size={15} />}
         </div>
 
         {/* Autocomplete Suggestions Overlay */}
         {showSuggestions && (searchResults.length > 0 || searching) && (
-          <div className="absolute z-50 top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95">
+          <div className="absolute z-50 top-full left-0 right-0 mt-1.5 bg-white border border-slate-200/90 rounded-xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95">
             {searching ? (
-              <div className="p-4 text-center text-xs font-semibold text-slate-500">Searching market symbols...</div>
+              <div className="p-3 text-center text-[10px] sm:text-xs font-semibold text-slate-400">Searching market symbols...</div>
             ) : (
               searchResults.slice(0, 6).map(r => (
                 <button
                   key={r.symbol}
                   type="button"
                   onClick={() => handleSelectStock(r)}
-                  className="w-full flex items-center justify-between p-3.5 hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-0 text-left"
+                  className="w-full flex items-center justify-between p-2.5 sm:p-3 hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-0 text-left cursor-pointer"
                 >
-                  <div>
-                    <p className="text-sm font-bold text-slate-900">{displaySymbol(r.symbol)}</p>
-                    <p className="text-xs font-medium text-slate-500 truncate max-w-[220px]">{r.companyName}</p>
+                  <div className="min-w-0 pr-2">
+                    <p className="text-xs sm:text-sm font-bold text-slate-900">{displaySymbol(r.symbol)}</p>
+                    <p className="text-[10px] sm:text-xs font-medium text-slate-400 truncate max-w-[200px] sm:max-w-[260px]">{r.companyName}</p>
                   </div>
-                  <ArrowUpRight size={16} className="text-slate-400" />
+                  <ArrowUpRight size={14} className="text-slate-400 shrink-0" />
                 </button>
               ))
             )}
@@ -238,25 +238,25 @@ export const MarketAssetsForm: React.FC<MarketAssetsFormProps> = ({
       </div>
 
       {/* Additional market asset fields */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
         {subcategory === 'stocks' && (
           <>
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-600">Exchange</label>
+            <div className="space-y-1 sm:space-y-1.5">
+              <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Exchange</label>
               <input
                 type="text"
                 value={formData.exchange || ''}
                 onChange={e => setFormData((prev: any) => ({ ...prev, exchange: e.target.value }))}
-                className="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl px-3.5 text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
+                className="w-full h-10 sm:h-11 bg-slate-50/80 border border-slate-200/80 rounded-xl px-3 sm:px-3.5 text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
                 placeholder="e.g. NSE, BSE, NASDAQ"
               />
             </div>
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-600">Market Region / Country</label>
+            <div className="space-y-1 sm:space-y-1.5">
+              <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Market Region / Country</label>
               <select
                 value={formData.country || 'IN'}
                 onChange={e => setFormData((prev: any) => ({ ...prev, country: e.target.value }))}
-                className="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl px-3.5 text-sm font-semibold text-slate-900 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none cursor-pointer"
+                className="w-full h-10 sm:h-11 bg-slate-50/80 border border-slate-200/80 rounded-xl px-3 sm:px-3.5 text-xs sm:text-sm font-semibold text-slate-900 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none cursor-pointer"
               >
                 <option value="IN">Indian Market (NSE/BSE)</option>
                 <option value="US">US Market (NASDAQ/NYSE)</option>
@@ -267,13 +267,13 @@ export const MarketAssetsForm: React.FC<MarketAssetsFormProps> = ({
         )}
 
         {(subcategory === 'crypto' || subcategory === 'forex') && (
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-600">Exchange / Platform</label>
+          <div className="space-y-1 sm:space-y-1.5">
+            <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Exchange / Platform</label>
             <input
               type="text"
               value={formData.broker || ''}
               onChange={e => setFormData((prev: any) => ({ ...prev, broker: e.target.value }))}
-              className="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl px-3.5 text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
+              className="w-full h-10 sm:h-11 bg-slate-50/80 border border-slate-200/80 rounded-xl px-3 sm:px-3.5 text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none"
               placeholder={subcategory === 'crypto' ? 'e.g. Binance, CoinDCX' : 'e.g. Zerodha, Interactive Brokers'}
             />
           </div>

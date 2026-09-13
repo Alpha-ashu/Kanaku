@@ -69,10 +69,11 @@ export const InvestmentCategoryTabs: React.FC<InvestmentCategoryTabsProps> = ({
 
   return (
     <div className="w-full space-y-2.5">
-      {/* Main Category Bar (Auto-resizing scrollable pill matching AddTransaction) */}
-      <div className="flex items-center justify-start sm:justify-center bg-slate-100/90 rounded-full p-1 gap-1 w-full max-w-xl mx-auto overflow-x-auto no-scrollbar scrollbar-none">
+      {/* Main Category Tabs (Non-truncating 3-column segmented control) */}
+      <div className="grid grid-cols-3 bg-slate-100/90 rounded-2xl sm:rounded-full p-1 gap-1 w-full max-w-lg mx-auto border border-slate-200/70 shadow-xs">
         {CATEGORY_CONFIGS.map(cat => {
           const isActive = selectedCategory === cat.code;
+          const shortLabel = cat.code === 'market_assets' ? 'Market' : cat.code === 'physical_assets' ? 'Physical' : 'Others';
           return (
             <button
               key={cat.code}
@@ -80,41 +81,46 @@ export const InvestmentCategoryTabs: React.FC<InvestmentCategoryTabsProps> = ({
               onClick={() => onSelectCategory(cat.code, cat.subcategories[0].code)}
               data-testid={`investment-category-tab-${cat.code}`}
               className={cn(
-                'flex-1 min-w-max flex items-center justify-center gap-1.5 py-2 px-3 sm:px-5 rounded-full font-black text-[11px] sm:text-xs uppercase tracking-wider transition-all duration-200 cursor-pointer select-none shrink-0',
+                'flex items-center justify-center gap-1 sm:gap-1.5 py-1.5 sm:py-2 px-1 sm:px-3 rounded-xl sm:rounded-full font-black text-[10px] sm:text-[11px] md:text-xs uppercase tracking-wider transition-all duration-200 cursor-pointer select-none text-center',
                 isActive
-                  ? 'bg-slate-900 text-white shadow-sm scale-[1.02]'
-                  : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/50'
+                  ? 'bg-slate-900 text-white shadow-xs scale-[1.01]'
+                  : 'text-slate-500 hover:text-slate-800 hover:bg-white/60'
               )}
             >
-              <span>{cat.icon}</span>
-              <span className="whitespace-nowrap">{cat.label}</span>
+              <span className="shrink-0">{cat.icon}</span>
+              <span className="truncate">
+                <span className="sm:hidden">{shortLabel}</span>
+                <span className="hidden sm:inline">{cat.label}</span>
+              </span>
             </button>
           );
         })}
       </div>
 
-      {/* Subcategory Responsive Pills Bar (Auto-resizing flex pills) */}
-      <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 max-w-4xl mx-auto w-full px-1">
-        {currentCategoryConfig.subcategories.map(sub => {
-          const isActive = selectedSubcategory === sub.code;
-          return (
-            <button
-              key={sub.code}
-              type="button"
-              onClick={() => onSelectSubcategory(sub.code)}
-              data-testid={`investment-subcategory-pill-${sub.code}`}
-              className={cn(
-                'flex items-center gap-1.5 px-3 sm:px-4 py-1.5 rounded-full text-[10px] sm:text-xs font-bold tracking-wider uppercase transition-all duration-150 cursor-pointer select-none',
-                isActive
-                  ? 'bg-white text-slate-900 border border-slate-300 shadow-sm scale-[1.02] font-black'
-                  : 'bg-slate-50 hover:bg-slate-100 text-slate-500 hover:text-slate-800 border border-slate-200/60'
-              )}
-            >
-              <span className="text-xs sm:text-sm">{sub.icon}</span>
-              <span>{sub.label}</span>
-            </button>
-          );
-        })}
+      {/* Subcategory Responsive Pills (Sleek single-line horizontal scroll rail on mobile, centered on desktop) */}
+      <div className="w-full max-w-2xl mx-auto overflow-hidden">
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar scrollbar-none py-1 px-1 sm:justify-center sm:flex-wrap">
+          {currentCategoryConfig.subcategories.map(sub => {
+            const isActive = selectedSubcategory === sub.code;
+            return (
+              <button
+                key={sub.code}
+                type="button"
+                onClick={() => onSelectSubcategory(sub.code)}
+                data-testid={`investment-subcategory-pill-${sub.code}`}
+                className={cn(
+                  'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] sm:text-[11px] font-bold tracking-wider uppercase transition-all duration-150 cursor-pointer select-none shrink-0 whitespace-nowrap',
+                  isActive
+                    ? 'bg-slate-900 text-white shadow-xs scale-[1.02] border border-slate-900'
+                    : 'bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 border border-slate-200/80 shadow-2xs'
+                )}
+              >
+                <span className="text-xs">{sub.icon}</span>
+                <span>{sub.label}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

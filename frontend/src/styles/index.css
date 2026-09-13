@@ -179,6 +179,7 @@ html {
 @media (max-width: 640px) {
   :root {
     --bottom-nav-height: 64px;
+    --bottom-nav-width: 296px;
     font-size: 14px;
   }
 
@@ -207,6 +208,7 @@ html {
 @media (min-width: 641px) and (max-width: 1024px) {
   :root {
     --bottom-nav-height: 64px;
+    --bottom-nav-width: 364px;
   }
 
   body {
