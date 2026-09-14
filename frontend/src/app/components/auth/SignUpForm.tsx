@@ -347,15 +347,15 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
   };
 
   const inputBase = (hasError: boolean) =>
-    `w-full pl-10 pr-10 pt-5 pb-1.5 bg-white border rounded-xl text-gray-900 placeholder-transparent text-sm focus:outline-none focus:ring-2 transition-all duration-200 ${
+    `w-full pl-10 pr-10 pt-5 pb-1.5 bg-slate-50/50 border rounded-xl text-slate-900 placeholder-transparent text-sm focus:outline-none focus:ring-2 transition-all duration-200 ${
       hasError
         ? 'border-red-300 focus:ring-red-500/20 focus:border-red-400 bg-red-50/30'
-        : 'border-gray-200 hover:border-gray-300 focus:ring-blue-500/20 focus:border-blue-400 focus:bg-white'
+        : 'border-slate-200 hover:border-slate-300 focus:ring-violet-500/20 focus:border-violet-500 focus:bg-white'
     }`;
 
-  const labelBase = `absolute left-10 top-1.5 text-[10px] font-semibold text-gray-400 transition-all duration-200 pointer-events-none
-    peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 peer-placeholder-shown:font-normal
-    peer-focus:top-1.5 peer-focus:text-[10px] peer-focus:text-blue-500 peer-focus:font-semibold`;
+  const labelBase = `absolute left-10 top-1.5 text-[10px] font-bold text-slate-400 transition-all duration-200 pointer-events-none
+    peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-sm peer-placeholder-shown:text-slate-400 peer-placeholder-shown:font-normal
+    peer-focus:top-1.5 peer-focus:text-[10px] peer-focus:text-violet-600 peer-focus:font-bold`;
 
   if (isSuccess) {
     return (
@@ -399,15 +399,15 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
       )}
 
       {/* Progress Bar */}
-      <div className="bg-gray-50 border border-gray-100 rounded-xl p-3">
+      <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
         <div className="flex justify-between items-center mb-1.5">
-          <span className="text-xs font-semibold text-gray-500">Account Setup</span>
-          <span className="text-xs font-bold text-blue-600">{progressPercentage}%</span>
+          <span className="text-xs font-semibold text-slate-500">Account Setup</span>
+          <span className="text-xs font-bold text-violet-600">{progressPercentage}%</span>
         </div>
-        <div className="h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
+        <div className="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
           <div
             ref={signupProgressRef}
-            className="h-full bg-gradient-to-r from-blue-500 to-emerald-500 rounded-full transition-all duration-500 ease-out"
+            className="h-full bg-gradient-to-r from-violet-600 via-indigo-600 to-emerald-500 rounded-full transition-all duration-500 ease-out"
           />
         </div>
       </div>
@@ -733,7 +733,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
       </div>
 
       {/* Terms */}
-      <div className="bg-blue-50 border border-blue-100 rounded-xl p-2.5 flex items-center justify-center gap-2">
+      <div className="bg-violet-50/70 border border-violet-100 rounded-xl p-2.5 flex items-center justify-center gap-2">
         <input
           type="checkbox"
           id="agreeToTerms"
@@ -742,13 +742,13 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
           onChange={(e) => setAgreedToTerms(e.target.checked)}
           disabled={isLoading}
           data-testid="auth-signup-terms-checkbox"
-          className="h-3.5 w-3.5 rounded border-gray-300 text-blue-600 focus:ring-blue-500/20 cursor-pointer"
+          className="h-3.5 w-3.5 rounded border-slate-300 text-violet-600 focus:ring-violet-500/20 cursor-pointer accent-violet-600"
         />
-        <label htmlFor="agreeToTerms" className="text-[11px] font-bold text-blue-700 cursor-pointer select-none whitespace-nowrap flex items-center gap-1">
+        <label htmlFor="agreeToTerms" className="text-[11px] font-bold text-violet-700 cursor-pointer select-none whitespace-nowrap flex items-center gap-1">
           I agree to the
-          <button type="button" onClick={onViewTerms} data-testid="auth-signup-view-terms-button" className="font-bold underline hover:text-blue-900 transition-colors">Terms of Service</button>
+          <button type="button" onClick={onViewTerms} data-testid="auth-signup-view-terms-button" className="font-bold underline hover:text-violet-900 transition-colors">Terms of Service</button>
           and
-          <button type="button" onClick={onViewPrivacy} data-testid="auth-signup-view-privacy-button" className="font-bold underline hover:text-blue-900 transition-colors">Privacy Policy</button>
+          <button type="button" onClick={onViewPrivacy} data-testid="auth-signup-view-privacy-button" className="font-bold underline hover:text-violet-900 transition-colors">Privacy Policy</button>
         </label>
       </div>
 
@@ -757,7 +757,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
         type="submit"
         disabled={isLoading || !isFormReady}
         data-testid="auth-signup-submit-button"
-        className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:scale-[0.98] text-white font-bold py-3.5 px-4 rounded-xl transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_4px_14px_rgba(37,99,235,0.25)] hover:shadow-[0_6px_20px_rgba(37,99,235,0.35)]"
+        className="w-full bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 hover:from-violet-700 hover:to-blue-700 active:scale-[0.98] text-white font-bold py-3.5 px-4 rounded-xl transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_4px_16px_rgba(124,58,237,0.25)] hover:shadow-[0_6px_22px_rgba(124,58,237,0.35)] text-sm"
       >
         {isLoading ? (
           <>
@@ -773,13 +773,13 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
         )}
       </button>
 
-      <p className="text-center text-sm text-gray-500 pt-1 font-medium">
+      <p className="text-center text-sm text-slate-500 pt-1 font-medium">
         Already have an account?{' '}
         <button
           type="button"
           onClick={onSwitchToSignIn}
           data-testid="auth-signup-switch-signin-button"
-          className="text-blue-600 hover:text-blue-700 font-bold transition-colors"
+          className="text-violet-600 hover:text-violet-700 font-bold transition-colors"
         >
           Sign in
         </button>

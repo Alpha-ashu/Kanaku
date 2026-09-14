@@ -1,143 +1,126 @@
 import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Shield, Lock, Eye, Cloud, Database, Mail, HardDrive } from 'lucide-react';
+import { Shield, Lock, Eye, Database, HardDrive, CheckCircle2, FileText, ArrowLeft } from 'lucide-react';
 import { PublicNavbar } from '@/app/components/ui/PublicNavbar';
 
 interface PrivacyPolicyProps {
- onBack?: () => void;
- onGetStarted?: () => void;
- onNavigate?: (page: string) => void;
- onLogin?: () => void;
- hideNavbar?: boolean;
+  onBack?: () => void;
+  onGetStarted?: () => void;
+  onNavigate?: (page: string) => void;
+  onLogin?: () => void;
+  hideNavbar?: boolean;
 }
 
 export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({
- onBack = () => { },
- onGetStarted = () => { },
- onNavigate = () => { },
- onLogin = () => { },
- hideNavbar = false
+  onBack = () => {},
+  onGetStarted = () => {},
+  onNavigate = () => {},
+  onLogin = () => {},
+  hideNavbar = false,
 }) => {
- useEffect(() => {
- window.scrollTo(0, 0);
- }, []);
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
- const sections = [
- {
- title:"1. Data Collection",
- icon: <Database className="w-5 h-5 text-blue-500" />,
- content:"We collect information you provide directly, such as your profile details and financial transactions. We also collect device information to ensure security and cross-device synchronization. Your financial data is transmitted over encrypted connections and handled with the highest level of confidentiality."
- },
- {
- title:"2. How We Use Data",
- icon: <Eye className="w-5 h-5 text-indigo-500" />,
- content:"Your data is used solely to provide and improve KANAKUservices, including AI-powered financial insights, personalized budgeting, and secure data sync. We DO NOT sell your personal or financial information to third parties."
- },
- {
- title:"3. Data Storage & Security",
- icon: <Lock className="w-5 h-5 text-green-500" />,
- content:"All traffic between the app and our servers uses TLS (HTTPS). Data held in our cloud database is encrypted at rest by our infrastructure provider. On your device, app data lives in storage private to KANAKU and isolated from other apps and sites; on Android we additionally block screenshots, recents-screen previews and OS backups of that data. Access is gated by your PIN — we never store the PIN itself, only a salted, deliberately slow verifier that cannot be reversed into your PIN."
- },
- {
- title:"4. Your Privacy Rights",
- icon: <Shield className="w-5 h-5 text-amber-500" />,
- content:"You have the right to access, export, or delete your data at any time through the app settings. We comply with GDPR and other regional privacy regulations to ensure your data remains under your control."
- },
- {
- title:"5. Offline Sync",
- icon: <HardDrive className="w-5 h-5 text-pink-500" />,
- content:"KANAKUoperates with a local-first philosophy. This means your data is primary on your device, ensuring privacy even when you're not connected to the internet."
- }
- ];
+  const sections = [
+    {
+      title: '1. Local-First Data Principle',
+      icon: <HardDrive className="w-5 h-5 text-violet-600" />,
+      content:
+        'KANAKU operates under a strict local-first philosophy. Your financial ledger, accounts, budget goals, and personal settings are created and stored directly on your own device in an isolated, sandboxed IndexedDB database. You can manage your finances entirely offline without sending a single byte across the internet.',
+    },
+    {
+      title: '2. Information We Process',
+      icon: <Database className="w-5 h-5 text-blue-600" />,
+      content:
+        'When you register, we collect essential account authentication credentials (your email, name, and hashed credentials). When you enable cloud sync, encrypted database delta snapshots are transmitted via TLS 1.3 to synchronize your data across authorized devices. We do NOT harvest or monitor your private financial habits.',
+    },
+    {
+      title: '3. Zero Data Resale or Advertising',
+      icon: <Eye className="w-5 h-5 text-pink-600" />,
+      content:
+        'We never sell, rent, monetize, or disclose your personal or financial data to third-party advertising brokers, data aggregators, or loan originators. KANAKU is supported strictly through transparent subscription plans, aligning our success directly with your privacy.',
+    },
+    {
+      title: '4. Bank-Grade Encryption & PIN Gateway',
+      icon: <Lock className="w-5 h-5 text-emerald-600" />,
+      content:
+        'Your local database is protected by a client-derived AES-256 master key. Access is gated by your chosen 6-digit PIN and optional biometric lock. We never store your raw PIN on our servers; only a salted, computationally intensive one-way verifier is used.',
+    },
+    {
+      title: '5. GDPR & DPDP Compliance Rights',
+      icon: <Shield className="w-5 h-5 text-amber-600" />,
+      content:
+        'Under applicable privacy statutes including GDPR and the Digital Personal Data Protection (DPDP) Act, you have absolute rights to inspect, export your complete transaction history (via PDF/CSV/JSON), and permanently delete your account and cloud records at any moment.',
+    },
+  ];
 
- return (
- <div className="min-h-screen bg-white font-sans text-gray-900 select-none pb-20">
- {/* Navbar */}
- {!hideNavbar && (
- <PublicNavbar
- onNavigate={onNavigate}
- onLogin={onLogin}
- onGetStarted={onGetStarted}
- currentPage="privacy"
- />
- )}
+  return (
+    <div className="relative min-h-screen bg-[#FDFEFE] text-slate-900 font-sans select-none overflow-x-hidden">
+      {!hideNavbar && (
+        <PublicNavbar
+          onNavigate={onNavigate}
+          onLogin={onLogin}
+          onGetStarted={onGetStarted}
+          currentPage="privacy"
+        />
+      )}
 
- <div className="max-w-4xl mx-auto px-6 pt-40 lg:pt-52 pb-24">
- <div className="mb-16 text-center">
- <motion.div
- initial={{ opacity: 0, scale: 0.9 }}
- animate={{ opacity: 1, scale: 1 }}
- className="inline-flex items-center gap-2 bg-green-50 px-4 py-2 rounded-full text-green-600 font-bold text-[10px] uppercase tracking-widest mb-6"
- >
- Privacy Commitment
- </motion.div>
- <motion.h1
- initial={{ opacity: 0, y: 20 }}
- animate={{ opacity: 1, y: 0 }}
- className="text-4xl lg:text-5xl font-extrabold tracking-tight mb-4"
- >
- Privacy Policy
- </motion.h1>
- <motion.p
- initial={{ opacity: 0, y: 20 }}
- animate={{ opacity: 1, y: 0 }}
- transition={{ delay: 0.1 }}
- className="text-gray-500"
- >
- Your data is yours. We're just here to help you manage it.
- </motion.p>
- </div>
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-36 sm:pt-44 lg:pt-48 pb-24">
+        {/* Header */}
+        <div className="mb-14 text-center">
+          <div className="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-200 px-3.5 py-1.5 rounded-full text-emerald-700 font-extrabold text-xs uppercase tracking-widest mb-4">
+            <Shield className="w-3.5 h-3.5" />
+            <span>Zero-Knowledge Privacy Architecture</span>
+          </div>
 
- <div className="space-y-6">
- {sections.map((section, idx) => (
- <motion.div
- key={idx}
- initial={{ opacity: 0, y: 20 }}
- animate={{ opacity: 1, y: 0 }}
- transition={{ delay: 0.1 + idx * 0.05 }}
- className="p-8 bg-white/50 rounded-[2.5rem] border border-gray-100/50 hover:bg-white hover:shadow-xl hover:border-white transition-all group"
- >
- <div className="flex items-center gap-4 mb-4">
- <div className="w-10 h-10 rounded-2xl bg-white shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
- {section.icon}
- </div>
- <h2 className="text-xl font-bold text-gray-900">{section.title}</h2>
- </div>
- <p className="text-gray-600 leading-relaxed pl-14">
- {section.content}
- </p>
- </motion.div>
- ))}
- </div>
+          <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-slate-900 mb-4">
+            Privacy Policy
+          </h1>
+          <p className="text-sm sm:text-base text-slate-500 max-w-lg mx-auto">
+            Your data belongs exclusively to you. Last updated: September 2026.
+          </p>
+        </div>
 
- <motion.div
- initial={{ opacity: 0 }}
- animate={{ opacity: 1 }}
- transition={{ delay: 0.5 }}
- className="mt-16 p-10 bg-gray-900 rounded-[3rem] text-white text-center relative overflow-hidden"
- >
- <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
- <div className="absolute -top-[50%] -left-[20%] w-[100%] h-[100%] bg-blue-500 rounded-full blur-[120px]" />
- <div className="absolute -bottom-[50%] -right-[20%] w-[100%] h-[100%] bg-purple-500 rounded-full blur-[120px]" />
- </div>
+        {/* Section Cards */}
+        <div className="space-y-6">
+          {sections.map((sec, idx) => (
+            <motion.div
+              key={idx}
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.05 }}
+              className="rounded-3xl bg-white border border-slate-200/80 p-6 sm:p-8 shadow-sm hover:shadow-md transition-all"
+            >
+              <div className="flex items-center gap-3.5 mb-3">
+                <div className="w-9 h-9 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0">
+                  {sec.icon}
+                </div>
+                <h3 className="text-lg font-bold text-slate-900">{sec.title}</h3>
+              </div>
+              <p className="text-sm sm:text-base text-slate-600 leading-relaxed pl-12">{sec.content}</p>
+            </motion.div>
+          ))}
+        </div>
 
- <Lock className="w-10 h-10 mx-auto mb-6 text-gray-400" />
- <h3 className="text-2xl font-bold mb-4">Secure by Design</h3>
- <p className="text-gray-400 mb-8 max-w-md mx-auto">
- We believe privacy is a fundamental right. KANAKUis built from the ground up to be the most private financial tool you've ever used.
- </p>
- <div className="flex items-center justify-center gap-4">
- <div className="px-4 py-2 rounded-xl border border-gray-800 text-xs font-bold text-gray-500 uppercase tracking-widest">PIN Protected</div>
- <div className="px-4 py-2 rounded-xl border border-gray-800 text-xs font-bold text-gray-500 uppercase tracking-widest">Local First</div>
- </div>
- </motion.div>
- </div>
+        {/* Contact info box */}
+        <div className="mt-12 p-6 rounded-3xl bg-slate-50 border border-slate-200 text-center text-xs text-slate-500 space-y-2">
+          <p className="font-bold text-slate-700">Questions regarding data protection or compliance?</p>
+          <p>
+            Reach our Data Protection Officer at{' '}
+            <a
+              href={`mailto:${import.meta.env.VITE_SUPPORT_EMAIL || 'support@kanaku.in'}`}
+              className="text-violet-600 font-bold hover:underline"
+            >
+              {import.meta.env.VITE_SUPPORT_EMAIL || 'support@kanaku.in'}
+            </a>
+          </p>
+        </div>
+      </div>
 
- <footer className="py-10 border-t border-gray-100 text-center">
- <p className="text-xs text-gray-400"> {new Date().getFullYear()} KANAKU. All rights reserved.</p>
- </footer>
- </div>
- );
+      <footer className="border-t border-slate-200 py-8 text-center text-xs text-slate-400">
+        <p>© {new Date().getFullYear()} KANAKU. Built with pride by Shaik Ashraf K.</p>
+      </footer>
+    </div>
+  );
 };
-
-

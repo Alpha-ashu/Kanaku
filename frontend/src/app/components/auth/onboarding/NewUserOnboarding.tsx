@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ShieldCheck, Sparkles } from 'lucide-react';
 import { ProfileSetupStep } from './ProfileSetupStep';
 import { BankAccountStep } from './BankAccountStep';
 import { CountryLanguageStep } from './CountryLanguageStep';
@@ -174,43 +175,89 @@ export const NewUserOnboarding: React.FC = () => {
  }
  };
 
- return (
- <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
- <div className={`bg-white rounded-2xl shadow-xl w-full transition-all duration-300 mx-auto ${
-      currentStep === 1 ? 'max-w-[480px] md:max-w-4xl' : 'max-w-[480px]'
-    }`}>
- {/* Progress Indicator */}
- <div className="p-6 border-b border-gray-200">
- <div className="flex items-center justify-between mb-4">
- <h2 className="text-xl font-semibold text-gray-800">Complete Your Profile</h2>
- <span className="text-sm text-gray-500">Step {currentStep} of 4</span>
- </div>
- <div className="flex space-x-2">
- {[1, 2, 3, 4].map((step) => (
- <div
- key={step}
- className={`flex-1 h-2 rounded-full transition-all duration-300 ${
- step < currentStep
- ? 'bg-blue-600'
- : step === currentStep
- ? 'bg-blue-500'
- : 'bg-gray-200'
- }`}
- />
- ))}
- </div>
- </div>
+  const stepNames = ['Personal Details', 'Region & Language', 'Primary Account', 'Launch'];
 
- <div className="p-6">
- {isInitializing ? (
- <div className="flex justify-center p-8">
- <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
- </div>
- ) : (
- renderStep()
- )}
- </div>
- </div>
- </div>
- );
+  return (
+    <div className="min-h-screen bg-slate-950 text-slate-100 relative overflow-hidden flex flex-col items-center justify-center p-4 py-8 sm:py-12 selection:bg-violet-500 selection:text-white">
+      {/* Background ambient lighting */}
+      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-violet-600/15 rounded-full blur-[130px] pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-indigo-600/15 rounded-full blur-[130px] pointer-events-none" />
+      <div className="absolute top-[35%] right-[15%] w-[300px] h-[300px] bg-emerald-500/10 rounded-full blur-[110px] pointer-events-none" />
+
+      {/* Grid texture overlay */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:3.5rem_3.5rem] pointer-events-none" />
+
+      {/* Top Brand Bar */}
+      <div className="relative z-10 mb-6 sm:mb-8 text-center">
+        <div className="inline-flex items-center gap-2.5 mb-2">
+          <span className="font-black text-2xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-violet-400 via-indigo-200 to-white">
+            KANAKU
+          </span>
+          <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-300 border border-violet-500/20">
+            Setup Wizard
+          </span>
+        </div>
+        <p className="text-xs text-slate-400">Initialize your local-first private finance environment</p>
+      </div>
+
+      {/* Main card */}
+      <div className={`relative z-10 bg-white text-slate-900 rounded-3xl shadow-2xl shadow-violet-950/40 border border-slate-200/90 w-full transition-all duration-300 overflow-hidden ${
+        currentStep === 1 ? 'max-w-[480px] md:max-w-4xl' : 'max-w-[520px]'
+      }`}>
+        {/* Progress Indicator */}
+        <div className="p-5 sm:p-6 border-b border-slate-100 bg-slate-50/60">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Onboarding</span>
+              <span className="text-xs text-slate-300">•</span>
+              <span className="text-xs font-bold text-violet-700 bg-violet-100/70 px-2.5 py-0.5 rounded-full border border-violet-200/60">
+                Step {currentStep} of 4: {stepNames[currentStep - 1]}
+              </span>
+            </div>
+            <span className="text-xs font-mono font-bold text-slate-400">
+              {Math.round((currentStep / 4) * 100)}%
+            </span>
+          </div>
+
+          <div className="flex space-x-2">
+            {[1, 2, 3, 4].map((step) => (
+              <div
+                key={step}
+                className={`flex-1 h-1.5 rounded-full transition-all duration-300 ${
+                  step < currentStep
+                    ? 'bg-gradient-to-r from-violet-600 to-indigo-600'
+                    : step === currentStep
+                    ? 'bg-violet-600 shadow-sm shadow-violet-500/40'
+                    : 'bg-slate-200'
+                }`}
+              />
+            ))}
+          </div>
+        </div>
+
+        <div className="p-6 sm:p-8">
+          {isInitializing ? (
+            <div className="flex flex-col items-center justify-center p-10 space-y-3">
+              <div className="animate-spin rounded-full h-9 w-9 border-3 border-violet-600 border-t-transparent"></div>
+              <p className="text-xs text-slate-400 font-medium">Preparing your setup environment...</p>
+            </div>
+          ) : (
+            renderStep()
+          )}
+        </div>
+      </div>
+
+      {/* Trust reassurance below the card */}
+      <div className="relative z-10 mt-6 flex flex-wrap items-center justify-center gap-3 sm:gap-4 text-xs text-slate-400">
+        <span className="inline-flex items-center gap-1.5">
+          <ShieldCheck size={14} className="text-emerald-400" />
+          <span>Local-First Encryption</span>
+        </span>
+        <span className="text-slate-600">•</span>
+        <span>Zero Telemetry</span>
+        <span className="text-slate-600">•</span>
+        <span>Cross-Device Cloud Sync</span>
+      </div>
+    </div>
+  );
 };

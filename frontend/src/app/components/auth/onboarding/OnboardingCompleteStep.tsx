@@ -1,12 +1,25 @@
 import React, { useState } from 'react';
 import supabase from '@/utils/supabase/client';
 import { toast } from 'sonner';
+import {
+  CheckCircle2,
+  Sparkles,
+  ShieldCheck,
+  AlertCircle,
+  ArrowRight,
+  RotateCcw,
+  Building2,
+  User,
+  MapPin,
+  Briefcase,
+  Wallet,
+} from 'lucide-react';
 import { saveAccountWithBackendSync } from '@/lib/auth-sync-integration';
 import { resolveAvatarSelection } from '@/lib/avatar-gallery';
 import { api, apiClient } from '@/lib/api';
 import {
- buildOnboardingUserSettings,
- toSettingsPayload,
+  buildOnboardingUserSettings,
+  toSettingsPayload,
 } from '@/lib/userPreferences';
 
 interface OnboardingCompleteStepProps {
@@ -250,129 +263,184 @@ export const OnboardingCompleteStep: React.FC<OnboardingCompleteStepProps> = ({
  setProgress(0);
  startProcessing();
  };
+  if (error) {
+    return (
+      <div className="text-center space-y-5">
+        <div className="bg-red-50/80 border border-red-200/80 rounded-2xl p-5">
+          <div className="w-12 h-12 rounded-2xl bg-red-100 text-red-600 flex items-center justify-center mx-auto mb-3">
+            <AlertCircle size={24} />
+          </div>
+          <h3 className="text-lg font-bold text-red-900 mb-1">
+            Setup Encountered an Issue
+          </h3>
+          <p className="text-red-700 text-xs leading-relaxed max-w-sm mx-auto">{error}</p>
+        </div>
 
- if (error) {
- return (
- <div className="text-center space-y-4">
- <div className="bg-red-50 border border-red-200 rounded-lg p-4">
- <div className="text-red-600 mb-2">
- <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
- <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
- </svg>
- </div>
- <h3 className="text-lg font-medium text-red-800 mb-2">
- Setup Failed
- </h3>
- <p className="text-red-700 text-sm">{error}</p>
- </div>
+        <div className="flex space-x-3 pt-2">
+          <button
+            data-testid="onboarding-complete-step-back"
+            onClick={onBack}
+            className="flex-1 bg-slate-100 text-slate-700 py-3 px-4 rounded-xl hover:bg-slate-200 transition-colors font-bold text-sm"
+          >
+            Back
+          </button>
+          <button
+            data-testid="onboarding-complete-step-try-again"
+            onClick={retrySetup}
+            className="flex-1 bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 hover:from-violet-700 hover:to-blue-700 text-white py-3 px-4 rounded-xl transition-all font-bold text-sm shadow-md shadow-violet-500/20"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
- <div className="flex space-x-3">
- <button data-testid="onboarding-complete-step-back"
- onClick={onBack}
- className="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors font-medium"
- >
- Back
- </button>
- <button data-testid="onboarding-complete-step-try-again"
- onClick={retrySetup}
- className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium"
- >
- Try Again
- </button>
- </div>
- </div>
- );
- }
+  return (
+    <div className="text-center space-y-6">
+      {/* Header */}
+      <div>
+        <div className={`inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-3.5 transition-all ${
+          progress === 100
+            ? 'bg-emerald-500/10 text-emerald-600 ring-1 ring-emerald-500/20 shadow-lg shadow-emerald-500/10'
+            : 'bg-gradient-to-tr from-violet-600/10 to-indigo-600/20 text-violet-600 ring-1 ring-violet-500/20 shadow-lg shadow-violet-500/10'
+        }`}>
+          {progress === 100 ? (
+            <CheckCircle2 size={30} className="text-emerald-500" />
+          ) : (
+            <Sparkles size={28} className="text-violet-600 animate-pulse" />
+          )}
+        </div>
+        <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight mb-1.5">
+          {progress === 100 ? "You're All Set!" : isProcessing ? 'Initializing Your Workspace' : 'Ready to Launch'}
+        </h3>
+        <p className="text-sm text-slate-500 max-w-sm mx-auto">
+          {progress === 100
+            ? 'Your ledger, accounts, and privacy settings have been configured.'
+            : isProcessing
+            ? 'Configuring accounts, localized categories, and encrypted storage...'
+            : 'Review your personalized configuration and initialize your secure ledger.'}
+        </p>
+      </div>
 
- return (
- <div className="text-center space-y-6">
- <div>
- <h3 className="text-lg font-medium text-gray-900 mb-2">
- Setting Up Your Account
- </h3>
- <p className="text-sm text-gray-600">
- We're configuring your profile and setting up your accounts. This will only take a moment.
- </p>
- </div>
+      {/* Progress Indicator (shown when processing or completed) */}
+      {(isProcessing || progress > 0) && (
+        <div className="space-y-2 bg-slate-50/70 border border-slate-200/70 rounded-2xl p-4 text-left">
+          <div className="flex justify-between items-center text-xs font-bold text-slate-600">
+            <span className="flex items-center gap-1.5">
+              {progress < 100 && <span className="w-2 h-2 rounded-full bg-violet-600 animate-ping inline-block mr-1" />}
+              {progress < 15 && 'Initializing secure database...'}
+              {progress >= 15 && progress < 35 && 'Saving your profile details...'}
+              {progress >= 35 && progress < 55 && 'Registering primary bank ledger...'}
+              {progress >= 55 && progress < 75 && 'Configuring income & salary schedules...'}
+              {progress >= 75 && progress < 90 && 'Encrypting local storage...'}
+              {progress >= 90 && progress < 100 && 'Finalizing workspace...'}
+              {progress === 100 && 'Ready to explore!'}
+            </span>
+            <span className="font-mono text-violet-600 bg-violet-50 px-2 py-0.5 rounded-full border border-violet-200/60">{progress}%</span>
+          </div>
 
- {/* Progress Indicator */}
- <div className="space-y-3">
- <div className="flex justify-between text-sm text-gray-600">
- <span>
- {progress < 15 && 'Initializing...'}
- {progress >= 15 && progress < 35 && 'Saving your profile...'}
- {progress >= 35 && progress < 55 && 'Creating bank account...'}
- {progress >= 55 && progress < 75 && 'Setting up salary tracking...'}
- {progress >= 75 && progress < 90 && 'Finalizing setup...'}
- {progress >= 90 && progress < 100 && 'Completing...'}
- {progress === 100 && 'Setup complete!'}
- </span>
- <span>{progress}%</span>
- </div>
+          <div className="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden">
+            <div
+              className={`bg-gradient-to-r from-violet-600 via-indigo-600 to-emerald-500 h-2.5 rounded-full transition-all duration-300 ease-out ${getProgressWidthClass(progress)}`}
+            />
+          </div>
+        </div>
+      )}
 
- <div className="w-full bg-gray-200 rounded-full h-2">
- <div
- className={`bg-blue-600 h-2 rounded-full transition-all duration-300 ease-out ${getProgressWidthClass(progress)}`}
- />
- </div>
- </div>
+      {/* Summary Bento Card */}
+      <div className="bg-slate-50/70 border border-slate-200/80 rounded-2xl p-4 text-left space-y-3">
+        <div className="flex items-center justify-between border-b border-slate-200/60 pb-2.5">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Setup Summary</span>
+          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 bg-emerald-50 border border-emerald-200/60 px-2 py-0.5 rounded-full">
+            <ShieldCheck size={12} /> Local-First Ready
+          </span>
+        </div>
 
- {/* Summary of what's being set up */}
- <div className="bg-white rounded-lg p-4 text-left">
- <h4 className="text-sm font-medium text-gray-700 mb-2">Setting up:</h4>
- <ul className="text-xs text-gray-600 space-y-1">
- <li> Profile: {data.displayName}</li>
- <li> Location: {data.country} ({data.language})</li>
- <li> Job: {data.jobType}</li>
- <li> Salary: {data.salary && !isNaN(parseFloat(data.salary)) ? `INR${parseFloat(data.salary).toLocaleString()}/year` : 'Not provided'}</li>
- <li> Bank: {data.bankName ? `${data.bankName} account` : 'No bank selected'}</li>
- {data.currentBalance && (
- <li> Current Balance: INR{parseFloat(data.currentBalance).toLocaleString()}</li>
- )}
- </ul>
- </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+          <div className="flex items-center gap-2.5 bg-white p-2.5 rounded-xl border border-slate-100 shadow-sm">
+            <div className="w-7 h-7 rounded-lg bg-violet-50 text-violet-600 flex items-center justify-center flex-shrink-0">
+              <User size={14} />
+            </div>
+            <div className="min-w-0">
+              <p className="font-bold text-slate-800 truncate">{data.displayName || 'Personal Account'}</p>
+              <p className="text-slate-400 text-[11px] truncate">{data.jobType || 'Individual'}</p>
+            </div>
+          </div>
 
- {/* Success Message */}
- {progress === 100 && (
- <div className="bg-green-50 border border-green-200 rounded-lg p-4">
- <div className="text-green-600 mb-2">
- <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
- <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
- </svg>
- </div>
- <h3 className="text-lg font-medium text-green-800 mb-2">
- All Set! 
- </h3>
- <p className="text-green-700 text-sm">
- Your account is ready. You'll be redirected to your dashboard shortly.
- </p>
- </div>
- )}
+          <div className="flex items-center gap-2.5 bg-white p-2.5 rounded-xl border border-slate-100 shadow-sm">
+            <div className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
+              <MapPin size={14} />
+            </div>
+            <div className="min-w-0">
+              <p className="font-bold text-slate-800 truncate">{data.city ? `${data.city}, ` : ''}{data.country || 'India'}</p>
+              <p className="text-slate-400 text-[11px] truncate">{data.language || 'English'}</p>
+            </div>
+          </div>
 
- {/* Loading Spinner */}
- {isProcessing && progress < 100 && (
- <div className="flex justify-center">
- <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
- </div>
- )}
+          <div className="flex items-center gap-2.5 bg-white p-2.5 rounded-xl border border-slate-100 shadow-sm">
+            <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0">
+              <Building2 size={14} />
+            </div>
+            <div className="min-w-0">
+              <p className="font-bold text-slate-800 truncate">{data.bankName ? `${data.bankName}` : 'Cash Ledger'}</p>
+              <p className="text-slate-400 text-[11px] truncate">
+                {data.currentBalance ? `₹${parseFloat(data.currentBalance).toLocaleString()}` : '₹0 Opening'}
+              </p>
+            </div>
+          </div>
 
- <div className="flex space-x-3">
- <button data-testid="onboarding-complete-step-back-2"
- onClick={onBack}
- disabled={isProcessing}
- className="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
- >
- Back
- </button>
- {!isProcessing && progress === 0 && (
- <button data-testid="onboarding-complete-step-complete-setup"
- onClick={startProcessing}
- className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium"
- >
- Complete Setup
- </button>
- )}
- </div>
- </div>
- );
+          <div className="flex items-center gap-2.5 bg-white p-2.5 rounded-xl border border-slate-100 shadow-sm">
+            <div className="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center flex-shrink-0">
+              <Wallet size={14} />
+            </div>
+            <div className="min-w-0">
+              <p className="font-bold text-slate-800 truncate">
+                {data.salary && !isNaN(parseFloat(data.salary)) ? `₹${parseFloat(data.salary).toLocaleString()}/yr` : 'Salary unstated'}
+              </p>
+              <p className="text-slate-400 text-[11px] truncate">Target Budget</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Success Banner */}
+      {progress === 100 && (
+        <div className="bg-emerald-50/80 border border-emerald-200 rounded-2xl p-4 text-center">
+          <p className="text-emerald-800 font-bold text-sm mb-0.5">Setup Successful!</p>
+          <p className="text-emerald-600 text-xs">Redirecting to your personal dashboard...</p>
+        </div>
+      )}
+
+      {/* Loading Spinner */}
+      {isProcessing && progress < 100 && (
+        <div className="flex items-center justify-center gap-2 py-2 text-violet-600 text-xs font-semibold">
+          <div className="animate-spin rounded-full h-4 w-4 border-2 border-violet-600 border-t-transparent"></div>
+          <span>Configuring your personal workspace...</span>
+        </div>
+      )}
+
+      {/* Action Buttons */}
+      <div className="flex space-x-3 pt-2">
+        <button
+          data-testid="onboarding-complete-step-back-2"
+          onClick={onBack}
+          disabled={isProcessing}
+          className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-3 px-4 rounded-xl transition-colors font-bold text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Back
+        </button>
+        {!isProcessing && progress === 0 && (
+          <button
+            data-testid="onboarding-complete-step-complete-setup"
+            onClick={startProcessing}
+            className="flex-1 inline-flex items-center justify-center gap-2 bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 hover:from-violet-700 hover:to-blue-700 text-white py-3 px-4 rounded-xl transition-all font-bold text-sm shadow-md shadow-violet-500/20 active:scale-[0.99]"
+          >
+            <span>Complete Setup</span>
+            <ArrowRight size={16} />
+          </button>
+        )}
+      </div>
+    </div>
+  );
 };

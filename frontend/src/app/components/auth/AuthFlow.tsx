@@ -18,6 +18,7 @@ import { pinService, isPinMissing } from '@/services/pinService';
 import { signIn as supabaseSignIn, signUp as supabaseSignUp, resendSignupConfirmation, DUPLICATE_ACCOUNT_MESSAGE } from '@/lib/supabase-helpers';
 import { MailCheck } from 'lucide-react';
 import { getConfiguredApiBase } from '@/lib/apiBase';
+import { AuthShowcase } from './AuthShowcase';
 
 // Auth source of truth for the login UI. 'custom' (default) keeps the backend-issued
 // JWT flow; 'supabase' (Option A) authenticates via Supabase Auth so the API client's
@@ -702,164 +703,217 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  }
  };
 
+  // Modern SaaS Split-Screen Container for Authentication Views
+  const renderAuthContainer = ({
+    children,
+    badge,
+    title,
+    subtitle,
+    showBackButton = true,
+    backAction,
+    backLabel = 'Back',
+    testIdPrefix = 'auth-flow'
+  }: {
+    children: React.ReactNode;
+    badge?: string;
+    title?: string;
+    subtitle?: string;
+    showBackButton?: boolean;
+    backAction?: () => void;
+    backLabel?: string;
+    testIdPrefix?: string;
+  }) => {
+    return (
+      <div className="relative min-h-screen bg-[#FDFEFE] text-slate-900 font-sans flex flex-col lg:flex-row overflow-x-hidden select-none">
+        {/* Left Column: Branded SaaS Desktop Showcase */}
+        <div className="hidden lg:block lg:w-1/2 xl:w-[48%] sticky top-0 h-screen overflow-hidden">
+          <AuthShowcase />
+        </div>
 
- // Welcome Screen
- const renderWelcome = () => {
- const containerVariants = {
- hidden: { opacity: 0 },
- show: { opacity: 1, transition: { staggerChildren: 0.12 } }
- };
- const itemVariants = {
- hidden: { opacity: 0, y: 24 },
- show: { opacity: 1, y: 0, transition: { type:"spring" as const, stiffness: 300, damping: 24 } }
- };
+        {/* Right Column: Form Container */}
+        <div className="w-full lg:w-1/2 xl:w-[52%] min-h-screen flex flex-col justify-between p-4 sm:p-8 lg:p-12 xl:p-14 relative z-10">
+          {/* Ambient Glows */}
+          <div className="absolute top-0 right-0 w-[450px] h-[450px] bg-violet-100/35 rounded-full blur-3xl pointer-events-none -z-10" />
+          <div className="absolute bottom-10 left-10 w-[400px] h-[400px] bg-blue-100/25 rounded-full blur-3xl pointer-events-none -z-10" />
 
- return (
- <div className="relative min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50/50 flex flex-col font-sans select-none">
- {onNavigate && onLogin && onGetStarted && (
- <PublicNavbar
- onNavigate={onNavigate}
- onLogin={() => { setStep('signin'); onLogin(); }}
- onGetStarted={() => { setStep('signup'); onGetStarted(); }}
- currentPage="welcome"
- />
- )}
- {/* Subtle decorative blobs */}
- <div className="absolute inset-0 pointer-events-none overflow-hidden">
- <div className="absolute -top-[15%] -left-[10%] w-[60vw] h-[60vw] md:w-[40vw] md:h-[40vw] bg-blue-200/40 rounded-full blur-[80px]" />
- <div className="absolute top-[50%] -right-[10%] w-[50vw] h-[50vw] md:w-[35vw] md:h-[35vw] bg-indigo-200/30 rounded-full blur-[80px]" />
- </div>
+          {/* Top Bar: Mobile Brand + Desktop Navigation */}
+          <div className="w-full flex items-center justify-between mb-4 lg:mb-6">
+            <div className="lg:hidden flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-violet-600 to-indigo-600 flex items-center justify-center text-white shadow-md">
+                <KANAKULogo className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <span className="font-extrabold text-lg text-slate-900 tracking-tight">KANAKU</span>
+              </div>
+            </div>
 
- <motion.div
- variants={containerVariants}
- initial="hidden"
- animate="show"
- className="relative z-10 flex-1 flex flex-col justify-center items-center px-6 sm:px-8 mt-24"
- >
- {/* Logo Section */}
- <motion.div variants={itemVariants} className="mb-10 text-center w-full max-w-sm">
- <div className="relative w-24 h-24 mx-auto mb-6">
- <motion.div
- animate={{ rotate: 360 }}
- transition={{ duration: 25, repeat: Infinity, ease:"linear" }}
- className="absolute inset-0 rounded-[2rem] border-2 border-blue-200 border-dashed"
- />
- <div className="absolute inset-2 bg-white rounded-3xl flex items-center justify-center shadow-sm">
- <KANAKULogo className="w-12 h-12 drop-shadow-sm" />
- </div>
- </div>
- <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-900 tracking-tight mb-4">
- KANAKU
- </h1>
- <p className="text-base sm:text-lg text-gray-500 font-medium max-w-[280px] sm:max-w-md mx-auto leading-relaxed">
- Experience the future of personal finance. Track, grow, and master your wealth seamlessly.
- </p>
- </motion.div>
+            {showBackButton ? (
+              <button
+                data-testid={`${testIdPrefix}-back`}
+                type="button"
+                onClick={backAction || (() => setStep('welcome'))}
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 transition-colors py-1.5 px-3 rounded-xl hover:bg-slate-100"
+              >
+                <span>←</span> {backLabel}
+              </button>
+            ) : <div />}
 
- {/* Feature Pills */}
- <motion.div variants={itemVariants} className="flex flex-wrap justify-center gap-3 w-full max-w-sm mb-12">
- {[
- { icon: TrendingUp, text: 'Insights' },
- { icon: Shield, text: 'Secure' },
- { icon: Sparkles, text: 'Smart' },
- ].map((feature, i) => (
- <div key={i} className="flex items-center gap-2 bg-white border border-gray-200 rounded-full px-4 py-2 shadow-sm hover:shadow-md hover:border-blue-200 transition-all duration-200 cursor-default">
- <feature.icon className="w-4 h-4 text-blue-600" />
- <span className="text-sm font-medium text-gray-700">{feature.text}</span>
- </div>
- ))}
- </motion.div>
- </motion.div>
+            <div className="hidden sm:flex items-center gap-2 text-xs font-semibold text-slate-400">
+              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+              <span>256-Bit SSL Encrypted</span>
+            </div>
+          </div>
 
- {/* Call To Actions */}
- <motion.div
- initial={{ opacity: 0, y: 40 }}
- animate={{ opacity: 1, y: 0 }}
- transition={{ delay: 0.5, type:"spring", stiffness: 300, damping: 30 }}
- className="relative z-10 px-6 sm:px-8 pb-12 w-full max-w-md mx-auto"
- >
- <div className="space-y-3">
- <motion.button data-testid="auth-flow-create-account"
- whileHover={{ scale: 1.02 }}
- whileTap={{ scale: 0.98 }}
- onClick={() => setStep('signup')}
- className="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold rounded-2xl py-4 text-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2"
- >
- Create Account
- <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
- </motion.button>
+          {/* Centered Form / Content */}
+          <div className="flex-1 flex items-center justify-center my-auto w-full py-4">
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+              className="w-full max-w-md sm:max-w-lg bg-white/95 backdrop-blur-xl border border-slate-200/80 rounded-3xl shadow-[0_20px_50px_rgba(15,23,42,0.06)] overflow-hidden"
+            >
+              <div className="h-1.5 w-full bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600" />
+              
+              {title && (
+                <div className="p-6 sm:p-8 pb-3 border-b border-slate-100/80">
+                  {badge && (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider bg-violet-50 text-violet-700 border border-violet-200/60 px-2.5 py-0.5 rounded-full mb-3">
+                      {badge}
+                    </span>
+                  )}
+                  <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">{title}</h2>
+                  {subtitle && <p className="text-slate-500 mt-1.5 text-sm font-medium">{subtitle}</p>}
+                </div>
+              )}
 
- <motion.button data-testid="auth-flow-sign-in"
- whileHover={{ scale: 1.02 }}
- whileTap={{ scale: 0.98 }}
- onClick={() => setStep('signin')}
- className="w-full bg-white hover:bg-gray-50 border border-gray-200 hover:border-gray-300 text-gray-700 rounded-2xl py-4 font-semibold text-lg shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-center gap-2"
- >
- Sign In
- </motion.button>
+              <div className="p-6 sm:p-8 pt-6">
+                {children}
+              </div>
+            </motion.div>
+          </div>
 
- {/* Continue as Guest */}
- <motion.button data-testid="auth-flow-continue-as-guest"
- whileHover={{ scale: 1.01 }}
- whileTap={{ scale: 0.99 }}
- onClick={handleGuestMode}
- className="w-full text-gray-400 hover:text-gray-600 py-3 text-sm font-medium transition-colors"
- >
- Continue as Guest
- </motion.button>
+          {/* Footer Legal Links */}
+          <div className="pt-6 text-center text-xs text-slate-400 font-medium select-none">
+            Local-First Private Ledger &bull;{' '}
+            <button type="button" onClick={() => setStep('privacy')} className="hover:text-slate-600 underline">Privacy Policy</button>
+            {' '}&bull;{' '}
+            <button type="button" onClick={() => setStep('terms')} className="hover:text-slate-600 underline">Terms of Service</button>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
- {onBack && (
- <button data-testid="auth-flow-back-to-landing-page"
- onClick={onBack}
- className="w-full mt-2 text-sm font-semibold text-gray-500 hover:text-gray-700 transition-colors py-2"
- >
- Back to Landing Page
- </button>
- )}
- </div>
- </motion.div>
+  // Welcome Screen
+  const renderWelcome = () => {
+    return (
+      <>
+        {renderAuthContainer({
+          title: 'Master Your Finances',
+          subtitle: 'Experience the future of personal wealth management with local-first encryption.',
+          badge: 'Intelligent Wealth OS',
+          showBackButton: !!onBack,
+          backAction: onBack,
+          backLabel: 'Landing Page',
+          children: (
+            <div className="space-y-6">
+              {/* 3 Value Pillars */}
+              <div className="grid grid-cols-3 gap-2.5 py-1">
+                <div className="p-3 bg-slate-50 border border-slate-100 rounded-2xl text-center">
+                  <TrendingUp className="w-4 h-4 text-violet-600 mx-auto mb-1" />
+                  <p className="text-xs font-bold text-slate-800">Insights</p>
+                  <p className="text-[10px] text-slate-400">Live Delta</p>
+                </div>
+                <div className="p-3 bg-slate-50 border border-slate-100 rounded-2xl text-center">
+                  <Shield className="w-4 h-4 text-emerald-600 mx-auto mb-1" />
+                  <p className="text-xs font-bold text-slate-800">Private</p>
+                  <p className="text-[10px] text-slate-400">AES-256</p>
+                </div>
+                <div className="p-3 bg-slate-50 border border-slate-100 rounded-2xl text-center">
+                  <Sparkles className="w-4 h-4 text-amber-500 mx-auto mb-1" />
+                  <p className="text-xs font-bold text-slate-800">Smart</p>
+                  <p className="text-[10px] text-slate-400">AI Alerts</p>
+                </div>
+              </div>
 
- {/* Guest Mode Caution Modal */}
- {showGuestCaution && (
- <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
- <motion.div
- initial={{ opacity: 0, scale: 0.95, y: 20 }}
- animate={{ opacity: 1, scale: 1, y: 0 }}
- className="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl"
- >
- <div className="w-12 h-12 rounded-2xl bg-amber-100 flex items-center justify-center mb-4">
- <AlertTriangle className="text-amber-600" size={24} />
- </div>
- <h3 className="text-xl font-bold text-gray-900 mb-2">Continue as Guest?</h3>
- <p className="text-sm text-gray-600 mb-4 leading-relaxed">
- Guest mode stores all your financial data <strong>locally on this device only</strong>.
- </p>
- <div className="bg-red-50 text-red-700 text-xs p-3 rounded-xl mb-6 font-medium border border-red-100">
- If you forget your PIN, there is no way to recover it. You will have to reset the app and <strong>all your data will be permanently lost</strong>. Sign in to safely backup your data.
- </div>
+              <div className="space-y-3 pt-2">
+                <motion.button
+                  data-testid="auth-flow-create-account"
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.99 }}
+                  onClick={() => setStep('signup')}
+                  className="w-full bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 hover:from-violet-700 hover:to-blue-700 text-white font-bold rounded-2xl py-4 text-base shadow-lg shadow-violet-500/20 transition-all flex items-center justify-center gap-2"
+                >
+                  <span>Create Free Account</span>
+                  <ArrowRight className="w-4 h-4" />
+                </motion.button>
 
- <div className="flex gap-3">
- <button data-testid="auth-flow-cancel"
- type="button"
- onClick={() => setShowGuestCaution(false)}
- className="flex-1 py-3 rounded-xl bg-gray-100 text-gray-700 font-semibold hover:bg-gray-200 transition-colors text-sm"
- >
- Cancel
- </button>
- <button data-testid="auth-flow-proceed-as-guest"
- type="button"
- onClick={confirmGuestMode}
- className="flex-[1.5] py-3 rounded-xl bg-amber-500 text-white font-semibold hover:bg-amber-600 transition-colors text-sm shadow-md shadow-amber-500/20"
- >
- Proceed as Guest
- </button>
- </div>
- </motion.div>
- </div>
- )}
- </div>
- );
- };
+                <motion.button
+                  data-testid="auth-flow-sign-in"
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.99 }}
+                  onClick={() => setStep('signin')}
+                  className="w-full bg-white hover:bg-slate-50 border border-slate-200 text-slate-800 rounded-2xl py-3.5 font-bold text-base shadow-sm transition-all flex items-center justify-center gap-2"
+                >
+                  Sign In
+                </motion.button>
+
+                <button
+                  data-testid="auth-flow-continue-as-guest"
+                  type="button"
+                  onClick={handleGuestMode}
+                  className="w-full text-center text-xs font-semibold text-slate-400 hover:text-slate-600 pt-2 transition-colors"
+                >
+                  Or continue as Guest (Local Only)
+                </button>
+              </div>
+            </div>
+          ),
+        })}
+
+        {/* Guest Mode Caution Modal */}
+        {showGuestCaution && (
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              className="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl"
+            >
+              <div className="w-12 h-12 rounded-2xl bg-amber-100 flex items-center justify-center mb-4">
+                <AlertTriangle className="text-amber-600" size={24} />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Continue as Guest?</h3>
+              <p className="text-sm text-gray-600 mb-4 leading-relaxed">
+                Guest mode stores all your financial data <strong>locally on this device only</strong>.
+              </p>
+              <div className="bg-red-50 text-red-700 text-xs p-3 rounded-xl mb-6 font-medium border border-red-100">
+                If you forget your PIN, there is no way to recover it. You will have to reset the app and <strong>all your data will be permanently lost</strong>. Sign in to safely backup your data.
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  data-testid="auth-flow-cancel"
+                  type="button"
+                  onClick={() => setShowGuestCaution(false)}
+                  className="flex-1 py-3 rounded-xl bg-gray-100 text-gray-700 font-semibold hover:bg-gray-200 transition-colors text-sm"
+                >
+                  Cancel
+                </button>
+                <button
+                  data-testid="auth-flow-proceed-as-guest"
+                  type="button"
+                  onClick={confirmGuestMode}
+                  className="flex-[1.5] py-3 rounded-xl bg-amber-500 text-white font-semibold hover:bg-amber-600 transition-colors text-sm shadow-md shadow-amber-500/20"
+                >
+                  Proceed as Guest
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </>
+    );
+  };
 
 
  // Profile Setup Step
@@ -1137,44 +1191,47 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  </button>
  </form>
  </div>
- </div>
- );
+  </div>
+  );
 
- // Confirm-your-email Screen (shown when Supabase requires email confirmation)
- const renderEmailConfirm = () => (
- <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50/50 flex items-center justify-center p-4">
- <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8 text-center">
- <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600">
- <MailCheck size={32} />
- </div>
- <h2 className="text-2xl font-bold text-gray-900 mb-2">Confirm your email</h2>
- <p className="text-sm text-gray-600 leading-relaxed mb-1">
- We&apos;ve sent a confirmation link to
- </p>
- <p className="text-sm font-semibold text-gray-900 mb-4 break-all">{email}</p>
- <p className="text-sm text-gray-500 leading-relaxed mb-6">
- Click the link in that email to activate your account, then sign in. The link
- may take a minute to arrive — remember to check your spam folder.
- </p>
+  // Confirm-your-email Screen (shown when Supabase requires email confirmation)
+  const renderEmailConfirm = () => (
+    renderAuthContainer({
+      title: 'Confirm Your Email',
+      subtitle: `We've sent an activation link to your inbox.`,
+      badge: 'Email Activation',
+      showBackButton: false,
+      children: (
+        <div className="text-center py-2">
+          <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-violet-50 border border-violet-200 flex items-center justify-center text-violet-600 shadow-sm">
+            <MailCheck size={32} />
+          </div>
+          <p className="text-sm font-semibold text-slate-900 mb-2 break-all">{email}</p>
+          <p className="text-xs text-slate-500 leading-relaxed mb-6">
+            Click the link in that email to activate your account, then sign in. The link may take a minute to arrive — remember to check your spam folder.
+          </p>
 
- <button data-testid="auth-flow-button-3"
- type="button"
- onClick={handleResendConfirmation}
- disabled={resendLoading}
- className="w-full py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 disabled:opacity-50 transition-colors mb-3"
- >
- {resendLoading ? 'Sending…' : 'Resend confirmation email'}
- </button>
- <button data-testid="auth-flow-back-to-sign-in"
- type="button"
- onClick={() => setStep('signin')}
- className="w-full py-3 bg-white border border-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-colors"
- >
- Back to Sign In
- </button>
- </div>
- </div>
- );
+          <button
+            data-testid="auth-flow-button-3"
+            type="button"
+            onClick={handleResendConfirmation}
+            disabled={resendLoading}
+            className="w-full py-3.5 bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 text-white rounded-xl font-bold hover:from-violet-700 hover:to-blue-700 disabled:opacity-50 transition-all shadow-md shadow-violet-500/15 mb-3 text-sm"
+          >
+            {resendLoading ? 'Sending…' : 'Resend confirmation email'}
+          </button>
+          <button
+            data-testid="auth-flow-back-to-sign-in"
+            type="button"
+            onClick={() => setStep('signin')}
+            className="w-full py-3 bg-white border border-slate-200 text-slate-700 rounded-xl font-semibold hover:bg-slate-50 transition-colors text-sm"
+          >
+            Back to Sign In
+          </button>
+        </div>
+      ),
+    })
+  );
 
  // Completion Screen
  const renderComplete = () => (
@@ -1242,78 +1299,64 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
       }
     };
 
-    return (
-      <div className="relative min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50/50 flex items-center justify-center p-4 pt-24 select-none overflow-hidden">
-        <motion.div
-          initial={{ opacity: 0, y: 20, scale: 0.98 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.4 }}
-          className="bg-white rounded-3xl shadow-[0_20px_50px_rgba(37,99,235,0.06)] border border-gray-100 w-full max-w-md overflow-hidden relative z-10"
-        >
-          <div className="h-1.5 w-full bg-gradient-to-r from-blue-500 to-indigo-600" />
-          
-          <div className="p-6 sm:p-8 flex flex-col items-center border-b border-gray-100/50">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 mb-6 shadow-sm border border-blue-100/50">
-              <Fingerprint className="w-6 h-6" />
+    return renderAuthContainer({
+      title: 'Reset Password',
+      subtitle: "Enter your registered email address. We'll send you a 6-digit verification code.",
+      badge: 'Account Recovery',
+      backAction: () => setStep('signin'),
+      backLabel: 'Back to Login',
+      children: (
+        <form onSubmit={handleSubmit} className="space-y-5">
+          {forgotErrorState && (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-3">
+              <p className="text-sm text-red-600 text-center font-semibold">{forgotErrorState}</p>
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 tracking-tight text-center">Forgot Your Password?</h2>
-            <p className="text-gray-500 mt-2 text-sm font-medium text-center max-w-xs">
-              Enter your registered email address. We'll send you a verification code.
-            </p>
+          )}
+          
+          <div className="space-y-1.5">
+            <label htmlFor="forgot-email" className="block text-xs font-bold text-slate-700">Email Address</label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                <Mail size={16} />
+              </div>
+              <input
+                data-testid="forgot-password-email-input"
+                id="forgot-email"
+                type="email"
+                value={forgotEmailState}
+                onChange={(e) => {
+                  setForgotEmailState(e.target.value);
+                  if (forgotErrorState) setForgotErrorState('');
+                }}
+                placeholder="Enter your registered email"
+                required
+                className="w-full pl-10 pr-4 py-3 bg-slate-50/60 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/25 focus:border-violet-500 focus:bg-white transition-all duration-200 h-12"
+              />
+            </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-5">
-            {forgotErrorState && (
-              <div className="bg-red-50 border border-red-200 rounded-xl p-3">
-                <p className="text-sm text-red-600 text-center font-semibold">{forgotErrorState}</p>
-              </div>
-            )}
-            
-            <div className="space-y-1.5">
-              <label htmlFor="forgot-email" className="block text-xs font-semibold text-gray-500">Email Address</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
-                  <Mail size={16} />
-                </div>
-                <input
-                  data-testid="forgot-password-email-input"
-                  id="forgot-email"
-                  type="email"
-                  value={forgotEmailState}
-                  onChange={(e) => {
-                    setForgotEmailState(e.target.value);
-                    if (forgotErrorState) setForgotErrorState('');
-                  }}
-                  placeholder="Enter your email"
-                  required
-                  className="w-full pl-10 pr-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/25 focus:border-blue-500 transition-all duration-200 h-12"
-                />
-              </div>
-            </div>
+          <button
+            data-testid="forgot-password-submit-button"
+            type="submit"
+            disabled={forgotLoadingState}
+            className="w-full bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 hover:from-violet-700 hover:to-blue-700 text-white font-bold py-3.5 px-4 rounded-xl transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-violet-500/10 h-12 text-sm"
+          >
+            {forgotLoadingState ? 'Sending Verification Code...' : 'Send Verification Code'}
+          </button>
 
+          <div className="flex justify-center pt-2">
             <button
-              data-testid="forgot-password-submit-button"
-              type="submit"
-              disabled={forgotLoadingState}
-              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3.5 px-4 rounded-xl transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-blue-500/10 h-12 text-sm"
+              type="button"
+              data-testid="forgot-password-back"
+              onClick={() => setStep('signin')}
+              className="text-sm font-semibold text-slate-500 hover:text-slate-800 transition-colors flex items-center gap-1.5"
             >
-              {forgotLoadingState ? 'Sending...' : 'Send Verification Code'}
+              <span>←</span> Back to Login
             </button>
-
-            <div className="flex justify-center pt-2">
-              <button
-                type="button"
-                data-testid="forgot-password-back"
-                onClick={() => setStep('signin')}
-                className="text-sm font-semibold text-gray-500 hover:text-gray-800 transition-colors flex items-center gap-1.5"
-              >
-                <span>←</span> Back to Login
-              </button>
-            </div>
-          </form>
-        </motion.div>
-      </div>
-    );
+          </div>
+        </form>
+      ),
+    });
   };
 
   const renderResetOtpVerify = () => {
@@ -1384,89 +1427,78 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
       }
     };
 
-    return (
-      <div className="relative min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50/50 flex items-center justify-center p-4 pt-24 select-none overflow-hidden">
-        <motion.div
-          initial={{ opacity: 0, y: 20, scale: 0.98 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.4 }}
-          className="bg-white rounded-3xl shadow-[0_20px_50px_rgba(37,99,235,0.06)] border border-gray-100 w-full max-w-md overflow-hidden relative z-10"
-        >
-          <div className="h-1.5 w-full bg-gradient-to-r from-blue-500 to-indigo-600" />
-          
-          <div className="p-6 sm:p-8 flex flex-col items-center border-b border-gray-100/50">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 mb-6 shadow-sm border border-blue-100/50">
-              <Mail className="w-6 h-6" />
+    return renderAuthContainer({
+      title: 'Verify Your Email',
+      subtitle: `Enter the 6-digit verification code sent to ${email || 'your email'}.`,
+      badge: 'Email Verification',
+      backAction: () => {
+        localStorage.setItem('auth_flow_step', 'forgot-password');
+        setStep('forgot-password');
+      },
+      backLabel: 'Back',
+      children: (
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {resetErrorState && (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-3">
+              <p className="text-sm text-red-600 text-center font-semibold">{resetErrorState}</p>
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 tracking-tight text-center">Verify Your Email</h2>
-            <p className="text-gray-500 mt-2 text-sm font-medium text-center max-w-xs">
-              Enter the 6-digit verification code sent to your email.
-            </p>
+          )}
+          
+          <div className="flex justify-between gap-2 max-w-sm mx-auto">
+            {Array(6).fill(0).map((_, i) => (
+              <input
+                key={i}
+                ref={(el) => { otpRefs.current[i] = el; }}
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={1}
+                value={otpInputs[i]}
+                onChange={(e) => handleOtpChange(i, e.target.value)}
+                onKeyDown={(e) => handleKeyDown(i, e)}
+                onPaste={handlePaste}
+                data-testid={`reset-otp-input-${i}`}
+                className="w-11 h-12 sm:w-13 sm:h-14 text-center text-lg font-bold text-slate-900 bg-slate-50/60 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/25 focus:border-violet-500 focus:bg-white transition-all duration-200"
+              />
+            ))}
           </div>
 
-          <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-6">
-            {resetErrorState && (
-              <div className="bg-red-50 border border-red-200 rounded-xl p-3">
-                <p className="text-sm text-red-600 text-center font-semibold">{resetErrorState}</p>
-              </div>
-            )}
-            
-            <div className="flex justify-between gap-2 max-w-sm mx-auto">
-              {Array(6).fill(0).map((_, i) => (
-                <input
-                  key={i}
-                  ref={(el) => { otpRefs.current[i] = el; }}
-                  type="text"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  maxLength={1}
-                  value={otpInputs[i]}
-                  onChange={(e) => handleOtpChange(i, e.target.value)}
-                  onKeyDown={(e) => handleKeyDown(i, e)}
-                  onPaste={handlePaste}
-                  data-testid={`reset-otp-input-${i}`}
-                  className="w-12 h-12 sm:w-14 sm:h-14 text-center text-lg font-bold text-gray-900 bg-gray-50/50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/25 focus:border-blue-500 transition-all duration-200"
-                />
-              ))}
+          <button
+            data-testid="otp-verify-submit-button"
+            type="submit"
+            disabled={resetLoadingState}
+            className="w-full bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 hover:from-violet-700 hover:to-blue-700 text-white font-bold py-3.5 px-4 rounded-xl transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-violet-500/10 h-12 text-sm"
+          >
+            {resetLoadingState ? 'Verifying...' : 'Verify Code'}
+          </button>
+
+          <div className="flex flex-col items-center space-y-3 pt-2 text-sm font-semibold text-slate-500">
+            <div className="flex items-center gap-1.5 select-none">
+              <span>Didn't receive the code?</span>
+              <button
+                type="button"
+                onClick={handleResendOTP}
+                disabled={resendCooldown > 0 || isResending}
+                className="text-violet-600 hover:text-violet-700 font-bold disabled:text-slate-400 disabled:cursor-not-allowed"
+              >
+                {resendCooldown > 0 ? `Resend Code (${resendCooldown}s)` : isResending ? 'Sending...' : 'Resend Code'}
+              </button>
             </div>
 
             <button
-              data-testid="otp-verify-submit-button"
-              type="submit"
-              disabled={resetLoadingState}
-              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3.5 px-4 rounded-xl transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-blue-500/10 h-12 text-sm"
+              type="button"
+              onClick={() => {
+                localStorage.setItem('auth_flow_step', 'forgot-password');
+                setStep('forgot-password');
+              }}
+              className="hover:text-slate-800 transition-colors"
             >
-              {resetLoadingState ? 'Verifying...' : 'Verify Code'}
+              ← Back
             </button>
-
-            <div className="flex flex-col items-center space-y-3 pt-2 text-sm font-semibold text-gray-500">
-              <div className="flex items-center gap-1.5 select-none">
-                <span>Didn't receive the code?</span>
-                <button
-                  type="button"
-                  onClick={handleResendOTP}
-                  disabled={resendCooldown > 0 || isResending}
-                  className="text-blue-600 hover:text-blue-700 disabled:text-gray-400 disabled:cursor-not-allowed"
-                >
-                  {resendCooldown > 0 ? `Resend Code (${resendCooldown}s)` : isResending ? 'Sending...' : 'Resend Code'}
-                </button>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => {
-                  localStorage.setItem('auth_flow_step', 'forgot-password');
-                  setStep('forgot-password');
-                }}
-                className="hover:text-gray-800 transition-colors"
-              >
-                ← Back
-              </button>
-            </div>
-          </form>
-        </motion.div>
-      </div>
-    );
+          </div>
+        </form>
+      ),
+    });
   };
 
   const renderResetPassword = () => {
@@ -1512,180 +1544,163 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
       }
     };
 
-    return (
-      <div className="relative min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50/50 flex items-center justify-center p-4 pt-24 select-none overflow-hidden">
-        <motion.div
-          initial={{ opacity: 0, y: 20, scale: 0.98 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.4 }}
-          className="bg-white rounded-3xl shadow-[0_20px_50px_rgba(37,99,235,0.06)] border border-gray-100 w-full max-w-md overflow-hidden relative z-10"
-        >
-          <div className="h-1.5 w-full bg-gradient-to-r from-blue-500 to-indigo-600" />
-          
-          <div className="p-6 sm:p-8 flex flex-col items-center border-b border-gray-100/50">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 mb-6 shadow-sm border border-blue-100/50">
-              <Lock className="w-6 h-6" />
+    return renderAuthContainer({
+      title: 'Create New Password',
+      subtitle: 'Set a strong password for your encrypted account.',
+      badge: 'Security Reset',
+      backAction: () => {
+        localStorage.setItem('auth_flow_step', 'forgot-password');
+        setStep('forgot-password');
+      },
+      backLabel: 'Cancel',
+      children: (
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {resetErrorState && (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-3">
+              <p className="text-sm text-red-600 text-center font-semibold">{resetErrorState}</p>
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 tracking-tight text-center">Create New Password</h2>
-            <p className="text-gray-500 mt-2 text-sm font-medium text-center max-w-xs">
-              Enter your new password below.
-            </p>
+          )}
+          
+          <div className="space-y-1.5">
+            <label htmlFor="new-password" className="block text-xs font-bold text-slate-700">New Password</label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                <Lock size={16} />
+              </div>
+              <input
+                data-testid="reset-password-password-input"
+                id="new-password"
+                type={showNewPassword ? 'text' : 'password'}
+                value={resetPasswordState}
+                onChange={(e) => {
+                  setResetPasswordState(e.target.value);
+                  if (resetErrorState) setResetErrorState('');
+                }}
+                placeholder="Min 8 characters"
+                required
+                className="w-full pl-10 pr-10 py-3 bg-slate-50/60 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/25 focus:border-violet-500 focus:bg-white transition-all duration-200 h-12"
+              />
+              <button
+                type="button"
+                onClick={() => setShowNewPassword(!showNewPassword)}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600"
+              >
+                {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-4">
-            {resetErrorState && (
-              <div className="bg-red-50 border border-red-200 rounded-xl p-3">
-                <p className="text-sm text-red-600 text-center font-semibold">{resetErrorState}</p>
+          <div className="space-y-1.5">
+            <label htmlFor="confirm-password" className="block text-xs font-bold text-slate-700">Confirm Password</label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                <Lock size={16} />
               </div>
-            )}
-            
-            <div className="space-y-1.5">
-              <label htmlFor="new-password" className="block text-xs font-semibold text-gray-500">New Password</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
-                  <Lock size={16} />
-                </div>
-                <input
-                  data-testid="reset-password-password-input"
-                  id="new-password"
-                  type={showNewPassword ? 'text' : 'password'}
-                  value={resetPasswordState}
-                  onChange={(e) => {
-                    setResetPasswordState(e.target.value);
-                    if (resetErrorState) setResetErrorState('');
-                  }}
-                  placeholder="Min 8 characters"
-                  required
-                  className="w-full pl-10 pr-10 py-3 bg-gray-50/50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/25 focus:border-blue-500 transition-all duration-200 h-12"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowNewPassword(!showNewPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
-                >
-                  {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
+              <input
+                data-testid="reset-password-confirm-input"
+                id="confirm-password"
+                type={showConfirmPassword ? 'text' : 'password'}
+                value={resetConfirmPasswordState}
+                onChange={(e) => {
+                  setResetConfirmPasswordState(e.target.value);
+                  if (resetErrorState) setResetErrorState('');
+                }}
+                placeholder="Confirm your password"
+                required
+                className="w-full pl-10 pr-10 py-3 bg-slate-50/60 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/25 focus:border-violet-500 focus:bg-white transition-all duration-200 h-12"
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600"
+              >
+                {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
+          </div>
+
+          <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 space-y-2">
+            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Password Requirements</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+              <div className="flex items-center gap-2">
+                <span className={`w-1.5 h-1.5 rounded-full ${requirements.minLength ? 'bg-emerald-500' : 'bg-slate-300'}`} />
+                <span className={requirements.minLength ? 'text-emerald-700 font-semibold' : 'text-slate-500'}>Min 8 characters</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className={`w-1.5 h-1.5 rounded-full ${requirements.hasUpper ? 'bg-emerald-500' : 'bg-slate-300'}`} />
+                <span className={requirements.hasUpper ? 'text-emerald-700 font-semibold' : 'text-slate-500'}>One uppercase</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className={`w-1.5 h-1.5 rounded-full ${requirements.hasLower ? 'bg-emerald-500' : 'bg-slate-300'}`} />
+                <span className={requirements.hasLower ? 'text-emerald-700 font-semibold' : 'text-slate-500'}>One lowercase</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className={`w-1.5 h-1.5 rounded-full ${requirements.hasDigit ? 'bg-emerald-500' : 'bg-slate-300'}`} />
+                <span className={requirements.hasDigit ? 'text-emerald-700 font-semibold' : 'text-slate-500'}>One number</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className={`w-1.5 h-1.5 rounded-full ${requirements.hasSpecial ? 'bg-emerald-500' : 'bg-slate-300'}`} />
+                <span className={requirements.hasSpecial ? 'text-emerald-700 font-semibold' : 'text-slate-500'}>One special character</span>
               </div>
             </div>
+          </div>
 
-            <div className="space-y-1.5">
-              <label htmlFor="confirm-password" className="block text-xs font-semibold text-gray-500">Confirm Password</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
-                  <Lock size={16} />
-                </div>
-                <input
-                  data-testid="reset-password-confirm-input"
-                  id="confirm-password"
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  value={resetConfirmPasswordState}
-                  onChange={(e) => {
-                    setResetConfirmPasswordState(e.target.value);
-                    if (resetErrorState) setResetErrorState('');
-                  }}
-                  placeholder="Confirm your password"
-                  required
-                  className="w-full pl-10 pr-10 py-3 bg-gray-50/50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/25 focus:border-blue-500 transition-all duration-200 h-12"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
-                >
-                  {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-              </div>
-            </div>
+          <button
+            data-testid="reset-password-submit-button"
+            type="submit"
+            disabled={resetLoadingState}
+            className="w-full bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 hover:from-violet-700 hover:to-blue-700 text-white font-bold py-3.5 px-4 rounded-xl transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-violet-500/10 h-12 text-sm"
+          >
+            {resetLoadingState ? 'Resetting...' : 'Reset Password'}
+          </button>
 
-            <div className="bg-gray-50/50 rounded-2xl p-4 border border-gray-100 space-y-2">
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Password Requirements</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                <div className="flex items-center gap-2">
-                  <span className={`w-1.5 h-1.5 rounded-full ${requirements.minLength ? 'bg-green-500' : 'bg-gray-300'}`} />
-                  <span className={requirements.minLength ? 'text-green-600 font-semibold' : 'text-gray-500'}>Min 8 characters</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className={`w-1.5 h-1.5 rounded-full ${requirements.hasUpper ? 'bg-green-500' : 'bg-gray-300'}`} />
-                  <span className={requirements.hasUpper ? 'text-green-600 font-semibold' : 'text-gray-500'}>One uppercase</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className={`w-1.5 h-1.5 rounded-full ${requirements.hasLower ? 'bg-green-500' : 'bg-gray-300'}`} />
-                  <span className={requirements.hasLower ? 'text-green-600 font-semibold' : 'text-gray-500'}>One lowercase</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className={`w-1.5 h-1.5 rounded-full ${requirements.hasDigit ? 'bg-green-500' : 'bg-gray-300'}`} />
-                  <span className={requirements.hasDigit ? 'text-green-600 font-semibold' : 'text-gray-500'}>One number</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className={`w-1.5 h-1.5 rounded-full ${requirements.hasSpecial ? 'bg-green-500' : 'bg-gray-300'}`} />
-                  <span className={requirements.hasSpecial ? 'text-green-600 font-semibold' : 'text-gray-500'}>One special character</span>
-                </div>
-              </div>
-            </div>
-
-            <button
-              data-testid="reset-password-submit-button"
-              type="submit"
-              disabled={resetLoadingState}
-              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3.5 px-4 rounded-xl transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-blue-500/10 h-12 text-sm"
-            >
-              {resetLoadingState ? 'Resetting...' : 'Reset Password'}
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                localStorage.setItem('auth_flow_step', 'forgot-password');
-                setStep('forgot-password');
-              }}
-              className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3.5 px-4 rounded-xl transition-all duration-200 flex items-center justify-center h-12 text-sm"
-            >
-              Cancel
-            </button>
-          </form>
-        </motion.div>
-      </div>
-    );
+          <button
+            type="button"
+            onClick={() => {
+              localStorage.setItem('auth_flow_step', 'forgot-password');
+              setStep('forgot-password');
+            }}
+            className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3.5 px-4 rounded-xl transition-all duration-200 flex items-center justify-center h-12 text-sm"
+          >
+            Cancel
+          </button>
+        </form>
+      ),
+    });
   };
 
   const renderResetSuccess = () => {
-    return (
-      <div className="relative min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50/50 flex items-center justify-center p-4 pt-24 select-none overflow-hidden">
-        <motion.div
-          initial={{ opacity: 0, y: 20, scale: 0.98 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.4 }}
-          className="bg-white rounded-3xl shadow-[0_20px_50px_rgba(37,99,235,0.06)] border border-gray-100 w-full max-w-md overflow-hidden relative z-10"
-        >
-          <div className="h-1.5 w-full bg-gradient-to-r from-blue-500 to-indigo-600" />
-          
-          <div className="p-6 sm:p-8 flex flex-col items-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-50 text-green-500 mb-6 shadow-sm border border-green-105">
-              <CheckCircle className="w-8 h-8" />
-            </div>
-            
-            <h2 className="text-2xl font-bold text-gray-900 tracking-tight text-center">Password Reset Successfully</h2>
-            <p className="text-gray-500 mt-2 text-sm font-medium text-center max-w-xs leading-relaxed">
-              Your password has been updated successfully. You can now log in using your new password.
-            </p>
-
-            <button
-              data-testid="reset-success-back-to-login"
-              type="button"
-              onClick={() => {
-                localStorage.removeItem('auth_flow_step');
-                localStorage.removeItem('pending_auth_email');
-                localStorage.removeItem('auth_flow_step_timestamp');
-                setStep('signin');
-              }}
-              className="w-full mt-8 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3.5 px-4 rounded-xl transition-all duration-200 flex items-center justify-center shadow-md shadow-blue-500/10 h-12 text-sm"
-            >
-              Back to Login
-            </button>
+    return renderAuthContainer({
+      title: 'Password Reset Successfully',
+      subtitle: 'Your password has been updated. You can now log in securely.',
+      badge: 'Account Secured',
+      showBackButton: false,
+      children: (
+        <div className="flex flex-col items-center text-center py-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-emerald-50 text-emerald-600 mb-6 shadow-sm border border-emerald-200">
+            <CheckCircle className="w-8 h-8" />
           </div>
-        </motion.div>
-      </div>
-    );
+          
+          <p className="text-slate-600 text-sm font-medium max-w-xs leading-relaxed">
+            Your credentials have been securely refreshed. Sign in with your new password to resume tracking.
+          </p>
+
+          <button
+            data-testid="reset-success-back-to-login"
+            type="button"
+            onClick={() => {
+              localStorage.removeItem('auth_flow_step');
+              localStorage.removeItem('pending_auth_email');
+              localStorage.removeItem('auth_flow_step_timestamp');
+              setStep('signin');
+            }}
+            className="w-full mt-8 bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 hover:from-violet-700 hover:to-blue-700 text-white font-bold py-3.5 px-4 rounded-xl transition-all duration-200 flex items-center justify-center shadow-lg shadow-violet-500/20 h-12 text-sm"
+          >
+            Back to Login
+          </button>
+        </div>
+      ),
+    });
   };
 // Main render
  switch (step) {
@@ -1700,168 +1715,35 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  case 'reset-success':
  return renderResetSuccess();
  case 'signin':
- return (
- <div className="relative min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50/50 flex items-center justify-center p-4 pt-24 select-none overflow-hidden">
- {/* Premium animated decorative blobs */}
- <div className="absolute inset-0 pointer-events-none overflow-hidden">
- <motion.div
- animate={{
- x: [0, 40, -20, 0],
- y: [0, -40, 20, 0],
- scale: [1, 1.1, 0.9, 1],
- }}
- transition={{
- duration: 20,
- repeat: Infinity,
- ease: "easeInOut",
- }}
- className="absolute -top-[15%] -left-[10%] w-[60vw] h-[60vw] md:w-[40vw] md:h-[40vw] bg-blue-200/30 rounded-full blur-[80px]"
- />
- <motion.div
- animate={{
- x: [0, -30, 40, 0],
- y: [0, 50, -30, 0],
- scale: [1, 0.9, 1.1, 1],
- }}
- transition={{
- duration: 25,
- repeat: Infinity,
- ease: "easeInOut",
- }}
- className="absolute top-[40%] -right-[10%] w-[50vw] h-[50vw] md:w-[35vw] md:h-[35vw] bg-indigo-200/25 rounded-full blur-[80px]"
- />
- <motion.div
- animate={{
- x: [0, 30, -30, 0],
- y: [0, 30, -40, 0],
- }}
- transition={{
- duration: 22,
- repeat: Infinity,
- ease: "easeInOut",
- }}
- className="absolute -bottom-[10%] left-[20%] w-[40vw] h-[40vw] bg-purple-200/20 rounded-full blur-[80px]"
- />
- </div>
-
- {onNavigate && onLogin && onGetStarted && (
- <PublicNavbar
- onNavigate={onNavigate}
- onLogin={() => { setStep('signin'); onLogin(); }}
- onGetStarted={() => { setStep('signup'); onGetStarted(); }}
- currentPage="signin"
- />
- )}
-
- <motion.div
- initial={{ opacity: 0, y: 20, scale: 0.98 }}
- animate={{ opacity: 1, y: 0, scale: 1 }}
- transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
- className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-[0_20px_50px_rgba(37,99,235,0.06)] border border-white/60 w-full max-w-md overflow-hidden relative z-10"
- >
- <div className="h-1.5 w-full bg-gradient-to-r from-blue-500 to-indigo-600" />
- <div className="p-6 sm:p-8 border-b border-gray-100/50">
- <button data-testid="auth-flow-back"
- onClick={() => setStep('welcome')}
- className="text-gray-500 hover:text-gray-800 transition-colors mb-5 flex items-center gap-1.5 text-sm font-semibold group animate-none"
- >
- <span className="group-hover:-translate-x-0.5 transition-transform">←</span> Back
- </button>
- <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Welcome Back</h2>
- <p className="text-gray-500 mt-1.5 text-sm font-medium">Sign in to continue your financial journey.</p>
- </div>
- <div className="p-6 sm:p-8 pt-6">
- <SignInForm
- onSwitchToSignUp={() => setStep('signup')}
- onSubmit={handleSignIn}
- onForgotPassword={() => setStep('forgot-password')}
- />
- </div>
- </motion.div>
- </div>
- );
+    return renderAuthContainer({
+      title: 'Welcome Back',
+      subtitle: 'Sign in to access your encrypted financial dashboard.',
+      badge: 'Secure Login',
+      backAction: () => setStep('welcome'),
+      children: (
+        <SignInForm
+          onSwitchToSignUp={() => setStep('signup')}
+          onSubmit={handleSignIn}
+          onForgotPassword={() => setStep('forgot-password')}
+        />
+      ),
+    });
  case 'signup':
- return (
- <div className="relative min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50/50 flex items-center justify-center p-4 pt-24 select-none overflow-hidden">
- {/* Premium animated decorative blobs */}
- <div className="absolute inset-0 pointer-events-none overflow-hidden">
- <motion.div
- animate={{
- x: [0, 40, -20, 0],
- y: [0, -40, 20, 0],
- scale: [1, 1.1, 0.9, 1],
- }}
- transition={{
- duration: 20,
- repeat: Infinity,
- ease: "easeInOut",
- }}
- className="absolute -top-[15%] -left-[10%] w-[60vw] h-[60vw] md:w-[40vw] md:h-[40vw] bg-blue-200/30 rounded-full blur-[80px]"
- />
- <motion.div
- animate={{
- x: [0, -30, 40, 0],
- y: [0, 50, -30, 0],
- scale: [1, 0.9, 1.1, 1],
- }}
- transition={{
- duration: 25,
- repeat: Infinity,
- ease: "easeInOut",
- }}
- className="absolute top-[40%] -right-[10%] w-[50vw] h-[50vw] md:w-[35vw] md:h-[35vw] bg-indigo-200/25 rounded-full blur-[80px]"
- />
- <motion.div
- animate={{
- x: [0, 30, -30, 0],
- y: [0, 30, -40, 0],
- }}
- transition={{
- duration: 22,
- repeat: Infinity,
- ease: "easeInOut",
- }}
- className="absolute -bottom-[10%] left-[20%] w-[40vw] h-[40vw] bg-purple-200/20 rounded-full blur-[80px]"
- />
- </div>
-
- {onNavigate && onLogin && onGetStarted && (
- <PublicNavbar
- onNavigate={onNavigate}
- onLogin={() => { setStep('signin'); onLogin(); }}
- onGetStarted={() => { setStep('signup'); onGetStarted(); }}
- currentPage="signup"
- />
- )}
-
- <motion.div
- initial={{ opacity: 0, y: 20, scale: 0.98 }}
- animate={{ opacity: 1, y: 0, scale: 1 }}
- transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
- className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-[0_20px_50px_rgba(37,99,235,0.06)] border border-white/60 w-full max-w-md overflow-hidden relative z-10"
- >
- <div className="h-1.5 w-full bg-gradient-to-r from-blue-500 to-indigo-600" />
- <div className="p-6 sm:p-8 border-b border-gray-100/50">
- <button data-testid="auth-flow-back-2"
- onClick={() => setStep('welcome')}
- className="text-gray-500 hover:text-gray-800 transition-colors mb-5 flex items-center gap-1.5 text-sm font-semibold group animate-none"
- >
- <span className="group-hover:-translate-x-0.5 transition-transform">←</span> Back
- </button>
- <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Create Account</h2>
- <p className="text-gray-500 mt-1.5 text-sm font-medium">Join KANAKU to start mastering your wealth.</p>
- </div>
- <div className="p-6 sm:p-8 pt-6">
- <SignUpForm
- onSwitchToSignIn={() => setStep('signin')}
- onSubmit={handleSignUp}
- onViewTerms={() => setStep('terms')}
- onViewPrivacy={() => setStep('privacy')}
- />
- </div>
- </motion.div>
- </div>
- );
+    return renderAuthContainer({
+      title: 'Create Your Account',
+      subtitle: 'Join KANAKU to start mastering your wealth with local-first security.',
+      badge: 'Fast Setup',
+      backAction: () => setStep('welcome'),
+      testIdPrefix: 'auth-flow-back-2',
+      children: (
+        <SignUpForm
+          onSwitchToSignIn={() => setStep('signin')}
+          onSubmit={handleSignUp}
+          onViewTerms={() => setStep('terms')}
+          onViewPrivacy={() => setStep('privacy')}
+        />
+      ),
+    });
  case 'privacy':
  return (
  <PrivacyPolicy

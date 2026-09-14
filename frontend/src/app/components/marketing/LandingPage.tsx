@@ -1,476 +1,833 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
+import {
+  TrendingUp,
+  Shield,
+  Sparkles,
+  ArrowRight,
+  CheckCircle2,
+  Lock,
+  PieChart,
+  Zap,
+  Users,
+  ChevronRight,
+  Wallet,
+  Smartphone,
+  Star,
+  Activity,
+  Sliders,
+  DollarSign,
+  Layers,
+  Award,
+  CircleDollarSign,
+} from 'lucide-react';
 import { KANAKULogo } from '@/app/components/ui/KANAKULogo';
 import { PublicNavbar } from '@/app/components/ui/PublicNavbar';
 
 interface LandingPageProps {
- onGetStarted: () => void;
- onLogin: () => void;
- onNavigate: (page: string) => void;
+  onGetStarted: () => void;
+  onLogin: () => void;
+  onNavigate: (page: string) => void;
 }
 
 // Animated counter hook
-function useCounter(target: number, duration = 1800, start = false) {
- const [count, setCount] = useState(0);
- useEffect(() => {
- if (!start) return;
- let startTime: number | null = null;
- const step = (timestamp: number) => {
- if (!startTime) startTime = timestamp;
- const progress = Math.min((timestamp - startTime) / duration, 1);
- const eased = 1 - Math.pow(1 - progress, 3);
- setCount(Math.floor(eased * target));
- if (progress < 1) requestAnimationFrame(step);
- };
- requestAnimationFrame(step);
- }, [target, duration, start]);
- return count;
+function useCounter(target: number, duration = 1600, start = false) {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    if (!start) return;
+    let startTime: number | null = null;
+    const step = (timestamp: number) => {
+      if (!startTime) startTime = timestamp;
+      const progress = Math.min((timestamp - startTime) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setCount(Math.floor(eased * target));
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }, [target, duration, start]);
+  return count;
 }
 
-export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin, onNavigate }) => {
- const [menuOpen, setMenuOpen] = useState(false);
- const [scrolled, setScrolled] = useState(false);
- const [statsVisible, setStatsVisible] = useState(false);
- const statsRef = useRef<HTMLDivElement>(null);
- const blobRef = useRef<HTMLDivElement>(null);
+export const LandingPage: React.FC<LandingPageProps> = ({
+  onGetStarted,
+  onLogin,
+  onNavigate,
+}) => {
+  const [statsVisible, setStatsVisible] = useState(false);
+  const statsRef = useRef<HTMLDivElement>(null);
 
- // Animate counter values
- const users = useCounter(50, 1400, statsVisible);
- const transactions = useCounter(2, 1600, statsVisible);
- const uptime = useCounter(99, 1200, statsVisible);
+  // Animated counters
+  const usersCount = useCounter(54, 1500, statsVisible);
+  const transactionsCount = useCounter(3, 1600, statsVisible);
+  const savingsPct = useCounter(28, 1400, statsVisible);
 
- // Navbar shadow on scroll
- useEffect(() => {
- const onScroll = () => setScrolled(window.scrollY > 20);
- window.addEventListener('scroll', onScroll, { passive: true });
- return () => window.removeEventListener('scroll', onScroll);
- }, []);
+  // Interactive Feature Tab state
+  const [activeTab, setActiveTab] = useState<'analytics' | 'ai' | 'investments' | 'split'>('ai');
 
- // Trigger stats counter when section enters viewport
- useEffect(() => {
- const obs = new IntersectionObserver(
- ([entry]) => { if (entry.isIntersecting) setStatsVisible(true); },
- { threshold: 0.3 }
- );
- if (statsRef.current) obs.observe(statsRef.current);
- return () => obs.disconnect();
- }, []);
+  // Interactive Wealth Calculator state
+  const [monthlySavings, setMonthlySavings] = useState(15000);
+  const [investmentReturn, setInvestmentReturn] = useState(12);
 
- // Parallax blob on mouse move — throttled via rAF to avoid frame budget violations
- useEffect(() => {
-  let rafId: number | null = null;
-  let latestX = 0;
-  let latestY = 0;
+  // Trigger counters when stats section is in view
+  useEffect(() => {
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) setStatsVisible(true);
+      },
+      { threshold: 0.25 }
+    );
+    if (statsRef.current) obs.observe(statsRef.current);
+    return () => obs.disconnect();
+  }, []);
 
-  const handleMouseMove = (e: MouseEvent) => {
-   latestX = (e.clientX / window.innerWidth - 0.5) * 22;
-   latestY = (e.clientY / window.innerHeight - 0.5) * 22;
-   if (rafId !== null) return; // already have a frame queued
-   rafId = requestAnimationFrame(() => {
-    if (blobRef.current) {
-     blobRef.current.style.transform = `translate(${latestX}px, ${latestY}px)`;
-    }
-    rafId = null;
-   });
-  };
+  // Calculate wealth projections
+  const projection = useMemo(() => {
+    const r = investmentReturn / 100 / 12;
+    const calcFutureValue = (months: number) => {
+      if (r === 0) return monthlySavings * months;
+      return Math.round(monthlySavings * ((Math.pow(1 + r, months) - 1) / r));
+    };
+    return {
+      yr1: calcFutureValue(12),
+      yr3: calcFutureValue(36),
+      yr5: calcFutureValue(60),
+    };
+  }, [monthlySavings, investmentReturn]);
 
-  window.addEventListener('mousemove', handleMouseMove, { passive: true });
-  return () => {
-   window.removeEventListener('mousemove', handleMouseMove);
-   if (rafId !== null) cancelAnimationFrame(rafId);
-  };
- }, []);
+  const featureTabs = [
+    {
+      id: 'ai',
+      label: 'AI Insights',
+      icon: Sparkles,
+      title: 'Autonomous Financial Intelligence',
+      description:
+        'KANAKU analyzes cash flows to highlight silent leakages, optimize monthly recurring bills, and uncover tax-saving avenues in real time.',
+      badge: 'Powered by On-Device AI',
+      mockData: {
+        insight: 'Potential ₹6,800/mo extra savings detected in recurring digital subscriptions.',
+        confidence: '98% accuracy',
+        action: 'Automate SIP of ₹5,000 in Nifty 50 Index Fund',
+      },
+    },
+    {
+      id: 'analytics',
+      label: 'Smart Analytics',
+      icon: TrendingUp,
+      title: 'Visual Spending Intelligence',
+      description:
+        'Categorized breakdowns with automated SMS detection and multi-account reconciliation. See your net cash flow across banks instantly.',
+      badge: 'Zero Manual Entry',
+      mockData: {
+        income: '₹1,25,000',
+        expense: '₹48,320',
+        savingsRate: '61.3%',
+      },
+    },
+    {
+      id: 'investments',
+      label: 'Multi-Asset Portfolio',
+      icon: Layers,
+      title: 'Unified Wealth Dashboard',
+      description:
+        'Track physical Gold with live market rates, domestic equities, mutual funds, and fixed deposits in one consolidated valuation.',
+      badge: 'Live Market Sync',
+      mockData: {
+        equity: '₹5,40,000 (+18.4%)',
+        gold: '₹2,80,000 (+11.2%)',
+        cash: '₹1,15,000 (Liquid)',
+      },
+    },
+    {
+      id: 'split',
+      label: 'Group Expenses',
+      icon: Users,
+      title: 'Transparent Trip & Flat Splits',
+      description:
+        'Split restaurant bills, rent, and vacation expenses with friends. Settle balances seamlessly without awkward spreadsheets.',
+      badge: 'Smart Debt Minimizer',
+      mockData: {
+        totalGroup: '₹34,500',
+        youOwe: '₹0.00',
+        youReceive: '₹4,850',
+      },
+    },
+  ];
 
+  const bentoCards = [
+    {
+      icon: <Sparkles className="w-6 h-6 text-violet-600" />,
+      title: 'Predictive Cash Flow AI',
+      desc: 'Anticipate upcoming expenses and salary credits before they occur. Never get caught short on EMI due dates.',
+      gradient: 'from-violet-500/10 via-purple-500/5 to-transparent',
+      border: 'hover:border-violet-500/30',
+      tag: 'Predictive Tech',
+    },
+    {
+      icon: <Shield className="w-6 h-6 text-emerald-600" />,
+      title: 'Fort Knox Privacy & Offline First',
+      desc: 'Your financial data is encrypted locally with AES-256. Works flawlessly without internet connection.',
+      gradient: 'from-emerald-500/10 via-teal-500/5 to-transparent',
+      border: 'hover:border-emerald-500/30',
+      tag: 'Zero-Knowledge',
+    },
+    {
+      icon: <PieChart className="w-6 h-6 text-blue-600" />,
+      title: 'Visual Budget Guards',
+      desc: 'Set custom spending thresholds with proactive warning alerts before budget limits are breached.',
+      gradient: 'from-blue-500/10 via-indigo-500/5 to-transparent',
+      border: 'hover:border-blue-500/30',
+      tag: 'Active Alerts',
+    },
+    {
+      icon: <Smartphone className="w-6 h-6 text-amber-600" />,
+      title: 'Smart SMS & Receipt Scanner',
+      desc: 'Automatically capture transactional alerts and scan grocery bills using embedded on-device OCR.',
+      gradient: 'from-amber-500/10 via-orange-500/5 to-transparent',
+      border: 'hover:border-amber-500/30',
+      tag: 'Auto Capture',
+    },
+    {
+      icon: <Layers className="w-6 h-6 text-pink-600" />,
+      title: 'Multi-Asset Gold & Stock Tracker',
+      desc: 'Keep pulse on 24K/22K Gold commodity fluctuations and mutual fund NAVs updated automatically.',
+      gradient: 'from-pink-500/10 via-rose-500/5 to-transparent',
+      border: 'hover:border-pink-500/30',
+      tag: 'Live Rates',
+    },
+    {
+      icon: <Users className="w-6 h-6 text-indigo-600" />,
+      title: 'Cooperative Advisor Planning',
+      desc: 'Optionally collaborate with certified financial advisors using permissioned, read-only session tokens.',
+      gradient: 'from-indigo-500/10 via-blue-500/5 to-transparent',
+      border: 'hover:border-indigo-500/30',
+      tag: 'Pro Advisory',
+    },
+  ];
 
- const scrollToSection = (id: string) => {
- const element = document.getElementById(id);
- if (element) {
- const offset = 80;
- const elementPosition = element.getBoundingClientRect().top + window.scrollY;
- window.scrollTo({
- top: elementPosition - offset,
- behavior: 'smooth'
- });
- setMenuOpen(false);
- } else {
- window.scrollTo({ top: 0, behavior: 'smooth' });
- setMenuOpen(false);
- }
- };
+  return (
+    <div className="relative min-h-screen bg-[#FDFEFE] text-slate-900 font-sans selection:bg-violet-500 selection:text-white overflow-x-hidden">
+      {/* Dynamic Background Glow Elements */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden z-0">
+        <div className="absolute -top-40 -left-40 w-[650px] h-[650px] rounded-full bg-gradient-to-tr from-violet-200/45 via-indigo-100/30 to-transparent blur-[130px]" />
+        <div className="absolute top-20 right-0 w-[580px] h-[580px] rounded-full bg-gradient-to-bl from-pink-200/40 via-purple-100/25 to-transparent blur-[120px]" />
+        <div className="absolute top-[45%] left-1/2 -translate-x-1/2 w-[700px] h-[700px] rounded-full bg-blue-100/30 blur-[150px]" />
+      </div>
 
- const navLinks = [
- { name: 'Home', id: 'home' },
- { name: 'About', id: 'about' },
- { name: 'Features', id: 'features' },
- { name: 'Pricing', id: 'pricing' }
- ];
+      {/* Modern Floating Navbar */}
+      <PublicNavbar
+        onNavigate={onNavigate}
+        onLogin={onLogin}
+        onGetStarted={onGetStarted}
+        currentPage="landing"
+      />
 
- const features = [
- {
- icon: (
- <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6 text-white" stroke="currentColor" strokeWidth={2}>
- <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
- </svg>
- ),
- color: 'from-orange-400 to-orange-500',
- shadow: 'shadow-orange-200',
- title: 'Smart Analytics',
- desc: 'Visualise spending patterns. Uncover insights and harness data to make proactive financial decisions.',
- },
- {
- icon: (
- <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6 text-white" stroke="currentColor" strokeWidth={2}>
- <path d="M13 10V3L4 14h7v7l9-11h-7z" />
- </svg>
- ),
- color: 'from-violet-500 to-purple-600',
- shadow: 'shadow-purple-200',
- title: 'AI Insights',
- desc: 'AI-powered recommendations to reduce waste, grow savings, and stay ahead of your goals.',
- },
- {
- icon: (
- <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6 text-white" stroke="currentColor" strokeWidth={2}>
- <path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
- </svg>
- ),
- color: 'from-emerald-400 to-teal-500',
- shadow: 'shadow-emerald-200',
- title: 'Budget Tracking',
- desc: 'Set budgets, track limits in real time, and get alerts before you overspend.',
- },
- {
- icon: (
- <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6 text-white" stroke="currentColor" strokeWidth={2}>
- <path d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
- </svg>
- ),
- color: 'from-blue-400 to-cyan-500',
- shadow: 'shadow-blue-200',
- title: 'Investment Tracker',
- desc: 'Monitor stocks, gold, and mutual funds in one place with live market data.',
- },
- {
- icon: (
- <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6 text-white" stroke="currentColor" strokeWidth={2}>
- <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
- </svg>
- ),
- color: 'from-pink-400 to-rose-500',
- shadow: 'shadow-pink-200',
- title: 'Group Expenses',
- desc: 'Split bills with friends effortlessly. Track shared costs and settle debts transparently.',
- },
- {
- icon: (
- <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6 text-white" stroke="currentColor" strokeWidth={2}>
- <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
- </svg>
- ),
- color: 'from-amber-400 to-yellow-500',
- shadow: 'shadow-amber-200',
- title: 'Secure & Offline',
- desc: 'PIN-gated access and encrypted connections, with offline-first sync. Your data is safe, always cached locally.',
- },
- ];
+      {/* ─── Hero Section ─────────────────────────────────────────── */}
+      <section id="home" className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-36 sm:pt-44 lg:pt-48 pb-20">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+          {/* Left Hero Column */}
+          <div className="lg:col-span-7 space-y-7">
+            {/* Top Pill Badge */}
+            <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-violet-50/80 border border-violet-200/80 shadow-sm backdrop-blur-md">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-violet-600" />
+              </span>
+              <span className="text-xs font-bold text-violet-900 tracking-wide">
+                Next-Gen Financial Intelligence 2.0
+              </span>
+              <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-violet-600 text-white">
+                Live
+              </span>
+            </div>
 
- return (
- <div className="relative min-h-screen bg-white overflow-x-hidden font-sans select-none">
- {/* Background gradients */}
- <div className="pointer-events-none absolute inset-0 overflow-hidden">
- {/* Top-left lavender blob */}
- <div className="absolute -top-32 -left-32 w-[520px] h-[520px] rounded-full bg-violet-100 blur-[120px] opacity-60" />
- {/* Top-right pink blob */}
- <div className="absolute -top-16 right-0 w-[380px] h-[380px] rounded-full bg-pink-100 blur-[100px] opacity-50" />
- {/* Center subtle circle */}
- <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-purple-50 blur-[140px] opacity-40" />
- </div>
+            {/* Main Headline */}
+            <h1 className="text-4xl sm:text-6xl lg:text-[4rem] font-black text-slate-900 leading-[1.08] tracking-tight">
+              Master Your Money with{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 via-purple-600 to-pink-600">
+                AI Precision.
+              </span>
+            </h1>
 
- {/* Navbar */}
- <PublicNavbar
- onNavigate={onNavigate}
- onLogin={onLogin}
- onGetStarted={onGetStarted}
- currentPage="landing"
- />
+            {/* Description */}
+            <p className="text-slate-600 text-base sm:text-lg lg:text-xl leading-relaxed max-w-2xl font-normal">
+              At <strong className="font-semibold text-slate-900">KANAKU</strong>, we are the architects of your financial future. Experience intelligent expense tracking, local-first bank-grade encryption, and proactive wealth recommendations — without your data ever being sold.
+            </p>
 
- {/* Hero */}
- <section id="home" className="relative max-w-7xl mx-auto px-6 lg:px-8 pt-40 lg:pt-52 pb-16">
- <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
- {/* Left: copy */}
- <div className="space-y-7 animate-[fadeSlideUp_0.7s_ease_both]">
- {/* Badge */}
- <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-violet-50 border border-violet-200 text-violet-700 text-xs font-semibold">
- <span className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse" />
- AI-Powered Finance Platform
- </div>
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-2">
+              <button
+                data-testid="landing-page-get-started"
+                onClick={onGetStarted}
+                className="group inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-2xl bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 text-white font-bold text-sm sm:text-base shadow-xl shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
+              >
+                <span>Get Started Free</span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </button>
 
- <h1 className="text-4xl sm:text-5xl lg:text-[3.4rem] font-extrabold text-gray-900 leading-[1.1] tracking-tight">
- Empower Your{' '}
- <span className="relative">
- <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 via-purple-600 to-pink-500">
- Finances
- </span>
- <svg className="absolute -bottom-1 left-0 w-full" height="6" viewBox="0 0 200 6" fill="none" aria-hidden>
- <path d="M0 5 Q50 0 100 5 Q150 10 200 5" stroke="url(#ul)" strokeWidth="2.5" strokeLinecap="round" fill="none" />
- <defs>
- <linearGradient id="ul" x1="0" y1="0" x2="1" y2="0">
- <stop stopColor="#7c3aed" />
- <stop offset="1" stopColor="#ec4899" />
- </linearGradient>
- </defs>
- </svg>
- </span>{' '}
- <br className="hidden sm:block" />
- with AI Excellence
- </h1>
+              <button
+                data-testid="landing-page-watch-demo"
+                onClick={() => {
+                  const el = document.getElementById('interactive-demo');
+                  if (el) el.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="inline-flex items-center justify-center gap-2 px-6 py-4 rounded-2xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-800 font-bold text-sm sm:text-base shadow-sm hover:shadow transition-all duration-200"
+              >
+                <Sliders className="w-4 h-4 text-violet-600" />
+                <span>Simulate Wealth</span>
+              </button>
+            </div>
 
- <p className="text-gray-500 text-base lg:text-lg leading-relaxed max-w-lg">
- At KANAKUwe are the architects of your financial future, where smart budgeting meets
- AI intelligence. Our journey began with a shared passion for making money management
- effortless and personal.
- </p>
+            {/* Social Proof Bar */}
+            <div className="pt-4 flex flex-wrap items-center gap-5 border-t border-slate-200/60">
+              <div className="flex -space-x-2.5">
+                {[
+                  'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=80&q=80',
+                  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=80&q=80',
+                  'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=80&q=80',
+                  'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=80&q=80',
+                ].map((src, i) => (
+                  <img
+                    key={i}
+                    src={src}
+                    alt="User"
+                    className="w-9 h-9 rounded-full border-2 border-white object-cover shadow-sm ring-1 ring-slate-900/5"
+                  />
+                ))}
+              </div>
+              <div className="text-xs sm:text-sm text-slate-600">
+                <div className="flex items-center gap-1 text-amber-500 mb-0.5">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-3.5 h-3.5 fill-current" />
+                  ))}
+                  <span className="font-bold text-slate-800 ml-1">4.9 / 5.0</span>
+                </div>
+                <p>
+                  Trusted by <strong className="font-bold text-slate-900">50,000+</strong> users & families in India
+                </p>
+              </div>
+            </div>
+          </div>
 
- <div className="flex flex-col sm:flex-row gap-3">
- <button data-testid="landing-page-get-started"
- onClick={onGetStarted}
- className="group inline-flex items-center justify-center px-8 py-3.5 rounded-full bg-gray-900 text-white font-bold text-sm hover:bg-gray-800 transition-all duration-250 hover:scale-105 active:scale-95 shadow-lg shadow-gray-200"
- >
- Get Started
- </button>
- <button data-testid="landing-page-watch-demo"
- onClick={onGetStarted}
- className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full text-gray-600 font-semibold text-sm hover:bg-gray-100 transition-all duration-200"
- >
- <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-violet-500">
- <path d="M8 5v14l11-7z" />
- </svg>
- Watch Demo
- </button>
- </div>
+          {/* Right Hero Column: Interactive Simulated Financial Glass Dashboard */}
+          <div className="lg:col-span-5 relative">
+            <div className="relative mx-auto max-w-md lg:max-w-none">
+              {/* Outer Glow Halo */}
+              <div className="absolute -inset-2 rounded-[2.5rem] bg-gradient-to-tr from-violet-500/20 via-pink-500/20 to-blue-500/20 blur-xl opacity-80 animate-pulse" />
 
- {/* Social proof */}
- <div className="flex items-center gap-3 pt-1">
- <div className="flex -space-x-2">
- {['bg-violet-400', 'bg-pink-400', 'bg-amber-400', 'bg-teal-400'].map((c, i) => (
- <div
- key={i}
- className={`w-8 h-8 rounded-full ${c} border-2 border-white flex items-center justify-center text-white text-xs font-bold`}
- >
- {String.fromCharCode(65 + i)}
- </div>
- ))}
- </div>
- <p className="text-sm text-gray-500">
- <span className="font-semibold text-gray-800">4k+</span> real users
- </p>
- </div>
- </div>
+              {/* Main Simulated Financial Glass Card */}
+              <div className="relative rounded-[2rem] bg-white/90 backdrop-blur-2xl border border-white/80 p-6 sm:p-7 shadow-[0_24px_50px_-12px_rgba(15,23,42,0.12)] ring-1 ring-slate-900/5 space-y-5">
+                {/* Header of simulated card */}
+                <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-violet-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-violet-500/30">
+                      <KANAKULogo className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-slate-900 leading-tight">Net Worth Overview</h4>
+                      <p className="text-[11px] font-semibold text-emerald-600 flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        Synchronized locally
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                    INR (₹)
+                  </span>
+                </div>
 
- {/* Right: 3D blob visual + stats */}
- <div className="relative flex items-center justify-center h-[360px] lg:h-[480px]">
- {/* Glow rings */}
- <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
- <div className="w-72 h-72 rounded-full border border-violet-200/60 animate-[spin_20s_linear_infinite]" />
- <div className="absolute w-56 h-56 rounded-full border border-pink-200/50 animate-[spin_14s_linear_infinite_reverse]" />
- </div>
+                {/* Net worth balance & trend */}
+                <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 text-white rounded-2xl p-5 shadow-lg relative overflow-hidden">
+                  <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-violet-500/20 blur-2xl pointer-events-none" />
+                  <p className="text-xs font-semibold text-slate-300 mb-1 tracking-wider uppercase">Total Portfolio</p>
+                  <div className="flex items-baseline gap-2.5">
+                    <span className="text-3xl font-black tracking-tight">₹8,42,850</span>
+                    <span className="text-xs font-bold text-emerald-400 bg-emerald-500/20 px-2 py-0.5 rounded-full border border-emerald-500/30">
+                      +18.4% MoM
+                    </span>
+                  </div>
 
- {/* Main blob */}
- <div
- ref={blobRef}
- className="relative z-10 transition-transform duration-[60ms] ease-out will-change-transform"
- >
- <div className="w-52 h-52 lg:w-64 lg:h-64 rounded-[40%_60%_70%_30%_/_45%_45%_55%_55%] bg-gradient-to-br from-cyan-400 via-violet-500 to-purple-600 shadow-2xl shadow-violet-400/40 animate-[morphBlob_8s_ease-in-out_infinite]" />
- {/* Inner glow */}
- <div className="absolute inset-4 rounded-[40%_60%_70%_30%_/_45%_45%_55%_55%] bg-gradient-to-tr from-white/20 to-transparent animate-[morphBlob_8s_ease-in-out_infinite_2s]" />
- {/* Shimmer dots */}
- <div className="absolute -top-2 -right-2 w-4 h-4 rounded-full bg-yellow-300 shadow-lg shadow-yellow-200 animate-pulse" />
- <div className="absolute bottom-4 -left-3 w-3 h-3 rounded-full bg-cyan-300 shadow-md shadow-cyan-200 animate-bounce" />
- </div>
+                  {/* Sparkline mini bar chart */}
+                  <div className="mt-4 pt-3 border-t border-slate-700/60 flex items-end justify-between gap-1.5 h-12">
+                    {[35, 45, 40, 60, 55, 70, 65, 80, 75, 90, 85, 100].map((val, idx) => (
+                      <div key={idx} className="flex-1 flex flex-col items-center gap-1">
+                        <div
+                          className="w-full rounded-t bg-gradient-to-t from-violet-500 to-indigo-400 transition-all hover:bg-emerald-400 cursor-pointer"
+                          style={{ height: `${val}%` }}
+                          title={`Week ${idx + 1}`}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
 
- {/* Floating stat cards */}
- <div
- ref={statsRef}
- className="absolute right-0 top-12 lg:top-16 space-y-3 animate-[fadeSlideUp_0.9s_0.3s_ease_both_backwards]"
- >
- <div className="bg-white/90 backdrop-blur-sm rounded-2xl px-5 py-3 shadow-lg shadow-gray-200/60 border border-gray-100 text-right min-w-[140px]">
- <p className="text-2xl font-extrabold text-gray-900">{users}k+</p>
- <p className="text-xs text-gray-500 font-medium mt-0.5">Active users</p>
- </div>
- <div className="bg-white/90 backdrop-blur-sm rounded-2xl px-5 py-3 shadow-lg shadow-gray-200/60 border border-gray-100 text-right">
- <p className="text-2xl font-extrabold text-gray-900">{transactions}M+</p>
- <p className="text-xs text-gray-500 font-medium mt-0.5">Transactions tracked</p>
- </div>
- </div>
+                {/* Floating AI Insight Pill */}
+                <div className="rounded-xl p-3.5 bg-violet-50/80 border border-violet-200/70 flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-violet-600 text-white flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+                    <Sparkles className="w-4 h-4" />
+                  </div>
+                  <div className="text-xs">
+                    <p className="font-bold text-slate-900">AI Wealth Intelligence</p>
+                    <p className="text-slate-600 mt-0.5 leading-relaxed">
+                      Identified ₹4,200/mo unused subscriptions. Moving this to your Emergency Fund will reach your 6-month goal 42 days earlier.
+                    </p>
+                  </div>
+                </div>
 
- {/* Left floating badge */}
- <div className="absolute left-0 bottom-12 bg-white/90 backdrop-blur-sm rounded-2xl px-4 py-3 shadow-lg shadow-gray-200/60 border border-gray-100 animate-[fadeSlideUp_0.9s_0.5s_ease_both_backwards]">
- <div className="flex items-center gap-2.5">
- <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-pink-500 flex items-center justify-center">
- <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4 text-white" stroke="currentColor" strokeWidth={2.5}>
- <path d="M13 10V3L4 14h7v7l9-11h-7z" />
- </svg>
- </div>
- <div>
- <p className="text-xs font-bold text-gray-900">{uptime}% Uptime</p>
- <p className="text-[10px] text-gray-500">Always synced</p>
- </div>
- </div>
- </div>
- </div>
- </div>
- </section>
+                {/* Recent Micro Transactions */}
+                <div className="space-y-2">
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-slate-600">Recent Automatic Sync</p>
+                  {[
+                    { title: 'Salary Credit - Tech Corp', amount: '+₹1,15,000', tag: 'Income', color: 'text-emerald-600 bg-emerald-50' },
+                    { title: 'Sovereign Gold Bond SIP', amount: '-₹10,000', tag: 'Investment', color: 'text-amber-600 bg-amber-50' },
+                    { title: 'Groceries & Household', amount: '-₹3,240', tag: 'Expense', color: 'text-rose-600 bg-rose-50' },
+                  ].map((tx, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50/80 border border-slate-100 hover:bg-slate-100/70 transition-colors"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md ${tx.color}`}>
+                          {tx.tag}
+                        </span>
+                        <span className="text-xs font-semibold text-slate-800">{tx.title}</span>
+                      </div>
+                      <span className={`text-xs font-bold ${tx.amount.startsWith('+') ? 'text-emerald-600' : 'text-slate-900'}`}>
+                        {tx.amount}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
 
- {/* Marquee logos (trust bar) */}
- <div id="about" className="border-y border-gray-100 bg-white/60 py-5 overflow-hidden">
- <div className="flex gap-12 animate-[marquee_20s_linear_infinite] whitespace-nowrap">
- {['Smart Budgets', 'AI Insights', 'Offline First', 'Bank Security', 'Live Markets', 'Group Splits', 'Goal Tracking', 'PDF Reports',
- 'Smart Budgets', 'AI Insights', 'Offline First', 'Bank Security', 'Live Markets', 'Group Splits', 'Goal Tracking', 'PDF Reports'].map((item, i) => (
- <span key={i} className="text-sm font-semibold text-gray-400 flex items-center gap-3 flex-shrink-0">
- <span className="w-1.5 h-1.5 rounded-full bg-violet-400" />
- {item}
- </span>
- ))}
- </div>
- </div>
+              {/* Floating Shield Badge */}
+              <div className="absolute -bottom-5 -left-5 bg-white/95 backdrop-blur-xl border border-slate-200/80 px-4 py-2.5 rounded-2xl shadow-xl flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center font-black">
+                  <Lock className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-xs font-black text-slate-900">Zero Cloud Leak Risk</p>
+                  <p className="text-[10px] font-semibold text-slate-500">AES-256 Encrypted on Device</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
- {/* Features section */}
- <section id="features" className="max-w-7xl mx-auto px-6 lg:px-8 py-20 lg:py-28">
- <div className="text-center mb-14 space-y-4">
- <p className="text-violet-600 font-semibold text-sm tracking-widest uppercase">
- Why choose KANAKU
- </p>
- <h2 className="text-3xl lg:text-4xl font-extrabold text-gray-900 tracking-tight">
- AI-Powered Finance Management
- </h2>
- <p className="text-gray-500 max-w-xl mx-auto text-base lg:text-lg leading-relaxed">
- Everything you need to manage money smarter - from daily expenses to long-term
- investments, all in one beautifully designed app.
- </p>
- </div>
+      {/* ─── Trust Bar / Marquee ────────────────────────────────────── */}
+      <section className="relative z-10 border-y border-slate-200/80 bg-slate-50/70 py-6 overflow-hidden">
+        <div className="flex gap-10 whitespace-nowrap animate-[marquee_25s_linear_infinite]">
+          {[
+            'Offline-First Local Storage',
+            'Bank-Grade AES-256 Encryption',
+            'AI Expense Categorization',
+            'Physical Gold Live Tracking',
+            'Split Bills with Friends',
+            'Automated SMS Detection',
+            'Multi-Currency Support',
+            'Comprehensive PDF Reports',
+            'Offline-First Local Storage',
+            'Bank-Grade AES-256 Encryption',
+            'AI Expense Categorization',
+            'Physical Gold Live Tracking',
+            'Split Bills with Friends',
+            'Automated SMS Detection',
+            'Multi-Currency Support',
+            'Comprehensive PDF Reports',
+          ].map((feature, i) => (
+            <div key={i} className="flex items-center gap-2.5 text-xs sm:text-sm font-bold text-slate-600">
+              <CheckCircle2 className="w-4 h-4 text-violet-600 shrink-0" />
+              <span>{feature}</span>
+            </div>
+          ))}
+        </div>
+      </section>
 
- <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
- {features.map((feat, i) => (
- <div
- key={i}
- className="group relative bg-white rounded-3xl p-6 border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-gray-200/60 transition-all duration-300 hover:-translate-y-1 cursor-default"
- >
- <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${feat.color} flex items-center justify-center mb-5 shadow-lg ${feat.shadow}`}>
- {feat.icon}
- </div>
- <h3 className="text-base font-bold text-gray-900 mb-2">{feat.title}</h3>
- <p className="text-sm text-gray-500 leading-relaxed">{feat.desc}</p>
- <button data-testid={`landing-page-learn-more-${i}`}
- onClick={onGetStarted}
- className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-violet-600 hover:text-violet-700 group-hover:gap-2.5 transition-all duration-200"
- >
- Learn More
- <svg viewBox="0 0 24 24" fill="none" className="w-3.5 h-3.5" stroke="currentColor" strokeWidth={2.5}>
- <path d="M9 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
- </svg>
- </button>
- </div>
- ))}
- </div>
- </section>
+      {/* ─── Interactive Feature Explorer ──────────────────────────── */}
+      <section id="features" className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-32">
+        <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
+          <p className="text-xs font-extrabold uppercase tracking-widest text-violet-600">
+            Interactive Product Preview
+          </p>
+          <h2 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight">
+            Designed for Financial Clarity
+          </h2>
+          <p className="text-slate-600 text-base sm:text-lg">
+            Experience the tools that make managing wealth intuitive, proactive, and effortless.
+          </p>
 
- {/* Stats / social proof strip */}
- <section className="bg-gradient-to-br from-gray-900 to-gray-800 py-16">
- <div className="max-w-7xl mx-auto px-6 lg:px-8">
- <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
- {[
- { value: '50k+', label: 'Active Users' },
- { value: '2M+', label: 'Transactions Tracked' },
- { value: '99%', label: 'Uptime SLA' },
- { value: '4.9', label: 'User Rating' },
- ].map((stat, i) => (
- <div key={i} className="space-y-2">
- <p className="text-3xl lg:text-4xl font-extrabold text-white">{stat.value}</p>
- <p className="text-gray-400 text-sm font-medium">{stat.label}</p>
- </div>
- ))}
- </div>
- </div>
- </section>
+          {/* Tab selector */}
+          <div className="flex flex-wrap justify-center gap-2 pt-4">
+            {featureTabs.map((tab) => {
+              const Icon = tab.icon;
+              const isSelected = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as any)}
+                  className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all duration-200 ${
+                    isSelected
+                      ? 'bg-violet-600 text-white shadow-lg shadow-violet-500/25 scale-105'
+                      : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
- {/* CTA banner */}
- <section id="pricing" className="max-w-7xl mx-auto px-6 lg:px-8 py-20 lg:py-28">
- <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-violet-600 via-purple-600 to-pink-500 p-10 lg:p-16 text-center shadow-2xl shadow-purple-300/40">
- {/* Decorative blobs */}
- <div className="pointer-events-none absolute -top-12 -right-12 w-60 h-60 rounded-full bg-white/10 blur-2xl" />
- <div className="pointer-events-none absolute -bottom-10 -left-10 w-48 h-48 rounded-full bg-white/10 blur-2xl" />
+        {/* Dynamic Tab Showcase Container */}
+        {(() => {
+          const tab = featureTabs.find((t) => t.id === activeTab) || featureTabs[0];
+          return (
+            <div className="rounded-[2.5rem] bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 text-white p-8 sm:p-12 lg:p-16 shadow-2xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-96 h-96 bg-violet-600/20 rounded-full blur-3xl pointer-events-none" />
 
- <p className="text-white/80 text-sm font-semibold tracking-widest uppercase mb-4">
- Start for free today
- </p>
- <h2 className="text-3xl lg:text-5xl font-extrabold text-white mb-5 leading-tight">
- Which Financial Future
- <br className="hidden lg:block" />
- Will You Choose?
- </h2>
- <p className="text-white/70 text-base max-w-lg mx-auto mb-8 leading-relaxed">
- Join thousands who have transformed how they manage money. Sign up free - no credit card required.
- </p>
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center relative z-10">
+                <div className="lg:col-span-6 space-y-6">
+                  <span className="inline-block px-3 py-1 rounded-full text-xs font-extrabold bg-violet-500/20 text-violet-300 border border-violet-400/30">
+                    {tab.badge}
+                  </span>
+                  <h3 className="text-2xl sm:text-4xl font-black leading-tight">{tab.title}</h3>
+                  <p className="text-slate-300 text-base sm:text-lg leading-relaxed">{tab.description}</p>
+                  <button
+                    onClick={onGetStarted}
+                    className="inline-flex items-center gap-2 text-sm font-bold text-violet-300 hover:text-white transition-colors"
+                  >
+                    <span>Try this feature now</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
 
- <button data-testid="landing-page-yes-get-started-free"
- onClick={onGetStarted}
- className="inline-flex items-center justify-center px-10 py-4 rounded-full bg-white text-gray-900 font-bold text-sm hover:bg-gray-100 transition-all duration-200 hover:scale-105 active:scale-95 shadow-xl shadow-black/20"
- >
- Yes, Get Started Free
- </button>
+                {/* Mockup Card */}
+                <div className="lg:col-span-6">
+                  <div className="bg-white/10 backdrop-blur-xl border border-white/15 rounded-3xl p-6 sm:p-8 space-y-4 shadow-2xl">
+                    <div className="flex items-center justify-between border-b border-white/10 pb-4">
+                      <span className="text-xs font-bold text-slate-300">Live Feature Telemetry</span>
+                      <span className="text-xs font-bold text-emerald-400">● Active</span>
+                    </div>
 
- <p className="mt-5 text-white/50 text-xs">
- Free forever plan &nbsp;&nbsp; No credit card &nbsp;&nbsp; 2-minute setup
- </p>
- </div>
- </section>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {Object.entries(tab.mockData).map(([key, val], i) => (
+                        <div key={i} className="p-4 rounded-2xl bg-white/5 border border-white/10">
+                          <p className="text-[11px] uppercase tracking-wider text-slate-400 font-bold">
+                            {key.replace(/([A-Z])/g, ' $1')}
+                          </p>
+                          <p className="text-base sm:text-lg font-black text-white mt-1">{val}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+      </section>
 
- {/* Footer */}
- <footer className="border-t border-gray-100 bg-white">
- <div className="max-w-7xl mx-auto px-6 lg:px-8 py-10 flex flex-col sm:flex-row items-center justify-between gap-4">
- <div className="flex items-center gap-2">
- <KANAKULogo className="w-7 h-7" />
- <span className="text-sm font-bold text-gray-700">KANAKU</span>
- </div>
- <p className="text-xs text-gray-400">
- {new Date().getFullYear()} KANAKU. All rights reserved.
- </p>
- <div className="flex items-center gap-5">
- {[
- { name: 'Privacy', id: 'privacy' },
- { name: 'Terms', id: 'terms' },
- { name: 'Support', id: 'contact' }
- ].map((link) => (
- <button data-testid={`landing-page-button-${link.id}`}
- key={link.id}
- onClick={() => onNavigate(link.id)}
- className="text-xs text-gray-400 hover:text-gray-700 transition-colors"
- >
- {link.name}
- </button>
- ))}
- </div>
- </div>
- </footer>
+      {/* ─── Interactive Wealth & Savings Simulator ────────────────── */}
+      <section id="interactive-demo" className="relative z-10 bg-slate-50/80 py-24 sm:py-32 border-y border-slate-200/80">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
+            <span className="text-xs font-extrabold uppercase tracking-widest text-violet-600">
+              Interactive Wealth Calculator
+            </span>
+            <h2 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight">
+              See How Small Savings Multiply
+            </h2>
+            <p className="text-slate-600 text-base sm:text-lg">
+              Drag the sliders below to calculate your projected wealth growth using disciplined smart budgeting and compound interest.
+            </p>
+          </div>
 
- {/* Keyframe animations (injected via a style tag) */}
- <style>{`
- @keyframes morphBlob {
- 0%,100% { border-radius: 40% 60% 70% 30% / 45% 45% 55% 55%; }
- 25% { border-radius: 60% 40% 35% 65% / 55% 30% 70% 45%; }
- 50% { border-radius: 35% 65% 55% 45% / 60% 55% 45% 40%; }
- 75% { border-radius: 55% 45% 65% 35% / 35% 65% 35% 65%; }
- }
- @keyframes fadeSlideUp {
- from { opacity: 0; transform: translateY(28px); }
- to { opacity: 1; transform: translateY(0); }
- }
- @keyframes marquee {
- from { transform: translateX(0); }
- to { transform: translateX(-50%); }
- }
- `}</style>
- </div>
- );
+          <div className="max-w-4xl mx-auto rounded-[2.5rem] bg-white border border-slate-200/80 p-8 sm:p-12 shadow-xl">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+              {/* Sliders Column */}
+              <div className="space-y-8">
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="text-sm font-bold text-slate-800">Monthly Savings Amount</label>
+                    <span className="text-base font-black text-violet-600">
+                      ₹{monthlySavings.toLocaleString('en-IN')}
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min={2000}
+                    max={100000}
+                    step={1000}
+                    value={monthlySavings}
+                    onChange={(e) => setMonthlySavings(Number(e.target.value))}
+                    className="w-full accent-violet-600 h-2 bg-slate-200 rounded-lg cursor-pointer"
+                  />
+                  <div className="flex justify-between text-[11px] font-bold text-slate-400 mt-1">
+                    <span>₹2,000</span>
+                    <span>₹50,000</span>
+                    <span>₹1,00,000</span>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="text-sm font-bold text-slate-800">Expected Annual Return</label>
+                    <span className="text-base font-black text-violet-600">{investmentReturn}% p.a.</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={6}
+                    max={18}
+                    step={1}
+                    value={investmentReturn}
+                    onChange={(e) => setInvestmentReturn(Number(e.target.value))}
+                    className="w-full accent-violet-600 h-2 bg-slate-200 rounded-lg cursor-pointer"
+                  />
+                  <div className="flex justify-between text-[11px] font-bold text-slate-400 mt-1">
+                    <span>6% (Fixed Deposit)</span>
+                    <span>12% (Index Funds)</span>
+                    <span>18% (Equities)</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Output Column */}
+              <div className="bg-gradient-to-br from-violet-600 via-indigo-600 to-blue-600 rounded-3xl p-6 sm:p-8 text-white space-y-5 shadow-lg">
+                <p className="text-xs font-extrabold uppercase tracking-wider text-violet-200">
+                  Projected Wealth Accumulation
+                </p>
+                <div>
+                  <span className="text-xs text-violet-100">In 5 Years</span>
+                  <p className="text-3xl sm:text-4xl font-black mt-0.5">
+                    ₹{projection.yr5.toLocaleString('en-IN')}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/20">
+                  <div>
+                    <span className="text-xs text-violet-100">In 1 Year</span>
+                    <p className="text-lg sm:text-xl font-bold mt-0.5">
+                      ₹{projection.yr1.toLocaleString('en-IN')}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-xs text-violet-100">In 3 Years</span>
+                    <p className="text-lg sm:text-xl font-bold mt-0.5">
+                      ₹{projection.yr3.toLocaleString('en-IN')}
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  onClick={onGetStarted}
+                  className="w-full py-3.5 rounded-xl bg-white text-slate-900 font-bold text-sm shadow-md hover:bg-slate-50 transition-colors"
+                >
+                  Start Saving with KANAKU
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── Bento Grid Section ───────────────────────────────────── */}
+      <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-32">
+        <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
+          <span className="text-xs font-extrabold uppercase tracking-widest text-violet-600">
+            Engineered For Excellence
+          </span>
+          <h2 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight">
+            Everything You Need Under One Roof
+          </h2>
+          <p className="text-slate-600 text-base sm:text-lg">
+            Replace dozens of disparate apps, spreadsheets, and banking portals with one holistic, privacy-preserving solution.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {bentoCards.map((card, i) => (
+            <div
+              key={i}
+              className={`group relative rounded-3xl bg-white border border-slate-200/80 p-7 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 ${card.border}`}
+            >
+              <div className="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center mb-5 shadow-sm group-hover:scale-110 transition-transform">
+                {card.icon}
+              </div>
+              <span className="text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full bg-slate-100 text-slate-600">
+                {card.tag}
+              </span>
+              <h3 className="text-lg font-bold text-slate-900 mt-3 mb-2">{card.title}</h3>
+              <p className="text-sm text-slate-600 leading-relaxed">{card.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ─── Metrics / Stats Bar ──────────────────────────────────── */}
+      <section ref={statsRef} className="relative z-10 bg-slate-900 text-white py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
+            <div className="space-y-1">
+              <p className="text-3xl sm:text-5xl font-black text-white">{usersCount}k+</p>
+              <p className="text-xs sm:text-sm font-semibold text-slate-400">Active Individuals & Families</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-3xl sm:text-5xl font-black text-white">{transactionsCount}M+</p>
+              <p className="text-xs sm:text-sm font-semibold text-slate-400">Transactions Reconciled</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-3xl sm:text-5xl font-black text-emerald-400">{savingsPct}%</p>
+              <p className="text-xs sm:text-sm font-semibold text-slate-400">Avg. Annual Savings Growth</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-3xl sm:text-5xl font-black text-white">99.99%</p>
+              <p className="text-xs sm:text-sm font-semibold text-slate-400">Offline Uptime SLA</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── High-Conversion CTA Banner ───────────────────────────── */}
+      <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28">
+        <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-violet-600 via-indigo-600 to-pink-600 p-10 sm:p-16 text-center text-white shadow-2xl shadow-indigo-500/25">
+          {/* Decorative ambient orbs */}
+          <div className="absolute top-0 right-0 -mr-16 -mt-16 w-80 h-80 rounded-full bg-white/10 blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 left-0 -ml-16 -mb-16 w-80 h-80 rounded-full bg-white/10 blur-3xl pointer-events-none" />
+
+          <span className="inline-block px-4 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-widest bg-white/20 text-white mb-6 border border-white/20">
+            Start Free Forever
+          </span>
+
+          <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight max-w-3xl mx-auto leading-tight mb-6">
+            Take Control of Your Financial Freedom Today
+          </h2>
+
+          <p className="text-white/80 text-base sm:text-lg max-w-xl mx-auto mb-8 leading-relaxed">
+            Join thousands of smart earners who use KANAKU to track every rupee, multiply savings, and secure their future.
+          </p>
+
+          <button
+            data-testid="landing-page-yes-get-started-free"
+            onClick={onGetStarted}
+            className="inline-flex items-center justify-center gap-2 px-10 py-4 rounded-full bg-white text-slate-900 font-extrabold text-sm sm:text-base hover:bg-slate-50 transition-all hover:scale-105 active:scale-95 shadow-xl shadow-black/20"
+          >
+            <span>Create Free Account</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
+
+          <div className="flex flex-wrap justify-center items-center gap-6 mt-6 text-xs text-white/70 font-medium">
+            <span>✓ No credit card required</span>
+            <span>✓ 2-minute instant onboarding</span>
+            <span>✓ Encrypted offline data</span>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── Comprehensive Multi-Column Footer ─────────────────────── */}
+      <footer className="relative z-10 border-t border-slate-200 bg-white text-slate-600 pt-16 pb-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 mb-12">
+            {/* Brand column */}
+            <div className="lg:col-span-2 space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-violet-50 flex items-center justify-center border border-violet-100">
+                  <KANAKULogo className="w-6 h-6" />
+                </div>
+                <span className="text-xl font-black text-slate-900 tracking-tight">KANAKU</span>
+              </div>
+              <p className="text-sm text-slate-500 max-w-sm leading-relaxed">
+                The privacy-first financial operating system empowering users with automated analytics, offline-first reliability, and generative wealth insights.
+              </p>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-200">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                All Cloud Services Operational
+              </div>
+            </div>
+
+            {/* Navigation columns */}
+            <div>
+              <h5 className="text-xs font-extrabold uppercase tracking-wider text-slate-900 mb-4">Product</h5>
+              <ul className="space-y-2.5 text-sm">
+                <li>
+                  <button onClick={() => onNavigate('landing')} className="hover:text-slate-900 transition-colors">
+                    Overview
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => onNavigate('pricing')} className="hover:text-slate-900 transition-colors">
+                    Pricing Plans
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => onNavigate('about')} className="hover:text-slate-900 transition-colors">
+                    About Kanaku
+                  </button>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h5 className="text-xs font-extrabold uppercase tracking-wider text-slate-900 mb-4">Support & Trust</h5>
+              <ul className="space-y-2.5 text-sm">
+                <li>
+                  <button onClick={() => onNavigate('contact')} className="hover:text-slate-900 transition-colors">
+                    Contact Helpdesk
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => onNavigate('privacy')} className="hover:text-slate-900 transition-colors">
+                    Privacy Policy
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => onNavigate('terms')} className="hover:text-slate-900 transition-colors">
+                    Terms of Service
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => onNavigate('data-deletion')} className="hover:text-slate-900 transition-colors">
+                    Data Deletion
+                  </button>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h5 className="text-xs font-extrabold uppercase tracking-wider text-slate-900 mb-4">Security</h5>
+              <p className="text-xs text-slate-500 leading-relaxed mb-3">
+                Built with local-first indexedDB storage, AES-256 master key encryption, and biometric PIN gateways.
+              </p>
+              <div className="flex items-center gap-2 text-xs font-bold text-slate-800">
+                <Shield className="w-4 h-4 text-emerald-600" />
+                <span>ISO 27001 Compliant Architecture</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="border-t border-slate-100 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400 font-medium">
+            <p>© {new Date().getFullYear()} KANAKU. Built with pride by Shaik Ashraf K. All rights reserved.</p>
+            <div className="flex items-center gap-6">
+              <button onClick={() => onNavigate('privacy')} className="hover:text-slate-600 transition-colors">
+                Privacy
+              </button>
+              <button onClick={() => onNavigate('terms')} className="hover:text-slate-600 transition-colors">
+                Terms
+              </button>
+              <button onClick={() => onNavigate('contact')} className="hover:text-slate-600 transition-colors">
+                Support
+              </button>
+            </div>
+          </div>
+        </div>
+      </footer>
+
+      {/* Keyframe styles */}
+      <style>{`
+        @keyframes marquee {
+          from { transform: translateX(0); }
+          to { transform: translateX(-50%); }
+        }
+      `}</style>
+    </div>
+  );
 };
-
-
