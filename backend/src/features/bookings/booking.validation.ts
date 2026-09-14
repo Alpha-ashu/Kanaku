@@ -4,8 +4,10 @@ export const bookingCreateSchema = z.object({
   advisorId: z.string().trim().min(1, 'advisorId is required'),
   sessionType: z.string().trim().min(1, 'sessionType is required').max(60),
   description: z.string().trim().max(1000).optional(),
-  proposedDate: z.string().trim().min(1, 'proposedDate is required'),
-  proposedTime: z.string().trim().min(1, 'proposedTime is required'),
+  // Calendar date + wall-clock time as picked in the booking form (<input type=date|time>).
+  // Anything else used to reach `new Date()` as an Invalid Date and surface as a 500.
+  proposedDate: z.string().trim().regex(/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/, 'proposedDate must be YYYY-MM-DD'),
+  proposedTime: z.string().trim().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'proposedTime must be HH:MM (24h)'),
   duration: z.coerce.number().int().min(1).max(600),
   amount: z.coerce.number().min(0),
 });

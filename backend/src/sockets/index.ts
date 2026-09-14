@@ -5,6 +5,7 @@ import { prisma } from '../db/prisma';
 import { isAllowedOrigin } from '../config/cors';
 import { isAccountLocked } from '../utils/accountStatus';
 import { getPurposeClient } from '../config/redis-connections';
+import { isTokenRevoked } from '../security/tokenRevocation';
 
 const SOCKET_AUTH_CACHE_TTL = 60; // seconds — cache verified identity to avoid DB on every connect
 
@@ -88,6 +89,8 @@ export class SocketManager {
   }
 
   private async verifyToken(token: string): Promise<SocketUserIdentity | null> {
+    if (isTokenRevoked(token)) return null; // handed back at logout
+
     const customSecret = process.env.JWT_SECRET || process.env.SUPABASE_JWT_SECRET || '';
 
     if (customSecret) {

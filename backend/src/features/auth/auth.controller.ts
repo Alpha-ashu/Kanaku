@@ -13,9 +13,10 @@ import { otpService } from '../otp/otp.service';
 import bcrypt from 'bcrypt';
 import { isDatabaseUnavailableError } from '../../utils/databaseAvailability';
 import { AppError } from '../../utils/AppError';
-import { generateTokens, verifyRefreshToken, REFRESH_TOKEN_TTL_SECONDS } from '../../utils/auth';
+import { generateTokens, verifyRefreshToken, verifyToken, REFRESH_TOKEN_TTL_SECONDS } from '../../utils/auth';
 import { setRefreshCookie, clearRefreshCookie, readRefreshCookie } from '../../security/refreshCookie';
 import { establishIdleSession, clearIdleSession } from '../../security/idleSession';
+import { revokeToken, isTokenRevoked } from '../../security/tokenRevocation';
 import { clearPinUnlock, isPinUnlocked, PIN_UNLOCK_HEADER } from '../../security/pinUnlock';
 import { sendWelcomeEmail, sendLoginAlertEmail } from '../../emails';
 import { auditFromRequest } from '../../utils/auditLogger';
@@ -296,7 +297,10 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
     if (!/[A-Z]/.test(input.password)) missingRequirements.push('one uppercase letter');
     if (!/[a-z]/.test(input.password)) missingRequirements.push('one lowercase letter');
     if (!/[0-9]/.test(input.password)) missingRequirements.push('one number');
-    if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?`~]/.test(input.password)) missingRequirements.push('one special character (!@#$%^&* etc.)');
+    // Any non-alphanumeric character counts — the same rule as the sign-up form
+    // and resetPasswordSchema. A fixed ASCII list rejected passwords the form had
+    // already accepted (e.g. containing a space or ₹), failing signup with a 400.
+    if (!/[^A-Za-z0-9]/.test(input.password)) missingRequirements.push('one special character (!@#$%^&* etc.)');
 
     if (missingRequirements.length > 0) {
       logger.warn(`[AuthController] Registration failed: weak password for email: ${input.email}. Missing: ${missingRequirements.join(', ')}`);
@@ -845,6 +849,9 @@ export const refreshToken = async (req: Request, res: Response, next: NextFuncti
     } catch {
       throw AppError.unauthorized('Your session has expired. Please sign in again.', 'REFRESH_TOKEN_INVALID');
     }
+    if (isTokenRevoked(token)) {
+      throw AppError.unauthorized('Your session has ended. Please sign in again.', 'SESSION_REVOKED');
+    }
 
     // Re-load the user so role / approval / suspension changes take effect on refresh.
     const user = await prisma.user.findUnique({ where: { id: claims.userId } });
@@ -864,12 +871,12 @@ export const refreshToken = async (req: Request, res: Response, next: NextFuncti
     // Trade-off: this drops the "stolen refresh token can't be replayed after the
     // idle window" protection.
     //
-    // IMPORTANT: refresh tokens are STATELESS JWTs — they are NOT tracked server-side
-    // and CANNOT be individually revoked. Logout clears the (web) HttpOnly cookie and
-    // the in-memory session/PIN state, but a captured refresh token stays valid until
-    // its 7-day expiry. The only hard session boundaries are that expiry and the
-    // cookie clear. DB-backed refresh-token tracking/revocation is a deferred
-    // architecture-phase item (see the currently-unused RefreshToken model).
+    // IMPORTANT: refresh tokens are STATELESS JWTs — they are NOT tracked server-side.
+    // A token presented at logout is revoked (security/tokenRevocation, in-process,
+    // checked above); a token captured without ever being logged out stays valid until
+    // its 7-day expiry, and rotation here does not revoke the previous token.
+    // DB-backed refresh-token tracking/revocation is a deferred architecture-phase
+    // item (see the currently-unused RefreshToken model).
 
     // Rotate: issue a brand-new access + refresh pair.
     const tokens = generateTokens(user);
@@ -1148,27 +1155,43 @@ export const revokeDevice = async (req: AuthRequest, res: Response, next: NextFu
 /**
  * POST /api/v1/auth/logout
  *
- * Clears the HttpOnly refresh cookie and best-effort revokes the
- * presented refresh token from the DB so it cannot be replayed. Always
- * returns 200 — logout must never fail the client.
+ * Clears the HttpOnly refresh cookie and revokes both the access token
+ * (Authorization header) and the refresh token (cookie / header) it is
+ * handed, so neither can be replayed after sign-out. Always returns 200 —
+ * logout must never fail the client.
  */
 export const logout = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const cookieToken = readRefreshCookie(req) || '';
     const headerToken = (req.headers['x-refresh-token'] as string | undefined) || '';
     const token = (cookieToken || headerToken).trim();
+    const bearer = (req.headers.authorization || '').replace(/^Bearer\s+/i, '').trim();
 
-    // No-op today: refresh tokens are stateless JWTs and are not persisted, so there
-    // is nothing to delete (the RefreshToken table is unused). Kept forward-compatible
-    // so that, once DB-backed token tracking lands, logout already revokes the row.
-    // Logout's real effect now is clearing the cookie + in-memory session/PIN below.
+    // The route is mounted without authMiddleware (an expired session must still be
+    // able to log out), so req.userId is never populated here — resolve the user
+    // from whichever presented token still verifies.
+    let userId = req.userId;
+    for (const candidate of [bearer, token]) {
+      if (userId || !candidate) continue;
+      try {
+        const claims = verifyToken(candidate);
+        userId = typeof claims?.userId === 'string' ? claims.userId : claims?.sub;
+      } catch {
+        // expired or foreign token — nothing to clean up for it
+      }
+    }
+
+    revokeToken(bearer);
+    revokeToken(token);
+    // The RefreshToken table is unused (tokens are stateless); kept so DB-backed
+    // tracking, once it lands, is already revoked here.
     if (token) {
       await prisma.refreshToken.deleteMany({ where: { token } }).catch(() => null);
     }
-    if (req.userId) {
-      invalidateUserSnapshotCache(req.userId);
-      await clearIdleSession(req.userId);
-      await clearPinUnlock(req.userId); // re-lock financial endpoints on logout
+    if (userId) {
+      invalidateUserSnapshotCache(userId);
+      await clearIdleSession(userId);
+      await clearPinUnlock(userId); // re-lock financial endpoints on logout
     }
 
     clearRefreshCookie(res);

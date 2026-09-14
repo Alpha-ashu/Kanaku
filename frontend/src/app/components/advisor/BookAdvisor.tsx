@@ -201,8 +201,11 @@ const BOOKING_STATUSES: BookingData['status'][] = [
 
 const mapBooking = (row: BookingApiRow, advisorLookup: Map<string, AdvisorProfileData>): BookingData => {
   const advisor = advisorLookup.get(row.advisorId);
-  const status = BOOKING_STATUSES.includes(row.status as BookingData['status'])
-    ? (row.status as BookingData['status'])
+  // Older rows carry 'confirmed' — the same state the API now calls 'accepted'.
+  // Falling through to 'pending' showed confirmed consultations as still awaiting the advisor.
+  const rawStatus = row.status === 'confirmed' ? 'accepted' : row.status;
+  const status = BOOKING_STATUSES.includes(rawStatus as BookingData['status'])
+    ? (rawStatus as BookingData['status'])
     : 'pending';
   const sessionType = ['video', 'audio', 'chat'].includes(row.sessionType)
     ? (row.sessionType as BookingData['sessionType'])

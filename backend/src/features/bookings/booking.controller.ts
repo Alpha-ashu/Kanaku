@@ -15,73 +15,93 @@ export const createBooking = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    // Verify advisor exists and is approved.
-    // The declared type is needed: `let advisor = null` infers `null`, so the
-    // role/isApproved reads below fail to compile.
-    let advisor: { id: string; role: string; isApproved: boolean } | null = null;
-    try {
-      advisor = await prisma.user.findUnique({
-        where: { id: advisorId },
-        select: { id: true, role: true, isApproved: true },
-      });
-    } catch {
-      return res.status(404).json({ error: 'Advisor not found or not approved' });
+    if (advisorId === clientId) {
+      return res.status(400).json({ error: 'You cannot book a consultation with yourself', code: 'SELF_BOOKING' });
     }
+
+    const advisor = await prisma.user.findUnique({
+      where: { id: advisorId },
+      select: { id: true, name: true, role: true, isApproved: true },
+    }).catch(() => null);
 
     if (!advisor || advisor.role !== 'advisor' || !advisor.isApproved) {
       return res.status(404).json({ error: 'Advisor not found or not approved' });
     }
 
+    // proposedDate/proposedTime are the client's local wall-clock values with no
+    // offset. Compare calendar dates against the earliest date currently in effect
+    // anywhere (UTC-12) so no timezone ever sees a same-day booking refused, while a
+    // day that has already ended everywhere is.
+    const earliestToday = new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    if (proposedDate < earliestToday) {
+      return res.status(400).json({ error: 'Please choose a date that has not already passed', code: 'BOOKING_IN_PAST' });
+    }
 
-    // Check advisor availability
+    // Enforce the advisor's weekly schedule once they have one. An advisor with no
+    // slots configured is still bookable (the request waits for accept/decline).
+    const slots = await prisma.advisorAvailability.findMany({ where: { advisorId }, orderBy: { dayOfWeek: 'asc' } });
+    if (slots.length > 0) {
+      const dayOfWeek = new Date(`${proposedDate}T00:00:00Z`).getUTCDay();
+      const toMinutes = (hhmm: string) => {
+        const [h, m] = hhmm.split(':').map(Number);
+        return h * 60 + m;
+      };
+      const start = toMinutes(proposedTime);
+      const fits = slots.some((slot) => slot.isActive
+        && slot.dayOfWeek === dayOfWeek
+        && start >= toMinutes(slot.startTime)
+        && start + Number(duration) <= toMinutes(slot.endTime));
+      if (!fits) {
+        const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const hours = slots.filter((slot) => slot.isActive)
+          .map((slot) => `${DAYS[slot.dayOfWeek]} ${slot.startTime}-${slot.endTime}`)
+          .join(', ');
+        return res.status(400).json({
+          error: hours
+            ? `${advisor.name} is not available then. Available: ${hours}`
+            : `${advisor.name} is not taking bookings right now`,
+          code: 'ADVISOR_UNAVAILABLE',
+        });
+      }
+    }
+
     const proposedDateTime = new Date(`${proposedDate}T${proposedTime}`);
-    const dayOfWeek = proposedDateTime.getDay();
 
-    const availability = await prisma.advisorAvailability.findFirst({
-      where: {
-        advisorId,
-        dayOfWeek,
-        isActive: true,
-      },
+    // One active request per client, advisor and slot. The Idempotency-Key only
+    // dedupes exact replays — the web client mints a fresh key per click — so a
+    // double-tap is serialised here: the lock makes the duplicate check and the
+    // insert atomic.
+    const { booking, created } = await prisma.$transaction(async (tx) => {
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`booking:${clientId}:${advisorId}:${proposedDate}:${proposedTime}`}))`;
+      const duplicate = await tx.bookingRequest.findFirst({
+        where: {
+          clientId,
+          advisorId,
+          proposedDate: proposedDateTime,
+          proposedTime,
+          status: { in: ['pending', 'accepted', 'reschedule'] },
+        },
+      });
+      if (duplicate) return { booking: duplicate, created: false };
+      const row = await tx.bookingRequest.create({
+        data: {
+          clientId,
+          advisorId,
+          sessionType,
+          description: description || '',
+          proposedDate: proposedDateTime,
+          proposedTime,
+          duration,
+          amount,
+          status: 'pending',
+        },
+      });
+      return { booking: row, created: true };
     });
 
-    // Check advisor availability (soft check — advisor may not have configured slots yet)
-    if (!availability) {
-      // Log a warning but allow the booking; advisor will accept/reject
-      console.warn(`No availability slot for advisor ${advisorId} on dayOfWeek ${dayOfWeek}. Proceeding with booking.`);
+    if (!created) {
+      return res.status(200).json(booking);
     }
-
-    // Prevent duplicate booking requests — a double-submit (or retry) for the
-    // same advisor/slot must not create a second pending request.
-    const duplicate = await prisma.bookingRequest.findFirst({
-      where: {
-        clientId,
-        advisorId,
-        sessionType,
-        proposedDate: proposedDateTime,
-        proposedTime,
-        status: { in: ['pending', 'accepted'] },
-      },
-    });
-
-    if (duplicate) {
-      return res.status(200).json(duplicate);
-    }
-
-    // Create booking request
-    const booking = await prisma.bookingRequest.create({
-      data: {
-        clientId,
-        advisorId,
-        sessionType,
-        description: description || '',
-        proposedDate: proposedDateTime,
-        proposedTime,
-        duration,
-        amount,
-        status: 'pending',
-      },
-    });
 
     // Create multi-channel notification for advisor (app, email, push).
     const clientName = req.user?.name || 'A client';
@@ -233,23 +253,40 @@ export const acceptBooking = async (req: AuthRequest, res: Response) => {
       return res.status(403).json({ error: 'Access denied' });
     }
 
-    // Update booking status
-    const updated = await prisma.bookingRequest.update({
-      where: { id },
-      data: { status: 'accepted' },
+    // Conditional transition + session upsert in one transaction. A second tap
+    // used to hit the unique AdvisorSession.bookingId and answer 500 (and could
+    // re-open a cancelled booking); now it returns the accepted booking as-is.
+    const outcome = await prisma.$transaction(async (tx) => {
+      const { count } = await tx.bookingRequest.updateMany({
+        where: { id, advisorId, status: { in: ['pending', 'reschedule'] } },
+        data: { status: 'accepted' },
+      });
+      const current = await tx.bookingRequest.findUniqueOrThrow({ where: { id } });
+      if (count === 0 && current.status !== 'accepted') {
+        return { conflict: current.status };
+      }
+      const session = await tx.advisorSession.upsert({
+        where: { bookingId: id },
+        update: {},
+        create: {
+          bookingId: id,
+          advisorId,
+          clientId: current.clientId,
+          startTime: current.proposedDate,
+          sessionType: current.sessionType,
+          status: 'scheduled',
+        },
+      });
+      return { updated: current, session, transitioned: count === 1 };
     });
 
-    // Create advisor session
-    const session = await prisma.advisorSession.create({
-      data: {
-        bookingId: id,
-        advisorId,
-        clientId: booking.clientId,
-        startTime: booking.proposedDate,
-        sessionType: booking.sessionType,
-        status: 'scheduled',
-      },
-    });
+    if ('conflict' in outcome) {
+      return res.status(409).json({ error: `This booking is already ${outcome.conflict} and cannot be accepted`, code: 'BOOKING_NOT_ACCEPTABLE' });
+    }
+    const { updated, session } = outcome;
+    if (!outcome.transitioned) {
+      return res.json({ booking: updated, session });
+    }
 
     // Notify client via multi-channel delivery (app, email, push)
     await dispatchNotification({
@@ -285,13 +322,19 @@ export const rejectBooking = async (req: AuthRequest, res: Response) => {
       return res.status(403).json({ error: 'Access denied' });
     }
 
-    const updated = await prisma.bookingRequest.update({
-      where: { id },
+    // Only an open request can be declined; a repeat tap must not re-notify the client.
+    const { count } = await prisma.bookingRequest.updateMany({
+      where: { id, advisorId, status: { in: ['pending', 'reschedule'] } },
       data: {
         status: 'rejected',
         rejectionReason: reason || '',
       },
     });
+    const updated = await prisma.bookingRequest.findUniqueOrThrow({ where: { id } });
+    if (count === 0) {
+      if (updated.status === 'rejected') return res.json(updated);
+      return res.status(409).json({ error: `This booking is already ${updated.status} and cannot be declined`, code: 'BOOKING_NOT_DECLINABLE' });
+    }
 
     // Notify client via multi-channel delivery (app, email, push)
     await dispatchNotification({

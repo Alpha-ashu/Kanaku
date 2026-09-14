@@ -261,7 +261,7 @@ export const AdvisorWorkspace: React.FC = () => {
  };
 
   const pending = bookings.filter(b => b.status === 'pending');
-  const confirmed = bookings.filter(b => ['accepted', 'scheduled'].includes(b.status));
+  const confirmed = bookings.filter(b => ['accepted', 'confirmed', 'scheduled'].includes(b.status));
   const settledEarnings = sessions
     .filter(s => s.status === 'completed' && s.payment?.status === 'completed')
     .reduce((acc: number, sess: any) => acc + (Number(sess.amount) || Number(sess.payment?.amount) || 0), 0);

@@ -6,6 +6,7 @@ import { createClient } from '@supabase/supabase-js';
 import { audit } from '../utils/auditLogger';
 import { prisma } from '../db/prisma';
 import { evaluateIdleSession } from '../security/idleSession';
+import { isTokenRevoked } from '../security/tokenRevocation';
 import { isAccountLocked, isAccountPending, isDemoDisabled } from '../utils/accountStatus';
 
 // ─── Typed JWT payload interfaces ─────────────────────────────────────────────
@@ -274,6 +275,11 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
     if (!token || token === authHeader) {
       logger.warn('Auth check failed: No token provided in headers.');
       return res.status(401).json({ error: 'No token provided' });
+    }
+
+    // Signed out: the token is still cryptographically valid but was handed back at logout.
+    if (isTokenRevoked(token)) {
+      return res.status(401).json({ error: 'Your session has ended. Please sign in again.', code: 'SESSION_REVOKED' });
     }
 
     // In production we require an explicit JWT_SECRET. Outside production

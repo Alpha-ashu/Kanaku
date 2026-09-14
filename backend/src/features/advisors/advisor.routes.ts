@@ -1,5 +1,5 @@
-import { Router } from 'express';
-import { authMiddleware } from '../../middleware/auth';
+import { Router, RequestHandler } from 'express';
+import { authMiddleware, AuthRequest } from '../../middleware/auth';
 import { adminPlatformGate } from '../../middleware/adminPlatformGate';
 import { requireRole, requireApproved } from '../../middleware/rbac';
 import { requireFeature } from '../../middleware/featureGate';
@@ -20,6 +20,13 @@ import {
 } from './advisor.validation';
 
 const router = Router();
+
+// bookAdvisor is off for the advisor role (it is the consumer marketplace), but
+// an advisor must still read their own schedule in the workspace — the gate
+// applies only when looking at someone else's calendar.
+const bookAdvisorGate = requireFeature('bookAdvisor');
+const ownAvailabilityOrBookAdvisor: RequestHandler = (req, res, next) =>
+  (req as AuthRequest).user?.id === req.params.id ? next() : bookAdvisorGate(req as AuthRequest, res, next);
 
 // Marketplace browse — gated by the admin feature flag `bookAdvisor`. Anonymous
 // callers are treated as role `user`; when admin disables the module this 403s
@@ -50,7 +57,7 @@ router.put('/role-mode', requireRole(['advisor', 'admin', 'manager']), validateB
 // Availability slots (approved advisors)
 router.post('/availability', requireRole('advisor'), requireApproved, validateBody(setAvailabilitySchema), AdvisorController.setAvailability);
 router.put('/availability/status', requireRole('advisor'), requireApproved, validateBody(availabilityStatusSchema), AdvisorController.setAvailabilityStatus);
-router.get('/:id/availability', requireFeature('bookAdvisor'), validateParams(advisorIdParamSchema), AdvisorController.getAvailability);
+router.get('/:id/availability', validateParams(advisorIdParamSchema), ownAvailabilityOrBookAdvisor, AdvisorController.getAvailability);
 router.delete('/availability/:id', requireRole('advisor'), requireApproved, validateParams(advisorIdParamSchema), AdvisorController.deleteAvailability);
 router.get('/me/sessions', requireRole('advisor'), requireApproved, AdvisorController.getSessions);
 

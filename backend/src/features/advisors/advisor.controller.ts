@@ -1,10 +1,20 @@
 import { Response } from 'express';
-import { AuthRequest, getUserId, invalidateUserSnapshotCache } from '../../middleware/auth';
+import { AuthRequest, getUserId } from '../../middleware/auth';
 import { prisma } from '../../db/prisma';
 import { logger } from '../../config/logger';
 import { isDatabaseUnavailableError } from '../../utils/databaseAvailability';
-import { uploadBuffer, createSignedUrl } from '../../utils/storage';
-import { sendRoleAssignedEmail } from '../../emails';
+import { uploadBuffer, createSignedUrl, removeObject } from '../../utils/storage';
+import { approveAdvisorApplication, rejectAdvisorApplication } from './advisorReview.service';
+
+const STAFF_ROLES = ['admin', 'manager'];
+
+/**
+ * Serialise writes that must not interleave for one key (per-advisor schedule,
+ * per-user application) inside the caller's transaction. Postgres releases the
+ * lock at commit/rollback, so it holds across pgBouncer transaction pooling.
+ */
+const lockKey = (tx: { $executeRaw: typeof prisma.$executeRaw }, key: string) =>
+  tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${key}))`;
 
 // ─── Public ───────────────────────────────────────────────────────────────────
 
@@ -12,10 +22,11 @@ export const listAdvisors = async (req: AuthRequest, res: Response) => {
   try {
     const advisors = await prisma.user.findMany({
       where: { role: 'advisor', isApproved: true },
+      // No email: this listing is reachable anonymously and the booking screen
+      // never needs it — contact goes through bookings and session chat.
       select: {
         id: true,
         name: true,
-        email: true,
         avatarId: true,
         advisorStatus: true,
         advisorAvailability: true,
@@ -82,14 +93,19 @@ export const getAdvisor = async (req: AuthRequest, res: Response) => {
         sessionsAsAdvisor: { where: { status: 'completed' }, select: { rating: true } },
       },
     });
-    if (!advisor || advisor.role !== 'advisor') {
+    // Unapproved advisor rows and contact details are visible only to the advisor
+    // themself and to reviewers.
+    const ownerOrStaff = req.user?.id === id || STAFF_ROLES.includes(req.user?.role ?? '');
+    if (!advisor || advisor.role !== 'advisor' || (!advisor.isApproved && !ownerOrStaff)) {
       return res.status(404).json({ error: 'Advisor not found' });
     }
+    const { email, ...profile } = advisor;
     const ratings = advisor.sessionsAsAdvisor.map((s: any) => s.rating).filter(Boolean);
     const averageRating = ratings.length > 0 ? ratings.reduce((a: number, b: number) => a + b) / ratings.length : 0;
     const availability = advisor.advisorAvailability.some((slot: any) => slot.isActive);
     res.json({
-      ...advisor,
+      ...profile,
+      ...(ownerOrStaff ? { email } : {}),
       averageRating,
       reviewCount: ratings.length,
       availability,
@@ -114,18 +130,21 @@ export const setAvailability = async (req: AuthRequest, res: Response) => {
     if (dayOfWeek < 0 || dayOfWeek > 6) {
       return res.status(400).json({ error: 'Invalid dayOfWeek (0-6)' });
     }
-    const existing = await prisma.advisorAvailability.findFirst({ where: { advisorId, dayOfWeek } });
-    let availability;
-    if (existing) {
-      availability = await prisma.advisorAvailability.update({
-        where: { id: existing.id },
-        data: { startTime, endTime, isActive: isActive !== false },
+    // One row per weekday. Without the lock, two saves racing past findFirst both
+    // inserted, and the booking screen then listed the day twice.
+    const availability = await prisma.$transaction(async (tx) => {
+      await lockKey(tx, `advisor-availability:${advisorId}`);
+      const existing = await tx.advisorAvailability.findFirst({ where: { advisorId, dayOfWeek } });
+      if (existing) {
+        return tx.advisorAvailability.update({
+          where: { id: existing.id },
+          data: { startTime, endTime, isActive: isActive !== false },
+        });
+      }
+      return tx.advisorAvailability.create({
+        data: { advisorId, dayOfWeek, startTime, endTime, isActive: isActive !== false },
       });
-    } else {
-      availability = await prisma.advisorAvailability.create({
-        data: { advisorId, dayOfWeek, startTime, endTime, isActive: true },
-      });
-    }
+    });
     res.json(availability);
   } catch {
     res.status(500).json({ error: 'Failed to set availability' });
@@ -139,17 +158,20 @@ export const setAvailabilityStatus = async (req: AuthRequest, res: Response) => 
     if (typeof available !== 'boolean') {
       return res.status(400).json({ error: 'available must be a boolean' });
     }
-    const existingSlots = await prisma.advisorAvailability.findMany({ where: { advisorId }, orderBy: { dayOfWeek: 'asc' } });
-    if (!available) {
-      await prisma.advisorAvailability.updateMany({ where: { advisorId }, data: { isActive: false } });
-    } else if (existingSlots.length === 0) {
-      await prisma.advisorAvailability.createMany({
-        data: [1, 2, 3, 4, 5].map((dayOfWeek) => ({ advisorId, dayOfWeek, startTime: '09:00', endTime: '17:00', isActive: true })),
-      });
-    } else {
-      await prisma.advisorAvailability.updateMany({ where: { advisorId }, data: { isActive: true } });
-    }
-    const slots = await prisma.advisorAvailability.findMany({ where: { advisorId }, orderBy: { dayOfWeek: 'asc' } });
+    const slots = await prisma.$transaction(async (tx) => {
+      await lockKey(tx, `advisor-availability:${advisorId}`);
+      const existingSlots = await tx.advisorAvailability.count({ where: { advisorId } });
+      if (!available) {
+        await tx.advisorAvailability.updateMany({ where: { advisorId }, data: { isActive: false } });
+      } else if (existingSlots === 0) {
+        await tx.advisorAvailability.createMany({
+          data: [1, 2, 3, 4, 5].map((dayOfWeek) => ({ advisorId, dayOfWeek, startTime: '09:00', endTime: '17:00', isActive: true })),
+        });
+      } else {
+        await tx.advisorAvailability.updateMany({ where: { advisorId }, data: { isActive: true } });
+      }
+      return tx.advisorAvailability.findMany({ where: { advisorId }, orderBy: { dayOfWeek: 'asc' } });
+    });
     res.json({ advisorId, availability: slots.some((slot) => slot.isActive), slots });
   } catch {
     res.status(500).json({ error: 'Failed to update advisor availability status' });
@@ -294,6 +316,10 @@ export const applyAsAdvisor = async (req: AuthRequest, res: Response) => {
     if (user.role === 'advisor' && user.isApproved) {
       return res.status(400).json({ error: 'You are already an approved advisor' });
     }
+    // Approval assigns role 'advisor', which would silently strip a staff role.
+    if (STAFF_ROLES.includes(user.role)) {
+      return res.status(403).json({ error: 'Admin and manager accounts cannot apply as advisors', code: 'STAFF_ACCOUNT' });
+    }
 
     // Check for an existing pending application
     const existing = await prisma.advisorApplication.findUnique({ where: { userId } });
@@ -336,41 +362,63 @@ export const applyAsAdvisor = async (req: AuthRequest, res: Response) => {
       return path;
     };
 
+    const uploaded: string[] = [];
     let panPath: string, aadhaarPath: string, certPath: string | null = null;
     try {
       panPath = await uploadDoc(files.panDocument[0], 'pan');
+      uploaded.push(panPath);
       aadhaarPath = await uploadDoc(files.aadhaarDocument[0], 'aadhaar');
+      uploaded.push(aadhaarPath);
       if (files?.certDocument?.[0]) {
         certPath = await uploadDoc(files.certDocument[0], 'cert');
+        uploaded.push(certPath);
       }
     } catch (err: any) {
+      await Promise.all(uploaded.map((p) => removeObject(p)));
       return res.status(err.statusCode ?? 500).json({ error: err.message || 'Document upload failed' });
     }
 
-    // Upsert AdvisorApplication (allow resubmission after rejection)
-    const application = await prisma.advisorApplication.upsert({
-      where: { userId },
-      create: {
-        userId, fullName, email: user.email, phone,
-        experienceYears: Number(experienceYears), expertise,
-        organizationName: organizationName || null, bio,
-        hourlyRate: parsedHourlyRate,
-        panDocumentPath: panPath, aadhaarDocumentPath: aadhaarPath,
-        certDocumentPath: certPath, status: 'PENDING',
-      },
-      update: {
-        fullName, phone, experienceYears: Number(experienceYears), expertise,
-        organizationName: organizationName || null, bio,
-        hourlyRate: parsedHourlyRate,
-        panDocumentPath: panPath, aadhaarDocumentPath: aadhaarPath,
-        certDocumentPath: certPath, status: 'PENDING',
-        rejectionReason: null, reviewedBy: null, reviewedAt: null,
-        submittedAt: new Date(),
-      },
+    // Upsert AdvisorApplication (allow resubmission after rejection). The pending
+    // check above runs before the slow uploads, so a double-tap passes it twice;
+    // re-check under a per-user lock so exactly one submission wins.
+    const result = await prisma.$transaction(async (tx) => {
+      await lockKey(tx, `advisor-apply:${userId}`);
+      const current = await tx.advisorApplication.findUnique({ where: { userId }, select: { status: true } });
+      if (current && current.status !== 'REJECTED') return { blockedBy: current.status };
+      const saved = await tx.advisorApplication.upsert({
+        where: { userId },
+        create: {
+          userId, fullName, email: user.email, phone,
+          experienceYears: Number(experienceYears), expertise,
+          organizationName: organizationName || null, bio,
+          hourlyRate: parsedHourlyRate,
+          panDocumentPath: panPath, aadhaarDocumentPath: aadhaarPath,
+          certDocumentPath: certPath, status: 'PENDING',
+        },
+        update: {
+          fullName, phone, experienceYears: Number(experienceYears), expertise,
+          organizationName: organizationName || null, bio,
+          hourlyRate: parsedHourlyRate,
+          panDocumentPath: panPath, aadhaarDocumentPath: aadhaarPath,
+          certDocumentPath: certPath, status: 'PENDING',
+          rejectionReason: null, reviewedBy: null, reviewedAt: null,
+          submittedAt: new Date(),
+        },
+      });
+      return { saved };
     });
+    const application = result.saved;
+    if (!application) {
+      await Promise.all(uploaded.map((p) => removeObject(p)));
+      return res.status(400).json({
+        error: result.blockedBy === 'PENDING'
+          ? 'You already have a pending application'
+          : 'Your advisor application has already been approved',
+      });
+    }
 
-    // Mark user as pending advisor
-    await prisma.user.update({ where: { id: userId }, data: { role: 'advisor', isApproved: false } });
+    // The role is NOT changed here. A pending applicant stays a 'user' (keeps
+    // booking access, gains nothing); approval assigns 'advisor' + isApproved.
 
     // Notify BOTH admins and managers — the advisor-verification queue is
     // reviewable/approvable by either role (requireRole(['admin','manager']) on
@@ -419,7 +467,9 @@ export const getMyApplication = async (req: AuthRequest, res: Response) => {
     ]);
     res.json({
       application: application || null,
-      isApproved: user?.isApproved ?? false,
+      // Advisor approval, not the account flag: regular users are created with
+      // User.isApproved = true, which says nothing about an advisor application.
+      isApproved: user?.role === 'advisor' && user.isApproved === true,
       roleMode: user?.roleMode ?? 'user',
       advisorStatus: user?.advisorStatus ?? 'NOT_AVAILABLE',
     });
@@ -500,6 +550,7 @@ export const listPendingAdvisors = async (req: AuthRequest, res: Response) => {
       expertise: app.expertise,
       organizationName: app.organizationName,
       bio: app.bio,
+      hourlyRate: app.hourlyRate != null ? Number(app.hourlyRate) : null,
       status: app.status,
       rejectionReason: app.rejectionReason,
       submittedAt: app.submittedAt,
@@ -534,84 +585,28 @@ export const listPendingAdvisors = async (req: AuthRequest, res: Response) => {
 
 export const approveAdvisor = async (req: AuthRequest, res: Response) => {
   try {
-    const reviewerId = getUserId(req);
-    const { id } = req.params; // userId
-
-    const user = await prisma.user.findUnique({ where: { id }, select: { id: true, name: true, email: true, role: true } });
-    if (!user) return res.status(404).json({ error: 'User not found' });
-
-    const application = await prisma.advisorApplication.findUnique({ where: { userId: id } });
-    if (!application) return res.status(404).json({ error: 'No application found for this user' });
-
-    await prisma.$transaction([
-      prisma.user.update({ where: { id }, data: { role: 'advisor', isApproved: true, roleMode: 'advisor' } }),
-      prisma.advisorApplication.update({
-        where: { userId: id },
-        data: { status: 'APPROVED', reviewedBy: reviewerId, reviewedAt: new Date() },
-      }),
-    ]);
-    invalidateUserSnapshotCache(id);
-
-    await prisma.notification.create({
-      data: {
-        userId: id,
-        title: 'Advisor Application Approved!',
-        message: 'Congratulations! Your advisor application has been approved. You can now accept client bookings.',
-        category: 'system',
-      },
-    });
-
-    logger.info('Advisor approved', { advisorId: id, reviewerId });
-
-    // Best-effort role-assigned email (no-op if SendGrid is unconfigured).
-    if (user.email) {
-      void sendRoleAssignedEmail(user.email, 'advisor', user.name || undefined).catch(() => {});
-    }
-
+    const outcome = await approveAdvisorApplication(req.params.id, getUserId(req)); // :id is the applicant's userId
+    if ('error' in outcome) return res.status(outcome.status).json({ error: outcome.error, code: outcome.code });
     return res.json({ success: true });
   } catch (error: any) {
     if (isDatabaseUnavailableError(error)) {
       return res.status(503).json({ error: 'Database is temporarily offline', code: 'DB_OFFLINE' });
     }
+    logger.error('Advisor approval error', { error });
     return res.status(500).json({ error: 'Failed to approve advisor' });
   }
 };
 
 export const rejectAdvisor = async (req: AuthRequest, res: Response) => {
   try {
-    const reviewerId = getUserId(req);
-    const { id } = req.params; // userId
-    const { reason } = req.body;
-
-    const user = await prisma.user.findUnique({ where: { id }, select: { id: true, name: true } });
-    if (!user) return res.status(404).json({ error: 'User not found' });
-
-    await prisma.$transaction([
-      prisma.user.update({ where: { id }, data: { role: 'user', isApproved: false } }),
-      prisma.advisorApplication.updateMany({
-        where: { userId: id, status: 'PENDING' },
-        data: { status: 'REJECTED', rejectionReason: reason || null, reviewedBy: reviewerId, reviewedAt: new Date() },
-      }),
-    ]);
-    invalidateUserSnapshotCache(id);
-
-    await prisma.notification.create({
-      data: {
-        userId: id,
-        title: 'Advisor Application Update',
-        message: reason
-          ? `Your advisor application was not approved: ${reason}`
-          : 'Your advisor application was not approved at this time. Please contact support for more details.',
-        category: 'system',
-      },
-    });
-
-    logger.info('Advisor rejected', { advisorId: id, reviewerId, reason });
+    const outcome = await rejectAdvisorApplication(req.params.id, getUserId(req), req.body?.reason);
+    if ('error' in outcome) return res.status(outcome.status).json({ error: outcome.error, code: outcome.code });
     return res.json({ success: true });
   } catch (error: any) {
     if (isDatabaseUnavailableError(error)) {
       return res.status(503).json({ error: 'Database is temporarily offline', code: 'DB_OFFLINE' });
     }
+    logger.error('Advisor rejection error', { error });
     return res.status(500).json({ error: 'Failed to reject advisor application' });
   }
 };

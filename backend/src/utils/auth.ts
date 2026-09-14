@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import { randomUUID } from 'crypto';
 import { AuthTokens } from '../features/auth/auth.types';
 
 const getSecret = () => {
@@ -35,16 +36,19 @@ export const generateTokens = (user: {
   // `type` distinguishes access vs refresh tokens so a refresh token cannot be
   // used to authorize API calls (and vice-versa). Legacy tokens minted before
   // this change have no `type` and are still accepted as access tokens.
+  // `jwtid` makes every token unique: without it two logins in the same second
+  // minted byte-identical tokens, so revoking one at logout (security/tokenRevocation)
+  // also ended the other session.
   const accessToken = jwt.sign(
     { ...claims, type: 'access' },
     getSecret(),
-    { expiresIn: ACCESS_TOKEN_TTL_SECONDS }
+    { expiresIn: ACCESS_TOKEN_TTL_SECONDS, jwtid: randomUUID() }
   );
 
   const refreshToken = jwt.sign(
     { ...claims, type: 'refresh' },
     getSecret(),
-    { expiresIn: REFRESH_TOKEN_TTL_SECONDS }
+    { expiresIn: REFRESH_TOKEN_TTL_SECONDS, jwtid: randomUUID() }
   );
 
   return {

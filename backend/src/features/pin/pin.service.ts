@@ -39,8 +39,8 @@ class PinService {
   private readonly MAX_FAILED_ATTEMPTS = 5;
   private readonly LOCKOUT_DURATION_HOURS = 1;
 
-  private normalizeRole(role?: string): 'admin' | 'advisor' | 'user' {
-    if (role === 'admin' || role === 'advisor' || role === 'user') {
+  private normalizeRole(role?: string): 'admin' | 'manager' | 'advisor' | 'user' {
+    if (role === 'admin' || role === 'manager' || role === 'advisor' || role === 'user') {
       return role;
     }
 
@@ -57,15 +57,13 @@ class PinService {
     const fallbackNameFromEmail = resolvedEmail.split('@')[0]?.replace(/[._-]+/g, ' ').trim() || 'User';
     const resolvedName = request.name?.trim() || fallbackNameFromEmail || 'User';
 
+    // Provision a missing row only (identities first seen through Supabase). An
+    // existing account is left untouched: this used to rewrite role/status/name
+    // from the request, and normalizeRole had no 'manager', so every manager who
+    // set up a PIN was silently demoted to 'user' and lost the verification queue.
     await prisma.user.upsert({
       where: { id: request.userId },
-      update: {
-        email: resolvedEmail,
-        name: resolvedName,
-        role: normalizedRole,
-        status: 'verified',
-        isApproved: request.isApproved ?? normalizedRole !== 'advisor',
-      },
+      update: {},
       create: {
         id: request.userId,
         email: resolvedEmail,

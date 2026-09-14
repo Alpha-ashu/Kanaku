@@ -18,16 +18,40 @@ let phoneSeq = 0;
 const uniquePhone = (cc = '+91') => `${cc} 9${String(Date.now()).slice(-4)}${String(phoneSeq++).padStart(5, '0')}`;
 
 const createdUserIds = new Set<string>();
+const createdEmails = new Set<string>();
 const dbUp = (status: number) => status === 201;
 
+/**
+ * Registration is OTP-gated: POST /auth/register creates a pending_verification
+ * user and emails a code; the account only activates (and the user object is
+ * only returned) on POST /auth/verify-registration-otp. Outside production the
+ * register response echoes the code, so this helper completes both steps the
+ * way the app does and returns a 201-shaped result carrying the verified user.
+ */
 async function registerUser(body: Record<string, unknown>) {
-  const res = await request(app).post(`${API}/auth/register`).send(body);
-  if (res.status === 201 && res.body?.data?.user?.id) createdUserIds.add(res.body.data.user.id);
-  return res;
+  if (typeof body.email === 'string') createdEmails.add(body.email.toLowerCase());
+  const reg = await request(app).post(`${API}/auth/register`).send(body);
+  if (reg.status !== 201) return reg;
+
+  expect(reg.body?.data?.requireOtp).toBe(true);
+  const verify = await request(app)
+    .post(`${API}/auth/verify-registration-otp`)
+    .send({ email: body.email, code: reg.body.data.code });
+  expect(verify.status).toBe(200);
+  expect(verify.body?.data?.accessToken).toBeTruthy();
+
+  const userId = verify.body.data.user.id as string;
+  createdUserIds.add(userId);
+  return { status: 201, body: { data: { user: verify.body.data.user } } };
 }
 
 afterAll(async () => {
-  // Cascade (FK) removes profile/settings/categories with the user.
+  // Cascade (FK) removes profile/settings/categories with the user. Unverified
+  // users (e.g. from the race test) never return an id, so also sweep by email.
+  for (const email of createdEmails) {
+    const user = await prisma.user.findUnique({ where: { email }, select: { id: true } }).catch(() => null);
+    if (user) createdUserIds.add(user.id);
+  }
   for (const id of createdUserIds) {
     try { await prisma.user.delete({ where: { id } }); } catch { /* ignore */ }
   }
@@ -83,7 +107,9 @@ describe('Registration remediation', () => {
     // async persist and flakes.
     let audits: Awaited<ReturnType<typeof prisma.auditLog.findMany>> = [];
     for (let attempt = 0; attempt < 20 && audits.length === 0; attempt += 1) {
-      audits = await prisma.auditLog.findMany({ where: { userId: res.body.data.user.id, action: 'auth.register' } });
+      audits = await prisma.auditLog.findMany({
+        where: { userId: res.body.data.user.id, action: { in: ['auth.register_initiated', 'auth.register_verified'] } },
+      });
       if (audits.length === 0) await new Promise((r) => setTimeout(r, 100));
     }
     expect(audits.length).toBeGreaterThanOrEqual(1);
@@ -110,11 +136,22 @@ describe('Registration remediation', () => {
     expect(second.body.code).toBe('PHONE_EXISTS');
   });
 
+  it('accepts any non-alphanumeric character as the special character (same rule as the sign-up form)', async () => {
+    for (const password of ['Secure Pass123', 'SecurePass123₹']) {
+      const res = await registerUser({ name: 'Symbol User', email: uniqueEmail(), password, mobile: uniquePhone('+91') });
+      if (res.status === 500 || res.status === 503) return; // DB unavailable
+      expect(res.status).toBe(201);
+    }
+  });
+
   it('is race-safe: concurrent same-email registrations yield exactly one user (rollback proof)', async () => {
     const email = uniqueEmail();
     const body = { name: 'Race', password: 'SecurePass123!' };
+    createdEmails.add(email);
+    // Raw register calls (no OTP step): this asserts the atomic insert, and
+    // concurrent OTP sends would invalidate each other's codes.
     const results = await Promise.allSettled(
-      [0, 1, 2, 3].map((i) => registerUser({ ...body, email, mobile: uniquePhone('+91') })),
+      [0, 1, 2, 3].map(() => request(app).post(`${API}/auth/register`).send({ ...body, email, mobile: uniquePhone('+91') })),
     );
     const statuses = results.map((r) => (r.status === 'fulfilled' ? (r.value as any).status : 0));
     if (!statuses.includes(201)) return; // DB unavailable

@@ -14,6 +14,7 @@ import { isProtectedAccount } from '../../utils/protectedAccounts';
 import { sendAdminChangeEmail } from '../../emails';
 import { demoService } from './demo.service';
 import { approvalService } from './approval.service';
+import { approveAdvisorApplication, rejectAdvisorApplication } from '../advisors/advisorReview.service';
 import { 
   UserRole,
 } from '../../utils/roleBasedFeatures';
@@ -187,69 +188,30 @@ export const getUserStats = async (_req: AuthRequest, res: Response) => {
   }
 };
 
-// Get pending advisor requests (admin only)
+// Get pending advisor requests (admin only). Pending is read from the application
+// itself — submitting no longer switches the applicant's role to 'advisor'.
 export const getPendingAdvisors = async (req: AuthRequest, res: Response) => {
   try {
-    const advisors = await prisma.user.findMany({
-      where: {
-        role: 'advisor',
-        isApproved: false,
-      },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        createdAt: true,
-      },
-      orderBy: { createdAt: 'asc' },
+    const applications = await prisma.advisorApplication.findMany({
+      where: { status: 'PENDING' },
+      select: { submittedAt: true, user: { select: { id: true, email: true, name: true, createdAt: true } } },
+      orderBy: { submittedAt: 'asc' },
     });
 
-    res.json(advisors);
+    res.json(applications.map((a) => a.user));
   } catch (error: any) {
     res.status(500).json({ error: 'Failed to fetch pending advisors' });
   }
 };
 
-// Approve advisor (admin only)
+// Approve advisor (admin only) — same decision path as the verification queue,
+// so the application record and the role grant can never disagree.
 export const approveAdvisor = async (req: AuthRequest, res: Response) => {
   try {
-    const { advisorId } = req.params;
-
-    const advisor = await prisma.user.findUnique({
-      where: { id: advisorId },
-    });
-
-    if (!advisor || advisor.role !== 'advisor') {
-      return res.status(404).json({ error: 'Advisor not found' });
-    }
-
-    const updated = await prisma.user.update({
-      where: { id: advisorId },
-      data: { isApproved: true },
-    });
-    invalidateUserSnapshotCache(advisorId);
-
-    // Notify advisor
-    await prisma.notification.create({
-      data: {
-        userId: advisorId,
-        title: 'Advisor Approved',
-        message: 'Your advisor account has been approved. You can now accept bookings.',
-        category: 'system',
-        deepLink: '/advisor-panel',
-      },
-    });
-
-    res.json({
-      message: 'Advisor approved',
-      user: {
-        id: updated.id,
-        email: updated.email,
-        name: updated.name,
-        role: updated.role,
-        isApproved: updated.isApproved,
-      },
-    });
+    const outcome = await approveAdvisorApplication(req.params.advisorId, req.userId!);
+    if ('error' in outcome) return res.status(outcome.status).json({ error: outcome.error, code: outcome.code });
+    const { id, email, name, role, isApproved } = outcome.user;
+    res.json({ message: 'Advisor approved', user: { id, email, name, role, isApproved } });
   } catch (error: any) {
     res.status(500).json({ error: 'Failed to approve advisor' });
   }
@@ -258,46 +220,10 @@ export const approveAdvisor = async (req: AuthRequest, res: Response) => {
 // Reject advisor (admin only)
 export const rejectAdvisor = async (req: AuthRequest, res: Response) => {
   try {
-    const { advisorId } = req.params;
-    const { reason } = req.body;
-
-    const advisor = await prisma.user.findUnique({
-      where: { id: advisorId },
-    });
-
-    if (!advisor || advisor.role !== 'advisor') {
-      return res.status(404).json({ error: 'Advisor not found' });
-    }
-
-    // Update user back to regular user
-    const updated = await prisma.user.update({
-      where: { id: advisorId },
-      data: {
-        role: 'user',
-        isApproved: false,
-      },
-    });
-    invalidateUserSnapshotCache(advisorId);
-
-    // Notify user
-    await prisma.notification.create({
-      data: {
-        userId: advisorId,
-        title: 'Advisor Request Rejected',
-        message: `Your advisor request has been rejected${reason ? ': ' + reason : ''}`,
-        category: 'system',
-      },
-    });
-
-    res.json({
-      message: 'Advisor rejected',
-      user: {
-        id: updated.id,
-        email: updated.email,
-        name: updated.name,
-        role: updated.role,
-      },
-    });
+    const outcome = await rejectAdvisorApplication(req.params.advisorId, req.userId!, req.body?.reason);
+    if ('error' in outcome) return res.status(outcome.status).json({ error: outcome.error, code: outcome.code });
+    const { id, email, name, role } = outcome.user;
+    res.json({ message: 'Advisor rejected', user: { id, email, name, role } });
   } catch (error: any) {
     res.status(500).json({ error: 'Failed to reject advisor' });
   }
@@ -308,7 +234,7 @@ export const getPlatformStats = async (req: AuthRequest, res: Response) => {
   try {
     const [
       totalUsers,
-      advisorCount,
+      pendingAdvisorRequests,
       approvedAdvisors,
       totalBookings,
       completedSessions,
@@ -316,7 +242,7 @@ export const getPlatformStats = async (req: AuthRequest, res: Response) => {
       totalRevenue,
     ] = await Promise.all([
       prisma.user.count(),
-      prisma.user.count({ where: { role: 'advisor' } }),
+      prisma.advisorApplication.count({ where: { status: 'PENDING' } }),
       prisma.user.count({ where: { role: 'advisor', isApproved: true } }),
       prisma.bookingRequest.count(),
       prisma.advisorSession.count({ where: { status: 'completed' } }),
@@ -333,7 +259,7 @@ export const getPlatformStats = async (req: AuthRequest, res: Response) => {
       users: {
         total: totalUsers,
         advisors: approvedAdvisors,
-        advisorRequests: advisorCount - approvedAdvisors,
+        advisorRequests: pendingAdvisorRequests,
         activeToday: await prisma.user.count({
           where: { lastSynced: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } }
         })

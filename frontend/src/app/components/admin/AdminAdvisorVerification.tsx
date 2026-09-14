@@ -121,11 +121,11 @@ export const AdminAdvisorVerification: React.FC = () => {
     try {
       await backendService.api.put(`/advisors/admin/${userId}/approve`);
       toast.success(`${name} has been approved as an advisor!`);
-      fetchApplications();
-    } catch {
-      toast.error('Failed to approve advisor');
+    } catch (err: any) {
+      toast.error(err?.response?.data?.error || 'Failed to approve advisor');
     } finally {
       setProcessingId(null);
+      fetchApplications();
     }
   };
 
@@ -137,11 +137,11 @@ export const AdminAdvisorVerification: React.FC = () => {
       toast.success('Application rejected and user notified');
       setRejectModal(null);
       setRejectReason('');
-      fetchApplications();
-    } catch {
-      toast.error('Failed to reject application');
+    } catch (err: any) {
+      toast.error(err?.response?.data?.error || 'Failed to reject application');
     } finally {
       setProcessingId(null);
+      fetchApplications();
     }
   };
 
@@ -150,6 +150,10 @@ export const AdminAdvisorVerification: React.FC = () => {
     setLoadingDocUrl(key);
     try {
       const res = await backendService.api.get(`/advisors/application/${applicationId}/document/${docType}`);
+      if (!res.data?.url) {
+        toast.error('This document could not be loaded — a secure link was not issued');
+        return;
+      }
       window.open(res.data.url, '_blank', 'noopener,noreferrer');
     } catch {
       toast.error('Failed to load document');
