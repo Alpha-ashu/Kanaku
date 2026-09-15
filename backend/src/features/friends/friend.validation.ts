@@ -27,6 +27,7 @@ export const friendBulkSchema = z.object({
       }),
     )
     .min(1, 'A non-empty friends array is required')
+    // The web client batches to this size (FRIENDS_BULK_BATCH_SIZE in backend-api.ts).
     .max(200, 'A maximum of 200 friends can be added at once'),
 });
 

@@ -70,7 +70,7 @@ async function linkStaleGroupMembersForFriend(friend: any, userId: string) {
 }
 
 
-async function getRegisteredUserMap(emails: string[], phones: string[]): Promise<Map<string, { id: string; name: string }>> {
+async function getRegisteredUserMap(emails: (string | null)[], phones: (string | null)[]): Promise<Map<string, { id: string; name: string }>> {
   const map = new Map<string, { id: string; name: string }>();
   const cleanEmails = emails.filter(Boolean) as string[];
   const cleanPhones = phones.filter(Boolean) as string[];
@@ -539,7 +539,7 @@ export const bulkCreateFriends = async (req: AuthRequest, res: Response, next: N
       existing.flatMap(f => [f.email?.toLowerCase(), f.phone].filter(Boolean) as string[])
     );
 
-    const created: any[] = [];
+    const toCreate: { name: string; email: string | null; phone: string | null }[] = [];
     const skipped: { name: string; reason: string }[] = [];
 
     for (const row of rawList) {
@@ -560,14 +560,36 @@ export const bulkCreateFriends = async (req: AuthRequest, res: Response, next: N
         continue;
       }
 
-      const friend = await prisma.friend.create({
-        data: { userId, name: sanitize(name), email: cleanEmail, phone: cleanPhone, syncStatus: 'synced' },
-      });
-      await linkStaleGroupMembersForFriend(friend, userId);
-      created.push(friend);
+      toCreate.push({ name, email: cleanEmail, phone: cleanPhone });
       existingNameKeys.add(name.toLowerCase());
       if (cleanEmail) existingContactKeys.add(cleanEmail);
       if (cleanPhone) existingContactKeys.add(cleanPhone);
+    }
+
+    // One INSERT for the whole batch. Per-row creates cost a DB round trip each,
+    // and at production app↔DB latency a 200-contact import outlasted the
+    // client's 15s timeout (→ local-only fallback while the server kept writing).
+    const created = toCreate.length > 0
+      ? await prisma.friend.createManyAndReturn({
+          data: toCreate.map((f) => ({
+            userId, name: sanitize(f.name), email: f.email, phone: f.phone, syncStatus: 'synced',
+          })),
+        })
+      : [];
+
+    // The link step is several queries per friend, so only run it for friends
+    // whose name matches an unlinked group member — found with a single query.
+    if (created.length > 0) {
+      const staleMembers = await prisma.groupExpenseMember.findMany({
+        where: { friendId: null, deletedAt: null, groupExpense: { userId, deletedAt: null } },
+        select: { name: true },
+      });
+      const staleNameKeys = new Set(staleMembers.map((m) => m.name.toLowerCase()));
+      for (const friend of created) {
+        if (staleNameKeys.has(friend.name.toLowerCase())) {
+          await linkStaleGroupMembersForFriend(friend, userId);
+        }
+      }
     }
 
     const registeredMap = await getRegisteredUserMap(created.map(f => f.email), created.map(f => f.phone));

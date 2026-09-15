@@ -7,7 +7,10 @@ import { Button } from '@/app/components/ui/button';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { Card } from '@/app/components/ui/card';
 import { getGoalCategoryMeta, getGoalProgress, getMilestoneLabel, getMonthlySuggestion } from '@/lib/goal-utils';
-import { ArrowDownLeft, MessageSquare, Plus, Target, ArrowLeft } from 'lucide-react';
+import { 
+  ArrowDownLeft, MessageSquare, Plus, Target, ArrowLeft,
+  Plane, Car, Laptop, Heart, GraduationCap, Briefcase, Smile, ShieldAlert, TrendingUp, Sparkles, Users, Calendar
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { takeVoiceDraft, VOICE_GOAL_DRAFT_KEY, type VoiceGoalDraft } from '@/lib/voiceDrafts';
 import { formatCurrencyAmount } from '@/lib/currencyUtils';
@@ -18,9 +21,51 @@ import { cn } from '@/lib/utils';
 const SELECTED_GOAL_ID_KEY = 'selected_goal_id';
 
 type MemberContribution = {
- name: string;
- amount: number;
- status: 'paid' | 'pending';
+  name: string;
+  amount: number;
+  status: 'paid' | 'pending';
+};
+
+const AVATAR_PALETTE = [
+  { bg: 'bg-[#C4B5FD]', text: 'text-[#4C1D95]' }, // lavender / purple (You)
+  { bg: 'bg-[#67E8F9]', text: 'text-[#164E63]' }, // cyan
+  { bg: 'bg-[#FCD34D]', text: 'text-[#78350F]' }, // amber / yellow
+  { bg: 'bg-[#6EE7B7]', text: 'text-[#064E3B]' }, // emerald / mint
+  { bg: 'bg-[#F472B6]', text: 'text-[#831843]' }, // pink
+  { bg: 'bg-[#FDBA74]', text: 'text-[#7C2D12]' }, // orange
+];
+
+const getInitials = (name: string) => {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+  return name.slice(0, 2).toUpperCase();
+};
+
+const getCategoryIcon = (categoryKey?: string) => {
+  switch (categoryKey) {
+    case 'travel':
+      return <Plane className="w-6 h-6 sm:w-7 sm:h-7 text-white stroke-[2.2]" />;
+    case 'emergency':
+      return <ShieldAlert className="w-6 h-6 sm:w-7 sm:h-7 text-white stroke-[2.2]" />;
+    case 'gadget':
+      return <Laptop className="w-6 h-6 sm:w-7 sm:h-7 text-white stroke-[2.2]" />;
+    case 'wedding':
+      return <Heart className="w-6 h-6 sm:w-7 sm:h-7 text-white stroke-[2.2]" />;
+    case 'education':
+      return <GraduationCap className="w-6 h-6 sm:w-7 sm:h-7 text-white stroke-[2.2]" />;
+    case 'investment':
+      return <TrendingUp className="w-6 h-6 sm:w-7 sm:h-7 text-white stroke-[2.2]" />;
+    case 'vehicle':
+      return <Car className="w-6 h-6 sm:w-7 sm:h-7 text-white stroke-[2.2]" />;
+    case 'business':
+      return <Briefcase className="w-6 h-6 sm:w-7 sm:h-7 text-white stroke-[2.2]" />;
+    case 'personal':
+      return <Smile className="w-6 h-6 sm:w-7 sm:h-7 text-white stroke-[2.2]" />;
+    default:
+      return <Target className="w-6 h-6 sm:w-7 sm:h-7 text-white stroke-[2.2]" />;
+  }
 };
 
 export const GoalDetail: React.FC = () => {
@@ -275,65 +320,152 @@ export const GoalDetail: React.FC = () => {
   </div>
 
   <div className="space-y-6">
-  <div className="bg-white dark:bg-card rounded-[28px] sm:rounded-[32px] p-6 lg:p-8 border border-slate-100/80 dark:border-border/60 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)] space-y-6">
-  <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-  <div className="p-4 rounded-2xl bg-slate-50/70 dark:bg-muted/40 border border-slate-100 dark:border-border/40">
-  <p className="text-xs font-semibold text-slate-400 tracking-wider uppercase mb-1">Target</p>
-  <p className="text-2xl font-bold text-slate-900 dark:text-white">{formatCurrency(goal.targetAmount)}</p>
-  </div>
-  <div className="p-4 rounded-2xl bg-slate-50/70 dark:bg-muted/40 border border-slate-100 dark:border-border/40">
-  <p className="text-xs font-semibold text-slate-400 tracking-wider uppercase mb-1">Saved</p>
-  <p className="text-2xl font-bold text-slate-900 dark:text-white">{formatCurrency(goal.currentAmount)}</p>
-  </div>
-  <div className="p-4 rounded-2xl bg-slate-50/70 dark:bg-muted/40 border border-slate-100 dark:border-border/40">
-  <p className="text-xs font-semibold text-slate-400 tracking-wider uppercase mb-1">Remaining</p>
-  <p className="text-2xl font-bold text-slate-900 dark:text-white">{formatCurrency(Math.max(0, goal.targetAmount - goal.currentAmount))}</p>
-  </div>
-  <div className="p-4 rounded-2xl bg-slate-50/70 dark:bg-muted/40 border border-slate-100 dark:border-border/40">
-  <p className="text-xs font-semibold text-slate-400 tracking-wider uppercase mb-1">Goal Type</p>
-  <p className="text-2xl font-bold text-slate-900 dark:text-white">{goal.isGroupGoal ? 'Group' : 'Individual'}</p>
-  </div>
-  </div>
+    {/* TOP HERO CARD — Matches Reference Image 2 */}
+    <div className="bg-gradient-to-br from-[#7C3AED] via-[#8B5CF6] to-[#9333EA] rounded-[28px] sm:rounded-[36px] p-6 sm:p-8 text-white relative overflow-hidden shadow-[0_20px_50px_-12px_rgba(124,58,237,0.35)] border border-purple-400/20">
+      {/* Ambient decorative glow */}
+      <div className="absolute -top-24 -right-24 w-72 h-72 bg-white/10 blur-3xl rounded-full pointer-events-none" />
+      <div className="absolute -bottom-24 -left-24 w-72 h-72 bg-purple-950/30 blur-3xl rounded-full pointer-events-none" />
 
-  <div>
-    <div className="w-full h-3 bg-slate-100 dark:bg-muted rounded-full overflow-hidden">
-      <div
-        className="h-3 bg-gradient-to-r from-[#8B5CF6] to-[#7C3AED] rounded-full transition-all duration-700 ease-out"
-        style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
-      />
+      {/* Top Row: Amount & Translucent Squircle Icon (Matches Image 2) */}
+      <div className="relative z-10 flex items-start justify-between gap-4">
+        <div>
+          <p className="text-xs sm:text-sm font-semibold text-purple-100/90 tracking-wide uppercase">
+            Saved so far
+          </p>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white mt-1">
+            {formatCurrency(goal.currentAmount)}
+          </h2>
+        </div>
+
+        {/* Squircle category icon badge matching Image 2 */}
+        <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white/15 backdrop-blur-md border border-white/25 flex items-center justify-center text-white shadow-xs shrink-0">
+          {getCategoryIcon(goal.category)}
+        </div>
+      </div>
+
+      {/* Middle: Progress Bar with High-Contrast Indicator */}
+      <div className="relative z-10 my-4 sm:my-5">
+        <div className="w-full h-2.5 bg-black/25 backdrop-blur-xs rounded-full overflow-hidden">
+          <div
+            className="h-full bg-gradient-to-r from-white via-purple-100 to-emerald-300 rounded-full transition-all duration-700 ease-out"
+            style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
+          />
+        </div>
+        <div className="flex items-center justify-between text-xs font-semibold text-purple-100/90 mt-2">
+          <span>{progress.toFixed(0)}% completed {milestone ? `• ${milestone}` : ''}</span>
+          <span>Target: {formatCurrency(goal.targetAmount)}</span>
+        </div>
+      </div>
+
+      {/* Bottom Row: Overlapping Avatars (Left) & Pill Badge (Right) */}
+      <div className="relative z-10 flex items-center justify-between gap-3 pt-1 flex-wrap sm:flex-nowrap">
+        {/* Overlapping Avatars: You, RS, MK, VN (Matches Image 2) */}
+        <div className="flex items-center -space-x-2">
+          {/* (You) Bubble */}
+          <div
+            className={cn(
+              "w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center font-black text-[11px] sm:text-xs ring-2 ring-[#7C3AED] shadow-xs shrink-0 z-10",
+              AVATAR_PALETTE[0].bg,
+              AVATAR_PALETTE[0].text
+            )}
+            title="You"
+          >
+            You
+          </div>
+
+          {/* Collaborator member bubbles */}
+          {goal.isGroupGoal && goal.members && goal.members.length > 0 && (
+            goal.members.slice(0, 3).map((m, idx) => {
+              const palette = AVATAR_PALETTE[(idx + 1) % AVATAR_PALETTE.length];
+              const initials = getInitials(m.name);
+              return (
+                <div
+                  key={m.name}
+                  className={cn(
+                    "w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center font-black text-[11px] sm:text-xs ring-2 ring-[#7C3AED] shadow-xs shrink-0",
+                    palette.bg,
+                    palette.text
+                  )}
+                  style={{ zIndex: 9 - idx }}
+                  title={m.name}
+                >
+                  {initials}
+                </div>
+              );
+            })
+          )}
+
+          {goal.isGroupGoal && goal.members && goal.members.length > 3 && (
+            <div
+              className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center font-black text-[10px] sm:text-[11px] bg-[#F472B6] text-[#831843] ring-2 ring-[#7C3AED] shadow-xs shrink-0 z-0"
+              title={`${goal.members.length - 3} more collaborators`}
+            >
+              +{goal.members.length - 3}
+            </div>
+          )}
+
+          {!goal.isGroupGoal && (
+            <span className="ml-3 pl-2 text-xs font-semibold text-purple-200">Solo Goal</span>
+          )}
+        </div>
+
+        {/* Pill Badge matching "You are owed ₹4,850" from Reference Image 2 */}
+        <div className="bg-white/20 hover:bg-white/25 backdrop-blur-md px-4 sm:px-5 py-2 sm:py-2.5 rounded-full font-bold text-white text-xs sm:text-sm tracking-wide shadow-xs border border-white/10 shrink-0">
+          {Math.max(0, goal.targetAmount - goal.currentAmount) <= 0
+            ? 'Goal Completed 🎉'
+            : `${formatCurrency(Math.max(0, goal.targetAmount - goal.currentAmount))} remaining`}
+        </div>
+      </div>
     </div>
-    <div className="flex items-center justify-between text-xs sm:text-sm font-semibold mt-2.5">
-      <span className="text-slate-600 dark:text-slate-300">{progress.toFixed(0)}% completed</span>
-      {milestone && <span className="font-bold text-emerald-600">{milestone}</span>}
+
+    {/* Financial Metric Cards */}
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+      <div className="p-4 rounded-[22px] bg-white dark:bg-card border border-slate-100/80 dark:border-border/60 shadow-[0_4px_20px_-4px_rgba(112,144,176,0.06)]">
+        <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 tracking-wider uppercase mb-1">Target</p>
+        <p className="text-lg sm:text-xl font-black text-slate-900 dark:text-white">{formatCurrency(goal.targetAmount)}</p>
+      </div>
+      <div className="p-4 rounded-[22px] bg-white dark:bg-card border border-slate-100/80 dark:border-border/60 shadow-[0_4px_20px_-4px_rgba(112,144,176,0.06)]">
+        <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 tracking-wider uppercase mb-1">Saved</p>
+        <p className="text-lg sm:text-xl font-black text-slate-900 dark:text-white">{formatCurrency(goal.currentAmount)}</p>
+      </div>
+      <div className="p-4 rounded-[22px] bg-white dark:bg-card border border-slate-100/80 dark:border-border/60 shadow-[0_4px_20px_-4px_rgba(112,144,176,0.06)]">
+        <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 tracking-wider uppercase mb-1">Monthly Plan</p>
+        <p className="text-lg sm:text-xl font-black text-slate-900 dark:text-white">
+          {formatCurrency(monthlySuggestion.monthlyAmount)}
+          <span className="text-xs font-semibold text-slate-400">/mo</span>
+        </p>
+      </div>
+      <div className="p-4 rounded-[22px] bg-white dark:bg-card border border-slate-100/80 dark:border-border/60 shadow-[0_4px_20px_-4px_rgba(112,144,176,0.06)]">
+        <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 tracking-wider uppercase mb-1">Target Date</p>
+        <p className="text-sm sm:text-base font-black text-slate-900 dark:text-white truncate">
+          {new Date(goal.targetDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+        </p>
+      </div>
     </div>
-  </div>
 
-  <div className="rounded-2xl bg-purple-50/60 dark:bg-purple-950/20 border border-purple-100/60 p-4 flex items-start gap-3">
-  <Target className="w-5 h-5 text-purple-600 shrink-0 mt-0.5" />
-  <div>
-  <p className="text-sm font-semibold text-slate-900 dark:text-white">Suggested Saving</p>
-  <p className="text-sm text-slate-500">{formatCurrency(monthlySuggestion.monthlyAmount)} / month for {monthlySuggestion.months} month(s)</p>
-  </div>
-  </div>
-
-  <div className="rounded-2xl border border-slate-100 dark:border-border/40 bg-slate-50/50 dark:bg-muted/20 p-4">
-  <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-2">Timeline Insights</p>
-  <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-slate-600">
-  <span className="flex items-center gap-2">
-  <div className="w-1.5 h-1.5 rounded-full bg-slate-300" />
-  Last contribution: {lastContributionDate
-  ? lastContributionDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
-  : 'No contribution yet'}
-  </span>
-  {completedOnDate && (
-  <span className="flex items-center gap-2 font-semibold text-emerald-600">
-  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-  Completed on: {completedOnDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
-  </span>
-  )}
-  </div>
-  </div>
-  </div>
+    {/* Suggested Saving and Timeline Insights Banner */}
+    <div className="rounded-[24px] border border-slate-100/90 dark:border-border/40 bg-white dark:bg-card p-4 sm:p-5 shadow-2xs flex flex-wrap items-center justify-between gap-3">
+      <div className="flex items-center gap-2.5">
+        <Sparkles className="w-4 h-4 text-purple-600 shrink-0" />
+        <span className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200">
+          Suggested: <span className="text-purple-600 font-extrabold">{formatCurrency(monthlySuggestion.monthlyAmount)} / month</span> for {monthlySuggestion.months} month(s)
+        </span>
+      </div>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500 font-medium">
+        <span className="flex items-center gap-1.5">
+          <div className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+          Last: {lastContributionDate
+            ? lastContributionDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+            : 'No contribution yet'}
+        </span>
+        {completedOnDate && (
+          <span className="flex items-center gap-1.5 font-bold text-emerald-600">
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            Completed: {completedOnDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+          </span>
+        )}
+      </div>
+    </div>
 
   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
   <div className="space-y-6">

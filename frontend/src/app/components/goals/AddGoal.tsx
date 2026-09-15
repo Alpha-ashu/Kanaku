@@ -168,11 +168,29 @@ export const AddGoal: React.FC = () => {
  }
  }, [suggestion?.monthlyAmount, formData.monthlySavingPlan]);
 
- const handleSubmit = async () => {
- if (!formData.name.trim()) { toast.error('Enter goal name'); return; }
- if (formData.targetAmount <= 0) { toast.error('Enter target amount'); return; }
- if (!formData.deadline) { toast.error('Select a target date'); return; }
- if (formData.goalType === 'group' && members.length === 0) { toast.error('Add at least one member'); return; }
+  const handleSubmit = async () => {
+  if (!formData.name.trim()) { toast.error('Enter goal name'); return; }
+  if (formData.targetAmount <= 0) { toast.error('Enter target amount'); return; }
+  if (!formData.deadline) { toast.error('Select a target date'); return; }
+  if (formData.goalType === 'group') {
+    if (members.length === 0) { toast.error('Add at least one collaborator'); return; }
+    const contactsSet = new Set<string>();
+    const namesSet = new Set<string>();
+    for (const m of members) {
+      const c = m.contactType === 'phone' ? m.contactValue.replace(/\D/g, '') : m.contactValue.trim().toLowerCase();
+      const n = m.name.trim().toLowerCase();
+      if (contactsSet.has(c)) {
+        toast.error(`Duplicate collaborator contact: "${m.contactValue}". All collaborators must have unique contacts.`);
+        return;
+      }
+      if (namesSet.has(n)) {
+        toast.error(`Duplicate collaborator name: "${m.name}". All collaborator names must be unique.`);
+        return;
+      }
+      contactsSet.add(c);
+      namesSet.add(n);
+    }
+  }
 
  setIsSubmitting(true);
  try {
@@ -210,12 +228,129 @@ export const AddGoal: React.FC = () => {
  }
  };
 
- const addMember = () => {
- if (!memberInput.name || !memberInput.contactValue) { toast.error('Name and contact are required'); return; }
- setMembers(prev => [...prev, { name: memberInput.name, contactType: memberInput.contactType, contactValue: memberInput.contactValue, contribution: 0, status: 'pending' }]);
- setMemberInput({ name: '', contactType: 'email', contactValue: '' });
- setShowNewMemberInput(false);
- };
+  const addMember = () => {
+    const trimmedName = memberInput.name.trim();
+    const trimmedContact = memberInput.contactValue.trim();
+
+    if (!trimmedName) {
+      toast.error('Collaborator name is required');
+      return;
+    }
+    if (!trimmedContact) {
+      toast.error('Collaborator email or phone is required');
+      return;
+    }
+
+    // Email syntax validation
+    if (memberInput.contactType === 'email') {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(trimmedContact)) {
+        toast.error('Please enter a valid email address');
+        return;
+      }
+    }
+
+    // Phone syntax validation
+    if (memberInput.contactType === 'phone') {
+      const digitsOnly = trimmedContact.replace(/\D/g, '');
+      if (digitsOnly.length < 7) {
+        toast.error('Please enter a valid phone number (at least 7 digits)');
+        return;
+      }
+    }
+
+    // Duplicate contact check (unique email & phone across collaborators)
+    const duplicateContact = members.find(m => {
+      if (memberInput.contactType === 'email' && m.contactType === 'email') {
+        return m.contactValue.trim().toLowerCase() === trimmedContact.toLowerCase();
+      }
+      if (memberInput.contactType === 'phone' && m.contactType === 'phone') {
+        const mDigits = m.contactValue.replace(/\D/g, '');
+        const newDigits = trimmedContact.replace(/\D/g, '');
+        return mDigits && newDigits && mDigits === newDigits;
+      }
+      return m.contactValue.trim().toLowerCase() === trimmedContact.toLowerCase();
+    });
+
+    if (duplicateContact) {
+      toast.error(`"${trimmedContact}" is already added for collaborator "${duplicateContact.name}". Each collaborator must be unique.`);
+      return;
+    }
+
+    // Duplicate name check
+    const duplicateName = members.find(m => m.name.trim().toLowerCase() === trimmedName.toLowerCase());
+    if (duplicateName) {
+      toast.error(`A collaborator named "${trimmedName}" has already been added.`);
+      return;
+    }
+
+    setMembers(prev => [...prev, {
+      name: trimmedName,
+      contactType: memberInput.contactType,
+      contactValue: trimmedContact,
+      contribution: 0,
+      status: 'pending'
+    }]);
+    setMemberInput({ name: '', contactType: 'email', contactValue: '' });
+    setShowNewMemberInput(false);
+    toast.success(`Added ${trimmedName} as collaborator`);
+  };
+
+  const handlePickFriend = (friend: typeof friends[0]) => {
+    // Check if friend name is already added
+    if (members.some(m => m.name.trim().toLowerCase() === friend.name.trim().toLowerCase())) {
+      toast.error(`"${friend.name}" is already added as a collaborator.`);
+      return;
+    }
+
+    // Check if friend's email or phone is already taken by another collaborator
+    if (friend.email) {
+      const emailDup = members.find(m => m.contactType === 'email' && m.contactValue.trim().toLowerCase() === friend.email!.trim().toLowerCase());
+      if (emailDup) {
+        toast.error(`Email ${friend.email} is already used by ${emailDup.name}.`);
+        return;
+      }
+    }
+    if (friend.phone) {
+      const pDigits = friend.phone.replace(/\D/g, '');
+      const phoneDup = members.find(m => m.contactType === 'phone' && m.contactValue.replace(/\D/g, '') === pDigits);
+      if (phoneDup) {
+        toast.error(`Phone ${friend.phone} is already used by ${phoneDup.name}.`);
+        return;
+      }
+    }
+
+    if (friend.email) {
+      setMembers(prev => [...prev, {
+        name: friend.name,
+        contactType: 'email',
+        contactValue: friend.email!,
+        contribution: 0,
+        status: 'pending'
+      }]);
+      toast.success(`Added ${friend.name} (${friend.email})`);
+      setShowFriendPicker(false);
+    } else if (friend.phone) {
+      setMembers(prev => [...prev, {
+        name: friend.name,
+        contactType: 'phone',
+        contactValue: friend.phone!,
+        contribution: 0,
+        status: 'pending'
+      }]);
+      toast.success(`Added ${friend.name} (${friend.phone})`);
+      setShowFriendPicker(false);
+    } else {
+      setMemberInput({
+        name: friend.name,
+        contactType: 'email',
+        contactValue: ''
+      });
+      setShowNewMemberInput(true);
+      setShowFriendPicker(false);
+      toast.info(`Please enter an email or phone for ${friend.name}`);
+    }
+  };
 
  return (
     <CenteredLayout enablePullToRefresh={false} className="pb-32">
@@ -297,60 +432,82 @@ export const AddGoal: React.FC = () => {
 
   {/* Group Members Section */}
   {formData.goalType === 'group' && (
-  <div className="bg-white rounded-[28px] sm:rounded-[32px] p-5 sm:p-6 border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] space-y-4 animate-in slide-in-from-bottom-2 duration-300">
+  <div className="bg-white rounded-[28px] sm:rounded-[32px] p-5 sm:p-6 border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)] space-y-4 animate-in slide-in-from-bottom-2 duration-300">
   <div className="flex items-center justify-between">
-  <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-  Collaborators ({members.length})
+  <label className="text-xs sm:text-[13px] font-bold text-slate-500 uppercase tracking-wider">
+  COLLABORATORS ({members.length})
   </label>
   
-  <div className="flex gap-2">
+  <div className="flex items-center gap-2">
   {friends.length > 0 && (
   <button
   type="button"
   onClick={() => { setShowFriendPicker(p => !p); setShowNewMemberInput(false); }}
   data-testid="goals-create-friends-picker-button"
-  className="flex items-center gap-1 text-[10px] sm:text-[11px] font-bold text-violet-600 bg-violet-50 px-2.5 py-1.5 rounded-lg uppercase tracking-wide transition-all"
+  className={cn(
+    "flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wider transition-all cursor-pointer",
+    showFriendPicker
+      ? "bg-violet-600 text-white shadow-xs"
+      : "text-violet-700 bg-violet-50 hover:bg-violet-100"
+  )}
   >
-  <Users size={11} /> Friends
+  <Users size={12} /> Friends
   </button>
   )}
   <button
   type="button"
   onClick={() => { setShowNewMemberInput(p => !p); setShowFriendPicker(false); }}
   data-testid="goals-create-add-member-toggle-button"
-  className="flex items-center gap-1 text-[10px] sm:text-[11px] font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1.5 rounded-lg uppercase tracking-wide transition-all"
+  className={cn(
+    "flex items-center gap-1.5 text-xs font-bold px-3.5 py-1.5 rounded-full uppercase tracking-wider transition-all cursor-pointer",
+    showNewMemberInput
+      ? "bg-[#4F46E5] text-white shadow-xs"
+      : "text-[#4F46E5] bg-[#EEF2FF] hover:bg-[#E0E7FF]"
+  )}
   >
-  <UserPlus size={11} /> New
+  <UserPlus size={13} /> NEW
   </button>
   </div>
   </div>
 
   {/* Friends quick-add / Selection Panel */}
   {showFriendPicker && friends.length > 0 && (
-  <div className="p-3 bg-violet-50/60 rounded-xl border border-violet-100 animate-in zoom-in-95 duration-200">
-  <p className="text-[10px] sm:text-[11px] font-bold text-violet-400 uppercase tracking-wider mb-2">Tap to select</p>
-  <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2">
+  <div className="p-3.5 bg-violet-50/70 rounded-2xl border border-violet-100 animate-in zoom-in-95 duration-200 space-y-2">
+  <div className="flex items-center justify-between">
+    <p className="text-[11px] font-bold text-violet-600 uppercase tracking-wider">Tap friend to add uniquely</p>
+    <button
+      type="button"
+      onClick={() => setShowFriendPicker(false)}
+      className="text-violet-400 hover:text-violet-600 text-[11px] font-semibold"
+    >
+      Close
+    </button>
+  </div>
+  <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto pr-1">
   {friends.map(f => {
-  const isSelected = members.some(m => m.name.toLowerCase() === f.name.toLowerCase());
+  const isAdded = members.some(m =>
+    m.name.trim().toLowerCase() === f.name.trim().toLowerCase() ||
+    (f.email && m.contactType === 'email' && m.contactValue.trim().toLowerCase() === f.email.trim().toLowerCase()) ||
+    (f.phone && m.contactType === 'phone' && m.contactValue.replace(/\D/g, '') === f.phone.replace(/\D/g, ''))
+  );
   return (
   <button
   key={f.id}
   type="button"
-  onClick={() => {
-  if (!isSelected) {
-  setMemberInput(prev => ({ ...prev, name: f.name }));
-  setShowNewMemberInput(true);
-  setShowFriendPicker(false);
-  }
-  }}
+  disabled={isAdded}
+  onClick={() => handlePickFriend(f)}
   className={cn(
-  "px-2.5 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-bold transition-all border",
-  isSelected
-  ?"bg-indigo-600 border-indigo-600 text-white shadow-md"
-  :"bg-white border-violet-100 text-violet-700 hover:bg-violet-600 hover:text-white"
+  "px-3 py-1.5 rounded-full text-xs font-bold transition-all border flex items-center gap-1.5 cursor-pointer",
+  isAdded
+  ?"bg-indigo-100/80 border-indigo-200 text-indigo-800 opacity-60 cursor-not-allowed"
+  :"bg-white border-violet-200/80 text-violet-800 hover:bg-violet-600 hover:text-white hover:border-violet-600 shadow-2xs active:scale-95"
   )}
   >
-  {f.name}
+  <span className="w-4 h-4 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center text-[9px] font-black uppercase">
+    {f.name[0] || '?'}
+  </span>
+  <span>{f.name}</span>
+  {isAdded && <Check size={12} className="text-indigo-700" />}
   </button>
   );
   })}
@@ -360,15 +517,25 @@ export const AddGoal: React.FC = () => {
 
   {/* New Person Input */}
   {showNewMemberInput && (
-  <div className="flex flex-col gap-2 p-3 bg-slate-50 rounded-xl animate-in slide-in-from-top-2">
-  <div className="flex gap-2">
+  <div className="flex flex-col gap-2.5 p-3.5 bg-slate-50/90 rounded-2xl border border-slate-200/80 animate-in slide-in-from-top-2 duration-200">
+  <div className="flex items-center justify-between">
+    <span className="text-xs font-bold text-slate-700">Add Unique Collaborator</span>
+    <button
+      type="button"
+      onClick={() => setShowNewMemberInput(false)}
+      className="text-slate-400 hover:text-slate-600 text-xs font-semibold"
+    >
+      Cancel
+    </button>
+  </div>
+  <div className="flex flex-col sm:flex-row gap-2">
   <input
   id="goal-member-name" name="memberName" aria-label="Member name"
   type="text"
   value={memberInput.name}
   onChange={e => setMemberInput(prev => ({ ...prev, name: e.target.value }))}
   data-testid="goals-create-member-name-input"
-  className="flex-1 h-10 sm:h-11 bg-white border border-slate-200/80 rounded-xl px-3 text-xs sm:text-sm font-semibold"
+  className="flex-1 h-10 sm:h-11 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400"
   placeholder="Friend Name"
   autoFocus
   />
@@ -377,7 +544,7 @@ export const AddGoal: React.FC = () => {
   onChange={e => setMemberInput(prev => ({ ...prev, contactType: e.target.value as any }))}
   aria-label="Contact type"
   data-testid="goals-create-member-contact-type"
-  className="h-10 sm:h-11 bg-white border border-slate-200/80 rounded-xl px-2 text-[10px] sm:text-[11px] font-bold uppercase"
+  className="h-10 sm:h-11 bg-white border border-slate-200/80 rounded-xl px-3 text-xs font-bold text-slate-700 uppercase focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
   >
   <option data-testid="add-goal-email" value="email">Email</option>
   <option data-testid="add-goal-phone" value="phone">Phone</option>
@@ -386,53 +553,68 @@ export const AddGoal: React.FC = () => {
   <div className="flex gap-2">
   <input
   id="goal-member-contact" name="memberContact" aria-label="Member contact (email or phone)"
-  type="text"
+  type={memberInput.contactType === 'email' ? 'email' : 'tel'}
   value={memberInput.contactValue}
   onChange={e => setMemberInput(prev => ({ ...prev, contactValue: e.target.value }))}
   data-testid="goals-create-member-contact-input"
-  className="flex-1 h-10 sm:h-11 bg-white border border-slate-200/80 rounded-xl px-3 text-xs sm:text-sm font-semibold"
-  placeholder="Contact (Email or Phone)..."
+  className="flex-1 h-10 sm:h-11 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400"
+  placeholder={memberInput.contactType === 'email' ? 'Unique email (e.g. friend@gmail.com)' : 'Unique phone number'}
   />
   <button
   type="button"
   onClick={addMember}
   data-testid="goals-create-member-add-button"
-  className="px-4 h-10 sm:h-11 bg-indigo-600 text-white rounded-xl text-[10px] sm:text-[11px] font-bold uppercase tracking-wider"
+  className="px-4 h-10 sm:h-11 bg-[#4F46E5] hover:bg-[#4338CA] active:scale-95 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer shadow-xs shrink-0 flex items-center gap-1"
   >
-  Add
+  <Plus size={14} /> Add
   </button>
   </div>
+  <p className="text-[11px] text-slate-400 flex items-center gap-1">
+    <Info size={12} className="shrink-0 text-slate-400" />
+    Duplicate emails or phone numbers are not allowed.
+  </p>
   </div>
   )}
 
-  {/* Participant List Display */}
-  <div className="space-y-2">
+  {/* Participant List Display — Matches Reference Image 1 */}
+  <div className="space-y-2.5">
   {members.length === 0 ? (
-  <p className="text-xs font-bold text-slate-400 text-center py-6">No participants added</p>
-  ) : (
-  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[160px] overflow-y-auto no-scrollbar">
-  {members.map((m, idx) => (
-  <div key={idx} className="flex items-center justify-between p-2 bg-slate-50 border border-slate-100 rounded-xl group transition-all">
-  <div className="flex items-center gap-2">
-  <div className="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center text-[10px] font-black text-indigo-600 uppercase">
-  {m.name[0] || '?'}
+  <div className="text-center py-6 border border-dashed border-slate-200 rounded-2xl bg-slate-50/50">
+    <Users className="w-8 h-8 mx-auto text-slate-300 mb-1.5" />
+    <p className="text-xs font-bold text-slate-500">No collaborators added yet</p>
+    <p className="text-[11px] text-slate-400">Add friends or new members with unique contact details</p>
   </div>
-  <div className="flex flex-col">
-  <span className="text-xs font-bold text-slate-800 leading-tight">{m.name}</span>
-  <span className="text-[10px] sm:text-[11px] font-medium text-slate-400 leading-none">{m.contactValue}</span>
+  ) : (
+  <div className="flex flex-col gap-2.5">
+  {members.map((m, idx) => {
+  const initial = (m.name[0] || '?').toUpperCase();
+  return (
+  <div
+    key={idx}
+    className="rounded-full bg-slate-50/80 hover:bg-slate-50 border border-slate-100/90 px-4 py-3 flex items-center justify-between transition-all group"
+  >
+  <div className="flex items-center gap-3 min-w-0">
+  <div className="w-10 h-10 rounded-full bg-[#E0E7FF] text-[#4F46E5] font-black text-sm flex items-center justify-center shrink-0">
+  {initial}
+  </div>
+  <div className="flex flex-col min-w-0">
+  <span className="text-sm font-bold text-slate-900 leading-tight truncate">{m.name}</span>
+  <span className="text-xs font-medium text-slate-500 leading-tight truncate mt-0.5">{m.contactValue}</span>
   </div>
   </div>
   <button
   type="button"
   onClick={() => setMembers(prev => prev.filter((_, i) => i !== idx))}
-  title="Remove member"
+  title={`Remove ${m.name}`}
+  aria-label={`Remove ${m.name}`}
   data-testid={`goals-create-member-remove-${idx}`}
-  className="p-1 text-slate-300 hover:text-rose-500 transition-colors opacity-0 group-hover:opacity-100"
+  className="p-1.5 text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded-full transition-colors cursor-pointer"
   >
-  <Trash2 size={12} strokeWidth={3} />
+  <Trash2 size={15} />
   </button>
   </div>
-  ))}
+  );
+  })}
   </div>
   )}
   </div>

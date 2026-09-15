@@ -12,6 +12,8 @@ import { awaitPinUnlock, getPinUnlockToken, setPinUnlockToken } from './pinUnloc
 
 const API_BASE_URL = (getConfiguredApiBase()).replace(/\/+$/, '');
 const SHOULD_SKIP_OPTIONAL_BACKEND_REQUESTS = import.meta.env.DEV && !import.meta.env.VITE_API_URL;
+/** Must not exceed the `.max()` on `friendBulkSchema.friends` in the backend. */
+const FRIENDS_BULK_BATCH_SIZE = 200;
 
 function shouldUseLocalFallback(error: unknown) {
   if (error && typeof error === 'object' && 'status' in error) {
@@ -905,13 +907,44 @@ class BackendService {
   }
 
   /**
-   * Bulk add multiple friends atomically to both local storage and cloud backend.
+   * Bulk add multiple friends to both local storage and cloud backend.
+   * `POST /friends/bulk` accepts at most FRIENDS_BULK_BATCH_SIZE rows, and a
+   * phone-contacts import is often hundreds, so rows go up in sequential
+   * batches. If a later batch fails, earlier batches stay saved and the error
+   * is rethrown; re-saving the same list is safe (the backend skips names that
+   * already exist).
    */
   async createFriendsBulk(friends: Array<{
     name: string;
     email?: string;
     phone?: string;
     relationship?: string;
+  }>): Promise<{
+    created: any[];
+    skipped: { name: string; reason: string }[];
+    createdCount: number;
+    skippedCount: number;
+  }> {
+    const result = {
+      created: [] as any[],
+      skipped: [] as { name: string; reason: string }[],
+      createdCount: 0,
+      skippedCount: 0,
+    };
+    for (let i = 0; i < friends.length; i += FRIENDS_BULK_BATCH_SIZE) {
+      const batch = await this.createFriendsBulkBatch(friends.slice(i, i + FRIENDS_BULK_BATCH_SIZE));
+      result.created.push(...batch.created);
+      result.skipped.push(...batch.skipped);
+      result.createdCount += batch.createdCount;
+      result.skippedCount += batch.skippedCount;
+    }
+    return result;
+  }
+
+  private async createFriendsBulkBatch(friends: Array<{
+    name: string;
+    email?: string;
+    phone?: string;
   }>): Promise<{
     created: any[];
     skipped: { name: string; reason: string }[];
