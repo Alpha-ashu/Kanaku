@@ -23,11 +23,7 @@ export const AuthShowcase: React.FC = () => {
       {/* Top Header / Logo */}
       <div className="relative z-10">
         <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-violet-600 to-indigo-500 p-0.5 shadow-lg shadow-violet-500/30 flex items-center justify-center">
-            <div className="w-full h-full bg-[#0A0D17] rounded-[14px] flex items-center justify-center">
-              <KANAKULogo className="w-6 h-6 text-violet-400" />
-            </div>
-          </div>
+          <KANAKULogo className="w-9 h-9 flex-shrink-0 drop-shadow-md" />
           <div>
             <div className="flex items-center gap-2">
               <span className="font-black tracking-tight text-xl text-white">KANAKU</span>

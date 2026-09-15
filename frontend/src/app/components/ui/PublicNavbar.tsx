@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X, ArrowRight, Sparkles } from 'lucide-react';
+import { Menu, X, ArrowRight } from 'lucide-react';
 import { KANAKULogo } from './KANAKULogo';
 
 interface PublicNavbarProps {
@@ -8,6 +8,39 @@ interface PublicNavbarProps {
   onGetStarted: () => void;
   currentPage: string;
 }
+
+const DISPLAY_FONT = "'Manrope', 'Inter', system-ui, sans-serif";
+
+// Entries marked `section` are anchors on the landing page; the rest are public pages.
+const navLinks: { name: string; id: string; section?: boolean }[] = [
+  { name: 'Features', id: 'features', section: true },
+  { name: 'Security', id: 'security', section: true },
+  { name: 'Pricing', id: 'pricing' },
+  { name: 'About', id: 'about' },
+  { name: 'Support', id: 'contact' },
+];
+
+export const scrollToSection = (id: string) => {
+  const element = document.getElementById(id);
+  if (!element) return;
+  const top = element.getBoundingClientRect().top + window.scrollY - 72;
+  window.scrollTo({ top, behavior: 'smooth' });
+};
+
+export const KanakuWordmark: React.FC<{ className?: string; logoClassName?: string }> = ({
+  className = 'text-lg',
+  logoClassName = 'w-8 h-8',
+}) => (
+  <span className="inline-flex items-center gap-2.5 select-none">
+    <KANAKULogo className={`${logoClassName} flex-shrink-0`} />
+    <span
+      className={`${className} font-extrabold tracking-[0.02em] text-slate-950 leading-none`}
+      style={{ fontFamily: DISPLAY_FONT }}
+    >
+      KANAKU
+    </span>
+  </span>
+);
 
 export const PublicNavbar: React.FC<PublicNavbarProps> = ({
   onNavigate,
@@ -19,89 +52,66 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const navLinks = [
-    { name: 'Home', id: 'landing' },
-    { name: 'About', id: 'about' },
-    { name: 'Features', id: 'features' },
-    { name: 'Pricing', id: 'pricing' },
-    { name: 'Privacy', id: 'privacy' },
-    { name: 'Terms', id: 'terms' },
-    { name: 'Support', id: 'contact' },
-  ];
-
-  const handleLinkClick = (id: string) => {
-    if (id === 'features') {
-      if (currentPage === 'landing') {
-        const element = document.getElementById('features');
-        if (element) {
-          const offset = 90;
-          const elementPosition = element.getBoundingClientRect().top + window.scrollY;
-          window.scrollTo({ top: elementPosition - offset, behavior: 'smooth' });
-        }
-      } else {
-        onNavigate('landing');
-        setTimeout(() => {
-          const element = document.getElementById('features');
-          if (element) {
-            const offset = 90;
-            const elementPosition = element.getBoundingClientRect().top + window.scrollY;
-            window.scrollTo({ top: elementPosition - offset, behavior: 'smooth' });
-          }
-        }, 120);
-      }
-    } else {
-      onNavigate(id);
-    }
+  const handleLinkClick = (id: string, section?: boolean) => {
     setMenuOpen(false);
+    if (!section) {
+      if (id === 'landing' && currentPage === 'landing') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+      onNavigate(id);
+      return;
+    }
+    if (currentPage === 'landing') {
+      scrollToSection(id);
+    } else {
+      onNavigate('landing');
+      setTimeout(() => scrollToSection(id), 120);
+    }
   };
 
-  return (
-    <header className="fixed top-4 inset-x-3 sm:inset-x-6 z-50 pointer-events-none transition-all duration-300">
-      <div
-        className={`max-w-6xl mx-auto pointer-events-auto h-16 sm:h-17 rounded-full transition-all duration-300 px-4 sm:px-8 flex items-center justify-between ${
-          scrolled
-            ? 'bg-white/85 backdrop-blur-2xl border border-white/60 shadow-[0_16px_36px_rgba(15,23,42,0.12)] ring-1 ring-slate-900/5'
-            : 'bg-white/70 backdrop-blur-xl border border-white/40 shadow-[0_8px_30px_rgba(15,23,42,0.06)]'
-        }`}
-      >
-        {/* Logo */}
-        <div
-          data-testid="public-navbar-div"
-          className="flex items-center gap-3 cursor-pointer group select-none"
-          onClick={() => handleLinkClick('landing')}
-        >
-          <div className="w-10 h-10 flex items-center justify-center rounded-2xl bg-gradient-to-tr from-violet-500/10 to-indigo-500/10 border border-violet-500/20 group-hover:scale-105 transition-transform duration-300 shadow-sm">
-            <KANAKULogo className="w-7 h-7 drop-shadow" />
-          </div>
-          <div className="flex flex-col">
-            <span className="text-lg font-black text-slate-900 tracking-tight leading-tight flex items-center gap-1.5">
-              KANAKU
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-violet-600 animate-pulse" />
-            </span>
-            <span className="text-[10px] uppercase font-bold tracking-widest text-violet-600 hidden sm:inline-block">
-              Finance OS
-            </span>
-          </div>
-        </div>
+  const solid = scrolled || menuOpen;
 
-        {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-1 bg-slate-100/60 p-1.5 rounded-full border border-slate-200/50">
+  return (
+    <header
+      className={`fixed inset-x-0 top-0 z-50 transition-[background-color,border-color,box-shadow] duration-200 border-b ${
+        solid
+          ? 'bg-white/90 backdrop-blur-xl border-slate-200/80 shadow-[0_1px_12px_rgba(15,23,42,0.05)]'
+          : 'bg-white/0 border-transparent'
+      }`}
+      style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
+    >
+      <div className="max-w-7xl mx-auto h-16 px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-6">
+        <button
+          type="button"
+          data-testid="public-navbar-div"
+          className="rounded-[10px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/60"
+          onClick={() => handleLinkClick('landing')}
+          aria-label="KANAKU home"
+        >
+          <KanakuWordmark />
+        </button>
+
+        <nav className="hidden md:flex items-center gap-1" aria-label="Main">
           {navLinks.map((link) => {
             const isActive = currentPage === link.id;
             return (
               <button
+                type="button"
                 data-testid={`public-navbar-button-${link.id}`}
                 key={link.id}
-                onClick={() => handleLinkClick(link.id)}
-                className={`relative px-3.5 py-1.5 text-xs lg:text-sm font-semibold rounded-full transition-all duration-200 ${
+                onClick={() => handleLinkClick(link.id, link.section)}
+                aria-current={isActive ? 'page' : undefined}
+                className={`px-3 py-2 text-sm font-medium rounded-[10px] transition-colors ${
                   isActive
-                    ? 'text-white bg-gradient-to-r from-violet-600 to-indigo-600 shadow-sm shadow-violet-500/25'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/70'
+                    ? 'text-slate-950 bg-slate-100'
+                    : 'text-slate-600 hover:text-slate-950 hover:bg-slate-100/70'
                 }`}
               >
                 {link.name}
@@ -110,70 +120,72 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
           })}
         </nav>
 
-        {/* CTA buttons */}
-        <div className="hidden md:flex items-center gap-3">
+        <div className="hidden md:flex items-center gap-2">
           <button
+            type="button"
             data-testid="public-navbar-log-in"
             onClick={onLogin}
-            className="px-4 py-2 text-xs lg:text-sm font-bold text-slate-700 hover:text-slate-900 transition-colors rounded-full hover:bg-slate-100/70"
+            className="px-3.5 py-2 text-sm font-semibold text-slate-700 hover:text-slate-950 rounded-[10px] hover:bg-slate-100/70 transition-colors"
           >
-            Log In
+            Log in
           </button>
           <button
+            type="button"
             data-testid="public-navbar-get-started"
             onClick={onGetStarted}
-            className="group inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 text-white text-xs lg:text-sm font-bold shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+            className="group inline-flex items-center gap-1.5 px-4 py-2 rounded-[10px] bg-slate-950 text-white text-sm font-semibold hover:bg-violet-700 transition-colors shadow-sm"
           >
-            <span>Get Started</span>
+            Get started
             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
           </button>
         </div>
 
-        {/* Mobile hamburger */}
         <button
+          type="button"
           data-testid="public-navbar-menu"
-          className="md:hidden p-2 rounded-xl bg-slate-100/80 hover:bg-slate-200/80 text-slate-700 transition-colors"
+          className="md:hidden -mr-1 p-2 rounded-[10px] text-slate-700 hover:bg-slate-100 transition-colors"
           onClick={() => setMenuOpen(!menuOpen)}
           aria-label="Toggle navigation menu"
+          aria-expanded={menuOpen}
         >
           {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
       </div>
 
-      {/* Mobile menu dropdown */}
       {menuOpen && (
-        <div className="md:hidden mt-3 pointer-events-auto bg-white/95 backdrop-blur-2xl border border-slate-200/70 rounded-3xl overflow-hidden p-4 shadow-2xl animate-in fade-in slide-in-from-top-4 duration-200">
-          <div className="grid grid-cols-2 gap-1.5 mb-3">
+        <div className="md:hidden border-t border-slate-200/80 bg-white px-4 pt-2 pb-4 shadow-lg">
+          <nav className="flex flex-col" aria-label="Mobile">
             {navLinks.map((link) => (
               <button
+                type="button"
                 data-testid={`public-navbar-button-2-${link.id}`}
                 key={link.id}
-                onClick={() => handleLinkClick(link.id)}
-                className={`text-left px-3.5 py-3 text-xs font-bold rounded-xl transition-all ${
-                  currentPage === link.id
-                    ? 'text-white bg-gradient-to-r from-violet-600 to-indigo-600 shadow-sm'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                onClick={() => handleLinkClick(link.id, link.section)}
+                className={`text-left px-2 py-3 text-[15px] font-medium border-b border-slate-100 transition-colors ${
+                  currentPage === link.id ? 'text-violet-700' : 'text-slate-700 hover:text-slate-950'
                 }`}
               >
                 {link.name}
               </button>
             ))}
-          </div>
+          </nav>
 
-          <div className="border-t border-slate-100 pt-3 flex flex-col gap-2">
+          <div className="pt-4 grid grid-cols-2 gap-2">
             <button
+              type="button"
               data-testid="public-navbar-log-in-2"
               onClick={onLogin}
-              className="w-full py-3 text-xs font-bold text-slate-700 hover:bg-slate-100 rounded-xl transition-all text-center"
+              className="py-2.5 text-sm font-semibold text-slate-800 border border-slate-200 rounded-[10px] hover:bg-slate-50 transition-colors"
             >
-              Sign In to Account
+              Log in
             </button>
             <button
+              type="button"
               data-testid="public-navbar-get-started-2"
               onClick={onGetStarted}
-              className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 text-white text-xs font-bold text-center shadow-lg shadow-indigo-500/20 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5"
+              className="py-2.5 rounded-[10px] bg-slate-950 text-white text-sm font-semibold hover:bg-violet-700 transition-colors inline-flex items-center justify-center gap-1.5"
             >
-              <span>Get Started Free</span>
+              Get started
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -182,5 +194,3 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
     </header>
   );
 };
-
-
