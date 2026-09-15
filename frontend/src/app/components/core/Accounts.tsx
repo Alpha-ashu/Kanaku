@@ -19,6 +19,8 @@ import {
     ArrowDownLeft,
     Repeat2,
     Landmark,
+    Eye,
+    EyeOff,
 } from "lucide-react";
 
 import { toast } from "sonner";
@@ -196,6 +198,27 @@ export const Accounts: React.FC = () => {
     const cardRefs = useRef<Record<number, HTMLDivElement | null>>({}); // desktop
     const mobileCardRefs = useRef<Record<number, HTMLDivElement | null>>({}); // mobile
     const isClickScrolling = useRef(false);
+
+    // Balance privacy visibility (can be toggled globally or per-card)
+    const [hideBalances, setHideBalances] = useState<boolean>(() => {
+        try {
+            return localStorage.getItem('kanaku_hide_balances') === 'true';
+        } catch {
+            return false;
+        }
+    });
+    const [accountBalanceOverrides, setAccountBalanceOverrides] = useState<Record<string, boolean>>({});
+
+    const toggleAccountBalance = useCallback((accountId: string | number) => {
+        const key = String(accountId);
+        setAccountBalanceOverrides((prev) => {
+            const currentHidden = prev[key] !== undefined ? prev[key] : hideBalances;
+            return {
+                ...prev,
+                [key]: !currentHidden,
+            };
+        });
+    }, [hideBalances]);
 
     // Filter accounts based on active tab
     const filteredAccounts = useMemo(() => {
@@ -401,8 +424,8 @@ export const Accounts: React.FC = () => {
                 </div>
 
                 {/* Tab Navigation (Pill Capsule Bar) */}
-                <div className="w-full mb-6">
-                    <div className="flex w-full bg-white/95 backdrop-blur-xl p-1 rounded-full border border-slate-200/80 shadow-xs overflow-x-auto scrollbar-hide gap-1">
+                <div className="w-full flex justify-center mb-5 sm:mb-6">
+                    <div className="flex w-full max-w-md sm:max-w-lg lg:max-w-xl bg-white/95 backdrop-blur-xl p-1 rounded-full border border-slate-200/80 shadow-xs overflow-x-auto scrollbar-hide gap-0.5 sm:gap-1">
                         {tabs.map((tab) => {
                             const Icon = tab.icon;
                             const isActive = activeTab === tab.id;
@@ -413,18 +436,25 @@ export const Accounts: React.FC = () => {
                                     type="button"
                                     onClick={() => setActiveTab(tab.id as AssetType)}
                                     className={cn(
-                                        'flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 sm:py-2 rounded-full transition-all duration-150 font-bold select-none text-xs cursor-pointer whitespace-nowrap',
+                                        'flex-1 flex items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 rounded-full transition-all duration-150 font-bold select-none text-[11px] sm:text-xs cursor-pointer whitespace-nowrap min-w-0',
                                         isActive
                                             ? 'bg-slate-900 text-white shadow-xs'
                                             : 'bg-transparent text-slate-500 hover:text-slate-900 hover:bg-slate-100/60'
                                     )}
                                 >
                                     <Icon
-                                        size={14}
-                                        className={isActive ? "text-white shrink-0" : "text-slate-400 shrink-0"}
+                                        size={13}
+                                        className={cn("shrink-0 sm:w-3.5 sm:h-3.5", isActive ? "text-white" : "text-slate-400")}
                                     />
-                                    <span className={cn("font-bold text-xs truncate", isActive ? "text-white" : "text-slate-600")}>
-                                        {tab.label}
+                                    <span className={cn("font-bold truncate", isActive ? "text-white" : "text-slate-600")}>
+                                        {tab.id === 'all' ? (
+                                            <>
+                                                <span className="sm:hidden">All</span>
+                                                <span className="hidden sm:inline">All Assets</span>
+                                            </>
+                                        ) : (
+                                            tab.label
+                                        )}
                                     </span>
                                 </button>
                             );
@@ -566,18 +596,39 @@ export const Accounts: React.FC = () => {
                                                     <div className="flex justify-between items-end mt-auto pt-3">
                                                         <div className="min-w-0 pr-2">
                                                             <h3 className={cn(
-                                                                "font-black text-xl sm:text-2xl tracking-tight truncate max-w-[180px] sm:max-w-[240px]",
+                                                                "font-bold text-base sm:text-lg tracking-tight truncate max-w-[180px] sm:max-w-[240px]",
                                                                 isActive ? "text-white" : "text-slate-900"
                                                             )}>
                                                                 {account.name}
                                                             </h3>
                                                             <div className="mt-1">
-                                                                <p className={cn(
-                                                                    "text-sm font-bold",
-                                                                    isActive ? "text-white/80" : "text-slate-600"
-                                                                )}>
-                                                                    {formatCurrency(account.balance)}
-                                                                </p>
+                                                                <div className="flex items-center gap-1.5">
+                                                                    <p className={cn(
+                                                                        "text-sm font-bold tracking-tight",
+                                                                        isActive ? "text-white/90" : "text-slate-600"
+                                                                    )}>
+                                                                        {(accountBalanceOverrides[String(account.id)] !== undefined ? accountBalanceOverrides[String(account.id)] : hideBalances) ? (
+                                                                            <span className="tracking-wider select-none font-semibold">****</span>
+                                                                        ) : (
+                                                                            formatCurrency(account.balance)
+                                                                        )}
+                                                                    </p>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            toggleAccountBalance(account.id!);
+                                                                        }}
+                                                                        className={cn(
+                                                                            "p-0.5 rounded-full transition-colors cursor-pointer",
+                                                                            isActive ? "text-white/60 hover:text-white hover:bg-white/10" : "text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+                                                                        )}
+                                                                        title={(accountBalanceOverrides[String(account.id)] !== undefined ? accountBalanceOverrides[String(account.id)] : hideBalances) ? "Show balance" : "Hide balance"}
+                                                                        aria-label={(accountBalanceOverrides[String(account.id)] !== undefined ? accountBalanceOverrides[String(account.id)] : hideBalances) ? "Show balance" : "Hide balance"}
+                                                                    >
+                                                                        {(accountBalanceOverrides[String(account.id)] !== undefined ? accountBalanceOverrides[String(account.id)] : hideBalances) ? <Eye size={13} /> : <EyeOff size={13} />}
+                                                                    </button>
+                                                                </div>
                                                                 {(account.openingBalance != null || snapshot?.hasActivity) && (
                                                                     <p className={cn(
                                                                         "text-[10px] font-semibold mt-0.5 flex items-center gap-x-2 flex-wrap",

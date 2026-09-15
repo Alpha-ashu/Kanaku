@@ -370,6 +370,36 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
     });
   }, [hideBalances]);
 
+  // Accounts & Wallets Carousel state for mobile single-card view & pagination dots
+  const accountsCarouselRef = useRef<HTMLDivElement>(null);
+  const [activeAccountIndex, setActiveAccountIndex] = useState(0);
+
+  const handleAccountsScroll = useCallback(() => {
+    const el = accountsCarouselRef.current;
+    if (!el) return;
+    const scrollLeft = el.scrollLeft;
+    const cardWidth = el.offsetWidth;
+    if (cardWidth > 0) {
+      const newIndex = Math.round(scrollLeft / cardWidth);
+      setActiveAccountIndex(Math.max(0, Math.min(filteredAccounts.length - 1, newIndex)));
+    }
+  }, [filteredAccounts.length]);
+
+  const scrollToAccount = useCallback((index: number) => {
+    const el = accountsCarouselRef.current;
+    if (!el) return;
+    const cardWidth = el.offsetWidth;
+    el.scrollTo({ left: index * cardWidth, behavior: 'smooth' });
+    setActiveAccountIndex(index);
+  }, []);
+
+  useEffect(() => {
+    setActiveAccountIndex(0);
+    if (accountsCarouselRef.current) {
+      accountsCarouselRef.current.scrollLeft = 0;
+    }
+  }, [activeTab]);
+
   const SectionHeader = ({ title, onViewAll, viewLabel = 'View All', extra }: { title: string; onViewAll?: () => void; viewLabel?: string; extra?: React.ReactNode }) => (
     <div className="flex items-center justify-between mb-3 px-1">
       <div className="flex items-center gap-2">
@@ -663,89 +693,120 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
             </div>
 
             {filteredAccounts.length > 0 ? (
-              <div className="flex gap-3 sm:gap-4 overflow-x-auto pb-4 pt-1 px-1 snap-x snap-mandatory scrollbar-none scroll-smooth touch-scroll -mx-1">
-                {filteredAccounts.map((account) => {
-                  const style = getCardStyle(account);
-                  const accountKey = String(account.id ?? account.name);
-                  const isHidden = accountBalanceOverrides[accountKey] !== undefined
-                    ? accountBalanceOverrides[accountKey]
-                    : hideBalances;
-                  return (
-                    <Card
-                      key={account.id ?? account.name}
-                      className={cn(
-                        "p-4 sm:p-4.5 w-[245px] xs:w-[265px] sm:w-[285px] shrink-0 snap-center hover:shadow-xl transition-all cursor-pointer relative overflow-hidden group border-none text-white rounded-[22px] sm:rounded-[26px]",
-                        style.bgClass
-                      )}
-                      style={style.background ? { backgroundColor: style.background } : {}}
-                      onClick={() => setCurrentPage?.('accounts')}
-                    >
-                      {/* Glow & subtle overlay */}
-                      <div className={cn("absolute -top-16 -right-16 w-32 h-32 rounded-full blur-3xl opacity-30", style.glow)} />
-                      <div className="absolute top-1/2 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+              <div>
+                <div
+                  ref={accountsCarouselRef}
+                  onScroll={handleAccountsScroll}
+                  className="flex overflow-x-auto pb-2 pt-1 snap-x snap-mandatory scrollbar-none scroll-smooth touch-scroll w-full -mx-1 px-1"
+                >
+                  {filteredAccounts.map((account) => {
+                    const style = getCardStyle(account);
+                    const accountKey = String(account.id ?? account.name);
+                    const isHidden = accountBalanceOverrides[accountKey] !== undefined
+                      ? accountBalanceOverrides[accountKey]
+                      : hideBalances;
+                    return (
+                      <div
+                        key={account.id ?? account.name}
+                        className="w-full min-w-full shrink-0 snap-center px-0.5"
+                      >
+                        <Card
+                          className={cn(
+                            "p-5 sm:p-6 w-full min-h-[160px] sm:min-h-[175px] hover:shadow-2xl transition-all cursor-pointer relative overflow-hidden group border-none text-white rounded-[24px] sm:rounded-[28px] flex flex-col justify-between",
+                            style.bgClass
+                          )}
+                          style={style.background ? { backgroundColor: style.background } : {}}
+                          onClick={() => setCurrentPage?.('accounts')}
+                        >
+                          {/* Glow & subtle overlay */}
+                          <div className={cn("absolute -top-16 -right-16 w-36 h-36 rounded-full blur-3xl opacity-30", style.glow)} />
+                          <div className="absolute top-1/2 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
 
-                      <div className="relative z-10 flex flex-col justify-between h-full min-h-[120px]">
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center bg-white/15 backdrop-blur-md border border-white/20 text-white shadow-sm">
-                              {account.type === 'bank' && <Landmark size={17} />}
-                              {account.type === 'card' && <CreditCard size={17} />}
-                              {account.type === 'wallet' && <Wallet size={17} />}
-                              {account.type === 'cash' && <Banknote size={17} />}
-                            </div>
-                            <div className="drop-shadow-md rounded-lg overflow-hidden">
-                              {getBankCardLogo(account.name, true, 'sm')}
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            {account.subType && (
-                              <div className="scale-90 opacity-90">
-                                <CardNetworkLogo network={account.subType} />
+                          {/* Top row */}
+                          <div className="relative z-10 flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-2.5">
+                              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center bg-white/15 backdrop-blur-md border border-white/20 text-white shadow-sm">
+                                {account.type === 'bank' && <Landmark size={18} />}
+                                {account.type === 'card' && <CreditCard size={18} />}
+                                {account.type === 'wallet' && <Wallet size={18} />}
+                                {account.type === 'cash' && <Banknote size={18} />}
                               </div>
-                            )}
-                            {!account.isActive && (
-                              <span className="text-[9px] font-bold text-white/60 bg-white/10 px-2 py-0.5 rounded-full backdrop-blur-sm border border-white/10">
-                                INACTIVE
-                              </span>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="space-y-1">
-                          <h4 className="text-[13px] sm:text-sm font-semibold text-white/95 tracking-tight leading-snug truncate">
-                            {account.name}
-                          </h4>
-                          <div className="flex items-center justify-between pt-1">
-                            <div className="flex items-center gap-1.5">
-                              <p className="text-sm sm:text-base font-bold text-white tracking-tight">
-                                {isHidden ? (
-                                  <span className="tracking-wider select-none font-semibold text-white/90">****</span>
-                                ) : (
-                                  formatCurrencyAmount(account.balance || 0, account.currency ?? currency)
-                                )}
-                              </p>
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  toggleAccountBalance(accountKey);
-                                }}
-                                className="p-1 rounded-full text-white/60 hover:text-white hover:bg-white/15 active:scale-95 transition-all cursor-pointer"
-                                title={isHidden ? "Show balance" : "Hide balance"}
-                                aria-label={isHidden ? "Show balance" : "Hide balance"}
-                              >
-                                {isHidden ? <Eye size={13} /> : <EyeOff size={13} />}
-                              </button>
+                              <div className="drop-shadow-md rounded-lg overflow-hidden">
+                                {getBankCardLogo(account.name, true, 'sm')}
+                              </div>
                             </div>
-                            <p className="text-[9px] font-bold text-white/80 uppercase tracking-wider bg-white/15 px-2 py-0.5 rounded-md backdrop-blur-sm border border-white/10">
-                              {account.type}
-                            </p>
+                            <div className="flex items-center gap-1.5">
+                              {account.subType && (
+                                <div className="scale-90 opacity-90">
+                                  <CardNetworkLogo network={account.subType} />
+                                </div>
+                              )}
+                              {!account.isActive && (
+                                <span className="text-[9px] font-bold text-white/60 bg-white/10 px-2 py-0.5 rounded-full backdrop-blur-sm border border-white/10">
+                                  INACTIVE
+                                </span>
+                              )}
+                            </div>
                           </div>
-                        </div>
+
+                          {/* Bottom info */}
+                          <div className="relative z-10 space-y-1.5 mt-auto">
+                            <h4 className="text-sm sm:text-base font-semibold text-white/95 tracking-tight leading-snug truncate">
+                              {account.name}
+                            </h4>
+                            <div className="flex items-center justify-between pt-0.5">
+                              <div className="flex items-center gap-2">
+                                <p className="text-lg sm:text-xl font-bold text-white tracking-tight">
+                                  {isHidden ? (
+                                    <span className="tracking-wider select-none font-semibold text-white/90">****</span>
+                                  ) : (
+                                    formatCurrencyAmount(account.balance || 0, account.currency ?? currency)
+                                  )}
+                                </p>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleAccountBalance(accountKey);
+                                  }}
+                                  className="p-1 rounded-full text-white/60 hover:text-white hover:bg-white/15 active:scale-95 transition-all cursor-pointer"
+                                  title={isHidden ? "Show balance" : "Hide balance"}
+                                  aria-label={isHidden ? "Show balance" : "Hide balance"}
+                                >
+                                  {isHidden ? <Eye size={14} /> : <EyeOff size={14} />}
+                                </button>
+                              </div>
+                              <p className="text-[10px] font-bold text-white/80 uppercase tracking-wider bg-white/15 px-2.5 py-1 rounded-lg backdrop-blur-sm border border-white/10">
+                                {account.type}
+                              </p>
+                            </div>
+                          </div>
+                        </Card>
                       </div>
-                    </Card>
-                  );
-                })}
+                    );
+                  })}
+                </div>
+
+                {/* Pagination Dots below card when multiple accounts exist */}
+                {filteredAccounts.length > 1 && (
+                  <div className="flex items-center justify-center gap-1.5 mt-3">
+                    {filteredAccounts.map((acc, idx) => (
+                      <button
+                        key={acc.id ?? idx}
+                        type="button"
+                        onClick={() => scrollToAccount(idx)}
+                        className={cn(
+                          "transition-all duration-300 rounded-full cursor-pointer",
+                          idx === activeAccountIndex
+                            ? "w-6 h-2 bg-slate-900 shadow-xs"
+                            : "w-2 h-2 bg-slate-200 hover:bg-slate-300"
+                        )}
+                        aria-label={`Go to account ${idx + 1}`}
+                        title={`Go to account ${idx + 1} (${acc.name})`}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
             ) : (
               <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setCurrentPage?.('accounts')}>
