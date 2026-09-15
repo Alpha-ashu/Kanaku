@@ -666,9 +666,9 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
               }
             />
 
-            {/* Account Type Filters — centered on desktop, scrollable on mobile */}
-            <div className="flex justify-start sm:justify-center mb-3">
-              <div className="flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-none max-w-full">
+            {/* Account Type Filters — centered */}
+            <div className="flex justify-center w-full mb-3">
+              <div className="flex items-center justify-center gap-1.5 overflow-x-auto pb-2 scrollbar-none max-w-full">
               {[
                 { id: 'all', label: 'All' },
                 { id: 'bank', label: 'Banks' },
