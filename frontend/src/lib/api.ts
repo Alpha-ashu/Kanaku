@@ -1109,6 +1109,9 @@ export const api = {
         successMessage: 'Verification code resent',
       }),
 
+    verifyLater: (email: string) =>
+      apiClient.post('/auth/verify-later', { email }),
+
     getProfile: async (options?: { force?: boolean; includePrivate?: boolean }) => {
       const force = options?.force === true;
       const includePrivate = options?.includePrivate === true;

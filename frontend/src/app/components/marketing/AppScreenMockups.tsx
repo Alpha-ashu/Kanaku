@@ -53,7 +53,7 @@ import { AIOrb, type AIOrbState } from '@/app/components/features/ai/AIOrb';
 
 export const formatINR = (value: number) => `₹${value.toLocaleString('en-IN')}`;
 
-const appCard = 'rounded-[20px] bg-white border border-slate-100 shadow-[0_8px_24px_-8px_rgba(112,144,176,0.18)]';
+const appCard = 'rounded-[28px] sm:rounded-[32px] bg-white border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)]';
 
 // ─── Device frame ─────────────────────────────────────────────────────────────
 
@@ -139,14 +139,14 @@ export const PhoneFrame: React.FC<{
 
 // ─── Small shared pieces ──────────────────────────────────────────────────────
 
-/** Progress ring. `arc` < 1 draws an open gauge with the gap centred at the bottom. */
-const Ring: React.FC<{ size: number; stroke: number; pct: number; color: string; track: string; arc?: number }> = ({
+export const Ring: React.FC<{ size: number; stroke: number; pct: number; color: string; track: string; arc?: number; className?: string }> = ({
   size,
   stroke,
   pct,
   color,
   track,
   arc = 1,
+  className = '',
 }) => {
   const radius = (size - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
@@ -164,16 +164,18 @@ const Ring: React.FC<{ size: number; stroke: number; pct: number; color: string;
         strokeLinecap="round"
         strokeDasharray={`${arcLength} ${circumference}`}
       />
-      <circle
-        cx={size / 2}
-        cy={size / 2}
-        r={radius}
-        fill="none"
-        stroke={color}
-        strokeWidth={stroke}
-        strokeLinecap="round"
-        strokeDasharray={`${(arcLength * Math.min(pct, 100)) / 100} ${circumference}`}
-      />
+      {pct > 0 && (
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke={color}
+          strokeWidth={stroke}
+          strokeLinecap="round"
+          strokeDasharray={`${(arcLength * Math.min(pct, 100)) / 100} ${circumference}`}
+        />
+      )}
     </svg>
   );
 };
@@ -329,11 +331,11 @@ export const DashboardScreen: React.FC = () => {
         </div>
       </div>
 
-      <div className={`${appCard} overflow-hidden`}>
-        <div className="flex items-center justify-between gap-2 p-3.5 pb-2">
+      <div className="p-4 sm:p-6 bg-white border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)] rounded-[28px] sm:rounded-[32px] relative overflow-hidden">
+        <div className="flex items-center justify-between gap-2 pb-3">
           <div className="min-w-0">
-            <span className="inline-flex items-center gap-1 rounded-full border border-purple-100 bg-purple-50 px-2 py-0.5 text-[9px] font-bold text-purple-700">
-              <Sparkles className="h-2.5 w-2.5" />
+            <span className="inline-flex items-center gap-1 rounded-full border border-purple-100 bg-purple-50 px-2.5 py-0.5 text-[9px] font-bold text-purple-700">
+              <Sparkles className="h-2.5 w-2.5 text-purple-600" />
               Total Net Worth
             </span>
             <p className="mt-1.5 text-[22px] font-black leading-none tracking-tight text-slate-900">₹9,21,000</p>
@@ -347,7 +349,7 @@ export const DashboardScreen: React.FC = () => {
             </div>
           </div>
         </div>
-        <div className="grid grid-cols-3 divide-x divide-slate-100 border-t border-slate-100">
+        <div className="grid grid-cols-3 divide-x divide-slate-100 border-t border-slate-100 -mx-4 sm:-mx-6 -mb-4 sm:-mb-6">
           {miniGauges.map(({ label, value, pct, stroke, track, icon: Icon }) => (
             <div key={label} className="flex flex-col items-center py-2.5">
               <span className="text-[10.5px] font-black text-slate-900">{value}</span>

@@ -22,7 +22,6 @@ export const isAccountLocked = (status?: string | null): boolean => {
 };
 
 export const isAccountPending = (status?: string | null, emailVerified?: boolean | null): boolean => {
-  if (emailVerified === false) return true;
   if (!status || typeof status !== 'string') return false;
   const normalized = status.trim().toLowerCase();
   return normalized === 'pending_verification' || normalized === 'pending' || normalized === 'unverified';

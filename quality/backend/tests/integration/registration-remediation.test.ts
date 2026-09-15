@@ -136,6 +136,33 @@ describe('Registration remediation', () => {
     expect(second.body.code).toBe('PHONE_EXISTS');
   });
 
+  it('frees a phone held only by an abandoned, never-verified signup', async () => {
+    // e.g. the OTP email failed, then the person retried with a corrected email.
+    const phone = uniquePhone('+91');
+    const abandonedEmail = uniqueEmail();
+    createdEmails.add(abandonedEmail);
+    const abandoned = await request(app).post(`${API}/auth/register`).send({ name: 'Typo Email', email: abandonedEmail, password: 'SecurePass123!', mobile: phone });
+    if (abandoned.status !== 201) return; // DB unavailable
+    const abandonedUser = await prisma.user.findUnique({ where: { email: abandonedEmail }, select: { id: true } });
+
+    const check = await request(app).post(`${API}/auth/check-phone`).send({ phone });
+    expect(check.body.available).toBe(true);
+
+    const retry = await registerUser({ name: 'Fixed Email', email: uniqueEmail(), password: 'SecurePass123!', mobile: phone });
+    expect(retry.status).toBe(201);
+    const [oldProfile, newProfile] = await Promise.all([
+      prisma.profiles.findUnique({ where: { id: abandonedUser!.id }, select: { phone: true } }),
+      prisma.profiles.findUnique({ where: { id: retry.body.data.user.id }, select: { phone: true } }),
+    ]);
+    expect(oldProfile?.phone).toBeNull();
+    expect(newProfile?.phone).toBeTruthy();
+
+    // Once verified, the number is really taken again.
+    const third = await request(app).post(`${API}/auth/register`).send({ name: 'Third', email: uniqueEmail(), password: 'SecurePass123!', mobile: phone });
+    expect(third.status).toBe(409);
+    expect(third.body.code).toBe('PHONE_EXISTS');
+  });
+
   it('accepts any non-alphanumeric character as the special character (same rule as the sign-up form)', async () => {
     for (const password of ['Secure Pass123', 'SecurePass123₹']) {
       const res = await registerUser({ name: 'Symbol User', email: uniqueEmail(), password, mobile: uniquePhone('+91') });

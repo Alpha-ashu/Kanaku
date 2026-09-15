@@ -37,3 +37,39 @@ export const KANAKULogo = ({ className = "w-10 h-10" }: { className?: string }) 
     </svg>
   );
 };
+
+export const DISPLAY_FONT = "'Manrope', 'Inter', system-ui, sans-serif";
+
+export interface KanakuWordmarkProps {
+  className?: string;
+  logoClassName?: string;
+  textClassName?: string;
+  isDark?: boolean;
+  badge?: React.ReactNode;
+}
+
+export const KanakuWordmark: React.FC<KanakuWordmarkProps> = ({
+  className = '',
+  logoClassName = 'w-8 h-8',
+  textClassName,
+  isDark = false,
+  badge,
+}) => {
+  const isCustomText = Boolean(textClassName);
+  const textClass = textClassName || (className && className.includes('text-') ? className : 'text-lg');
+  const containerClass = isCustomText ? className : (className && !className.includes('text-') ? className : '');
+  const textColor = isDark ? 'text-white' : 'text-slate-950';
+
+  return (
+    <span className={`inline-flex items-center gap-2.5 select-none ${containerClass}`}>
+      <KANAKULogo className={`${logoClassName} flex-shrink-0 drop-shadow-sm`} />
+      <span
+        className={`font-extrabold tracking-[0.02em] leading-none ${textColor} ${textClass}`}
+        style={{ fontFamily: DISPLAY_FONT }}
+      >
+        KANAKU
+      </span>
+      {badge}
+    </span>
+  );
+};

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Shield, TrendingUp, Sparkles, ArrowRight, Calendar, Fingerprint, Lock, Eye, EyeOff, CheckCircle, Mail } from 'lucide-react';
-import { KANAKULogo } from '@/app/components/ui/KANAKULogo';
+import { KANAKULogo, KanakuWordmark } from '@/app/components/ui/KANAKULogo';
 import { motion } from 'framer-motion';
 import { SignInForm } from './SignInForm';
 import { SignUpForm } from './SignUpForm';
@@ -730,15 +730,10 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
           <div className="absolute top-0 right-0 w-[450px] h-[450px] bg-violet-100/35 rounded-full blur-3xl pointer-events-none -z-10" />
           <div className="absolute bottom-10 left-10 w-[400px] h-[400px] bg-blue-100/25 rounded-full blur-3xl pointer-events-none -z-10" />
 
-          {/* Top Bar: Mobile Brand + Desktop Navigation */}
+          {/* Top Bar: Brand + Navigation */}
           <div className="w-full flex items-center justify-between mb-4 sm:mb-6">
-            <div className="lg:hidden flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-violet-600 to-indigo-600 flex items-center justify-center text-white shadow-md">
-                <KANAKULogo className="w-4 h-4 text-white" />
-              </div>
-              <div>
-                <span className="font-extrabold text-base sm:text-lg text-slate-900 tracking-tight">KANAKU</span>
-              </div>
+            <div className="flex items-center">
+              <KanakuWordmark logoClassName="w-8 h-8" textClassName="text-xl" />
             </div>
 
             {showBackButton ? (
@@ -764,23 +759,22 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-              className="w-full max-w-lg mx-auto bg-white/95 backdrop-blur-xl border border-slate-200/80 rounded-2xl sm:rounded-3xl shadow-[0_12px_40px_rgba(15,23,42,0.05)] overflow-hidden"
+              className="w-full max-w-lg mx-auto p-4 sm:p-6 bg-white border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)] rounded-[28px] sm:rounded-[32px] relative overflow-hidden"
             >
-              <div className="h-1.5 w-full bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600" />
-              
               {title && (
-                <div className="p-5 sm:p-7 md:p-8 pb-3.5 sm:pb-4 border-b border-slate-100">
+                <div className="pb-4 sm:pb-5 border-b border-slate-100 mb-4 sm:mb-5">
                   {badge && (
-                    <span className="inline-flex items-center gap-1 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider bg-violet-50 text-violet-700 border border-violet-200/60 px-2.5 py-0.5 rounded-full mb-2.5">
-                      {badge}
-                    </span>
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-50 text-purple-700 border border-purple-100/80 text-xs font-bold mb-2.5">
+                      <Sparkles size={13} className="text-purple-600" />
+                      <span>{badge}</span>
+                    </div>
                   )}
                   <h1 className="text-xl sm:text-2xl md:text-[1.65rem] font-extrabold text-slate-900 tracking-tight leading-snug">{title}</h1>
                   {subtitle && <p className="text-slate-500 mt-1.5 text-xs sm:text-sm font-normal leading-relaxed">{subtitle}</p>}
                 </div>
               )}
 
-              <div className="p-5 sm:p-7 md:p-8 pt-5 sm:pt-6">
+              <div>
                 {children}
               </div>
             </motion.div>

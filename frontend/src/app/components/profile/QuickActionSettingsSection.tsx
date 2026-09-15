@@ -34,10 +34,11 @@ export const QuickActionSettingsSection: React.FC = () => {
 
   const handleResetDefaults = () => {
     setSelectedIds(DEFAULT_QUICK_ACTION_IDS);
-    toast.success('Reset to default 15 quick action shortcuts');
+    toast.success(`Reset to default ${DEFAULT_QUICK_ACTION_IDS.length} quick action shortcuts`);
   };
 
   const selectedCount = selectedIds.length;
+  const isDefaultCount = selectedCount === DEFAULT_QUICK_ACTION_IDS.length;
   const activeSet = new Set(selectedIds);
 
   return (
@@ -63,7 +64,7 @@ export const QuickActionSettingsSection: React.FC = () => {
           <span
             className={cn(
               "px-3 py-1 rounded-full text-xs font-bold border flex items-center gap-1.5 transition-colors",
-              selectedCount === 15
+              isDefaultCount
                 ? "bg-blue-50 text-blue-700 border-blue-200"
                 : "bg-amber-50 text-amber-700 border-amber-200"
             )}
@@ -71,7 +72,7 @@ export const QuickActionSettingsSection: React.FC = () => {
             <span
               className={cn(
                 "w-1.5 h-1.5 rounded-full",
-                selectedCount === 15 ? "bg-blue-600" : "bg-amber-500 animate-pulse"
+                isDefaultCount ? "bg-blue-600" : "bg-amber-500 animate-pulse"
               )}
             />
             {selectedCount} / 15 selected
@@ -81,10 +82,10 @@ export const QuickActionSettingsSection: React.FC = () => {
             type="button"
             onClick={handleResetDefaults}
             className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-slate-200/80 transition-all cursor-pointer shadow-xs active:scale-95"
-            title="Reset to default 15 items"
+            title={`Reset to default ${DEFAULT_QUICK_ACTION_IDS.length} items`}
           >
             <RotateCcw size={12} strokeWidth={2.2} />
-            <span>Reset 15 Defaults</span>
+            <span>Reset {DEFAULT_QUICK_ACTION_IDS.length} Defaults</span>
           </button>
         </div>
       </div>

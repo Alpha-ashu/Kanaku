@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ShieldCheck, Sparkles, TrendingUp, Lock, Zap, CheckCircle2, ArrowUpRight } from 'lucide-react';
-import { KANAKULogo } from '@/app/components/ui/KANAKULogo';
+import { KANAKULogo, DISPLAY_FONT } from '@/app/components/ui/KANAKULogo';
 
 export const AuthShowcase: React.FC = () => {
   return (
@@ -26,7 +26,7 @@ export const AuthShowcase: React.FC = () => {
           <KANAKULogo className="w-9 h-9 flex-shrink-0 drop-shadow-md" />
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-black tracking-tight text-xl text-white">KANAKU</span>
+              <span className="font-extrabold tracking-[0.02em] text-xl text-white" style={{ fontFamily: DISPLAY_FONT }}>KANAKU</span>
               <span className="px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider bg-violet-500/20 text-violet-300 border border-violet-500/30 uppercase">
                 Pro
               </span>

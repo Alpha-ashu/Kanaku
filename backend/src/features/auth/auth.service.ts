@@ -26,6 +26,34 @@ export const getCachedUserByEmail = async (email: string) => {
   return prisma.user.findUnique({ where: { email: normalized } });
 };
 
+/**
+ * Who holds `normalizedPhone`, and whether that hold may be released for a new
+ * signup. Registration creates the pending account BEFORE the OTP email goes
+ * out, so a failed send (or a typo'd email the person then corrects) leaves an
+ * unverified `pending_verification` account owning the number — which would
+ * otherwise answer PHONE_EXISTS to that same person forever. Such an account
+ * cannot log in and its phone was never proven, so the number stays claimable.
+ * Profiles without a User row (Supabase-era) are treated as real owners.
+ */
+export const resolveSignupPhoneHold = async (
+  normalizedPhone: string,
+): Promise<{ inUse: boolean; releasableProfileId: string | null }> => {
+  const profile = await prisma.profiles.findFirst({
+    where: { phone: normalizedPhone },
+    select: { id: true },
+  });
+  if (!profile) return { inUse: false, releasableProfileId: null };
+
+  const owner = await prisma.user.findUnique({
+    where: { id: profile.id },
+    select: { emailVerified: true, status: true },
+  });
+  const abandoned = Boolean(owner && !owner.emailVerified && owner.status === 'pending_verification');
+  return abandoned
+    ? { inUse: false, releasableProfileId: profile.id }
+    : { inUse: true, releasableProfileId: null };
+};
+
 export class AuthService {
   async register(input: RegisterInput & {
     firstName?: string;
@@ -51,12 +79,14 @@ export class AuthService {
       }
 
       const normalizedPhone = normalizePhone(input.phone ?? input.mobile);
+      let releasablePhoneProfileId: string | null = null;
       if (normalizedPhone) {
-        const existingPhoneProfile = await prisma.profiles.findFirst({ where: { phone: normalizedPhone } });
-        if (existingPhoneProfile) {
+        const phoneHold = await resolveSignupPhoneHold(normalizedPhone);
+        if (phoneHold.inUse) {
           logger.warn('[AuthService] Registration failed: phone number already in use');
           throw new Error('Phone number already in use');
         }
+        releasablePhoneProfileId = phoneHold.releasableProfileId;
       }
 
       // Hash OUTSIDE the transaction — bcrypt is CPU-bound; never hold a DB
@@ -98,6 +128,17 @@ export class AuthService {
             status,
           },
         });
+
+        // Free the number from the abandoned signup found above. Scoped to that
+        // exact profile + phone, so a number that moved to another profile since
+        // the check is never cleared — it trips the phone unique constraint on
+        // the insert below instead (→ PHONE_EXISTS).
+        if (releasablePhoneProfileId && normalizedPhone) {
+          await tx.profiles.updateMany({
+            where: { id: releasablePhoneProfileId, phone: normalizedPhone },
+            data: { phone: null },
+          });
+        }
 
         // Profile is MANDATORY now (previously best-effort/swallowed). The FK
         // profiles.id → User.id is satisfied because `created` exists in this tx;

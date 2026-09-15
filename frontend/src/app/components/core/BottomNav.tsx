@@ -26,6 +26,7 @@ import { BottomNavSettingsSection } from '@/app/components/profile/BottomNavSett
 import {
   useQuickActionPreferences,
   ALL_QUICK_ACTIONS,
+  DEFAULT_QUICK_ACTION_IDS,
   executeQuickAction,
   QuickActionDefinition,
 } from '@/lib/quickActionPreferences';
@@ -387,7 +388,8 @@ export const BottomNav: React.FC<BottomNavProps> = () => {
         items.push(action);
       }
     }
-    return items.length > 0 ? items : (ALL_QUICK_ACTIONS.slice(0, 8) as QuickActionDefinition[]);
+    if (items.length > 0) return items;
+    return DEFAULT_QUICK_ACTION_IDS.map((id) => actionMap.get(id)).filter(Boolean) as QuickActionDefinition[];
   }, [selectedQuickActionIds]);
 
   const isMoreActive = activeQuickActions.some((item) => item.id === currentPage);

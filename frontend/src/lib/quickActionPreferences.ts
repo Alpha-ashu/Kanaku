@@ -239,8 +239,22 @@ export const ALL_QUICK_ACTIONS: QuickActionDefinition[] = [
   },
 ];
 
-// Exact 15 default items for 3 columns × 5 rows
+// Default popup: Expense, Split, Transfer, Kai, New Goal, Investments, Todos, Settings
 export const DEFAULT_QUICK_ACTION_IDS: string[] = [
+  'add-expense',
+  'split-bill',
+  'transfer',
+  'voice-input',
+  'add-goal',
+  'investments',
+  'todo-lists',
+  'settings',
+];
+
+// Previous 15-item default. Login seeding wrote it to storage for every user,
+// so a stored value that still matches it exactly means "never customised" and
+// is replaced once with the current default.
+const LEGACY_DEFAULT_QUICK_ACTION_IDS: string[] = [
   'add-expense',
   'add-income',
   'voice-input',
@@ -260,10 +274,28 @@ export const DEFAULT_QUICK_ACTION_IDS: string[] = [
 
 const STORAGE_KEY = 'KANAKU_QUICK_ACTION_ITEMS';
 const EVENT_KEY = 'KANAKU_QUICK_ACTIONS_UPDATED';
+const DEFAULTS_VERSION_KEY = 'KANAKU_QUICK_ACTION_DEFAULTS_VERSION';
+const DEFAULTS_VERSION = '2';
+
+// One-shot so a user who deliberately re-picks the old 15 isn't reset again.
+function migrateLegacyDefault(): void {
+  if (localStorage.getItem(DEFAULTS_VERSION_KEY) === DEFAULTS_VERSION) return;
+  const raw = localStorage.getItem(STORAGE_KEY);
+  const parsed = raw ? JSON.parse(raw) : null;
+  if (
+    Array.isArray(parsed) &&
+    parsed.length === LEGACY_DEFAULT_QUICK_ACTION_IDS.length &&
+    parsed.every((id, i) => id === LEGACY_DEFAULT_QUICK_ACTION_IDS[i])
+  ) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_QUICK_ACTION_IDS));
+  }
+  localStorage.setItem(DEFAULTS_VERSION_KEY, DEFAULTS_VERSION);
+}
 
 export function getQuickActionPreferences(): string[] {
   if (typeof window === 'undefined') return DEFAULT_QUICK_ACTION_IDS;
   try {
+    migrateLegacyDefault();
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
@@ -289,6 +321,7 @@ export function initializeDefaultQuickActions(): void {
     if (!existing) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_QUICK_ACTION_IDS));
     }
+    migrateLegacyDefault();
   } catch {
     // Non-fatal — in-memory default will still be used
   }
@@ -298,6 +331,7 @@ export function setQuickActionPreferences(ids: string[]): void {
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(ids));
+    localStorage.setItem(DEFAULTS_VERSION_KEY, DEFAULTS_VERSION);
     window.dispatchEvent(new Event(EVENT_KEY));
   } catch (err) {
     console.error('Failed to save quick action preferences:', err);

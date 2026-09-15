@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { signIn, signUp } from '@/lib/supabase-helpers';
 import { Shield, Eye, EyeOff, Mail, Lock, User, Check, ArrowRight, Loader2 } from 'lucide-react';
-import { KANAKULogo } from '@/app/components/ui/KANAKULogo';
+import { KANAKULogo, DISPLAY_FONT } from '@/app/components/ui/KANAKULogo';
 import { toast } from 'sonner';
 import { PrivacyPolicy } from '@/app/components/marketing/PrivacyPolicy';
 import { Terms } from '@/app/components/marketing/Terms';
@@ -107,7 +107,9 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
  <div className="inline-flex items-center justify-center w-20 h-20 mb-4 bg-white rounded-full p-2 shadow-sm border border-gray-100">
  <KANAKULogo className="w-12 h-12" />
  </div>
- <h1 className="text-3xl font-bold text-gray-900">KANAKU</h1>
+ <h1 className="text-3xl font-extrabold tracking-[0.02em] text-gray-900" style={{ fontFamily: DISPLAY_FONT }}>
+ KANAKU
+ </h1>
  <p className="text-gray-500 mt-2">
  {isLogin ? 'Welcome back!' : 'Create your account'}
  </p>

@@ -3,6 +3,7 @@ import { authMiddleware } from '../../middleware/auth';
 import {
   register,
   verifyRegistrationOtp,
+  verifyLater,
   resendRegistrationOtp,
   login,
   loginChallenge,
@@ -95,6 +96,7 @@ router.post('/check-phone', authLimiter, checkPhoneAvailability);
 // asserts on — do not front them with a generic validateBody layer.
 router.post('/register', authLimiter, registerLimiter, register);
 router.post('/verify-registration-otp', authLimiter, verifyRegistrationOtp);
+router.post('/verify-later', authLimiter, verifyLater);
 router.post('/resend-registration-otp', otpLimiter, resendRegistrationOtp);
 router.post('/login/challenge', authLimiter, loginLimiter, loginChallenge);
 router.post('/login', authLimiter, login);

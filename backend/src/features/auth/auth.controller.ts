@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { randomUUID, randomInt } from 'crypto';
-import { AuthService, getCachedUserByEmail } from './auth.service';
+import { AuthService, getCachedUserByEmail, resolveSignupPhoneHold } from './auth.service';
 import { RegisterInput, LoginInput } from './auth.types';
 import { AuthRequest, invalidateUserSnapshotCache } from '../../middleware/auth';
 import { cacheGetJson, cacheSetJson, cacheDeleteByPrefix, getRedisClient, getRedisStatus } from '../../cache/redis';
@@ -262,11 +262,10 @@ export const checkPhoneAvailability = async (req: Request, res: Response, next: 
     if (!normalized) {
       return res.status(200).json({ available: false, code: 'INVALID_PHONE' });
     }
-    const existingPhoneProfile = await prisma.profiles.findFirst({
-      where: { phone: normalized },
-      select: { id: true }
-    });
-    return res.status(200).json({ available: !existingPhoneProfile });
+    // Same rule as register: a number held only by an abandoned, never-verified
+    // signup is still available.
+    const { inUse } = await resolveSignupPhoneHold(normalized);
+    return res.status(200).json({ available: !inUse });
   } catch (error) {
     return next(error);
   }
@@ -526,6 +525,59 @@ export const verifyRegistrationOtp = async (req: Request, res: Response, next: N
     res.status(200).json({
       success: true,
       message: 'Email verified and account activated successfully.',
+      data: {
+        user: tokens.user,
+        accessToken: tokens.accessToken,
+        expiresAt: tokens.expiresAt,
+        ...(native ? { refreshToken: tokens.refreshToken } : {}),
+      },
+    });
+  } catch (error: any) {
+    next(error);
+  }
+};
+
+export const verifyLater = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      throw AppError.badRequest('Email is required.', 'MISSING_FIELDS');
+    }
+    const cleanEmail = email.toLowerCase().trim();
+    const user = await prisma.user.findUnique({
+      where: { email: cleanEmail },
+    });
+
+    if (!user) {
+      throw AppError.notFound('User account');
+    }
+
+    // Update status to 'active' while preserving emailVerified: false for later verification
+    const updatedUser = await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        status: user.role === 'advisor' && !user.isApproved ? 'pending_approval' : 'active',
+      },
+    });
+
+    invalidateUserSnapshotCache(user.id);
+    const tokens = generateTokens(updatedUser);
+
+    res.setHeader('Authorization', `Bearer ${tokens.accessToken}`);
+    setRefreshCookie(res, tokens.refreshToken, REFRESH_TOKEN_TTL_SECONDS);
+    const native = isNativeClient(req);
+
+    if (updatedUser.id) await establishIdleSession(updatedUser.id);
+
+    auditFromRequest(req, 'auth.register', {
+      userId: user.id,
+      resource: 'User',
+      resourceId: user.id,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Email verification deferred. You can verify later from Settings.',
       data: {
         user: tokens.user,
         accessToken: tokens.accessToken,

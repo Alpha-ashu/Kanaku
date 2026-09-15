@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Menu, X, ArrowRight } from 'lucide-react';
-import { KANAKULogo } from './KANAKULogo';
+import { KANAKULogo, KanakuWordmark, DISPLAY_FONT } from './KANAKULogo';
+export { KanakuWordmark, DISPLAY_FONT };
 
 interface PublicNavbarProps {
   onNavigate: (page: string) => void;
@@ -8,8 +9,6 @@ interface PublicNavbarProps {
   onGetStarted: () => void;
   currentPage: string;
 }
-
-const DISPLAY_FONT = "'Manrope', 'Inter', system-ui, sans-serif";
 
 // Entries marked `section` are anchors on the landing page; the rest are public pages.
 const navLinks: { name: string; id: string; section?: boolean }[] = [
@@ -26,21 +25,6 @@ export const scrollToSection = (id: string) => {
   const top = element.getBoundingClientRect().top + window.scrollY - 72;
   window.scrollTo({ top, behavior: 'smooth' });
 };
-
-export const KanakuWordmark: React.FC<{ className?: string; logoClassName?: string }> = ({
-  className = 'text-lg',
-  logoClassName = 'w-8 h-8',
-}) => (
-  <span className="inline-flex items-center gap-2.5 select-none">
-    <KANAKULogo className={`${logoClassName} flex-shrink-0`} />
-    <span
-      className={`${className} font-extrabold tracking-[0.02em] text-slate-950 leading-none`}
-      style={{ fontFamily: DISPLAY_FONT }}
-    >
-      KANAKU
-    </span>
-  </span>
-);
 
 export const PublicNavbar: React.FC<PublicNavbarProps> = ({
   onNavigate,

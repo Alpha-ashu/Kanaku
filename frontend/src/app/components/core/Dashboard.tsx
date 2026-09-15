@@ -6,7 +6,8 @@ import {
  ArrowUpRight, ArrowDownLeft, Target, TrendingDown,
  AlertCircle, Calendar, Users, BarChart3, ChevronRight,
  Clock, CheckCircle2, AlertTriangle, BadgeDollarSign,
- HandCoins, Activity, Landmark, Receipt, Sparkles
+ HandCoins, Activity, Landmark, Receipt, Sparkles,
+ Eye, EyeOff
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Card } from '@/app/components/ui/card';
@@ -35,6 +36,7 @@ import { calculateTaxSummary } from '@/lib/taxService';
 import { AppArcGauge } from '@/app/components/ui/AppArcGauge';
 import { AppMiniGauge } from '@/app/components/ui/AppMiniGauge';
 import { AppDateStrip } from '@/app/components/ui/AppDateStrip';
+import { Ring } from '@/app/components/marketing/AppScreenMockups';
 import { AIOrb } from '@/app/components/features/ai/AIOrb';
 
 interface DashboardProps {
@@ -318,6 +320,14 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
     [currency]
   );
 
+  const netCashflow = stats.monthlyIncome - stats.monthlyExpense;
+  const expenseRatio = stats.monthlyIncome > 0
+    ? Math.min(100, Math.round((stats.monthlyExpense / stats.monthlyIncome) * 100))
+    : (stats.monthlyExpense > 0 ? 100 : 0);
+  const cashflowPercent = stats.monthlyIncome > 0
+    ? Math.min(100, Math.max(0, Math.round(stats.savingsRate)))
+    : (netCashflow >= 0 ? 50 : 20);
+
   const taxSummary = useMemo(
     () => calculateTaxSummary(transactions, liveDocuments),
     [transactions, liveDocuments]
@@ -329,9 +339,43 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
     transition: { duration: 0.3 }
   };
 
-  const SectionHeader = ({ title, onViewAll, viewLabel = 'View All' }: { title: string; onViewAll?: () => void; viewLabel?: string }) => (
+  // Balance privacy visibility (can be toggled globally or per-card)
+  const [hideBalances, setHideBalances] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('kanaku_hide_balances') === 'true';
+    } catch {
+      return false;
+    }
+  });
+  const [accountBalanceOverrides, setAccountBalanceOverrides] = useState<Record<string, boolean>>({});
+
+  const toggleAllBalances = useCallback(() => {
+    setHideBalances((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('kanaku_hide_balances', String(next));
+      } catch {}
+      setAccountBalanceOverrides({});
+      return next;
+    });
+  }, []);
+
+  const toggleAccountBalance = useCallback((accountId: string) => {
+    setAccountBalanceOverrides((prev) => {
+      const currentHidden = prev[accountId] !== undefined ? prev[accountId] : hideBalances;
+      return {
+        ...prev,
+        [accountId]: !currentHidden,
+      };
+    });
+  }, [hideBalances]);
+
+  const SectionHeader = ({ title, onViewAll, viewLabel = 'View All', extra }: { title: string; onViewAll?: () => void; viewLabel?: string; extra?: React.ReactNode }) => (
     <div className="flex items-center justify-between mb-3 px-1">
-      <h3 className="font-section-title text-slate-900 tracking-tight">{title}</h3>
+      <div className="flex items-center gap-2">
+        <h3 className="font-section-title text-slate-900 tracking-tight">{title}</h3>
+        {extra}
+      </div>
       {onViewAll && (
         <button
           onClick={onViewAll}
@@ -375,98 +419,143 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
           </div>
         </div>
 
-        {/* ── Unified Hero Card: Net Worth + Arc Gauge + 3 Mini Gauges ── */}
+        {/* ── Unified Hero Card: Net Worth + Arc Gauge + 3 Mini Gauges (Matching Reference) ── */}
         <motion.div {...fadeUp}>
-          <Card className="bg-white border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)] rounded-[28px] sm:rounded-[32px] relative overflow-hidden">
+          <div className="p-4 sm:p-6 bg-white border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)] rounded-[28px] sm:rounded-[32px] relative overflow-hidden">
             {/* Top half: Net Worth + Arc Gauge */}
-            <div className="p-6 sm:p-8">
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
-                {/* Left: Summary Metrics */}
-                <div className="md:col-span-7 flex flex-col justify-between space-y-4">
-                  <div>
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-50 text-purple-700 border border-purple-100/80 text-xs font-bold mb-3">
-                      <Sparkles size={13} className="text-purple-600" />
-                      <span>Total Net Worth</span>
-                    </div>
-                    <h2 className="font-hero-metric tracking-tight text-slate-900">
-                      {formatCurrency(totalNetWorth)}
-                    </h2>
-                  </div>
+            <div className="flex items-center justify-between gap-3 pb-3 sm:pb-4">
+              <div className="min-w-0">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-purple-100/80 bg-purple-50 px-3 py-1 text-xs font-bold text-purple-700">
+                  <Sparkles className="h-3.5 w-3.5 text-purple-600" />
+                  Total Net Worth
+                </span>
+                <h2 className="mt-2 text-2xl sm:text-4xl font-black leading-tight tracking-tight text-slate-900">
+                  {formatCurrency(totalNetWorth)}
+                </h2>
+                <p className={cn(
+                  "mt-1 text-xs sm:text-sm font-bold flex items-center gap-1",
+                  netCashflow >= 0 ? "text-emerald-600" : "text-rose-600"
+                )}>
+                  <span>{netCashflow >= 0 ? '▲' : '▼'}</span>
+                  <span>{formatCurrency(Math.abs(netCashflow))} this month</span>
+                </p>
+              </div>
 
-                  <div className="flex flex-wrap items-center gap-3 pt-2">
-                    <div className="px-3.5 py-2 rounded-2xl bg-slate-50 border border-slate-100 text-xs text-slate-600">
-                      <span className="font-medium text-slate-400 block text-[10px] uppercase font-bold">Total Assets</span>
-                      <strong className="text-slate-900 font-bold text-sm">
-                        {formatCurrency(stats.totalBalance + investmentStats.currentValue)}
-                      </strong>
-                    </div>
-                    <div className="px-3.5 py-2 rounded-2xl bg-slate-50 border border-slate-100 text-xs text-slate-600">
-                      <span className="font-medium text-slate-400 block text-[10px] uppercase font-bold">Active Accounts</span>
-                      <strong className="text-slate-900 font-bold text-sm">{accounts.length}</strong>
-                    </div>
-                    {stats.savingsRate > 0 && (
-                      <div className="px-3.5 py-2 rounded-2xl bg-emerald-50 border border-emerald-100 text-xs text-emerald-800">
-                        <span className="font-medium text-emerald-600 block text-[10px] uppercase font-bold">Savings Rate</span>
-                        <strong className="text-emerald-700 font-bold text-sm">{stats.savingsRate}%</strong>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Right: Arc Gauge */}
-                <div className="md:col-span-5 flex justify-center md:justify-end pt-2 md:pt-0">
-                  <AppArcGauge
-                    value={stats.monthlyExpense}
-                    max={stats.monthlyIncome > 0 ? stats.monthlyIncome : (stats.monthlyExpense * 1.3 || 10000)}
-                    centerValue={formatCurrency(stats.monthlyExpense)}
-                    subtitle={stats.monthlyIncome > 0 ? `of ${formatCurrency(stats.monthlyIncome)}` : 'Expenses'}
-                    size={200}
-                    strokeWidth={15}
-                    strokeColor="#18181B"
-                    trackColor="#F1F5F9"
-                  />
+              {/* Arc Gauge in top right */}
+              <div className="relative h-[88px] w-[88px] sm:h-[100px] sm:w-[100px] shrink-0">
+                <Ring
+                  size={100}
+                  stroke={9}
+                  pct={expenseRatio}
+                  color="#18181B"
+                  track="#F1F5F9"
+                  arc={0.75}
+                  className="w-full h-full"
+                />
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none px-1">
+                  <span className="text-xs sm:text-sm font-black leading-tight text-slate-900 truncate max-w-[78px]">
+                    {formatCurrency(stats.monthlyExpense)}
+                  </span>
+                  <span className="mt-0.5 text-[9px] sm:text-[10px] font-medium text-slate-400 truncate max-w-[78px]">
+                    {stats.monthlyIncome > 0 ? `of ${formatCurrency(stats.monthlyIncome)}` : 'Expenses'}
+                  </span>
                 </div>
               </div>
             </div>
 
-            {/* Divider */}
-            <div className="border-t border-slate-100 mx-4 sm:mx-6" />
+            {/* Full-bleed divider line */}
+            <div className="border-t border-slate-100 -mx-4 sm:-mx-6" />
 
-            {/* Bottom half: 3 Mini Gauges */}
-            <div className="grid grid-cols-3 gap-0 divide-x divide-slate-100">
-              <AppMiniGauge
-                tone="peach"
-                label="Total Expenses"
-                value={formatCurrency(stats.monthlyExpense)}
-                subLabel={getPeriodLabel(timePeriod, selectedDate)}
-                progressPercent={stats.monthlyIncome > 0 ? Math.min(100, (stats.monthlyExpense / stats.monthlyIncome) * 100) : 50}
-                icon={<TrendingDown size={16} />}
+            {/* Bottom half: 3 Mini Gauges (Expenses, Income, Cashflow) matching reference image */}
+            <div className="grid grid-cols-3 divide-x divide-slate-100 -mx-4 sm:-mx-6 -mb-4 sm:-mb-6">
+              {/* Column 1: Expenses */}
+              <div
                 onClick={() => setCurrentPage?.('transactions')}
-                className="rounded-none rounded-bl-[28px] sm:rounded-bl-[32px] border-0 shadow-none bg-transparent"
-              />
-              <AppMiniGauge
-                tone="lavender"
-                label="Total Income"
-                value={formatCurrency(stats.monthlyIncome)}
-                subLabel={getPeriodLabel(timePeriod, selectedDate)}
-                progressPercent={100}
-                icon={<TrendingUp size={16} />}
+                className="flex flex-col items-center py-3.5 sm:py-4 px-2 text-center cursor-pointer hover:bg-slate-50/70 transition-colors"
+              >
+                <span className="text-xs sm:text-base font-black text-slate-900 tracking-tight">
+                  {formatCurrency(stats.monthlyExpense)}
+                </span>
+                <span className="text-[10px] sm:text-xs font-medium text-slate-400 mb-1.5 sm:mb-2">Expenses</span>
+                <div className="relative flex h-[38px] w-[38px] sm:h-[44px] sm:w-[44px] items-center justify-center">
+                  <Ring
+                    size={42}
+                    stroke={4.5}
+                    pct={expenseRatio}
+                    color="#F97316"
+                    track="#FFE4D6"
+                    className="w-full h-full"
+                  />
+                  <TrendingDown className="absolute h-4 w-4 sm:h-[18px] sm:w-[18px] text-[#EA580C]" />
+                </div>
+              </div>
+
+              {/* Column 2: Income */}
+              <div
                 onClick={() => setCurrentPage?.('transactions')}
-                className="rounded-none border-0 shadow-none bg-transparent"
-              />
-              <AppMiniGauge
-                tone="mint"
-                label="Net Cashflow"
-                value={formatCurrency(stats.monthlyIncome - stats.monthlyExpense)}
-                subLabel={(stats.monthlyIncome - stats.monthlyExpense >= 0) ? 'Surplus' : 'Deficit'}
-                progressPercent={stats.monthlyIncome > 0 ? Math.min(100, Math.max(0, stats.savingsRate)) : 40}
-                icon={<Activity size={16} />}
+                className="flex flex-col items-center py-3.5 sm:py-4 px-2 text-center cursor-pointer hover:bg-slate-50/70 transition-colors"
+              >
+                <span className="text-xs sm:text-base font-black text-slate-900 tracking-tight">
+                  {formatCurrency(stats.monthlyIncome)}
+                </span>
+                <span className="text-[10px] sm:text-xs font-medium text-slate-400 mb-1.5 sm:mb-2">Income</span>
+                <div className="relative flex h-[38px] w-[38px] sm:h-[44px] sm:w-[44px] items-center justify-center">
+                  <Ring
+                    size={42}
+                    stroke={4.5}
+                    pct={100}
+                    color="#8B5CF6"
+                    track="#EDE9FE"
+                    className="w-full h-full"
+                  />
+                  <TrendingUp className="absolute h-4 w-4 sm:h-[18px] sm:w-[18px] text-[#8B5CF6]" />
+                </div>
+              </div>
+
+              {/* Column 3: Cashflow */}
+              <div
                 onClick={() => setCurrentPage?.('reports')}
-                className="rounded-none rounded-br-[28px] sm:rounded-br-[32px] border-0 shadow-none bg-transparent"
-              />
+                className="flex flex-col items-center py-3.5 sm:py-4 px-2 text-center cursor-pointer hover:bg-slate-50/70 transition-colors"
+              >
+                <span className="text-xs sm:text-base font-black text-slate-900 tracking-tight">
+                  {formatCurrency(netCashflow)}
+                </span>
+                <span className="text-[10px] sm:text-xs font-medium text-slate-400 mb-1.5 sm:mb-2">Cashflow</span>
+                <div className="relative flex h-[38px] w-[38px] sm:h-[44px] sm:w-[44px] items-center justify-center">
+                  <Ring
+                    size={42}
+                    stroke={4.5}
+                    pct={cashflowPercent}
+                    color="#10B981"
+                    track="#D1FAE5"
+                    className="w-full h-full"
+                  />
+                  <Activity className="absolute h-4 w-4 sm:h-[18px] sm:w-[18px] text-[#10B981]" />
+                </div>
+              </div>
             </div>
-          </Card>
+          </div>
         </motion.div>
+
+        {/* Quick summary stats strip: Total Assets, Active Accounts, Savings Rate */}
+        <div className="grid grid-cols-3 gap-2 sm:gap-3">
+          <div className="px-3 py-2.5 rounded-2xl bg-white border border-slate-100/80 shadow-[0_6px_20px_-4px_rgba(112,144,176,0.06)] text-center">
+            <span className="font-bold text-slate-400 block text-[9px] sm:text-[10px] uppercase tracking-wider">Total Assets</span>
+            <strong className="text-slate-900 font-extrabold text-xs sm:text-sm">
+              {formatCurrency(stats.totalBalance + investmentStats.currentValue)}
+            </strong>
+          </div>
+          <div className="px-3 py-2.5 rounded-2xl bg-white border border-slate-100/80 shadow-[0_6px_20px_-4px_rgba(112,144,176,0.06)] text-center">
+            <span className="font-bold text-slate-400 block text-[9px] sm:text-[10px] uppercase tracking-wider">Active Accounts</span>
+            <strong className="text-slate-900 font-extrabold text-xs sm:text-sm">{accounts.length}</strong>
+          </div>
+          <div className="px-3 py-2.5 rounded-2xl bg-white border border-slate-100/80 shadow-[0_6px_20px_-4px_rgba(112,144,176,0.06)] text-center">
+            <span className="font-bold text-slate-400 block text-[9px] sm:text-[10px] uppercase tracking-wider">Savings Rate</span>
+            <strong className={cn("font-extrabold text-xs sm:text-sm", stats.savingsRate >= 0 ? "text-emerald-600" : "text-rose-600")}>
+              {stats.savingsRate}%
+            </strong>
+          </div>
+        </div>
 
         {/* AI Monty Assistant Banner Card (Matching Reference Image Phone 1) */}
         <motion.div {...fadeUp}>
@@ -531,7 +620,21 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
         {/* 4. Lower Dashboard Section 1: Accounts & Wallets */}
         {visibleFeatures?.accounts !== false && (
           <motion.div {...fadeUp} className="mb-6 lg:mb-8">
-            <SectionHeader title="Accounts & Wallets" onViewAll={() => setCurrentPage?.('accounts')} />
+            <SectionHeader
+              title="Accounts & Wallets"
+              onViewAll={() => setCurrentPage?.('accounts')}
+              extra={
+                <button
+                  type="button"
+                  onClick={toggleAllBalances}
+                  className="p-1 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition-colors cursor-pointer inline-flex items-center justify-center"
+                  title={hideBalances ? "Show all balances" : "Hide all balances"}
+                  aria-label={hideBalances ? "Show all balances" : "Hide all balances"}
+                >
+                  {hideBalances ? <Eye size={15} /> : <EyeOff size={15} />}
+                </button>
+              }
+            />
 
             {/* Account Type Filters — centered on desktop, scrollable on mobile */}
             <div className="flex justify-start sm:justify-center mb-3">
@@ -560,57 +663,81 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
             </div>
 
             {filteredAccounts.length > 0 ? (
-              <div className="flex gap-4 overflow-x-auto pb-4 pt-1 px-1 snap-x snap-mandatory scrollbar-none scroll-smooth touch-scroll -mx-1">
+              <div className="flex gap-3 sm:gap-4 overflow-x-auto pb-4 pt-1 px-1 snap-x snap-mandatory scrollbar-none scroll-smooth touch-scroll -mx-1">
                 {filteredAccounts.map((account) => {
                   const style = getCardStyle(account);
+                  const accountKey = String(account.id ?? account.name);
+                  const isHidden = accountBalanceOverrides[accountKey] !== undefined
+                    ? accountBalanceOverrides[accountKey]
+                    : hideBalances;
                   return (
                     <Card
-                      key={account.id}
+                      key={account.id ?? account.name}
                       className={cn(
-                        "p-5 w-[270px] xs:w-[290px] sm:w-[320px] shrink-0 snap-center hover:shadow-2xl transition-all cursor-pointer relative overflow-hidden group border-none text-white rounded-3xl",
+                        "p-4 sm:p-4.5 w-[245px] xs:w-[265px] sm:w-[285px] shrink-0 snap-center hover:shadow-xl transition-all cursor-pointer relative overflow-hidden group border-none text-white rounded-[22px] sm:rounded-[26px]",
                         style.bgClass
                       )}
                       style={style.background ? { backgroundColor: style.background } : {}}
                       onClick={() => setCurrentPage?.('accounts')}
                     >
                       {/* Glow & subtle overlay */}
-                      <div className={cn("absolute -top-16 -right-16 w-36 h-36 rounded-full blur-3xl opacity-30", style.glow)} />
+                      <div className={cn("absolute -top-16 -right-16 w-32 h-32 rounded-full blur-3xl opacity-30", style.glow)} />
                       <div className="absolute top-1/2 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
 
-                      <div className="relative z-10 flex flex-col justify-between h-full min-h-[140px]">
-                        <div className="flex items-center justify-between mb-4">
-                          <div className="flex items-center gap-2.5">
-                            <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-white/15 backdrop-blur-md border border-white/20 text-white shadow-lg">
-                              {account.type === 'bank' && <Landmark size={20} />}
-                              {account.type === 'card' && <CreditCard size={20} />}
-                              {account.type === 'wallet' && <Wallet size={20} />}
-                              {account.type === 'cash' && <Banknote size={20} />}
+                      <div className="relative z-10 flex flex-col justify-between h-full min-h-[120px]">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center bg-white/15 backdrop-blur-md border border-white/20 text-white shadow-sm">
+                              {account.type === 'bank' && <Landmark size={17} />}
+                              {account.type === 'card' && <CreditCard size={17} />}
+                              {account.type === 'wallet' && <Wallet size={17} />}
+                              {account.type === 'cash' && <Banknote size={17} />}
                             </div>
                             <div className="drop-shadow-md rounded-lg overflow-hidden">
                               {getBankCardLogo(account.name, true, 'sm')}
                             </div>
                           </div>
-                          {account.subType && (
-                            <div className="scale-90 opacity-90">
-                              <CardNetworkLogo network={account.subType} />
-                            </div>
-                          )}
-                          {!account.isActive && (
-                            <span className="text-[10px] font-bold text-white/60 bg-white/10 px-2 py-0.5 rounded-full backdrop-blur-sm border border-white/10">
-                              INACTIVE
-                            </span>
-                          )}
+                          <div className="flex items-center gap-1.5">
+                            {account.subType && (
+                              <div className="scale-90 opacity-90">
+                                <CardNetworkLogo network={account.subType} />
+                              </div>
+                            )}
+                            {!account.isActive && (
+                              <span className="text-[9px] font-bold text-white/60 bg-white/10 px-2 py-0.5 rounded-full backdrop-blur-sm border border-white/10">
+                                INACTIVE
+                              </span>
+                            )}
+                          </div>
                         </div>
 
                         <div className="space-y-1">
-                          <h4 className="text-lg sm:text-xl font-black text-white tracking-tight leading-tight truncate">
+                          <h4 className="text-[13px] sm:text-sm font-semibold text-white/95 tracking-tight leading-snug truncate">
                             {account.name}
                           </h4>
                           <div className="flex items-center justify-between pt-1">
-                            <p className="text-xl sm:text-2xl font-black text-white tracking-tight">
-                              {formatCurrencyAmount(account.balance || 0, account.currency ?? currency)}
-                            </p>
-                            <p className="text-[10px] font-bold text-white/70 uppercase tracking-widest bg-white/15 px-2.5 py-0.5 rounded-lg backdrop-blur-sm">
+                            <div className="flex items-center gap-1.5">
+                              <p className="text-sm sm:text-base font-bold text-white tracking-tight">
+                                {isHidden ? (
+                                  <span className="tracking-wider select-none font-semibold text-white/90">****</span>
+                                ) : (
+                                  formatCurrencyAmount(account.balance || 0, account.currency ?? currency)
+                                )}
+                              </p>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleAccountBalance(accountKey);
+                                }}
+                                className="p-1 rounded-full text-white/60 hover:text-white hover:bg-white/15 active:scale-95 transition-all cursor-pointer"
+                                title={isHidden ? "Show balance" : "Hide balance"}
+                                aria-label={isHidden ? "Show balance" : "Hide balance"}
+                              >
+                                {isHidden ? <Eye size={13} /> : <EyeOff size={13} />}
+                              </button>
+                            </div>
+                            <p className="text-[9px] font-bold text-white/80 uppercase tracking-wider bg-white/15 px-2 py-0.5 rounded-md backdrop-blur-sm border border-white/10">
                               {account.type}
                             </p>
                           </div>

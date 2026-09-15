@@ -5,20 +5,22 @@ import supabase from '@/utils/supabase/client';
 import { api, TokenManager } from '@/lib/api';
 
 interface OTPVerificationProps {
- email: string;
- onVerified: () => void;
- onBack: () => void;
- isNewUser?: boolean;
- /** If provided, the OTP step cannot be skipped - user MUST verify email */
- mandatory?: boolean;
+  email: string;
+  onVerified: () => void;
+  onBack: () => void;
+  isNewUser?: boolean;
+  /** If provided, the OTP step cannot be skipped - user MUST verify email */
+  mandatory?: boolean;
+  onVerifyLater?: () => void;
 }
 
 export const OTPVerification: React.FC<OTPVerificationProps> = ({
- email,
- onVerified,
- onBack,
- isNewUser = false,
- mandatory = true,
+  email,
+  onVerified,
+  onBack,
+  isNewUser = false,
+  mandatory = true,
+  onVerifyLater,
 }) => {
  const [otp, setOtp] = useState(['', '', '', '', '', '']);
  const [isLoading, setIsLoading] = useState(false);
@@ -28,7 +30,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = ({
  const maxResendAttempts = 3;
  const [error, setError] = useState<string | null>(null);
  const [verified, setVerified] = useState(false);
- const [devOtp, setDevOtp] = useState<string | null>(() => (typeof window !== 'undefined' ? sessionStorage.getItem('kanaku_dev_otp') : null));
  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
  // Cooldown timer
@@ -183,11 +184,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = ({
       // Backend resend
       const res = await api.auth.resendRegistrationOtp(email);
       if (res.success) {
-        const newCode = (res.data as any)?.code;
-        if (newCode) {
-          sessionStorage.setItem('kanaku_dev_otp', newCode);
-          setDevOtp(newCode);
-        }
         setResendAttempts(prev => prev + 1);
         setResendCooldown(30);
         setOtp(['', '', '', '', '', '']);
@@ -251,7 +247,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = ({
  <h1 className="text-2xl font-bold text-gray-900 mb-2">Verify Your Email</h1>
  <p className="text-sm text-gray-600">We sent a 6-digit code to</p>
  <p className="text-sm font-semibold text-blue-600 mt-1">{email}</p>
- {mandatory && (
+ {mandatory && !onVerifyLater && (
  <p className="text-xs text-amber-600 mt-2 bg-amber-50 rounded-lg px-3 py-1 inline-block">
  Email verification is required to continue
  </p>
@@ -261,30 +257,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = ({
 
  {/* OTP Input */}
  <div className="p-6">
-  {import.meta.env.DEV && devOtp && (
-    <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between text-xs text-amber-900 shadow-sm">
-      <div className="flex items-center gap-1.5 flex-wrap">
-        <span className="font-semibold text-amber-800">Dev OTP:</span>
-        <span className="font-mono font-bold tracking-widest bg-amber-100/90 text-amber-950 px-2 py-0.5 rounded border border-amber-300">
-          {devOtp}
-        </span>
-      </div>
-      <button
-        type="button"
-        onClick={() => {
-          const digits = devOtp.slice(0, 6).split('');
-          setOtp(digits);
-          if (digits.length === 6) {
-            handleVerifyOTP(devOtp);
-          }
-        }}
-        className="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white font-medium rounded-lg text-xs transition-colors cursor-pointer"
-      >
-        Auto-fill
-      </button>
-    </div>
-  )}
-
  {error && (
  <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
  <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
@@ -323,15 +295,28 @@ export const OTPVerification: React.FC<OTPVerificationProps> = ({
  </div>
  )}
 
- {/* Manual verify button */}
- {!isLoading && otp.every(d => d !== '') && (
- <button data-testid="otpverification-verify-email"
- onClick={() => handleVerifyOTP(otp.join(''))}
- className="w-full py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors mb-4"
- >
- Verify Email
- </button>
- )}
+  {/* Manual verify button */}
+  {!isLoading && otp.every(d => d !== '') && (
+  <button data-testid="otpverification-verify-email"
+  onClick={() => handleVerifyOTP(otp.join(''))}
+  className="w-full py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors mb-3 shadow-sm"
+  >
+  Verify Email
+  </button>
+  )}
+
+  {/* Verify Later button */}
+  {onVerifyLater && (
+    <button
+      type="button"
+      data-testid="otpverification-verify-later"
+      onClick={onVerifyLater}
+      disabled={isLoading}
+      className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition-all duration-200 text-sm border border-slate-200 mb-4 cursor-pointer disabled:opacity-50"
+    >
+      Verify Later
+    </button>
+  )}
 
  {/* Resend Section */}
  <div className="text-center mb-4">

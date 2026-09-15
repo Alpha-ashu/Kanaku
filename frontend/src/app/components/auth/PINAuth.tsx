@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { LogOut, KeyRound, AlertCircle, ChevronLeft, ShieldCheck, Eye, EyeOff, Lock, Loader2, Fingerprint, ScanFace } from 'lucide-react';
-import { KANAKULogo } from '@/app/components/ui/KANAKULogo';
+import { KANAKULogo, DISPLAY_FONT } from '@/app/components/ui/KANAKULogo';
 import { clearSecurityData, isPINSet, verifyPIN, storeMasterKey, serializePINKeyBackup, restorePINKeyBackup } from '@/lib/encryption';
 import { isPinMissing, isPinServiceUnavailable, isSessionExpired, pinService } from '@/services/pinService';
 import { toast } from 'sonner';
@@ -889,7 +889,7 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
           <div className="mb-2 sm:mb-4">
             <KANAKULogo className="w-10 h-10 sm:w-12 sm:h-12" />
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight mb-1">KANAKU</h1>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-[0.02em] mb-1" style={{ fontFamily: DISPLAY_FONT }}>KANAKU</h1>
           <p className="text-xs sm:text-sm text-gray-500 font-medium text-center max-w-[260px] leading-tight">{currentStepSub}</p>
         </div>
 
