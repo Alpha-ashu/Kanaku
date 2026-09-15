@@ -39,7 +39,7 @@ export const Terms: React.FC<TermsProps> = ({
       title: '3. Keeping Your Account Secure',
       icon: <Shield className="w-5 h-5 text-emerald-600" />,
       content:
-        'You are responsible for keeping your password, 6-digit PIN and devices secure. In guest mode your data exists only on your device, so KANAKU cannot recover it if the device is lost, the app data is cleared, or you are locked out.',
+        'You are responsible for keeping your password, 6-digit PIN and devices secure, and for signing out of shared devices. Entries you make offline are saved on that device until it reconnects and syncs, so they can be lost if the app data is cleared first.',
     },
     {
       title: '4. Non-Advisory Financial Disclaimer',

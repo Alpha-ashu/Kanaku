@@ -2,7 +2,7 @@ import type { KaiSessionContext } from '@kanaku/shared';
 
 const KIND_LIST = [
   'expense', 'income', 'transfer', 'loan_borrow', 'loan_lend', 'goal', 'investment',
-  'group_expense', 'subscription', 'todo', 'goal_update', 'update_previous', 'clarify', 'query',
+  'group_expense', 'subscription', 'todo', 'goal_update', 'budget', 'update_previous', 'clarify', 'query',
 ].map((k) => `"${k}"`).join(' | ');
 
 function contextBlock(context: KaiSessionContext | undefined): string {
@@ -60,6 +60,7 @@ OUTPUT: one JSON object {"actions":[...]} — no markdown, no prose. Each action
   "expenseMode": <"individual"|"group"|"loan"|null>,
   "title": <todo title|null>, "dueDate": <"YYYY-MM-DD"|null>, "priority": <"low"|"medium"|"high"|null>,
   "goalName": <string|null>, "targetAmount": <number|null>, "targetDate": <"YYYY-MM-DD"|null>,
+  "period": <budget: "weekly"|"monthly"|"yearly"|null>,
   "targetActionId": <actionId from SESSION CONTEXT|"last"|null>, "patch": <object of changed fields|null>,
   "question": <string|null>, "options": <[{"label":string,"patch":object}]|null>,
   "queryType": <string|null>, "startDate": <"YYYY-MM-DD"|null>, "endDate": <"YYYY-MM-DD"|null>, "keyword": <string|null>, "limit": <number|null>,
@@ -73,6 +74,10 @@ KINDS
 - goal: "create/set a goal for X", "save 1.5 lakh for a bike" → goalName, targetAmount (required), targetDate if said.
 - goal_update: changes to an EXISTING goal ("set the target date to Dec 31 2026", "change the bike goal to 2 lakh")
   → goalName (from SESSION CONTEXT recent goal or the user's existing goals), targetDate and/or targetAmount.
+- budget: create or change a spending LIMIT for a category ("set a food budget of 8000", "limit shopping to 5k a
+  month", "make my transport budget 3000") → category (required, from CATEGORIES), amount = the limit (required),
+  period (default monthly). A budget is not spending — never emit an expense for it. Asking how a budget is going
+  is a query (BUDGET_STATUS), not a budget.
 - todo: reminders and tasks ("remind me to pay bike insurance tomorrow", "add a task to check my expenses")
   → title (required), dueDate, priority. No amount needed.
 - update_previous: the user CORRECTS or ADDS TO an earlier statement — "actually make it 4,500", "change it to
@@ -134,6 +139,9 @@ EXAMPLES
 
 "Remind me to pay my bike insurance tomorrow" →
 {"actions":[{"kind":"todo","title":"Pay bike insurance","dueDate":"<tomorrow>","priority":"high","confidence":0.95,"say":"Reminder set: pay bike insurance tomorrow."}]}
+
+"Set a 3,000 rupee monthly budget for food delivery" →
+{"actions":[{"kind":"budget","category":"Food & Dining","description":"Food delivery","amount":3000,"period":"monthly","confidence":0.95,"say":"Your ₹3,000 monthly food budget is set — I'll warn you as you get close."}]}
 
 "What is my food budget for this week?" →
 {"actions":[{"kind":"query","queryType":"BUDGET_STATUS","category":"Food & Dining","confidence":0.95,"say":"Here's your food budget."}]}

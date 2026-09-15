@@ -3133,7 +3133,9 @@ export async function saveTransactionWithBackendSync(transaction: any) {
             version: remote?.version ?? transaction.version,
           };
 
-          const savedId = await db.transactions.add(dbTransaction);
+          // The server just created this row — suppress the Dexie hook so it is not
+          // queued and echoed straight back as a redundant PUT /transactions/:id.
+          const savedId = await runWithCloudSyncSuppressed(() => db.transactions.add(dbTransaction));
           return { ...dbTransaction, id: savedId };
         } catch (backendError: any) {
           // Fall back to local save for: unavailability (503/network) AND business-logic
@@ -3217,14 +3219,15 @@ export async function updateTransactionWithBackendSync(localId: number, updates:
         });
 
         const remote = response.data as any;
-        await db.transactions.update(localId, {
+        // Already persisted server-side — don't let the hook queue an echo PUT.
+        await runWithCloudSyncSuppressed(() => db.transactions.update(localId, {
           ...updates,
           cloudId: remote?.id ?? existing.cloudId,
           createdAt: toDate(remote?.createdAt) ?? existing.createdAt,
           updatedAt: toDate(remote?.updatedAt) ?? new Date(),
           syncStatus: 'synced' as const,
           version: remote?.version ?? existing.version,
-        });
+        }));
         return;
       } catch (backendError: any) {
         const isFallback =

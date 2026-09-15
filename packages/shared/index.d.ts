@@ -92,6 +92,8 @@ export type KaiActionKind =
   | VoiceActionType
   | 'todo'
   | 'goal_update'
+  /** create or change a category spending limit */
+  | 'budget'
   | 'update_previous'
   | 'clarify'
   | 'query';
@@ -99,6 +101,7 @@ export type KaiActionKind =
 /** Partial entity set applied to an earlier action (corrections, clarification answers). */
 export interface KaiEntityPatch extends Partial<VoiceActionEntities> {
   kind?: KaiActionKind;
+  period?: 'weekly' | 'monthly' | 'yearly';
   /** 1-based index of the clarification option the user picked; the client expands it to that option's patch */
   chosenOption?: number;
   title?: string;
@@ -117,6 +120,8 @@ export interface KaiClarifyOption {
 
 export interface KaiActionEntities extends VoiceActionEntities {
   expenseMode?: 'individual' | 'group' | 'loan';
+  /** budget: how often the limit resets (category + amount carry the rest) */
+  period?: 'weekly' | 'monthly' | 'yearly';
   /** todo */
   title?: string;
   dueDate?: string;

@@ -37,7 +37,7 @@ const faqs = [
   },
   {
     q: 'Where is my financial data stored?',
-    a: 'On your device first, so the app works offline. When you sign in, your records also sync over an encrypted HTTPS connection to your KANAKU account, so they are available on your other devices. In guest mode, data stays on the device only.',
+    a: 'On your device first, so the app works offline. When you sign in, your records also sync over an encrypted HTTPS connection to your KANAKU account, so they are available on your other devices.',
   },
   {
     q: 'Can I export or delete my data?',

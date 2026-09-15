@@ -28,7 +28,7 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({
       title: '1. Where Your Data Lives',
       icon: <HardDrive className="w-5 h-5 text-violet-600" />,
       content:
-        'KANAKU is offline-first. Your accounts, transactions, budgets and settings are stored on your device so the app works without a connection. When you sign in, those records also sync to your KANAKU account in our cloud database so they are available on your other devices. In guest mode, data stays on your device only.',
+        'KANAKU is offline-first. Your accounts, transactions, budgets and settings are stored on your device so the app works without a connection. When you sign in, those records also sync to your KANAKU account in our cloud database so they are available on your other devices.',
     },
     {
       title: '2. Information We Process',

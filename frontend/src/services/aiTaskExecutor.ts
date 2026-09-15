@@ -5,7 +5,7 @@
  * hand, so a task created from chat syncs exactly like one created in the UI.
  */
 
-import { db, type RecurringTransaction } from '@/lib/database';
+import { db, type Budget, type RecurringTransaction } from '@/lib/database';
 import { backendService } from '@/lib/backend-api';
 import {
   saveGoalWithBackendSync,
@@ -52,11 +52,16 @@ async function createGoal(task: AssistantTask): Promise<string> {
   return `Goal "${task.title}" created (${inr(targetAmount)} by ${targetDate.toLocaleDateString('en-IN')})`;
 }
 
-async function createBudget(task: AssistantTask): Promise<string> {
-  const amount = Number(task.amount ?? 0);
+/**
+ * Creates the category budget, or updates the limit of the one already set for
+ * that category and period. Shared by chat tasks and Kai voice.
+ */
+export async function saveBudget(input: { category: string; amount: number; period?: string }): Promise<{ budget: Budget; created: boolean }> {
+  const amount = Number(input.amount ?? 0);
   if (!amount || amount <= 0) throw new Error('A budget needs a limit');
-  const category = (task.category || task.title).trim();
-  const period = task.period || 'monthly';
+  const category = input.category.trim();
+  if (!category) throw new Error('Which category should this budget cover?');
+  const period = input.period || 'monthly';
   const now = new Date();
 
   const existing = await db.budgets
@@ -72,7 +77,7 @@ async function createBudget(task: AssistantTask): Promise<string> {
         await db.budgets.update(existing.id, { syncStatus: 'pending' });
       }
     }
-    return `Budget for ${existing.category} updated to ${inr(amount)}/${period.replace('ly', '')}`;
+    return { budget: { ...existing, amount }, created: false };
   }
 
   const budgetId = crypto.randomUUID();
@@ -95,7 +100,17 @@ async function createBudget(task: AssistantTask): Promise<string> {
   } catch {
     // Left pending — syncBudgets() retries it on the next visit.
   }
-  return `Budget set: ${inr(amount)}/${period.replace('ly', '')} for ${category}`;
+  const saved = await db.budgets.get(budgetId);
+  if (!saved) throw new Error('Could not save the budget');
+  return { budget: saved, created: true };
+}
+
+async function createBudget(task: AssistantTask): Promise<string> {
+  const period = task.period || 'monthly';
+  const { budget, created } = await saveBudget({ category: task.category || task.title, amount: Number(task.amount ?? 0), period });
+  return created
+    ? `Budget set: ${inr(budget.amount)}/${period.replace('ly', '')} for ${budget.category}`
+    : `Budget for ${budget.category} updated to ${inr(budget.amount)}/${period.replace('ly', '')}`;
 }
 
 /** The list assistant-created reminders land in: the default list, else any individual list, else a new one. */

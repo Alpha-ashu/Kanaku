@@ -4,8 +4,10 @@ import { toast } from 'sonner';
 import { useApp } from '@/contexts/AppContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatCurrencyAmount } from '@/lib/currencyUtils';
+import type { Goal } from '@/lib/database';
+import { addGoalContribution } from '@/lib/goalContributions';
 import type { KaiAction, KaiActionKind } from '@kanaku/shared';
-import { actionOutflow, executeKaiAction, resolveDefaultAccount } from '@/services/kai/kaiActionExecutor';
+import { actionOutflow, executeKaiAction, findGoalByName, resolveDefaultAccount } from '@/services/kai/kaiActionExecutor';
 import { executeAssistantTask } from '@/services/aiTaskExecutor';
 import type { AssistantTask } from '@/services/voiceFinancialService';
 import type { QueryResult } from '@/services/nlqService';
@@ -40,7 +42,9 @@ const TASK_TITLES: Record<AssistantTask['type'], string> = {
 
 export const isConfirmableChatAction = (action?: ChatProposedAction): boolean =>
   !!action?.requiresConfirmation &&
-  (action.type === 'task' ? !!action.entities?.task : RECORD_KINDS.includes(action.type as KaiActionKind));
+  (action.type === 'task'
+    ? !!action.entities?.task
+    : action.type === 'goal' || RECORD_KINDS.includes(action.type as KaiActionKind));
 
 interface ChatActionCardProps {
   messageId: string;
@@ -53,20 +57,24 @@ interface ChatActionCardProps {
 /**
  * Confirmation card for an action KAI proposes in chat mode. Nothing is written
  * until the user taps Confirm; money records go through the Kai executor so
- * balances and sync behave exactly as they do for voice.
+ * balances and sync behave exactly as they do for voice, and goal contributions
+ * use the same helper as the Goals screens.
  */
 export const ChatActionCard: React.FC<ChatActionCardProps> = ({ messageId, prompt, action, status, onResolved }) => {
-  const { accounts, currency, refreshData } = useApp();
+  const { accounts, currency, refreshData, setCurrentPage } = useApp();
   const { user } = useAuth();
   const [saving, setSaving] = useState(false);
   const [accountId, setAccountId] = useState<number | undefined>();
 
   const isTask = action.type === 'task';
+  const isGoal = action.type === 'goal';
   const task = isTask ? (action.entities.task as AssistantTask) : undefined;
   const e = action.entities;
+  // undefined while looking up, null when the user has no goal by that name.
+  const [goal, setGoal] = useState<Goal | null | undefined>(undefined);
 
   const kaiAction = useMemo<KaiAction | null>(() => {
-    if (isTask) return null;
+    if (isTask || isGoal) return null;
     return {
       // Stable per message, so a double tap or retry maps to the same server row.
       actionId: `chat:${messageId}`,
@@ -86,22 +94,38 @@ export const ChatActionCard: React.FC<ChatActionCardProps> = ({ messageId, promp
       confidence: action.confidence,
       requiresReview: false,
     };
-  }, [action, e, isTask, messageId, prompt]);
+  }, [action, e, isTask, isGoal, messageId, prompt]);
 
   const activeAccounts = useMemo(() => accounts.filter((a) => !a.deletedAt), [accounts]);
   const needsAccount = !isTask || task?.type === 'create_recurring';
 
   useEffect(() => {
+    if (!isGoal || status !== 'pending') return;
+    let cancelled = false;
+    void findGoalByName(e.description).then((found) => {
+      if (!cancelled) setGoal(found ?? null);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [isGoal, e.description, status]);
+
+  useEffect(() => {
     if (!needsAccount || accountId !== undefined || status !== 'pending') return;
-    const outflow = kaiAction ? actionOutflow(kaiAction) : 0;
+    const outflow = kaiAction ? actionOutflow(kaiAction) : isGoal ? Number(e.amount ?? 0) : 0;
     void resolveDefaultAccount(outflow).then((account) => {
       if (account?.id !== undefined) setAccountId(account.id);
     });
-  }, [needsAccount, accountId, kaiAction, status]);
+  }, [needsAccount, accountId, kaiAction, isGoal, e.amount, status]);
 
   const money = (value?: number) => (value ? formatCurrencyAmount(Number(value), currency) : undefined);
 
-  const rows: Array<[string, string | undefined]> = task
+  const rows: Array<[string, string | undefined]> = isGoal
+    ? [
+        ['Goal', goal?.name ?? e.description],
+        ['Amount', money(e.amount)],
+      ]
+    : task
     ? [
         [task.type === 'create_budget' ? 'Category' : 'Name', task.type === 'create_budget' ? task.category || task.title : task.title],
         [task.type === 'create_budget' ? 'Limit' : 'Amount', money(task.amount) && (task.type === 'create_budget' ? `${money(task.amount)} / ${(task.period || 'monthly').replace('ly', '')}` : money(task.amount))],
@@ -120,7 +144,8 @@ export const ChatActionCard: React.FC<ChatActionCardProps> = ({ messageId, promp
         ['Date', e.date],
       ];
 
-  const title = task ? TASK_TITLES[task.type] : RECORD_TITLES[action.type] ?? 'New entry';
+  const title = isGoal ? 'Goal contribution' : task ? TASK_TITLES[task.type] : RECORD_TITLES[action.type] ?? 'New entry';
+  const goalMissing = isGoal && goal === null;
 
   const confirm = async () => {
     if (saving) return;
@@ -131,7 +156,13 @@ export const ChatActionCard: React.FC<ChatActionCardProps> = ({ messageId, promp
     setSaving(true);
     try {
       let summary: string;
-      if (task) {
+      if (isGoal) {
+        const account = activeAccounts.find((a) => a.id === accountId);
+        if (!goal || !account) throw new Error('Choose a goal and an account first.');
+        const amount = Number(e.amount ?? 0);
+        await addGoalContribution({ goal, account, amount, notes: 'Added with KAI' });
+        summary = `Added ${money(amount)} to ${goal.name}.`;
+      } else if (task) {
         const account = activeAccounts.find((a) => a.id === accountId);
         summary = await executeAssistantTask(task, {
           userId: user?.id,
@@ -189,18 +220,35 @@ export const ChatActionCard: React.FC<ChatActionCardProps> = ({ messageId, promp
         </label>
       )}
 
+      {status === 'pending' && goalMissing && (
+        <p className="mt-2 text-xs text-slate-600">
+          You don't have a goal called “{e.description}” yet. Create it on the Goals page, then add money to it.
+        </p>
+      )}
+
       {status === 'pending' ? (
         <div className="mt-3 flex gap-2">
+          {goalMissing ? (
+          <button
+            type="button"
+            data-testid="kai-chat-action-open-goals"
+            onClick={() => setCurrentPage('goals')}
+            className="flex flex-1 items-center justify-center gap-1.5 rounded-full bg-gradient-to-tr from-[#8B5CF6] to-[#7C3AED] py-2 text-xs font-bold text-white"
+          >
+            Open Goals
+          </button>
+          ) : (
           <button
             type="button"
             data-testid="kai-chat-action-confirm"
             onClick={() => void confirm()}
-            disabled={saving}
+            disabled={saving || (isGoal && goal === undefined)}
             className="flex flex-1 items-center justify-center gap-1.5 rounded-full bg-gradient-to-tr from-[#8B5CF6] to-[#7C3AED] py-2 text-xs font-bold text-white disabled:opacity-60"
           >
             {saving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} strokeWidth={2.6} />}
             Confirm
           </button>
+          )}
           <button
             type="button"
             data-testid="kai-chat-action-dismiss"

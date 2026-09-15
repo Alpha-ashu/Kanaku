@@ -17,6 +17,7 @@ export interface GoldEntry {
   syncStatus?: SyncStatus;
 }
 import Dexie, { Table } from 'dexie';
+import { purgeLegacySampleData } from './legacySampleData';
 
 // Database Interfaces
 export type SyncStatus = 'pending' | 'synced' | 'failed';
@@ -1237,6 +1238,10 @@ export class OfflineSyncDB extends ProductionDB {
 }
 
 export const db = new OfflineSyncDB();
+
+// Runs inside open(): queued queries (and therefore any sync push) wait until the
+// fake rows an older build seeded for signed-out visitors are gone.
+db.on('ready', () => purgeLegacySampleData(db));
 
 if (typeof window !== 'undefined') {
   (window as any).db = db;

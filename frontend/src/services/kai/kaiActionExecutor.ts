@@ -1,7 +1,7 @@
 /**
  * Turns understood Kai actions into real Kanaku records — through the same
  * save / update / delete paths the pages use, so a voice-created expense,
- * loan, group bill, goal or to-do is indistinguishable from a typed one.
+ * loan, group bill, goal, budget or to-do is indistinguishable from a typed one.
  *
  * Idempotency: every created row carries a key derived from the actionId
  * (`dedupHash` for transactions, `clientRequestId` for goals/loans,
@@ -30,7 +30,8 @@ import {
   queueRecordUpsertSync,
 } from '@/lib/auth-sync-integration';
 import { applyAccountBalanceDeltas, getTransactionAccountDeltas } from '@/lib/transactionAggregation';
-import { resolveAssistantTodoList } from '@/services/aiTaskExecutor';
+import { resolveAssistantTodoList, saveBudget } from '@/services/aiTaskExecutor';
+import { deleteBudgetEverywhere } from '@/services/featureSyncService';
 import {
   applyPatch,
   deterministicUuid,
@@ -439,7 +440,7 @@ async function createGroupExpense(action: KaiAction, ctx: ExecutionContext): Pro
   };
 }
 
-async function findGoalByName(name?: string) {
+export async function findGoalByName(name?: string) {
   if (!name) return undefined;
   const lower = name.trim().toLowerCase();
   const goals = await db.goals.filter((g) => !g.deletedAt).toArray();
@@ -555,6 +556,23 @@ async function createTodo(action: KaiAction, ctx: ExecutionContext): Promise<Exe
   };
 }
 
+async function createBudgetFromVoice(action: KaiAction): Promise<ExecutionOutcome> {
+  const e = action.entities;
+  const amount = requireAmount(e);
+  const period = e.period ?? 'monthly';
+  const { budget, created } = await saveBudget({ category: e.category || e.description || '', amount, period });
+  const every = period.replace('ly', '');
+  return {
+    // An existing budget whose limit Kai changed is not Kai's to delete on undo.
+    refs: [{ table: 'budgets', budgetId: budget.id, owned: created }],
+    balanceDelta: {},
+    entities: { ...e, category: budget.category, amount, period },
+    say: action.say ?? (created
+      ? `Budget set: ${inr(amount)} a ${every} for ${budget.category}.`
+      : `${budget.category} budget updated to ${inr(amount)} a ${every}.`),
+  };
+}
+
 /** Create the records for one understood action. Throws with a user-readable message on failure. */
 export async function executeKaiAction(action: KaiAction, ctx: ExecutionContext): Promise<ExecutionOutcome> {
   await assertAccountCanCover(ctx.accountId, actionOutflow(action));
@@ -578,6 +596,8 @@ export async function executeKaiAction(action: KaiAction, ctx: ExecutionContext)
       return updateGoalFromVoice(action);
     case 'todo':
       return createTodo(action, ctx);
+    case 'budget':
+      return createBudgetFromVoice(action);
     default:
       throw new Error(`Nothing to save for "${action.kind}"`);
   }
@@ -611,6 +631,11 @@ export async function removeKaiAction(action: KaiExecutedAction): Promise<void> 
   for (const ref of [...action.refs].reverse()) {
     if (ref.owned === false) continue;
     switch (ref.table) {
+      case 'budgets': {
+        const budget = await db.budgets.get(ref.budgetId);
+        if (budget) await deleteBudgetEverywhere(budget);
+        break;
+      }
       case 'transactions':
         await deleteTransactionWithBackendSync(ref.localId);
         break;
@@ -673,6 +698,25 @@ export async function updateKaiAction(
 
   for (const ref of action.refs) {
     switch (ref.table) {
+      case 'budgets': {
+        const budget = await db.budgets.get(ref.budgetId);
+        if (!budget) break;
+        const updates = {
+          ...(patch.amount ? { amount: patch.amount } : {}),
+          ...(patch.category ? { category: patch.category } : {}),
+          ...(patch.period ? { period: patch.period } : {}),
+        };
+        if (Object.keys(updates).length === 0) break;
+        await db.budgets.update(budget.id, { ...updates, updatedAt: now, ...(budget.cloudId ? {} : { syncStatus: 'pending' as const }) });
+        if (budget.cloudId) {
+          try {
+            await backendService.updateBudget(budget.cloudId, updates);
+          } catch {
+            await db.budgets.update(budget.id, { syncStatus: 'pending' });
+          }
+        }
+        break;
+      }
       case 'transactions': {
         const updates: Partial<Transaction> & Record<string, unknown> = { updatedAt: now };
         if (patch.amount) updates.amount = patch.amount;

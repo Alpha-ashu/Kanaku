@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { db, Goal, GoalContribution } from '@/lib/database';
 import { applyAccountBalanceDeltas } from '@/lib/transactionAggregation';
+import { addGoalContribution } from '@/lib/goalContributions';
 import { useApp } from '@/contexts/AppContext';
 import { Button } from '@/app/components/ui/button';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
@@ -154,39 +155,19 @@ export const GoalDetail: React.FC = () => {
 
     setIsSubmitting(true);
     try {
-      if (goal.cloudId && account.cloudId && navigator.onLine) {
-        try {
-          await backendService.api.post(`/goals/${goal.cloudId}/contribute`, {
-            amount,
-            accountId: account.cloudId,
-            memberName: goal.isGroupGoal ? memberName : undefined,
-            notes: notes.trim() || undefined,
-          });
-        } catch (backendError) {
-          console.warn('[GoalDetail] Direct contribution sync failed, falling back to sync queue:', backendError);
-        }
+      try {
+        await addGoalContribution({
+          goal,
+          account,
+          amount,
+          notes,
+          memberName: goal.isGroupGoal ? memberName : undefined,
+          status: goal.isGroupGoal ? 'paid' : undefined,
+        });
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : 'Could not add the contribution');
+        return;
       }
-
-      await db.goalContributions.add({
-        goalId: goal.id,
-        amount,
-        accountId,
-        date: new Date(),
-        memberName: goal.isGroupGoal ? memberName : undefined,
-        status: goal.isGroupGoal ? 'paid' : undefined,
-        notes: notes.trim() || undefined,
-      });
-
-      await db.goals.update(goal.id, {
-        currentAmount: goal.currentAmount + amount,
-        updatedAt: new Date(),
-      });
-
-      await applyAccountBalanceDeltas(new Map([[accountId, -amount]]));
-
-      queueRecordUpsertSync('goals', goal.id);
-      queueRecordUpsertSync('accounts', accountId);
-      void processPendingSyncQueue();
 
       toast.success('Contribution added');
       setAmount(0);

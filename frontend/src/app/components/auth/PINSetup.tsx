@@ -227,8 +227,10 @@ export const PINSetup: React.FC<PINSetupProps> = ({
     : 'Choose a 6-digit PIN to secure your account';
 
   return (
-    <div data-testid="pinsetup-div" 
-      className="fixed inset-0 z-50 overflow-y-auto bg-white flex items-center justify-center p-4"
+    // Top-aligned on phones: a vertically centred flex child that is taller than a
+    // short Android viewport overflows upward, and that top part can't be scrolled to.
+    <div data-testid="pinsetup-div"
+      className="fixed inset-0 z-50 overflow-y-auto bg-white flex flex-col items-center justify-start sm:justify-center p-3 sm:p-6 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))]"
     >
       <form data-testid="pinsetup-form"
         style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', width: 0, height: 0, overflow: 'hidden' }}
@@ -250,25 +252,25 @@ export const PINSetup: React.FC<PINSetupProps> = ({
         />
       </form>
 
-      <div className="w-full max-w-md p-6 md:p-8 flex flex-col">
+      <div className="w-full max-w-md p-3 sm:p-6 md:p-8 flex flex-col my-auto">
         {/* Header */}
-        <div className="pt-4 pb-6 flex flex-col items-center px-6">
-          <div className="mb-4">
-            <KANAKULogo className="w-12 h-12" />
+        <div className="pt-2 sm:pt-4 pb-3 sm:pb-6 flex flex-col items-center px-4 sm:px-6">
+          <div className="mb-2 sm:mb-4">
+            <KANAKULogo className="w-10 h-10 sm:w-12 sm:h-12" />
           </div>
-          <h1 className="text-3xl font-black text-gray-900 tracking-tighter mb-1">KANAKU</h1>
-          <p className="text-sm text-gray-500 font-medium text-center max-w-[240px] leading-tight">
+          <h1 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tighter mb-1">KANAKU</h1>
+          <p className="text-xs sm:text-sm text-gray-500 font-medium text-center max-w-[240px] leading-tight">
             {currentStepSub}
           </p>
         </div>
 
         {/* Card Content */}
-        <div className="px-8 flex flex-col gap-6">
+        <div className="px-2 sm:px-6 md:px-8 flex flex-col gap-3.5 sm:gap-6">
           <div className="flex flex-col items-center text-center">
             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-1">
               {step !== 'enter' ? `Step ${step === 'create' ? '1' : '2'} of 2` : 'Secure Unlock'}
             </p>
-            <h2 className="text-2xl font-black text-gray-900 tracking-tight">{currentStepLabel}</h2>
+            <h2 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight">{currentStepLabel}</h2>
             {step === 'confirm' && (
               <button
                 type="button"
@@ -282,7 +284,7 @@ export const PINSetup: React.FC<PINSetupProps> = ({
           </div>
 
           {/* PIN digit boxes */}
-          <div data-testid="pinsetup-div-2" className="flex justify-center gap-3">
+          <div data-testid="pinsetup-div-2" className="flex justify-center gap-2 sm:gap-3">
             {Array.from({ length: 6 }, (_, i) => {
               const isActive = i === currentPinVal.length;
               const isFilled = i < currentPinVal.length;
@@ -291,7 +293,7 @@ export const PINSetup: React.FC<PINSetupProps> = ({
               return (
                 <div
                   key={i}
-                  className={`w-11 h-11 md:w-14 md:h-14 rounded-2xl border-2 flex items-center justify-center text-xl font-black transition-all ${
+                  className={`w-9 h-9 sm:w-11 sm:h-11 md:w-14 md:h-14 rounded-xl sm:rounded-2xl border-2 flex items-center justify-center text-lg sm:text-xl font-black transition-all ${
                     isActive
                       ? 'border-gray-900 bg-white ring-4 ring-gray-100'
                       : isFilled
@@ -326,8 +328,11 @@ export const PINSetup: React.FC<PINSetupProps> = ({
             </div>
           </div>
 
-          {/* Number pad */}
-          <div className="hidden md:grid grid-cols-3 gap-3">
+          {/* Number pad — rendered on EVERY viewport. It used to be `hidden md:grid`,
+              which left phones with no way to type: the hidden input is readOnly with
+              inputMode="none", so the OS keyboard never opens. This pad is the touch
+              input; the hidden input still serves hardware keyboards. */}
+          <div className="grid grid-cols-3 gap-2 sm:gap-3 w-full max-w-[280px] sm:max-w-[320px] mx-auto">
             {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => (
               <button
                 key={n}
@@ -335,7 +340,7 @@ export const PINSetup: React.FC<PINSetupProps> = ({
                 onClick={() => appendDigit(String(n))}
                 disabled={isLoading}
                 data-testid={`pin-setup-digit-${n}`}
-                className="h-14 rounded-2xl bg-white hover:bg-gray-100 active:bg-gray-200 active:scale-95 transition-all text-xl font-semibold text-gray-900 flex items-center justify-center disabled:opacity-50 disabled:pointer-events-none"
+                className="h-11 sm:h-14 rounded-xl sm:rounded-2xl bg-white hover:bg-gray-100 active:bg-gray-200 active:scale-95 transition-all text-lg sm:text-xl font-semibold text-gray-900 flex items-center justify-center disabled:opacity-50 disabled:pointer-events-none"
               >
                 {n}
               </button>
@@ -346,7 +351,7 @@ export const PINSetup: React.FC<PINSetupProps> = ({
                 onClick={onBack}
                 disabled={isLoading}
                 data-testid="pin-setup-back-nav-button"
-                className="h-14 rounded-2xl bg-transparent hover:bg-gray-50 active:bg-gray-100 transition-all text-gray-500 hover:text-gray-900 flex items-center justify-center disabled:opacity-50 disabled:pointer-events-none"
+                className="h-11 sm:h-14 rounded-xl sm:rounded-2xl bg-transparent hover:bg-gray-50 active:bg-gray-100 transition-all text-gray-500 hover:text-gray-900 flex items-center justify-center disabled:opacity-50 disabled:pointer-events-none"
               >
                 <ChevronLeft size={20} />
               </button>
@@ -358,7 +363,7 @@ export const PINSetup: React.FC<PINSetupProps> = ({
               onClick={() => appendDigit('0')}
               disabled={isLoading}
               data-testid="pin-setup-digit-0"
-              className="h-14 rounded-2xl bg-white hover:bg-gray-100 active:bg-gray-200 active:scale-95 transition-all text-xl font-semibold text-gray-900 flex items-center justify-center disabled:opacity-50 disabled:pointer-events-none"
+              className="h-11 sm:h-14 rounded-xl sm:rounded-2xl bg-white hover:bg-gray-100 active:bg-gray-200 active:scale-95 transition-all text-lg sm:text-xl font-semibold text-gray-900 flex items-center justify-center disabled:opacity-50 disabled:pointer-events-none"
             >
               0
             </button>
@@ -367,7 +372,7 @@ export const PINSetup: React.FC<PINSetupProps> = ({
               onClick={deleteDigit}
               disabled={isLoading}
               data-testid="pin-setup-delete-button"
-              className="h-14 rounded-2xl bg-transparent hover:bg-gray-50 active:bg-gray-100 transition-all text-gray-500 hover:text-gray-900 flex items-center justify-center disabled:opacity-50 disabled:pointer-events-none animate-none"
+              className="h-11 sm:h-14 rounded-xl sm:rounded-2xl bg-transparent hover:bg-gray-50 active:bg-gray-100 transition-all text-gray-500 hover:text-gray-900 flex items-center justify-center disabled:opacity-50 disabled:pointer-events-none animate-none"
             >
               {isLoading ? (
                 <div className="w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
@@ -378,8 +383,8 @@ export const PINSetup: React.FC<PINSetupProps> = ({
           </div>
 
           {/* Security banner */}
-          <div className="bg-gray-100/50 border border-gray-100 rounded-[28px] p-5 flex flex-col items-center text-center gap-2 mt-2 mb-4">
-            <ShieldCheck className="text-emerald-500" size={20} />
+          <div className="bg-gray-100/50 border border-gray-100 rounded-2xl sm:rounded-[28px] p-3 sm:p-5 flex flex-col items-center text-center gap-1.5 sm:gap-2 mt-1 sm:mt-2 mb-2 sm:mb-4">
+            <ShieldCheck className="text-emerald-500" size={18} />
             <div>
               <p className="text-gray-900 text-[11px] font-black uppercase tracking-wider mb-1">Secure Encryption</p>
               <p className="text-gray-500 text-[10px] leading-relaxed max-w-[220px]">

@@ -30,6 +30,7 @@ export const KIND_LABEL: Record<KaiActionKind, string> = {
   unknown: 'Action',
   todo: 'Reminder',
   goal_update: 'Goal update',
+  budget: 'Budget',
   update_previous: 'Correction',
   clarify: 'Question',
   query: 'Answer',

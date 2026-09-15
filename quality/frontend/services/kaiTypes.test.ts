@@ -33,6 +33,7 @@ describe('describeAction / actionAmount', () => {
     expect(describeAction({ kind: 'loan_lend', entities: { person: 'Prijith' }, rawSegment: '' })).toBe('Lent to Prijith');
     expect(describeAction({ kind: 'goal', entities: { goalName: 'Bike' }, rawSegment: '' })).toBe('Bike goal');
     expect(describeAction({ kind: 'todo', entities: { title: 'Pay bike insurance' }, rawSegment: '' })).toBe('Pay bike insurance');
+    expect(describeAction({ kind: 'budget', entities: { category: 'Food & Dining', amount: 3000 }, rawSegment: '' })).toBe('Food & Dining budget');
     expect(describeAction({ kind: 'query', entities: {}, rawSegment: 'what is my food budget' })).toBe('what is my food budget');
   });
 
@@ -49,6 +50,8 @@ describe('kind predicates', () => {
     expect(isMoneyKind('goal')).toBe(false);
     expect(isRecordKind('goal')).toBe(true);
     expect(isRecordKind('todo')).toBe(true);
+    expect(isMoneyKind('budget')).toBe(false);
+    expect(isRecordKind('budget')).toBe(true);
     expect(isRecordKind('query')).toBe(false);
     expect(isRecordKind('clarify')).toBe(false);
     expect(isRecordKind('update_previous')).toBe(false);

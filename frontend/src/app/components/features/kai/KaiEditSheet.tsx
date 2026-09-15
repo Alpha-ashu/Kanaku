@@ -24,8 +24,9 @@ export const KaiEditSheet: React.FC<Props> = ({ action, currency, onSave, onClos
   const isLoan = kind === 'loan_borrow' || kind === 'loan_lend';
   const isGoal = kind === 'goal' || kind === 'goal_update';
   const isTodo = kind === 'todo';
+  const isBudget = kind === 'budget';
   const isGroup = kind === 'group_expense';
-  const isMoney = !isGoal && !isTodo;
+  const isMoney = !isGoal && !isTodo && !isBudget;
 
   const categories = useMemo(() => {
     const names = (kind === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES).map((c) => c.name);
@@ -44,13 +45,18 @@ export const KaiEditSheet: React.FC<Props> = ({ action, currency, onSave, onClos
   const [title, setTitle] = useState(e.title ?? '');
   const [dueDate, setDueDate] = useState(e.dueDate ?? '');
   const [priority, setPriority] = useState<'low' | 'medium' | 'high'>(e.priority ?? 'medium');
+  const [period, setPeriod] = useState<'weekly' | 'monthly' | 'yearly'>(e.period ?? 'monthly');
 
   const submit = (ev: React.FormEvent) => {
     ev.preventDefault();
     const patch: KaiEntityPatch = {};
     const n = Number(amount);
 
-    if (isTodo) {
+    if (isBudget) {
+      if (Number.isFinite(n) && n > 0 && n !== e.amount) patch.amount = n;
+      if (category && category !== e.category) patch.category = category;
+      if (period !== (e.period ?? 'monthly')) patch.period = period;
+    } else if (isTodo) {
       if (title.trim() && title.trim() !== e.title) patch.title = title.trim();
       if (dueDate && dueDate !== e.dueDate) patch.dueDate = dueDate;
       if (priority !== e.priority) patch.priority = priority;
@@ -102,7 +108,30 @@ export const KaiEditSheet: React.FC<Props> = ({ action, currency, onSave, onClos
           </button>
         </div>
 
-        {isTodo ? (
+        {isBudget ? (
+          <>
+            <div>
+              <label className={label}>Category</label>
+              <select className={field} value={category} onChange={(ev) => setCategory(ev.target.value)}>
+                {categories.map((c) => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className={label}>Limit ({currency})</label>
+                <input type="number" inputMode="decimal" min={1} className={field} value={amount} onChange={(ev) => setAmount(ev.target.value)} required />
+              </div>
+              <div>
+                <label className={label}>Resets</label>
+                <select className={field} value={period} onChange={(ev) => setPeriod(ev.target.value as 'weekly' | 'monthly' | 'yearly')}>
+                  <option value="weekly">Weekly</option>
+                  <option value="monthly">Monthly</option>
+                  <option value="yearly">Yearly</option>
+                </select>
+              </div>
+            </div>
+          </>
+        ) : isTodo ? (
           <>
             <div>
               <label className={label}>Task</label>

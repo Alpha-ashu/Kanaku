@@ -4,8 +4,11 @@ import React, { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { executeKaiAction, executeAssistantTask, resolveDefaultAccount, refreshData, toast } = vi.hoisted(() => ({
+const { executeKaiAction, executeAssistantTask, resolveDefaultAccount, refreshData, toast, findGoalByName, addGoalContribution, setCurrentPage } = vi.hoisted(() => ({
   executeKaiAction: vi.fn(),
+  findGoalByName: vi.fn(),
+  addGoalContribution: vi.fn(),
+  setCurrentPage: vi.fn(),
   executeAssistantTask: vi.fn(),
   resolveDefaultAccount: vi.fn(),
   refreshData: vi.fn(),
@@ -15,19 +18,22 @@ const { executeKaiAction, executeAssistantTask, resolveDefaultAccount, refreshDa
 vi.mock('@/services/kai/kaiActionExecutor', () => ({
   executeKaiAction,
   resolveDefaultAccount,
+  findGoalByName,
   actionOutflow: (action: { kind: string; entities: { amount?: number } }) =>
     action.kind === 'income' ? 0 : Number(action.entities.amount ?? 0),
 }));
 vi.mock('@/services/aiTaskExecutor', () => ({ executeAssistantTask }));
+vi.mock('@/lib/goalContributions', () => ({ addGoalContribution }));
 vi.mock('@/contexts/AuthContext', () => ({ useAuth: () => ({ user: { id: 'user-1' } }) }));
 vi.mock('@/contexts/AppContext', () => ({
   useApp: () => ({
     accounts: [
-      { id: 1, name: 'HDFC Savings', cloudId: 'acc-cloud-1' },
+      { id: 1, name: 'HDFC Savings', cloudId: 'acc-cloud-1', balance: 50000 },
       { id: 2, name: 'Cash', deletedAt: new Date() },
     ],
     currency: 'INR',
     refreshData,
+    setCurrentPage,
   }),
 }));
 vi.mock('sonner', () => ({ toast }));
@@ -61,7 +67,7 @@ describe('isConfirmableChatAction', () => {
   it('rejects missing, unconfirmed, unknown or empty-task actions', () => {
     expect(isConfirmableChatAction(undefined)).toBe(false);
     expect(isConfirmableChatAction({ ...expense, requiresConfirmation: false })).toBe(false);
-    expect(isConfirmableChatAction({ ...expense, type: 'goal' })).toBe(false);
+    expect(isConfirmableChatAction({ ...expense, type: 'unknown' })).toBe(false);
     expect(isConfirmableChatAction({ ...budget, entities: {} })).toBe(false);
   });
 });
@@ -147,6 +153,57 @@ describe('ChatActionCard', () => {
     expect(toast.error).toHaveBeenCalledWith('HDFC Savings only has ₹100 — this needs ₹1,850.');
     expect(onResolved).not.toHaveBeenCalled();
     expect(container.querySelector('[data-testid="kai-chat-action-confirm"]')).not.toBeNull();
+  });
+
+  it('adds a chat goal contribution to the matching goal', async () => {
+    const onResolved = vi.fn();
+    const goal = { id: 7, name: 'Goa Trip', targetAmount: 60000, currentAmount: 10000 };
+    findGoalByName.mockResolvedValue(goal);
+    addGoalContribution.mockResolvedValue(undefined);
+    const contribution: ChatProposedAction = {
+      type: 'goal',
+      entities: { amount: 5000, description: 'goa trip' },
+      confidence: 0.9,
+      requiresConfirmation: true,
+    };
+
+    await act(async () => {
+      root.render(<ChatActionCard messageId="m5" prompt="Add 5000 to my goa trip goal" action={contribution} status="pending" onResolved={onResolved} />);
+    });
+    expect(findGoalByName).toHaveBeenCalledWith('goa trip');
+    expect(container.textContent).toContain('Goa Trip');
+
+    await click('kai-chat-action-confirm');
+
+    expect(addGoalContribution).toHaveBeenCalledWith({
+      goal,
+      account: expect.objectContaining({ id: 1 }),
+      amount: 5000,
+      notes: 'Added with KAI',
+    });
+    expect(executeKaiAction).not.toHaveBeenCalled();
+    expect(onResolved).toHaveBeenCalledWith('saved', expect.stringContaining('Goa Trip'));
+  });
+
+  it('sends the user to Goals instead of saving when the goal does not exist', async () => {
+    const onResolved = vi.fn();
+    findGoalByName.mockResolvedValue(undefined);
+    const contribution: ChatProposedAction = {
+      type: 'goal',
+      entities: { amount: 5000, description: 'boat' },
+      confidence: 0.9,
+      requiresConfirmation: true,
+    };
+
+    await act(async () => {
+      root.render(<ChatActionCard messageId="m6" prompt="Add 5000 to boat" action={contribution} status="pending" onResolved={onResolved} />);
+    });
+
+    expect(container.querySelector('[data-testid="kai-chat-action-confirm"]')).toBeNull();
+    await click('kai-chat-action-open-goals');
+    expect(setCurrentPage).toHaveBeenCalledWith('goals');
+    expect(addGoalContribution).not.toHaveBeenCalled();
+    expect(onResolved).not.toHaveBeenCalled();
   });
 
   it('cancelling resolves without saving', async () => {

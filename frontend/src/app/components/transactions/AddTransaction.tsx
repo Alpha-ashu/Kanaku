@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useApp, useAICapability } from '@/contexts/AppContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/database';
-import { saveTransactionWithBackendSync, updateTransactionWithBackendSync, queueRecordUpsertSync } from '@/lib/auth-sync-integration';
+import { saveTransactionWithBackendSync, updateTransactionWithBackendSync, queueRecordUpsertSync, runWithCloudSyncSuppressed } from '@/lib/auth-sync-integration';
 import { applyTransactionAccountImpact, applyAccountBalanceDeltas, getTransactionAccountDeltas } from '@/lib/transactionAggregation';
 import { DocumentManagementService } from '@/services/documentManagementService';
 import { backendService } from '@/lib/backend-api';
@@ -617,6 +617,18 @@ export function AddTransaction() {
  return () => clearTimeout(timer);
  }, [formData.description, formData.merchant, isExpense, manualExpenseCategory]);
 
+  // Mirror a saved transaction's balance impact onto the local accounts. When the
+  // backend confirmed the save it already booked the delta in the same DB
+  // transaction, and it ignores client balances on account updates — so queueing
+  // those account rows would only fire a no-op PUT /accounts/:id per account.
+  const applyLocalAccountImpact = (
+    saved: Parameters<typeof applyTransactionAccountImpact>[0] & { syncStatus?: string },
+    at: Date,
+  ) =>
+    saved?.syncStatus === 'synced'
+      ? runWithCloudSyncSuppressed(() => applyTransactionAccountImpact(saved, at))
+      : applyTransactionAccountImpact(saved, at);
+
   const handleSubmit = async () => {
     if (!selectedAccount) { toast.error('Select an account'); return; }
     if (!formData.amount || formData.amount <= 0) { toast.error('Enter amount'); return; }
@@ -651,10 +663,13 @@ export function AddTransaction() {
       dayEnd.setHours(23, 59, 59, 999);
 
       if (!editingTransactionId) {
+        // Narrow by the indexed accountId first — a bare .filter() walks every
+        // transaction the user has ever recorded before each save.
         const similarTransactions = await db.transactions
+          .where('accountId')
+          .equals(formData.accountId)
           .filter(t =>
             !t.deletedAt &&
-            t.accountId === formData.accountId &&
             t.type === formData.type &&
             t.amount === formData.amount &&
             t.category === normalizeCategorySelection(formData.category, formData.type as 'expense' | 'income') &&
@@ -724,7 +739,6 @@ export function AddTransaction() {
 
         toast.success('Transaction updated successfully');
         clearQuickStorage();
-        refreshData();
         setCurrentPage(returnPage);
         return;
       }
@@ -766,7 +780,7 @@ export function AddTransaction() {
  intentionalDuplicate,
  });
 
- await applyTransactionAccountImpact(result, now);
+ await applyLocalAccountImpact(result, now);
  } else {
  const payload: any = {
   ...formData,
@@ -797,7 +811,7 @@ export function AddTransaction() {
  }
 
  result = await saveTransactionWithBackendSync(payload);
- await applyTransactionAccountImpact(result, now);
+ await applyLocalAccountImpact(result, now);
 
  // Create GroupExpense record so it appears in the Groups page 
  if (isExpense && expenseMode === 'group' && result?.id && groupParticipants.length > 0) {
@@ -933,7 +947,6 @@ if (linkedDocId) {
 
  toast.success('Transaction saved');
  clearQuickStorage();
- refreshData();
  setCurrentPage(returnPage);
  } catch (err: any) {
  toast.error(err?.message || 'Failed to save');

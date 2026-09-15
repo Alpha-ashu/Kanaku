@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Shield, TrendingUp, Sparkles, ArrowRight, AlertTriangle, Calendar, Fingerprint, Lock, Eye, EyeOff, CheckCircle, Mail } from 'lucide-react';
+import { Shield, TrendingUp, Sparkles, ArrowRight, Calendar, Fingerprint, Lock, Eye, EyeOff, CheckCircle, Mail } from 'lucide-react';
 import { KANAKULogo } from '@/app/components/ui/KANAKULogo';
 import { motion } from 'framer-motion';
 import { SignInForm } from './SignInForm';
@@ -13,7 +13,7 @@ import { Terms } from '@/app/components/marketing/Terms';
 import { saveAccountWithBackendSync } from '@/lib/auth-sync-integration';
 import { api, TokenManager } from '@/lib/api';
 import { PublicNavbar } from '@/app/components/ui/PublicNavbar';
-import { enableGuestMode, isGuestMode, disableGuestMode, migrateGuestDataToUser, migrateGuestLocalStorage } from '@/lib/guestMode';
+import { isGuestMode, disableGuestMode, migrateGuestDataToUser, migrateGuestLocalStorage } from '@/lib/guestMode';
 import { pinService, isPinMissing } from '@/services/pinService';
 import { signIn as supabaseSignIn, signUp as supabaseSignUp, resendSignupConfirmation, DUPLICATE_ACCOUNT_MESSAGE } from '@/lib/supabase-helpers';
 import { MailCheck } from 'lucide-react';
@@ -99,7 +99,6 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
  const [salaryAccount, setSalaryAccount] = useState<SalaryAccount | null>(null);
  const [isLoading, setIsLoading] = useState(false);
- const [showGuestCaution, setShowGuestCaution] = useState(false);
  const [psDob, setPsDob] = useState('');
  const [resendLoading, setResendLoading] = useState(false);
 
@@ -221,17 +220,6 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
       setIsResending(false);
     }
   };
-
- // Guest Mode 
- const handleGuestMode = () => {
- setShowGuestCaution(true);
- };
-
- const confirmGuestMode = () => {
- enableGuestMode();
- // Reload so the app opens in guest mode (onboarding_completed = true)
- window.location.reload();
- };
 
  // Migrate any guest data when a guest user signs in / signs up
  const runGuestMigrationIfNeeded = async (userId: string) => {
@@ -733,20 +721,20 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
           <AuthShowcase />
         </div>
 
-        {/* Right Column: Form Container */}
-        <div className="w-full lg:w-1/2 xl:w-[52%] min-h-screen flex flex-col justify-between p-4 sm:p-8 lg:p-12 xl:p-14 relative z-10">
+        {/* Right Column: Form Container with Smooth Viewport-Aware Scrolling */}
+        <div className="w-full lg:w-1/2 xl:w-[52%] min-h-screen overflow-y-auto flex flex-col justify-between p-4 sm:p-6 md:p-8 lg:p-10 xl:p-12 relative z-10">
           {/* Ambient Glows */}
           <div className="absolute top-0 right-0 w-[450px] h-[450px] bg-violet-100/35 rounded-full blur-3xl pointer-events-none -z-10" />
           <div className="absolute bottom-10 left-10 w-[400px] h-[400px] bg-blue-100/25 rounded-full blur-3xl pointer-events-none -z-10" />
 
           {/* Top Bar: Mobile Brand + Desktop Navigation */}
-          <div className="w-full flex items-center justify-between mb-4 lg:mb-6">
+          <div className="w-full flex items-center justify-between mb-4 sm:mb-6">
             <div className="lg:hidden flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-violet-600 to-indigo-600 flex items-center justify-center text-white shadow-md">
-                <KANAKULogo className="w-5 h-5 text-white" />
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-violet-600 to-indigo-600 flex items-center justify-center text-white shadow-md">
+                <KANAKULogo className="w-4 h-4 text-white" />
               </div>
               <div>
-                <span className="font-extrabold text-lg text-slate-900 tracking-tight">KANAKU</span>
+                <span className="font-extrabold text-base sm:text-lg text-slate-900 tracking-tight">KANAKU</span>
               </div>
             </div>
 
@@ -767,40 +755,53 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
             </div>
           </div>
 
-          {/* Centered Form / Content */}
-          <div className="flex-1 flex items-center justify-center my-auto w-full py-4">
+          {/* Centered Form / Content Card */}
+          <div className="flex-1 flex flex-col justify-center my-auto w-full py-2 sm:py-4">
             <motion.div
-              initial={{ opacity: 0, y: 15 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-              className="w-full max-w-md sm:max-w-lg bg-white/95 backdrop-blur-xl border border-slate-200/80 rounded-3xl shadow-[0_20px_50px_rgba(15,23,42,0.06)] overflow-hidden"
+              className="w-full max-w-lg mx-auto bg-white/95 backdrop-blur-xl border border-slate-200/80 rounded-2xl sm:rounded-3xl shadow-[0_12px_40px_rgba(15,23,42,0.05)] overflow-hidden"
             >
               <div className="h-1.5 w-full bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600" />
               
               {title && (
-                <div className="p-6 sm:p-8 pb-3 border-b border-slate-100/80">
+                <div className="p-5 sm:p-7 md:p-8 pb-3.5 sm:pb-4 border-b border-slate-100">
                   {badge && (
-                    <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider bg-violet-50 text-violet-700 border border-violet-200/60 px-2.5 py-0.5 rounded-full mb-3">
+                    <span className="inline-flex items-center gap-1 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider bg-violet-50 text-violet-700 border border-violet-200/60 px-2.5 py-0.5 rounded-full mb-2.5">
                       {badge}
                     </span>
                   )}
-                  <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">{title}</h2>
-                  {subtitle && <p className="text-slate-500 mt-1.5 text-sm font-medium">{subtitle}</p>}
+                  <h1 className="text-xl sm:text-2xl md:text-[1.65rem] font-extrabold text-slate-900 tracking-tight leading-snug">{title}</h1>
+                  {subtitle && <p className="text-slate-500 mt-1.5 text-xs sm:text-sm font-normal leading-relaxed">{subtitle}</p>}
                 </div>
               )}
 
-              <div className="p-6 sm:p-8 pt-6">
+              <div className="p-5 sm:p-7 md:p-8 pt-5 sm:pt-6">
                 {children}
               </div>
             </motion.div>
           </div>
 
           {/* Footer Legal Links */}
-          <div className="pt-6 text-center text-xs text-slate-400 font-medium select-none">
-            Local-First Private Ledger &bull;{' '}
-            <button type="button" onClick={() => setStep('privacy')} className="hover:text-slate-600 underline">Privacy Policy</button>
-            {' '}&bull;{' '}
-            <button type="button" onClick={() => setStep('terms')} className="hover:text-slate-600 underline">Terms of Service</button>
+          <div className="pt-6 pb-2 text-center text-xs text-slate-400 font-medium select-none flex items-center justify-center flex-wrap gap-x-2 gap-y-1">
+            <span>Local-First Private Ledger</span>
+            <span className="text-slate-300">&bull;</span>
+            <button
+              type="button"
+              onClick={() => setStep('privacy')}
+              className="inline text-xs font-medium text-slate-400 hover:text-slate-600 underline underline-offset-2 transition-colors"
+            >
+              Privacy Policy
+            </button>
+            <span className="text-slate-300">&bull;</span>
+            <button
+              type="button"
+              onClick={() => setStep('terms')}
+              className="inline text-xs font-medium text-slate-400 hover:text-slate-600 underline underline-offset-2 transition-colors"
+            >
+              Terms of Service
+            </button>
           </div>
         </div>
       </div>
@@ -861,59 +862,11 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
                   Sign In
                 </motion.button>
 
-                <button
-                  data-testid="auth-flow-continue-as-guest"
-                  type="button"
-                  onClick={handleGuestMode}
-                  className="w-full text-center text-xs font-semibold text-slate-400 hover:text-slate-600 pt-2 transition-colors"
-                >
-                  Or continue as Guest (Local Only)
-                </button>
               </div>
             </div>
           ),
         })}
 
-        {/* Guest Mode Caution Modal */}
-        {showGuestCaution && (
-          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              className="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl"
-            >
-              <div className="w-12 h-12 rounded-2xl bg-amber-100 flex items-center justify-center mb-4">
-                <AlertTriangle className="text-amber-600" size={24} />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Continue as Guest?</h3>
-              <p className="text-sm text-gray-600 mb-4 leading-relaxed">
-                Guest mode stores all your financial data <strong>locally on this device only</strong>.
-              </p>
-              <div className="bg-red-50 text-red-700 text-xs p-3 rounded-xl mb-6 font-medium border border-red-100">
-                If you forget your PIN, there is no way to recover it. You will have to reset the app and <strong>all your data will be permanently lost</strong>. Sign in to safely backup your data.
-              </div>
-
-              <div className="flex gap-3">
-                <button
-                  data-testid="auth-flow-cancel"
-                  type="button"
-                  onClick={() => setShowGuestCaution(false)}
-                  className="flex-1 py-3 rounded-xl bg-gray-100 text-gray-700 font-semibold hover:bg-gray-200 transition-colors text-sm"
-                >
-                  Cancel
-                </button>
-                <button
-                  data-testid="auth-flow-proceed-as-guest"
-                  type="button"
-                  onClick={confirmGuestMode}
-                  className="flex-[1.5] py-3 rounded-xl bg-amber-500 text-white font-semibold hover:bg-amber-600 transition-colors text-sm shadow-md shadow-amber-500/20"
-                >
-                  Proceed as Guest
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
       </>
     );
   };

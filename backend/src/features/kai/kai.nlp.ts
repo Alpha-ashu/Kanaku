@@ -36,10 +36,11 @@ export const MONEY_KINDS: KaiActionKind[] = [
   'expense', 'income', 'transfer', 'loan_borrow', 'loan_lend', 'investment', 'group_expense', 'subscription',
 ];
 const ALL_KINDS: KaiActionKind[] = [
-  ...MONEY_KINDS, 'goal', 'todo', 'goal_update', 'update_previous', 'clarify', 'query',
+  ...MONEY_KINDS, 'goal', 'todo', 'goal_update', 'budget', 'update_previous', 'clarify', 'query',
 ];
 const PRIORITIES = ['low', 'medium', 'high'] as const;
 const RECURRENCES = ['monthly', 'yearly', 'weekly', 'daily'] as const;
+const BUDGET_PERIODS = ['weekly', 'monthly', 'yearly'] as const;
 const EXPENSE_MODES = ['individual', 'group', 'loan'] as const;
 
 export interface KaiUnderstandInput {
@@ -124,6 +125,7 @@ interface RawKaiAction {
   goalName?: unknown;
   targetAmount?: unknown;
   targetDate?: unknown;
+  period?: unknown;
   targetActionId?: unknown;
   patch?: unknown;
   question?: unknown;
@@ -306,7 +308,8 @@ export function normaliseKaiAction(
     const targetAmount = num(raw.targetAmount) ?? amount;
     if (!goalName) return clarifyAction(transcript, 'What is this goal for?', [], base);
     if (!targetAmount) {
-      return clarifyAction(transcript, `How much do you want to save for ${goalName}?`, [], { goalName, category: 'Savings' });
+      // patch.kind makes the answer finish the goal rather than default to an expense.
+      return clarifyAction(transcript, `How much do you want to save for ${goalName}?`, [], { goalName, category: 'Savings', patch: { kind } });
     }
     return {
       kind,
@@ -322,6 +325,25 @@ export function normaliseKaiAction(
       },
       confidence,
       requiresReview: confidence < threshold,
+      say,
+    };
+  }
+
+  if (kind === 'budget') {
+    const budgetCategory = base.category ?? base.description;
+    const period = oneOf(raw.period, BUDGET_PERIODS) ?? 'monthly';
+    if (!budgetCategory) {
+      return clarifyAction(transcript, 'Which category should this budget cover?', [], { ...base, period, patch: { kind } });
+    }
+    if (!amount) {
+      return clarifyAction(transcript, `What ${period} limit should the ${budgetCategory} budget have?`, [], { category: budgetCategory, period, patch: { kind } });
+    }
+    return {
+      kind,
+      rawSegment: transcript,
+      entities: { amount, category: budgetCategory, description: base.description, period },
+      confidence,
+      requiresReview: false,
       say,
     };
   }
@@ -511,6 +533,9 @@ export function offlineActions(
   const chat = classifyOffline(cleaned);
   if (chat.intent === 'task' && chat.taskType === 'add_todo') {
     return [normaliseKaiAction({ kind: 'todo', title: chat.title, dueDate: parseSpokenDate(cleaned) ?? chat.date, priority: chat.priority, confidence: 0.8 }, cleaned, context, threshold)!];
+  }
+  if (chat.intent === 'task' && chat.taskType === 'create_budget') {
+    return [normaliseKaiAction({ kind: 'budget', category: chat.category ?? chat.title, amount: chat.amount ?? amount, period: chat.period, confidence: 0.8 }, cleaned, context, threshold)!];
   }
   if (chat.intent === 'task' && chat.taskType === 'create_goal') {
     return [normaliseKaiAction({ kind: 'goal', goalName: chat.title, targetAmount: chat.amount ?? amount, targetDate: parseSpokenDate(cleaned), confidence: 0.75 }, cleaned, context, threshold)!];

@@ -38,7 +38,7 @@ export const DataDeletion: React.FC<DataDeletionProps> = ({
       title: '3. What gets deleted',
       icon: <CheckCircle2 className="w-5 h-5 text-green-500" />,
       content:
-        'Your profile and login, accounts, transactions, budgets, goals, groups, loans, investments, uploaded bills and receipts, and files you shared in advisor sessions. If you were signed in on other devices, the copy stored there stays until you sign out or clear the app data on that device.',
+        'Your profile and login, accounts, transactions, budgets, goals, groups, loans, investments, uploaded bills and receipts, and files you shared in advisor sessions. Other devices you were signed in on are signed out and their local copy is cleared the next time they connect.',
     },
   ];
 

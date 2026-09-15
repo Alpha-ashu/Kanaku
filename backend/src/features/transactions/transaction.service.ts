@@ -172,30 +172,8 @@ export class TransactionService {
       throw AppError.badRequest('Invalid transaction date format', 'INVALID_DATE');
     }
 
-    // Verify account ownership AND that the account is live (not archived /
-    // soft-deleted). Recording a transaction against a deleted account is what
-    // produces the "expense exists but no account" state on the dashboard, so we
-    // reject it here at the source rather than letting an orphan be written.
-    const primaryAccount = await accountRepository.findFirst({ id: accountId, userId, deletedAt: null, isActive: true });
-    if (!primaryAccount) {
-      throw AppError.badRequest(
-        'The selected account is unavailable. Please choose an active account or create one before recording transactions.',
-        'ACCOUNT_UNAVAILABLE',
-      );
-    }
-
-    if (type === 'transfer') {
-      if (!transferToAccountId) {
-        throw AppError.badRequest('transferToAccountId is required for transfers', 'TRANSFER_ACCOUNT_REQUIRED');
-      }
-      if (transferToAccountId === accountId) {
-        throw AppError.badRequest('Cannot transfer to the same account', 'INVALID_TRANSFER');
-      }
-      const targetAccount = await accountRepository.findFirst({ id: transferToAccountId, userId, deletedAt: null, isActive: true });
-      if (!targetAccount) {
-        throw AppError.badRequest('The transfer destination account is unavailable. Please choose an active account.', 'TRANSFER_ACCOUNT_UNAVAILABLE');
-      }
-    }
+    const isTransfer = type === 'transfer';
+    const needsTargetLookup = isTransfer && !!transferToAccountId && transferToAccountId !== accountId;
 
     // ── Deduplification & Idempotency ─────────────────────────────────────────
     //
@@ -221,12 +199,46 @@ export class TransactionService {
       activeDedupHash = `${baseHash}-intentional-${uniqueSuffix}`;
     } else {
       activeDedupHash = dedupHash || transactionRepository.generateDedupHash(userId, numAmount, txDate, description);
+    }
 
-      // Idempotency check — return the existing transaction for retried requests
-      const existing = await transactionRepository.findFirst({ dedupHash: activeDedupHash, userId });
-      if (existing) {
-        return transactionRepository.normalizeTransaction(existing);
+    // The ownership, transfer-target and replay lookups are independent reads, so
+    // run them concurrently: awaited one after another, each added a full DB round
+    // trip to every save. Results are still checked in the original order below,
+    // so the error a request gets is unchanged.
+    const [primaryAccount, targetAccount, existing] = await Promise.all([
+      accountRepository.findFirst({ id: accountId, userId, deletedAt: null, isActive: true }),
+      needsTargetLookup
+        ? accountRepository.findFirst({ id: transferToAccountId, userId, deletedAt: null, isActive: true })
+        : null,
+      intentionalDuplicate ? null : transactionRepository.findFirst({ dedupHash: activeDedupHash, userId }),
+    ]);
+
+    // Verify account ownership AND that the account is live (not archived /
+    // soft-deleted). Recording a transaction against a deleted account is what
+    // produces the "expense exists but no account" state on the dashboard, so we
+    // reject it here at the source rather than letting an orphan be written.
+    if (!primaryAccount) {
+      throw AppError.badRequest(
+        'The selected account is unavailable. Please choose an active account or create one before recording transactions.',
+        'ACCOUNT_UNAVAILABLE',
+      );
+    }
+
+    if (isTransfer) {
+      if (!transferToAccountId) {
+        throw AppError.badRequest('transferToAccountId is required for transfers', 'TRANSFER_ACCOUNT_REQUIRED');
       }
+      if (transferToAccountId === accountId) {
+        throw AppError.badRequest('Cannot transfer to the same account', 'INVALID_TRANSFER');
+      }
+      if (!targetAccount) {
+        throw AppError.badRequest('The transfer destination account is unavailable. Please choose an active account.', 'TRANSFER_ACCOUNT_UNAVAILABLE');
+      }
+    }
+
+    // Idempotency — return the existing transaction for retried requests
+    if (existing) {
+      return transactionRepository.normalizeTransaction(existing);
     }
 
     const serializedTags = transactionRepository.serializeTags(tags);

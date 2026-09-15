@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useApp, useSubFeature } from '@/contexts/AppContext';
 import { db } from '@/lib/database';
-import { applyAccountBalanceDeltas } from '@/lib/transactionAggregation';
+import { addGoalContribution } from '@/lib/goalContributions';
 import { getGoalCategoryMeta, getGoalProgress, getMilestoneLabel, getMonthlySuggestion } from '@/lib/goal-utils';
 import { getCategoryCartoonIcon } from '@/app/components/ui/CartoonCategoryIcons';
 import { Edit2, Plus, Target, Trash2, Users } from 'lucide-react';
@@ -13,8 +13,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { VOICE_GOAL_DRAFT_KEY, takeVoiceDraft, type VoiceGoalDraft } from '@/lib/voiceDrafts';
 import { formatCurrencyAmount } from '@/lib/currencyUtils';
-import { backendService } from '@/lib/backend-api';
-import { queueRecordUpsertSync, processPendingSyncQueue } from '@/lib/auth-sync-integration';
 
 export const Goals: React.FC = () => {
  const { goals, accounts, currency, setCurrentPage } = useApp();
@@ -598,41 +596,12 @@ const ContributeModal: React.FC<{
   return;
   }
 
-  if (account.balance < amount) {
-  toast.error('Selected account does not have enough balance');
+  try {
+  await addGoalContribution({ goal, account, amount, notes });
+  } catch (error) {
+  toast.error(error instanceof Error ? error.message : 'Could not add the contribution');
   return;
   }
-
-  if (goal.cloudId && account.cloudId && navigator.onLine) {
-  try {
-  await backendService.api.post(`/goals/${goal.cloudId}/contribute`, {
-  amount,
-  accountId: account.cloudId,
-  notes: notes.trim() || undefined,
-  });
-  } catch (backendError) {
-  console.warn('[Goals] Direct contribution sync failed; relying on sync queue', backendError);
-  }
-  }
-
-  await db.goalContributions.add({
-  goalId,
-  amount,
-  accountId,
-  date: new Date(),
-  notes: notes.trim() || undefined,
-  });
-
-  await db.goals.update(goalId, {
-  currentAmount: goal.currentAmount + amount,
-  updatedAt: new Date(),
-  });
-
-  await applyAccountBalanceDeltas(new Map([[accountId, -amount]]));
-
-  queueRecordUpsertSync('goals', goalId);
-  queueRecordUpsertSync('accounts', accountId);
-  void processPendingSyncQueue();
 
   toast.success('Contribution added successfully');
   onClose();

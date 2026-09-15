@@ -25,6 +25,7 @@ const TITLE: Partial<Record<KaiActionKind, string>> = {
   investment: 'New investment',
   group_expense: 'Group expense',
   todo: 'New reminder',
+  budget: 'Budget',
 };
 
 type Row = { label: string; value?: string | null };
@@ -71,6 +72,12 @@ function detailRows(action: KaiExecutedAction, currency: string): Row[] {
         { label: 'Task', value: e.title || e.description || action.summary },
         { label: 'Due', value: e.dueDate ? formatDay(e.dueDate) : 'No due date' },
         { label: 'Priority', value: e.priority ? e.priority.charAt(0).toUpperCase() + e.priority.slice(1) : 'Medium' },
+      ];
+    case 'budget':
+      return [
+        { label: 'Category', value: e.category || e.description },
+        { label: 'Limit', value: money },
+        { label: 'Resets', value: e.period ? e.period.charAt(0).toUpperCase() + e.period.slice(1) : 'Monthly' },
       ];
     case 'investment':
       return [

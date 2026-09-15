@@ -290,6 +290,27 @@ const clearLocalUserData = async () => {
         db.userCategoryPreferences.clear(),
         db.documents.clear(),
         db.smsTransactions.clear(),
+        // Also user-owned. Leaving these behind let the previous user's to-dos,
+        // goal/loan history and advisor chats survive a logout or user switch on
+        // a shared device, and the synced to-do tables then pushed them into the
+        // next account. Device prefs, reference categories and the per-user
+        // sync/upload queues are intentionally kept.
+        db.loanPayments.clear(),
+        db.goalContributions.clear(),
+        db.groups.clear(),
+        db.toDoLists.clear(),
+        db.toDoItems.clear(),
+        db.toDoListShares.clear(),
+        db.expenseBills.clear(),
+        db.importHistories.clear(),
+        db.budgetAlerts.clear(),
+        db.investmentDocuments.clear(),
+        db.investmentLinks.clear(),
+        db.chatMessages.clear(),
+        db.chatConversations.clear(),
+        db.bookingRequests.clear(),
+        db.advisorAssignments.clear(),
+        db.advisorSessions.clear(),
       ]);
     });
   } catch (err) {

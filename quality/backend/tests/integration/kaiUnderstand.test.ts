@@ -136,6 +136,25 @@ describe('normaliseKaiAction', () => {
     expect(a?.entities.patch).toEqual({ kind: 'group_expense', members: ['Jijo'] });
   });
 
+  it('keeps a budget as a limit with a monthly default period', () => {
+    const a = normaliseKaiAction({ kind: 'budget', category: 'Food & Dining', amount: 3000, confidence: 0.95 }, 'set a food budget of 3000', undefined, THRESHOLD);
+    expect(a).toMatchObject({ kind: 'budget', requiresReview: false, entities: { category: 'Food & Dining', amount: 3000, period: 'monthly' } });
+  });
+
+  it('asks for a missing budget limit or category and keeps the answer a budget', () => {
+    const noLimit = normaliseKaiAction({ kind: 'budget', category: 'Shopping', period: 'weekly' }, 'shopping budget', undefined, THRESHOLD);
+    expect(noLimit).toMatchObject({ kind: 'clarify', entities: { category: 'Shopping', period: 'weekly', patch: { kind: 'budget' } } });
+    expect(noLimit?.entities.question).toMatch(/weekly limit/i);
+
+    const noCategory = normaliseKaiAction({ kind: 'budget', amount: 5000 }, 'set a budget of 5000', undefined, THRESHOLD);
+    expect(noCategory).toMatchObject({ kind: 'clarify', entities: { amount: 5000, patch: { kind: 'budget' } } });
+  });
+
+  it('keeps a goal clarification a goal once the target amount is answered', () => {
+    const a = normaliseKaiAction({ kind: 'goal', goalName: 'bike' }, 'create a bike goal', undefined, THRESHOLD);
+    expect(a).toMatchObject({ kind: 'clarify', entities: { goalName: 'bike', patch: { kind: 'goal' } } });
+  });
+
   it('passes queries through with an upper-cased type', () => {
     const a = normaliseKaiAction({ kind: 'query', queryType: 'budget_status', category: 'Food & Dining' }, 'food budget', undefined, THRESHOLD);
     expect(a).toMatchObject({ kind: 'query', entities: { queryType: 'BUDGET_STATUS', category: 'Food & Dining' } });
@@ -176,6 +195,11 @@ describe('offline heuristics', () => {
   it('answers questions as queries', () => {
     expect(offlineActions('How much do I owe Arun?', undefined, THRESHOLD)[0]).toMatchObject({ kind: 'query', entities: { queryType: 'PERSON_BALANCE', person: 'Arun' } });
     expect(offlineActions('What is my total expense this month?', undefined, THRESHOLD)[0]).toMatchObject({ kind: 'query', entities: { queryType: 'SUM_EXPENSES' } });
+  });
+
+  it('reads a spoken budget as a budget, not an expense', () => {
+    expect(offlineActions('Set a food budget of 8000', undefined, THRESHOLD)[0]).toMatchObject({ kind: 'budget', entities: { amount: 8000, period: 'monthly' } });
+    expect(offlineActions('create a weekly shopping budget of 2k', undefined, THRESHOLD)[0]).toMatchObject({ kind: 'budget', entities: { amount: 2000, period: 'weekly' } });
   });
 
   it('resolves a spoken answer to a pending question', () => {

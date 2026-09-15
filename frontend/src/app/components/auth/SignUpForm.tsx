@@ -347,15 +347,11 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
   };
 
   const inputBase = (hasError: boolean) =>
-    `w-full pl-10 pr-10 pt-5 pb-1.5 bg-slate-50/50 border rounded-xl text-slate-900 placeholder-transparent text-sm focus:outline-none focus:ring-2 transition-all duration-200 ${
+    `w-full pl-10 pr-10 py-2.5 sm:py-3 bg-slate-50/50 border rounded-xl text-slate-900 placeholder:text-slate-400 text-sm focus:outline-none focus:ring-2 transition-all duration-200 ${
       hasError
-        ? 'border-red-300 focus:ring-red-500/20 focus:border-red-400 bg-red-50/30'
-        : 'border-slate-200 hover:border-slate-300 focus:ring-violet-500/20 focus:border-violet-500 focus:bg-white'
+        ? 'border-red-300 focus:ring-red-500/20 focus:border-red-500 bg-red-50/20'
+        : 'border-slate-200 hover:border-slate-300 focus:ring-violet-500/20 focus:border-violet-600 focus:bg-white'
     }`;
-
-  const labelBase = `absolute left-10 top-1.5 text-[10px] font-bold text-slate-400 transition-all duration-200 pointer-events-none
-    peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-sm peer-placeholder-shown:text-slate-400 peer-placeholder-shown:font-normal
-    peer-focus:top-1.5 peer-focus:text-[10px] peer-focus:text-violet-600 peer-focus:font-bold`;
 
   if (isSuccess) {
     return (
@@ -394,142 +390,158 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
     <form data-testid="sign-up-form-form" onSubmit={handleSubmit} className="space-y-4">
       {errors.general && (
         <div className="bg-red-50 border border-red-200 rounded-xl p-3">
-          <p className="text-sm text-red-600 text-center">{errors.general}</p>
+          <p className="text-sm text-red-600 text-center font-medium">{errors.general}</p>
         </div>
       )}
 
-      {/* Progress Bar */}
-      <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
+      {/* Progress Bar Header */}
+      <div className="mb-4 pb-3 border-b border-slate-100">
         <div className="flex justify-between items-center mb-1.5">
-          <span className="text-xs font-semibold text-slate-500">Account Setup</span>
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs font-semibold text-slate-700">Account Setup</span>
+            <span className="text-[11px] font-medium text-slate-400">
+              &bull; {5 - fieldsRemaining} of 5 completed
+            </span>
+          </div>
           <span className="text-xs font-bold text-violet-600">{progressPercentage}%</span>
         </div>
-        <div className="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
+        <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
           <div
             ref={signupProgressRef}
-            className="h-full bg-gradient-to-r from-violet-600 via-indigo-600 to-emerald-500 rounded-full transition-all duration-500 ease-out"
+            className="h-full bg-gradient-to-r from-violet-600 via-indigo-600 to-emerald-500 rounded-full transition-all duration-300 ease-out"
           />
         </div>
       </div>
 
       {/* Name row */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
         {(['firstName', 'lastName'] as const).map((field, idx) => {
           const isValid = field === 'firstName' ? isFirstNameValid : isLastNameValid;
           const hasError = touched[field] && !isValid;
           return (
-            <div key={field} className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                <User size={16} />
-              </div>
-              <input
-                type="text"
-                id={field}
-                name={field}
-                value={formData[field]}
-                onChange={handleInputChange}
-                onBlur={handleNameBlur}
-                disabled={isLoading}
-                placeholder=" "
-                data-testid={`auth-signup-${field === 'firstName' ? 'firstname' : 'lastname'}-input`}
-                className={`${inputBase(hasError)} peer`}
-                autoComplete={field === 'firstName' ? 'given-name' : 'family-name'}
-              />
-              <label htmlFor={field} className={labelBase}>
-                {idx === 0 ? 'First Name' : 'Last Name'}
+            <div key={field}>
+              <label htmlFor={field} className="block text-xs font-semibold text-slate-700 mb-1.5">
+                {idx === 0 ? 'First Name' : 'Last Name'} <span className="text-red-500">*</span>
               </label>
-
-              {/* Real-time Status Icon */}
-              {touched[field] && (
-                <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
-                  {isValid ? (
-                    <Check className="text-emerald-500" size={16} />
-                  ) : (
-                    <AlertCircle className="text-red-500" size={16} />
-                  )}
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                  <User size={16} />
                 </div>
-              )}
-              {hasError && errors[field] && <p className="mt-1 text-xs text-red-500 pl-1">{errors[field]}</p>}
+                <input
+                  type="text"
+                  id={field}
+                  name={field}
+                  value={formData[field]}
+                  onChange={handleInputChange}
+                  onBlur={handleNameBlur}
+                  disabled={isLoading}
+                  placeholder={idx === 0 ? 'e.g. John' : 'e.g. Doe'}
+                  data-testid={`auth-signup-${field === 'firstName' ? 'firstname' : 'lastname'}-input`}
+                  className={inputBase(hasError)}
+                  autoComplete={field === 'firstName' ? 'given-name' : 'family-name'}
+                />
+
+                {/* Real-time Status Icon */}
+                {touched[field] && (
+                  <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+                    {isValid ? (
+                      <Check className="text-emerald-500" size={16} />
+                    ) : (
+                      <AlertCircle className="text-red-500" size={16} />
+                    )}
+                  </div>
+                )}
+              </div>
+              {hasError && errors[field] && <p className="mt-1 text-xs text-red-500 pl-1 font-medium">{errors[field]}</p>}
             </div>
           );
         })}
       </div>
 
       {/* Email */}
-      <div className="relative">
-        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-          <Mail size={16} />
-        </div>
-        <input
-          type="email"
-          id="email"
-          name="email"
-          value={formData.email}
-          onChange={handleInputChange}
-          onBlur={handleBlur}
-          onFocus={() => setEmailFocused(true)}
-          disabled={isLoading}
-          placeholder=" "
-          data-testid="auth-signup-email-input"
-          className={`${inputBase(touched.email && !isEmailValid)} peer`}
-          autoComplete="email"
-        />
-        <label htmlFor="email" className={labelBase}>
-          Email Address
+      <div>
+        <label htmlFor="email" className="block text-xs font-semibold text-slate-700 mb-1.5">
+          Email Address <span className="text-red-500">*</span>
         </label>
-
-        {/* Real-time Status Icon */}
-        {touched.email && (
-          <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
-            {isCheckingEmail ? (
-              <Loader2 className="text-gray-400 animate-spin" size={16} />
-            ) : isEmailValid ? (
-              <Check className="text-emerald-500" size={16} />
-            ) : (
-              <AlertCircle className="text-red-500" size={16} />
-            )}
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+            <Mail size={16} />
           </div>
-        )}
+          <input
+            type="email"
+            id="email"
+            name="email"
+            value={formData.email}
+            onChange={handleInputChange}
+            onBlur={handleBlur}
+            onFocus={() => setEmailFocused(true)}
+            disabled={isLoading}
+            placeholder="name@example.com"
+            data-testid="auth-signup-email-input"
+            className={inputBase(touched.email && !isEmailValid)}
+            autoComplete="email"
+          />
 
-        {/* Email domain autocomplete suggestions */}
-        {emailFocused && filteredDomains.length > 0 && (
-          <div className="absolute z-20 w-full mt-1 bg-white border border-gray-100 rounded-xl shadow-lg overflow-hidden py-1">
-            {filteredDomains.map(domain => {
-              const prefix = formData.email.split('@')[0];
-              const suggestion = `${prefix}@${domain}`;
-              return (
-                <button data-testid={`sign-up-form-use-${domain}`}
-                  key={domain}
-                  type="button"
-                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors"
-                  onMouseDown={(e) => {
-                    // Prevent blur from firing before suggestion selection completes
-                    e.preventDefault();
-                  }}
-                  onClick={() => {
-                    setFormData(prev => ({ ...prev, email: suggestion }));
-                    setTouched(prev => ({ ...prev, email: true }));
-                    setEmailFocused(false);
-                  }}
-                >
-                  Use <span className="font-semibold text-blue-600">{suggestion}</span>
-                </button>
-              );
-            })}
-          </div>
-        )}
+          {/* Real-time Status Icon */}
+          {touched.email && (
+            <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+              {isCheckingEmail ? (
+                <Loader2 className="text-slate-400 animate-spin" size={16} />
+              ) : isEmailValid ? (
+                <Check className="text-emerald-500" size={16} />
+              ) : (
+                <AlertCircle className="text-red-500" size={16} />
+              )}
+            </div>
+          )}
+
+          {/* Email domain autocomplete suggestions */}
+          {emailFocused && filteredDomains.length > 0 && (
+            <div className="absolute z-20 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden py-1">
+              {filteredDomains.map(domain => {
+                const prefix = formData.email.split('@')[0];
+                const suggestion = `${prefix}@${domain}`;
+                return (
+                  <button data-testid={`sign-up-form-use-${domain}`}
+                    key={domain}
+                    type="button"
+                    className="w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-violet-50 transition-colors"
+                    onMouseDown={(e) => {
+                      // Prevent blur from firing before suggestion selection completes
+                      e.preventDefault();
+                    }}
+                    onClick={() => {
+                      setFormData(prev => ({ ...prev, email: suggestion }));
+                      setTouched(prev => ({ ...prev, email: true }));
+                      setEmailFocused(false);
+                    }}
+                  >
+                    Use <span className="font-semibold text-violet-600">{suggestion}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
         {touched.email && emailTaken === true && (
-          <p className="mt-1 text-xs text-red-500 pl-1">This email can&apos;t be used for a new account. <button data-testid="sign-up-form-sign-in-instead" type="button" className="underline font-semibold" onClick={onSwitchToSignIn}>Sign in instead</button></p>
+          <p className="mt-1 text-xs text-red-500 pl-1 font-medium">This email can&apos;t be used for a new account. <button data-testid="sign-up-form-sign-in-instead" type="button" className="inline text-xs underline font-semibold text-red-700 hover:text-red-800" onClick={onSwitchToSignIn}>Sign in instead</button></p>
         )}
-        {touched.email && !isEmailFormatValid && emailTaken !== true && <p className="mt-1 text-xs text-red-500 pl-1">Please enter a valid email address</p>}
+        {touched.email && !isEmailFormatValid && emailTaken !== true && <p className="mt-1 text-xs text-red-500 pl-1 font-medium">Please enter a valid email address</p>}
       </div>
 
       {/* Mobile */}
-      <div className="relative">
-        {/* Aligned Country Code Selector prefix */}
-        <div className="absolute inset-y-0 left-3 flex items-center gap-1.5 z-10 pointer-events-none">
-          <Phone size={16} className="text-gray-400 flex-shrink-0" />
-          <div className="pointer-events-auto flex items-center">
+      <div>
+        <label htmlFor="mobile" className="block text-xs font-semibold text-slate-700 mb-1.5">
+          Mobile Number <span className="text-red-500">*</span>
+        </label>
+        <div className={`relative flex items-stretch rounded-xl border transition-all duration-200 ${
+          touched.mobile && (!isMobileValid || mobileTaken === true)
+            ? 'border-red-300 bg-red-50/20 focus-within:ring-2 focus-within:ring-red-500/20 focus-within:border-red-500'
+            : 'border-slate-200 bg-slate-50/50 hover:border-slate-300 focus-within:bg-white focus-within:border-violet-600 focus-within:ring-2 focus-within:ring-violet-500/20'
+        }`}>
+          {/* Country Code Prefix */}
+          <div className="flex items-center pl-3 pr-2 border-r border-slate-200/80 bg-slate-100/50 rounded-l-xl select-none">
+            <Phone size={15} className="text-slate-400 mr-1.5 shrink-0" />
             <select
               aria-label="Country code"
               value={countryCode}
@@ -540,62 +552,67 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
               }}
               disabled={isLoading}
               data-testid="auth-signup-country-code-select"
-              className="bg-transparent border-0 outline-none text-xs font-bold text-gray-700 cursor-pointer py-1 pl-0.5 pr-3.5 focus:ring-0 focus:ring-offset-0 appearance-none bg-[right_center] bg-no-repeat"
-              style={{
-                backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`,
-                backgroundSize: '8px',
-                paddingRight: '12px'
-              }}
+              className="bg-transparent border-0 outline-none text-xs font-bold text-slate-700 cursor-pointer py-2 pr-1 focus:ring-0 appearance-none"
             >
               {countryCodes.map(c => (
-                <option data-testid={`sign-up-form-option-${c.code}`} key={c.code} value={c.code} className="text-gray-900 font-medium">
+                <option data-testid={`sign-up-form-option-${c.code}`} key={c.code} value={c.code} className="text-slate-900 font-medium">
                   {c.code}
                 </option>
               ))}
             </select>
           </div>
-          <div className="h-5 w-px bg-gray-200" />
+
+          <input
+            type="tel"
+            inputMode="tel"
+            id="mobile"
+            name="mobile"
+            value={formData.mobile}
+            onChange={handlePhoneChange}
+            onBlur={handleBlur}
+            disabled={isLoading}
+            placeholder={countryCode === '+91' ? '98765 43210' : countryCode === '+1' ? '(555) 000-0000' : 'Mobile number'}
+            data-testid="auth-signup-mobile-input"
+            className="w-full min-w-0 bg-transparent py-2.5 sm:py-3 px-3.5 text-sm text-slate-900 placeholder:text-slate-400 outline-none rounded-r-xl"
+            autoComplete="tel"
+          />
+
+          {/* Real-time Status Icon */}
+          {touched.mobile && (
+            <div className="pr-3 flex items-center pointer-events-none">
+              {isCheckingMobile ? (
+                <Loader2 className="text-slate-400 animate-spin" size={16} />
+              ) : isMobileValid && mobileTaken !== true ? (
+                <Check className="text-emerald-500" size={16} />
+              ) : (
+                <AlertCircle className="text-red-500" size={16} />
+              )}
+            </div>
+          )}
         </div>
-
-        <input
-          type="tel"
-          id="mobile"
-          name="mobile"
-          value={formData.mobile}
-          onChange={handlePhoneChange}
-          onBlur={handleBlur}
-          disabled={isLoading}
-          placeholder=" "
-          data-testid="auth-signup-mobile-input"
-          className={`${inputBase(touched.mobile && (!isMobileValid || mobileTaken === true))} peer !pl-[6.2rem] pr-10`}
-          autoComplete="tel"
-        />
-        <label htmlFor="mobile" className={`${labelBase} !left-[6.2rem]`}>
-          Mobile Number
-        </label>
-
-        {/* Real-time Status Icon */}
-        {touched.mobile && (
-          <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
-            {isCheckingMobile ? (
-              <Loader2 className="text-gray-400 animate-spin" size={16} />
-            ) : isMobileValid && mobileTaken !== true ? (
-              <Check className="text-emerald-500" size={16} />
-            ) : (
-              <AlertCircle className="text-red-500" size={16} />
-            )}
-          </div>
-        )}
         {touched.mobile && mobileTaken === true && (
-          <p className="mt-1 text-xs text-red-500 pl-1">This phone number is already registered to another account. Please use a different phone number.</p>
+          <p className="mt-1 text-xs text-red-500 pl-1 font-medium">This phone number is already registered to another account. Please use a different phone number.</p>
         )}
-        {touched.mobile && !isMobileValid && mobileTaken !== true && <p className="mt-1 text-xs text-red-500 pl-1">Please enter a valid mobile number</p>}
+        {touched.mobile && !isMobileValid && mobileTaken !== true && <p className="mt-1 text-xs text-red-500 pl-1 font-medium">Please enter a valid mobile number</p>}
       </div>
 
       {/* Password */}
       <div>
+        <div className="flex items-center justify-between mb-1.5">
+          <label htmlFor="password" className="block text-xs font-semibold text-slate-700">
+            Password <span className="text-red-500">*</span>
+          </label>
+          <button
+            type="button"
+            onClick={generateStrongPassword}
+            data-testid="auth-signup-suggest-password-button"
+            className="text-xs text-violet-600 hover:text-violet-700 font-semibold flex items-center gap-1 transition-colors"
+          >
+            <Sparkles size={12} /> Suggest a strong password
+          </button>
+        </div>
         <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
             <Lock size={16} />
           </div>
           <input
@@ -606,76 +623,68 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
             onChange={handleInputChange}
             onBlur={handleBlur}
             disabled={isLoading}
-            placeholder=" "
+            placeholder="Create a strong password"
             data-testid="auth-signup-password-input"
-            className={`${inputBase(touched.password && !isPasswordValid)} peer pr-12`}
+            className={`${inputBase(touched.password && !isPasswordValid)} pr-11`}
             autoComplete="new-password"
           />
-          <label htmlFor="password" className={labelBase}>
-            Password
-          </label>
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
             data-testid="auth-signup-password-toggle"
-            className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+            aria-label={showPassword ? 'Hide password' : 'Show password'}
+            className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 transition-colors"
           >
             {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
           </button>
         </div>
 
         {/* Password suggestion generator & strength meter */}
-        <div className="mt-2 flex justify-between items-center">
-          <button
-            type="button"
-            onClick={generateStrongPassword}
-            data-testid="auth-signup-suggest-password-button"
-            className="text-xs text-blue-600 hover:text-blue-700 font-semibold flex items-center gap-1 transition-colors"
-          >
-            <Sparkles size={12} /> Suggest a strong password
-          </button>
-          {formData.password && getStrengthLabel()}
-        </div>
-
         {formData.password && (
-          <div className="mt-1.5 flex gap-1 h-1 w-full">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className={`h-full flex-1 rounded-full transition-all duration-300 ${getStrengthColor(i)}`} />
-            ))}
+          <div className="mt-2 space-y-1.5">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] text-slate-500 font-medium">Password strength</span>
+              {getStrengthLabel()}
+            </div>
+            <div className="flex gap-1 h-1.5 w-full">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className={`h-full flex-1 rounded-full transition-all duration-300 ${getStrengthColor(i)}`} />
+              ))}
+            </div>
           </div>
         )}
 
         {/* Requirements Checklist */}
         {formData.password && (
-          <div className="mt-3 bg-gray-50 border border-gray-100 rounded-xl p-3 space-y-1.5">
-            <span className="text-xs font-semibold text-gray-500 block mb-1">Password Check</span>
+          <div className="mt-2.5 bg-slate-50/80 border border-slate-100 rounded-xl p-3 space-y-1.5">
+            <span className="text-[11px] font-semibold text-slate-500 block mb-1">Password Requirements</span>
             <div className="grid grid-cols-2 gap-2 text-xs">
-              <div className="flex items-center gap-1.5 text-gray-500">
-                <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center transition-colors ${hasMinLength ? 'bg-emerald-100 text-emerald-600' : 'bg-gray-200 text-gray-400'}`}>
+              <div className="flex items-center gap-1.5 text-slate-500">
+                <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center transition-colors ${hasMinLength ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-200 text-slate-400'}`}>
                   <Check size={10} />
                 </div>
                 <span className={hasMinLength ? 'text-emerald-700 font-medium' : ''}>Min 8 characters</span>
               </div>
-              <div className="flex items-center gap-1.5 text-gray-500">
-                <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center transition-colors ${hasUppercase ? 'bg-emerald-100 text-emerald-600' : 'bg-gray-200 text-gray-400'}`}>
+              <div className="flex items-center gap-1.5 text-slate-500">
+                <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center transition-colors ${hasUppercase ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-200 text-slate-400'}`}>
                   <Check size={10} />
                 </div>
                 <span className={hasUppercase ? 'text-emerald-700 font-medium' : ''}>Uppercase letter</span>
               </div>
-              <div className="flex items-center gap-1.5 text-gray-500">
-                <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center transition-colors ${hasLowercase ? 'bg-emerald-100 text-emerald-600' : 'bg-gray-200 text-gray-400'}`}>
+              <div className="flex items-center gap-1.5 text-slate-500">
+                <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center transition-colors ${hasLowercase ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-200 text-slate-400'}`}>
                   <Check size={10} />
                 </div>
                 <span className={hasLowercase ? 'text-emerald-700 font-medium' : ''}>Lowercase letter</span>
               </div>
-              <div className="flex items-center gap-1.5 text-gray-500">
-                <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center transition-colors ${hasNumber ? 'bg-emerald-100 text-emerald-600' : 'bg-gray-200 text-gray-400'}`}>
+              <div className="flex items-center gap-1.5 text-slate-500">
+                <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center transition-colors ${hasNumber ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-200 text-slate-400'}`}>
                   <Check size={10} />
                 </div>
                 <span className={hasNumber ? 'text-emerald-700 font-medium' : ''}>Number (0-9)</span>
               </div>
-              <div className="flex items-center gap-1.5 text-gray-500 col-span-2">
-                <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center transition-colors ${hasSpecial ? 'bg-emerald-100 text-emerald-600' : 'bg-gray-200 text-gray-400'}`}>
+              <div className="flex items-center gap-1.5 text-slate-500 col-span-2">
+                <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center transition-colors ${hasSpecial ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-200 text-slate-400'}`}>
                   <Check size={10} />
                 </div>
                 <span className={hasSpecial ? 'text-emerald-700 font-medium' : ''}>Special character (!@#$ etc.)</span>
@@ -683,57 +692,60 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
             </div>
           </div>
         )}
-        {touched.password && !isPasswordValid && <p className="mt-1 text-xs text-red-500 pl-1">Password must meet all requirements</p>}
+        {touched.password && !isPasswordValid && <p className="mt-1 text-xs text-red-500 pl-1 font-medium">Password must meet all requirements</p>}
       </div>
 
       {/* Confirm Password */}
-      <div className="relative">
-        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-          <Lock size={16} />
-        </div>
-        <input
-          type={showConfirmPassword ? 'text' : 'password'}
-          id="confirmPassword"
-          name="confirmPassword"
-          value={formData.confirmPassword}
-          onChange={handleInputChange}
-          onBlur={handleBlur}
-          disabled={isLoading}
-          placeholder=" "
-          className={`${inputBase(touched.confirmPassword && !isConfirmPasswordValid)} peer pr-16`}
-          autoComplete="new-password"
-          data-testid="auth-signup-confirm-password-input"
-        />
-        <label htmlFor="confirmPassword" className={labelBase}>
-          Confirm Password
+      <div>
+        <label htmlFor="confirmPassword" className="block text-xs font-semibold text-slate-700 mb-1.5">
+          Confirm Password <span className="text-red-500">*</span>
         </label>
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+            <Lock size={16} />
+          </div>
+          <input
+            type={showConfirmPassword ? 'text' : 'password'}
+            id="confirmPassword"
+            name="confirmPassword"
+            value={formData.confirmPassword}
+            onChange={handleInputChange}
+            onBlur={handleBlur}
+            disabled={isLoading}
+            placeholder="Re-enter your password"
+            className={`${inputBase(touched.confirmPassword && !isConfirmPasswordValid)} pr-16`}
+            autoComplete="new-password"
+            data-testid="auth-signup-confirm-password-input"
+          />
 
-        {/* Verification indicator */}
-        <div className="absolute inset-y-0 right-10 flex items-center pointer-events-none">
-          {touched.confirmPassword && (
-            isConfirmPasswordValid ? (
-              <Check className="text-emerald-500" size={16} />
-            ) : (
-              <AlertCircle className="text-red-500" size={16} />
-            )
-          )}
+          {/* Verification indicator */}
+          <div className="absolute inset-y-0 right-10 flex items-center pointer-events-none">
+            {touched.confirmPassword && (
+              isConfirmPasswordValid ? (
+                <Check className="text-emerald-500" size={16} />
+              ) : (
+                <AlertCircle className="text-red-500" size={16} />
+              )
+            )}
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            data-testid="auth-signup-confirm-password-toggle"
+            aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
+            className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 transition-colors"
+          >
+            {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+          </button>
         </div>
-
-        <button
-          type="button"
-          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-          data-testid="auth-signup-confirm-password-toggle"
-          className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
-        >
-          {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-        </button>
         {touched.confirmPassword && !isConfirmPasswordValid && (
-          <p className="mt-1 text-xs text-red-500 pl-1">Passwords do not match</p>
+          <p className="mt-1 text-xs text-red-500 pl-1 font-medium">Passwords do not match</p>
         )}
       </div>
 
       {/* Terms */}
-      <div className="bg-violet-50/70 border border-violet-100 rounded-xl p-2.5 flex items-center justify-center gap-2">
+      <div className="rounded-xl border border-slate-200/80 bg-slate-50/60 p-3 flex items-start gap-2.5 transition-colors hover:bg-slate-50">
         <input
           type="checkbox"
           id="agreeToTerms"
@@ -742,13 +754,27 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
           onChange={(e) => setAgreedToTerms(e.target.checked)}
           disabled={isLoading}
           data-testid="auth-signup-terms-checkbox"
-          className="h-3.5 w-3.5 rounded border-slate-300 text-violet-600 focus:ring-violet-500/20 cursor-pointer accent-violet-600"
+          className="mt-0.5 h-4 w-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500/20 cursor-pointer accent-violet-600 shrink-0"
         />
-        <label htmlFor="agreeToTerms" className="text-[11px] font-bold text-violet-700 cursor-pointer select-none whitespace-nowrap flex items-center gap-1">
-          I agree to the
-          <button type="button" onClick={onViewTerms} data-testid="auth-signup-view-terms-button" className="font-bold underline hover:text-violet-900 transition-colors">Terms of Service</button>
-          and
-          <button type="button" onClick={onViewPrivacy} data-testid="auth-signup-view-privacy-button" className="font-bold underline hover:text-violet-900 transition-colors">Privacy Policy</button>
+        <label htmlFor="agreeToTerms" className="text-xs text-slate-600 leading-normal cursor-pointer select-none">
+          I agree to the{' '}
+          <button
+            type="button"
+            onClick={onViewTerms}
+            data-testid="auth-signup-view-terms-button"
+            className="inline text-xs font-semibold text-violet-600 hover:text-violet-800 underline underline-offset-2 transition-colors"
+          >
+            Terms of Service
+          </button>{' '}
+          and{' '}
+          <button
+            type="button"
+            onClick={onViewPrivacy}
+            data-testid="auth-signup-view-privacy-button"
+            className="inline text-xs font-semibold text-violet-600 hover:text-violet-800 underline underline-offset-2 transition-colors"
+          >
+            Privacy Policy
+          </button>
         </label>
       </div>
 
@@ -757,7 +783,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
         type="submit"
         disabled={isLoading || !isFormReady}
         data-testid="auth-signup-submit-button"
-        className="w-full bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 hover:from-violet-700 hover:to-blue-700 active:scale-[0.98] text-white font-bold py-3.5 px-4 rounded-xl transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_4px_16px_rgba(124,58,237,0.25)] hover:shadow-[0_6px_22px_rgba(124,58,237,0.35)] text-sm"
+        className="w-full bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 hover:from-violet-700 hover:to-blue-700 active:scale-[0.99] text-white font-bold py-3 sm:py-3.5 px-4 rounded-xl transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_4px_16px_rgba(124,58,237,0.25)] hover:shadow-[0_6px_22px_rgba(124,58,237,0.35)] text-sm h-11 sm:h-12"
       >
         {isLoading ? (
           <>
@@ -769,17 +795,17 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
         ) : !agreedToTerms ? (
           'Agree to terms to continue'
         ) : (
-          'Create Account ✓ Ready'
+          'Create Account'
         )}
       </button>
 
-      <p className="text-center text-sm text-slate-500 pt-1 font-medium">
+      <p className="text-center text-xs sm:text-sm text-slate-500 pt-1 font-normal">
         Already have an account?{' '}
         <button
           type="button"
           onClick={onSwitchToSignIn}
           data-testid="auth-signup-switch-signin-button"
-          className="text-violet-600 hover:text-violet-700 font-bold transition-colors"
+          className="text-violet-600 hover:text-violet-700 font-bold underline underline-offset-2 transition-colors"
         >
           Sign in
         </button>

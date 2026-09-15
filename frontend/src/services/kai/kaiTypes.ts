@@ -15,12 +15,11 @@ export type { KaiAction, KaiActionEntities, KaiActionKind, KaiEntityPatch };
 
 export type KaiRecordTable = SyncedTableName | 'goalContributions' | 'loanPayments';
 
-export interface RecordRef {
-  table: KaiRecordTable;
-  localId: number;
-  /** false when Kai touched a pre-existing row (e.g. updated an existing goal) — never deleted on undo */
-  owned?: boolean;
-}
+/** `owned: false` when Kai touched a pre-existing row (e.g. updated an existing goal) — never deleted on undo */
+export type RecordRef =
+  | { table: KaiRecordTable; localId: number; owned?: boolean }
+  /** Budgets are keyed by a string id in Dexie. */
+  | { table: 'budgets'; budgetId: string; owned?: boolean };
 
 export type KaiActionStatus = 'pending' | 'saving' | 'saved' | 'failed' | 'deleted' | 'answered';
 
@@ -52,7 +51,7 @@ export const isMoneyKind = (kind: KaiActionKind): boolean => MONEY_KINDS.include
 
 /** Kinds that create/modify records (everything except questions, answers and corrections). */
 export const isRecordKind = (kind: KaiActionKind): boolean =>
-  isMoneyKind(kind) || kind === 'goal' || kind === 'goal_update' || kind === 'todo';
+  isMoneyKind(kind) || kind === 'goal' || kind === 'goal_update' || kind === 'todo' || kind === 'budget';
 
 const fnv1a = (seed: string, basis: number): number => {
   let h = basis >>> 0;
@@ -110,6 +109,8 @@ export function describeAction(action: Pick<KaiAction, 'kind' | 'entities' | 'ra
       return `${e.goalName || 'Goal'} updated`;
     case 'todo':
       return e.title || 'Reminder';
+    case 'budget':
+      return `${e.category || e.description || 'Category'} budget`;
     case 'query':
       return action.rawSegment;
     case 'clarify':
