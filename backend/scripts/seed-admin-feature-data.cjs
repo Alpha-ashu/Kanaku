@@ -255,7 +255,19 @@ async function seedTodos(userId) {
     }
   }
 
-  // Populate actual public.todo_lists / public.todo_items used by frontend
+  // Populate the legacy public.todo_lists / public.todo_items tables when the
+  // database has them. They are not in schema.prisma, so a database built from
+  // the schema (CI's `db push`) lacks them and the raw INSERT threw, failing the
+  // whole seed ("Seed admin QA data" in backend-feature-matrix.yml).
+  const [{ exists: hasLegacyTodoTables }] = await prisma.$queryRaw`
+    SELECT to_regclass('public.todo_lists') IS NOT NULL
+       AND to_regclass('public.todo_items') IS NOT NULL AS exists
+  `;
+  if (!hasLegacyTodoTables) {
+    console.log('Skipping legacy todo_lists/todo_items seed: tables not present.');
+    return;
+  }
+
   const [individualList] = await prisma.$queryRaw`
     INSERT INTO public.todo_lists (user_id, name, description)
     VALUES (${userId}::uuid, 'Admin Checklist', 'Individual list')

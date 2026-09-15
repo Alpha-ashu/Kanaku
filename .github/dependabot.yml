@@ -1,8 +1,11 @@
 version: 2
 updates:
+  # Dependency PRs enter at dev like every other change and are promoted
+  # dev → staging → main (docs/release/ENVIRONMENTS.md).
   # Root workspace — covers all npm workspaces (root + backend + frontend)
   - package-ecosystem: "npm"
     directory: "/"
+    target-branch: "dev"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 10
@@ -13,6 +16,7 @@ updates:
   # Python receipt_ai dependencies
   - package-ecosystem: "pip"
     directory: "/backend/receipt_ai"
+    target-branch: "dev"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 10
@@ -23,6 +27,7 @@ updates:
   # GitHub Actions used by CI/CD workflows (supply-chain coverage)
   - package-ecosystem: "github-actions"
     directory: "/"
+    target-branch: "dev"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 10
@@ -33,13 +38,14 @@ updates:
   # Android (Gradle) dependencies for the Capacitor shell
   - package-ecosystem: "gradle"
     directory: "/android"
+    target-branch: "dev"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 10
     groups:
       all-gradle:
         patterns: ["*"]
-    # The Android toolchain is pinned to AGP 8.13 / Gradle 8.14.3 until Capacitor
+    # The Android toolchain is pinned to AGP 8.13 / Gradle 8.14.x until Capacitor
     # supports AGP 9: under AGP 9 every @capacitor/* plugin module fails to
     # configure ("Cannot add extension with name 'kotlin'"). Majors here are
     # coupled to a Capacitor upgrade — see docs/release/MOBILE_RELEASE_GUIDE.md.
