@@ -4,11 +4,11 @@
  * Provides standard SMTP delivery (Gmail, Amazon SES, Brevo, Mailgun, Postmark, custom SMTP).
  * Automatically enabled when SMTP_HOST or SMTP_USER is configured in environment variables.
  */
-import nodemailer from 'nodemailer';
+import nodemailer, { type Transporter } from 'nodemailer';
 import { logger } from '../../config/logger';
 import type { SendEmailOptions } from './sendgrid.provider';
 
-let transporter: nodemailer.Transporter | null = null;
+let transporter: Transporter | null = null;
 let initialized = false;
 
 export const SMTP_FROM_EMAIL = process.env.SMTP_FROM_EMAIL || process.env.SENDGRID_FROM_EMAIL || 'no-reply@kanaku.app';
@@ -18,7 +18,7 @@ export function isSmtpConfigured(): boolean {
   return Boolean(process.env.SMTP_HOST || (process.env.SMTP_USER && process.env.SMTP_PASS));
 }
 
-function getTransporter(): nodemailer.Transporter | null {
+function getTransporter(): Transporter | null {
   if (initialized) return transporter;
   initialized = true;
 
