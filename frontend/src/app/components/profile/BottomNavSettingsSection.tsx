@@ -44,10 +44,11 @@ export const BottomNavSettingsSection: React.FC = () => {
 
   const handleResetDefaults = () => {
     setSelectedIds(DEFAULT_BOTTOM_NAV_IDS);
-    toast.success('Reset to default 6 bottom navigation icons');
+    toast.success(`Reset to default ${DEFAULT_BOTTOM_NAV_IDS.length} bottom navigation icons`);
   };
 
   const selectedCount = selectedIds.length;
+  const isDefaultCount = selectedCount === DEFAULT_BOTTOM_NAV_IDS.length;
   const activeSet = new Set(selectedIds);
 
   // Group items by selected and unselected
@@ -80,7 +81,7 @@ export const BottomNavSettingsSection: React.FC = () => {
           <span
             className={cn(
               'px-3 py-1 rounded-full text-xs font-bold border flex items-center gap-1.5 transition-colors',
-              selectedCount === 6
+              isDefaultCount
                 ? 'bg-purple-50 text-purple-700 border-purple-200'
                 : 'bg-slate-50 text-slate-700 border-slate-200'
             )}
@@ -88,7 +89,7 @@ export const BottomNavSettingsSection: React.FC = () => {
             <span
               className={cn(
                 'w-1.5 h-1.5 rounded-full',
-                selectedCount === 6 ? 'bg-purple-600' : 'bg-slate-500'
+                isDefaultCount ? 'bg-purple-600' : 'bg-slate-500'
               )}
             />
             {selectedCount} / 7 icons active
@@ -98,7 +99,7 @@ export const BottomNavSettingsSection: React.FC = () => {
             type="button"
             onClick={handleResetDefaults}
             className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-slate-200/80 transition-all cursor-pointer shadow-xs active:scale-95"
-            title="Reset to default 6 items"
+            title={`Reset to default ${DEFAULT_BOTTOM_NAV_IDS.length} items`}
           >
             <RotateCcw size={12} strokeWidth={2.2} />
             <span>Reset Defaults</span>

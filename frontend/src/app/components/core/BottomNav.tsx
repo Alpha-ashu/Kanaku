@@ -552,7 +552,7 @@ export const BottomNav: React.FC<BottomNavProps> = () => {
         {/* Outer Flex Container: Dark Capsule + Separate White Plus Button */}
         <div ref={navContainerRef} className="pointer-events-auto relative flex items-center gap-2 sm:gap-3 max-w-full">
 
-          {/* ── Dark Capsule Dock (Customized / Default: Dashboard, Accounts, Transactions, AI Assistant, Groups, Investments) ── */}
+          {/* ── Dark Capsule Dock (Customized / Default: Dashboard, Accounts, Transactions, Kai, Groups, Investments, Reports) ── */}
           <div
             data-testid="bottom-nav-dock"
             className="relative bg-[#000000] border border-white/[0.12] rounded-full p-1 sm:p-1.5 shadow-[0_16px_40px_rgba(0,0,0,0.6),0_2px_8px_rgba(0,0,0,0.4)] flex items-center gap-0.5 sm:gap-1.5 overflow-x-auto scrollbar-none"

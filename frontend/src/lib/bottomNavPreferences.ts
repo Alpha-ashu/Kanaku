@@ -155,8 +155,21 @@ export const ALL_BOTTOM_NAV_ITEMS: BottomNavItemDefinition[] = [
   },
 ];
 
-// Default items as requested: Dashboard, Accounts, Transactions, AI Assistant, Group Expense, Investment
+// Default dock: Dashboard, Accounts, Transactions, Kai, Groups, Investments, Reports
 export const DEFAULT_BOTTOM_NAV_IDS: string[] = [
+  'dashboard',
+  'accounts',
+  'transactions',
+  'ai-assistant',
+  'groups',
+  'investments',
+  'reports',
+];
+
+// Previous default. Login seeding wrote it to storage for every user, so a
+// stored value that still matches it exactly means "never customised" and is
+// upgraded once to the current default.
+const LEGACY_DEFAULT_BOTTOM_NAV_IDS: string[] = [
   'dashboard',
   'accounts',
   'transactions',
@@ -167,10 +180,28 @@ export const DEFAULT_BOTTOM_NAV_IDS: string[] = [
 
 const STORAGE_KEY = 'KANAKU_bottom_nav_preferences_v1';
 const EVENT_KEY = 'KANAKU_bottom_nav_preferences_changed';
+const DEFAULTS_VERSION_KEY = 'KANAKU_bottom_nav_defaults_version';
+const DEFAULTS_VERSION = '2';
+
+// One-shot so a user who later removes Reports on purpose isn't upgraded again.
+function migrateLegacyDefault(): void {
+  if (localStorage.getItem(DEFAULTS_VERSION_KEY) === DEFAULTS_VERSION) return;
+  const raw = localStorage.getItem(STORAGE_KEY);
+  const parsed = raw ? JSON.parse(raw) : null;
+  if (
+    Array.isArray(parsed) &&
+    parsed.length === LEGACY_DEFAULT_BOTTOM_NAV_IDS.length &&
+    parsed.every((id, i) => id === LEGACY_DEFAULT_BOTTOM_NAV_IDS[i])
+  ) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_BOTTOM_NAV_IDS));
+  }
+  localStorage.setItem(DEFAULTS_VERSION_KEY, DEFAULTS_VERSION);
+}
 
 export function getBottomNavPreferences(): string[] {
   if (typeof window === 'undefined') return DEFAULT_BOTTOM_NAV_IDS;
   try {
+    migrateLegacyDefault();
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
@@ -196,6 +227,7 @@ export function initializeDefaultBottomNav(): void {
     if (!existing) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_BOTTOM_NAV_IDS));
     }
+    migrateLegacyDefault();
   } catch {
     // Non-fatal — in-memory default will still be used
   }
@@ -205,6 +237,7 @@ export function setBottomNavPreferences(ids: string[]): void {
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(ids));
+    localStorage.setItem(DEFAULTS_VERSION_KEY, DEFAULTS_VERSION);
     window.dispatchEvent(new Event(EVENT_KEY));
   } catch (err) {
     console.error('Failed to save bottom nav preferences:', err);
