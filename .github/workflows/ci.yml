@@ -180,7 +180,9 @@ jobs:
         working-directory: backend
         # github-actions reporter turns each failing test into a check annotation, so
         # failures are readable on the PR/run page without opening the raw log.
-        run: npx jest --ci --forceExit --runInBand --reporters=default --reporters=github-actions "../quality/backend/tests/integration"
+        # The path must come BEFORE --reporters: that option is an array and would
+        # swallow a trailing positional as another "reporter".
+        run: npx jest "../quality/backend/tests/integration" --ci --forceExit --runInBand --reporters=default --reporters=github-actions
         env:
           NODE_ENV: test
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/kanaku_test
