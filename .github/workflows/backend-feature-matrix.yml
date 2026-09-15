@@ -96,6 +96,12 @@ jobs:
           SUPABASE_JWT_SECRET: test-jwt-secret
           PORT: 3000
           NODE_ENV: production
+          # Production boot requires an email provider (config/env.ts, since the OTP
+          # signup gate in 5b3445dd). A dummy SMTP host satisfies the check; nodemailer
+          # only connects on send, and the health checks below send nothing.
+          SMTP_HOST: 127.0.0.1
+          SMTP_PORT: 2525
+          SMTP_FROM_EMAIL: ci@kanaku.invalid
 
       - name: Wait for health endpoint
         run: |
@@ -109,6 +115,10 @@ jobs:
           done
           echo "Backend did not become healthy in time"
           cat backend-dev.log || true
+          # Surface the end of the log as annotations (visible on the run page).
+          tail -n 15 backend-dev.log 2>/dev/null | while IFS= read -r line; do
+            echo "::error title=backend-dev.log::${line:0:400}"
+          done
           exit 1
 
       - name: Test API health endpoint
