@@ -393,6 +393,26 @@ function handleAPIError(error: any): never {
   }
 }
 
+// ==================== Rate-limit back-off ====================
+
+// Longest server-requested wait absorbed silently before replaying a throttled
+// request once. A longer Retry-After is a real throttle the caller should see —
+// holding a user's tap on a spinner for most of a minute is worse than an error.
+const RATE_LIMIT_MAX_SILENT_WAIT_MS = 5_000;
+
+/**
+ * How long to wait before quietly replaying a 429, or null when it should not be
+ * replayed. `retryAfter` is the Retry-After header or the body's `retryAfter`, in
+ * seconds; anything unparseable falls back to one second.
+ */
+export const getRateLimitRetryDelayMs = (retryAfter: unknown): number | null => {
+  const seconds = retryAfter === null || retryAfter === undefined || retryAfter === '' ? NaN : Number(retryAfter);
+  const waitMs = Number.isFinite(seconds) && seconds >= 0 ? seconds * 1000 : 1000;
+  if (waitMs > RATE_LIMIT_MAX_SILENT_WAIT_MS) return null;
+  // Jitter, so a burst of throttled parallel requests doesn't replay in lockstep.
+  return Math.max(250, waitMs) + Math.floor(Math.random() * 250);
+};
+
 // ==================== Token Refresh ====================
 
 // Shared in-flight refresh promise so concurrent 401s only trigger one refresh
@@ -512,6 +532,8 @@ interface RequestConfig extends RequestInit {
    * GET_CACHE_TTL_BY_PREFIX). Only applies to GET requests.
    */
   cacheTtlMs?: number;
+  /** Internal: set on the single quiet replay of a rate-limited request. */
+  isRateLimitRetry?: boolean;
 }
 
 const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
@@ -560,6 +582,7 @@ class HTTPClient {
       showSuccessToast = false,
       successMessage,
       idempotencyKey,
+      isRateLimitRetry = false,
       ...fetchConfig
     } = { ...this.defaultConfig, ...config };
 
@@ -663,6 +686,25 @@ class HTTPClient {
 
             if (index < baseCandidates.length - 1 && shouldRetryWithLocalApiFallback(response.status)) {
               continue;
+            }
+
+            // ── 429 handling ────────────────────────────────────────────────
+            // The global limiter rejected the request before it ran. When the
+            // server's back-off is short, wait it out and replay once with the
+            // same Idempotency-Key so the user never sees the throttle. Only the
+            // limiter's own RATE_LIMIT_EXCEEDED is replayed — other 429s (e.g. a
+            // PIN-attempt lockout) mean "stop", not "slow down".
+            if (response.status === 429 && data?.code === 'RATE_LIMIT_EXCEEDED' && !isRateLimitRetry) {
+              const retryDelayMs = getRateLimitRetryDelayMs(response.headers?.get?.('Retry-After') ?? data.retryAfter);
+              if (retryDelayMs !== null) {
+                clearTimeout(timeoutId);
+                await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
+                return await this.request<T>(endpoint, {
+                  ...config,
+                  idempotencyKey: resolvedIdempotencyKey,
+                  isRateLimitRetry: true,
+                });
+              }
             }
 
             // ── 401 handling ────────────────────────────────────────────────
@@ -820,14 +862,22 @@ class HTTPClient {
               details: data.details,
             };
 
-            if (showErrorToast) {
+            // A throttled READ is background work (sync pulls, polls, flag refreshes)
+            // that retries on its own schedule — never interrupt the user over it.
+            const isBackgroundThrottle = response.status === 429 && method === 'GET';
+            if (showErrorToast && !isBackgroundThrottle) {
               ErrorHandler.handle(
                 ErrorFactory.fromHTTPStatus(response.status, userMessage),
                 true,
               );
             }
 
-            throw new APIError(error.code, error.message, response.status, error.details);
+            throw new APIError(
+              error.code,
+              error.message,
+              response.status,
+              error.details ?? (response.status === 429 ? { retryAfter: data.retryAfter } : undefined),
+            );
           }
 
           if (showSuccessToast && successMessage) {

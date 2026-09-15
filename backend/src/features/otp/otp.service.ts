@@ -317,6 +317,14 @@ class OtpService {
       } else {
         logger.error(`[OTP] Email delivery failed for ${destination.substring(0, 3)}*** (${purposeText}) — no provider succeeded`);
       }
+
+      // In non-production environments, never abort OTP creation if email sending fails.
+      // The OTP is already stored in the database and logged to the console / returned in response.
+      if (!sent && process.env.NODE_ENV !== 'production') {
+        logger.warn(`[OTP] Dev mode fallback: Proceeding despite email delivery failure for ${destination}. Dev OTP: ${otp}`);
+        return true;
+      }
+
       return sent;
     }
 

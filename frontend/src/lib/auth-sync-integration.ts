@@ -3144,6 +3144,8 @@ export async function saveTransactionWithBackendSync(transaction: any) {
           // The FIFO sync queue will retry the expense after the deposits land.
           const isFallback =
             backendError?.status === 503 ||
+            // 429: throttled before it ran — keep the user's write locally; the queue retries it.
+            backendError?.status === 429 ||
             backendError?.status === 0 ||
             backendError?.status === 400 ||
             backendError?.status === 409 ||
@@ -3232,6 +3234,7 @@ export async function updateTransactionWithBackendSync(localId: number, updates:
       } catch (backendError: any) {
         const isFallback =
           backendError?.status === 503 ||
+          backendError?.status === 429 ||
           backendError?.status === 0 ||
           backendError?.status === 400 ||
           backendError?.status === 409 ||
@@ -3373,6 +3376,7 @@ export async function saveAccountWithBackendSync(account: any) {
       // rejections (400/409) that may result from temporary sync lag.
       const isFallback =
         backendError?.status === 503 ||
+        backendError?.status === 429 ||
         backendError?.status === 0 ||
         backendError?.status === 400 ||
         backendError?.status === 409 ||
@@ -3480,6 +3484,7 @@ export async function updateAccountWithBackendSync(accountId: number, updates: a
       } catch (backendError: any) {
         const isFallback =
           backendError?.status === 503 ||
+          backendError?.status === 429 ||
           backendError?.status === 0 ||
           backendError?.status === 400 ||
           backendError?.status === 409 ||
@@ -3699,6 +3704,7 @@ export async function saveToDoListWithBackendSync(list: any) {
     } catch (backendError: any) {
       const isUnavailable =
         backendError?.status === 503 ||
+        backendError?.status === 429 ||
         backendError?.status === 0 ||
         backendError?.code === 'DATABASE_UNAVAILABLE' ||
         backendError?.code === 'NETWORK_ERROR' ||
@@ -3770,6 +3776,7 @@ export async function updateToDoListWithBackendSync(listId: number, updates: any
       } catch (backendError: any) {
         const isUnavailable =
           backendError?.status === 503 ||
+          backendError?.status === 429 ||
           backendError?.status === 0 ||
           backendError?.code === 'DATABASE_UNAVAILABLE' ||
           backendError?.code === 'NETWORK_ERROR' ||
@@ -3863,6 +3870,7 @@ export async function saveToDoItemWithBackendSync(item: any, opts: { idempotency
     } catch (backendError: any) {
       const isUnavailable =
         backendError?.status === 503 ||
+        backendError?.status === 429 ||
         backendError?.status === 0 ||
         backendError?.code === 'DATABASE_UNAVAILABLE' ||
         backendError?.code === 'NETWORK_ERROR' ||
@@ -3942,6 +3950,7 @@ export async function updateToDoItemWithBackendSync(itemId: number, updates: any
       } catch (backendError: any) {
         const isUnavailable =
           backendError?.status === 503 ||
+          backendError?.status === 429 ||
           backendError?.status === 0 ||
           backendError?.code === 'DATABASE_UNAVAILABLE' ||
           backendError?.code === 'NETWORK_ERROR' ||
@@ -4029,6 +4038,7 @@ export async function saveToDoListShareWithBackendSync(listId: number, sharedWit
     } catch (backendError: any) {
       const isUnavailable =
         backendError?.status === 503 ||
+        backendError?.status === 429 ||
         backendError?.status === 0 ||
         backendError?.code === 'DATABASE_UNAVAILABLE' ||
         backendError?.code === 'NETWORK_ERROR' ||
@@ -4093,6 +4103,7 @@ export async function updateToDoListShareWithBackendSync(shareId: number, permis
       } catch (backendError: any) {
         const isUnavailable =
           backendError?.status === 503 ||
+          backendError?.status === 429 ||
           backendError?.status === 0 ||
           backendError?.code === 'DATABASE_UNAVAILABLE' ||
           backendError?.code === 'NETWORK_ERROR' ||

@@ -6,7 +6,7 @@ import { randomUUID } from 'crypto';
 import { errorHandler } from './middleware/error';
 import { apiRoutes } from './routes/index';
 import { docsRoutes } from './routes/docs';
-import { rateLimit, authenticatedRateLimit } from './middleware/rateLimit';
+import { authenticatedRateLimit } from './middleware/rateLimit';
 import { getCircuitBreakerStatus } from './utils/circuitBreaker';
 import { sanitize } from './utils/sanitize';
 import { logger } from './config/logger';
@@ -264,12 +264,20 @@ app.use((req, _res, next) => {
   next();
 });
 
-// Baseline API throttling for abuse protection (IP + optional user identity).
-const defaultGlobalApiRateLimit = process.env.NODE_ENV === 'production' ? 60 : 600;
+// Baseline API throttling for abuse protection.
+//
+// Signed-in traffic is budgeted PER USER, anonymous traffic per IP. A flat 60/min
+// per IP was tripped by ordinary use: one app launch syncs ~12 tables plus
+// profile/flags/PIN/device calls, the dashboard polls live quotes every 6–10s, and
+// a user's web, Android and iOS clients on one Wi-Fi (or thousands of phones behind
+// a carrier NAT) all shared that single IP bucket.
+const isProductionEnv = process.env.NODE_ENV === 'production';
+const globalApiUserLimit = Number(process.env.API_USER_RATE_LIMIT || (isProductionEnv ? 300 : 600));
+const globalApiIpLimit = Number(process.env.API_RATE_LIMIT || (isProductionEnv ? 120 : 600));
 
-app.use('/api/v1', rateLimit({
+app.use('/api/v1', authenticatedRateLimit({
   windowMs: 60_000,
-  max: Number(process.env.API_RATE_LIMIT || defaultGlobalApiRateLimit),
+  max: (key) => (key.startsWith('user:') ? globalApiUserLimit : globalApiIpLimit),
   scope: 'api-global',
   message: 'Too many API requests. Please try again later.',
 }));

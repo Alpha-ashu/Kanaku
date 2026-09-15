@@ -28,6 +28,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = ({
  const maxResendAttempts = 3;
  const [error, setError] = useState<string | null>(null);
  const [verified, setVerified] = useState(false);
+ const [devOtp, setDevOtp] = useState<string | null>(() => (typeof window !== 'undefined' ? sessionStorage.getItem('kanaku_dev_otp') : null));
  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
  // Cooldown timer
@@ -111,6 +112,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = ({
           }
           localStorage.setItem('email_verified', 'true');
           localStorage.setItem('user_status', 'verified');
+          sessionStorage.removeItem('kanaku_dev_otp');
           setVerified(true);
           toast.success('Email verified successfully! Welcome to Kanaku.');
           setTimeout(() => onVerified(), 800);
@@ -128,39 +130,39 @@ export const OTPVerification: React.FC<OTPVerificationProps> = ({
 
       // Supabase verification fallback
       let verifySuccess = false;
-      const { error: signupError } = await supabase.auth.verifyOtp({
+      const { data, error: verifyError } = await supabase.auth.verifyOtp({
         email,
         token: otpCode,
-        type: 'signup',
+        type: 'email',
       });
 
-      if (!signupError) {
+      if (!verifyError && data.session) {
         verifySuccess = true;
       } else {
-        const { error: emailError } = await supabase.auth.verifyOtp({
+        const { data: signupData, error: signupError } = await supabase.auth.verifyOtp({
           email,
           token: otpCode,
-          type: 'email',
+          type: 'signup',
         });
-        if (!emailError) {
+        if (!signupError && signupData.session) {
           verifySuccess = true;
         }
       }
 
-      if (!verifySuccess) {
-        setError('Invalid or expired code. Please request a new one.');
+      if (verifySuccess) {
+        localStorage.setItem('email_verified', 'true');
+        localStorage.setItem('user_status', 'verified');
+        sessionStorage.removeItem('kanaku_dev_otp');
+        setVerified(true);
+        toast.success('Email verified successfully! Welcome to Kanaku.');
+        setTimeout(() => onVerified(), 800);
+      } else {
+        setError('Invalid or expired verification code. Please try again.');
         setOtp(['', '', '', '', '', '']);
         inputRefs.current[0]?.focus();
-        return;
       }
-
-      localStorage.setItem('email_verified', 'true');
-      localStorage.setItem('user_status', 'verified');
-      setVerified(true);
-      toast.success('Email verified successfully! Welcome to Kanaku.');
-      setTimeout(() => onVerified(), 800);
     } catch (err: any) {
-      setError(err?.message || 'Verification failed. Please try again.');
+      setError(err?.message || 'Verification failed. Please check the code and try again.');
       setOtp(['', '', '', '', '', '']);
       inputRefs.current[0]?.focus();
     } finally {
@@ -170,7 +172,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = ({
 
   const handleResendOTP = async () => {
     if (resendAttempts >= maxResendAttempts) {
-      setError('Maximum resend attempts reached. Please wait a few minutes before trying again.');
+      toast.error('Maximum resend attempts reached. Please wait a few minutes.');
       return;
     }
     if (resendCooldown > 0) return;
@@ -181,6 +183,11 @@ export const OTPVerification: React.FC<OTPVerificationProps> = ({
       // Backend resend
       const res = await api.auth.resendRegistrationOtp(email);
       if (res.success) {
+        const newCode = (res.data as any)?.code;
+        if (newCode) {
+          sessionStorage.setItem('kanaku_dev_otp', newCode);
+          setDevOtp(newCode);
+        }
         setResendAttempts(prev => prev + 1);
         setResendCooldown(30);
         setOtp(['', '', '', '', '', '']);
@@ -254,6 +261,30 @@ export const OTPVerification: React.FC<OTPVerificationProps> = ({
 
  {/* OTP Input */}
  <div className="p-6">
+  {import.meta.env.DEV && devOtp && (
+    <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between text-xs text-amber-900 shadow-sm">
+      <div className="flex items-center gap-1.5 flex-wrap">
+        <span className="font-semibold text-amber-800">Dev OTP:</span>
+        <span className="font-mono font-bold tracking-widest bg-amber-100/90 text-amber-950 px-2 py-0.5 rounded border border-amber-300">
+          {devOtp}
+        </span>
+      </div>
+      <button
+        type="button"
+        onClick={() => {
+          const digits = devOtp.slice(0, 6).split('');
+          setOtp(digits);
+          if (digits.length === 6) {
+            handleVerifyOTP(devOtp);
+          }
+        }}
+        className="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white font-medium rounded-lg text-xs transition-colors cursor-pointer"
+      >
+        Auto-fill
+      </button>
+    </div>
+  )}
+
  {error && (
  <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
  <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />

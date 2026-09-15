@@ -105,6 +105,15 @@ describe('backend-first transaction saves', () => {
     expect(queuedKeys()).toContain(`transactions:${saved.id}`);
   });
 
+  it('keeps a throttled save locally and queues it instead of failing', async () => {
+    apiPost.mockRejectedValue({ status: 429, code: 'RATE_LIMIT_EXCEEDED' });
+
+    const saved = await saveTransactionWithBackendSync(expense);
+
+    expect(saved).toMatchObject({ syncStatus: 'pending' });
+    expect(queuedKeys()).toContain(`transactions:${saved.id}`);
+  });
+
   it('does not queue an echo of an update the server just accepted', async () => {
     tables.transactions.rows.set(7, { ...expense, id: 7, cloudId: 'cloud-tx-7', syncStatus: 'synced' });
     apiPut.mockResolvedValue({ data: { id: 'cloud-tx-7', updatedAt: '2026-09-15T11:00:00.000Z' } });

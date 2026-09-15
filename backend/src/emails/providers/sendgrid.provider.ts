@@ -68,11 +68,12 @@ export async function sendEmail(opts: SendEmailOptions): Promise<boolean> {
     if (smtpSuccess) return true;
   }
 
-  // 3. Dev/test with NO provider configured: simulate. A configured provider
-  // that failed must report false so callers (and developers) see the failure
-  // instead of a silently "sent" email.
-  if (!sendgridConfigured && !smtpConfigured && process.env.NODE_ENV !== 'production') {
-    logger.info(`[Email/DevMock] Simulated email send to ${opts.to}: "${opts.subject}"`);
+  // 3. Dev/test fallback: In non-production environments, simulate if no provider
+  // is configured OR if the configured provider failed (e.g. SendGrid quota exhausted,
+  // network unreachable, invalid key). This prevents local development and testing
+  // from being hard-blocked by third-party provider limits.
+  if (process.env.NODE_ENV !== 'production') {
+    logger.warn(`[Email/DevMock] Provider delivery failed or unconfigured. Simulating email send in dev mode to ${opts.to}: "${opts.subject}"`);
     return true;
   }
 

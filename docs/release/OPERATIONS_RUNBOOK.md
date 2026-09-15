@@ -59,6 +59,8 @@ refuses to start (visible in `system/integrity → worker`).
 
 ## Capacity levers
 
-`API_RATE_LIMIT`, `SYNC_RATE_LIMIT`, `BILL_UPLOAD_RATE_LIMIT`, `RECEIPT_SCAN_RATE_LIMIT`,
+`API_USER_RATE_LIMIT` (global /api/v1 budget per signed-in user, default 300/min),
+`API_RATE_LIMIT` (same limiter for anonymous traffic, per IP, default 120/min),
+`SYNC_RATE_LIMIT`, `BILL_UPLOAD_RATE_LIMIT`, `RECEIPT_SCAN_RATE_LIMIT`,
 `REQUEST_TIMEOUT_MS`, `UPLOAD_MAX_BYTES`, DB `connection_limit` (per instance), Render plan
 size. Multi-instance caveats: KNOWN_LIMITATIONS.md §4.

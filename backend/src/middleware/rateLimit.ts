@@ -9,7 +9,8 @@ const getRedisStatus = () => getPurposeStatus('ratelimit');
 
 type RateLimitOptions = {
   windowMs: number;
-  max: number;
+  /** Requests allowed per window — or a function of the resolved bucket key. */
+  max: number | ((key: string) => number);
   scope?: string;
   keyGenerator?: (req: Request) => string;
   message?: string;
@@ -69,11 +70,12 @@ export const rateLimit = ({ windowMs, max, scope = 'global', keyGenerator, messa
     const rawKey = keyGenerator?.(req) || req.ip || 'anonymous';
     const key = `rl:${scope}:${rawKey}`;
     const now = Date.now();
+    const limit = typeof max === 'function' ? max(rawKey) : max;
 
     // Try Redis first (persistent across restarts / instances)
     let count: number;
     let resetAt: number;
-    const redisResult = await redisIncrement(key, windowMs, max);
+    const redisResult = await redisIncrement(key, windowMs, limit);
 
     if (redisResult) {
       count = redisResult.count;
@@ -92,11 +94,11 @@ export const rateLimit = ({ windowMs, max, scope = 'global', keyGenerator, messa
       }
     }
 
-    res.setHeader('X-RateLimit-Limit', String(max));
-    res.setHeader('X-RateLimit-Remaining', String(Math.max(0, max - count)));
+    res.setHeader('X-RateLimit-Limit', String(limit));
+    res.setHeader('X-RateLimit-Remaining', String(Math.max(0, limit - count)));
     res.setHeader('X-RateLimit-Reset', String(Math.ceil(resetAt / 1000)));
 
-    if (count > max) {
+    if (count > limit) {
       const retryAfter = Math.ceil((resetAt - now) / 1000);
       res.setHeader('Retry-After', retryAfter.toString());
       res.setHeader('X-RateLimit-Remaining', '0');
@@ -104,38 +106,56 @@ export const rateLimit = ({ windowMs, max, scope = 'global', keyGenerator, messa
         event: 'security.rate_limit_hit',
         ip: req.ip || undefined,
         action: `${req.method} ${req.path}`,
-        meta: { scope, key: rawKey, limit: max },
+        meta: { scope, key: rawKey, limit },
       });
-      return res.status(429).json({ error: message || 'Too many requests. Please try again later.' });
+      // `code` + `retryAfter` let clients back off and retry quietly instead of
+      // surfacing a generic error for a request the user never consciously made.
+      return res.status(429).json({
+        error: message || 'Too many requests. Please try again later.',
+        code: 'RATE_LIMIT_EXCEEDED',
+        retryAfter,
+      });
     }
 
     return next();
   };
 
+/**
+ * Bucket key for a request: `user:<id>` when it carries a bearer token we signed,
+ * otherwise `ip:<address>`.
+ *
+ * Expiry is deliberately ignored. This only picks WHICH bucket to count against —
+ * it authorizes nothing (authMiddleware still rejects the expired token) — and a
+ * valid signature already proves who the token was issued to. Without it, every
+ * request fired in the gap before a silent token refresh landed on the shared IP
+ * bucket, which is exactly the burst an app resume produces.
+ */
+export const resolveRateLimitKey = (req: Request): string => {
+  const authReq = req as Request & { userId?: string; user?: { id?: string } };
+  let userId = authReq.userId || authReq.user?.id;
+
+  if (!userId) {
+    const bearerToken = req.headers.authorization?.startsWith('Bearer ')
+      ? req.headers.authorization.slice('Bearer '.length).trim()
+      : '';
+    const secret = process.env.JWT_SECRET || process.env.SUPABASE_JWT_SECRET;
+
+    if (bearerToken && secret) {
+      try {
+        const decoded = jwt.verify(bearerToken, secret, { ignoreExpiration: true }) as { userId?: string; id?: string };
+        userId = decoded.userId || decoded.id;
+      } catch {
+        // Fallback to IP-based throttling for tokens we did not sign.
+      }
+    }
+  }
+
+  const ip = req.ip || req.headers['x-forwarded-for']?.toString() || 'anonymous';
+  return userId ? `user:${userId}` : `ip:${ip}`;
+};
+
 export const authenticatedRateLimit = (options: Omit<RateLimitOptions, 'keyGenerator'>) =>
   rateLimit({
     ...options,
-    keyGenerator: (req) => {
-      const authReq = req as Request & { userId?: string; user?: { id?: string } };
-      let userId = authReq.userId || authReq.user?.id;
-
-      if (!userId) {
-        const bearerToken = req.headers.authorization?.startsWith('Bearer ')
-          ? req.headers.authorization.slice('Bearer '.length).trim()
-          : '';
-        const secret = process.env.JWT_SECRET || process.env.SUPABASE_JWT_SECRET;
-
-        if (bearerToken && secret) {
-          try {
-            const decoded = jwt.verify(bearerToken, secret) as { userId?: string; id?: string };
-            userId = decoded.userId || decoded.id;
-          } catch {
-            // Fallback to IP-based throttling for invalid/expired tokens.
-          }
-        }
-      }
-
-      const ip = req.ip || req.headers['x-forwarded-for']?.toString() || 'anonymous';
-      return userId ? `user:${userId}` : `ip:${ip}`;
-    },
+    keyGenerator: resolveRateLimitKey,
   });

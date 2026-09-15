@@ -5,7 +5,7 @@ import RealtimeDataManager from './realtimeData';
 import { db } from './database';
 import { createNotificationRecord } from './notifications';
 import { categorizeText as localCategorizeText } from './smartCategorization';
-import { TokenManager } from './api';
+import { TokenManager, getRateLimitRetryDelayMs, refreshAccessToken, wasRefreshFailureFatal } from './api';
 import supabase from '@/utils/supabase/client';
 import { getConfiguredApiBase } from '@/lib/apiBase';
 import { awaitPinUnlock, getPinUnlockToken, setPinUnlockToken } from './pinUnlockCoordinator';
@@ -221,7 +221,6 @@ class BackendService {
           originalRequest._retry = true;
           try {
             console.log('[BackendService] Request returned 401. Attempting silent token refresh...');
-            const { refreshAccessToken } = await import('./api');
             const newToken = await refreshAccessToken();
             if (newToken) {
               console.log('[BackendService] Token refreshed successfully. Retrying request...');
@@ -230,6 +229,16 @@ class BackendService {
             }
           } catch (refreshErr) {
             console.error('[BackendService] Silent refresh failed:', refreshErr);
+          }
+
+          // Only a refresh token the server actually REJECTED ends the session. A
+          // refresh that failed transiently — throttled (429), 5xx, offline, or held
+          // back by the post-failure cooldown — must not sign the user out; apiClient
+          // makes the same distinction.
+          if (!wasRefreshFailureFatal()) {
+            const transientError = wrapWithStatus('Could not reach the server. Please try again in a moment.');
+            transientError.status = 503;
+            return Promise.reject(transientError);
           }
 
           console.warn('[BackendService] Unauthorized request, performing clean signout.');
@@ -249,6 +258,18 @@ class BackendService {
         }
 
         if (status === 429) {
+          // Same quiet single replay as apiClient: the limiter rejected the request
+          // before it ran, and the Idempotency-Key set above is kept on the replay.
+          if (serverCode === 'RATE_LIMIT_EXCEEDED' && originalRequest && !originalRequest._rateLimitRetry) {
+            const retryDelayMs = getRateLimitRetryDelayMs(
+              error.response?.headers?.['retry-after'] ?? error.response?.data?.retryAfter,
+            );
+            if (retryDelayMs !== null) {
+              originalRequest._rateLimitRetry = true;
+              await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
+              return this.api(originalRequest);
+            }
+          }
           return Promise.reject(wrapWithStatus('Too many requests. Please wait a moment and try again.'));
         }
 

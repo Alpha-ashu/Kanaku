@@ -434,6 +434,9 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
       if (resData?.requireOtp || !resData?.accessToken) {
         saveFlowState('otp-verify');
         setStep('otp-verify');
+        if (resData?.code) {
+          sessionStorage.setItem('kanaku_dev_otp', resData.code);
+        }
         toast.success('Verification code sent to your email. Please enter the code to continue.');
         const halt = new Error('OTP_VERIFICATION_REQUIRED') as Error & { code?: string };
         halt.code = 'OTP_VERIFICATION_REQUIRED';
