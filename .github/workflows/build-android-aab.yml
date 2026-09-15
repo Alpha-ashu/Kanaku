@@ -68,8 +68,14 @@ jobs:
           distribution: 'temurin'
           java-version: ${{ env.JAVA_VERSION }}
 
+      # setup-android installs "tools platform-tools" by default. Google stopped
+      # serving the long-deprecated `tools` package on 2026-09-15, so the default
+      # failed every run ("Failed to find package 'tools'", setup-android#537).
+      # cmdline-tools (sdkmanager) comes from the action itself; `tools` is unused.
       - name: Set up Android SDK
         uses: android-actions/setup-android@v4
+        with:
+          packages: 'platform-tools'
 
       # Every run recompiled all Capacitor plugin modules from scratch.
       - name: Cache Gradle
