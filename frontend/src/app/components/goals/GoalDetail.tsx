@@ -329,10 +329,10 @@ export const GoalDetail: React.FC = () => {
       {/* Top Row: Amount & Translucent Squircle Icon (Matches Image 2) */}
       <div className="relative z-10 flex items-start justify-between gap-4">
         <div>
-          <p className="text-xs sm:text-sm font-semibold text-purple-100/90 tracking-wide uppercase">
+          <p className="text-[10px] sm:text-xs font-semibold text-purple-100/90 tracking-wide uppercase">
             Saved so far
           </p>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white mt-1">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white mt-0.5">
             {formatCurrency(goal.currentAmount)}
           </h2>
         </div>
@@ -351,7 +351,7 @@ export const GoalDetail: React.FC = () => {
             style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
           />
         </div>
-        <div className="flex items-center justify-between text-xs font-semibold text-purple-100/90 mt-2">
+        <div className="flex items-center justify-between text-[10px] sm:text-xs font-semibold text-purple-100/90 mt-1.5">
           <span>{progress.toFixed(0)}% completed {milestone ? `• ${milestone}` : ''}</span>
           <span>Target: {formatCurrency(goal.targetAmount)}</span>
         </div>
@@ -410,7 +410,7 @@ export const GoalDetail: React.FC = () => {
         </div>
 
         {/* Pill Badge matching "You are owed ₹4,850" from Reference Image 2 */}
-        <div className="bg-white/20 hover:bg-white/25 backdrop-blur-md px-4 sm:px-5 py-2 sm:py-2.5 rounded-full font-bold text-white text-xs sm:text-sm tracking-wide shadow-xs border border-white/10 shrink-0">
+        <div className="bg-white/20 hover:bg-white/25 backdrop-blur-md px-3 sm:px-4 py-1.5 sm:py-2 rounded-full font-bold text-white text-[10px] sm:text-xs tracking-wide shadow-xs border border-white/10 shrink-0">
           {Math.max(0, goal.targetAmount - goal.currentAmount) <= 0
             ? 'Goal Completed 🎉'
             : `${formatCurrency(Math.max(0, goal.targetAmount - goal.currentAmount))} remaining`}
@@ -419,59 +419,58 @@ export const GoalDetail: React.FC = () => {
     </div>
 
     {/* Financial Metric Cards */}
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-      <div className="p-4 rounded-[22px] bg-white dark:bg-card border border-slate-100/80 dark:border-border/60 shadow-[0_4px_20px_-4px_rgba(112,144,176,0.06)]">
-        <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 tracking-wider uppercase mb-1">Target</p>
-        <p className="text-lg sm:text-xl font-black text-slate-900 dark:text-white">{formatCurrency(goal.targetAmount)}</p>
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
+      <div className="p-3 sm:p-4 rounded-[20px] bg-white dark:bg-card border border-slate-100/80 dark:border-border/60 shadow-2xs">
+        <p className="text-[9px] sm:text-[10px] font-bold text-slate-400 tracking-wider uppercase mb-0.5">Target</p>
+        <p className="text-sm sm:text-base font-black text-slate-900 dark:text-white truncate">{formatCurrency(goal.targetAmount)}</p>
       </div>
-      <div className="p-4 rounded-[22px] bg-white dark:bg-card border border-slate-100/80 dark:border-border/60 shadow-[0_4px_20px_-4px_rgba(112,144,176,0.06)]">
-        <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 tracking-wider uppercase mb-1">Saved</p>
-        <p className="text-lg sm:text-xl font-black text-slate-900 dark:text-white">{formatCurrency(goal.currentAmount)}</p>
+      <div className="p-3 sm:p-4 rounded-[20px] bg-white dark:bg-card border border-slate-100/80 dark:border-border/60 shadow-2xs">
+        <p className="text-[9px] sm:text-[10px] font-bold text-slate-400 tracking-wider uppercase mb-0.5">Saved</p>
+        <p className="text-sm sm:text-base font-black text-slate-900 dark:text-white truncate">{formatCurrency(goal.currentAmount)}</p>
       </div>
-      <div className="p-4 rounded-[22px] bg-white dark:bg-card border border-slate-100/80 dark:border-border/60 shadow-[0_4px_20px_-4px_rgba(112,144,176,0.06)]">
-        <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 tracking-wider uppercase mb-1">Monthly Plan</p>
-        <p className="text-lg sm:text-xl font-black text-slate-900 dark:text-white">
-          {formatCurrency(monthlySuggestion.monthlyAmount)}
-          <span className="text-xs font-semibold text-slate-400">/mo</span>
+      <div className="p-3 sm:p-4 rounded-[20px] bg-white dark:bg-card border border-slate-100/80 dark:border-border/60 shadow-2xs">
+        <p className="text-[9px] sm:text-[10px] font-bold text-slate-400 tracking-wider uppercase mb-0.5">Monthly</p>
+        <p className="text-sm sm:text-base font-black text-slate-900 dark:text-white truncate">
+          {formatCurrency(monthlySuggestion.monthlyAmount)}<span className="text-[10px] font-semibold text-slate-400">/mo</span>
         </p>
       </div>
-      <div className="p-4 rounded-[22px] bg-white dark:bg-card border border-slate-100/80 dark:border-border/60 shadow-[0_4px_20px_-4px_rgba(112,144,176,0.06)]">
-        <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 tracking-wider uppercase mb-1">Target Date</p>
-        <p className="text-sm sm:text-base font-black text-slate-900 dark:text-white truncate">
+      <div className="p-3 sm:p-4 rounded-[20px] bg-white dark:bg-card border border-slate-100/80 dark:border-border/60 shadow-2xs">
+        <p className="text-[9px] sm:text-[10px] font-bold text-slate-400 tracking-wider uppercase mb-0.5">Due Date</p>
+        <p className="text-xs sm:text-sm font-black text-slate-900 dark:text-white truncate">
           {new Date(goal.targetDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
         </p>
       </div>
     </div>
 
     {/* Suggested Saving and Timeline Insights Banner */}
-    <div className="rounded-[24px] border border-slate-100/90 dark:border-border/40 bg-white dark:bg-card p-4 sm:p-5 shadow-2xs flex flex-wrap items-center justify-between gap-3">
-      <div className="flex items-center gap-2.5">
-        <Sparkles className="w-4 h-4 text-purple-600 shrink-0" />
-        <span className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200">
-          Suggested: <span className="text-purple-600 font-extrabold">{formatCurrency(monthlySuggestion.monthlyAmount)} / month</span> for {monthlySuggestion.months} month(s)
+    <div className="rounded-[20px] border border-slate-100/90 dark:border-border/40 bg-white dark:bg-card p-3 sm:p-4 shadow-2xs flex flex-wrap items-center justify-between gap-2">
+      <div className="flex items-center gap-2">
+        <Sparkles className="w-3.5 h-3.5 text-purple-600 shrink-0" />
+        <span className="text-[11px] sm:text-xs font-bold text-slate-700 dark:text-slate-200">
+          Suggested: <span className="text-purple-600 font-extrabold">{formatCurrency(monthlySuggestion.monthlyAmount)}/mo</span> for {monthlySuggestion.months} month(s)
         </span>
       </div>
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500 font-medium">
-        <span className="flex items-center gap-1.5">
-          <div className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] sm:text-xs text-slate-500 font-medium">
+        <span className="flex items-center gap-1">
+          <div className="w-1 h-1 rounded-full bg-slate-300" />
           Last: {lastContributionDate
-            ? lastContributionDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
-            : 'No contribution yet'}
+            ? lastContributionDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })
+            : 'None'}
         </span>
         {completedOnDate && (
-          <span className="flex items-center gap-1.5 font-bold text-emerald-600">
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            Completed: {completedOnDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+          <span className="flex items-center gap-1 font-bold text-emerald-600">
+            <div className="w-1 h-1 rounded-full bg-emerald-500" />
+            Done: {completedOnDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
           </span>
         )}
       </div>
     </div>
 
-  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-  <div className="space-y-6">
-        <div className="bg-white dark:bg-card rounded-[28px] sm:rounded-[32px] p-6 lg:p-8 border border-slate-100/80 dark:border-border/60 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)]">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-xl font-bold text-slate-900 dark:text-white">
+  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
+  <div className="space-y-4">
+        <div className="bg-white dark:bg-card rounded-[24px] sm:rounded-[28px] p-4 sm:p-5 border border-slate-100/80 dark:border-border/60 shadow-[0_6px_20px_-4px_rgba(112,144,176,0.08)]">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
               {activeTab === 'contribute' ? 'Add Contribution' : 'Withdraw Funds'}
             </h3>
             <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-full">
@@ -499,27 +498,27 @@ export const GoalDetail: React.FC = () => {
           </div>
 
           {activeTab === 'contribute' ? (
-            <form data-testid="goal-detail-form" onSubmit={addContribution} className="space-y-4">
+            <form data-testid="goal-detail-form" onSubmit={addContribution} className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Amount</label>
+                <label className="block text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Amount</label>
                 <input
                   type="number"
                   step="0.01"
                   value={amount || ''}
                   onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
                   data-testid="goals-detail-amount-input"
-                  className="w-full bg-slate-50/70 border border-slate-200/80 rounded-2xl px-4 py-3.5 text-slate-900 font-semibold text-lg placeholder-slate-400 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-300 transition-all"
+                  className="w-full bg-slate-50/70 border border-slate-200/80 rounded-xl px-3.5 py-2.5 text-slate-900 font-semibold text-sm sm:text-base placeholder-slate-400 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-300 transition-all"
                   placeholder="0.00"
                   required
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">From Account</label>
+                <label className="block text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">From Account</label>
                 <select
                   value={accountId}
                   onChange={(e) => setAccountId(parseInt(e.target.value, 10))}
                   data-testid="goals-detail-account-select"
-                  className="w-full bg-slate-50/70 border border-slate-200/80 rounded-2xl px-4 py-3.5 text-slate-900 font-medium focus:ring-2 focus:ring-purple-500/20 focus:border-purple-300 transition-all appearance-none"
+                  className="w-full bg-slate-50/70 border border-slate-200/80 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-slate-900 font-medium focus:ring-2 focus:ring-purple-500/20 focus:border-purple-300 transition-all appearance-none"
                 >
                   {accounts.map((account) => (
                     <option data-testid={`goal-detail-option-${account.id}`} key={account.id} value={account.id}>{account.name}</option>
@@ -528,13 +527,15 @@ export const GoalDetail: React.FC = () => {
               </div>
               {goal.isGroupGoal && (
                 <div>
-                  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Group Member</label>
+                  <label className="block text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Group Member</label>
                   <select
                     value={memberName}
                     onChange={(e) => setMemberName(e.target.value)}
                     data-testid="goals-detail-member-select"
-                    className="w-full bg-slate-50/70 border border-slate-200/80 rounded-2xl px-4 py-3.5 text-slate-900 font-medium focus:ring-2 focus:ring-purple-500/20 focus:border-purple-300 transition-all appearance-none"
+                    className="w-full bg-slate-50/70 border border-slate-200/80 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-slate-900 font-medium focus:ring-2 focus:ring-purple-500/20 focus:border-purple-300 transition-all appearance-none"
                   >
+                    {/* "Me" — current user's own contribution */}
+                    <option data-testid="goal-detail-option-2-me" value="Me">Me (You)</option>
                     {(goal.members || []).map((member) => (
                       <option data-testid={`goal-detail-option-2-${member.name}`} key={member.name} value={member.name}>{member.name}</option>
                     ))}
@@ -542,13 +543,13 @@ export const GoalDetail: React.FC = () => {
                 </div>
               )}
               <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Notes</label>
+                <label className="block text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Notes</label>
                 <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   data-testid="goals-detail-notes-textarea"
-                  className="w-full resize-none rounded-2xl bg-slate-50/70 border border-slate-200/80 px-4 py-3.5 text-sm font-medium text-slate-900 placeholder-slate-400 transition-all focus:ring-2 focus:ring-purple-500/20 focus:border-purple-300"
-                  rows={3}
+                  className="w-full resize-none rounded-xl bg-slate-50/70 border border-slate-200/80 px-3.5 py-2.5 text-xs sm:text-sm font-medium text-slate-900 placeholder-slate-400 transition-all focus:ring-2 focus:ring-purple-500/20 focus:border-purple-300"
+                  rows={2}
                   placeholder="Optional note for this contribution"
                 />
               </div>
@@ -556,17 +557,17 @@ export const GoalDetail: React.FC = () => {
                 type="submit"
                 disabled={isSubmitting}
                 data-testid="goals-detail-submit-button"
-                className="w-full py-3.5 rounded-full bg-[#18181B] hover:bg-black disabled:opacity-50 text-white font-bold text-sm transition-all flex items-center justify-center gap-2 mt-2 shadow-xs"
+                className="w-full py-2.5 sm:py-3 rounded-full bg-[#18181B] hover:bg-black disabled:opacity-50 text-white font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 shadow-xs"
               >
-                <Plus size={18} /> Add Contribution
+                <Plus size={16} /> Add Contribution
               </button>
             </form>
           ) : (
             <form data-testid="goal-detail-withdraw-form" onSubmit={handleWithdraw} className="space-y-4">
               <div>
                 <div className="flex justify-between items-center mb-2">
-                  <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider">Withdraw Amount</label>
-                  <span className="text-xs text-gray-500 font-medium">Available: {formatCurrency(goal.currentAmount)}</span>
+                  <label className="block text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider">Withdraw Amount</label>
+                  <span className="text-[10px] sm:text-xs text-gray-500 font-medium">Available: {formatCurrency(goal.currentAmount)}</span>
                 </div>
                 <input
                   type="number"
@@ -575,18 +576,18 @@ export const GoalDetail: React.FC = () => {
                   value={withdrawAmount || ''}
                   onChange={(e) => setWithdrawAmount(parseFloat(e.target.value) || 0)}
                   data-testid="goals-detail-withdraw-input"
-                  className="w-full bg-white border-0 rounded-2xl px-4 py-3.5 text-gray-900 font-medium text-lg placeholder-gray-400 focus:ring-2 focus:ring-gray-900 focus:bg-white transition-all"
+                  className="w-full bg-white border-0 rounded-xl px-3.5 py-2.5 text-gray-900 font-medium text-sm sm:text-base placeholder-gray-400 focus:ring-2 focus:ring-gray-900 focus:bg-white transition-all"
                   placeholder="0.00"
                   required
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Deposit To Account</label>
+                <label className="block text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Deposit To Account</label>
                 <select
                   value={withdrawAccountId}
                   onChange={(e) => setWithdrawAccountId(parseInt(e.target.value, 10))}
                   data-testid="goals-detail-withdraw-account-select"
-                  className="w-full bg-white border-0 rounded-2xl px-4 py-3.5 text-gray-900 font-medium focus:ring-2 focus:ring-gray-900 focus:bg-white transition-all appearance-none"
+                  className="w-full bg-white border-0 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-gray-900 font-medium focus:ring-2 focus:ring-gray-900 focus:bg-white transition-all appearance-none"
                 >
                   {accounts.map((account) => (
                     <option key={account.id} value={account.id}>{account.name}</option>
@@ -594,13 +595,13 @@ export const GoalDetail: React.FC = () => {
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Notes</label>
+                <label className="block text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Notes</label>
                 <textarea
                   value={withdrawNotes}
                   onChange={(e) => setWithdrawNotes(e.target.value)}
                   data-testid="goals-detail-withdraw-notes"
-                  className="w-full resize-none rounded-2xl bg-white px-4 py-3.5 text-sm font-medium text-gray-900 placeholder-gray-400 transition-all focus:bg-white focus:ring-2 focus:ring-gray-900"
-                  rows={3}
+                  className="w-full resize-none rounded-xl bg-white px-3.5 py-2.5 text-xs sm:text-sm font-medium text-gray-900 placeholder-gray-400 transition-all focus:bg-white focus:ring-2 focus:ring-gray-900"
+                  rows={2}
                   placeholder="Reason for withdrawal"
                 />
               </div>
@@ -608,35 +609,35 @@ export const GoalDetail: React.FC = () => {
                 type="submit"
                 disabled={isSubmitting || goal.currentAmount <= 0}
                 data-testid="goals-detail-withdraw-submit-button"
-                className="w-full py-3.5 rounded-full bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white font-bold text-sm transition-all flex items-center justify-center gap-2 mt-2 shadow-xs"
+                className="w-full py-2.5 sm:py-3 rounded-full bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 shadow-xs"
               >
-                <ArrowDownLeft size={18} /> Withdraw Funds
+                <ArrowDownLeft size={16} /> Withdraw Funds
               </button>
             </form>
           )}
         </div>
 
   {goal.isGroupGoal && (
-  <div className="bg-white dark:bg-card rounded-[28px] sm:rounded-[32px] p-6 lg:p-8 border border-slate-100/80 dark:border-border/60 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)]">
-  <div className="flex items-center justify-between mb-6">
-  <h3 className="text-xl font-bold text-slate-900 dark:text-white">Group Members</h3>
-  <button data-testid="goal-detail-chat" className="text-sm font-semibold text-purple-600 hover:text-purple-800 flex items-center gap-2">
-  <MessageSquare size={16} /> Chat
+  <div className="bg-white dark:bg-card rounded-[24px] sm:rounded-[28px] p-4 sm:p-5 border border-slate-100/80 dark:border-border/60 shadow-[0_6px_20px_-4px_rgba(112,144,176,0.08)]">
+  <div className="flex items-center justify-between mb-4">
+  <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">Group Members</h3>
+  <button data-testid="goal-detail-chat" className="text-xs font-semibold text-purple-600 hover:text-purple-800 flex items-center gap-1.5">
+  <MessageSquare size={14} /> Chat
   </button>
   </div>
-  <div className="space-y-4">
+  <div className="space-y-2.5">
   {memberRows.map((row) => (
-  <div key={row.name} className="flex items-center justify-between p-4 rounded-2xl bg-slate-50/70 dark:bg-muted/40 border border-slate-100 dark:border-border/40">
-  <div className="flex items-center gap-3">
-  <div className="w-10 h-10 rounded-full bg-white dark:bg-card border border-slate-200 flex items-center justify-center text-slate-700 font-bold">
+  <div key={row.name} className="flex items-center justify-between p-3 rounded-xl bg-slate-50/70 dark:bg-muted/40 border border-slate-100 dark:border-border/40">
+  <div className="flex items-center gap-2.5">
+  <div className="w-8 h-8 rounded-full bg-white dark:bg-card border border-slate-200 flex items-center justify-center text-slate-700 font-bold text-xs">
   {row.name.charAt(0).toUpperCase()}
   </div>
   <div>
-  <p className="font-bold text-slate-900 dark:text-white text-sm">{row.name}</p>
-  <p className="text-xs text-slate-400">{row.status === 'paid' ? 'Contributed' : 'Pending'}</p>
+  <p className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm">{row.name}</p>
+  <p className="text-[10px] text-slate-400">{row.status === 'paid' ? 'Contributed' : 'Pending'}</p>
   </div>
   </div>
-  <span className="font-bold text-slate-900 dark:text-white">{formatCurrency(row.amount)}</span>
+  <span className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm">{formatCurrency(row.amount)}</span>
   </div>
   ))}
   </div>
@@ -644,29 +645,29 @@ export const GoalDetail: React.FC = () => {
   )}
   </div>
 
-  <div className="bg-white dark:bg-card rounded-[28px] sm:rounded-[32px] p-6 lg:p-8 border border-slate-100/80 dark:border-border/60 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)] h-fit">
-  <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-6">Contribution History</h3>
-  <div className="space-y-4">
+  <div className="bg-white dark:bg-card rounded-[24px] sm:rounded-[28px] p-4 sm:p-5 border border-slate-100/80 dark:border-border/60 shadow-[0_6px_20px_-4px_rgba(112,144,176,0.08)] h-fit">
+  <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white mb-4">Contribution History</h3>
+  <div className="space-y-3">
   {timeline.length === 0 && (
-  <div className="text-center py-12">
-  <div className="w-16 h-16 bg-purple-50 text-purple-600 rounded-full flex items-center justify-center mx-auto mb-3">
-  <Target className="w-8 h-8" />
+  <div className="text-center py-8">
+  <div className="w-12 h-12 bg-purple-50 text-purple-600 rounded-full flex items-center justify-center mx-auto mb-2">
+  <Target className="w-6 h-6" />
   </div>
-  <p className="text-sm text-slate-400 font-medium">No contributions yet</p>
+  <p className="text-xs text-slate-400 font-medium">No contributions yet</p>
   </div>
   )}
   {timeline.map((item) => {
     const percent = Math.min(100, (item.total / Math.max(goal.targetAmount, 1)) * 100);
     return (
-      <div key={item.month} className="flex items-center gap-3 sm:gap-4 group">
-        <div className="w-10 sm:w-12 text-[11px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider">{item.month}</div>
-        <div className="flex-1 h-2.5 sm:h-3 bg-slate-100 dark:bg-muted rounded-full overflow-hidden">
+      <div key={item.month} className="flex items-center gap-2.5 sm:gap-3 group">
+        <div className="w-8 sm:w-10 text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">{item.month}</div>
+        <div className="flex-1 h-2 sm:h-2.5 bg-slate-100 dark:bg-muted rounded-full overflow-hidden">
           <div 
             className="h-full bg-gradient-to-r from-[#8B5CF6] to-[#7C3AED] rounded-full transition-all group-hover:opacity-90"
             style={{ width: `${Math.max(4, percent)}%` }}
           />
         </div>
-        <div className="w-24 text-right font-bold text-slate-900 dark:text-white text-xs sm:text-sm">{formatCurrency(item.total)}</div>
+        <div className="w-20 sm:w-24 text-right font-bold text-slate-900 dark:text-white text-[10px] sm:text-xs">{formatCurrency(item.total)}</div>
       </div>
     );
   })}

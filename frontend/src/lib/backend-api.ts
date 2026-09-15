@@ -3,6 +3,7 @@ import axios, { AxiosInstance } from 'axios';
 import type { KaiUnderstandRequest, KaiUnderstandResponse } from '@kanaku/shared';
 import RealtimeDataManager from './realtimeData';
 import { db } from './database';
+import { runWithCloudSyncSuppressed } from './auth-sync-integration';
 import { createNotificationRecord } from './notifications';
 import { categorizeText as localCategorizeText } from './smartCategorization';
 import { TokenManager, getRateLimitRetryDelayMs, refreshAccessToken, wasRefreshFailureFatal } from './api';
@@ -14,6 +15,16 @@ const API_BASE_URL = (getConfiguredApiBase()).replace(/\/+$/, '');
 const SHOULD_SKIP_OPTIONAL_BACKEND_REQUESTS = import.meta.env.DEV && !import.meta.env.VITE_API_URL;
 /** Must not exceed the `.max()` on `friendBulkSchema.friends` in the backend. */
 const FRIENDS_BULK_BATCH_SIZE = 200;
+/** A full batch is a few DB round trips, but allow for cold starts and slow links. */
+const FRIENDS_BULK_TIMEOUT_MS = 60_000;
+
+function isRequestTimeout(error: unknown): boolean {
+  if (error && typeof error === 'object' && 'original' in error) {
+    const original = (error as { original?: unknown }).original;
+    if (original) return isRequestTimeout(original);
+  }
+  return axios.isAxiosError(error) && (error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT');
+}
 
 function shouldUseLocalFallback(error: unknown) {
   if (error && typeof error === 'object' && 'status' in error) {
@@ -962,16 +973,14 @@ class BackendService {
       phone: f.phone?.trim() || undefined,
     }));
 
+    // Every Dexie write re-runs the app's live queries (a full re-render), so a
+    // contact import must land as ONE bulkAdd per batch — adding rows one by one
+    // froze the UI for ~2 s per contact.
     const saveLocally = async () => {
-      const created: any[] = [];
-      for (const item of cleanList) {
-        const localId = await RealtimeDataManager.addFriend({
-          ...item,
-          createdAt: now,
-          updatedAt: now,
-        });
-        created.push({ id: `local_${localId}`, localId, ...item });
-      }
+      const rows = cleanList.map((item) => ({ ...item, createdAt: now, updatedAt: now }));
+      // Unsuppressed on purpose: the sync hooks queue these for upload.
+      const localIds = await db.friends.bulkAdd(rows, { allKeys: true });
+      const created = rows.map((item, i) => ({ id: `local_${localIds[i]}`, localId: localIds[i], ...item }));
       return { created, skipped: [], createdCount: created.length, skippedCount: 0 };
     };
 
@@ -982,22 +991,21 @@ class BackendService {
     try {
       const response = await this.api.post('/friends/bulk', {
         friends: cleanList,
-      });
+      }, { timeout: FRIENDS_BULK_TIMEOUT_MS });
       const resData = response.data?.data ?? response.data;
       const createdItems = Array.isArray(resData?.created) ? resData.created : [];
 
-      // Save synced items into Dexie
-      for (const item of createdItems) {
-        await RealtimeDataManager.addFriend({
-          name: item.name,
-          email: item.email || undefined,
-          phone: item.phone || undefined,
-          cloudId: item.id,
-          syncStatus: 'synced',
-          createdAt: now,
-          updatedAt: now,
-        });
-      }
+      // Already on the server, so suppress the sync hooks — otherwise every row
+      // queues an echo PUT /friends/:id (hundreds of requests after an import).
+      await runWithCloudSyncSuppressed(() => db.friends.bulkAdd(createdItems.map((item: any) => ({
+        name: item.name,
+        email: item.email || undefined,
+        phone: item.phone || undefined,
+        cloudId: item.id,
+        syncStatus: 'synced' as const,
+        createdAt: now,
+        updatedAt: now,
+      }))));
 
       return {
         created: createdItems,
@@ -1006,6 +1014,11 @@ class BackendService {
         skippedCount: resData?.skippedCount ?? (resData?.skipped?.length || 0),
       };
     } catch (error) {
+      // A timeout does not mean the server failed — it may still commit the
+      // batch, so a local copy would duplicate every contact once it syncs.
+      if (isRequestTimeout(error)) {
+        throw new Error('Saving contacts is taking longer than expected. They may still appear shortly — check your friends list before importing again.');
+      }
       if (!shouldUseLocalFallback(error)) {
         throw error;
       }
@@ -1042,14 +1055,17 @@ class BackendService {
     });
 
     const responsePayload = response.data?.data ?? response.data;
-    await RealtimeDataManager.updateFriend(localId, {
+    // Server-confirmed: suppress the sync hooks so this doesn't queue an echo PUT.
+    await runWithCloudSyncSuppressed(() => db.friends.update(localId, {
       cloudId: responsePayload.id,
       syncStatus: 'synced',
       updatedAt: new Date(),
-    });
+    }));
 
     return { cloudId: responsePayload.id };
   }
+
+  private pendingFriendsSweep: Promise<{ synced: number; skipped: number }> | null = null;
 
   /**
    * Self-healing sweep: find every local-only friend (no `cloudId`, i.e. one
@@ -1058,18 +1074,26 @@ class BackendService {
    * duplicate name on the backend, etc.) are skipped, not thrown.
    */
   async retrySyncAllPendingFriends(): Promise<{ synced: number; skipped: number }> {
-    const pending = await db.friends.filter((f) => !f.cloudId && !f.deletedAt).toArray();
-    let synced = 0;
-    let skipped = 0;
-    for (const friend of pending) {
-      try {
-        await this.retrySyncFriend(friend.id!);
-        synced++;
-      } catch {
-        skipped++;
+    // Single-flight: every backend sync fires this without awaiting, so without
+    // a guard overlapping sweeps re-POST the same friends in parallel.
+    if (this.pendingFriendsSweep) return this.pendingFriendsSweep;
+    this.pendingFriendsSweep = (async () => {
+      const pending = await db.friends.filter((f) => !f.cloudId && !f.deletedAt).toArray();
+      let synced = 0;
+      let skipped = 0;
+      for (const friend of pending) {
+        try {
+          await this.retrySyncFriend(friend.id!);
+          synced++;
+        } catch {
+          skipped++;
+        }
       }
-    }
-    return { synced, skipped };
+      return { synced, skipped };
+    })().finally(() => {
+      this.pendingFriendsSweep = null;
+    });
+    return this.pendingFriendsSweep;
   }
 
   /** Repairs stale GroupExpenseMember rows (null email/friendId from pre-fix creation) across all groups owned by this user. Fire-and-forget — call on Groups page mount. */

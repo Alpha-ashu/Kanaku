@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useApp, useSubFeature } from '@/contexts/AppContext';
 import { db } from '@/lib/database';
 import { addGoalContribution } from '@/lib/goalContributions';
-import { getGoalCategoryMeta, getGoalProgress, getMilestoneLabel, getMonthlySuggestion } from '@/lib/goal-utils';
+import { getGoalCategoryMeta, getGoalProgress, getMilestoneLabel, getMonthlySuggestion, GOAL_CATEGORIES } from '@/lib/goal-utils';
 import { getCategoryCartoonIcon } from '@/app/components/ui/CartoonCategoryIcons';
-import { Edit2, Plus, Target, Trash2, Users } from 'lucide-react';
+import { Edit2, Plus, Target, Trash2, Users, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { DeleteConfirmModal } from '@/app/components/shared/DeleteConfirmModal';
 import { Button } from '@/app/components/ui/button';
@@ -167,11 +167,23 @@ export const Goals: React.FC = () => {
   <div className="space-y-5 sm:space-y-6">
     {/* Header */}
     <div className="flex items-center justify-between gap-3 w-full">
-      <div className="min-w-0">
-        <p className="text-xs sm:text-sm font-semibold text-slate-400 truncate">
-          {goals.length} {goals.length === 1 ? 'goal' : 'goals'} · {completedGoals} completed
-        </p>
-        <h1 className="font-page-title text-slate-900 tracking-tight leading-tight truncate">Goals &amp; Savings</h1>
+      <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+        <button
+          type="button"
+          onClick={() => setCurrentPage('dashboard')}
+          className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200/80 hover:bg-slate-50 active:scale-95 shadow-xs flex items-center justify-center text-slate-700 transition-all shrink-0 cursor-pointer"
+          aria-label="Back to Dashboard"
+          title="Back to Dashboard"
+          data-testid="goals-back-button"
+        >
+          <ArrowLeft size={18} className="text-slate-700" />
+        </button>
+        <div className="min-w-0">
+          <p className="text-xs sm:text-sm font-semibold text-slate-400 truncate">
+            {goals.length} {goals.length === 1 ? 'goal' : 'goals'} · {completedGoals} completed
+          </p>
+          <h1 className="font-page-title text-slate-900 tracking-tight leading-tight truncate">Goals &amp; Savings</h1>
+        </div>
       </div>
       {canCreateGoal && (
         <button
@@ -180,9 +192,9 @@ export const Goals: React.FC = () => {
           data-testid="goals-add-goal-button"
           aria-label="Add Goal"
           title="Add goal"
-          className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-[#18181B] hover:bg-black text-white flex items-center justify-center shadow-[0_8px_20px_-6px_rgba(15,23,42,0.45)] active:scale-95 transition-all cursor-pointer shrink-0"
+          className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#18181B] hover:bg-black text-white flex items-center justify-center shadow-xs active:scale-95 transition-all cursor-pointer shrink-0"
         >
-          <Plus size={20} />
+          <Plus size={18} />
         </button>
       )}
     </div>
@@ -295,65 +307,6 @@ export const Goals: React.FC = () => {
                   </span>
                 </div>
 
-                {editingGoalId === goal.id ? (
-                  <div className="mt-4 space-y-3">
-                    <input
-                      type="text"
-                      value={editFormData.name}
-                      onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
-                      placeholder="Goal name"
-                      aria-label="Goal name"
-                      title="Goal name"
-                      data-testid="goals-edit-name-input"
-                      className={editInputClass}
-                    />
-                    <input
-                      type="number"
-                      value={editFormData.targetAmount}
-                      onChange={(e) => setEditFormData({ ...editFormData, targetAmount: parseFloat(e.target.value) })}
-                      placeholder="Target amount"
-                      aria-label="Target amount"
-                      title="Target amount"
-                      data-testid="goals-edit-target-input"
-                      className={editInputClass}
-                    />
-                    <input
-                      type="number"
-                      value={editFormData.currentAmount}
-                      onChange={(e) => setEditFormData({ ...editFormData, currentAmount: parseFloat(e.target.value) })}
-                      placeholder="Current amount"
-                      aria-label="Current amount"
-                      title="Current amount"
-                      data-testid="goals-edit-current-input"
-                      className={editInputClass}
-                    />
-                    <input
-                      type="date"
-                      value={editFormData.targetDate ? new Date(editFormData.targetDate).toISOString().split('T')[0] : ''}
-                      onChange={(e) => setEditFormData({ ...editFormData, targetDate: e.target.value })}
-                      aria-label="Target date"
-                      title="Target date"
-                      data-testid="goals-edit-date-input"
-                      className={editInputClass}
-                    />
-                    <div className="flex gap-2 pt-1">
-                      <button
-                        onClick={handleSaveEdit}
-                        data-testid="goals-edit-save-button"
-                        className="flex-1 py-2.5 bg-[#18181B] text-white rounded-full text-xs font-bold hover:bg-black transition-all shadow-xs cursor-pointer active:scale-95"
-                      >
-                        Save
-                      </button>
-                      <button
-                        onClick={() => setEditingGoalId(null)}
-                        data-testid="goals-edit-cancel-button"
-                        className="flex-1 py-2.5 bg-slate-100 border border-slate-200/80 text-slate-700 rounded-full text-xs font-bold hover:bg-slate-200 transition-all cursor-pointer active:scale-95"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                ) : (
                   <div className="flex-1 flex flex-col">
                     <div className="mt-4 flex items-end justify-between gap-3">
                       <div className="min-w-0">
@@ -439,8 +392,7 @@ export const Goals: React.FC = () => {
                         </button>
                       )}
                     </div>
-                  </div>
-                )}
+              </div>
               </div>
             </motion.div>
           );
@@ -548,6 +500,124 @@ export const Goals: React.FC = () => {
   </div>
   </motion.div>
   </div>
+  )}
+
+  {/* Edit Goal Modal */}
+  {editingGoalId !== null && (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 p-4 backdrop-blur-sm" onClick={() => setEditingGoalId(null)}>
+      <motion.div
+        initial={{ opacity: 0, y: 40 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 40 }}
+        transition={{ type: 'spring', damping: 24, stiffness: 300 }}
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-md rounded-[28px] bg-white p-5 sm:p-6 shadow-2xl border border-slate-100"
+      >
+        {/* Modal Header */}
+        <div className="flex items-center gap-3 mb-5">
+          <div className="w-10 h-10 rounded-[12px] flex items-center justify-center bg-purple-50 border border-purple-100/60 shrink-0">
+            {getCategoryCartoonIcon(editFormData.category, 20)}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Edit Goal</p>
+            <h3 className="text-base font-bold text-slate-900 truncate">{editFormData.name || 'Unnamed Goal'}</h3>
+          </div>
+          <button
+            onClick={() => setEditingGoalId(null)}
+            className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 transition-colors shrink-0"
+            aria-label="Close"
+          >
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+          </button>
+        </div>
+
+        <div className="space-y-3.5">
+          {/* Goal Name */}
+          <div>
+            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Goal Name</label>
+            <input
+              type="text"
+              value={editFormData.name}
+              onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+              placeholder="e.g. Goa Trip"
+              data-testid="goals-edit-name-input"
+              className="w-full px-3.5 py-2.5 bg-slate-50/80 border border-slate-200/80 rounded-xl text-sm font-semibold text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-300 transition-all"
+            />
+          </div>
+
+          {/* Category */}
+          <div>
+            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Category</label>
+            <select
+              value={editFormData.category || 'custom'}
+              onChange={(e) => setEditFormData({ ...editFormData, category: e.target.value })}
+              data-testid="goals-edit-category-select"
+              className="w-full px-3.5 py-2.5 bg-slate-50/80 border border-slate-200/80 rounded-xl text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-300 transition-all appearance-none"
+            >
+              {GOAL_CATEGORIES.map((cat) => (
+                <option key={cat.key} value={cat.key}>{cat.label}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Amounts row */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Target Amount</label>
+              <input
+                type="number"
+                value={editFormData.targetAmount}
+                onChange={(e) => setEditFormData({ ...editFormData, targetAmount: parseFloat(e.target.value) || 0 })}
+                placeholder="0.00"
+                data-testid="goals-edit-target-input"
+                className="w-full px-3.5 py-2.5 bg-slate-50/80 border border-slate-200/80 rounded-xl text-sm font-semibold text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-300 transition-all"
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Saved So Far</label>
+              <input
+                type="number"
+                value={editFormData.currentAmount}
+                onChange={(e) => setEditFormData({ ...editFormData, currentAmount: parseFloat(e.target.value) || 0 })}
+                placeholder="0.00"
+                data-testid="goals-edit-current-input"
+                className="w-full px-3.5 py-2.5 bg-slate-50/80 border border-slate-200/80 rounded-xl text-sm font-semibold text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-300 transition-all"
+              />
+            </div>
+          </div>
+
+          {/* Target Date */}
+          <div>
+            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Target Date</label>
+            <input
+              type="date"
+              value={editFormData.targetDate ? new Date(editFormData.targetDate).toISOString().split('T')[0] : ''}
+              onChange={(e) => setEditFormData({ ...editFormData, targetDate: e.target.value })}
+              data-testid="goals-edit-date-input"
+              className="w-full px-3.5 py-2.5 bg-slate-50/80 border border-slate-200/80 rounded-xl text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-300 transition-all"
+            />
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex gap-2.5 mt-5">
+          <button
+            onClick={handleSaveEdit}
+            data-testid="goals-edit-save-button"
+            className="flex-1 py-3 bg-[#18181B] hover:bg-black text-white rounded-full text-sm font-bold transition-all shadow-xs cursor-pointer active:scale-95"
+          >
+            Save Changes
+          </button>
+          <button
+            onClick={() => setEditingGoalId(null)}
+            data-testid="goals-edit-cancel-button"
+            className="flex-1 py-3 bg-slate-100 border border-slate-200/80 text-slate-700 rounded-full text-sm font-bold hover:bg-slate-200 transition-all cursor-pointer active:scale-95"
+          >
+            Cancel
+          </button>
+        </div>
+      </motion.div>
+    </div>
   )}
 
   <DeleteConfirmModal
