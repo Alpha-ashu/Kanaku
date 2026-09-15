@@ -251,10 +251,10 @@ export const NewUserOnboarding: React.FC = () => {
       <div className="relative z-10 mt-6 flex flex-wrap items-center justify-center gap-3 sm:gap-4 text-xs text-slate-400">
         <span className="inline-flex items-center gap-1.5">
           <ShieldCheck size={14} className="text-emerald-400" />
-          <span>Local-First Encryption</span>
+          <span>Offline-First</span>
         </span>
         <span className="text-slate-600">•</span>
-        <span>Zero Telemetry</span>
+        <span>No Ads</span>
         <span className="text-slate-600">•</span>
         <span>Cross-Device Cloud Sync</span>
       </div>

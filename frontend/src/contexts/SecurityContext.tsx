@@ -7,6 +7,7 @@ interface SecurityContextType {
   isAuthenticated: boolean;
   encryptionKey: string | null;
   setAuthenticated: (key: string) => void;
+  lock: () => void;
   logout: () => void;
   isNativePlatform: boolean;
   lockTimeout: number;
@@ -35,10 +36,10 @@ const readStoredLockTimeout = (): number => {
 
 export const SecurityProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return sessionStorage.getItem('session_active') === 'true' || localStorage.getItem('session_active') === 'true';
+    return sessionStorage.getItem('session_active') === 'true';
   });
   const [encryptionKey, setEncryptionKey] = useState<string | null>(() => {
-    return sessionStorage.getItem('session_encryption_key') || localStorage.getItem('session_encryption_key');
+    return sessionStorage.getItem('session_encryption_key');
   });
   // Minutes of inactivity before the app auto-locks. 0 = disabled (only locks on close).
   const [lockTimeout, setLockTimeoutState] = useState<number>(readStoredLockTimeout);
@@ -120,11 +121,13 @@ export const SecurityProvider: React.FC<{ children: ReactNode }> = ({ children }
     setEncryptionKey(key);
     setIsAuthenticated(true);
 
-    // Store in session
+    // Store strictly in session so app locks on tab/browser close
     try {
       sessionStorage.setItem('session_active', 'true');
       sessionStorage.setItem('session_encryption_key', key);
-      localStorage.setItem('session_active', 'true');
+      // Clean up any lingering persistent keys from previous installs
+      localStorage.removeItem('session_active');
+      localStorage.removeItem('session_encryption_key');
     } catch (storageErr) {
       console.warn('[SecurityContext] Failed to persist session keys to storage:', storageErr);
     }
@@ -140,6 +143,7 @@ export const SecurityProvider: React.FC<{ children: ReactNode }> = ({ children }
       sessionStorage.removeItem('session_active');
       sessionStorage.removeItem('session_encryption_key');
       localStorage.removeItem('session_active');
+      localStorage.removeItem('session_encryption_key');
     } catch (storageErr) {
       console.warn('[SecurityContext] Failed to clear session keys from storage:', storageErr);
     }
@@ -165,6 +169,8 @@ export const SecurityProvider: React.FC<{ children: ReactNode }> = ({ children }
       clearPinUnlockToken();
       sessionStorage.removeItem('session_active');
       sessionStorage.removeItem('session_encryption_key');
+      localStorage.removeItem('session_active');
+      localStorage.removeItem('session_encryption_key');
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('KANAKU_PIN_LOCKED'));
       }
@@ -184,6 +190,8 @@ export const SecurityProvider: React.FC<{ children: ReactNode }> = ({ children }
       clearPinUnlockToken();
       sessionStorage.removeItem('session_active');
       sessionStorage.removeItem('session_encryption_key');
+      localStorage.removeItem('session_active');
+      localStorage.removeItem('session_encryption_key');
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('KANAKU_PIN_LOCKED'));
       }
@@ -217,6 +225,7 @@ export const SecurityProvider: React.FC<{ children: ReactNode }> = ({ children }
         isAuthenticated,
         encryptionKey,
         setAuthenticated,
+        lock: handleLock,
         logout,
         isNativePlatform,
         lockTimeout,
@@ -237,6 +246,7 @@ export const useSecurity = () => {
         isAuthenticated: false,
         encryptionKey: null,
         setAuthenticated: () => {},
+        lock: () => {},
         logout: () => {},
         isNativePlatform: false,
         lockTimeout: 0,

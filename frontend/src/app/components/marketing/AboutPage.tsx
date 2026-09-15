@@ -24,29 +24,29 @@ export const AboutPage: React.FC<AboutPageProps> = ({
   const values = [
     {
       icon: <Shield className="w-6 h-6 text-violet-600" />,
-      title: 'Zero-Knowledge Privacy',
-      desc: 'We store your sensitive financial records locally on your device with AES-256 encryption. We never monetize or sell user data to advertising networks.',
+      title: 'Privacy by Default',
+      desc: 'Your records live on your device first and sync to your account over encrypted connections. We never show ads or sell your data.',
       color: 'from-violet-500/10 to-indigo-500/5',
       border: 'border-violet-100',
     },
     {
       icon: <Sparkles className="w-6 h-6 text-pink-600" />,
-      title: 'Proactive AI Intelligence',
-      desc: 'Empowering users with contextual insights, automated expense detection, and predictive cash flow alerts before overspending occurs.',
+      title: 'Helpful AI',
+      desc: 'KAI logs expenses from plain language, answers questions about your spending, and budget alerts warn you before you overspend.',
       color: 'from-pink-500/10 to-rose-500/5',
       border: 'border-pink-100',
     },
     {
       icon: <Users className="w-6 h-6 text-blue-600" />,
       title: 'Community & Collaboration',
-      desc: 'Money management is social. From shared trip splits with flatmates to cooperative advisor reviews, Kanaku brings transparency to group expenses.',
+      desc: 'Money management is social. From shared trip splits with flatmates to sessions with verified advisors, KANAKU brings clarity to shared money.',
       color: 'from-blue-500/10 to-cyan-500/5',
       border: 'border-blue-100',
     },
     {
       icon: <Globe className="w-6 h-6 text-emerald-600" />,
       title: 'Offline-First Resilience',
-      desc: 'Whether on a flight, in a remote town, or experiencing network drops, Kanaku never locks you out. Full offline capability with seamless background sync.',
+      desc: 'On a flight, in a remote town or on a patchy network, KANAKU keeps working. Add and review entries offline, and they sync when you reconnect.',
       color: 'from-emerald-500/10 to-teal-500/5',
       border: 'border-emerald-100',
     },
@@ -61,15 +61,21 @@ export const AboutPage: React.FC<AboutPageProps> = ({
     },
     {
       year: 'Early 2026',
-      title: 'AI Intelligence & Engine 2.0',
+      title: 'First Release',
       event:
-        'Rolled out automated SMS transaction parsing, on-device OCR bill scanner, and offline-first IndexedDB synchronization protocol.',
+        'Launched offline-first expense tracking with accounts, budgets and reports, followed by bank SMS capture on Android.',
     },
     {
       year: 'Mid 2026',
-      title: 'Multi-Asset & Cooperative Hub',
+      title: 'Scanning, Investments & Advisors',
       event:
-        'Expanded to real-time physical Gold price tracking, certified advisor sessions, and transparent group debt minimizers for 50,000+ users.',
+        'Added AI bill scanning for receipts and PDFs, investment and live gold price tracking, and sessions with verified financial advisors.',
+    },
+    {
+      year: 'September 2026',
+      title: 'Meet KAI',
+      event:
+        'Launched KAI, the finance assistant you can talk or type to — log expenses, check spending and set budgets in plain language.',
     },
   ];
 
@@ -146,12 +152,12 @@ export const AboutPage: React.FC<AboutPageProps> = ({
                 "Why should smart finance require giving up your privacy?"
               </h4>
               <p className="text-sm sm:text-base text-slate-300 leading-relaxed font-normal">
-                Traditional finance managers either sell your transaction history to lenders, barrage you with credit card spam, or trap your data in opaque silos. We built KANAKU on an uncompromising principle: Your data lives on your device, encrypted with keys only you control.
+                Too many finance apps sell your transaction history to lenders, barrage you with credit card offers, or lock your data away. We built KANAKU on a simple principle: your money data is yours — no ads, no data selling, and you can export or delete it anytime.
               </p>
               <div className="flex flex-wrap gap-4 pt-2 text-xs font-bold text-slate-300">
                 <div className="flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                  <span>100% Local-First Architecture</span>
+                  <span>Offline-First Design</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4 text-emerald-400" />
@@ -215,7 +221,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({
             Be Part of the Private Finance Revolution
           </h2>
           <p className="text-white/80 text-base sm:text-lg max-w-xl mx-auto mb-8 leading-relaxed">
-            Join over 50,000 individuals and families who enjoy complete financial confidence with KANAKU.
+            Track your spending, budgets and net worth in one free app — on the web and on your phone.
           </p>
           <button
             onClick={onGetStarted}

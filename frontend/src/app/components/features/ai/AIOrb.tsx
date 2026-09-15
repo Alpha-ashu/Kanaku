@@ -28,6 +28,18 @@ export const AIOrb: React.FC<AIOrbProps> = ({
   const isExecuting = state === 'executing';
   const isCompleted = state === 'completed';
 
+  // Per-instance SVG ids: url(#id) resolves to the first match in the document, so shared ids make
+  // every orb borrow the first orb's gradients — and render blank when that first orb is hidden.
+  const uid = React.useId().replace(/:/g, '');
+  const ids = {
+    pearlBase: `orb-pearl-${uid}`,
+    liquidSwirlPrimary: `orb-swirl-a-${uid}`,
+    liquidSwirlSecondary: `orb-swirl-b-${uid}`,
+    specularGlint: `orb-glint-${uid}`,
+    rimFresnel: `orb-rim-${uid}`,
+    orbClip: `orb-clip-${uid}`,
+  };
+
   const pixelSize =
     typeof size === 'number'
       ? size
@@ -151,7 +163,7 @@ export const AIOrb: React.FC<AIOrbProps> = ({
         >
           <defs>
             {/* 1. Base Iridescent Glass Pearl Gradient */}
-            <radialGradient id="pearlBase" cx="35%" cy="30%" r="78%">
+            <radialGradient id={ids.pearlBase} cx="35%" cy="30%" r="78%">
               <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.98" />
               <stop offset="16%" stopColor="#F5D0FE" stopOpacity="0.95" />
               <stop offset="38%" stopColor="#C084FC" stopOpacity="0.9" />
@@ -161,7 +173,7 @@ export const AIOrb: React.FC<AIOrbProps> = ({
             </radialGradient>
 
             {/* 2. Primary Chromatic Swirl Gradient */}
-            <linearGradient id="liquidSwirlPrimary" x1="0%" y1="100%" x2="100%" y2="0%">
+            <linearGradient id={ids.liquidSwirlPrimary} x1="0%" y1="100%" x2="100%" y2="0%">
               <stop offset="0%" stopColor="#F43F5E" stopOpacity="0.95" />
               <stop offset="28%" stopColor="#EC4899" stopOpacity="0.85" />
               <stop offset="55%" stopColor="#A855F7" stopOpacity="0.8" />
@@ -170,7 +182,7 @@ export const AIOrb: React.FC<AIOrbProps> = ({
             </linearGradient>
 
             {/* 3. Secondary Flow Gradient (Turquoise / Violet / Apricot) */}
-            <radialGradient id="liquidSwirlSecondary" cx="68%" cy="75%" r="65%">
+            <radialGradient id={ids.liquidSwirlSecondary} cx="68%" cy="75%" r="65%">
               <stop offset="0%" stopColor="#38BDF8" stopOpacity="0.9" />
               <stop offset="42%" stopColor="#818CF8" stopOpacity="0.8" />
               <stop offset="78%" stopColor="#F472B6" stopOpacity="0.75" />
@@ -178,7 +190,7 @@ export const AIOrb: React.FC<AIOrbProps> = ({
             </radialGradient>
 
             {/* 4. Specular Top Glass Sheen */}
-            <linearGradient id="specularGlint" x1="20%" y1="5%" x2="65%" y2="85%">
+            <linearGradient id={ids.specularGlint} x1="20%" y1="5%" x2="65%" y2="85%">
               <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.85" />
               <stop offset="30%" stopColor="#FFFFFF" stopOpacity="0.3" />
               <stop offset="70%" stopColor="#FFFFFF" stopOpacity="0.05" />
@@ -186,27 +198,27 @@ export const AIOrb: React.FC<AIOrbProps> = ({
             </linearGradient>
 
             {/* 5. Rim Fresnel Light */}
-            <radialGradient id="rimFresnel" cx="50%" cy="50%" r="50%">
+            <radialGradient id={ids.rimFresnel} cx="50%" cy="50%" r="50%">
               <stop offset="80%" stopColor="#FFFFFF" stopOpacity="0" />
               <stop offset="94%" stopColor="#FDF4FF" stopOpacity="0.6" />
               <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0.95" />
             </radialGradient>
 
             {/* Clip path for internal waves */}
-            <clipPath id="orbClip">
+            <clipPath id={ids.orbClip}>
               <circle cx="100" cy="100" r="96" />
             </clipPath>
           </defs>
 
           {/* ── Base Sphere ── */}
-          <circle cx="100" cy="100" r="96" fill="url(#pearlBase)" />
+          <circle cx="100" cy="100" r="96" fill={`url(#${ids.pearlBase})`} />
 
           {/* ── Internal Living Fluid Waves (Clipped) ── */}
-          <g clipPath="url(#orbClip)">
+          <g clipPath={`url(#${ids.orbClip})`}>
             {/* Wave Layer 1: Lower Swirling Fluid */}
             <motion.path
               d="M 5 115 C 38 65, 80 148, 128 92 C 162 52, 185 88, 196 118 C 172 185, 75 198, 5 115 Z"
-              fill="url(#liquidSwirlPrimary)"
+              fill={`url(#${ids.liquidSwirlPrimary})`}
               opacity="0.88"
               // Without an explicit starting value motion has nothing to animate
               // `d` from on the first frame and writes the string "undefined".
@@ -243,7 +255,7 @@ export const AIOrb: React.FC<AIOrbProps> = ({
             {/* Wave Layer 2: Counter-Flowing Wave (Turquoise & Rose) */}
             <motion.path
               d="M 28 142 C 68 98, 122 152, 172 128 C 185 152, 150 186, 100 193 C 54 191, 30 172, 28 142 Z"
-              fill="url(#liquidSwirlSecondary)"
+              fill={`url(#${ids.liquidSwirlSecondary})`}
               opacity="0.82"
               initial={{ d: 'M 28 142 C 68 98, 122 152, 172 128 C 185 152, 150 186, 100 193 C 54 191, 30 172, 28 142 Z' }}
               animate={
@@ -273,7 +285,7 @@ export const AIOrb: React.FC<AIOrbProps> = ({
             {/* Wave Layer 3: Central Translucent Shimmer Ribbon */}
             <motion.path
               d="M 22 92 C 62 132, 138 68, 188 108 C 162 142, 112 162, 48 148 Z"
-              fill="url(#liquidSwirlPrimary)"
+              fill={`url(#${ids.liquidSwirlPrimary})`}
               opacity="0.65"
               style={{ mixBlendMode: 'overlay' }}
               animate={{
@@ -294,7 +306,7 @@ export const AIOrb: React.FC<AIOrbProps> = ({
             rx="56"
             ry="32"
             transform="rotate(-26 75 52)"
-            fill="url(#specularGlint)"
+            fill={`url(#${ids.specularGlint})`}
           />
 
           {/* Secondary Tiny Bright Glass Glint */}
@@ -309,7 +321,7 @@ export const AIOrb: React.FC<AIOrbProps> = ({
           />
 
           {/* Edge Fresnel Glow Rim (Volumetric 3D Glass Boundary) */}
-          <circle cx="100" cy="100" r="96" fill="url(#rimFresnel)" />
+          <circle cx="100" cy="100" r="96" fill={`url(#${ids.rimFresnel})`} />
         </svg>
       </motion.div>
 

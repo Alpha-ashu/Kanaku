@@ -36,10 +36,10 @@ export const Terms: React.FC<TermsProps> = ({
         'KANAKU is provided to assist individuals and households in tracking personal budgets, analyzing expenses, and organizing accounts. You agree not to use the application for illegal purposes, financial fraud, unauthorized credential sharing, or malicious penetration testing.',
     },
     {
-      title: '3. Security & PIN Confidentiality',
+      title: '3. Keeping Your Account Secure',
       icon: <Shield className="w-5 h-5 text-emerald-600" />,
       content:
-        'You are exclusively responsible for preserving the confidentiality of your 6-digit Security PIN and biometric credentials. In local-only guest mode, if you lose your PIN, the client master encryption key cannot be recovered by KANAKU support, and local data will require reset.',
+        'You are responsible for keeping your password, 6-digit PIN and devices secure. In guest mode your data exists only on your device, so KANAKU cannot recover it if the device is lost, the app data is cleared, or you are locked out.',
     },
     {
       title: '4. Non-Advisory Financial Disclaimer',
@@ -78,7 +78,7 @@ export const Terms: React.FC<TermsProps> = ({
             Terms & Conditions
           </h1>
           <p className="text-sm sm:text-base text-slate-500 max-w-lg mx-auto">
-            Clear, transparent expectations for our community. Version 2.4 — Updated 2026.
+            Clear, transparent expectations for everyone who uses KANAKU. Last updated: September 2026.
           </p>
         </div>
 

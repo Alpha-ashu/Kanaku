@@ -20,5 +20,9 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
+    // Suites under ../quality would otherwise resolve react from the ROOT
+    // node_modules (18.x) while app code gets frontend's 19.x — two Reacts, and
+    // hooks throw "Cannot read properties of null (reading 'useState')".
+    dedupe: ['react', 'react-dom'],
   },
 });

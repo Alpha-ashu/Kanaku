@@ -1,11 +1,9 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
-import { Card } from '@/app/components/ui/card';
-import { FinancialAmount } from '@/app/components/ui/FinancialAmount';
 import {
-  Bell, CheckCircle2, ShieldAlert, Sliders, Mail, Smartphone,
-  MessageSquare, Plus, Trash2, ArrowLeft, ShieldCheck, Wallet,
-  TrendingUp, AlertTriangle, X, Sparkles, Check
+  Sliders, Mail, Smartphone,
+  MessageSquare, Plus, Trash2, ShieldCheck, Wallet,
+  AlertTriangle, X, BellRing
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { db } from '@/lib/database';
@@ -15,14 +13,7 @@ import { backendService } from '@/lib/backend-api';
 import { syncBudgets, pushBudgetUpdate, deleteBudgetEverywhere } from '@/services/featureSyncService';
 import { formatCurrencyAmount } from '@/lib/currencyUtils';
 import { cn } from '@/lib/utils';
-
-interface BudgetLimit {
-  id: string;
-  category: string;
-  limit: number;
-  spent: number;
-  threshold: number;
-}
+import { getCategoryCartoonIcon, getCategoryColor } from '@/app/components/ui/CartoonCategoryIcons';
 
 interface AlertEvent {
   id: number;
@@ -37,13 +28,59 @@ const CATEGORY_PRESETS = [
   'Entertainment', 'Transportation', 'Healthcare', 'Housing'
 ];
 
+/** Open ring (gap at the bottom) showing how much of the month's budgets is used. */
+const BudgetGauge: React.FC<{ pct: number; over: boolean; value: string; caption: string }> = ({ pct, over, value, caption }) => {
+  const size = 132;
+  const stroke = 13;
+  const radius = (size - stroke) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const arc = circumference * 0.75;
+  const filled = (arc * Math.max(0, Math.min(pct, 100))) / 100;
+  return (
+    <div className="relative shrink-0 w-[112px] h-[112px] sm:w-[132px] sm:h-[132px]">
+      <svg viewBox={`0 0 ${size} ${size}`} className="w-full h-full" style={{ transform: 'rotate(135deg)' }} aria-hidden="true">
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke={over ? '#FFE4E6' : '#EDE9FE'}
+          strokeWidth={stroke}
+          strokeLinecap="round"
+          strokeDasharray={`${arc} ${circumference}`}
+        />
+        {filled > 0 && (
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            fill="none"
+            stroke={over ? '#E11D48' : '#7C3AED'}
+            strokeWidth={stroke}
+            strokeLinecap="round"
+            strokeDasharray={`${filled} ${circumference}`}
+            className="transition-all duration-700"
+          />
+        )}
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
+        <span className={cn('text-sm sm:text-base font-black leading-tight truncate max-w-full', over ? 'text-rose-600' : 'text-slate-900')}>
+          {value}
+        </span>
+        <span className="text-[11px] font-medium text-slate-400">{caption}</span>
+      </div>
+    </div>
+  );
+};
+
 export const BudgetAlertsPage: React.FC = () => {
-  const { currency, setCurrentPage } = useApp();
+  const { currency } = useApp();
   const [showAddModal, setShowAddModal] = useState(false);
   const [newCategory, setNewCategory] = useState('');
   const [newLimit, setNewLimit] = useState<number>(0);
   const [newThreshold, setNewThreshold] = useState<number>(85);
   const [dismissedAlerts, setDismissedAlerts] = useState<string[]>([]);
+  const [expandedBudgetId, setExpandedBudgetId] = useState<string | null>(null);
 
   // Reconcile with the backend on open
   useEffect(() => {
@@ -219,353 +256,290 @@ export const BudgetAlertsPage: React.FC = () => {
     }
   };
 
+  const monthLabel = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  // Whole-rupee amounts. minimumFractionDigits must be lowered together with the maximum,
+  // otherwise Intl throws and formatCurrencyAmount falls back to an ungrouped "₹28000.00".
+  const formatWhole = (amount: number) =>
+    formatCurrencyAmount(amount, currency, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  const usedPct = totalBudgetCap > 0 ? (totalSpent / totalBudgetCap) * 100 : 0;
+  const overBy = Math.max(0, totalSpent - totalBudgetCap);
+  const cardClass =
+    'bg-white border border-slate-100 rounded-[24px] sm:rounded-[28px] shadow-[0_10px_30px_-4px_rgba(112,144,176,0.10)]';
+  const channels = [
+    { key: 'budget_alert_email' as const, value: emailAlerts, name: 'Email', label: 'Email alerts', description: 'Daily digest & limit warnings', icon: Mail, tint: 'bg-indigo-50 text-indigo-600', testId: 'budget-alerts-page-button' },
+    { key: 'budget_alert_push' as const, value: pushAlerts, name: 'Push', label: 'Push notifications', description: 'Instant alerts on this device', icon: Smartphone, tint: 'bg-purple-50 text-purple-600', testId: 'budget-alerts-page-button-2' },
+    { key: 'budget_alert_sms' as const, value: smsAlerts, name: 'SMS', label: 'SMS warnings', description: 'Texts when a limit is crossed', icon: MessageSquare, tint: 'bg-emerald-50 text-emerald-600', testId: 'budget-alerts-page-button-3' },
+  ];
+
   return (
     <CenteredLayout enablePullToRefresh={false} className="pb-32">
-      <div className="space-y-6 w-full">
-        
+      <div className="space-y-5 sm:space-y-6 w-full">
         {/* Header */}
         <div className="flex items-center justify-between gap-3 w-full">
-          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-            <button
-              type="button"
-              onClick={() => setCurrentPage('dashboard')}
-              title="Back to Dashboard"
-              aria-label="Back to Dashboard"
-              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200/80 hover:bg-slate-50 active:scale-95 shadow-xs flex items-center justify-center text-slate-700 transition-all shrink-0 cursor-pointer"
-            >
-              <ArrowLeft size={18} className="text-slate-700" />
-            </button>
-            <h1 className="font-page-title text-slate-900 tracking-tight leading-none truncate">
-              Budget Alerts
-            </h1>
+          <div className="min-w-0">
+            <p className="text-xs sm:text-sm font-semibold text-slate-400 truncate">{monthLabel}</p>
+            <h1 className="font-page-title text-slate-900 tracking-tight leading-tight truncate">Budgets</h1>
           </div>
           <button
+            type="button"
             data-testid="budget-alerts-page-add-budget"
             onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-1.5 px-4 sm:px-5 h-9 sm:h-10 bg-[#18181B] hover:bg-black text-white rounded-full active:scale-95 transition-all font-bold text-xs sm:text-sm shadow-xs cursor-pointer shrink-0"
+            className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-[#18181B] hover:bg-black text-white flex items-center justify-center shadow-[0_8px_20px_-6px_rgba(15,23,42,0.45)] active:scale-95 transition-all cursor-pointer shrink-0"
+            aria-label="Add budget"
+            title="Add budget"
           >
-            <Plus size={16} />
-            <span>Add Budget</span>
+            <Plus size={20} />
           </button>
         </div>
 
-        {/* High-Density 2x2 / 4-Metric Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5 w-full">
-          {/* Card 1: Total Cap */}
-          <div className="p-4 sm:p-5 rounded-[24px] sm:rounded-[28px] bg-white border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] flex flex-col justify-between">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] sm:text-xs font-black text-slate-400 uppercase tracking-widest truncate">Monthly Cap</span>
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-700 shrink-0">
-                <Wallet size={14} />
-              </div>
-            </div>
-            <div>
-              <p className="text-base sm:text-xl font-black text-slate-900 tracking-tight truncate">
-                {formatCurrencyAmount(totalBudgetCap, currency, { maximumFractionDigits: 0 })}
-              </p>
-              <p className="text-[10px] font-bold text-slate-400 mt-0.5">Across {limits.length} categories</p>
-            </div>
-          </div>
-
-          {/* Card 2: Spent MTD */}
-          <div className="p-4 sm:p-5 rounded-[24px] sm:rounded-[28px] bg-white border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] flex flex-col justify-between">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] sm:text-xs font-black text-slate-400 uppercase tracking-widest truncate">Total Spent</span>
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shrink-0">
-                <TrendingUp size={14} />
-              </div>
-            </div>
-            <div>
-              <p className="text-base sm:text-xl font-black text-slate-900 tracking-tight truncate">
-                {formatCurrencyAmount(totalSpent, currency, { maximumFractionDigits: 0 })}
-              </p>
-              <p className="text-[10px] font-bold text-slate-400 mt-0.5">
-                {totalBudgetCap > 0 ? `${((totalSpent / totalBudgetCap) * 100).toFixed(0)}% of ceiling` : 'No ceiling set'}
-              </p>
-            </div>
-          </div>
-
-          {/* Card 3: Safe Buffer */}
-          <div className="p-4 sm:p-5 rounded-[24px] sm:rounded-[28px] bg-white border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] flex flex-col justify-between">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] sm:text-xs font-black text-slate-400 uppercase tracking-widest truncate">Safe Buffer</span>
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
-                <ShieldCheck size={14} />
-              </div>
-            </div>
-            <div>
-              <p className="text-base sm:text-xl font-black text-emerald-600 tracking-tight truncate">
-                {formatCurrencyAmount(safeBuffer, currency, { maximumFractionDigits: 0 })}
-              </p>
-              <p className="text-[10px] font-bold text-slate-400 mt-0.5">Remaining unspent</p>
-            </div>
-          </div>
-
-          {/* Card 4: Active Breaches */}
-          <div className="p-4 sm:p-5 rounded-[24px] sm:rounded-[28px] bg-white border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] flex flex-col justify-between">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] sm:text-xs font-black text-slate-400 uppercase tracking-widest truncate">Alert Status</span>
-              <div className={cn(
-                "w-7 h-7 sm:w-8 sm:h-8 rounded-full border flex items-center justify-center shrink-0",
-                breachesCount > 0 ? "bg-rose-50 border-rose-100 text-rose-600" :
-                warningsCount > 0 ? "bg-amber-50 border-amber-100 text-amber-600" :
-                "bg-emerald-50 border-emerald-100 text-emerald-600"
-              )}>
-                {breachesCount > 0 ? <AlertTriangle size={14} /> : <CheckCircle2 size={14} />}
-              </div>
-            </div>
-            <div>
-              <p className={cn(
-                "text-base sm:text-xl font-black tracking-tight truncate",
-                breachesCount > 0 ? "text-rose-600" : warningsCount > 0 ? "text-amber-600" : "text-slate-900"
-              )}>
-                {breachesCount > 0 ? `${breachesCount} Breached` : warningsCount > 0 ? `${warningsCount} Warning` : 'All Healthy'}
-              </p>
-              <p className="text-[10px] font-bold text-slate-400 mt-0.5">{alerts.length} active alerts</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Categories grid & Settings */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full">
-          
-          {/* Main Budgets monitor (lg:col-span-8) */}
-          <div className="lg:col-span-8 space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">Category Ceilings</h3>
-              <span className="text-xs font-bold text-slate-400">{limits.length} active</span>
-            </div>
-
-            {limits.length === 0 ? (
-              <div className="text-center py-16 bg-white border border-dashed border-slate-200 rounded-[28px] sm:rounded-[32px] p-6 shadow-xs">
-                <Wallet className="mx-auto text-slate-300 mb-3" size={36} />
-                <p className="text-sm font-bold text-slate-700">No active category budgets yet</p>
-                <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
-                  Set monthly spending limits for categories like Food, Shopping, or Utilities to prevent budget overruns.
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 w-full items-start">
+          <div className="lg:col-span-7 xl:col-span-8 space-y-4 sm:space-y-5 min-w-0">
+            {/* Month summary */}
+            <div className={cn(cardClass, 'p-5 sm:p-6 flex items-center gap-4 sm:gap-6')}>
+              <BudgetGauge
+                pct={usedPct}
+                over={overBy > 0}
+                value={overBy > 0 ? formatWhole(overBy) : formatWhole(safeBuffer)}
+                caption={overBy > 0 ? 'over' : 'left'}
+              />
+              <div className="min-w-0">
+                <p className="text-xs sm:text-sm font-semibold text-slate-400">Spent so far</p>
+                <p className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight truncate">{formatWhole(totalSpent)}</p>
+                <p className="text-xs sm:text-sm font-medium text-slate-400 mt-0.5">
+                  of {formatWhole(totalBudgetCap)} across {limits.length} {limits.length === 1 ? 'budget' : 'budgets'}
                 </p>
-                <button
-                  onClick={() => setShowAddModal(true)}
-                  className="mt-4 px-4 py-2 bg-[#18181B] text-white rounded-full font-bold text-xs hover:bg-black transition-all cursor-pointer shadow-xs"
+                <span
+                  className={cn(
+                    'mt-2.5 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold',
+                    breachesCount > 0
+                      ? 'bg-rose-50 text-rose-700'
+                      : warningsCount > 0
+                      ? 'bg-amber-50 text-amber-700'
+                      : 'bg-emerald-50 text-emerald-700'
+                  )}
                 >
-                  + Add First Budget
-                </button>
+                  {breachesCount > 0 ? <AlertTriangle size={12} /> : warningsCount > 0 ? <BellRing size={12} /> : <ShieldCheck size={12} />}
+                  {breachesCount > 0
+                    ? `${breachesCount} over limit`
+                    : warningsCount > 0
+                    ? `${warningsCount} near limit`
+                    : 'All budgets healthy'}
+                </span>
               </div>
-            ) : (
-              limits.map(limit => {
-                const pct = limit.limit > 0 ? (limit.spent / limit.limit) * 100 : 0;
-                const isOver = limit.spent > limit.limit;
-                const isNear = pct >= limit.threshold;
-
-                return (
-                  <Card
-                    data-testid={`budget-alerts-page-card-${limit.id}`}
-                    key={limit.id}
-                    className="p-5 sm:p-6 rounded-[28px] sm:rounded-[32px] bg-white border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] relative group/card"
-                  >
-                    <div className="flex items-start justify-between gap-3 mb-3">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h4 className="font-black text-base text-slate-900 tracking-tight">{limit.category}</h4>
-                          <span className={cn(
-                            "px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider",
-                            isOver ? "bg-rose-50 text-rose-700 border border-rose-200/60" :
-                            isNear ? "bg-amber-50 text-amber-700 border border-amber-200/60" :
-                            "bg-emerald-50 text-emerald-700 border border-emerald-200/60"
-                          )}>
-                            {isOver ? "Exceeded" : isNear ? "Warning" : "Safe"}
-                          </span>
-                        </div>
-                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
-                          Alert Trigger: {limit.threshold}% limit
-                        </p>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <div className="text-right">
-                          <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider block">Spent / Cap</span>
-                          <div className="flex items-center gap-1 mt-0.5 justify-end">
-                            <FinancialAmount value={limit.spent} currency={currency} size="sm" className="font-black text-slate-900" />
-                            <span className="text-slate-300 font-bold text-xs">/</span>
-                            <FinancialAmount value={limit.limit} currency={currency} size="sm" className="font-bold text-slate-400" />
-                          </div>
-                        </div>
-                        <button
-                          data-testid={`budget-alerts-page-delete-budget-${limit.id}`}
-                          onClick={() => handleDeleteBudget(limit.id)}
-                          className="w-8 h-8 rounded-full bg-slate-50 hover:bg-rose-50 hover:text-rose-600 text-slate-400 flex items-center justify-center transition-colors cursor-pointer shrink-0 ml-1"
-                          title="Delete Budget"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Continuous Gradient Progress Track */}
-                    <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden mb-4">
-                      <div
-                        className={cn(
-                          "h-full rounded-full transition-all duration-500",
-                          isOver ? "bg-gradient-to-r from-rose-500 via-rose-600 to-red-600 shadow-xs" :
-                          isNear ? "bg-gradient-to-r from-amber-500 via-amber-600 to-orange-500 shadow-xs" :
-                          "bg-gradient-to-r from-slate-900 via-slate-800 to-slate-700 shadow-xs"
-                        )}
-                        style={{ width: `${Math.min(pct, 100)}%` }}
-                      />
-                    </div>
-
-                    {/* Slider Configuration */}
-                    <div className="flex items-center justify-between gap-4 flex-wrap border-t border-slate-100 pt-3.5">
-                      <div className="flex items-center gap-2">
-                        <Sliders size={14} className="text-slate-400" />
-                        <span className="text-xs font-bold text-slate-500">Alert threshold:</span>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <input
-                          data-testid={`budget-alerts-page-input-${limit.id}`}
-                          type="range"
-                          min="50"
-                          max="95"
-                          step="5"
-                          value={limit.threshold}
-                          onChange={e => handleUpdateThreshold(limit.id, parseInt(e.target.value))}
-                          className="w-28 sm:w-36 accent-[#18181B] cursor-pointer"
-                        />
-                        <span className="px-2 py-0.5 bg-slate-100 rounded-md text-xs font-black text-slate-900 min-w-[40px] text-center">
-                          {limit.threshold}%
-                        </span>
-                      </div>
-                    </div>
-                  </Card>
-                );
-              })
-            )}
-          </div>
-
-          {/* Delivery Channels and Recent Alerts Side Panel (lg:col-span-4) */}
-          <div className="lg:col-span-4 space-y-6">
-            
-            {/* Delivery Channels Card */}
-            <div>
-              <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight mb-3">Delivery Channels</h3>
-              <Card data-testid="budget-alerts-page-card-2" className="p-5 sm:p-6 rounded-[28px] sm:rounded-[32px] bg-white border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
-                      <Mail size={18} />
-                    </div>
-                    <div>
-                      <span className="text-xs font-bold text-slate-900 block">Email Alerts</span>
-                      <p className="text-[10px] text-slate-400 font-medium">Daily digest & ceiling warnings</p>
-                    </div>
-                  </div>
-                  <button
-                    data-testid="budget-alerts-page-button"
-                    onClick={() => handleToggleChannel('budget_alert_email', emailAlerts, 'Email')}
-                    className={cn(
-                      "w-11 h-6 rounded-full relative transition-all cursor-pointer",
-                      emailAlerts ? "bg-[#18181B]" : "bg-slate-200"
-                    )}
-                  >
-                    <div className={cn(
-                      "absolute top-0.5 w-5 h-5 rounded-full bg-white transition-all shadow-sm",
-                      emailAlerts ? "right-0.5" : "left-0.5"
-                    )} />
-                  </button>
-                </div>
-
-                <div className="flex items-center justify-between pt-2 border-t border-slate-50">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
-                      <Smartphone size={18} />
-                    </div>
-                    <div>
-                      <span className="text-xs font-bold text-slate-900 block">Push Notifications</span>
-                      <p className="text-[10px] text-slate-400 font-medium">Instant mobile alerts</p>
-                    </div>
-                  </div>
-                  <button
-                    data-testid="budget-alerts-page-button-2"
-                    onClick={() => handleToggleChannel('budget_alert_push', pushAlerts, 'Push')}
-                    className={cn(
-                      "w-11 h-6 rounded-full relative transition-all cursor-pointer",
-                      pushAlerts ? "bg-[#18181B]" : "bg-slate-200"
-                    )}
-                  >
-                    <div className={cn(
-                      "absolute top-0.5 w-5 h-5 rounded-full bg-white transition-all shadow-sm",
-                      pushAlerts ? "right-0.5" : "left-0.5"
-                    )} />
-                  </button>
-                </div>
-
-                <div className="flex items-center justify-between pt-2 border-t border-slate-50">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                      <MessageSquare size={18} />
-                    </div>
-                    <div>
-                      <span className="text-xs font-bold text-slate-900 block">SMS Warnings</span>
-                      <p className="text-[10px] text-slate-400 font-medium">Urgent critical threshold texts</p>
-                    </div>
-                  </div>
-                  <button
-                    data-testid="budget-alerts-page-button-3"
-                    onClick={() => handleToggleChannel('budget_alert_sms', smsAlerts, 'SMS')}
-                    className={cn(
-                      "w-11 h-6 rounded-full relative transition-all cursor-pointer",
-                      smsAlerts ? "bg-[#18181B]" : "bg-slate-200"
-                    )}
-                  >
-                    <div className={cn(
-                      "absolute top-0.5 w-5 h-5 rounded-full bg-white transition-all shadow-sm",
-                      smsAlerts ? "right-0.5" : "left-0.5"
-                    )} />
-                  </button>
-                </div>
-              </Card>
             </div>
 
-            {/* Recent Breaches */}
-            <div>
-              <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight mb-3">Recent Breaches</h3>
-              <div className="space-y-3">
-                {alerts.length === 0 ? (
-                  <div className="text-center py-8 bg-white border border-slate-100 rounded-[28px] sm:rounded-[32px] p-6 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)]">
-                    <CheckCircle2 className="mx-auto text-emerald-500 mb-2" size={28} />
-                    <p className="text-xs font-bold text-slate-800">All category budgets healthy</p>
-                    <p className="text-[10px] text-slate-400 mt-0.5">No spending ceilings have been breached.</p>
+            {/* Active alerts */}
+            {alerts.map((alert) => {
+              const limit = limits.find((l) => l.category === alert.category);
+              const critical = alert.type === 'critical';
+              const pct = limit && limit.limit > 0 ? Math.round((limit.spent / limit.limit) * 100) : 0;
+              return (
+                <div
+                  key={`${alert.category}-${alert.id}`}
+                  data-testid={`budget-alerts-page-card-3-${alert.id}`}
+                  role="alert"
+                  className={cn(
+                    'flex items-center gap-3 rounded-[20px] sm:rounded-[24px] border p-3.5 sm:p-4',
+                    critical ? 'bg-rose-50 border-rose-200' : 'bg-amber-50 border-amber-200'
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'w-10 h-10 sm:w-11 sm:h-11 rounded-[12px] flex items-center justify-center shrink-0',
+                      critical ? 'bg-rose-100 text-rose-600' : 'bg-amber-100 text-amber-600'
+                    )}
+                  >
+                    {critical ? <AlertTriangle size={18} /> : <BellRing size={18} />}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className={cn('text-sm sm:text-base font-bold truncate', critical ? 'text-rose-900' : 'text-amber-900')}>
+                      {critical ? `${alert.category} is over budget` : `${alert.category} is at ${pct}%`}
+                    </p>
+                    {limit && (
+                      <p className={cn('text-xs sm:text-sm font-medium truncate', critical ? 'text-rose-700' : 'text-amber-700')}>
+                        {critical
+                          ? `${formatWhole(limit.spent - limit.limit)} over the ${formatWhole(limit.limit)} limit`
+                          : `${formatWhole(Math.max(0, limit.limit - limit.spent))} left for this month`}
+                      </p>
+                    )}
                   </div>
-                ) : (
-                  alerts.map(alert => (
-                    <Card
-                      data-testid={`budget-alerts-page-card-3-${alert.id}`}
-                      key={alert.id}
+                  <button
+                    type="button"
+                    data-testid={`budget-alerts-page-dismiss-${alert.id}`}
+                    onClick={() => handleDismissAlert(alert.category)}
+                    className={cn(
+                      'w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-colors cursor-pointer',
+                      critical ? 'text-rose-500 hover:bg-rose-100' : 'text-amber-600 hover:bg-amber-100'
+                    )}
+                    aria-label={`Dismiss ${alert.category} alert`}
+                    title="Dismiss"
+                  >
+                    <X size={15} />
+                  </button>
+                </div>
+              );
+            })}
+
+            {/* Category budgets */}
+            <div>
+              <div className="flex items-center justify-between px-1 mb-2">
+                <p className="text-[11px] sm:text-xs font-extrabold uppercase tracking-wider text-slate-400">Category budgets</p>
+                <span className="text-[11px] sm:text-xs font-bold text-slate-400">{limits.length} active</span>
+              </div>
+
+              {limits.length === 0 ? (
+                <div className={cn(cardClass, 'text-center py-12 px-6')}>
+                  <span className="mx-auto w-14 h-14 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-300 mb-3">
+                    <Wallet size={26} />
+                  </span>
+                  <p className="text-sm font-bold text-slate-800">No budgets yet</p>
+                  <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+                    Set monthly spending limits for categories like Food, Shopping, or Utilities and get alerted before you overspend.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setShowAddModal(true)}
+                    className="mt-4 px-5 py-2.5 bg-[#18181B] text-white rounded-full font-bold text-xs hover:bg-black transition-all cursor-pointer shadow-xs"
+                  >
+                    + Add first budget
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div className={cn(cardClass, 'px-4 sm:px-5 divide-y divide-slate-100')}>
+                    {limits.map((limit) => {
+                      const pct = limit.limit > 0 ? (limit.spent / limit.limit) * 100 : 0;
+                      const isOver = limit.spent > limit.limit;
+                      const isNear = !isOver && pct >= limit.threshold;
+                      const categoryColor = getCategoryColor(limit.category);
+                      const barColor = isOver ? '#E11D48' : isNear ? '#F59E0B' : categoryColor;
+                      const expanded = expandedBudgetId === limit.id;
+                      return (
+                        <div key={limit.id} data-testid={`budget-alerts-page-card-${limit.id}`} className="py-3.5 sm:py-4">
+                          <button
+                            type="button"
+                            onClick={() => setExpandedBudgetId(expanded ? null : limit.id)}
+                            aria-expanded={expanded}
+                            className="w-full flex items-center gap-3 sm:gap-4 text-left cursor-pointer"
+                          >
+                            <span
+                              className="w-11 h-11 sm:w-12 sm:h-12 rounded-[14px] flex items-center justify-center shrink-0"
+                              style={{ backgroundColor: `${categoryColor}1A` }}
+                            >
+                              {getCategoryCartoonIcon(limit.category, 22)}
+                            </span>
+                            <span className="min-w-0 flex-1">
+                              <span className="flex items-center gap-2 min-w-0">
+                                <span className="block text-sm sm:text-base font-bold text-slate-900 truncate">{limit.category}</span>
+                                {(isOver || isNear) && (
+                                  <span
+                                    className={cn(
+                                      'px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider shrink-0',
+                                      isOver ? 'bg-rose-50 text-rose-700' : 'bg-amber-50 text-amber-700'
+                                    )}
+                                  >
+                                    {isOver ? 'Exceeded' : 'Warning'}
+                                  </span>
+                                )}
+                              </span>
+                              <span className="block text-xs sm:text-sm font-medium text-slate-400 truncate">
+                                {formatWhole(limit.spent)} of {formatWhole(limit.limit)}
+                              </span>
+                            </span>
+                            <span
+                              className={cn(
+                                'text-sm sm:text-base font-extrabold shrink-0',
+                                isOver ? 'text-rose-600' : isNear ? 'text-amber-600' : 'text-slate-900'
+                              )}
+                            >
+                              {Math.round(pct)}%
+                            </span>
+                          </button>
+                          <div className="mt-2.5 h-2 rounded-full bg-slate-100 overflow-hidden">
+                            <div
+                              className="h-full rounded-full transition-all duration-500"
+                              style={{ width: `${Math.min(pct, 100)}%`, backgroundColor: barColor }}
+                            />
+                          </div>
+                          {expanded && (
+                            <div className="mt-3 flex items-center gap-2.5 rounded-2xl bg-slate-50 border border-slate-100 px-3.5 py-2.5">
+                              <Sliders size={14} className="text-slate-400 shrink-0" />
+                              <span className="text-xs font-bold text-slate-500 shrink-0">Alert at</span>
+                              <input
+                                data-testid={`budget-alerts-page-input-${limit.id}`}
+                                type="range"
+                                min="50"
+                                max="95"
+                                step="5"
+                                value={limit.threshold}
+                                onChange={(e) => handleUpdateThreshold(limit.id, parseInt(e.target.value))}
+                                className="flex-1 min-w-0 accent-[#18181B] cursor-pointer"
+                                aria-label={`Alert threshold for ${limit.category}`}
+                              />
+                              <span className="px-2 py-0.5 bg-white border border-slate-200/70 rounded-md text-xs font-black text-slate-900 min-w-[42px] text-center">
+                                {limit.threshold}%
+                              </span>
+                              <button
+                                type="button"
+                                data-testid={`budget-alerts-page-delete-budget-${limit.id}`}
+                                onClick={() => handleDeleteBudget(limit.id)}
+                                className="w-8 h-8 rounded-full bg-white border border-slate-200/70 text-slate-400 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center shrink-0 transition-colors cursor-pointer"
+                                title="Delete budget"
+                                aria-label={`Delete ${limit.category} budget`}
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <p className="mt-2 px-1 text-[11px] font-medium text-slate-400">Tap a budget to change its alert level or remove it.</p>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Alert channels */}
+          <div className="lg:col-span-5 xl:col-span-4 min-w-0">
+            <p className="px-1 mb-2 text-[11px] sm:text-xs font-extrabold uppercase tracking-wider text-slate-400">Alert channels</p>
+            <div data-testid="budget-alerts-page-card-2" className={cn(cardClass, 'px-4 sm:px-5 divide-y divide-slate-100')}>
+              {channels.map((channel) => {
+                const Icon = channel.icon;
+                return (
+                  <div key={channel.key} className="flex items-center justify-between gap-3 py-3.5">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span className={cn('w-10 h-10 rounded-[12px] flex items-center justify-center shrink-0', channel.tint)}>
+                        <Icon size={18} />
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block text-sm font-bold text-slate-900 truncate">{channel.label}</span>
+                        <span className="block text-xs font-medium text-slate-400 truncate">{channel.description}</span>
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      data-testid={channel.testId}
+                      onClick={() => handleToggleChannel(channel.key, channel.value, channel.name)}
+                      role="switch"
+                      aria-checked={channel.value}
+                      aria-label={channel.label}
                       className={cn(
-                        "p-4 rounded-2xl border shadow-xs transition-all",
-                        alert.type === 'critical'
-                          ? "bg-rose-50/50 border-rose-200/80 text-rose-900"
-                          : "bg-amber-50/50 border-amber-200/80 text-amber-900"
+                        'w-11 h-6 rounded-full relative transition-all cursor-pointer shrink-0',
+                        channel.value ? 'bg-[#18181B]' : 'bg-slate-200'
                       )}
                     >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex-1">
-                          <span className="text-[9px] font-black uppercase tracking-widest block opacity-70">
-                            {alert.category} • {alert.timestamp}
-                          </span>
-                          <p className="text-xs font-bold leading-relaxed mt-1">{alert.message}</p>
-                        </div>
-                        <button
-                          data-testid={`budget-alerts-page-dismiss-${alert.id}`}
-                          onClick={() => handleDismissAlert(alert.category)}
-                          className="text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-lg hover:bg-black/5 transition-all shrink-0 cursor-pointer"
-                        >
-                          Dismiss
-                        </button>
-                      </div>
-                    </Card>
-                  ))
-                )}
-              </div>
+                      <span
+                        className={cn(
+                          'absolute top-0.5 w-5 h-5 rounded-full bg-white transition-all shadow-sm',
+                          channel.value ? 'right-0.5' : 'left-0.5'
+                        )}
+                      />
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>

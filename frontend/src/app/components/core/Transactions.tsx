@@ -7,24 +7,23 @@ import { applyAccountBalanceDeltas, buildTransactionAggregation, getTransactionA
 import {
   Plus, TrendingUp, TrendingDown, Search, Camera, Edit2, Trash2,
   ArrowUpRight, ArrowDownLeft, Repeat2, Wallet, Receipt, Eye,
-  X, ChevronLeft, ChevronRight, FileText, Paperclip, ArrowLeft,
-  Building2, CreditCard, Banknote, Tag, Clock, Users, HandCoins,
-  ArrowRight
+  X, ChevronLeft, ChevronRight, Paperclip,
+  Building2, CreditCard, Banknote, Tag, Users, HandCoins,
+  ArrowRight, SlidersHorizontal
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { DeleteConfirmModal } from '@/app/components/shared/DeleteConfirmModal';
 import { ReceiptScanner } from '@/app/components/transactions/ReceiptScanner';
-import { Card } from '@/app/components/ui/card';
 import { Button } from '@/app/components/ui/button';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
-import { getCategoryCartoonIcon } from '@/app/components/ui/CartoonCategoryIcons';
+import { getCategoryCartoonIcon, getCategoryColor } from '@/app/components/ui/CartoonCategoryIcons';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { InfiniteScrollFooter } from '@/app/components/ui/InfiniteScrollFooter';
 import { backendSyncService } from '@/lib/backend-sync-service';
 import { AppDateStrip } from '@/app/components/ui/AppDateStrip';
-import { TimeFilter, TimeFilterPeriod, filterByTimePeriod } from '@/app/components/ui/TimeFilter';
+import { TimeFilter, TimeFilterPeriod, filterByTimePeriod, getPeriodLabel } from '@/app/components/ui/TimeFilter';
 import { coerceDate, formatLocalDate } from '@/lib/dateUtils';
 import { backendService } from '@/lib/backend-api';
 import type { TaxComponent } from '@/types/receipt.types';
@@ -138,6 +137,8 @@ export const Transactions: React.FC = () => {
   const [selectedTransaction, setSelectedTransaction] = useState<(typeof transactions)[number] | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [hasSyncedInitialDate, setHasSyncedInitialDate] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
 
   const documentService = useMemo(() => new DocumentManagementService(), []);
   const localDocuments = useLiveQuery(() => db.documents.toArray(), []) || [];
@@ -350,6 +351,56 @@ export const Transactions: React.FC = () => {
     getItemKey: (item) => item.id ?? item.cloudId ?? `${item.date}-${item.amount}-${item.description}`,
   });
 
+  // The list reads like a statement: consecutive rows from the same day share a section.
+  // Amount sorts break date order, so they render as one section with a date on every row.
+  const transactionGroups = useMemo(() => {
+    type Group = { key: string; label: string; items: typeof visibleTransactions; showDates: boolean };
+    if (visibleTransactions.length === 0) return [] as Group[];
+    if (sortBy === 'highest' || sortBy === 'lowest') {
+      return [{
+        key: `by-amount-${sortBy}`,
+        label: sortBy === 'highest' ? 'Highest amount first' : 'Lowest amount first',
+        items: visibleTransactions,
+        showDates: true,
+      }] as Group[];
+    }
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+    const sameDay = (a: Date, b: Date) =>
+      a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+
+    const groups: Group[] = [];
+    visibleTransactions.forEach((transaction) => {
+      const date = coerceDate(transaction.date);
+      const key = date ? `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}` : 'undated';
+      let group = groups[groups.length - 1];
+      if (!group || group.key !== key) {
+        const label = !date
+          ? 'Undated'
+          : sameDay(date, today)
+          ? 'Today'
+          : sameDay(date, yesterday)
+          ? 'Yesterday'
+          : date.toLocaleDateString('en-US', {
+              weekday: 'short',
+              month: 'short',
+              day: 'numeric',
+              ...(date.getFullYear() !== today.getFullYear() ? { year: 'numeric' as const } : {}),
+            });
+        group = { key, label, items: [], showDates: false };
+        groups.push(group);
+      }
+      group.items.push(transaction);
+    });
+    return groups;
+  }, [visibleTransactions, sortBy]);
+
+  const summaryTileClass =
+    'p-4 sm:p-5 bg-white border border-slate-100 rounded-[24px] sm:rounded-[28px] shadow-[0_10px_30px_-4px_rgba(112,144,176,0.10)] min-w-0';
+  const filterSelectClass =
+    'appearance-none bg-white border border-slate-100 shadow-xs text-slate-700 font-bold text-xs py-2 pl-4 pr-8 rounded-full cursor-pointer focus:outline-none transition-all';
+
   const handleDeleteTransaction = (id: number, description: string) => {
     setTransactionToDelete({ id, description });
     setDeleteModalOpen(true);
@@ -461,6 +512,7 @@ export const Transactions: React.FC = () => {
   };
 
   const hasActiveFilters = filterType !== 'all' || selectedCategory !== 'all' || onlyWithReceipts || normalizedSearch.length > 0;
+  const refineCount = Number(selectedCategory !== 'all') + Number(sortBy !== 'newest') + Number(onlyWithReceipts);
 
   const resetAllFilters = () => {
     setFilterType('all');
@@ -479,48 +531,69 @@ export const Transactions: React.FC = () => {
       <div className="space-y-4 sm:space-y-6 lg:space-y-8 pb-32">
         {/* Page Header */}
         <div className="flex items-center justify-between gap-3 w-full">
-          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+          <div className="min-w-0">
+            <p className="text-xs sm:text-sm font-semibold text-slate-400 truncate">
+              {getPeriodLabel(timePeriod, selectedDate)}
+            </p>
+            <h1 className="font-page-title text-slate-900 tracking-tight leading-tight truncate">Transactions</h1>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
             <button
               type="button"
-              onClick={() => setCurrentPage('dashboard')}
-              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200/80 hover:bg-slate-50 active:scale-95 shadow-xs flex items-center justify-center text-slate-700 transition-all shrink-0 cursor-pointer"
-              aria-label="Go to dashboard"
-              title="Go to dashboard"
-              data-testid="transactions-go-back-button"
+              data-testid="transactions-search-toggle"
+              onClick={() => setShowSearch((open) => !open || searchQuery.length > 0)}
+              className={cn(
+                'w-10 h-10 sm:w-11 sm:h-11 rounded-full flex items-center justify-center transition-all active:scale-95 cursor-pointer shadow-[0_6px_18px_-6px_rgba(15,23,42,0.18)]',
+                showSearch || searchQuery ? 'bg-[#18181B] text-white' : 'bg-white text-slate-700 border border-slate-100'
+              )}
+              aria-label="Search transactions"
+              aria-expanded={showSearch}
+              title="Search"
             >
-              <ArrowLeft size={18} className="text-slate-700" />
+              <Search size={18} />
             </button>
-            <div className="min-w-0">
-              <h1 className="font-page-title text-slate-900 tracking-tight leading-none truncate">Transactions</h1>
-              <p className="text-[10px] sm:text-xs font-semibold text-slate-400 mt-0.5 truncate">
-                <span className="sm:hidden">{timeFilteredTransactions.length} recorded</span>
-                <span className="hidden sm:inline">{timeFilteredTransactions.length} recorded • Tracked liquidity & verified accounts</span>
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+            <button
+              type="button"
+              data-testid="transactions-filters-toggle"
+              onClick={() => setShowFilters((open) => !open)}
+              className={cn(
+                'relative w-10 h-10 sm:w-11 sm:h-11 rounded-full flex items-center justify-center transition-all active:scale-95 cursor-pointer shadow-[0_6px_18px_-6px_rgba(15,23,42,0.18)]',
+                showFilters ? 'bg-[#18181B] text-white' : 'bg-white text-slate-700 border border-slate-100'
+              )}
+              aria-label="Filter and sort"
+              aria-expanded={showFilters}
+              title="Filter & sort"
+            >
+              <SlidersHorizontal size={18} />
+              {refineCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-1 rounded-full bg-purple-600 text-white text-[9px] font-black flex items-center justify-center border-2 border-white">
+                  {refineCount}
+                </span>
+              )}
+            </button>
             {canImport && (
-              <Button
+              <button
+                type="button"
                 data-testid="transactions-scan-bill-button"
-                variant="secondary"
                 onClick={() => setShowScanModal(true)}
-                className="shadow-2xs border border-slate-200/90 bg-white hover:bg-slate-50 text-slate-800 h-8.5 sm:h-10 px-3 sm:px-4 rounded-full font-bold text-xs sm:text-sm shrink-0 transition-all active:scale-95"
+                className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white border border-slate-100 text-slate-700 flex items-center justify-center transition-all active:scale-95 cursor-pointer shadow-[0_6px_18px_-6px_rgba(15,23,42,0.18)]"
+                aria-label="Scan bill"
+                title="Scan bill"
               >
-                <Camera size={14} className="mr-1 sm:mr-1.5 shrink-0 text-slate-600" />
-                <span className="hidden sm:inline">Scan Bill</span>
-                <span className="sm:hidden">Scan</span>
-              </Button>
+                <Camera size={18} />
+              </button>
             )}
             {canAdd && (
-              <Button
+              <button
+                type="button"
                 data-testid="transactions-add-button"
                 onClick={() => setShowTransactionTypeModal(true)}
-                className="shadow-sm bg-slate-950 hover:bg-slate-800 text-white h-8.5 sm:h-10 px-3.5 sm:px-5 rounded-full font-bold text-xs sm:text-sm shrink-0 transition-all active:scale-95"
+                className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#18181B] hover:bg-black text-white flex items-center justify-center transition-all active:scale-95 cursor-pointer shadow-[0_8px_20px_-6px_rgba(15,23,42,0.45)]"
+                aria-label="Add transaction"
+                title="Add transaction"
               >
-                <Plus size={15} className="mr-1 sm:mr-1.5 shrink-0" />
-                <span className="hidden sm:inline">Add Transaction</span>
-                <span className="sm:hidden">Add</span>
-              </Button>
+                <Plus size={20} />
+              </button>
             )}
           </div>
         </div>
@@ -537,589 +610,338 @@ export const Transactions: React.FC = () => {
           </div>
         </div>
 
-        {/* Compact Responsive 4-Metric Financial Pulse Strip */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
-          {/* 1. Inflow / Income */}
-          <Card
-            data-testid="transactions-card"
-            variant="default"
-            className="p-3 sm:p-4 lg:p-5 bg-white dark:bg-card border border-slate-100/90 dark:border-border/60 rounded-[20px] sm:rounded-[24px] shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] relative overflow-hidden group hover:border-emerald-200/70 transition-all"
-          >
-            <div className="flex items-center justify-between gap-1.5 mb-1.5 sm:mb-2">
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60 whitespace-nowrap shrink-0">
-                <ArrowDownLeft size={11} className="shrink-0" /> Inflow
-              </span>
-              <span className="text-[10px] sm:text-[11px] font-semibold text-slate-400 truncate">
-                {counts.income} {counts.income === 1 ? 'credit' : 'credits'}
-              </span>
-            </div>
-            <p className="text-base sm:text-xl lg:text-2xl font-black text-emerald-600 tracking-tight truncate">
-              {formatCurrency(stats.income)}
+        {/* Summary tiles */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div data-testid="transactions-card" className={summaryTileClass}>
+            <span className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
+              <ArrowDownLeft size={18} />
+            </span>
+            <p className="mt-3 text-xs sm:text-sm font-semibold text-slate-400">Income</p>
+            <p className="text-lg sm:text-2xl font-black text-slate-900 tracking-tight truncate">{formatCurrency(stats.income)}</p>
+            <p className="text-[10px] sm:text-[11px] font-medium text-slate-400 truncate">
+              {counts.income} {counts.income === 1 ? 'credit' : 'credits'}
             </p>
-            <p className="text-[10px] sm:text-[11px] font-medium text-slate-400 mt-0.5 truncate">Total received</p>
-          </Card>
+          </div>
 
-          {/* 2. Outflow / Expenses */}
-          <Card
-            data-testid="transactions-card-2"
-            variant="default"
-            className="p-3 sm:p-4 lg:p-5 bg-white dark:bg-card border border-slate-100/90 dark:border-border/60 rounded-[20px] sm:rounded-[24px] shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] relative overflow-hidden group hover:border-rose-200/70 transition-all"
-          >
-            <div className="flex items-center justify-between gap-1.5 mb-1.5 sm:mb-2">
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200/60 whitespace-nowrap shrink-0">
-                <ArrowUpRight size={11} className="shrink-0" /> Outflow
-              </span>
-              <span className="text-[10px] sm:text-[11px] font-semibold text-slate-400 truncate">
-                {counts.expense} {counts.expense === 1 ? 'debit' : 'debits'}
-              </span>
-            </div>
-            <p className="text-base sm:text-xl lg:text-2xl font-black text-slate-900 dark:text-white tracking-tight truncate">
-              {formatCurrency(stats.expenses)}
+          <div data-testid="transactions-card-2" className={summaryTileClass}>
+            <span className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center">
+              <ArrowUpRight size={18} />
+            </span>
+            <p className="mt-3 text-xs sm:text-sm font-semibold text-slate-400">Expenses</p>
+            <p className="text-lg sm:text-2xl font-black text-slate-900 tracking-tight truncate">{formatCurrency(stats.expenses)}</p>
+            <p className="text-[10px] sm:text-[11px] font-medium text-slate-400 truncate">
+              {counts.expense} {counts.expense === 1 ? 'debit' : 'debits'}
             </p>
-            <p className="text-[10px] sm:text-[11px] font-medium text-slate-400 mt-0.5 truncate">Total spent</p>
-          </Card>
+          </div>
 
-          {/* 3. Net Flow / Balance */}
-          <Card
-            data-testid="transactions-card-3"
-            variant="default"
-            className="p-3 sm:p-4 lg:p-5 bg-white dark:bg-card border border-slate-100/90 dark:border-border/60 rounded-[20px] sm:rounded-[24px] shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] relative overflow-hidden group hover:border-purple-200/70 transition-all"
-          >
-            <div className="flex items-center justify-between gap-1 mb-1.5 sm:mb-2">
+          <div data-testid="transactions-card-3" className={summaryTileClass}>
+            <div className="flex items-start justify-between gap-2">
               <span className={cn(
-                "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold border whitespace-nowrap shrink-0",
-                stats.netFlow >= 0
-                  ? "bg-purple-50 text-purple-700 border-purple-200/60"
-                  : "bg-amber-50 text-amber-700 border-amber-200/60"
+                'w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center',
+                stats.netFlow >= 0 ? 'bg-purple-50 text-purple-600' : 'bg-amber-50 text-amber-600'
               )}>
-                <TrendingUp size={11} className={cn("shrink-0", stats.netFlow >= 0 ? "text-purple-600" : "text-amber-600")} />
-                Net Flow
+                {stats.netFlow >= 0 ? <TrendingUp size={18} /> : <TrendingDown size={18} />}
               </span>
               <span className={cn(
-                "text-[9px] sm:text-[10px] font-black uppercase px-1.5 py-0.5 rounded-md whitespace-nowrap shrink-0",
-                stats.netFlow >= 0 ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"
+                'px-2 py-0.5 rounded-full text-[10px] font-bold',
+                stats.netFlow >= 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'
               )}>
                 {stats.netFlow >= 0 ? 'Surplus' : 'Deficit'}
               </span>
             </div>
+            <p className="mt-3 text-xs sm:text-sm font-semibold text-slate-400">Net flow</p>
             <p className={cn(
-              "text-base sm:text-xl lg:text-2xl font-black tracking-tight truncate",
-              stats.netFlow >= 0 ? "text-slate-900 dark:text-white" : "text-rose-600"
+              'text-lg sm:text-2xl font-black tracking-tight truncate',
+              stats.netFlow >= 0 ? 'text-slate-900' : 'text-rose-600'
             )}>
               {stats.netFlow > 0 ? '+' : ''}{formatCurrency(stats.netFlow)}
             </p>
-            <p className="text-[10px] sm:text-[11px] font-medium text-slate-400 mt-0.5 truncate">
-              {stats.netFlow >= 0 ? 'Net retention' : 'Deficit'}
+            <p className="text-[10px] sm:text-[11px] font-medium text-slate-400 truncate">
+              {stats.netFlow >= 0 ? 'Kept this period' : 'Spent more than earned'}
             </p>
-          </Card>
+          </div>
 
-          {/* 4. Tax & Receipts Compliance */}
-          <div className="p-3 sm:p-4 lg:p-5 bg-white dark:bg-card border border-purple-100/80 dark:border-border/60 rounded-[20px] sm:rounded-[24px] shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] relative overflow-hidden group flex flex-col justify-between hover:border-purple-300/70 transition-all">
-            <div>
-              <div className="flex items-center justify-between gap-1.5 mb-1.5 sm:mb-2">
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200/60 whitespace-nowrap shrink-0">
-                  <Receipt size={11} className="shrink-0" /> Tax & Bills
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setCurrentPage('receipt-scanner')}
-                  className="text-[10px] font-bold text-purple-700 hover:text-purple-900 hover:underline inline-flex items-center gap-0.5 cursor-pointer shrink-0"
-                >
-                  Scanner <ChevronRight size={10} />
-                </button>
-              </div>
-              <p className="text-base sm:text-xl lg:text-2xl font-black text-slate-900 dark:text-white tracking-tight truncate">
-                {formatCurrency(taxSummary.totalTax)}
-              </p>
+          <div className={summaryTileClass}>
+            <div className="flex items-start justify-between gap-2">
+              <span className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                <Receipt size={18} />
+              </span>
+              <button
+                type="button"
+                onClick={() => setCurrentPage('receipt-scanner')}
+                className="text-[10px] sm:text-[11px] font-bold text-purple-700 hover:text-purple-900 inline-flex items-center gap-0.5 cursor-pointer"
+              >
+                Bills <ChevronRight size={11} />
+              </button>
             </div>
-            <div className="flex items-center justify-between text-[10px] sm:text-[11px] text-slate-400 font-medium mt-1 pt-1 border-t border-slate-100">
-              <span className="truncate">{counts.withReceipt} bills</span>
-              <span className="text-purple-700 font-bold shrink-0">{formatCurrency(taxSummary.monthlyTax)}/mo</span>
-            </div>
+            <p className="mt-3 text-xs sm:text-sm font-semibold text-slate-400">Tax on bills</p>
+            <p className="text-lg sm:text-2xl font-black text-slate-900 tracking-tight truncate">{formatCurrency(taxSummary.totalTax)}</p>
+            <p className="text-[10px] sm:text-[11px] font-medium text-slate-400 truncate">
+              {counts.withReceipt} {counts.withReceipt === 1 ? 'bill' : 'bills'} · {formatCurrency(taxSummary.monthlyTax)}/mo
+            </p>
           </div>
         </div>
 
-        {/* Compact Responsive Controls & Filter Suite */}
-        <div className="space-y-2 sm:space-y-2.5">
-          {/* Top Bar: Search Input */}
-          <div className="relative w-full max-w-xl mx-auto">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 w-3.5 h-3.5 sm:w-4 sm:h-4 pointer-events-none" />
+        {/* Search (opened from the header) */}
+        {(showSearch || searchQuery) && (
+          <div className="relative w-full">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4 pointer-events-none" />
             <input
               data-testid="transactions-search-input"
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search description, merchant, tags..."
-              className="w-full pl-9 sm:pl-10 pr-9 py-1.5 sm:py-2.5 bg-white border border-slate-200/80 shadow-xs rounded-full focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 text-[11px] sm:text-xs md:text-sm text-slate-900 placeholder:text-slate-400 transition-all text-center sm:text-left placeholder:text-center sm:placeholder:text-left"
+              autoFocus={showSearch && !searchQuery}
+              className="w-full pl-11 pr-10 py-3 bg-white border border-slate-100 shadow-[0_6px_18px_-8px_rgba(15,23,42,0.15)] rounded-full focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-300 text-sm text-slate-900 placeholder:text-slate-400 transition-all"
             />
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 w-4.5 h-4.5 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 cursor-pointer transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 cursor-pointer transition-colors"
+                aria-label="Clear search"
               >
-                <X size={11} />
+                <X size={12} />
               </button>
             )}
           </div>
+        )}
 
-          {/* Secondary Controls Bar: compact horizontal scroll row on mobile, centered */}
-          <div className="flex items-center justify-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-0.5 w-full">
-            {/* Category Dropdown Filter */}
+        {/* Filter & sort (opened from the header) */}
+        {showFilters && (
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 w-full">
             {availableCategories.length > 0 && (
               <div className="relative shrink-0">
                 <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="appearance-none bg-white border border-slate-200/80 hover:border-slate-300 text-slate-700 font-bold text-[10px] sm:text-[11px] md:text-xs py-1 sm:py-1.5 pl-2.5 sm:pl-3 pr-6 sm:pr-7 rounded-full shadow-xs cursor-pointer focus:outline-none transition-all"
+                  className={cn(filterSelectClass, selectedCategory !== 'all' && 'border-purple-300 text-purple-700 bg-purple-50')}
+                  aria-label="Filter by category"
                 >
-                  <option value="all">Categories ({availableCategories.length})</option>
+                  <option value="all">All categories</option>
                   {availableCategories.map((cat) => (
                     <option key={cat} value={cat}>
                       {cat}
                     </option>
                   ))}
                 </select>
-                <ChevronRight size={10} className="absolute right-2 sm:right-2.5 top-1/2 -translate-y-1/2 rotate-90 text-slate-400 pointer-events-none" />
+                <ChevronRight size={12} className="absolute right-3 top-1/2 -translate-y-1/2 rotate-90 text-slate-400 pointer-events-none" />
               </div>
             )}
 
-            {/* Sort Dropdown */}
             <div className="relative shrink-0">
               <select
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as any)}
-                className="appearance-none bg-white border border-slate-200/80 hover:border-slate-300 text-slate-700 font-bold text-[10px] sm:text-[11px] md:text-xs py-1 sm:py-1.5 pl-2.5 sm:pl-3 pr-6 sm:pr-7 rounded-full shadow-xs cursor-pointer focus:outline-none transition-all"
+                onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+                className={cn(filterSelectClass, sortBy !== 'newest' && 'border-purple-300 text-purple-700 bg-purple-50')}
+                aria-label="Sort transactions"
               >
-                <option value="newest">Sort: Newest</option>
-                <option value="oldest">Sort: Oldest</option>
-                <option value="highest">Sort: Highest</option>
-                <option value="lowest">Sort: Lowest</option>
+                <option value="newest">Newest first</option>
+                <option value="oldest">Oldest first</option>
+                <option value="highest">Highest amount</option>
+                <option value="lowest">Lowest amount</option>
               </select>
-              <ChevronRight size={10} className="absolute right-2 sm:right-2.5 top-1/2 -translate-y-1/2 rotate-90 text-slate-400 pointer-events-none" />
+              <ChevronRight size={12} className="absolute right-3 top-1/2 -translate-y-1/2 rotate-90 text-slate-400 pointer-events-none" />
             </div>
 
-            {/* Quick Bill / Receipt Toggle */}
             <button
               type="button"
               onClick={() => setOnlyWithReceipts(!onlyWithReceipts)}
               className={cn(
-                "inline-flex items-center justify-center gap-1 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-[11px] md:text-xs font-bold border transition-all cursor-pointer shrink-0 active:scale-95 shadow-xs whitespace-nowrap",
+                'inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold border transition-all cursor-pointer shrink-0 active:scale-95 whitespace-nowrap',
                 onlyWithReceipts
-                  ? "bg-purple-50 text-purple-700 border-purple-300"
-                  : "bg-white text-slate-600 border-slate-200/80 hover:bg-slate-50"
+                  ? 'bg-purple-50 text-purple-700 border-purple-300'
+                  : 'bg-white text-slate-600 border-slate-100 shadow-xs'
               )}
+              aria-pressed={onlyWithReceipts}
             >
-              <Paperclip size={10} className={onlyWithReceipts ? "text-purple-600" : "text-slate-400"} />
-              <span>With Bill</span>
-              {counts.withReceipt > 0 && (
-                <span className={cn("px-1.5 py-0.2 rounded-full text-[9px] font-black", onlyWithReceipts ? "bg-purple-200/70 text-purple-900" : "bg-slate-100 text-slate-600")}>
-                  {counts.withReceipt}
-                </span>
-              )}
+              <Paperclip size={12} />
+              With bill{counts.withReceipt > 0 ? ` (${counts.withReceipt})` : ''}
             </button>
           </div>
+        )}
 
-          {/* Segmented Filter Pills (All / Expenses / Income / Transfers) */}
-          <div className="flex items-center justify-center gap-2 overflow-x-auto no-scrollbar w-full">
-            <div className="inline-flex bg-slate-100/90 dark:bg-muted p-0.5 sm:p-1 rounded-full border border-slate-200/60 shadow-inner max-w-full overflow-x-auto no-scrollbar shrink-0 mx-auto">
-              {[
-                { type: 'all', label: 'All', count: counts.all },
-                { type: 'expense', label: 'Expenses', count: counts.expense },
-                { type: 'income', label: 'Income', count: counts.income },
-                { type: 'transfer', label: 'Transfers', count: counts.transfer },
-              ].map((tab) => {
-                const isActive = filterType === tab.type;
-                return (
-                  <button
-                    key={tab.type}
-                    data-testid={`transactions-filter-${tab.type}`}
-                    onClick={() => setFilterType(tab.type as any)}
-                    className={cn(
-                      'flex items-center justify-center gap-1 py-1 sm:py-1.5 px-2.5 sm:px-3.5 rounded-full transition-all duration-150 font-bold text-[10px] sm:text-xs select-none cursor-pointer whitespace-nowrap shrink-0',
-                      isActive
-                        ? 'bg-white text-slate-900 shadow-xs'
-                        : 'text-slate-500 hover:text-slate-900'
-                    )}
-                  >
-                    <span>{tab.label}</span>
-                    <span
-                      className={cn(
-                        'px-1.5 py-0.2 rounded-full text-[9px] font-black',
-                        isActive
-                          ? 'bg-slate-900 text-white'
-                          : 'bg-slate-200/70 text-slate-600'
-                      )}
-                    >
-                      {tab.count}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Active Filters Reset Link */}
-          {hasActiveFilters && (
-            <div className="flex justify-center pt-1">
+        {/* Type pills */}
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar w-full py-0.5">
+          {[
+            { type: 'all', label: 'All' },
+            { type: 'expense', label: 'Expenses' },
+            { type: 'income', label: 'Income' },
+            { type: 'transfer', label: 'Transfers' },
+          ].map((tab) => {
+            const isActive = filterType === tab.type;
+            return (
               <button
+                key={tab.type}
                 type="button"
-                onClick={resetAllFilters}
-                className="text-[11px] font-bold text-rose-600 hover:text-rose-700 flex items-center gap-1 cursor-pointer transition-colors px-1 shrink-0 whitespace-nowrap"
+                data-testid={`transactions-filter-${tab.type}`}
+                onClick={() => setFilterType(tab.type as typeof filterType)}
+                aria-pressed={isActive}
+                className={cn(
+                  'px-4 sm:px-5 py-2 rounded-full text-xs sm:text-sm font-bold whitespace-nowrap shrink-0 transition-all cursor-pointer active:scale-95',
+                  isActive
+                    ? 'bg-[#18181B] text-white shadow-[0_6px_16px_-6px_rgba(15,23,42,0.5)]'
+                    : 'bg-white text-slate-500 border border-slate-100 shadow-xs hover:text-slate-900'
+                )}
               >
-                <X size={12} /> Reset
+                {tab.label}
               </button>
-            </div>
+            );
+          })}
+          {hasActiveFilters && (
+            <button
+              type="button"
+              onClick={resetAllFilters}
+              className="ml-auto inline-flex items-center gap-1 px-3 py-2 rounded-full text-xs font-bold text-rose-600 hover:bg-rose-50 cursor-pointer transition-colors shrink-0 whitespace-nowrap"
+            >
+              <X size={12} /> Reset
+            </button>
           )}
         </div>
 
-        {/* Transaction List Card */}
-        <Card
-          data-testid="transactions-card-4"
-          variant="glass"
-          className="overflow-hidden !p-0 min-h-[350px] rounded-[24px] sm:rounded-[32px] border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)] bg-white/95"
-        >
-          {/* DESKTOP TABLE VIEW (lg+) */}
-          <div className="hidden lg:block overflow-x-auto">
-            <table data-testid="transactions-table" className="w-full">
-              <thead className="bg-slate-50/80 border-b border-slate-100">
-                <tr>
-                  <th className="px-5 py-3.5 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">
-                    Details & Entity
-                  </th>
-                  <th className="px-5 py-3.5 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">
-                    Timing & Context
-                  </th>
-                  <th className="px-5 py-3.5 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">
-                    Account / Route
-                  </th>
-                  <th className="px-5 py-3.5 text-right text-xs font-bold text-slate-400 uppercase tracking-wider">
-                    Amount & Bill
-                  </th>
-                  <th className="w-24 px-5 py-3.5 text-right text-xs font-bold text-slate-400 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100/80">
-                {visibleTransactions.map((transaction, i) => {
+        {/* Transaction list, grouped by day */}
+        <div data-testid="transactions-card-4" className="space-y-5">
+          {transactionGroups.map((group) => (
+            <section key={group.key}>
+              <p className="px-1 text-[11px] sm:text-xs font-extrabold uppercase tracking-wider text-slate-400">
+                {group.label}
+              </p>
+              <div className="mt-2 rounded-[24px] sm:rounded-[28px] bg-white border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.10)] px-4 sm:px-5 divide-y divide-slate-100">
+                {group.items.map((transaction, i) => {
                   const accountInfo = getAccountInfo(transaction.accountId);
                   const destAccountInfo = transaction.transferToAccountId ? getAccountInfo(transaction.transferToAccountId) : null;
                   const displayType = transaction.type === 'transfer'
                     ? (transaction.subcategory === 'Transfer In' ? 'income' : 'expense')
                     : transaction.type;
                   const attachedDocumentId = getDocumentIdFromTransaction(transaction);
-                  const attachedTaxAmount = parseMetadataNumber(transaction.importMetadata?.['Tax Amount']);
                   const formattedTime = formatTransactionTime(transaction.date);
+                  const category = transaction.category || 'Miscellaneous';
+                  const metaParts = [
+                    transaction.type === 'transfer' && destAccountInfo
+                      ? `${accountInfo.name} → ${destAccountInfo.name}`
+                      : category,
+                    transaction.type === 'transfer' && destAccountInfo ? null : accountInfo.name,
+                    transaction.groupName,
+                    transaction.contactName,
+                  ].filter(Boolean);
+                  const sideText = group.showDates
+                    ? formatLocalDate(transaction.date, 'en-US', { month: 'short', day: 'numeric' })
+                    : formattedTime;
 
                   return (
-                    <tr
-                      key={transaction.id ?? transaction.cloudId ?? i}
+                    <div
+                      key={transaction.id ?? transaction.cloudId ?? `${group.key}-${i}`}
+                      role="button"
+                      tabIndex={0}
+                      data-testid={`transactions-button-4-${transaction.id}`}
                       onClick={() => setSelectedTransaction(transaction)}
-                      className="group hover:bg-slate-50/80 transition-colors cursor-pointer"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          setSelectedTransaction(transaction);
+                        }
+                      }}
+                      className="group w-full flex items-center gap-3 sm:gap-4 py-3 sm:py-3.5 text-left cursor-pointer focus:outline-none focus-visible:bg-slate-50 rounded-xl"
                     >
-                      {/* 1. Details & Entity */}
-                      <td className="px-5 py-3.5">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-xs border border-slate-100 bg-slate-50/90 group-hover:bg-white shrink-0 transition-colors">
-                            {getCategoryCartoonIcon(transaction.category || 'Miscellaneous', 22)}
-                          </div>
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-1.5 flex-wrap">
-                              <p className="font-bold text-slate-900 text-xs sm:text-sm truncate max-w-[200px]">
-                                {transaction.description || transaction.category}
-                              </p>
-                              {transaction.merchant && transaction.merchant !== transaction.description && (
-                                <span className="text-[10px] font-semibold text-slate-500 bg-slate-100 px-1.5 py-0.2 rounded-full border border-slate-200/50 truncate max-w-[120px]">
-                                  {transaction.merchant}
-                                </span>
-                              )}
-                            </div>
+                      <div
+                        className="w-11 h-11 sm:w-12 sm:h-12 rounded-[14px] flex items-center justify-center shrink-0"
+                        style={{ backgroundColor: `${getCategoryColor(category)}1A` }}
+                      >
+                        {getCategoryCartoonIcon(category, 22)}
+                      </div>
 
-                            <div className="flex items-center gap-1 mt-0.5 flex-wrap">
-                              <span className="inline-flex items-center px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-slate-100/80 text-slate-700 border border-slate-200/40">
-                                {transaction.category}
-                              </span>
-                              {transaction.subcategory && (
-                                <span className="inline-flex items-center px-1.5 py-0.2 rounded-md text-[9px] font-medium bg-slate-50 text-slate-500 border border-slate-200/30">
-                                  {transaction.subcategory}
-                                </span>
-                              )}
-                              {transaction.groupName && (
-                                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200/50">
-                                  <Users size={9} /> {transaction.groupName}
-                                </span>
-                              )}
-                              {transaction.contactName && (
-                                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-amber-50 text-amber-800 border border-amber-200/50">
-                                  <HandCoins size={9} /> {transaction.contactName}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-
-                      {/* 2. Timing & Context */}
-                      <td className="px-5 py-3.5">
-                        <div className="min-w-0">
-                          <p className="text-xs font-bold text-slate-800">
-                            {formatLocalDate(transaction.date, 'en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <p className="font-bold text-slate-900 text-sm sm:text-base truncate">
+                            {transaction.description || category}
                           </p>
-                          <div className="flex items-center gap-1.5 mt-0.5">
-                            {formattedTime ? (
-                              <span className="text-[11px] text-slate-400 font-medium inline-flex items-center gap-1">
-                                <Clock size={10} /> {formattedTime}
-                              </span>
-                            ) : (
-                              <span className="text-[11px] text-slate-400 font-medium">Standard entry</span>
-                            )}
-                            {transaction.notes && (
-                              <span title={`Note: ${transaction.notes}`} className="text-slate-400 hover:text-slate-600">
-                                <FileText size={11} />
-                              </span>
-                            )}
-                          </div>
-                          {Array.isArray(transaction.tags) && transaction.tags.length > 0 && (
-                            <div className="flex items-center gap-1 mt-0.5 flex-wrap">
-                              {transaction.tags.slice(0, 2).map((tag, idx) => (
-                                <span key={idx} className="text-[9px] font-semibold text-slate-400 bg-slate-50 px-1.5 py-0.2 rounded">
-                                  #{tag}
-                                </span>
-                              ))}
-                              {transaction.tags.length > 2 && (
-                                <span className="text-[9px] font-bold text-slate-400">+{transaction.tags.length - 2}</span>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      </td>
-
-                      {/* 3. Account / Route */}
-                      <td className="px-5 py-3.5">
-                        {transaction.type === 'transfer' && destAccountInfo ? (
-                          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
-                            <span className="truncate max-w-[90px]">{accountInfo.name}</span>
-                            <ArrowRight size={12} className="text-purple-600 shrink-0" />
-                            <span className="truncate max-w-[90px] text-purple-700">{destAccountInfo.name}</span>
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-1.5">
-                            <accountInfo.Icon size={13} className="text-slate-400 shrink-0" />
-                            <span className="text-xs font-bold text-slate-700 truncate max-w-[130px]">
-                              {accountInfo.name}
-                            </span>
-                            <span className="text-[9px] font-semibold text-slate-400 px-1 py-0.2 bg-slate-100 rounded">
-                              {accountInfo.type}
-                            </span>
-                          </div>
-                        )}
-                      </td>
-
-                      {/* 4. Amount & Bill */}
-                      <td className="px-5 py-3.5 text-right">
-                        <div className="flex flex-col items-end">
-                          <span
-                            className={cn(
-                              'font-black text-xs sm:text-sm tracking-tight',
-                              transaction.type === 'transfer'
-                                ? 'text-purple-600'
-                                : displayType === 'income'
-                                ? 'text-emerald-600'
-                                : 'text-slate-900'
-                            )}
-                          >
-                            {transaction.type === 'transfer'
-                              ? '⇄ '
-                              : displayType === 'income'
-                              ? '+'
-                              : '-'}
-                            {formatCurrency(transaction.amount)}
-                          </span>
-
-                          <div className="flex items-center gap-1 mt-0.5 justify-end">
-                            {attachedDocumentId && (
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handlePreviewBill(transaction);
-                                }}
-                                className="inline-flex items-center gap-1 text-[9px] font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200/60 px-1.5 py-0.2 rounded-full transition-colors cursor-pointer"
-                                title="Click to view attached bill"
-                              >
-                                <Paperclip size={8} /> Receipt
-                              </button>
-                            )}
-                            {attachedTaxAmount > 0 && (
-                              <span className="text-[9px] font-semibold text-slate-500 bg-slate-100 px-1 py-0.2 rounded">
-                                GST {formatCurrency(attachedTaxAmount)}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </td>
-
-                      {/* 5. Actions */}
-                      <td className="px-5 py-3.5 text-right" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex justify-end items-center gap-1">
                           {attachedDocumentId && (
-                            <Button
-                              data-testid={`transactions-view-bill-${transaction.id}`}
-                              variant="ghost"
-                              size="icon"
-                              className="h-7 w-7 text-purple-600 hover:bg-purple-50 rounded-full"
-                              onClick={() => handlePreviewBill(transaction)}
-                              title="View bill"
-                            >
-                              <Eye size={13} />
-                            </Button>
+                            <Paperclip size={12} className="text-purple-500 shrink-0" aria-label="Bill attached" />
                           )}
-                          <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                            {canEdit && (
-                              <Button
-                                data-testid={`transactions-button-2-${transaction.id}`}
-                                variant="ghost"
-                                size="icon"
-                                className="h-7 w-7 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-full"
-                                onClick={() => {
-                                  localStorage.setItem('editTransactionId', transaction.id?.toString() || '');
-                                  setCurrentPage('add-transaction');
-                                }}
-                                title="Edit transaction"
-                              >
-                                <Edit2 size={12} />
-                              </Button>
-                            )}
-                            {canDelete && (
-                              <Button
-                                data-testid={`transactions-button-3-${transaction.id}`}
-                                variant="ghost"
-                                size="icon"
-                                className="h-7 w-7 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-full"
-                                onClick={() => handleDeleteTransaction(transaction.id!, transaction.description)}
-                                title="Delete transaction"
-                              >
-                                <Trash2 size={12} />
-                              </Button>
-                            )}
-                          </div>
                         </div>
-                      </td>
-                    </tr>
+                        <p className="text-xs sm:text-sm font-medium text-slate-400 truncate mt-0.5">
+                          {metaParts.join(' · ')}
+                        </p>
+                      </div>
+
+                      <div className="text-right shrink-0">
+                        <p
+                          className={cn(
+                            'font-extrabold text-sm sm:text-base tracking-tight',
+                            transaction.type === 'transfer'
+                              ? 'text-purple-600'
+                              : displayType === 'income'
+                              ? 'text-emerald-600'
+                              : 'text-slate-900'
+                          )}
+                        >
+                          {transaction.type === 'transfer' ? '⇄ ' : displayType === 'income' ? '+' : '−'}
+                          {formatCurrency(transaction.amount)}
+                        </p>
+                        {sideText && <p className="text-[11px] sm:text-xs font-medium text-slate-400 mt-0.5">{sideText}</p>}
+                      </div>
+
+                      {/* Quick actions on hover (desktop) */}
+                      <div className="hidden lg:flex items-center gap-0.5 shrink-0" onClick={(e) => e.stopPropagation()}>
+                        {attachedDocumentId && (
+                          <Button
+                            data-testid={`transactions-view-bill-${transaction.id}`}
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-purple-600 hover:bg-purple-50 rounded-full"
+                            onClick={() => handlePreviewBill(transaction)}
+                            title="View bill"
+                          >
+                            <Eye size={14} />
+                          </Button>
+                        )}
+                        {canEdit && (
+                          <Button
+                            data-testid={`transactions-button-2-${transaction.id}`}
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => {
+                              localStorage.setItem('editTransactionId', transaction.id?.toString() || '');
+                              setCurrentPage('add-transaction');
+                            }}
+                            title="Edit transaction"
+                          >
+                            <Edit2 size={13} />
+                          </Button>
+                        )}
+                        {canDelete && (
+                          <Button
+                            data-testid={`transactions-button-3-${transaction.id}`}
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => handleDeleteTransaction(transaction.id!, transaction.description)}
+                            title="Delete transaction"
+                          >
+                            <Trash2 size={13} />
+                          </Button>
+                        )}
+                      </div>
+                    </div>
                   );
                 })}
-              </tbody>
-            </table>
-          </div>
-
-          {/* MOBILE CARD LIST VIEW (< lg) - Compact & Elegant */}
-          <div className="lg:hidden divide-y divide-slate-100">
-            {visibleTransactions.map((transaction) => {
-              const accountInfo = getAccountInfo(transaction.accountId);
-              const destAccountInfo = transaction.transferToAccountId ? getAccountInfo(transaction.transferToAccountId) : null;
-              const displayType = transaction.type === 'transfer'
-                ? (transaction.subcategory === 'Transfer In' ? 'income' : 'expense')
-                : transaction.type;
-              const attachedDocumentId = getDocumentIdFromTransaction(transaction);
-              const formattedTime = formatTransactionTime(transaction.date);
-
-              return (
-                <button
-                  data-testid={`transactions-button-4-${transaction.id}`}
-                  key={transaction.id}
-                  onClick={() => setSelectedTransaction(transaction)}
-                  className="w-full flex items-start gap-3 px-3.5 py-3 hover:bg-slate-50/80 active:bg-slate-100 transition-colors text-left cursor-pointer"
-                >
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center shadow-2xs border border-slate-100 bg-slate-50/90 shrink-0 mt-0.5">
-                    {getCategoryCartoonIcon(transaction.category || 'Miscellaneous', 20)}
-                  </div>
-
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="font-bold text-slate-900 text-xs sm:text-sm truncate">
-                        {transaction.description || transaction.category}
-                      </p>
-                      <span
-                        className={cn(
-                          'font-black text-xs sm:text-sm tracking-tight shrink-0',
-                          transaction.type === 'transfer'
-                            ? 'text-purple-600'
-                            : displayType === 'income'
-                            ? 'text-emerald-600'
-                            : 'text-slate-900'
-                        )}
-                      >
-                        {transaction.type === 'transfer'
-                          ? '⇄ '
-                          : displayType === 'income'
-                          ? '+'
-                          : '-'}
-                        {formatCurrency(transaction.amount)}
-                      </span>
-                    </div>
-
-                    {/* Merchant & Subcategory Row */}
-                    <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                      {transaction.merchant && transaction.merchant !== transaction.description && (
-                        <span className="text-[10px] font-semibold text-slate-600 truncate max-w-[120px]">
-                          {transaction.merchant} •
-                        </span>
-                      )}
-                      <span className="text-[9px] font-bold text-slate-500 bg-slate-100 px-1.5 py-0.2 rounded-full">
-                        {transaction.category}
-                      </span>
-                      {transaction.subcategory && (
-                        <span className="text-[9px] font-medium text-slate-400 truncate max-w-[90px]">
-                          › {transaction.subcategory}
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Date, Time, Account & Bill pills */}
-                    <div className="flex items-center gap-1.5 mt-1 flex-wrap text-slate-400 text-[10px]">
-                      <span className="font-medium text-slate-500">
-                        {formatLocalDate(transaction.date, 'en-US', { month: 'short', day: 'numeric' })}
-                        {formattedTime ? ` • ${formattedTime}` : ''}
-                      </span>
-
-                      <span className="text-slate-300">•</span>
-
-                      {transaction.type === 'transfer' && destAccountInfo ? (
-                        <span className="inline-flex items-center gap-0.5 font-bold text-purple-700">
-                          {accountInfo.name} → {destAccountInfo.name}
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 font-medium text-slate-600">
-                          <accountInfo.Icon size={10} /> {accountInfo.name}
-                        </span>
-                      )}
-
-                      {attachedDocumentId && (
-                        <span className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded-full bg-purple-50 text-purple-700 font-bold text-[9px] border border-purple-200/50">
-                          <Paperclip size={8} /> Bill
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  <ChevronRight size={13} className="text-slate-300 shrink-0 self-center" />
-                </button>
-              );
-            })}
-          </div>
+              </div>
+            </section>
+          ))}
 
           {/* Empty State */}
           {filteredTransactions.length === 0 && (
-            <div className="py-16 flex flex-col items-center text-center px-4">
-              <div className="w-14 h-14 bg-slate-50 border border-slate-100 rounded-full flex items-center justify-center mb-3 text-slate-300 shadow-xs">
+            <div className="py-14 flex flex-col items-center text-center px-4 rounded-[24px] sm:rounded-[28px] bg-white border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.10)]">
+              <div className="w-14 h-14 bg-slate-50 border border-slate-100 rounded-full flex items-center justify-center mb-3 text-slate-300">
                 <Search size={24} />
               </div>
               <h3 className="text-sm sm:text-base font-bold text-slate-900">No transactions match your criteria</h3>
               <p className="text-slate-500 text-xs max-w-xs mt-1">
                 {hasActiveFilters
                   ? 'Try clearing your search query or relaxing your filter selections to view transactions.'
-                  : 'No transactions recorded for this period. Click "+ Add Transaction" to create your first entry.'}
+                  : 'No transactions recorded for this period. Tap + to add your first entry.'}
               </p>
               {hasActiveFilters ? (
                 <Button
@@ -1134,7 +956,7 @@ export const Transactions: React.FC = () => {
                 <Button
                   size="sm"
                   onClick={() => setShowTransactionTypeModal(true)}
-                  className="mt-3 rounded-full text-xs font-bold bg-slate-950 text-white"
+                  className="mt-3 rounded-full text-xs font-bold bg-[#18181B] text-white"
                 >
                   <Plus size={13} className="mr-1" /> Add Transaction
                 </Button>
@@ -1155,7 +977,7 @@ export const Transactions: React.FC = () => {
               endOfListText="All transactions loaded"
             />
           )}
-        </Card>
+        </div>
 
         {/* PROPER TRANSACTION DETAIL POPUP SCREEN - COMPACT & RESPONSIVE */}
         {selectedTransaction && typeof document !== 'undefined' && createPortal(

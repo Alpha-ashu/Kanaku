@@ -3,16 +3,13 @@ import { useApp, useSubFeature } from '@/contexts/AppContext';
 import { db } from '@/lib/database';
 import { backendService } from '@/lib/backend-api';
 import { queueTransactionDeleteSync } from '@/lib/auth-sync-integration';
-import { Plus, TrendingUp, TrendingDown, Edit2, Trash2, BarChart3, Activity, RefreshCw, Gem } from 'lucide-react';
+import { Plus, TrendingUp, Edit2, Trash2, BarChart3, Activity, RefreshCw, Gem, Coins, Bitcoin, Globe, House, Briefcase, ChartPie } from 'lucide-react';
 import { toast } from 'sonner';
 import { DeleteConfirmModal } from '@/app/components/shared/DeleteConfirmModal';
-import { Card } from '@/app/components/ui/card';
 import { Button } from '@/app/components/ui/button';
-import { PageHeader } from '@/app/components/ui/PageHeader';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { backendSyncService } from '@/lib/backend-sync-service';
 import { motion } from 'framer-motion';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { cn } from '@/lib/utils';
 import { LiveMarket } from '@/app/components/investments/LiveMarket';
 import { LiveMarketTicker } from '@/app/components/investments/LiveMarketTicker';
@@ -27,9 +24,72 @@ import {
  isClosedInvestment,
 } from '@/lib/investmentUtils';
 
-const COLORS = ['#000000', '#666666', '#999999', '#CCCCCC', '#E5E5E5', '#F0F0F0'];
-
 type Tab = 'portfolio' | 'market' | 'vault';
+
+const ASSET_STYLE: Record<string, { label: string; color: string; icon: React.ElementType }> = {
+  gold: { label: 'Gold', color: '#F59E0B', icon: Coins },
+  silver: { label: 'Silver', color: '#94A3B8', icon: Coins },
+  platinum: { label: 'Platinum', color: '#64748B', icon: Coins },
+  bronze: { label: 'Bronze', color: '#B45309', icon: Coins },
+  stock: { label: 'Stocks', color: '#10B981', icon: TrendingUp },
+  crypto: { label: 'Crypto', color: '#F97316', icon: Bitcoin },
+  forex: { label: 'Forex', color: '#0EA5E9', icon: Globe },
+  real_estate: { label: 'Real estate', color: '#8B5CF6', icon: House },
+  business: { label: 'Business', color: '#EC4899', icon: Briefcase },
+  other: { label: 'Other', color: '#6366F1', icon: ChartPie },
+};
+
+type InvestmentRecord = ReturnType<typeof useApp>['investments'][number];
+
+/**
+ * Capital deployed over time: cumulative amount invested by purchase date, ending at today's
+ * value. Built only from recorded purchases — no price history is invented.
+ */
+const PortfolioGrowthLine: React.FC<{
+  investments: InvestmentRecord[];
+  getMetrics: (investment: InvestmentRecord) => { totalInvested: number };
+  currentValue: number;
+}> = ({ investments, getMetrics, currentValue }) => {
+  const gradientId = `portfolio-growth-${React.useId().replace(/:/g, '')}`;
+  const dated = investments
+    .map((investment) => ({ time: new Date(investment.purchaseDate).getTime(), amount: Number(getMetrics(investment).totalInvested) || 0 }))
+    .filter((point) => Number.isFinite(point.time))
+    .sort((a, b) => a.time - b.time);
+  if (dated.length === 0) return null;
+
+  let running = 0;
+  const values = dated.map((point) => (running += point.amount));
+  values.push(currentValue);
+  if (values.length < 2) return null;
+
+  const width = 300;
+  const height = 56;
+  const max = Math.max(...values);
+  const min = Math.min(0, ...values);
+  const span = max - min || 1;
+  const points = values.map((value, index) => {
+    const x = (index / (values.length - 1)) * width;
+    const y = height - 4 - ((value - min) / span) * (height - 8);
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  });
+  const firstPurchase = new Date(dated[0].time).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+
+  return (
+    <div className="relative mt-4">
+      <svg viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" className="h-14 w-full" aria-hidden="true">
+        <defs>
+          <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#a78bfa" stopOpacity="0.45" />
+            <stop offset="100%" stopColor="#a78bfa" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <path d={`M0,${height} L${points.join(' L')} L${width},${height} Z`} fill={`url(#${gradientId})`} />
+        <polyline points={points.join(' ')} fill="none" stroke="#c4b5fd" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+      </svg>
+      <p className="mt-1 text-[10px] sm:text-[11px] font-medium text-white/50">Invested since {firstPurchase} → today&apos;s value</p>
+    </div>
+  );
+};
 
 export const Investments: React.FC = () => {
  const { investments, currency, setCurrentPage, refreshData } = useApp();
@@ -43,6 +103,7 @@ export const Investments: React.FC = () => {
  const [liveQuotes, setLiveQuotes] = useState<Record<string, StockQuote | null>>({});
  const [updatingPrices, setUpdatingPrices] = useState(false);
  const [closingInvestment, setClosingInvestment] = useState<(typeof investments)[number] | null>(null);
+ const [expandedHoldingId, setExpandedHoldingId] = useState<number | null>(null);
  const priceTimer = useRef<ReturnType<typeof setInterval> | null>(null);
  const priceFetchInFlight = useRef(false);
 
@@ -217,6 +278,20 @@ export const Investments: React.FC = () => {
  }
  };
 
+  const cardClass =
+    'bg-white border border-slate-100 rounded-[24px] sm:rounded-[28px] shadow-[0_10px_30px_-4px_rgba(112,144,176,0.10)]';
+  const isProfit = portfolioStats.profitLoss >= 0;
+  const allocationTotal = portfolioStats.chartData.reduce((sum, item) => sum + item.value, 0);
+  const allocation = [...portfolioStats.chartData]
+    .filter((item) => item.value > 0)
+    .sort((a, b) => b.value - a.value)
+    .map((item) => ({
+      ...item,
+      pct: allocationTotal > 0 ? (item.value / allocationTotal) * 100 : 0,
+      color: ASSET_STYLE[item.name.toLowerCase()]?.color ?? ASSET_STYLE.other.color,
+    }));
+  const holdings = [...openInvestments].sort((a, b) => getMetrics(b).currentValue - getMetrics(a).currentValue);
+
   return (
     <CenteredLayout
       onRefresh={async () => {
@@ -225,490 +300,329 @@ export const Investments: React.FC = () => {
         await fetchLivePrices(true);
       }}
     >
-  <div className="space-y-6 sm:space-y-8 investments-container portfolio-container" aria-label="Investments Portfolio">
-  {/* Header */}
-  <PageHeader
-  title="Investments"
-  showBack
-  backTo="dashboard"
-  >
-  {canAdd && (
-  <Button
-  onClick={() => setCurrentPage('add-investment')}
-  className="shadow-xs bg-[#18181B] hover:bg-black text-white h-9 sm:h-10 px-3.5 sm:px-5 rounded-full font-bold text-xs sm:text-sm flex items-center gap-1.5 active:scale-95 transition-all cursor-pointer shrink-0"
-  data-testid="investments-add-button"
-  >
-  <Plus size={16} />
-  <span className="hidden sm:inline">Add Investment</span>
-  <span className="sm:hidden">Add</span>
-  </Button>
-  )}
-  </PageHeader>
-
-  {/* Live Market Ticker */}
-  <div className="w-full overflow-hidden rounded-2xl">
-  <LiveMarketTicker />
-  </div>
-
-  {/* Tab switcher */}
-  <div className="flex gap-1 p-1 bg-white/95 rounded-full border border-slate-200/80 shadow-xs w-fit">
-  {([
-  { id: 'portfolio', label: 'My Portfolio', icon: BarChart3 },
-  { id: 'market', label: 'Live Market', icon: Activity },
-  { id: 'vault', label: 'Wealth Vault', icon: Gem },
-  ] as const).map(({ id, label, icon: Icon }) => (
-  <button
-  key={id}
-  onClick={() => setActiveTab(id)}
-  className={cn(
-  'flex items-center gap-1.5 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs font-bold transition-all cursor-pointer',
-  activeTab === id
-  ? 'bg-[#18181B] text-white shadow-xs'
-  : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100/60'
-  )}
-  data-testid={`investments-tab-${id}-button`}
-  >
-  <Icon size={14} className={activeTab === id ? 'text-white' : 'text-slate-400'} />
-  <span>{label}</span>
-  </button>
-  ))}
-  </div>
-
- {/* LIVE MARKET TAB */}
- {activeTab === 'market' && (
- <motion.div
- initial={{ opacity: 0, y: 12 }}
- animate={{ opacity: 1, y: 0 }}
- className="w-full"
- >
- {/* LiveMarket panel - grows with viewport, min capped so it's usable on short screens */}
- <div className="min-h-[480px] h-auto lg:h-[calc(100svh-22rem)] lg:max-h-[820px]">
- <LiveMarket />
- </div>
- </motion.div>
- )}
-
- {/* WEALTH VAULT TAB */}
- {activeTab === 'vault' && (
- <motion.div
- initial={{ opacity: 0, y: 12 }}
- animate={{ opacity: 1, y: 0 }}
- className="w-full"
- >
- <WealthVaultDashboard />
- </motion.div>
- )}
-
- {/* MY PORTFOLIO TAB */}
- {activeTab === 'portfolio' && (
- <motion.div
- initial={{ opacity: 0, y: 12 }}
- animate={{ opacity: 1, y: 0 }}
- className="space-y-6 sm:space-y-8"
- >
-        {/* Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-5">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-            <Card data-testid="investments-card" className="p-4 sm:p-6 rounded-[24px] sm:rounded-[32px] bg-white border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] relative overflow-hidden">
-              <div className="relative z-10">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-slate-100 rounded-2xl flex items-center justify-center mb-2 sm:mb-3 text-slate-800">
-                  <TrendingUp size={18} />
-                </div>
-                <p className="text-slate-400 font-bold mb-0.5 sm:mb-1 text-[10px] sm:text-xs uppercase tracking-wider">Total Invested</p>
-                <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                  {formatCurrency(portfolioStats.totalInvested)}
-                </h3>
-              </div>
-            </Card>
-          </motion.div>
-
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-            <Card data-testid="investments-card-2" className="p-4 sm:p-6 rounded-[24px] sm:rounded-[32px] bg-white border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] relative overflow-hidden">
-              <div className="relative z-10">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-slate-100 rounded-2xl flex items-center justify-center mb-2 sm:mb-3 text-slate-800">
-                  <BarChart3 size={18} />
-                </div>
-                <p className="text-slate-400 font-bold mb-0.5 sm:mb-1 text-[10px] sm:text-xs uppercase tracking-wider">Current Value</p>
-                <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                  {formatCurrency(portfolioStats.currentValue)}
-                </h3>
-              </div>
-            </Card>
-          </motion.div>
-
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-            <Card data-testid="investments-card-3" className="p-4 sm:p-6 rounded-[24px] sm:rounded-[32px] bg-white border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] relative overflow-hidden">
-              <div className="relative z-10">
-                <div className={cn("w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center mb-2 sm:mb-3", portfolioStats.profitLoss >= 0 ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600")}>
-                  {portfolioStats.profitLoss >= 0
-                    ? <TrendingUp size={18} />
-                    : <TrendingDown size={18} />}
-                </div>
-                <p className="text-slate-400 font-bold mb-0.5 sm:mb-1 text-[10px] sm:text-xs uppercase tracking-wider">Profit / Loss</p>
-                <div className="flex items-baseline gap-2">
-                  <h3 className={cn("text-xl sm:text-2xl font-black tracking-tight", portfolioStats.profitLoss >= 0 ? "text-emerald-600" : "text-rose-600")}>
-                    {portfolioStats.profitLoss >= 0 ? '+' : ''}{formatCurrency(portfolioStats.profitLoss)}
-                  </h3>
-                  <span className={cn("text-xs font-bold", portfolioStats.profitLoss >= 0 ? "text-emerald-600" : "text-rose-600")}>
-                    ({portfolioStats.profitLoss >= 0 ? '+' : ''}{portfolioStats.profitLossPercent.toFixed(2)}%)
-                  </span>
-                </div>
-              </div>
-            </Card>
-          </motion.div>
-        </div>
-
-        {/* Charts */}
-        {openInvestments.length > 0 && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card data-testid="investments-card-4" className="p-5 sm:p-6 rounded-[28px] sm:rounded-[32px] bg-white border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)]">
-              <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight mb-4">Asset Allocation</h3>
-              <ResponsiveContainer width="100%" height={250}>
-                <PieChart>
-                  <Pie
-                    data={portfolioStats.chartData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {portfolioStats.chartData.map((_, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-                </PieChart>
-              </ResponsiveContainer>
-            </Card>
-
-            <Card data-testid="investments-card-5" className="p-5 sm:p-6 rounded-[28px] sm:rounded-[32px] bg-white border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)]">
-              <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight mb-4">Top Performers</h3>
-              <div className="space-y-3">
-                {[...openInvestments]
-                  .sort((a, b) => getMetrics(b).percentChange - getMetrics(a).percentChange)
-                  .slice(0, 5)
-                  .map(inv => {
-                    const metrics = getMetrics(inv);
-                    return (
-                      <div key={inv.id} className="flex items-center justify-between p-3.5 bg-slate-50/70 rounded-2xl border border-slate-100/80 hover:bg-slate-100/70 transition-colors">
-                        <div>
-                          <p className="font-bold text-slate-900 text-sm">{getInvestmentDisplayName(inv.assetName)}</p>
-                          <p className="text-xs text-slate-400 capitalize mt-0.5">{inv.assetType} {metrics.assetCurrency}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className={`font-bold text-sm ${metrics.profitLoss >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-                            {metrics.profitLoss >= 0 ? '+' : ''}{formatCurrency(metrics.profitLoss)}
-                          </p>
-                          <p className={`text-xs font-bold ${metrics.profitLoss >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-                            {metrics.percentChange >= 0 ? '+' : ''}{metrics.percentChange.toFixed(2)}%
-                          </p>
-                        </div>
-                      </div>
-                    );
-                  })}
-              </div>
-            </Card>
+      <div className="space-y-5 sm:space-y-6 investments-container portfolio-container" aria-label="Investments Portfolio">
+        {/* Header */}
+        <div className="flex items-center justify-between gap-3 w-full">
+          <div className="min-w-0">
+            <p className="text-xs sm:text-sm font-semibold text-slate-400 truncate">Portfolio</p>
+            <h1 className="font-page-title text-slate-900 tracking-tight leading-tight truncate">Investments</h1>
           </div>
-        )}
-
-        {openInvestments.length > 0 && (
-          <Card data-testid="investments-card-6" className="rounded-[28px] sm:rounded-[32px] bg-white border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] overflow-hidden hidden sm:block">
-            <div className="flex items-center justify-between px-6 py-4 bg-white border-b border-slate-100">
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                Portfolio Holdings
-                {Object.keys(liveQuotes).length > 0 && (
-                  <span className="ml-2 text-emerald-600 font-normal"> Live</span>
-                )}
-              </p>
+          <div className="flex items-center gap-2 shrink-0">
+            {activeTab === 'portfolio' && openInvestments.length > 0 && (
               <button
+                type="button"
                 onClick={() => fetchLivePrices(true)}
                 disabled={updatingPrices}
-                className="flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-slate-800 transition-colors disabled:opacity-40 cursor-pointer"
+                className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white border border-slate-100 text-slate-700 flex items-center justify-center shadow-[0_6px_18px_-6px_rgba(15,23,42,0.18)] active:scale-95 transition-all cursor-pointer disabled:opacity-60"
                 data-testid="investments-refresh-prices-button"
+                aria-label="Update prices"
+                title="Update prices"
               >
-                <RefreshCw size={12} className={cn(updatingPrices && 'animate-spin')} />
-                Update Prices
+                <RefreshCw size={18} className={cn(updatingPrices && 'animate-spin')} />
               </button>
+            )}
+            {canAdd && (
+              <button
+                type="button"
+                onClick={() => setCurrentPage('add-investment')}
+                className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-[#18181B] hover:bg-black text-white flex items-center justify-center shadow-[0_8px_20px_-6px_rgba(15,23,42,0.45)] active:scale-95 transition-all cursor-pointer"
+                data-testid="investments-add-button"
+                aria-label="Add investment"
+                title="Add investment"
+              >
+                <Plus size={20} />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar w-full py-0.5">
+          {([
+            { id: 'portfolio', label: 'My Portfolio', icon: BarChart3 },
+            { id: 'market', label: 'Live Market', icon: Activity },
+            { id: 'vault', label: 'Wealth Vault', icon: Gem },
+          ] as const).map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setActiveTab(id)}
+              aria-pressed={activeTab === id}
+              className={cn(
+                'inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs sm:text-sm font-bold whitespace-nowrap shrink-0 transition-all cursor-pointer active:scale-95',
+                activeTab === id
+                  ? 'bg-[#18181B] text-white shadow-[0_6px_16px_-6px_rgba(15,23,42,0.5)]'
+                  : 'bg-white text-slate-500 border border-slate-100 shadow-xs hover:text-slate-900'
+              )}
+              data-testid={`investments-tab-${id}-button`}
+            >
+              <Icon size={14} />
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {/* LIVE MARKET TAB */}
+        {activeTab === 'market' && (
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="w-full space-y-4">
+            <div className="w-full overflow-hidden rounded-2xl">
+              <LiveMarketTicker />
             </div>
-            <div className="overflow-x-auto">
-              <table data-testid="investments-table" className="w-full">
-                <thead className="bg-slate-50/60">
-                  <tr>
-                    <th className="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Asset</th>
-                    <th className="px-6 py-3.5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">Type</th>
-                    <th className="px-6 py-3.5 text-right text-[11px] font-bold text-slate-500 uppercase tracking-wider">Qty</th>
-                    <th className="px-6 py-3.5 text-right text-[11px] font-bold text-slate-500 uppercase tracking-wider">Buy Price</th>
-                    <th className="px-6 py-3.5 text-right text-[11px] font-bold text-slate-500 uppercase tracking-wider">Current</th>
-                    <th className="px-6 py-3.5 text-right text-[11px] font-bold text-slate-500 uppercase tracking-wider">Value</th>
-                    <th className="px-6 py-3.5 text-right text-[11px] font-bold text-slate-500 uppercase tracking-wider">P/L</th>
-                    <th className="px-6 py-3.5" />
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {openInvestments.map(inv => {
+            <div className="min-h-[480px] h-auto lg:h-[calc(100svh-22rem)] lg:max-h-[820px]">
+              <LiveMarket />
+            </div>
+          </motion.div>
+        )}
+
+        {/* WEALTH VAULT TAB */}
+        {activeTab === 'vault' && (
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="w-full">
+            <WealthVaultDashboard />
+          </motion.div>
+        )}
+
+        {/* MY PORTFOLIO TAB */}
+        {activeTab === 'portfolio' && (
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-4 sm:space-y-5">
+            {investments.length > 0 && (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
+                {/* Portfolio value */}
+                <div
+                  data-testid="investments-card-2"
+                  className="relative overflow-hidden rounded-[24px] sm:rounded-[28px] bg-gradient-to-br from-[#18181B] via-[#1e1b4b] to-[#4c1d95] p-5 sm:p-6 text-white shadow-[0_18px_40px_-18px_rgba(76,29,149,0.6)]"
+                >
+                  <span className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-violet-500/25 blur-3xl" />
+                  <p className="relative text-xs sm:text-sm font-semibold text-white/60">Current value</p>
+                  <p className="relative text-3xl sm:text-4xl font-black tracking-tight truncate">{formatCurrency(portfolioStats.currentValue)}</p>
+                  <p className={cn('relative mt-1 text-xs sm:text-sm font-bold', isProfit ? 'text-emerald-300' : 'text-rose-300')}>
+                    {isProfit ? '+' : ''}{formatCurrency(portfolioStats.profitLoss)} ({isProfit ? '+' : ''}{portfolioStats.profitLossPercent.toFixed(1)}%) all time
+                  </p>
+                  <div data-testid="investments-card" className="relative mt-3 flex items-center gap-4 text-[11px] sm:text-xs font-semibold text-white/60">
+                    <span>Total invested <span className="text-white">{formatCurrency(portfolioStats.totalInvested)}</span></span>
+                    <span>{openInvestments.length} {openInvestments.length === 1 ? 'holding' : 'holdings'}</span>
+                  </div>
+                  <PortfolioGrowthLine investments={openInvestments} getMetrics={getMetrics} currentValue={portfolioStats.currentValue} />
+                </div>
+
+                {/* Allocation */}
+                {allocation.length > 0 && (
+                  <div data-testid="investments-card-4" className={cn(cardClass, 'p-5 sm:p-6 flex flex-col justify-center')}>
+                    <p className="text-[11px] sm:text-xs font-extrabold uppercase tracking-wider text-slate-400">Asset allocation</p>
+                    <div className="mt-3 flex h-3 gap-1 overflow-hidden rounded-full">
+                      {allocation.map((item) => (
+                        <span key={item.name} className="h-full rounded-full" style={{ width: `${item.pct}%`, backgroundColor: item.color }} title={`${item.name} ${item.pct.toFixed(0)}%`} />
+                      ))}
+                    </div>
+                    <div className="mt-4 grid grid-cols-2 gap-x-6 gap-y-2.5">
+                      {allocation.map((item) => (
+                        <div key={item.name} className="flex items-center gap-2 text-xs sm:text-sm min-w-0">
+                          <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
+                          <span className="font-medium text-slate-500 truncate">{ASSET_STYLE[item.name.toLowerCase()]?.label ?? item.name}</span>
+                          <span className="ml-auto font-bold text-slate-900">{item.pct.toFixed(0)}%</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Holdings */}
+            {holdings.length > 0 && (
+              <div>
+                <div className="flex items-center justify-between px-1 mb-2">
+                  <p className="text-[11px] sm:text-xs font-extrabold uppercase tracking-wider text-slate-400">
+                    Holdings
+                    {Object.keys(liveQuotes).length > 0 && <span className="ml-2 normal-case tracking-normal text-emerald-600">● Live prices</span>}
+                  </p>
+                  <span className="text-[11px] sm:text-xs font-bold text-slate-400">Tap for details</span>
+                </div>
+                <div data-testid="investments-card-6" className={cn(cardClass, 'px-4 sm:px-5 divide-y divide-slate-100')}>
+                  {holdings.map((inv) => {
                     const metrics = getMetrics(inv);
+                    const gain = metrics.profitLoss >= 0;
+                    const style = ASSET_STYLE[inv.assetType] ?? ASSET_STYLE.other;
+                    const Icon = style.icon;
+                    const expanded = expandedHoldingId === inv.id;
                     return (
-                      <tr key={inv.id} className="hover:bg-slate-50/70 transition-colors">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="font-bold text-slate-900 text-sm">{getInvestmentDisplayName(inv.assetName)}</div>
-                          <div className="text-xs text-slate-400">{inv.purchaseDate ? new Date(inv.purchaseDate).toLocaleDateString() : '—'}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-slate-100 text-slate-600 capitalize">{inv.assetType}</span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-slate-900">{inv.quantity}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-semibold text-slate-900">
-                          <div>{formatNativeMoney(metrics.nativeBuyPrice, metrics.assetCurrency)}</div>
-                          {metrics.assetCurrency !== currency && (
-                            <div className="text-xs text-slate-400">{formatCurrency(metrics.convertedBuyPrice)}</div>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-semibold text-slate-900">
-                          <div className={cn(metrics.isLive && 'text-emerald-700 font-bold')}>
-                            {formatNativeMoney(metrics.nativeCurrentPrice, metrics.assetCurrency)}
-                            {metrics.isLive && <span className="ml-1 text-[10px] text-emerald-500"></span>}
-                          </div>
-                          {metrics.assetCurrency !== currency && (
-                            <div className="text-xs text-slate-400">{formatCurrency(metrics.convertedCurrentPrice)}</div>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-slate-900">{formatCurrency(metrics.currentValue)}</td>
-                        <td className={`px-6 py-4 whitespace-nowrap text-right text-sm font-bold ${metrics.profitLoss >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-                          <div className="flex items-center justify-end gap-1">
-                            {metrics.profitLoss >= 0 ? <TrendingUp size={15} /> : <TrendingDown size={15} />}
-                            {metrics.profitLoss >= 0 ? '+' : ''}{formatCurrency(metrics.profitLoss)}
-                          </div>
-                          <div className="text-xs font-semibold">
-                            {metrics.percentChange >= 0 ? '+' : ''}{metrics.percentChange.toFixed(2)}%
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-center">
-                          <div className="flex gap-2 justify-center items-center">
-                            {canEdit && (
+                      <div key={inv.id} data-testid={`investments-card-7-${inv.id}`} className="py-3 sm:py-3.5">
+                        <button
+                          type="button"
+                          onClick={() => setExpandedHoldingId(expanded ? null : inv.id ?? null)}
+                          aria-expanded={expanded}
+                          className="w-full flex items-center gap-3 sm:gap-4 text-left cursor-pointer"
+                        >
+                          <span className="w-11 h-11 sm:w-12 sm:h-12 rounded-[14px] flex items-center justify-center shrink-0" style={{ backgroundColor: `${style.color}1F`, color: style.color }}>
+                            <Icon size={20} />
+                          </span>
+                          <span className="min-w-0 flex-1">
+                            <span className="block text-sm sm:text-base font-bold text-slate-900 truncate">{getInvestmentDisplayName(inv.assetName)}</span>
+                            <span className="block text-xs sm:text-sm font-medium text-slate-400 truncate">
+                              {style.label} · Qty {inv.quantity}
+                              {metrics.isLive ? ' · live' : ''}
+                            </span>
+                          </span>
+                          <span className="text-right shrink-0">
+                            <span className="block text-sm sm:text-base font-extrabold text-slate-900">{formatCurrency(metrics.currentValue)}</span>
+                            <span className={cn('block text-xs font-bold', gain ? 'text-emerald-600' : 'text-rose-600')}>
+                              {metrics.percentChange >= 0 ? '+' : ''}{metrics.percentChange.toFixed(1)}%
+                            </span>
+                          </span>
+                        </button>
+
+                        {expanded && (
+                          <div className="mt-3 rounded-2xl bg-slate-50 border border-slate-100 p-3.5">
+                            <div className="grid grid-cols-2 gap-x-4 gap-y-2.5 text-xs">
+                              <div>
+                                <p className="font-bold uppercase tracking-wider text-[10px] text-slate-400">Buy price</p>
+                                <p className="font-bold text-slate-900 mt-0.5">{formatNativeMoney(metrics.nativeBuyPrice, metrics.assetCurrency)}</p>
+                              </div>
+                              <div>
+                                <p className="font-bold uppercase tracking-wider text-[10px] text-slate-400">Current price</p>
+                                <p className={cn('font-bold mt-0.5', metrics.isLive ? 'text-emerald-700' : 'text-slate-900')}>
+                                  {formatNativeMoney(metrics.nativeCurrentPrice, metrics.assetCurrency)}
+                                </p>
+                              </div>
+                              <div>
+                                <p className="font-bold uppercase tracking-wider text-[10px] text-slate-400">Invested</p>
+                                <p className="font-bold text-slate-900 mt-0.5">{formatCurrency(metrics.totalInvested)}</p>
+                              </div>
+                              <div>
+                                <p className="font-bold uppercase tracking-wider text-[10px] text-slate-400">Profit / loss</p>
+                                <p className={cn('font-bold mt-0.5', gain ? 'text-emerald-600' : 'text-rose-600')}>
+                                  {gain ? '+' : ''}{formatCurrency(metrics.profitLoss)}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="mt-3 flex items-center gap-2">
                               <button
-                                onClick={() => { localStorage.setItem('editingInvestmentId', inv.id!.toString()); setCurrentPage('edit-investment'); }}
-                                className="text-slate-400 hover:text-slate-800 transition-colors p-1.5 hover:bg-slate-100 rounded-full cursor-pointer"
-                                title="Edit"
-                                data-testid={`investments-edit-button-${inv.id}`}
+                                type="button"
+                                onClick={() => setClosingInvestment(inv)}
+                                className="flex-1 h-9 rounded-full bg-[#18181B] hover:bg-black text-white text-xs font-bold transition-all active:scale-95 cursor-pointer"
+                                data-testid={`investments-complete-order-button-${inv.id}`}
                               >
-                                <Edit2 size={15} />
+                                Complete Order
                               </button>
-                            )}
-                            <button
-                              onClick={() => setClosingInvestment(inv)}
-                              className="px-3.5 py-1.5 rounded-full bg-[#18181B] hover:bg-black text-white text-xs font-bold transition-all shadow-xs active:scale-95 cursor-pointer"
-                              title="Complete Order"
-                              data-testid={`investments-complete-order-button-${inv.id}`}
-                            >
-                              Complete Order
-                            </button>
-                            {canDelete && (
-                              <button
-                                onClick={() => handleDeleteInvestment(inv.id!, inv.assetName)}
-                                className="text-slate-400 hover:text-rose-600 transition-colors p-1.5 hover:bg-rose-50 rounded-full cursor-pointer"
-                                title="Delete"
-                                data-testid={`investments-delete-button-${inv.id}`}
-                              >
-                                <Trash2 size={15} />
-                              </button>
-                            )}
+                              {canEdit && (
+                                <button
+                                  type="button"
+                                  onClick={() => { localStorage.setItem('editingInvestmentId', inv.id!.toString()); setCurrentPage('edit-investment'); }}
+                                  className="w-9 h-9 rounded-full bg-white border border-slate-200/70 text-slate-500 hover:text-slate-900 flex items-center justify-center transition-colors cursor-pointer"
+                                  title="Edit"
+                                  aria-label={`Edit ${getInvestmentDisplayName(inv.assetName)}`}
+                                  data-testid={`investments-edit-button-${inv.id}`}
+                                >
+                                  <Edit2 size={14} />
+                                </button>
+                              )}
+                              {canDelete && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteInvestment(inv.id!, inv.assetName)}
+                                  className="w-9 h-9 rounded-full bg-white border border-slate-200/70 text-slate-500 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center transition-colors cursor-pointer"
+                                  title="Delete"
+                                  aria-label={`Delete ${getInvestmentDisplayName(inv.assetName)}`}
+                                  data-testid={`investments-delete-button-${inv.id}`}
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                              )}
+                            </div>
                           </div>
-                        </td>
-                      </tr>
+                        )}
+                      </div>
                     );
                   })}
-                </tbody>
-              </table>
-            </div>
-          </Card>
-        )}
+                </div>
+              </div>
+            )}
 
-        {openInvestments.length > 0 && (
-          <div className="sm:hidden space-y-3">
-            {openInvestments.map(inv => {
-              const metrics = getMetrics(inv);
-              const isProfit = metrics.profitLoss >= 0;
-              return (
-                <Card data-testid={`investments-card-7-${inv.id}`} key={inv.id} className="p-4 sm:p-5 rounded-[24px] sm:rounded-[28px] bg-white border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)]">
-                  {/* Row 1: name + actions */}
-                  <div className="flex items-start justify-between gap-2 mb-3">
-                    <div className="min-w-0">
-                      <p className="font-black text-slate-900 text-base truncate tracking-tight">{getInvestmentDisplayName(inv.assetName)}</p>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <span className="px-2 py-0.5 text-xs font-bold rounded-full bg-slate-100 text-slate-600 capitalize">{inv.assetType}</span>
-                        <span className="text-xs text-slate-400">{inv.purchaseDate ? new Date(inv.purchaseDate).toLocaleDateString() : '—'}</span>
+            {openInvestments.length === 0 && completedInvestments.length > 0 && (
+              <div data-testid="investments-card-8" className={cn(cardClass, 'p-8 text-center')}>
+                <h3 className="text-base sm:text-lg font-bold text-slate-900">No open holdings</h3>
+                <p className="text-sm text-slate-500 mt-1">All your tracked positions are completed. Add a new investment to start another order.</p>
+              </div>
+            )}
+
+            {completedInvestments.length > 0 && (
+              <div>
+                <div className="flex items-center justify-between px-1 mb-2">
+                  <p className="text-[11px] sm:text-xs font-extrabold uppercase tracking-wider text-slate-400">Completed orders</p>
+                  <span className="text-[11px] sm:text-xs font-bold text-slate-400">{completedInvestments.length} closed</span>
+                </div>
+                <div data-testid="investments-card-9" className={cn(cardClass, 'px-4 sm:px-5 divide-y divide-slate-100')}>
+                  {completedInvestments.map((investment) => {
+                    const metrics = getMetrics(investment);
+                    const style = ASSET_STYLE[investment.assetType] ?? ASSET_STYLE.other;
+                    const Icon = style.icon;
+                    return (
+                      <div key={investment.id} className="flex items-center gap-3 sm:gap-4 py-3 sm:py-3.5">
+                        <span className="w-11 h-11 rounded-[14px] flex items-center justify-center shrink-0 bg-slate-100 text-slate-500">
+                          <Icon size={20} />
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm sm:text-base font-bold text-slate-900 truncate">{getInvestmentDisplayName(investment.assetName)}</p>
+                          <p className="text-xs sm:text-sm font-medium text-slate-400 truncate">
+                            Sold at {formatNativeMoney(investment.closePrice || metrics.nativeCurrentPrice, metrics.assetCurrency)}
+                            {investment.closedAt ? ` · ${new Date(investment.closedAt).toLocaleDateString()}` : ''}
+                          </p>
+                          {!!investment.closeNotes && <p className="text-xs text-slate-400 truncate">{investment.closeNotes}</p>}
+                        </div>
+                        <div className="text-right shrink-0">
+                          <p className="text-sm sm:text-base font-extrabold text-slate-900">{formatCurrency(metrics.netSaleValue ?? 0)}</p>
+                          <p className={cn('text-xs font-bold', metrics.profitLoss >= 0 ? 'text-emerald-600' : 'text-rose-600')}>
+                            {metrics.profitLoss >= 0 ? '+' : ''}{formatCurrency(metrics.profitLoss)}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex gap-1 shrink-0">
-                      {canEdit && (
-                        <button
-                          onClick={() => { localStorage.setItem('editingInvestmentId', inv.id!.toString()); setCurrentPage('edit-investment'); }}
-                          className="text-slate-400 hover:text-slate-800 transition-colors p-2 hover:bg-slate-100 rounded-full cursor-pointer"
-                          title="Edit"
-                          data-testid={`investments-mobile-edit-button-${inv.id}`}
-                        >
-                          <Edit2 size={14} />
-                        </button>
-                      )}
-                      {canDelete && (
-                        <button
-                          onClick={() => handleDeleteInvestment(inv.id!, inv.assetName)}
-                          className="text-slate-400 hover:text-rose-600 transition-colors p-2 hover:bg-rose-50 rounded-full cursor-pointer"
-                          title="Delete"
-                          data-testid={`investments-mobile-delete-button-${inv.id}`}
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      )}
-                    </div>
-                  </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
-                  {/* Row 2: key numbers grid */}
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="bg-slate-50/80 border border-slate-100/80 rounded-2xl p-3">
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Qty</p>
-                      <p className="text-sm font-black text-slate-900">{inv.quantity}</p>
-                    </div>
-                    <div className="bg-slate-50/80 border border-slate-100/80 rounded-2xl p-3">
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Buy Price</p>
-                      <p className="text-sm font-black text-slate-900">{formatNativeMoney(metrics.nativeBuyPrice, metrics.assetCurrency)}</p>
-                    </div>
-                    <div className="bg-slate-50/80 border border-slate-100/80 rounded-2xl p-3">
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Current Price {metrics.isLive && <span className="text-emerald-500"></span>}</p>
-                      <p className={cn("text-sm font-black", metrics.isLive ? "text-emerald-700" : "text-slate-900")}>
-                        {formatNativeMoney(metrics.nativeCurrentPrice, metrics.assetCurrency)}
-                      </p>
-                    </div>
-                    <div className="bg-slate-50/80 border border-slate-100/80 rounded-2xl p-3">
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Total Value</p>
-                      <p className="text-sm font-black text-slate-900">{formatCurrency(metrics.currentValue)}</p>
-                    </div>
-                  </div>
-
-                  {/* Row 3: P/L badge */}
-                  <div className={`mt-3 flex items-center justify-between px-3.5 py-2.5 rounded-2xl border ${isProfit ? 'bg-emerald-50 text-emerald-700 border-emerald-100/80' : 'bg-rose-50 text-rose-700 border-rose-100/80'}`}>
-                    <div className="flex items-center gap-1.5">
-                      {isProfit ? <TrendingUp size={15} className="text-emerald-600" /> : <TrendingDown size={15} className="text-rose-600" />}
-                      <span className="text-sm font-bold">
-                        {isProfit ? '+' : ''}{formatCurrency(metrics.profitLoss)}
-                      </span>
-                    </div>
-                    <span className="text-xs font-extrabold">
-                      {metrics.percentChange >= 0 ? '+' : ''}{metrics.percentChange.toFixed(2)}%
-                    </span>
-                  </div>
-
-                  <button
-                    onClick={() => setClosingInvestment(inv)}
-                    className="mt-3 w-full h-10 rounded-full bg-[#18181B] hover:bg-black text-white text-xs font-bold transition-all shadow-xs active:scale-95 cursor-pointer"
-                    data-testid={`investments-mobile-complete-order-button-${inv.id}`}
+            {/* Empty state */}
+            {investments.length === 0 && (
+              <div data-testid="investments-card-10" className={cn(cardClass, 'p-10 sm:p-12 text-center')}>
+                <div className="w-16 h-16 bg-[#18181B] rounded-[20px] flex items-center justify-center mx-auto mb-5 shadow-lg">
+                  <BarChart3 className="text-white" size={28} />
+                </div>
+                <h3 className="text-lg sm:text-xl font-bold text-slate-900 mb-1">No investments yet</h3>
+                <p className="text-sm text-slate-500 mb-6 max-w-md mx-auto">Start tracking your portfolio — stocks, mutual funds, gold and more — in one place.</p>
+                {canAdd && (
+                  <Button
+                    onClick={() => setCurrentPage('add-investment')}
+                    className="rounded-full h-11 px-6 shadow-lg bg-[#18181B] text-white hover:bg-black transition-transform active:scale-95"
+                    data-testid="investments-empty-state-add-button"
                   >
-                    Complete Order
-                  </button>
-                </Card>
-              );
-            })}
-          </div>
+                    <Plus size={18} className="mr-2" />
+                    Add Your First Investment
+                  </Button>
+                )}
+              </div>
+            )}
+          </motion.div>
         )}
 
- {openInvestments.length === 0 && completedInvestments.length > 0 && (
- <Card data-testid="investments-card-8" variant="glass" className="p-8 text-center">
- <h3 className="text-xl font-display font-bold text-gray-900">No open holdings</h3>
- <p className="text-gray-500 mt-2">All your tracked positions are completed. Add a new investment to start another order.</p>
- </Card>
- )}
+        <DeleteConfirmModal
+          isOpen={deleteModalOpen}
+          title="Delete Investment"
+          message="This investment record will be deleted, linked investment cashflows will be reversed, and related order transactions will be removed."
+          itemName={investmentToDelete?.name}
+          isLoading={isDeleting}
+          onConfirm={confirmDeleteInvestment}
+          onCancel={() => { setDeleteModalOpen(false); setInvestmentToDelete(null); }}
+        />
 
- {completedInvestments.length > 0 && (
- <Card data-testid="investments-card-9" variant="glass" className="p-6">
- <div className="flex items-center justify-between gap-3 mb-4">
- <div>
- <h3 className="text-lg font-display font-bold text-gray-900">Completed Orders</h3>
- <p className="text-sm text-gray-500">Closed positions with realized returns and fees</p>
- </div>
- <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-600">
- {completedInvestments.length} closed
- </span>
- </div>
-
- <div className="space-y-3">
- {completedInvestments.map((investment) => {
- const metrics = getMetrics(investment);
- return (
- <div key={investment.id} className="rounded-2xl border border-gray-200 bg-white p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
- <div className="min-w-0">
- <div className="flex items-center gap-2">
- <p className="font-display font-bold text-gray-900 truncate">{getInvestmentDisplayName(investment.assetName)}</p>
- <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[11px] font-semibold">Closed</span>
- </div>
- <p className="text-xs text-gray-500 mt-1">
- Sold at {formatNativeMoney(investment.closePrice || metrics.nativeCurrentPrice, metrics.assetCurrency)}
- {investment.closedAt ? ` on ${new Date(investment.closedAt).toLocaleDateString()}` : ''}
- </p>
- {!!investment.closeNotes && (
- <p className="text-xs text-gray-400 mt-1">{investment.closeNotes}</p>
- )}
- </div>
- <div className="sm:text-right">
- <p className="text-sm font-semibold text-gray-500">Net Proceeds</p>
- <p className="text-base font-bold text-gray-900">{formatCurrency(metrics.netSaleValue ?? 0)}</p>
- <p className={`text-sm font-semibold ${metrics.profitLoss >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
- {metrics.profitLoss >= 0 ? '+' : ''}{formatCurrency(metrics.profitLoss)}
- </p>
- </div>
- </div>
- );
- })}
- </div>
- </Card>
- )}
-
- {/* Empty state */}
- {investments.length === 0 && (
- <Card data-testid="investments-card-10" variant="glass" className="p-12 text-center border-2 border-dashed border-gray-300">
- <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.3 }}>
- <div className="w-20 h-20 bg-black rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
- <BarChart3 className="text-white" size={32} />
- </div>
- <h3 className="text-2xl font-display font-bold text-gray-900 mb-2">No investments yet</h3>
- <p className="text-gray-500 mb-6 max-w-md mx-auto">Start tracking your investment portfolio today</p>
- {canAdd && (
- <Button
- onClick={() => setCurrentPage('add-investment')}
- className="rounded-full h-11 px-6 shadow-lg bg-black text-white hover:bg-gray-900 transition-transform active:scale-95"
- data-testid="investments-empty-state-add-button"
- >
- <Plus size={18} className="mr-2" />
- Add Your First Investment
- </Button>
- )}
- </motion.div>
- </Card>
- )}
- </motion.div>
- )}
-
- <DeleteConfirmModal
- isOpen={deleteModalOpen}
- title="Delete Investment"
- message="This investment record will be deleted, linked investment cashflows will be reversed, and related order transactions will be removed."
- itemName={investmentToDelete?.name}
- isLoading={isDeleting}
- onConfirm={confirmDeleteInvestment}
- onCancel={() => { setDeleteModalOpen(false); setInvestmentToDelete(null); }}
- />
-
- <CloseInvestmentModal
- investment={closingInvestment}
- quotes={liveQuotes}
- isOpen={Boolean(closingInvestment)}
- onClose={() => setClosingInvestment(null)}
- onCompleted={() => setClosingInvestment(null)}
- />
- </div>
- </CenteredLayout>
- );
+        <CloseInvestmentModal
+          investment={closingInvestment}
+          quotes={liveQuotes}
+          isOpen={Boolean(closingInvestment)}
+          onClose={() => setClosingInvestment(null)}
+          onCompleted={() => setClosingInvestment(null)}
+        />
+      </div>
+    </CenteredLayout>
+  );
 };
 

@@ -99,11 +99,11 @@ export const AuthShowcase: React.FC = () => {
             </div>
             <div>
               <p className="text-xs font-bold text-violet-200 mb-0.5 flex items-center gap-2">
-                AI Copilot Recommendation
-                <span className="text-[10px] font-semibold text-violet-300/80 bg-violet-500/20 px-1.5 py-0.2 rounded">Optimized</span>
+                KAI Insight
+                <span className="text-[10px] font-semibold text-violet-300/80 bg-violet-500/20 px-1.5 py-0.2 rounded">Sample</span>
               </p>
               <p className="text-xs text-slate-300 leading-relaxed">
-                Smart recurring expense trimming saved you <strong className="text-white font-bold">₹14,200</strong> this quarter across 4 subscriptions.
+                You've spent <strong className="text-white font-bold">₹11,580</strong> on food this month — ₹1,210 less than at this point last month.
               </p>
             </div>
           </div>
@@ -113,8 +113,8 @@ export const AuthShowcase: React.FC = () => {
         <div className="grid grid-cols-3 gap-3 mt-6">
           <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/5 backdrop-blur-sm text-center">
             <Lock className="w-4 h-4 text-violet-400 mx-auto mb-1.5" />
-            <p className="text-xs font-bold text-slate-200">AES-256 Bit</p>
-            <p className="text-[10px] text-slate-400">Bank-Grade Vault</p>
+            <p className="text-xs font-bold text-slate-200">App Lock</p>
+            <p className="text-[10px] text-slate-400">PIN & biometrics</p>
           </div>
           <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/5 backdrop-blur-sm text-center">
             <Zap className="w-4 h-4 text-amber-400 mx-auto mb-1.5" />

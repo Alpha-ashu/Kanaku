@@ -5,6 +5,7 @@ import { generateTokens } from '../../utils/auth';
 import { Prisma } from '../../db/prisma-client';
 import { logger } from '../../config/logger';
 import { getSupabaseAdminClient } from '../../db/supabase';
+import { removeObject } from '../../utils/storage';
 import { authProvider } from './auth.provider';
 import { isAccountLocked, isAccountPending, isDemoDisabled } from '../../utils/accountStatus';
 import {
@@ -571,6 +572,24 @@ export class AuthService {
       logger.warn(`[AuthService] Prisma user not found for deletion: ${userId}`);
     }
 
+    // Uploaded bills/receipts and advisor-session attachments live in object
+    // storage, outside the cascade. Collect their paths while the rows exist and
+    // remove the files once the account is gone (mirrors the clear-data flow).
+    const storagePaths: string[] = [];
+    if (user) {
+      const [bills, attachments] = await Promise.all([
+        prisma.expenseBill.findMany({ where: { userId }, select: { storagePath: true } }),
+        prisma.chatMessage.findMany({
+          where: { senderId: userId, attachmentPath: { not: null } },
+          select: { attachmentPath: true },
+        }),
+      ]);
+      storagePaths.push(
+        ...bills.map((b) => b.storagePath),
+        ...attachments.map((m) => m.attachmentPath as string),
+      );
+    }
+
     // 2. Delete from profiles & Prisma (cascades to all related data: transactions, accounts, etc.)
     try {
       await prisma.profiles.delete({ where: { id: userId } });
@@ -593,6 +612,9 @@ export class AuthService {
         throw new Error('Failed to delete account data. Please contact support.');
       }
     }
+
+    // removeObject logs and swallows its own failures, so this never blocks deletion.
+    await Promise.allSettled(storagePaths.map((p) => removeObject(p)));
 
     // 3. Best-effort: Delete from Supabase Auth (requires service role key)
     try {

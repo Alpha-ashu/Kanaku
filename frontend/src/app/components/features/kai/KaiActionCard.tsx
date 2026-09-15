@@ -1,22 +1,9 @@
 import React, { useState } from 'react';
-import {
-  ArrowLeftRight,
-  CheckSquare,
-  Handshake,
-  Loader2,
-  Pencil,
-  PiggyBank,
-  Repeat,
-  RotateCcw,
-  Target,
-  Trash2,
-  TrendingDown,
-  TrendingUp,
-  Users,
-} from 'lucide-react';
+import { CheckCircle2, Loader2, Pencil, RotateCcw, Sparkles, Trash2 } from 'lucide-react';
 import type { KaiActionKind } from '@kanaku/shared';
 import { actionAmount, type KaiExecutedAction } from '@/services/kai/kaiTypes';
-import { formatDay, formatMoney, KIND_LABEL } from './kaiFormat';
+import { formatCurrencyAmount } from '@/lib/currencyUtils';
+import { formatDay, KIND_LABEL } from './kaiFormat';
 
 interface Props {
   action: KaiExecutedAction;
@@ -26,145 +13,178 @@ interface Props {
   onRetry: (action: KaiExecutedAction) => void;
 }
 
-const ICONS: Partial<Record<KaiActionKind, React.ComponentType<{ size?: number; className?: string }>>> = {
-  expense: TrendingDown,
-  subscription: Repeat,
-  income: TrendingUp,
-  transfer: ArrowLeftRight,
-  loan_borrow: Handshake,
-  loan_lend: Handshake,
-  goal: Target,
-  goal_update: Target,
-  investment: PiggyBank,
-  group_expense: Users,
-  todo: CheckSquare,
+const TITLE: Partial<Record<KaiActionKind, string>> = {
+  expense: 'New expense',
+  income: 'New income',
+  subscription: 'New subscription',
+  transfer: 'Transfer',
+  loan_borrow: 'Money borrowed',
+  loan_lend: 'Money lent',
+  goal: 'New goal',
+  goal_update: 'Goal update',
+  investment: 'New investment',
+  group_expense: 'Group expense',
+  todo: 'New reminder',
 };
 
-const TONE: Partial<Record<KaiActionKind, string>> = {
-  expense: 'bg-rose-50 text-rose-600',
-  subscription: 'bg-rose-50 text-rose-600',
-  income: 'bg-emerald-50 text-emerald-600',
-  transfer: 'bg-sky-50 text-sky-600',
-  loan_borrow: 'bg-amber-50 text-amber-600',
-  loan_lend: 'bg-amber-50 text-amber-600',
-  goal: 'bg-violet-50 text-violet-600',
-  goal_update: 'bg-violet-50 text-violet-600',
-  investment: 'bg-indigo-50 text-indigo-600',
-  group_expense: 'bg-fuchsia-50 text-fuchsia-600',
-  todo: 'bg-teal-50 text-teal-600',
-};
+type Row = { label: string; value?: string | null };
 
-function subline(action: KaiExecutedAction): string {
+/** The details a person would check before trusting the saved record, per kind. */
+function detailRows(action: KaiExecutedAction, currency: string): Row[] {
   const e = action.entities;
+  const amount = actionAmount(action);
+  const money = amount !== undefined
+    ? formatCurrencyAmount(amount, currency, { minimumFractionDigits: 0, maximumFractionDigits: 2 })
+    : null;
+  const category = [e.category, e.subcategory].filter(Boolean).join(' › ') || null;
+
   switch (action.kind) {
-    case 'group_expense':
-      return (e.members ?? []).join(' · ') || 'Shared';
-    case 'loan_borrow':
-      return `From ${e.person ?? '—'} · ${formatDay(e.date)}`;
-    case 'loan_lend':
-      return `To ${e.person ?? '—'} · ${formatDay(e.date)}`;
     case 'goal':
     case 'goal_update':
-      return e.targetDate ? `Target: ${formatDay(e.targetDate)}` : 'No target date yet';
-    case 'todo':
-      return `${e.dueDate ? `Due ${formatDay(e.dueDate)}` : 'No due date'} · ${e.priority ?? 'medium'} priority`;
+      return [
+        { label: 'Goal', value: e.goalName || e.description || action.summary },
+        { label: 'Target', value: money },
+        { label: 'Target date', value: e.targetDate ? formatDay(e.targetDate) : 'Not set' },
+      ];
     case 'transfer':
-      return formatDay(e.date);
+      return [
+        { label: 'Amount', value: money },
+        { label: 'To', value: e.person || e.merchant || e.description },
+        { label: 'Date', value: formatDay(e.date) },
+      ];
+    case 'loan_borrow':
+    case 'loan_lend':
+      return [
+        { label: 'Amount', value: money },
+        { label: action.kind === 'loan_borrow' ? 'From' : 'To', value: e.person || '—' },
+        { label: 'Date', value: formatDay(e.date) },
+      ];
+    case 'group_expense':
+      return [
+        { label: 'Amount', value: money },
+        { label: 'For', value: e.description || action.summary },
+        { label: 'With', value: e.members?.length ? e.members.join(', ') : 'Shared' },
+        { label: 'Split', value: e.splitType === 'custom' ? 'Custom' : 'Equally' },
+      ];
+    case 'todo':
+      return [
+        { label: 'Task', value: e.title || e.description || action.summary },
+        { label: 'Due', value: e.dueDate ? formatDay(e.dueDate) : 'No due date' },
+        { label: 'Priority', value: e.priority ? e.priority.charAt(0).toUpperCase() + e.priority.slice(1) : 'Medium' },
+      ];
+    case 'investment':
+      return [
+        { label: 'Amount', value: money },
+        { label: 'Asset', value: e.description || action.summary },
+        { label: 'Date', value: formatDay(e.date) },
+      ];
     default:
-      return [e.category, formatDay(e.date)].filter(Boolean).join(' · ');
+      return [
+        { label: 'Amount', value: money },
+        { label: 'Category', value: category },
+        { label: 'Merchant', value: e.merchant || (e.description && e.description !== e.category ? e.description : null) },
+        { label: 'Paid with', value: e.paymentMethod },
+        { label: 'Repeats', value: action.kind === 'subscription' ? e.recurrence : null },
+        { label: 'Date', value: formatDay(e.date) },
+      ];
   }
 }
 
 export const KaiActionCard: React.FC<Props> = ({ action, currency, onEdit, onDelete, onRetry }) => {
   const [confirmingDelete, setConfirmingDelete] = useState(false);
-  const Icon = ICONS[action.kind] ?? TrendingDown;
-  const amount = actionAmount(action);
   const busy = action.status === 'saving';
   const failed = action.status === 'failed';
+  const rows = detailRows(action, currency).filter((row) => row.value);
 
   return (
     <div
-      className={`rounded-2xl border bg-white/95 backdrop-blur-md shadow-2xs px-3.5 py-3 transition-all ${
+      className={`rounded-[24px] border bg-white/95 backdrop-blur-md shadow-[0_10px_30px_-8px_rgba(112,144,176,0.22)] p-4 sm:p-5 transition-all ${
         failed ? 'border-rose-200' : 'border-slate-100'
       }`}
       data-testid="kai-action-card"
     >
-      <div className="flex items-start gap-3">
-        <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${TONE[action.kind] ?? 'bg-slate-100 text-slate-600'}`}>
-          {busy ? <Loader2 size={17} className="animate-spin" /> : <Icon size={17} />}
-        </div>
-
-        <div className="min-w-0 flex-1">
-          <div className="flex items-baseline justify-between gap-2">
-            <p className="text-sm font-bold text-slate-900 truncate">{action.summary}</p>
-            {amount !== undefined && (
-              <span className="text-sm font-black text-slate-900 shrink-0">{formatMoney(currency, amount)}</span>
-            )}
-          </div>
-          <p className="text-[11px] font-medium text-slate-500 truncate mt-0.5">
-            <span className="text-slate-400">{KIND_LABEL[action.kind]}</span>
-            {' · '}
-            {subline(action)}
-          </p>
-          {failed && (
-            <p className="text-[11px] font-semibold text-rose-600 mt-1">{action.error ?? 'Could not save this.'}</p>
-          )}
-          {!failed && action.error && (
-            <p className="text-[11px] font-semibold text-amber-600 mt-1">{action.error}</p>
-          )}
-        </div>
-      </div>
-
-      <div className="mt-2.5 flex items-center gap-1.5 justify-end">
+      <div className="flex items-center justify-between gap-2">
+        <p className="flex items-center gap-1.5 text-[11px] sm:text-xs font-black uppercase tracking-wider text-purple-700 min-w-0">
+          <Sparkles size={13} className="shrink-0" />
+          <span className="truncate">{TITLE[action.kind] ?? KIND_LABEL[action.kind]}</span>
+        </p>
         {action.status === 'saved' && (
-          <span className="mr-auto inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Saved
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-[10px] font-bold text-emerald-700 shrink-0">
+            <CheckCircle2 size={11} /> Saved
           </span>
         )}
-        {busy && <span className="mr-auto text-[10px] font-bold text-slate-400">Saving…</span>}
+        {busy && (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 text-[10px] font-bold text-slate-500 shrink-0">
+            <Loader2 size={11} className="animate-spin" /> Saving…
+          </span>
+        )}
+        {failed && (
+          <span className="px-2 py-0.5 rounded-full bg-rose-50 text-[10px] font-bold text-rose-700 shrink-0">Not saved</span>
+        )}
+      </div>
+
+      <dl className="mt-2 divide-y divide-slate-100">
+        {rows.map((row) => (
+          <div key={row.label} className="flex items-center justify-between gap-4 py-2.5">
+            <dt className="text-sm text-slate-400 shrink-0">{row.label}</dt>
+            <dd className="text-sm font-bold text-slate-900 text-right truncate">{row.value}</dd>
+          </div>
+        ))}
+      </dl>
+
+      {failed && <p className="mt-1 text-xs font-semibold text-rose-600">{action.error ?? 'Could not save this.'}</p>}
+      {!failed && action.error && <p className="mt-1 text-xs font-semibold text-amber-600">{action.error}</p>}
+
+      <div className="mt-3 flex items-center gap-2">
         {failed && (
           <button
             type="button"
             onClick={() => onRetry(action)}
-            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-rose-50 text-rose-700 hover:bg-rose-100 transition-colors cursor-pointer"
+            className="flex-1 inline-flex items-center justify-center gap-1.5 h-10 rounded-full text-sm font-bold text-white bg-gradient-to-tr from-[#8B5CF6] to-[#7C3AED] shadow-md shadow-purple-500/25 transition-all cursor-pointer active:scale-95"
           >
-            <RotateCcw size={12} /> Retry
+            <RotateCcw size={14} /> Retry
           </button>
         )}
-        <button
-          type="button"
-          disabled={busy}
-          onClick={() => onEdit(action)}
-          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700 hover:bg-purple-50 hover:text-purple-700 disabled:opacity-40 transition-colors cursor-pointer"
-        >
-          <Pencil size={12} /> Edit
-        </button>
         {confirmingDelete ? (
           <>
             <button
               type="button"
               onClick={() => { setConfirmingDelete(false); onDelete(action); }}
-              className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-rose-600 text-white hover:bg-rose-700 transition-colors cursor-pointer"
+              className="flex-1 h-10 rounded-full text-sm font-bold bg-rose-600 text-white hover:bg-rose-700 transition-colors cursor-pointer active:scale-95"
             >
               Confirm delete
             </button>
             <button
               type="button"
               onClick={() => setConfirmingDelete(false)}
-              className="px-2.5 py-1 rounded-full text-[11px] font-bold text-slate-500 hover:bg-slate-100 transition-colors cursor-pointer"
+              className="flex-1 h-10 rounded-full text-sm font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors cursor-pointer active:scale-95"
             >
               Keep
             </button>
           </>
         ) : (
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() => setConfirmingDelete(true)}
-            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700 hover:bg-rose-50 hover:text-rose-700 disabled:opacity-40 transition-colors cursor-pointer"
-          >
-            <Trash2 size={12} /> Delete
-          </button>
+          <>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => onEdit(action)}
+              className={`flex-1 inline-flex items-center justify-center gap-1.5 h-10 rounded-full text-sm font-bold transition-all cursor-pointer active:scale-95 disabled:opacity-40 ${
+                failed
+                  ? 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                  : 'text-white bg-gradient-to-tr from-[#8B5CF6] to-[#7C3AED] shadow-md shadow-purple-500/25'
+              }`}
+            >
+              <Pencil size={14} /> Edit
+            </button>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => setConfirmingDelete(true)}
+              className="flex-1 inline-flex items-center justify-center gap-1.5 h-10 rounded-full text-sm font-bold bg-slate-100 text-slate-700 hover:bg-rose-50 hover:text-rose-700 disabled:opacity-40 transition-colors cursor-pointer active:scale-95"
+            >
+              <Trash2 size={14} /> Delete
+            </button>
+          </>
         )}
       </div>
     </div>

@@ -19,6 +19,7 @@ import { signIn as supabaseSignIn, signUp as supabaseSignUp, resendSignupConfirm
 import { MailCheck } from 'lucide-react';
 import { getConfiguredApiBase } from '@/lib/apiBase';
 import { AuthShowcase } from './AuthShowcase';
+import { useSecurity } from '@/contexts/SecurityContext';
 
 // Auth source of truth for the login UI. 'custom' (default) keeps the backend-issued
 // JWT flow; 'supabase' (Option A) authenticates via Supabase Auth so the API client's
@@ -91,6 +92,7 @@ interface AuthFlowProps {
 }
 
 export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavigate, onLogin, onGetStarted }) => {
+ const { setAuthenticated } = useSecurity();
  const [step, setStep] = useState<AuthStep>(initialStep || 'welcome');
  const [email, setEmail] = useState('');
  const [isNewUser, setIsNewUser] = useState(false);
@@ -633,6 +635,7 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  const handlePINComplete = async (pin: string) => {
  setIsLoading(true);
  try {
+ setAuthenticated(pin);
  // Auto-provision accounts and setup
  await autoProvisionAccounts();
 
@@ -760,7 +763,7 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
 
             <div className="hidden sm:flex items-center gap-2 text-xs font-semibold text-slate-400">
               <span className="w-2 h-2 rounded-full bg-emerald-500" />
-              <span>256-Bit SSL Encrypted</span>
+              <span>Encrypted connection</span>
             </div>
           </div>
 
@@ -810,7 +813,7 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
       <>
         {renderAuthContainer({
           title: 'Master Your Finances',
-          subtitle: 'Experience the future of personal wealth management with local-first encryption.',
+          subtitle: 'Track spending, budgets and net worth in one offline-first app.',
           badge: 'Intelligent Wealth OS',
           showBackButton: !!onBack,
           backAction: onBack,
@@ -827,7 +830,7 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
                 <div className="p-3 bg-slate-50 border border-slate-100 rounded-2xl text-center">
                   <Shield className="w-4 h-4 text-emerald-600 mx-auto mb-1" />
                   <p className="text-xs font-bold text-slate-800">Private</p>
-                  <p className="text-[10px] text-slate-400">AES-256</p>
+                  <p className="text-[10px] text-slate-400">PIN lock</p>
                 </div>
                 <div className="p-3 bg-slate-50 border border-slate-100 rounded-2xl text-center">
                   <Sparkles className="w-4 h-4 text-amber-500 mx-auto mb-1" />

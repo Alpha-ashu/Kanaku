@@ -16,6 +16,12 @@ import {
 import { useApp } from '@/contexts/AppContext';
 import { AIOrb } from './ai/AIOrb';
 import { PendingBreakdownCard } from './ai/PendingBreakdownCard';
+import {
+  ChatActionCard,
+  isConfirmableChatAction,
+  type ChatActionStatus,
+  type ChatProposedAction,
+} from './ai/ChatActionCard';
 import { NLQService, QueryResult } from '@/services/nlqService';
 import { KaiScreen } from './kai/KaiScreen';
 import { getKaiSession } from '@/services/kai/kaiSession';
@@ -34,6 +40,11 @@ interface Message {
   transactions?: QueryResult['transactions'];
   source?: 'backend' | 'local';
   isTyping?: boolean;
+  /** Record/task KAI proposed; saved only when the user confirms the card. */
+  action?: ChatProposedAction;
+  actionStatus?: ChatActionStatus;
+  /** The user text that produced `action` (kept for the saved record's raw segment). */
+  prompt?: string;
 }
 
 interface AIAssistantPageProps {
@@ -147,6 +158,7 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
 
     try {
       const result = await NLQService.executeQuery(text);
+      const proposed = isConfirmableChatAction(result.action) ? result.action : undefined;
 
       setMessages((prev) =>
         prev.map((m) =>
@@ -154,11 +166,15 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
             ? {
                 ...m,
                 content:
-                  result.answer ||
+                  // Replies use **bold** markup; the bubble renders plain text.
+                  result.answer?.replace(/\*\*/g, '') ||
                   (isBreakdownQuery
                     ? "Here's your detailed spending breakdown for this month."
                     : 'I have analyzed your request.'),
-                showBreakdownCard: isBreakdownQuery,
+                showBreakdownCard: isBreakdownQuery && !proposed,
+                action: proposed,
+                actionStatus: proposed ? 'pending' : undefined,
+                prompt: proposed ? text : undefined,
                 transactions: result.transactions,
                 source: result.source,
                 isTyping: false,
@@ -423,6 +439,20 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
                           <p className="whitespace-pre-wrap">{msg.content}</p>
                         )}
                       </div>
+
+                      {msg.action && (
+                        <ChatActionCard
+                          messageId={msg.id}
+                          prompt={msg.prompt ?? ''}
+                          action={msg.action}
+                          status={msg.actionStatus ?? 'pending'}
+                          onResolved={(actionStatus) =>
+                            setMessages((prev) =>
+                              prev.map((m) => (m.id === msg.id ? { ...m, actionStatus } : m)),
+                            )
+                          }
+                        />
+                      )}
 
                       {msg.showBreakdownCard && (
                         <div className="mt-1">

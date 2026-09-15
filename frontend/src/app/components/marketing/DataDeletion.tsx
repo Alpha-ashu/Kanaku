@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Trash2, ShieldAlert, Mail, CheckCircle2, UserX } from 'lucide-react';
 import { PublicNavbar } from '@/app/components/ui/PublicNavbar';
+import { SUPPORT_EMAIL } from '@/config/support';
 
 interface DataDeletionProps {
   onBack?: () => void;
@@ -23,22 +24,21 @@ export const DataDeletion: React.FC<DataDeletionProps> = ({
 
   const steps = [
     {
-      title: '1. In-App Account Deletion',
+      title: '1. Delete in the app',
       icon: <Trash2 className="w-5 h-5 text-red-500" />,
       content:
-        'Log in to Kanaku, open your Profile Settings, scroll to the bottom, and click "Delete Account". All your synced data, accounts, transactions, and cloud backups will be purged immediately.',
+        'Log in to KANAKU, open your Profile, and tap "Delete Account" in the Danger Zone. Confirm with your password. Your account and synced data are deleted straight away, and the app clears your data from that device.',
     },
     {
-      title: '2. Email Request',
+      title: '2. Or ask us by email',
       icon: <Mail className="w-5 h-5 text-blue-500" />,
-      content:
-        'If you cannot log in, send an email to shaik.job.details@gmail.com with the subject "Account & Data Deletion Request" from your registered email address. Our team will verify and execute the deletion within 48 hours.',
+      content: `If you can't log in, email ${SUPPORT_EMAIL} from your registered email address with the subject "Account & Data Deletion Request". We'll verify the request comes from the account owner, delete the account, and confirm by email.`,
     },
     {
-      title: '3. Data Purged',
+      title: '3. What gets deleted',
       icon: <CheckCircle2 className="w-5 h-5 text-green-500" />,
       content:
-        'All associated personal identifiable information (PII), database records, local caches, and analytical identifiers are permanently destroyed.',
+        'Your profile and login, accounts, transactions, budgets, goals, groups, loans, investments, uploaded bills and receipts, and files you shared in advisor sessions. If you were signed in on other devices, the copy stored there stays until you sign out or clear the app data on that device.',
     },
   ];
 
@@ -67,7 +67,7 @@ export const DataDeletion: React.FC<DataDeletionProps> = ({
             className="inline-flex items-center gap-2 bg-red-50 border border-red-200/60 px-4 py-1.5 rounded-full text-red-600 font-bold text-xs uppercase tracking-widest mb-5"
           >
             <ShieldAlert className="w-3.5 h-3.5 text-red-500" />
-            Data Rights & Absolute Control
+            Your Data, Your Choice
           </motion.div>
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
@@ -82,7 +82,7 @@ export const DataDeletion: React.FC<DataDeletionProps> = ({
             transition={{ delay: 0.1 }}
             className="text-slate-600 text-base lg:text-lg max-w-xl mx-auto"
           >
-            We strictly uphold your right to control, revoke, and permanently delete your personal financial records anytime.
+            You can permanently delete your KANAKU account and personal financial records at any time.
           </motion.p>
         </div>
 
@@ -115,19 +115,19 @@ export const DataDeletion: React.FC<DataDeletionProps> = ({
           <div className="w-14 h-14 mx-auto mb-5 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400">
             <UserX className="w-7 h-7" />
           </div>
-          <h3 className="text-2xl font-bold mb-3">Immediate Permanent Erasure</h3>
+          <h3 className="text-2xl font-bold mb-3">Deletion is permanent</h3>
           <p className="text-slate-400 mb-7 max-w-md mx-auto text-sm leading-relaxed">
-            Once deletion is initiated, your transaction history, account details, and AI intelligence profile cannot be retrieved or recovered by anyone—including our engineering team.
+            Once your account is deleted it can't be restored. Deleted data may remain in routine database backups for a short period until those backups expire.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3">
             <div className="px-4 py-2 rounded-xl bg-slate-800/80 border border-slate-700/60 text-xs font-semibold text-slate-300">
-              Zero Residual Backups
+              Can't be undone
             </div>
             <div className="px-4 py-2 rounded-xl bg-slate-800/80 border border-slate-700/60 text-xs font-semibold text-slate-300">
-              GDPR & DPDP Compliant
+              Uploaded files removed
             </div>
             <div className="px-4 py-2 rounded-xl bg-slate-800/80 border border-slate-700/60 text-xs font-semibold text-slate-300">
-              Immediate Token Revocation
+              This device cleared
             </div>
           </div>
         </motion.div>
@@ -135,7 +135,7 @@ export const DataDeletion: React.FC<DataDeletionProps> = ({
 
       <footer className="py-10 border-t border-slate-200/80 text-center">
         <p className="text-xs text-slate-400 font-medium">
-          © {new Date().getFullYear()} KANAKU Technologies. All rights reserved.
+          © {new Date().getFullYear()} KANAKU. All rights reserved.
         </p>
       </footer>
     </div>

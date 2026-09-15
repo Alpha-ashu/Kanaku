@@ -37,7 +37,7 @@ export const KaiReportCard: React.FC<Props> = ({ meta, currency }) => {
   const max = rows.reduce((m, r) => Math.max(m, r.amount), 0) || 1;
 
   return (
-    <div className="rounded-2xl border border-slate-100 bg-white/95 backdrop-blur-md shadow-2xs px-4 py-3.5" data-testid="kai-report-card">
+    <div className="rounded-[24px] border border-slate-100 bg-white/95 backdrop-blur-md shadow-[0_10px_30px_-8px_rgba(112,144,176,0.22)] p-4 sm:p-5" data-testid="kai-report-card">
       <p className="text-[11px] font-bold uppercase tracking-wide text-slate-400">{meta.period ? `${meta.period} · ` : ''}Expense report</p>
       <div className="flex items-end justify-between gap-3 mt-1">
         <div>

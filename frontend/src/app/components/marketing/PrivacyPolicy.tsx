@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Shield, Lock, Eye, Database, HardDrive, CheckCircle2, FileText, ArrowLeft } from 'lucide-react';
 import { PublicNavbar } from '@/app/components/ui/PublicNavbar';
+import { SUPPORT_EMAIL, supportMailto } from '@/config/support';
 
 interface PrivacyPolicyProps {
   onBack?: () => void;
@@ -24,34 +25,40 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({
 
   const sections = [
     {
-      title: '1. Local-First Data Principle',
+      title: '1. Where Your Data Lives',
       icon: <HardDrive className="w-5 h-5 text-violet-600" />,
       content:
-        'KANAKU operates under a strict local-first philosophy. Your financial ledger, accounts, budget goals, and personal settings are created and stored directly on your own device in an isolated, sandboxed IndexedDB database. You can manage your finances entirely offline without sending a single byte across the internet.',
+        'KANAKU is offline-first. Your accounts, transactions, budgets and settings are stored on your device so the app works without a connection. When you sign in, those records also sync to your KANAKU account in our cloud database so they are available on your other devices. In guest mode, data stays on your device only.',
     },
     {
       title: '2. Information We Process',
       icon: <Database className="w-5 h-5 text-blue-600" />,
       content:
-        'When you register, we collect essential account authentication credentials (your email, name, and hashed credentials). When you enable cloud sync, encrypted database delta snapshots are transmitted via TLS 1.3 to synchronize your data across authorized devices. We do NOT harvest or monitor your private financial habits.',
+        'To run your account we store your name, email address, a hashed password, and the financial records you add or sync. Receipts and bills you upload are kept in secure cloud storage. On Android, bank SMS detection (only in the directly downloaded app, and only if you enable it) reads messages on your device; the SMS text is not uploaded — only transactions you save are synced.',
     },
     {
-      title: '3. Zero Data Resale or Advertising',
+      title: '3. AI Features and Service Providers',
+      icon: <FileText className="w-5 h-5 text-indigo-600" />,
+      content:
+        'When you use KAI or bill scanning, the text, voice recording or image you submit, along with the financial context needed to answer, is sent to AI providers (such as Google Gemini, Groq, OpenRouter and OpenAI) to process that request. We also rely on infrastructure providers for hosting, database and file storage, and email delivery. They process data only to provide these services to us.',
+    },
+    {
+      title: '4. No Ads, No Data Selling',
       icon: <Eye className="w-5 h-5 text-pink-600" />,
       content:
-        'We never sell, rent, monetize, or disclose your personal or financial data to third-party advertising brokers, data aggregators, or loan originators. KANAKU is supported strictly through transparent subscription plans, aligning our success directly with your privacy.',
+        'We never sell, rent or share your personal or financial data with advertisers, data brokers or lenders, and KANAKU does not show ads.',
     },
     {
-      title: '4. Bank-Grade Encryption & PIN Gateway',
+      title: '5. Security',
       icon: <Lock className="w-5 h-5 text-emerald-600" />,
       content:
-        'Your local database is protected by a client-derived AES-256 master key. Access is gated by your chosen 6-digit PIN and optional biometric lock. We never store your raw PIN on our servers; only a salted, computationally intensive one-way verifier is used.',
+        'Data travelling between the app and our servers is encrypted over HTTPS. You can lock the app with a 6-digit PIN and, on supported devices, biometrics. Your PIN is never stored in plain text — only a salted, one-way hash is kept. Records stored on your device are protected by your device and browser security, so keep your device locked.',
     },
     {
-      title: '5. GDPR & DPDP Compliance Rights',
+      title: '6. Your Rights and Choices',
       icon: <Shield className="w-5 h-5 text-amber-600" />,
       content:
-        'Under applicable privacy statutes including GDPR and the Digital Personal Data Protection (DPDP) Act, you have absolute rights to inspect, export your complete transaction history (via PDF/CSV/JSON), and permanently delete your account and cloud records at any moment.',
+        "You can view and edit your records at any time, export reports as PDF or CSV, and permanently delete your account and synced data from your Profile. Depending on where you live, laws such as the GDPR or India's Digital Personal Data Protection Act may give you further rights; contact us to exercise them.",
     },
   ];
 
@@ -71,14 +78,14 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({
         <div className="mb-14 text-center">
           <div className="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-200 px-3.5 py-1.5 rounded-full text-emerald-700 font-extrabold text-xs uppercase tracking-widest mb-4">
             <Shield className="w-3.5 h-3.5" />
-            <span>Zero-Knowledge Privacy Architecture</span>
+            <span>Your Data, Your Control</span>
           </div>
 
           <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-slate-900 mb-4">
             Privacy Policy
           </h1>
           <p className="text-sm sm:text-base text-slate-500 max-w-lg mx-auto">
-            Your data belongs exclusively to you. Last updated: September 2026.
+            How KANAKU handles your information. Last updated: September 2026.
           </p>
         </div>
 
@@ -105,14 +112,14 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({
 
         {/* Contact info box */}
         <div className="mt-12 p-6 rounded-3xl bg-slate-50 border border-slate-200 text-center text-xs text-slate-500 space-y-2">
-          <p className="font-bold text-slate-700">Questions regarding data protection or compliance?</p>
+          <p className="font-bold text-slate-700">Questions about your data or this policy?</p>
           <p>
-            Reach our Data Protection Officer at{' '}
+            Email us at{' '}
             <a
-              href={`mailto:${import.meta.env.VITE_SUPPORT_EMAIL || 'support@kanaku.in'}`}
+              href={supportMailto('Privacy question')}
               className="text-violet-600 font-bold hover:underline"
             >
-              {import.meta.env.VITE_SUPPORT_EMAIL || 'support@kanaku.in'}
+              {SUPPORT_EMAIL}
             </a>
           </p>
         </div>

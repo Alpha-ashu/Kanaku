@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useApp } from '@/contexts/AppContext';
+import { useSecurity } from '@/contexts/SecurityContext';
 import { PageHeader } from '@/app/components/ui/PageHeader';
 import { Button } from '@/app/components/ui/button';
 import { Card } from '@/app/components/ui/card';
@@ -182,6 +183,7 @@ const ProfileSkeleton: React.FC = () => {
 export const UserProfile: React.FC = () => {
  const { user, signOut, role } = useAuth();
  const { setCurrentPage, currency, setCurrency, visibleFeatures } = useApp();
+ const { setAuthenticated } = useSecurity();
  const [isSigningOut, setIsSigningOut] = useState(false);
 
  const handleSignOut = async () => {
@@ -719,6 +721,7 @@ export const UserProfile: React.FC = () => {
       // Must complete before the key backup is serialised below — otherwise the
       // payload carries the PREVIOUS PIN's verifier.
       await storeMasterKey(newPin);
+      setAuthenticated(newPin);
 
       // Re-bind biometric unlock to the new PIN. Without this the secure store keeps
       // handing back the old PIN, which then fails server verification on every

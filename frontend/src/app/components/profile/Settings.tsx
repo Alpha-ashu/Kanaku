@@ -62,7 +62,7 @@ type SettingsCategory = 'all' | 'bottom-nav' | 'quick-actions' | 'general' | 'se
 export const Settings: React.FC = () => {
   const { currency, setCurrency, language, setLanguage, visibleFeatures, accounts, refreshData, setCurrentPage } = useApp();
   const { user, role } = useAuth();
-  const { lockTimeout, setLockTimeout } = useSecurity();
+  const { lockTimeout, setLockTimeout, lock } = useSecurity();
 
   // Desktop active tab / Mobile filter category
   const [selectedCategory, setSelectedCategory] = useState<SettingsCategory>('all');
@@ -793,6 +793,30 @@ export const Settings: React.FC = () => {
                 Security & Access
               </p>
               <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] divide-y divide-slate-100 overflow-hidden">
+                {/* Lock App Now */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    lock();
+                    toast.info('App locked. Please enter your PIN to resume.');
+                  }}
+                  data-testid="settings-lock-now-button"
+                  className="w-full text-left p-3.5 sm:p-4 flex items-center justify-between gap-3 cursor-pointer hover:bg-slate-50 active:bg-slate-100 transition-colors group"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-9 h-9 rounded-xl bg-amber-50 group-hover:bg-amber-100 flex items-center justify-center text-amber-600 transition-colors shrink-0">
+                      <Lock size={18} />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs sm:text-sm font-bold text-slate-900">Lock App Now</p>
+                      <p className="text-[11px] text-slate-400">Lock session immediately with your PIN</p>
+                    </div>
+                  </div>
+                  <span className="text-xs font-bold text-amber-700 bg-amber-100/70 border border-amber-200/60 px-3 py-1 rounded-full shrink-0">
+                    Lock Now
+                  </span>
+                </button>
+
                 {/* Auto-lock */}
                 <div className="p-3.5 sm:p-4 flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3 min-w-0">
@@ -809,7 +833,7 @@ export const Settings: React.FC = () => {
                     onChange={(e) => {
                       const minutes = Number(e.target.value);
                       setLockTimeout(minutes);
-                      toast.success(minutes === 0 ? 'Auto-lock disabled' : `Auto-lock: ${minutes}m`);
+                      toast.success(minutes === 0 ? 'Auto-lock disabled (locks on close)' : `Auto-lock: ${minutes}m`);
                     }}
                     className="app-select-compact shrink-0 max-w-[110px]"
                     aria-label="Select auto-lock timeout"
