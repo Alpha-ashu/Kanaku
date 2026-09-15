@@ -12,8 +12,8 @@ Pillow==12.3.0
 # 2.11.0/2.12.0 still had CVE-2025-3000. Both are fixed in 2.12.1. Keeping a >= floor
 # (no lockfile) means a fresh build resolves to the latest clean release.
 torch>=2.14.0
-transformers==5.16.1
-accelerate>=1.14.0
+transformers==5.17.0
+accelerate>=1.15.0
 
 # PaddleOCR — layout-aware OCR (text detection + recognition with bounding
 # boxes + confidence). Powers the /ocr endpoint; markedly more accurate than
