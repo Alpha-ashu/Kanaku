@@ -537,19 +537,41 @@ export const verifyRegistrationOtp = async (req: Request, res: Response, next: N
   }
 };
 
+// SECURITY: this endpoint issues a full session, so it must prove account
+// ownership exactly like login. It originally accepted only an email address:
+// anyone who knew a registered email received tokens for that account (admins
+// included), and the status write re-activated blocked/suspended users.
 export const verifyLater = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { email } = req.body;
-    if (!email) {
-      throw AppError.badRequest('Email is required.', 'MISSING_FIELDS');
+    const { email, password } = req.body ?? {};
+    if (typeof email !== 'string' || typeof password !== 'string' || !email || !password) {
+      throw AppError.badRequest('Email and password are required.', 'MISSING_FIELDS');
     }
     const cleanEmail = email.toLowerCase().trim();
+
+    const { valid, status, accountType, demoStatus } = await authService.verifyPasswordOnly(cleanEmail, password);
+    if (!valid) {
+      auditFromRequest(req, 'auth.login_failed', { meta: { email: cleanEmail, reason: 'invalid_credentials', via: 'verify_later' } });
+      throw AppError.unauthorized('Incorrect email or password. Please check your credentials and try again.', 'INVALID_CREDENTIALS');
+    }
+
+    if (isAccountLocked(status) || isDemoDisabled(accountType, demoStatus)) {
+      auditFromRequest(req, 'auth.login_failed', { meta: { email: cleanEmail, reason: 'account_suspended', via: 'verify_later' } });
+      throw new AppError(403, 'ACCOUNT_SUSPENDED', 'Account suspended or disabled. Contact support.', true);
+    }
+
+    // Only an account still awaiting its signup code may defer verification —
+    // never use this path to rewrite the status of an established account.
+    if (!isAccountPending(status)) {
+      throw new AppError(409, 'NOT_PENDING_VERIFICATION', 'This account is not awaiting email verification. Please sign in.', true);
+    }
+
     const user = await prisma.user.findUnique({
       where: { email: cleanEmail },
     });
 
     if (!user) {
-      throw AppError.notFound('User account');
+      throw AppError.unauthorized('Incorrect email or password. Please check your credentials and try again.', 'INVALID_CREDENTIALS');
     }
 
     // Update status to 'active' while preserving emailVerified: false for later verification
@@ -585,7 +607,7 @@ export const verifyLater = async (req: Request, res: Response, next: NextFunctio
         ...(native ? { refreshToken: tokens.refreshToken } : {}),
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     next(error);
   }
 };

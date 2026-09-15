@@ -1109,8 +1109,9 @@ export const api = {
         successMessage: 'Verification code resent',
       }),
 
-    verifyLater: (email: string) =>
-      apiClient.post('/auth/verify-later', { email }),
+    // Issues a session without the OTP, so the backend requires the password.
+    verifyLater: (email: string, password: string) =>
+      apiClient.post('/auth/verify-later', { email, password }),
 
     getProfile: async (options?: { force?: boolean; includePrivate?: boolean }) => {
       const force = options?.force === true;
