@@ -2,6 +2,8 @@
 
 Detailed migration/runbook material: [docs/runbooks/render-migration.md](../runbooks/render-migration.md),
 [docs/DATABASE_MIGRATIONS.md](../DATABASE_MIGRATIONS.md). This is the verified summary.
+Branches and environments (`dev` → `staging` → `main`), promotion and hotfix flow, and the
+non-production setup: [ENVIRONMENTS.md](ENVIRONMENTS.md).
 
 ## Topology
 
