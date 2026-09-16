@@ -127,7 +127,11 @@ export async function sendPushNotification(
       android: {
         priority: data.priority === "high" ? "high" : "normal",
         notification: {
-          clickAction: "FLUTTER_NOTIFICATION_CLICK",
+          // No clickAction: this is a Capacitor app, and the old
+          // "FLUTTER_NOTIFICATION_CLICK" matched no activity, so tapping a
+          // notification did nothing. Without it the launcher activity opens and
+          // @capacitor/push-notifications delivers the tap (with `data`).
+          // The channel is created by the app (services/pushNotificationService.ts).
           channelId: "KANAKU_notifications",
         },
       },

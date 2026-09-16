@@ -68,6 +68,9 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  const [resetOtpSent, setResetOtpSent] = useState(false);
  const [resetOtpInputs, setResetOtpInputs] = useState<string[]>(Array(6).fill(''));
  const resetOtpRefs = useRef<(HTMLInputElement | null)[]>([]);
+ // The code that /otp/verify already accepted. If a later step (security token,
+ // server reset) fails, tapping Verify again must not re-submit a used code.
+ const verifiedResetCodeRef = useRef<string | null>(null);
 
  // Biometric unlock (native only). `biometric` is null until the capability probe
  // resolves, so nothing biometric-shaped renders on web or on a device without it.
@@ -745,6 +748,7 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  setResetError('');
  setResetOtpSent(false);
  setResetOtpInputs(Array(6).fill(''));
+ verifiedResetCodeRef.current = null;
  setShowResetModal(true);
  };
 
@@ -757,6 +761,7 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
         channel: 'email',
         purpose: 'sensitive_action',
       });
+      verifiedResetCodeRef.current = null;
       setResetOtpSent(true);
       toast.success('Verification code sent to your email.');
     } catch (err: any) {
@@ -781,11 +786,14 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
     setIsResettingPin(true);
     setResetError('');
     try {
-      await apiClient.post('/otp/verify', {
-        destination: user!.email,
-        purpose: 'sensitive_action',
-        otp: code,
-      });
+      if (verifiedResetCodeRef.current !== code) {
+        await apiClient.post('/otp/verify', {
+          destination: user!.email,
+          purpose: 'sensitive_action',
+          otp: code,
+        });
+        verifiedResetCodeRef.current = code;
+      }
 
       // Obtain security token (the backend accepts recent OTP verification)
       const secResult = await pinService.verifySecurity();

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <!--
       android:enableOnBackInvokedCallback opts into the predictive back gesture
@@ -75,14 +76,20 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
-    <!-- SCHEDULE_EXACT_ALARM is deliberately NOT declared.
-         Apps targeting API 34+ are not auto-granted it, Play's Permissions
-         Declaration policy restricts it to alarm-clock/calendar apps (a finance
-         reminder does not qualify), and nothing here needs it: the only
-         LocalNotifications.schedule() call delivers immediately with no `schedule`
-         trigger, and LocalNotificationManager already falls back to
-         setAndAllowWhileIdle() when canScheduleExactAlarms() is false. Declaring
-         it bought nothing and created a store-review risk. -->
+    <!-- SCHEDULE_EXACT_ALARM is deliberately NOT declared — and removed here,
+         because @capacitor/local-notifications' own manifest declares it and the
+         merge would otherwise put it back. Apps targeting API 34+ are not
+         auto-granted it, and Play's Permissions Declaration policy restricts it to
+         alarm-clock/calendar apps (a finance reminder does not qualify). Nothing
+         needs it: due-date reminders (lib/localReminders.ts) fire at ~09:00, and
+         LocalNotificationManager falls back to setAndAllowWhileIdle() when
+         canScheduleExactAlarms() is false, so they arrive within minutes. -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" tools:node="remove" />
+
+    <!-- Friends / group members from the phone's address book
+         (services/contactsService.ts → @capacitor-community/contacts). Requested at
+         runtime only when the user taps "Pick from device contacts". -->
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
 
 
     <!-- Voice entry. Capacitor's BridgeWebChromeClient answers the WebView's

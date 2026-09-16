@@ -129,6 +129,12 @@ export const updateSettings = async (req: AuthRequest, res: Response) => {
         },
       });
     } else {
+      // Notification preferences are owned by /notifications/preferences; a
+      // general settings save that doesn't mention them must not erase them.
+      const existingBlob = presentSettingsBlob(userSettings.settings);
+      if (normalisedSettings && !('notifications' in normalisedSettings) && existingBlob.notifications) {
+        normalisedSettings.notifications = existingBlob.notifications;
+      }
       userSettings = await prisma.userSettings.update({
         where: { userId },
         data: {

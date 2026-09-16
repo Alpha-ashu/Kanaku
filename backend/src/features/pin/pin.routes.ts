@@ -5,7 +5,9 @@ import { authMiddleware, AuthRequest } from '../../middleware/auth';
 import { securityGate, generateSecurityToken } from '../../middleware/securityGate';
 import { establishPinUnlock } from '../../security/pinUnlock';
 import { PIN_UNLOCK_RESPONSE_HEADER } from '../../middleware/pinGate';
-import { otpService } from '../otp/otp.service';
+import { otpService, REVERIFY_WINDOW_SECONDS } from '../otp/otp.service';
+import { prisma } from '../../db/prisma';
+import { notifyPinChanged } from '../notifications/triggers';
 import { validateBody } from '../../middleware/validate';
 import { AppError } from '../../utils/AppError';
 import { logger } from '../../config/logger';
@@ -34,6 +36,9 @@ function requireUserId(req: AuthRequest): string {
 // Step-up window: a security token is only issued if the user proved PIN
 // possession within this window (or supplies a valid PIN / fresh OTP token now).
 const RECENT_VERIFICATION_WINDOW_MS = 2 * 60 * 1000;
+// An emailed OTP is typed by hand after the mail arrives, so its proof lasts
+// longer than a PIN entry's (same window otp.service re-accepts the code in).
+const OTP_PROOF_WINDOW_SECONDS = REVERIFY_WINDOW_SECONDS;
 
 /**
  * Verifies a freshly-minted auth token (e.g. the Supabase session returned by
@@ -86,6 +91,7 @@ router.post('/create', validateBody(createPinSchema), async (req: AuthRequest, r
     // header cross-origin, web reads whichever is convenient.
     const unlockToken = await establishPinUnlock(userId);
     if (unlockToken) res.setHeader(PIN_UNLOCK_RESPONSE_HEADER, unlockToken);
+    void notifyPinChanged(userId, 'created');
     res.json(unlockToken ? { ...result, pinUnlockToken: unlockToken } : result);
   } catch (error) {
     next(error);
@@ -150,9 +156,19 @@ router.post('/verify-security', validateBody(verifySecuritySchema), async (req: 
       // calling this endpoint).
       verified = await pinService.hasRecentVerification(userId, RECENT_VERIFICATION_WINDOW_MS);
       if (!verified) {
-        const dest = req.user?.email || (req.user as any)?.phone;
-        if (dest) {
-          verified = await otpService.hasRecentVerification(dest, 'sensitive_action', RECENT_VERIFICATION_WINDOW_MS / 1000);
+        // Forgot-PIN flow: an emailed sensitive_action OTP was just verified.
+        // The destination must be the account's own email. It is read from the
+        // database because the token's email claim can be empty or a placeholder
+        // (middleware/auth.ts), which made this check fail and the user's retry
+        // report "No active OTP found".
+        const account = await prisma.user.findUnique({ where: { id: userId }, select: { email: true } });
+        const destinations = [...new Set([account?.email, req.user?.email, (req.user as any)?.phone]
+          .filter((d): d is string => typeof d === 'string' && d.trim().length > 0))];
+        for (const dest of destinations) {
+          if (await otpService.hasRecentVerification(dest, 'sensitive_action', OTP_PROOF_WINDOW_SECONDS)) {
+            verified = true;
+            break;
+          }
         }
       }
     }
@@ -189,6 +205,7 @@ router.post('/update', securityGate, validateBody(updatePinSchema), async (req: 
       throw AppError.badRequest(result.message, 'INVALID_PIN');
     }
     auditFromRequest(req, 'security.pin_change', { resource: 'pin', resourceId: userId });
+    void notifyPinChanged(userId, 'changed');
     res.json(result);
   } catch (error) {
     next(error);
@@ -310,6 +327,7 @@ router.post('/self-reset', securityGate, async (req: AuthRequest, res: Response,
   try {
     const userId = requireUserId(req);
     const result = await pinService.forceResetPin(userId);
+    if (result.success) void notifyPinChanged(userId, 'reset');
     res.json(result);
   } catch (error) {
     next(error);

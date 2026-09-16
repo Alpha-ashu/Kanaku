@@ -27,6 +27,7 @@ import { startAIBackgroundJobs, stopAIBackgroundJobs } from './features/ai/ai.en
 import { startNotificationOutbox, stopNotificationOutbox } from './workers/index';
 import { startCleanupWorker, stopCleanupWorker } from './workers/cleanup.worker';
 import { startRecurringWorker, stopRecurringWorker } from './workers/recurring.worker';
+import { startReminderWorker, stopReminderWorker } from './workers/reminder.worker';
 import { getWorkerHealth } from './workers/health';
 import './features/budgets/budget.listener';
 import { renderMetrics, metricsContentType } from './config/metrics';
@@ -80,6 +81,7 @@ try {
 startAIBackgroundJobs();
 startCleanupWorker();
 startRecurringWorker();
+startReminderWorker();
 
 logger.info('Worker ready — background jobs running');
 
@@ -92,6 +94,7 @@ const shutdown = async (signal: string) => {
   stopAIBackgroundJobs();
   stopCleanupWorker();
   stopRecurringWorker();
+  stopReminderWorker();
   await stopNotificationOutbox();
   healthServer.close();
   await closePurposeClients();

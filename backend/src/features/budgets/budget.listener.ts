@@ -1,6 +1,7 @@
 import { prisma } from '../../db/prisma';
 import { logger } from '../../config/logger';
 import { eventBus } from '../../utils/eventBus';
+import { notifyBudgetAlert } from '../notifications/triggers';
 import { roundMoney, serializeMoney } from '../../utils/money';
 import { Prisma } from '../../db/prisma-client';
 
@@ -154,44 +155,32 @@ export const recalculateBudgetsForTransaction = async (userId: string, category:
               }
             }
 
-            try {
-              await prisma.notification.create({
-                data: {
-                  userId,
-                  title,
-                  message,
-                  type: 'budget_alert',
-                  category: budget.category,
-                  status: 'pending', // for the outbox worker to drain
-                  channels: channelsArray,
-                  dedupKey,
-                  metadata: {
-                    budgetId: budget.id,
-                    threshold,
-                    spent: serializeMoney(spent),
-                    limit: serializeMoney(limit),
-                    level,
-                    periodKey,
-                  },
-                },
-              });
+            // notify() applies the user's preferences, adds push, and treats a
+            // duplicate dedupKey (concurrent threshold crossing) as already sent.
+            const created = await notifyBudgetAlert({
+              userId,
+              budgetId: budget.id,
+              category: budget.category,
+              level,
+              title,
+              message,
+              dedupKey,
+              email: level === 'critical' || channelsArray.includes('email'),
+              metadata: {
+                budgetId: budget.id,
+                threshold,
+                spent: serializeMoney(spent),
+                limit: serializeMoney(limit),
+                level,
+                periodKey,
+              },
+            });
 
+            if (created) {
               logger.info(
                 `[budget-listener] Dispatched ${level} budget alert for user ${userId}, ` +
                 `category ${budget.category} (${pct}% spent), dedupKey=${dedupKey}`,
               );
-            } catch (createErr: any) {
-              if (createErr?.code === 'P2002') {
-                // A duplicate alert was prevented by the unique DB constraint.
-                // This is the expected path when two concurrent events trigger the
-                // same threshold crossing — log at debug to avoid noise in alerting.
-                logger.debug(
-                  `[budget-listener] Budget alert already exists (DB dedup) for dedupKey=${dedupKey} — skipping`,
-                );
-              } else {
-                // Unexpected error — re-throw so the outer catch can handle it
-                throw createErr;
-              }
             }
           }
         }

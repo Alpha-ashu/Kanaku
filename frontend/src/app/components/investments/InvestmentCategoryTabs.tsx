@@ -68,12 +68,12 @@ export const InvestmentCategoryTabs: React.FC<InvestmentCategoryTabsProps> = ({
   const currentCategoryConfig = CATEGORY_CONFIGS.find(c => c.code === selectedCategory) || CATEGORY_CONFIGS[0];
 
   return (
-    <div className="w-full space-y-2.5">
+    <div className="w-full space-y-3">
       {/* Main Category Tabs (Non-truncating 3-column segmented control) */}
-      <div className="grid grid-cols-3 bg-slate-100/90 rounded-2xl sm:rounded-full p-1 gap-1 w-full max-w-lg mx-auto border border-slate-200/70 shadow-xs">
+      <div className="grid grid-cols-3 bg-slate-100/90 rounded-2xl sm:rounded-full p-1 sm:p-1.5 gap-1 sm:gap-1.5 w-full max-w-md mx-auto border border-slate-200/80 shadow-xs">
         {CATEGORY_CONFIGS.map(cat => {
           const isActive = selectedCategory === cat.code;
-          const shortLabel = cat.code === 'market_assets' ? 'Market' : cat.code === 'physical_assets' ? 'Physical' : 'Others';
+          const label = cat.code === 'market_assets' ? 'Market' : cat.code === 'physical_assets' ? 'Physical' : 'Others';
           return (
             <button
               key={cat.code}
@@ -81,25 +81,31 @@ export const InvestmentCategoryTabs: React.FC<InvestmentCategoryTabsProps> = ({
               onClick={() => onSelectCategory(cat.code, cat.subcategories[0].code)}
               data-testid={`investment-category-tab-${cat.code}`}
               className={cn(
-                'flex items-center justify-center gap-1 sm:gap-1.5 py-1.5 sm:py-2 px-1 sm:px-3 rounded-xl sm:rounded-full font-black text-2xs md:text-xs uppercase tracking-wider transition-all duration-200 cursor-pointer select-none text-center',
+                'flex items-center justify-center gap-1.5 sm:gap-2 py-2 sm:py-2.5 px-2 sm:px-4 rounded-xl sm:rounded-full font-black text-2xs sm:text-xs uppercase tracking-wider transition-all duration-200 cursor-pointer select-none text-center whitespace-nowrap',
                 isActive
-                  ? 'bg-slate-900 text-white shadow-xs scale-[1.01]'
-                  : 'text-slate-500 hover:text-slate-800 hover:bg-white/60'
+                  ? 'bg-white text-slate-900 shadow-xs border border-slate-200/70 scale-[1.01]'
+                  : 'text-slate-500 hover:text-slate-800 hover:bg-white/50'
               )}
             >
-              <span className="shrink-0">{cat.icon}</span>
-              <span className="truncate">
-                <span className="sm:hidden">{shortLabel}</span>
-                <span className="hidden sm:inline">{cat.label}</span>
-              </span>
+              <span className={cn('shrink-0 transition-transform duration-200', isActive && 'scale-110 text-indigo-600')}>{cat.icon}</span>
+              <span>{label}</span>
             </button>
           );
         })}
       </div>
 
-      {/* Subcategory Responsive Pills (Sleek single-line horizontal scroll rail on mobile, centered on desktop) */}
-      <div className="w-full max-w-2xl mx-auto overflow-hidden">
-        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar scrollbar-none py-1 px-1 sm:justify-center sm:flex-wrap">
+      {/* Subcategory Grid (Column x Row structured layout - no horizontal clipping or scrollbar) */}
+      <div className="w-full max-w-3xl mx-auto">
+        <div
+          className={cn(
+            'grid gap-1.5 sm:gap-2 w-full',
+            currentCategoryConfig.code === 'market_assets'
+              ? 'grid-cols-2 sm:grid-cols-5'
+              : currentCategoryConfig.code === 'physical_assets'
+              ? 'grid-cols-3'
+              : 'grid-cols-2 sm:grid-cols-3 md:grid-cols-5'
+          )}
+        >
           {currentCategoryConfig.subcategories.map(sub => {
             const isActive = selectedSubcategory === sub.code;
             return (
@@ -109,14 +115,14 @@ export const InvestmentCategoryTabs: React.FC<InvestmentCategoryTabsProps> = ({
                 onClick={() => onSelectSubcategory(sub.code)}
                 data-testid={`investment-subcategory-pill-${sub.code}`}
                 className={cn(
-                  'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-2xs font-bold tracking-wider uppercase transition-all duration-150 cursor-pointer select-none shrink-0 whitespace-nowrap',
+                  'flex items-center justify-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl text-2xs sm:text-xs font-bold tracking-wide uppercase transition-all duration-200 cursor-pointer select-none border text-center shadow-xs active:scale-95',
                   isActive
-                    ? 'bg-slate-900 text-white shadow-xs scale-[1.02] border border-slate-900'
-                    : 'bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 border border-slate-200/80 shadow-2xs'
+                    ? 'bg-slate-900 text-white border-slate-900 shadow-sm ring-2 ring-indigo-500/20 scale-[1.01]'
+                    : 'bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 border-slate-200/80 shadow-2xs hover:border-slate-300'
                 )}
               >
-                <span className="text-xs">{sub.icon}</span>
-                <span>{sub.label}</span>
+                <span className="text-xs sm:text-sm shrink-0">{sub.icon}</span>
+                <span className="whitespace-nowrap">{sub.label}</span>
               </button>
             );
           })}

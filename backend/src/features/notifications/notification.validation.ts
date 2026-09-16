@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { NOTIFICATION_PREFERENCE_KEYS } from './notify';
 
 // `.passthrough()` keeps any extra fields the controller reads (the validate
 // middleware replaces req.* with the parsed result), so these schemas enforce
@@ -27,3 +28,8 @@ export const sendNotificationSchema = z
     deepLink: z.string().max(2000).optional(),
   })
   .passthrough();
+
+/** Partial update of the per-topic / per-channel notification toggles. */
+export const notificationPreferencesSchema = z
+  .object(Object.fromEntries(NOTIFICATION_PREFERENCE_KEYS.map((key) => [key, z.boolean().optional()])))
+  .strict();

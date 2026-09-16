@@ -4,6 +4,7 @@ import { sendEmail } from '../../utils/email';
 import { getSocketManager } from '../../sockets';
 import { todoRepository } from '../todos/todo.repository';
 import { logInvitationEvent } from '../../utils/invitationLifecycle';
+import { notify, type NotificationTopic } from '../notifications/notify';
 
 /**
  * Unified Collaboration, Participant Tracking & Notification Engine.
@@ -50,6 +51,16 @@ const MODULE_LABELS: Record<ModuleType, string> = {
   loan: 'Loan / Split Obligation',
   split_expense: 'Split Expense',
   shared_transaction: 'Shared Transaction',
+};
+
+/** Notification preference topic that governs each module's alerts. */
+const MODULE_TOPICS: Record<ModuleType, NotificationTopic> = {
+  group_expense: 'group',
+  split_expense: 'group',
+  todo_list: 'todo',
+  goal: 'goal',
+  loan: 'loan',
+  shared_transaction: 'transaction',
 };
 
 const MODULE_ACTION_LABELS: Record<ModuleType, string> = {
@@ -326,50 +337,42 @@ export async function notifyRegisteredParticipant(args: {
   const title = `You were added to a ${noun}`;
   const message = `${creatorName} added you to "${moduleName}".${detail ? ` ${detail}` : ''}`;
 
+  // notify() adds push, honours the member's preferences, emits the socket
+  // event, and treats a concurrent duplicate dedupKey as already sent.
+  const notification = await notify({
+    userId: targetUserId,
+    topic: MODULE_TOPICS[moduleType],
+    type: moduleType,
+    title,
+    message,
+    deepLink,
+    email: true,
+    priority: 'high',
+    sourceUserId: creatorId,
+    dedupKey,
+    metadata: {
+      moduleType,
+      moduleId,
+      moduleName,
+      creatorId,
+      creatorName,
+      detail,
+      emailTitle: title,
+      emailBody: message,
+    },
+  });
+
+  if (!notification) {
+    logger.info(`[collaboration] Notification not created for dedupKey=${dedupKey} (duplicate or muted by preferences)`);
+    return;
+  }
+
+  logInvitationEvent('EMAIL_QUEUED', { notificationId: notification.id, userId: targetUserId, moduleType, moduleId });
+
   try {
-    const notification = await prisma.notification.create({
-      data: {
-        userId: targetUserId,
-        sourceUserId: creatorId,
-        title,
-        message,
-        type: moduleType,
-        category: moduleType,
-        deepLink,
-        priority: 'high',
-        channels: JSON.stringify(['app', 'email']),
-        deliveryStatus: JSON.stringify({ app: 'sent', email: 'queued' }),
-        // 'pending' hands the email delivery to the outbox worker
-        status: 'pending',
-        dedupKey,
-        metadata: {
-          moduleType,
-          moduleId,
-          moduleName,
-          creatorId,
-          creatorName,
-          detail,
-          emailTitle: title,
-          emailBody: message,
-        },
-      },
-    });
-
-    logInvitationEvent('EMAIL_QUEUED', { notificationId: notification.id, userId: targetUserId, moduleType, moduleId });
-
-    try {
-      const socketManager = getSocketManager();
-      socketManager.notifyUser(targetUserId, 'notification', notification);
-      socketManager.notifyUser(targetUserId, `${moduleType}_updated`, { id: moduleId });
-    } catch (err) {
-      logger.warn('[collaboration] Socket notification failed for collaboration invite', err);
-    }
-  } catch (err: any) {
-    if (err?.code === 'P2002') {
-      logger.info(`[collaboration] Duplicate notification prevented by DB unique constraint for dedupKey=${dedupKey}`);
-    } else {
-      throw err;
-    }
+    getSocketManager().notifyUser(targetUserId, `${moduleType}_updated`, { id: moduleId });
+  } catch (err) {
+    logger.warn('[collaboration] Socket refresh failed for collaboration invite', err);
   }
 }
 

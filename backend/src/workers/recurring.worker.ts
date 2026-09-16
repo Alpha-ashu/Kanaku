@@ -4,6 +4,7 @@ import { logger } from '../config/logger';
 import { audit } from '../utils/auditLogger';
 import { roundMoney, neg } from '../utils/money';
 import { eventBus } from '../utils/eventBus';
+import { notifyRecurringDue, notifyRecurringPosted } from '../features/notifications/triggers';
 import { transactionRepository } from '../features/transactions/transaction.repository';
 import { Prisma } from '../db/prisma-client';
 import {
@@ -323,6 +324,15 @@ export const processDueRecurringTransactions = async (): Promise<void> => {
                 },
               });
 
+              void notifyRecurringPosted({
+                userId: item.userId,
+                recurringId: item.id,
+                transactionId: createdTx.id,
+                title: item.title,
+                amount: item.amount,
+                dueDate: currentDueDate,
+              });
+
               logger.info('[recurring-worker] Automatically posted transaction', {
                 transactionId: createdTx.id,
                 userId: item.userId,
@@ -336,29 +346,17 @@ export const processDueRecurringTransactions = async (): Promise<void> => {
             // Dispatch a reminder notification for non-auto-processed items.
             // Use a dedupKey to prevent duplicate reminder notifications for the
             // same recurring item and due date.
-            const reminderDedupKey = `reminder:${item.userId}:${item.id}:${currentDueDate.toISOString().slice(0, 10)}`;
-
-            try {
-              await prisma.notification.create({
-                data: {
-                  userId: item.userId,
-                  title: 'Recurring Payment Reminder',
-                  message: `Reminder: Your recurring item "${item.title}" of ${roundMoney(item.amount).toFixed(2)} is due on ${currentDueDate.toLocaleDateString()}.`,
-                  type: 'loan_reminder', // reusing loan_reminder style for bills
-                  status: 'pending', // outbox sweeper will deliver this
-                  channels: JSON.stringify(['app', 'email']),
-                  dedupKey: reminderDedupKey,
-                },
-              });
-
+            // notify()'s dedupKey makes this one reminder per item and due date.
+            const reminded = await notifyRecurringDue({
+              userId: item.userId,
+              recurringId: item.id,
+              title: item.title,
+              amount: item.amount,
+              dueDate: currentDueDate,
+              daysUntil: 0,
+            });
+            if (reminded) {
               logger.info(`[recurring-worker] Dispatched due reminder for recurring item ${item.id}`);
-            } catch (notifErr: any) {
-              // Unique constraint on dedupKey means a duplicate reminder was attempted
-              if (notifErr?.code === 'P2002') {
-                logger.info(`[recurring-worker] Reminder already dispatched for ${item.id} on ${currentDueDate.toISOString().slice(0, 10)} — skipping duplicate`);
-              } else {
-                throw notifErr;
-              }
             }
 
             // Mark the execution as SUCCESS (reminder dispatched)

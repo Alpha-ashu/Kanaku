@@ -3,7 +3,7 @@ import { LocalNotifications } from '@capacitor/local-notifications';
 import { toast } from 'sonner';
 import { db, type Notification } from './database';
 import supabase from '@/utils/supabase/client';
-import { apiClient } from '@/lib/api';
+import { apiClient, TokenManager } from '@/lib/api';
 import { markOptionalBackendUnavailable, shouldSkipOptionalBackendRequests } from '@/lib/apiBase';
 
 type NotificationInput = Omit<Notification, 'id' | 'createdAt' | 'isRead'> & {
@@ -11,17 +11,34 @@ type NotificationInput = Omit<Notification, 'id' | 'createdAt' | 'isRead'> & {
   isRead?: boolean;
 };
 
+/**
+ * A row from GET /notifications. The API returns Prisma's camelCase fields; the
+ * snake_case names are the old Supabase shape and are still accepted. Reading
+ * only snake_case left every synced notification with an invalid date and no
+ * read state.
+ */
 type BackendNotificationRow = {
   id: string;
-  user_id: string;
   type: Notification['type'];
   title: string;
   message: string;
-  due_date: string | null;
-  is_read: boolean;
-  related_id: string | null;
-  created_at: string;
+  userId?: string;
+  isRead?: boolean;
+  createdAt?: string;
+  deepLink?: string | null;
+  category?: string | null;
+  metadata?: Record<string, unknown> | null;
+  user_id?: string;
+  is_read?: boolean;
+  created_at?: string;
+  due_date?: string | null;
+  related_id?: string | null;
 };
+
+/** The user's own entries — shown in the feed, but no pop-up on the device that made them. */
+const SELF_ACTIVITY_TYPES = new Set(['transaction_created', 'account_created']);
+/** Only notifications newer than this pop up when first seen; older ones just fill the feed. */
+const FRESH_NOTIFICATION_MS = 10 * 60 * 1000;
 
 const SYNCABLE_NOTIFICATION_TYPES = new Set<Notification['type']>(['emi', 'loan', 'goal', 'group', 'friend_request', 'friend_accepted', 'todo_shared']);
 
@@ -63,8 +80,13 @@ let periodicNotificationCheck: ReturnType<typeof setInterval> | null = null;
 let notificationInitPromise: Promise<void> | null = null;
 let notificationSyncPromise: Promise<void> | null = null;
 let nextBackendNotificationSyncAt = 0;
+let hasSyncedBackendOnce = false;
+let visibilityListenerAttached = false;
+let backendNotificationPoll: ReturnType<typeof setInterval> | null = null;
 
 const NOTIFICATION_SYNC_COOLDOWN_MS = 15_000;
+/** How often an open, visible app checks for new server notifications. */
+const BACKEND_NOTIFICATION_POLL_MS = 60_000;
 const NOTIFICATION_RATE_LIMIT_COOLDOWN_MS = 30_000;
 
 export async function removeLegacyMockNotifications() {
@@ -88,23 +110,47 @@ export async function removeLegacyMockNotifications() {
   }
 }
 
-const toLocalNotification = (remote: BackendNotificationRow): Notification => ({
-  type: remote.type,
-  title: remote.title,
-  message: remote.message,
-  dueDate: remote.due_date ? new Date(remote.due_date) : undefined,
-  isRead: remote.is_read,
-  relatedId: remote.related_id ? Number(remote.related_id) || undefined : undefined,
-  createdAt: new Date(remote.created_at),
-  userId: remote.user_id,
-  remoteId: remote.id,
-  source: 'supabase',
-});
+export const toLocalNotification = (remote: BackendNotificationRow): Notification => {
+  const created = new Date(remote.createdAt ?? remote.created_at ?? Date.now());
+  return {
+    type: remote.type,
+    title: remote.title,
+    message: remote.message,
+    dueDate: remote.due_date ? new Date(remote.due_date) : undefined,
+    isRead: Boolean(remote.isRead ?? remote.is_read ?? false),
+    relatedId: remote.related_id ? Number(remote.related_id) || undefined : undefined,
+    createdAt: Number.isNaN(created.getTime()) ? new Date() : created,
+    userId: remote.userId ?? remote.user_id,
+    remoteId: String(remote.id),
+    deepLink: remote.deepLink ?? undefined,
+    category: remote.category ?? undefined,
+    source: 'supabase',
+  };
+};
 
 const shouldUseSystemNotification = () =>
   typeof document !== 'undefined' && document.visibilityState !== 'visible';
 
+/** User id from the app's own access token (the normal sign-in path). */
+function userIdFromAccessToken(): string | undefined {
+  const token = TokenManager.getAccessToken();
+  if (!token) return undefined;
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+    const id = payload.userId ?? payload.id ?? payload.sub;
+    return typeof id === 'string' && id ? id : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 async function getActiveUserId() {
+  // The app signs in through its own backend, so a Supabase session usually
+  // does not exist. Checking only Supabase returned no user for everyone else,
+  // and server notifications were never fetched.
+  const fromToken = userIdFromAccessToken();
+  if (fromToken) return fromToken;
+
   // No try/catch here: it caught and immediately rethrew, which only obscured
   // the original stack. Callers already handle a rejection.
   const { data: { session } } = await supabase.auth.getSession();
@@ -195,17 +241,37 @@ async function upsertLocalNotification(notification: Notification) {
   return db.notifications.add(notification);
 }
 
+function shouldAnnounce(notification: Notification): boolean {
+  return !notification.isRead
+    && !SELF_ACTIVITY_TYPES.has(notification.type)
+    && Date.now() - new Date(notification.createdAt).getTime() < FRESH_NOTIFICATION_MS
+    && isNotificationEnabled(notification.type);
+}
+
 async function syncRemoteNotification(row: BackendNotificationRow, notifyUser = false) {
   const localNotification = toLocalNotification(row);
-  const existing = row.id
-    ? await db.notifications.filter((item) => item.remoteId === row.id).first()
-    : undefined;
+  const existing = await db.notifications
+    .filter((item) => item.remoteId === localNotification.remoteId)
+    .first();
 
-  await upsertLocalNotification(localNotification);
+  // Keep a read mark made on this device even if the server has not caught up.
+  await upsertLocalNotification(
+    existing?.isRead ? { ...localNotification, isRead: true, readAt: existing.readAt } : localNotification,
+  );
 
-  if (notifyUser && !existing && !localNotification.isRead) {
+  if (notifyUser && !existing && shouldAnnounce(localNotification)) {
     await showDeliveredNotification(localNotification);
   }
+}
+
+/**
+ * Store (and, if new, announce) a notification the server pushed in real time —
+ * over the socket or as a foreground push. Keyed on the server id, so the same
+ * notification arriving by several routes appears once.
+ */
+export async function ingestServerNotification(row: BackendNotificationRow): Promise<void> {
+  if (!row?.id) return;
+  await syncRemoteNotification(row, true);
 }
 
 async function syncBackendNotifications() {
@@ -235,9 +301,13 @@ async function syncBackendNotifications() {
       return;
     }
 
+    // The first sync of a session only fills the feed; after that, anything new
+    // (and recent) is announced — that is how web users see server alerts.
+    const announce = hasSyncedBackendOnce;
     for (const row of data) {
-      await syncRemoteNotification(row, false);
+      await syncRemoteNotification(row, announce);
     }
+    hasSyncedBackendOnce = true;
   })();
 
   try {
@@ -441,17 +511,34 @@ export const initializeNotifications = async () => {
 
   initialized = true;
   initializedUserId = userId ?? null;
+  hasSyncedBackendOnce = false;
   await checkAndCreateNotifications();
   await syncBackendNotifications();
 
   if (periodicNotificationCheck) {
     clearInterval(periodicNotificationCheck);
   }
+  if (backendNotificationPoll) {
+    clearInterval(backendNotificationPoll);
+  }
 
+  // Due-date checks are coarse; server notifications (group expenses, budget
+  // alerts, reminders) should show up within a minute while the app is open.
   periodicNotificationCheck = setInterval(() => {
     void checkAndCreateNotifications();
-    void syncBackendNotifications();
   }, 60 * 60 * 1000);
+  backendNotificationPoll = setInterval(() => {
+    if (typeof document === 'undefined' || document.visibilityState === 'visible') {
+      void syncBackendNotifications();
+    }
+  }, BACKEND_NOTIFICATION_POLL_MS);
+
+  if (!visibilityListenerAttached && typeof document !== 'undefined') {
+    visibilityListenerAttached = true;
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && initialized) void syncBackendNotifications();
+    });
+  }
   })();
 
   try {

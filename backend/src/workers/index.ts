@@ -58,26 +58,43 @@ const parseChannels = (value: unknown): string[] => {
   return Array.isArray(parsed) ? parsed.map(String) : [];
 };
 
+/** A 'processing' row this old belongs to a pass that crashed; it may be taken over. */
+const STALE_PROCESSING_MS = 10 * 60 * 1000;
+
+/** Rows a drainer may deliver: queued, awaiting retry, or abandoned mid-delivery. */
+const deliverableWhere = (now: Date) => ({
+  OR: [
+    { status: { in: ['pending', 'retrying'] } },
+    { status: 'processing', updatedAt: { lt: new Date(now.getTime() - STALE_PROCESSING_MS) } },
+  ],
+});
+
 /**
- * Atomic idempotency guard: claims delivery slot for a channel so concurrent worker processes cannot race.
+ * Atomic idempotency guard for one channel.
+ *
+ * Called standalone (`rowClaimed` false) it claims the whole row, so concurrent
+ * worker processes cannot both send. deliverNotification claims the row once up
+ * front and passes `rowClaimed`: every channel of that notification is then
+ * deliverable in the same pass — before, the first channel's claim moved the row
+ * to 'processing', so the second channel's claim always failed, and a channel
+ * whose send threw stayed 'sending' and was skipped on every retry, forever.
  */
-async function claimChannelDelivery(notificationId: string, channel: Channel): Promise<boolean> {
+async function claimChannelDelivery(notificationId: string, channel: Channel, rowClaimed = false): Promise<boolean> {
   const n = await prisma.notification.findUnique({
     where: { id: notificationId },
     select: { deliveryStatus: true, status: true },
   });
   if (!n) return false;
   const ds = parseDeliveryStatus(n.deliveryStatus);
-  if (ds[channel] === 'sent' || ds[channel] === 'sending') {
+  if (ds[channel] === 'sent' || (ds[channel] === 'sending' && !rowClaimed)) {
     return false;
   }
 
   ds[channel] = 'sending';
   const updated = await prisma.notification.updateMany({
-    where: {
-      id: notificationId,
-      status: { in: ['pending', 'retrying'] },
-    },
+    where: rowClaimed
+      ? { id: notificationId, status: 'processing' }
+      : { id: notificationId, status: { in: ['pending', 'retrying'] } },
     data: {
       status: 'processing',
       deliveryStatus: JSON.stringify(ds),
@@ -122,12 +139,14 @@ export interface DeliveryJob {
   fcmToken?: string;
   priority?: string;
   metadata?: unknown;
+  /** Set by deliverNotification, which has already claimed the whole row for this pass. */
+  rowClaimed?: boolean;
 }
 
 export async function processEmail(job: { data: DeliveryJob }): Promise<unknown> {
   const { notificationId, userId, title, message, category, deepLink, metadata } = job.data;
 
-  const claimed = await claimChannelDelivery(notificationId, 'email');
+  const claimed = await claimChannelDelivery(notificationId, 'email', job.data.rowClaimed);
   if (!claimed) {
     return { skipped: true, reason: 'already_sent_or_claimed' };
   }
@@ -167,31 +186,33 @@ export async function processEmail(job: { data: DeliveryJob }): Promise<unknown>
   return { sent: true };
 }
 
+const DEAD_FCM_TOKEN_CODES = new Set([
+  'messaging/registration-token-not-registered',
+  'messaging/invalid-registration-token',
+]);
+
 export async function processPush(job: { data: DeliveryJob }): Promise<unknown> {
   const { notificationId, userId, title, message, category, deepLink, priority, metadata } =
     job.data;
 
-  const claimed = await claimChannelDelivery(notificationId, 'push');
+  const claimed = await claimChannelDelivery(notificationId, 'push', job.data.rowClaimed);
   if (!claimed) {
     return { skipped: true, reason: 'already_sent_or_claimed' };
   }
 
-  // Find all active devices for the user with push tokens (FCM or APNs)
+  // The sender is Firebase Cloud Messaging, which only accepts FCM registration
+  // tokens. A raw APNs token (what @capacitor/push-notifications returns on iOS
+  // without the Firebase SDK) is rejected as invalid — sending to it used to get
+  // the iPhone deactivated. Those devices get in-app + on-device reminders until
+  // iOS registers an FCM token.
   const devices = await prisma.device.findMany({
-    where: {
-      userId,
-      isActive: true,
-      OR: [
-        { fcmToken: { not: null } },
-        { apnsToken: { not: null } },
-      ],
-    },
+    where: { userId, isActive: true, fcmToken: { not: null } },
     orderBy: { lastSyncedAt: 'desc' },
   });
 
   if (devices.length === 0) {
     await markChannel(notificationId, 'push', 'failed');
-    return { skipped: true, reason: 'no_device' };
+    return { skipped: true, reason: 'no_fcm_device' };
   }
 
   const meta = parseJson<any>(metadata, {});
@@ -202,7 +223,7 @@ export async function processPush(job: { data: DeliveryJob }): Promise<unknown> 
   let lastError: any = null;
 
   for (const device of devices) {
-    const token = device.fcmToken || device.apnsToken;
+    const token = device.fcmToken;
     if (!token) continue;
 
     try {
@@ -220,10 +241,12 @@ export async function processPush(job: { data: DeliveryJob }): Promise<unknown> 
       anySent = true;
     } catch (err: any) {
       lastError = err;
-      const msg = err instanceof Error ? err.message.toLowerCase() : '';
-      if (msg.includes('invalid') || msg.includes('unregistered') || msg.includes('not-registered')) {
+      // Only a token FCM itself reports as dead is dropped. A broad "invalid"
+      // match also caught payload errors (messaging/invalid-argument) and
+      // disconnected healthy devices.
+      if (DEAD_FCM_TOKEN_CODES.has(String(err?.code || err?.errorInfo?.code || ''))) {
         await prisma.device
-          .update({ where: { id: device.id }, data: { fcmToken: null, apnsToken: null, isActive: false } })
+          .update({ where: { id: device.id }, data: { fcmToken: null } })
           .catch(() => {});
       }
     }
@@ -265,8 +288,8 @@ interface OutboxRow {
 
 const isTerminal = (s: string | undefined) => s === 'sent' || s === 'failed';
 
-/** Build the per-channel job payload from a notification row (+ device for push). */
-async function buildJob(row: OutboxRow, channel: Channel): Promise<DeliveryJob> {
+/** Build the delivery job payload from a notification row. */
+async function buildJob(row: OutboxRow): Promise<DeliveryJob> {
   const base: DeliveryJob = {
     notificationId: row.id,
     userId: row.userId,
@@ -277,21 +300,8 @@ async function buildJob(row: OutboxRow, channel: Channel): Promise<DeliveryJob> 
     priority: row.priority ?? undefined,
     metadata: row.metadata ?? undefined,
   };
-  if (channel === 'push') {
-    const device = await prisma.device.findFirst({
-      where: {
-        userId: row.userId,
-        isActive: true,
-        OR: [
-          { fcmToken: { not: null } },
-          { apnsToken: { not: null } },
-        ],
-      },
-      orderBy: { lastSyncedAt: 'desc' },
-    });
-    base.deviceId = device?.id;
-    base.fcmToken = device?.fcmToken || device?.apnsToken || undefined;
-  }
+  // Push resolves the user's FCM devices itself (processPush), so the job carries
+  // no device.
   return base;
 }
 
@@ -324,12 +334,20 @@ export async function deliverNotification(row: OutboxRow): Promise<void> {
     return;
   }
 
+  // Claim the row once for this pass (see claimChannelDelivery). If another
+  // drainer already holds it, leave it alone.
+  const rowClaim = await prisma.notification.updateMany({
+    where: { id: row.id, ...deliverableWhere(new Date()) },
+    data: { status: 'processing' },
+  });
+  if (rowClaim.count === 0) return;
+
   const attemptsMade = (row.attempts ?? 0) + 1;
   let lastError: string | undefined;
 
   for (const channel of pending) {
     try {
-      const job = { data: await buildJob(row, channel) };
+      const job = { data: { ...(await buildJob(row)), rowClaimed: true } };
       await (channel === 'email' ? processEmail(job) : processPush(job));
       notificationDeliveriesTotal.inc({ channel, status: 'sent' });
     } catch (err) {
@@ -397,9 +415,11 @@ export async function drainNotificationOutbox(): Promise<number> {
     const now = new Date();
     const due = (await prisma.notification.findMany({
       where: {
-        status: { in: ['pending', 'retrying'] },
+        AND: [
+          deliverableWhere(now),
+          { OR: [{ nextRetryAt: null }, { nextRetryAt: { lte: now } }] },
+        ],
         deletedAt: null,
-        OR: [{ nextRetryAt: null }, { nextRetryAt: { lte: now } }],
       },
       orderBy: { createdAt: 'asc' },
       take: OUTBOX_BATCH,

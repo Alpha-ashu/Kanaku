@@ -12,6 +12,8 @@ import { closePurposeClients } from './config/redis-connections';
 import { startAIBackgroundJobs, stopAIBackgroundJobs } from './features/ai/ai.engine';
 import { startNotificationOutbox, stopNotificationOutbox } from './workers/index';
 import { startCleanupWorker, stopCleanupWorker } from './workers/cleanup.worker';
+import { startRecurringWorker, stopRecurringWorker } from './workers/recurring.worker';
+import { startReminderWorker, stopReminderWorker } from './workers/reminder.worker';
 import { runWorkersInApiProcess } from './config/serviceRole';
 import { verifyStorageBucket } from './utils/storage';
 import './features/budgets/budget.listener';
@@ -59,6 +61,18 @@ if (runWorkersInApiProcess()) {
 
   startAIBackgroundJobs();
   startCleanupWorker();
+  // Daily due-date reminders (notifications only — no data changes).
+  startReminderWorker();
+  // The recurring worker was only ever started by the separate worker process,
+  // so the combined-mode deployment (Render) has never run recurring rules. Its
+  // first run posts up to 24 missed occurrences per auto-process rule into real
+  // account balances (including rules seeded before 2026-09-15), so enabling it
+  // here is an explicit decision: set RECURRING_WORKER_ENABLED=true.
+  if (process.env.RECURRING_WORKER_ENABLED === 'true') {
+    startRecurringWorker();
+  } else {
+    logger.info('[api] recurring worker not started (RECURRING_WORKER_ENABLED != true)');
+  }
 } else {
   logger.info('[api] background jobs delegated to worker machine (RUN_WORKERS_IN_API=false)');
 }
@@ -69,6 +83,8 @@ const shutdown = async (signal: string) => {
     if (runWorkersInApiProcess()) {
       stopAIBackgroundJobs();
       stopCleanupWorker();
+      stopRecurringWorker();
+      stopReminderWorker();
       await stopNotificationOutbox();
     }
     await closePurposeClients();

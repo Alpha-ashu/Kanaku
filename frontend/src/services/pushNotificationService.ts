@@ -24,7 +24,7 @@ import { Capacitor, type PluginListenerHandle } from '@capacitor/core';
 import { Device } from '@capacitor/device';
 import { PushNotifications } from '@capacitor/push-notifications';
 import { apiClient } from '@/lib/api';
-import { createNotificationRecord } from '@/lib/notifications';
+import { createNotificationRecord, ingestServerNotification } from '@/lib/notifications';
 import { openDeepLink, type NavigateToPage } from '@/lib/nativeDeepLinks';
 
 const DEVICE_ID_KEY = 'device_id';
@@ -41,6 +41,37 @@ const isNative = (): boolean => {
     return false;
   }
 };
+
+/**
+ * Android channel every server push targets (backend config/firebase.ts). On
+ * Android 8+ a notification for a channel the app never created is not shown
+ * as an alert, so create it before registering. Local reminders use it too.
+ */
+export const ANDROID_NOTIFICATION_CHANNEL_ID = 'KANAKU_notifications';
+
+export const ensureAndroidNotificationChannel = async (): Promise<void> => {
+  if (!isNative() || Capacitor.getPlatform() !== 'android') return;
+  try {
+    await PushNotifications.createChannel({
+      id: ANDROID_NOTIFICATION_CHANNEL_ID,
+      name: 'KANAKU alerts',
+      description: 'Due-date reminders, budget alerts, group expense and security updates',
+      importance: 4,
+      visibility: 1,
+      vibration: true,
+    });
+  } catch (error) {
+    console.info('[Push] Notification channel not created:', error instanceof Error ? error.message : String(error));
+  }
+};
+
+/**
+ * True when the server can push to this device: Android with an FCM token the
+ * backend has stored. iOS registers an APNs token, which the FCM sender cannot
+ * use, so iOS relies on on-device reminders (lib/localReminders.ts).
+ */
+export const isServerPushActive = (): boolean =>
+  isNative() && Capacitor.getPlatform() === 'android' && Boolean(localStorage.getItem(SYNCED_TOKEN_KEY));
 
 /** Stable per-install id. Shared with the socket client, which already uses this key. */
 const getDeviceId = (): string => {
@@ -193,6 +224,7 @@ export const initializePushNotifications = async (navigate: NavigateToPage): Pro
     }
 
     await removeListeners();
+    await ensureAndroidNotificationChannel();
 
     listenerHandles.push(
       await PushNotifications.addListener('registration', (token) => {
@@ -215,12 +247,26 @@ export const initializePushNotifications = async (navigate: NavigateToPage): Pro
     // otherwise a foreground push is invisible.
     listenerHandles.push(
       await PushNotifications.addListener('pushNotificationReceived', (notification) => {
-        const deepLink = (notification.data as Record<string, string> | undefined)?.deepLink;
+        const data = (notification.data as Record<string, string> | undefined) ?? {};
+        if (data.notificationId) {
+          // A server notification — store it under its server id so the socket
+          // event and the next /notifications sync don't add a second copy.
+          void ingestServerNotification({
+            id: data.notificationId,
+            type: data.category || 'message',
+            title: notification.title || 'KANAKU',
+            message: notification.body || '',
+            deepLink: data.deepLink || null,
+            category: data.category || null,
+            createdAt: new Date().toISOString(),
+          });
+          return;
+        }
         void createNotificationRecord({
           type: 'message',
           title: notification.title || 'KANAKU',
           message: notification.body || '',
-          deepLink: deepLink || undefined,
+          deepLink: data.deepLink || undefined,
         });
       }),
     );

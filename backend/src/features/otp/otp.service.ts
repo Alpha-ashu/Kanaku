@@ -31,6 +31,10 @@ const OTP_EXPIRY_SECONDS = 120;
 const MAX_ATTEMPTS = 5;
 const COOLDOWN_SECONDS = 30;
 const BLOCK_THRESHOLD = 10; // Block after 10 total failed attempts in 1 hour
+/** Purposes whose VERIFIED row is itself the proof, so re-verifying the same code is harmless. */
+const REVERIFIABLE_PURPOSES = new Set<OtpPurpose>(['sensitive_action', 'aa_consent']);
+/** Matches the longest proof window callers pass to hasRecentVerification. */
+export const REVERIFY_WINDOW_SECONDS = 10 * 60;
 
 class OtpService {
   /**
@@ -132,25 +136,17 @@ class OtpService {
         };
       }
 
-      // Invalidate any existing active OTPs for this destination+purpose
-      await prisma.otpRequest.updateMany({
-        where: {
-          destination: cleanDestination,
-          purpose,
-          status: 'ACTIVE',
-        },
-        data: { status: 'EXPIRED' },
-      });
-
       // Generate and hash OTP
       const otp = this.generateOtp();
       const otpHash = this.hashOtp(otp);
       const expiryTime = new Date(Date.now() + OTP_EXPIRY_SECONDS * 1000);
+      const otpId = randomUUID();
 
-      // Store OTP record
+      // Store OTP record. Earlier active codes are only retired once this one
+      // has actually been delivered (below).
       await prisma.otpRequest.create({
         data: {
-          id: randomUUID(),
+          id: otpId,
           userId: userId || null,
           destination: cleanDestination,
           channel,
@@ -169,10 +165,12 @@ class OtpService {
       const delivered = await this.deliverOtp(cleanDestination, otp, channel, purpose);
 
       if (!delivered) {
-        // Never actually reached the user — expire it so a retry starts clean
-        // instead of leaving a "valid" OTP the user has no way to obtain.
-        await prisma.otpRequest.updateMany({
-          where: { destination: cleanDestination, purpose, status: 'ACTIVE' },
+        // Never reached the user — expire only this code. A code from an earlier,
+        // successful send stays valid: expiring it too meant a failed "resend"
+        // left the user holding an emailed code the server no longer accepted
+        // ("No active OTP found").
+        await prisma.otpRequest.update({
+          where: { id: otpId },
           data: { status: 'EXPIRED' },
         });
         logger.error(`[OTP] Delivery failed for ${cleanDestination.substring(0, 3)}*** (${purpose}) — no provider succeeded`);
@@ -181,6 +179,17 @@ class OtpService {
           message: `We couldn't send the verification code to your ${channel === 'sms' ? 'phone' : 'email'}. Please try again shortly.`,
         };
       }
+
+      // Delivered — this code supersedes any earlier active one.
+      await prisma.otpRequest.updateMany({
+        where: {
+          destination: cleanDestination,
+          purpose,
+          status: 'ACTIVE',
+          id: { not: otpId },
+        },
+        data: { status: 'EXPIRED' },
+      });
 
       logger.info(`[OTP] Sent ${channel} OTP to ${cleanDestination.substring(0, 3)}*** for ${purpose}`);
 
@@ -217,6 +226,26 @@ class OtpService {
       });
 
       if (!otpRecord) {
+        // The code may already have been accepted: the forgot-PIN flow verifies
+        // the OTP, then calls further endpoints, and a failure there made the
+        // user tap Verify again — which consumed nothing and reported "No active
+        // OTP". For proof-only purposes a VERIFIED row already works as proof
+        // for this whole window (hasRecentVerification), so re-accepting the
+        // same code inside it grants nothing new.
+        if (REVERIFIABLE_PURPOSES.has(purpose)) {
+          const recentlyVerified = await prisma.otpRequest.findFirst({
+            where: {
+              destination: cleanDestination,
+              purpose,
+              status: 'VERIFIED',
+              verifiedAt: { gte: new Date(Date.now() - REVERIFY_WINDOW_SECONDS * 1000) },
+            },
+            orderBy: { verifiedAt: 'desc' },
+          });
+          if (recentlyVerified && this.verifyHash(inputOtp, recentlyVerified.otpHash)) {
+            return { success: true, message: 'OTP verified successfully.', verificationToken: randomUUID() };
+          }
+        }
         return { success: false, message: 'No active OTP found. Please request a new one.' };
       }
 
@@ -341,7 +370,11 @@ class OtpService {
    * Check if a valid verification exists (for gating sensitive operations)
    */
   async hasRecentVerification(destination: string, purpose: OtpPurpose, withinSeconds = 300): Promise<boolean> {
+    // Deliberately matched on destination only, never on the requesting userId:
+    // /otp/send accepts any destination, so "a code this user verified" is not
+    // proof of owning the account's email — "a code sent to that email" is.
     const cleanDestination = destination.includes('@') ? destination.toLowerCase().trim() : destination.trim();
+    if (!cleanDestination) return false;
     const threshold = new Date(Date.now() - withinSeconds * 1000);
     const verified = await prisma.otpRequest.findFirst({
       where: {

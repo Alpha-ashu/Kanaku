@@ -7,6 +7,7 @@ import {
   notificationIdParamSchema,
   listNotificationsQuerySchema,
   sendNotificationSchema,
+  notificationPreferencesSchema,
 } from './notification.validation';
 
 const router = Router();
@@ -19,6 +20,10 @@ router.get('/', validateQuery(listNotificationsQuerySchema), NotificationControl
 
 // Get unread count
 router.get('/unread/count', NotificationController.getUnreadCount);
+
+// Notification preferences — registered before '/:id' so "preferences" is not read as an id
+router.get('/preferences', NotificationController.getPreferences);
+router.put('/preferences', validateBody(notificationPreferencesSchema), NotificationController.updatePreferences);
 
 // Get specific notification
 router.get('/:id', validateParams(notificationIdParamSchema), NotificationController.getNotification);

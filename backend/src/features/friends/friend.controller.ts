@@ -8,7 +8,7 @@ import { isDatabaseUnavailableError } from '../../utils/databaseAvailability';
 import { createdAtKeysetOrder, createdAtPosition, readKeysetPage, sliceKeysetPage, withCreatedAtKeyset } from '../../utils/pagination';
 import { getSocketManager } from '../../sockets';
 import { inviteParticipants, resolveContactDetailsForFriend } from '../collaboration/invitation.service';
-import { dispatchNotification } from '../notifications/notification.dispatcher';
+import { notify } from '../notifications/notify';
 
 async function findUserByEmailOrPhone(email?: string | null, phone?: string | null): Promise<any> {
   if (email) {
@@ -447,62 +447,55 @@ export const createFriend = async (req: AuthRequest, res: Response, next: NextFu
 
     if (targetUser) {
       if (isMutual) {
-        // Send multi-channel notification to B (target user) that B's request was accepted
-        const notificationB = await dispatchNotification({
+        // notify() respects each user's "Friend Requests" preference, only queues
+        // push for users with a registered phone, and emits the socket event.
+        // B's request was accepted — worth an email.
+        await notify({
           userId: targetUser.id,
           sourceUserId: userId,
+          topic: 'friend',
+          type: 'friend_accepted',
           title: 'Friend Request Accepted',
           message: `${currentUser.name} accepted your friend request.`,
-          type: 'friend_accepted',
-          category: 'friend',
           deepLink: '/friends',
           priority: 'high',
-          channels: ['app', 'email', 'push'],
+          email: true,
         });
 
-        // Send multi-channel notification to A (current user) that they are now friends
-        const notificationA = await dispatchNotification({
+        // A just did this themselves: in-app + push only, no email about their own action.
+        await notify({
           userId,
           sourceUserId: targetUser.id,
+          topic: 'friend',
+          type: 'friend_accepted',
           title: 'Friend Request Accepted',
           message: `You are now friends with ${targetUser.name}.`,
-          type: 'friend_accepted',
-          category: 'friend',
           deepLink: '/friends',
-          priority: 'high',
-          channels: ['app', 'email', 'push'],
         });
 
-        // Notify both via sockets immediately
         try {
           const socketManager = getSocketManager();
           socketManager.notifyUser(targetUser.id, 'friend_accepted', { friendId: friend.id, friendName: currentUser.name });
-          socketManager.notifyUser(targetUser.id, 'notification', notificationB);
-
           socketManager.notifyUser(userId, 'friend_accepted', { friendId: targetFriendRecordId, friendName: targetUser.name });
-          socketManager.notifyUser(userId, 'notification', notificationA);
         } catch (socketError) {
           logger.warn('Socket notification failed', { error: socketError });
         }
       } else {
         // B hasn't added A yet, this is a new friend request to B
-        const notificationB = await dispatchNotification({
+        await notify({
           userId: targetUser.id,
           sourceUserId: userId,
+          topic: 'friend',
+          type: 'friend_request',
           title: 'New Friend Request',
           message: `${currentUser.name} sent you a friend request on Kanaku.`,
-          type: 'friend_request',
-          category: 'friend',
           deepLink: '/friends',
           priority: 'high',
-          channels: ['app', 'email', 'push'],
+          email: true,
         });
 
-        // Notify B via sockets
         try {
-          const socketManager = getSocketManager();
-          socketManager.notifyUser(targetUser.id, 'friend_request', { friendId: friend.id, friendName: currentUser.name });
-          socketManager.notifyUser(targetUser.id, 'notification', notificationB);
+          getSocketManager().notifyUser(targetUser.id, 'friend_request', { friendId: friend.id, friendName: currentUser.name });
         } catch (socketError) {
           logger.warn('Socket notification failed', { error: socketError });
         }

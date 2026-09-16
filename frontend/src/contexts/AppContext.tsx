@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode, useCa
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { db, Account, Transaction, Loan, Goal, Investment, GroupExpense, Friend } from '@/lib/database';
+import { ingestServerNotification } from '@/lib/notifications';
 import { isBoilerplateDescription } from '@/services/smartExpenseImportService';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSecurity } from '@/contexts/SecurityContext';
@@ -827,35 +828,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     // Listen for real-time notification events from the backend (friend requests, todo shares, etc.)
     const unsubNotification = socketClient.on('notification', (payload: any) => {
-      console.log('[AppContext] notification received via WebSocket', payload);
-      if (!payload) return;
-      try {
-        // Map the backend notification shape to the Dexie Notification schema
-        const notifType = (payload.type ?? 'group') as any;
-        const notification = {
-          type: notifType,
-          title: payload.title ?? 'Notification',
-          message: payload.message ?? '',
-          isRead: payload.isRead ?? false,
-          createdAt: payload.createdAt ? new Date(payload.createdAt) : new Date(),
-          userId: payload.userId ?? user.id,
-          remoteId: payload.id ? String(payload.id) : undefined,
-          deepLink: payload.deepLink ?? undefined,
-          category: payload.category ?? undefined,
-          source: 'supabase' as const,
-        };
-        void db.notifications
-          .filter((n) => n.remoteId === notification.remoteId)
-          .first()
-          .then((existing) => {
-            if (existing?.id) {
-              return db.notifications.put({ ...notification, id: existing.id });
-            }
-            return db.notifications.add(notification);
-          });
-      } catch (err) {
-        console.warn('[AppContext] Failed to save socket notification to Dexie', err);
-      }
+      if (!payload?.id) return;
+      // Same store-and-announce path as the poll and foreground pushes, keyed on
+      // the server id so one notification never appears twice.
+      void ingestServerNotification(payload).catch((err) => {
+        console.warn('[AppContext] Failed to store socket notification', err);
+      });
     });
 
     return () => {

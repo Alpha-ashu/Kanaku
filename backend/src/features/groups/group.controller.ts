@@ -9,6 +9,7 @@ import { createdAtKeysetOrder, createdAtPosition, readKeysetPage, sliceKeysetPag
 import { getSocketManager } from '../../sockets';
 import { sanitize } from '../../utils/sanitize';
 import { inviteParticipants } from '../collaboration/invitation.service';
+import { notifyGroupExpenseChanged } from '../notifications/triggers';
 import { FinancialEventDispatcher, GroupExpenseCreatedEvent, GroupSettlementCompletedEvent } from '../transactions/dispatcher';
 import { FinancialLedgerService } from '../transactions/ledger.service';
 
@@ -478,8 +479,12 @@ export const updateGroup = async (req: AuthRequest, res: Response) => {
     }
 
     let updatedGroup: any;
-    const invitationsToSend: { email: string; name: string; share: number; totalAmount: number; groupName: string }[] = [];
+    // Only members added by THIS edit are invited; everyone already in the
+    // group gets a "changed" notice instead (notifyGroupExpenseChanged below).
+    const invitationsToSend: { email: string | null; phone: string | null; name: string; share: number; totalAmount: number; groupName: string }[] = [];
     const socketNotificationsToSend: { targetUserId: string; notification?: any; groupExpenseId: string }[] = [];
+    // Set inside the transaction callbacks; the cast stops TS narrowing it to null.
+    let changeToAnnounce = null as 'updated' | 'settled' | 'payment' | null;
 
     if (isCreator) {
       // Owner can update everything
@@ -597,38 +602,19 @@ export const updateGroup = async (req: AuthRequest, res: Response) => {
               matchingTransition.member.newId = createdMember.id;
             }
 
-            if (email) {
+            const isNewMember = !findMatchingExistingMember(m, existingMembers);
+            if (isNewMember && (email || friend?.phone || memberPhone)) {
               invitationsToSend.push({
                 email,
+                phone: friend?.phone || memberPhone,
                 name: m.name,
                 share: m.share,
                 totalAmount: Number(updated.totalAmount),
                 groupName: updated.name
               });
-            } else if (targetUser) {
-              const updNotifTitle = 'Group Expense Updated';
-              const updNotifMsg = `${currentUser.name} updated the split expense "${updated.name}".`;
-              const notification = await tx.notification.create({
-                data: {
-                  userId: targetUser.id,
-                  sourceUserId: userId,
-                  title: updNotifTitle,
-                  message: updNotifMsg,
-                  type: 'group_expense',
-                  category: 'group_expense',
-                  deepLink: '/groups',
-                  priority: 'normal',
-                  channels: '["app","email"]',
-                  deliveryStatus: '{"app":"sent","email":"queued"}',
-                  status: 'pending',
-                }
-              });
-
-              socketNotificationsToSend.push({
-                targetUserId: targetUser.id,
-                notification,
-                groupExpenseId: id
-              });
+            }
+            if (targetUser) {
+              socketNotificationsToSend.push({ targetUserId: targetUser.id, groupExpenseId: id });
             }
           }
         } else {
@@ -677,6 +663,10 @@ export const updateGroup = async (req: AuthRequest, res: Response) => {
           }
         }
 
+        changeToAnnounce = body.status === 'settled' && existing.status !== 'settled'
+          ? 'settled'
+          : transitions.length > 0 ? 'payment' : 'updated';
+
         return updated;
       }, { timeout: 30000 });
 
@@ -691,7 +681,7 @@ export const updateGroup = async (req: AuthRequest, res: Response) => {
             moduleId: id,
             moduleName: inv.groupName,
             creatorId: userId,
-            participants: [{ email: inv.email, name: inv.name, detail }],
+            participants: [{ email: inv.email, phone: inv.phone, name: inv.name, detail }],
           });
         } catch (err) {
           logger.warn('Failed to invite group expense participant on update', err);
@@ -754,28 +744,10 @@ export const updateGroup = async (req: AuthRequest, res: Response) => {
                 }
               }
 
-              // Notify creator via outbox row (within tx)
-              const settleNotifTitle = 'Split Expense Settled';
-              const settleNotifMsg = `${currentUser.name} marked their share as paid for "${existing.name}".`;
-              const notificationCreator = await tx.notification.create({
-                data: {
-                  userId: existing.userId,
-                  sourceUserId: userId,
-                  title: settleNotifTitle,
-                  message: settleNotifMsg,
-                  type: 'group_expense',
-                  category: 'group_expense',
-                  deepLink: '/groups',
-                  priority: 'normal',
-                  channels: '["app","email"]',
-                  deliveryStatus: '{"app":"sent","email":"queued"}',
-                  status: 'pending',
-                }
-              });
-
+              // The creator and other members are told after the commit (below).
+              changeToAnnounce = 'payment';
               socketNotificationsToSend.push({
                 targetUserId: existing.userId,
-                notification: notificationCreator,
                 groupExpenseId: id
               });
 
@@ -815,6 +787,16 @@ export const updateGroup = async (req: AuthRequest, res: Response) => {
       } catch (err) {
         // Ignore
       }
+    }
+
+    if (changeToAnnounce) {
+      void notifyGroupExpenseChanged({
+        groupExpenseId: id,
+        actorUserId: userId,
+        change: changeToAnnounce,
+        detail: changeToAnnounce === 'payment' && !isCreator ? `${currentUser.name} paid their share.` : undefined,
+        skipEmails: invitationsToSend.map((inv) => inv.email).filter((e): e is string => Boolean(e)),
+      });
     }
 
     const data = await buildGroupResponse(updatedGroup, userId);
@@ -1003,6 +985,8 @@ export const deleteGroup = async (req: AuthRequest, res: Response) => {
         }
       }
     }
+
+    void notifyGroupExpenseChanged({ groupExpenseId: id, actorUserId: userId, change: 'deleted' });
 
     res.json({ success: true, message: 'Group deleted' });
   } catch (error) {

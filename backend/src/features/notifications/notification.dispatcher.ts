@@ -29,6 +29,8 @@ export interface DispatchNotificationInput {
   sourceUserId?: string;
   metadata?: Record<string, unknown>;
   requestId?: string;
+  /** Globally unique event key (Notification.dedupKey) — a repeat fails with P2002. */
+  dedupKey?: string;
 }
 
 export async function dispatchNotification(input: DispatchNotificationInput, tx: any = prisma) {
@@ -70,6 +72,7 @@ export async function dispatchNotification(input: DispatchNotificationInput, tx:
       metadata: input.metadata as any,
       deliveryStatus: JSON.stringify(deliveryStatus),
       requestId: input.requestId || null,
+      dedupKey: input.dedupKey || null,
       // 'pending' makes the outbox drainer pick the row up; app-only rows rest at 'sent'.
       status: wantsAsync ? 'pending' : 'sent',
       sentAt: wantsAsync ? null : new Date(),

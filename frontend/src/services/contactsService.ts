@@ -2,10 +2,15 @@
  * Contacts Service — Device & File Contact Import
  *
  * Supports:
- * 1. HTML5 Web Contact Picker API (`navigator.contacts.select`) for mobile browsers / WebViews.
- * 2. vCard (.vcf) file parsing for cross-platform contact export/import.
- * 3. Sanitization, duplicate detection, and normalization for Kanaku friends.
+ * 1. Native Android/iOS apps: the system contact picker via @capacitor-community/contacts.
+ *    (The Android WebView and iOS WKWebView do not implement the Web Contact Picker
+ *    API, so before this the native apps could only import .vcf/.csv files.)
+ * 2. HTML5 Web Contact Picker API (`navigator.contacts.select`) for mobile browsers.
+ * 3. vCard (.vcf) file parsing for cross-platform contact export/import.
+ * 4. Sanitization, duplicate detection, and normalization for Kanaku friends.
  */
+import { Capacitor } from '@capacitor/core';
+import { Contacts } from '@capacitor-community/contacts';
 
 export interface DeviceContact {
   name: string;
@@ -13,16 +18,57 @@ export interface DeviceContact {
   phone?: string;
 }
 
-/** Check if the native/browser Web Contact Picker API is supported on this platform */
+const isNativeApp = (): boolean => {
+  try {
+    return Capacitor.isNativePlatform();
+  } catch {
+    return false;
+  }
+};
+
+/** Check if a device contact picker (native or browser) is available on this platform */
 export function isContactPickerSupported(): boolean {
+  if (isNativeApp()) return true;
   return typeof window !== 'undefined' && 'contacts' in navigator && 'ContactsManager' in window;
 }
 
 /**
- * Open the native device contact picker dialog (supported on Android Chrome, Samsung Internet, mobile WebViews).
- * Returns array of selected contacts.
+ * Native apps: asks for contacts access (Android READ_CONTACTS / iOS Contacts),
+ * then opens the system picker for one contact. The picked contact joins the
+ * same review queue as browser-picked ones.
+ */
+async function pickNativeContact(): Promise<DeviceContact[]> {
+  let permission = await Contacts.checkPermissions();
+  if (permission.contacts !== 'granted' && permission.contacts !== 'limited') {
+    permission = await Contacts.requestPermissions();
+  }
+  if (permission.contacts !== 'granted' && permission.contacts !== 'limited') {
+    throw new Error('Allow Contacts access for KANAKU in your phone settings to pick friends from your contacts.');
+  }
+
+  try {
+    const { contact } = await Contacts.pickContact({ projection: { name: true, phones: true, emails: true, organization: true } });
+    if (!contact) return [];
+    const email = contact.emails?.find((e) => e.address)?.address?.trim().toLowerCase() || undefined;
+    const phone = contact.phones?.find((p) => p.number)?.number?.trim().replace(/[\s\-()]/g, '') || undefined;
+    const rawName = contact.name?.display
+      || [contact.name?.given, contact.name?.family].filter(Boolean).join(' ');
+    const name = sanitizeContactName(rawName || '', { email, phone, org: contact.organization?.company ?? undefined });
+    return name ? [{ name, email, phone }] : [];
+  } catch (err: any) {
+    if (/cancel/i.test(String(err?.message ?? err))) return [];
+    throw err;
+  }
+}
+
+/**
+ * Open the device contact picker — the system picker in the native apps, the Web
+ * Contact Picker API in supporting mobile browsers. Returns the selected contacts.
  */
 export async function pickDeviceContacts(): Promise<DeviceContact[]> {
+  if (isNativeApp()) {
+    return pickNativeContact();
+  }
   if (!isContactPickerSupported()) {
     throw new Error('Contact Picker API is not supported on this browser/device.');
   }
@@ -124,8 +170,8 @@ export function removeEmojisAndMemojis(rawName: string): string {
 
   // 5. Remove ascii emoticons and symbol clusters (like -:;)=d, :-), :D, =D, etc.)
   name = name.replace(/[^\p{L}\p{N}\s]{2,}[a-zA-Z0-9]?/gu, ' ');
-  name = name.replace(/(?:^|\s)(?:[-:;=8][oO\-]?[)\]\(\[dDpP/\\|*]|[<>]?[:;=8][)\]\(\[dDpP/\\|*])(?:\s|$)/gi, ' ');
-  name = name.replace(/(?:^|\s)[=:;]-?[)\]\(\[dDpP](?:\s|$)/gi, ' ');
+  name = name.replace(/(?:^|\s)(?:[-:;=8][oO-]?[)\]([dDpP/\\|*]|[<>]?[:;=8][)\]([dDpP/\\|*])(?:\s|$)/gi, ' ');
+  name = name.replace(/(?:^|\s)[=:;]-?[)\]([dDpP](?:\s|$)/gi, ' ');
 
   // 6. Clean dangling punctuation from start and end (preserving valid parenthesis if balanced)
   name = name.replace(/^[-:;=,._~#*+|/\\s]+|[-:;=,._~#*+|/\\s]+$/gu, '');

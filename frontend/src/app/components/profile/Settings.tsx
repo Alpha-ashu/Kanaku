@@ -52,6 +52,15 @@ import {
   type SmsDetectionStatus,
 } from '@/services/smsTransactionDetectionService';
 import { runWithCloudSyncSuppressed } from '@/lib/auth-sync-integration';
+import {
+  NOTIFICATION_CHANNEL_TOGGLES,
+  NOTIFICATION_TOPIC_TOGGLES,
+  isToggleOn,
+  loadNotificationSettings,
+  readLocalNotificationSettings,
+  saveNotificationSetting,
+} from '@/lib/notificationPreferences';
+import { refreshLocalReminders } from '@/lib/localReminders';
 
 // Factory reset budget.
 const CLEAR_DATA_TIMEOUT_MS = 180_000;
@@ -117,34 +126,30 @@ export const Settings: React.FC = () => {
   const [pastedSmsText, setPastedSmsText] = useState('');
   const [isParsingPastedSms, setIsParsingPastedSms] = useState(false);
 
-  const [notifSettings, setNotifSettings] = useState<Record<string, boolean>>(() => {
-    try {
-      const stored = localStorage.getItem('notificationSettings');
-      return stored ? JSON.parse(stored) : {
-        transactionAlerts: true,
-        budgetAlerts: true,
-        loanReminders: true,
-        groupExpenseUpdates: true,
-        goalProgressAlerts: true,
-        appUpdates: true,
-      };
-    } catch {
-      return {
-        transactionAlerts: true,
-        budgetAlerts: true,
-        loanReminders: true,
-        groupExpenseUpdates: true,
-        goalProgressAlerts: true,
-        appUpdates: true,
-      };
-    }
-  });
+  const [notifSettings, setNotifSettings] = useState<Record<string, boolean>>(readLocalNotificationSettings);
 
-  const toggleNotif = (key: string) => {
-    const updated = { ...notifSettings, [key]: !notifSettings[key] };
-    setNotifSettings(updated);
-    localStorage.setItem('notificationSettings', JSON.stringify(updated));
-    toast.success(`Notification preference updated`);
+  // The server decides which pushes and emails it sends, so show its copy.
+  useEffect(() => {
+    let cancelled = false;
+    void loadNotificationSettings().then((settings) => {
+      if (!cancelled) setNotifSettings(settings);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const toggleNotif = async (key: string) => {
+    const nextValue = !isToggleOn(notifSettings, key);
+    setNotifSettings((current) => ({ ...current, [key]: nextValue }));
+    try {
+      await saveNotificationSetting(key, nextValue);
+      toast.success('Notification preference updated');
+      void refreshLocalReminders();
+    } catch {
+      setNotifSettings((current) => ({ ...current, [key]: !nextValue }));
+      toast.error('Could not save that preference. Check your connection and try again.');
+    }
   };
 
   // Registered devices state
@@ -934,41 +939,43 @@ export const Settings: React.FC = () => {
               <p className="text-xs font-black uppercase tracking-wider text-slate-400 px-2">
                 Alerts & Notifications
               </p>
-              <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] divide-y divide-slate-100 overflow-hidden">
-                {[
-                  { key: 'transactionAlerts', label: 'Transaction Alerts', desc: 'Real-time alert on expense/income' },
-                  { key: 'budgetAlerts', label: 'Budget Threshold Warnings', desc: 'Alert when exceeding category limits' },
-                  { key: 'loanReminders', label: 'Loan & EMI Due Reminders', desc: 'Upcoming repayment schedule alerts' },
-                  { key: 'groupExpenseUpdates', label: 'Group Split Updates', desc: 'Shared activity & balance settlements' },
-                  { key: 'goalProgressAlerts', label: 'Goal Milestone Celebrations', desc: 'Savings milestones and reminders' },
-                  { key: 'appUpdates', label: 'Feature Announcements', desc: 'Updates and system notices' },
-                ].map(({ key, label, desc }) => (
-                  <div key={key} className="p-3.5 sm:p-4 flex items-center justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="text-xs sm:text-sm font-bold text-slate-900 truncate">{label}</p>
-                      <p className="text-xs text-slate-400 truncate">{desc}</p>
-                    </div>
-                    <button
-                      type="button"
-                      role="switch"
-                      aria-checked={notifSettings[key]}
-                      onClick={() => toggleNotif(key)}
-                      data-testid={`settings-notif-toggle-${key}`}
-                      className={cn(
-                        "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none",
-                        notifSettings[key] ? "bg-slate-900" : "bg-slate-200"
-                      )}
-                    >
-                      <span
-                        className={cn(
-                          "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out",
-                          notifSettings[key] ? "translate-x-5" : "translate-x-0"
-                        )}
-                      />
-                    </button>
-                  </div>
-                ))}
-              </div>
+              {[NOTIFICATION_TOPIC_TOGGLES, NOTIFICATION_CHANNEL_TOGGLES].map((toggles, groupIndex) => (
+                <div
+                  key={groupIndex}
+                  className="bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] divide-y divide-slate-100 overflow-hidden"
+                >
+                  {toggles.map(({ key, label, desc }) => {
+                    const on = isToggleOn(notifSettings, key);
+                    return (
+                      <div key={key} className="p-3.5 sm:p-4 flex items-center justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="text-xs sm:text-sm font-bold text-slate-900 truncate">{label}</p>
+                          <p className="text-xs text-slate-400">{desc}</p>
+                        </div>
+                        <button
+                          type="button"
+                          role="switch"
+                          aria-checked={on}
+                          aria-label={label}
+                          onClick={() => void toggleNotif(key)}
+                          data-testid={`settings-notif-toggle-${key}`}
+                          className={cn(
+                            "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none",
+                            on ? "bg-slate-900" : "bg-slate-200"
+                          )}
+                        >
+                          <span
+                            className={cn(
+                              "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out",
+                              on ? "translate-x-5" : "translate-x-0"
+                            )}
+                          />
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
             </div>
           )}
 

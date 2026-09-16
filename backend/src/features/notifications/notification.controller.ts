@@ -3,6 +3,7 @@ import { AuthRequest, getUserId } from '../../middleware/auth';
 import { prisma } from '../../db/prisma';
 import { isDatabaseUnavailableError } from '../../utils/databaseAvailability';
 import { LIST_PAGE_DEFAULT, LIST_PAGE_MAX } from '../../utils/pagination';
+import { getNotificationPreferences, saveNotificationPreferences } from './notify';
 
 // Get user's notifications
 export const getNotifications = async (req: AuthRequest, res: Response) => {
@@ -202,5 +203,25 @@ export const getUnreadCount = async (req: AuthRequest, res: Response) => {
     res.json({ unreadCount: count });
   } catch (error: any) {
     res.status(500).json({ error: error.message || 'Failed to fetch unread count' });
+  }
+};
+
+// Get notification preferences (per-topic toggles + email/push channels)
+export const getPreferences = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = getUserId(req);
+    res.json({ success: true, data: await getNotificationPreferences(userId) });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to fetch notification preferences' });
+  }
+};
+
+// Update notification preferences — unknown keys are ignored, others merge
+export const updatePreferences = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = getUserId(req);
+    res.json({ success: true, data: await saveNotificationPreferences(userId, req.body ?? {}) });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to update notification preferences' });
   }
 };

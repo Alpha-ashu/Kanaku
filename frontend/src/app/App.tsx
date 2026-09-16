@@ -10,6 +10,7 @@ import { HealthChecker } from '@/lib/health';
 import { toast } from 'sonner';
 import { initializeSmsTransactionDetection } from '@/services/smsTransactionDetectionService';
 import { initializePushNotifications } from '@/services/pushNotificationService';
+import { refreshLocalReminders } from '@/lib/localReminders';
 import { canAccessPage } from '@/lib/featureFlags';
 import { ADMIN_UI_ENABLED } from '@/config/platform';
 
@@ -597,11 +598,27 @@ const AppContent: React.FC = () => {
       // Defer push notification prompt slightly so the first React frame mounts cleanly
       // before any native OS permission dialog obscures or pauses the webview
       const pushTimer = setTimeout(() => {
-        void initializePushNotifications((page) => setCurrentPageRef.current?.(page)).catch((err) => {
-          console.warn('[Startup] Push notifications init skipped:', err);
-        });
+        void initializePushNotifications((page) => setCurrentPageRef.current?.(page))
+          .catch((err) => {
+            console.warn('[Startup] Push notifications init skipped:', err);
+          })
+          // After push setup: permission has been asked, and we know whether the
+          // server can push to this device or reminders must be scheduled locally.
+          .then(() => refreshLocalReminders());
       }, 800);
-      return () => clearTimeout(pushTimer);
+
+      // Keep on-device reminders in step with edits made since the last run.
+      const onVisible = () => {
+        if (document.visibilityState === 'visible') void refreshLocalReminders();
+      };
+      document.addEventListener('visibilitychange', onVisible);
+      const reminderTimer = setInterval(() => void refreshLocalReminders(), 60 * 60 * 1000);
+
+      return () => {
+        clearTimeout(pushTimer);
+        clearInterval(reminderTimer);
+        document.removeEventListener('visibilitychange', onVisible);
+      };
     }
   }, [user, isAuthenticated]);
 

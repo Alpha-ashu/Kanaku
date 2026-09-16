@@ -9,6 +9,7 @@ import { cacheDeleteByPrefix } from '../../cache/redis';
 import { isDatabaseUnavailableError } from '../../utils/databaseAvailability';
 import { createdAtKeysetOrder, createdAtPosition, readKeysetPage, sliceKeysetPage, withCreatedAtKeyset } from '../../utils/pagination';
 import { inviteParticipants } from '../collaboration/invitation.service';
+import { notifyGoalProgress } from '../notifications/triggers';
 import { FinancialLedgerService } from '../transactions/ledger.service';
 import { FinancialEventDispatcher, GoalContributionEvent, GoalWithdrawalEvent } from '../transactions/dispatcher';
 
@@ -201,6 +202,10 @@ export const updateGoal = async (req: AuthRequest, res: Response, next: NextFunc
     });
 
     await cacheDeleteByPrefix('goals:');
+
+    if (updates.currentAmount !== undefined) {
+      void notifyGoalProgress(updated, goal.currentAmount, updated.currentAmount);
+    }
 
     res.json({ success: true, data: updated });
   } catch (error) {
@@ -495,6 +500,8 @@ export const addGoalContribution = async (req: AuthRequest, res: Response, next:
     await cacheDeleteByPrefix('goals:');
     await cacheDeleteByPrefix('accounts:');
     await cacheDeleteByPrefix('transactions:');
+
+    void notifyGoalProgress(result.goal, Number(result.goal.currentAmount) - numericAmount, result.goal.currentAmount);
 
     res.status(201).json({ success: true, data: result });
   } catch (error) {

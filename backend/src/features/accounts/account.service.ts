@@ -3,6 +3,7 @@ import { sanitize } from '../../utils/sanitize';
 import { AppError } from '../../utils/AppError';
 import { logger } from '../../config/logger';
 import { cacheDeleteByPrefix } from '../../cache/redis';
+import { notifyAccountCreated } from '../notifications/triggers';
 import { KeysetPage, createdAtPosition, sliceKeysetPage } from '../../utils/pagination';
 
 export class AccountService {
@@ -75,6 +76,8 @@ export class AccountService {
 
     await cacheDeleteByPrefix('accounts:');
     await cacheDeleteByPrefix('transactions:');
+
+    void notifyAccountCreated(account);
 
     return account;
   }

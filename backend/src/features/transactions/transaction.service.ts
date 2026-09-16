@@ -6,6 +6,7 @@ import { eventBus } from '../../utils/eventBus';
 import { Prisma } from '../../db/prisma-client';
 import { prisma } from '../../db/prisma';
 import { logger } from '../../config/logger';
+import { notifyTransactionCreated } from '../notifications/triggers';
 import { add, isPositive, neg, parseMoney, roundMoney, ZERO } from '../../utils/money';
 import { KeysetPage, LIST_PAGE_DEFAULT, LIST_PAGE_MAX, createdAtPosition, sliceKeysetPage } from '../../utils/pagination';
 
@@ -311,6 +312,8 @@ export class TransactionService {
         category: newTx.category,
       },
     });
+
+    void notifyTransactionCreated(newTx);
 
     return newTx;
   }
