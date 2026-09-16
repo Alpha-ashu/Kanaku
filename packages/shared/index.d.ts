@@ -47,7 +47,7 @@ export interface VoiceActionEntities {
   /** group_expense: other participants' names (never includes the speaker) */
   members?: string[];
   /** group_expense split style; equal when unspecified */
-  splitType?: 'equal' | 'custom';
+  splitType?: 'equal' | 'custom' | 'percentage' | 'shares';
   /** subscription: how often it recurs */
   recurrence?: 'monthly' | 'yearly' | 'weekly' | 'daily' | 'one-time';
 }

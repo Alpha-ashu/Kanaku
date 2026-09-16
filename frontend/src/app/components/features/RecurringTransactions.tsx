@@ -222,11 +222,12 @@ export const RecurringTransactions: React.FC = () => {
           </div>
           <button
             onClick={() => setShowAddForm((v) => !v)}
-            className="bg-[#18181B] hover:bg-black text-white px-4 sm:px-5 h-9 sm:h-10 rounded-full text-xs sm:text-sm font-bold active:scale-95 transition-all shadow-xs flex items-center gap-1.5 cursor-pointer shrink-0"
+            className="bg-[#18181B] hover:bg-black text-white px-3 sm:px-5 h-9 sm:h-10 rounded-full text-xs sm:text-sm font-bold active:scale-95 transition-all shadow-xs flex items-center gap-1.5 cursor-pointer shrink-0"
             data-testid="recurring-toggle-form-button"
           >
             <Plus size={16} className={cn("transition-transform duration-200", showAddForm ? "rotate-45" : "")} />
-            <span>{showAddForm ? 'Close' : 'Create Recurring'}</span>
+            <span className="hidden sm:inline">{showAddForm ? 'Close' : 'Create Recurring'}</span>
+            <span className="sm:hidden">{showAddForm ? 'Close' : 'Create'}</span>
           </button>
         </div>
 
@@ -235,7 +236,7 @@ export const RecurringTransactions: React.FC = () => {
           {/* Outflow */}
           <div className="p-4 sm:p-5 rounded-[24px] sm:rounded-[28px] bg-white border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] flex flex-col justify-between">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-2xs sm:text-xs font-black text-slate-400 uppercase tracking-widest truncate">Monthly Outflow</span>
+              <span className="text-2xs sm:text-xs font-bold text-slate-500 uppercase tracking-wider truncate">Monthly Outflow</span>
               <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-600 shrink-0">
                 <ArrowDownRight size={14} />
               </div>
@@ -251,7 +252,7 @@ export const RecurringTransactions: React.FC = () => {
           {/* Inflow */}
           <div className="p-4 sm:p-5 rounded-[24px] sm:rounded-[28px] bg-white border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] flex flex-col justify-between">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-2xs sm:text-xs font-black text-slate-400 uppercase tracking-widest truncate">Monthly Inflow</span>
+              <span className="text-2xs sm:text-xs font-bold text-slate-500 uppercase tracking-wider truncate">Monthly Inflow</span>
               <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
                 <ArrowUpRight size={14} />
               </div>
@@ -267,7 +268,7 @@ export const RecurringTransactions: React.FC = () => {
           {/* Active Profiles */}
           <div className="p-4 sm:p-5 rounded-[24px] sm:rounded-[28px] bg-white border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] flex flex-col justify-between">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-2xs sm:text-xs font-black text-slate-400 uppercase tracking-widest truncate">Active Rules</span>
+              <span className="text-2xs sm:text-xs font-bold text-slate-500 uppercase tracking-wider truncate">Active Rules</span>
               <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-700 shrink-0">
                 <ShieldCheck size={14} />
               </div>
@@ -283,7 +284,7 @@ export const RecurringTransactions: React.FC = () => {
           {/* Next Due */}
           <div className="p-4 sm:p-5 rounded-[24px] sm:rounded-[28px] bg-white border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] flex flex-col justify-between">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-2xs sm:text-xs font-black text-slate-400 uppercase tracking-widest truncate">Next Upcoming</span>
+              <span className="text-2xs sm:text-xs font-bold text-slate-500 uppercase tracking-wider truncate">Next Upcoming</span>
               <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shrink-0">
                 <Clock size={14} />
               </div>
@@ -486,8 +487,8 @@ export const RecurringTransactions: React.FC = () => {
           </div>
         )}
 
-        {/* Filter Pills */}
-        <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide py-1">
+        {/* Filter Pills - Device responsive & centric */}
+        <div className="grid grid-cols-2 min-[420px]:grid-cols-3 md:flex md:items-center md:justify-center md:flex-wrap gap-1.5 sm:gap-2 w-full py-1">
           {[
             { id: 'all', label: 'All Schedules', count: items.length },
             { id: 'expense', label: 'Expenses', count: items.filter(i => i.type === 'expense').length },
@@ -499,8 +500,9 @@ export const RecurringTransactions: React.FC = () => {
             <button
               key={f.id}
               onClick={() => setActiveFilter(f.id as any)}
+              data-testid={`recurring-filter-${f.id}`}
               className={cn(
-                "flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer whitespace-nowrap",
+                "flex items-center justify-center gap-1.5 px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-full text-xs font-bold transition-all cursor-pointer whitespace-nowrap active:scale-95 shadow-2xs",
                 activeFilter === f.id
                   ? "bg-[#18181B] text-white shadow-xs"
                   : "bg-white text-slate-600 hover:bg-slate-100/70 border border-slate-200/70"

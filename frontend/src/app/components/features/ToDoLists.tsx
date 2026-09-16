@@ -360,23 +360,25 @@ export const ToDoLists: React.FC = () => {
         </div>
 
         {/* Standard Segmented Filter Tabs */}
-        <div className="flex gap-1 p-1 bg-slate-100/80 rounded-full max-w-xs border border-slate-200/60">
-          {(['active', 'archived'] as const).map(tab => (
-            <button
-              key={tab}
-              type="button"
-              onClick={() => setActiveTab(tab)}
-              data-testid={`todo-tab-${tab}-button`}
-              className={cn(
-                'flex-1 py-1.5 sm:py-2 rounded-full text-xs font-bold transition-all cursor-pointer capitalize',
-                activeTab === tab
-                  ? 'bg-white text-slate-900 shadow-xs'
-                  : 'text-slate-500 hover:text-slate-700'
-              )}
-            >
-              {tab} ({tab === 'active' ? totalActive : totalArchived})
-            </button>
-          ))}
+        <div className="flex justify-center w-full">
+          <div className="flex gap-1 p-1 bg-slate-100/80 rounded-full w-full max-w-xs border border-slate-200/60 shadow-2xs">
+            {(['active', 'archived'] as const).map(tab => (
+              <button
+                key={tab}
+                type="button"
+                onClick={() => setActiveTab(tab)}
+                data-testid={`todo-tab-${tab}-button`}
+                className={cn(
+                  'flex-1 py-1.5 sm:py-2 rounded-full text-xs font-bold transition-all cursor-pointer capitalize text-center',
+                  activeTab === tab
+                    ? 'bg-white text-slate-900 shadow-xs'
+                    : 'text-slate-500 hover:text-slate-700'
+                )}
+              >
+                {tab} ({tab === 'active' ? totalActive : totalArchived})
+              </button>
+            ))}
+          </div>
         </div>
 
       {/* Create Modal */}

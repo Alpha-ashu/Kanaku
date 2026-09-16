@@ -2586,8 +2586,15 @@ async function _syncUserDataFromBackendInner(
         subcategory: group.subcategory ?? undefined,
         splitType: group.splitType ?? undefined,
         yourShare: group.yourShare ?? undefined,
-        expenseTransactionId: undefined,
-        createdBy: group.createdBy ?? undefined,
+        yourPaidAmount: group.yourPaidAmount ?? undefined,
+        yourSplitValue: group.yourSplitValue ?? undefined,
+        yourSettled: group.yourSettled ?? undefined,
+        // Keep the local link: the server doesn't know Dexie transaction ids, and
+        // editing the split needs it to adjust the creator's own transaction.
+        expenseTransactionId: localId ? localGroups.find((row) => row.id === localId)?.expenseTransactionId : undefined,
+        // The owner's user id — lets the Groups page tell your bills from ones
+        // you were added to.
+        createdBy: group.createdBy ?? group.userId ?? undefined,
         createdByName: group.createdByName ?? undefined,
         status: group.status ?? undefined,
         notificationStatus: group.notificationStatus ?? undefined,

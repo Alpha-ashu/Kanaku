@@ -20,6 +20,7 @@ import { formatLocalDate } from '@/lib/dateUtils';
 import { buildTransactionAggregation } from '@/lib/transactionAggregation';
 import { getCategoryCartoonIcon } from '@/app/components/ui/CartoonCategoryIcons';
 import { db } from '@/lib/database';
+import { getGroupExpenseSettlement } from '@/lib/groupSplit';
 import { useLiveQuery } from 'dexie-react-hooks';
 import {
  getInvestmentDisplayName,
@@ -280,9 +281,12 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
   const groupStats = useMemo(() => {
     const borrowed = loans.filter(l => l.type === 'borrowed' && l.status === 'active').reduce((s, l) => s + Number(l.outstandingBalance || 0), 0);
     const lent = loans.filter(l => l.type === 'lent' && l.status === 'active').reduce((s, l) => s + Number(l.outstandingBalance || 0), 0);
+    // Money still owed across group bills: each member's share less what they
+    // paid at the counter, for everyone who has not settled yet.
     const pendingSettlements = groupExpenses.reduce((s, g) => {
-      const unpaid = (g.members || []).filter(m => !m.paid).reduce((ms, m) => ms + Number(m.share || 0), 0);
-      return s + unpaid;
+      const unsettled = getGroupExpenseSettlement(g).balances
+        .reduce((ms, b) => ms + (b.owes > 0 ? b.outstanding : 0), 0);
+      return s + unsettled;
     }, 0);
     return { borrowed, lent, pendingSettlements, activeGroups: groupExpenses.length };
   }, [loans, groupExpenses]);
@@ -438,61 +442,85 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
     }
   }, [activeTab]);
 
-  // Desktop center-detection scroll listener
-  useEffect(() => {
+  // Desktop center-detection scroll calculation
+  const handleDesktopScroll = useCallback(() => {
+    if (isClickScrolling.current) return;
     const carousel = desktopCarouselRef.current;
-    if (!carousel || !isDesktop) return;
-
-    const handleScroll = () => {
-      if (isClickScrolling.current) return;
-      const center = carousel.scrollLeft + carousel.clientWidth / 2;
-      let closest: { id: number; dist: number } | null = null;
-      for (const account of filteredAccounts) {
-        if (!account.id) continue;
-        const el = desktopCardRefs.current[account.id];
-        if (!el) continue;
-        const dist = Math.abs((el.offsetLeft + el.offsetWidth / 2) - center);
-        if (!closest || dist < closest.dist) {
-          closest = { id: account.id, dist };
-        }
+    if (!carousel) return;
+    const center = carousel.scrollLeft + carousel.clientWidth / 2;
+    let closest: { id: number; dist: number } | null = null;
+    for (const account of filteredAccounts) {
+      if (!account.id) continue;
+      const el = desktopCardRefs.current[account.id];
+      if (!el) continue;
+      const dist = Math.abs((el.offsetLeft + el.offsetWidth / 2) - center);
+      if (!closest || dist < closest.dist) {
+        closest = { id: account.id, dist };
       }
-      if (closest && closest.id !== selectedAccountIdRef.current) {
-        setSelectedAccountId(closest.id);
-      }
-    };
+    }
+    if (closest && closest.id !== selectedAccountIdRef.current) {
+      selectedAccountIdRef.current = closest.id;
+      setSelectedAccountId(closest.id);
+    }
+  }, [filteredAccounts]);
 
-    carousel.addEventListener('scroll', handleScroll, { passive: true });
-    const t = setTimeout(handleScroll, 150);
-    return () => {
-      carousel.removeEventListener('scroll', handleScroll);
-      clearTimeout(t);
-    };
-  }, [filteredAccounts, isDesktop]);
-
-  // Mobile index-based scroll listener (stride = clientWidth)
-  useEffect(() => {
+  // Mobile center-detection scroll calculation (matching mobileCardRefs with fallback)
+  const handleMobileScroll = useCallback(() => {
+    if (isClickScrolling.current) return;
     const carousel = mobileCarouselRef.current;
-    if (!carousel || isDesktop) return;
+    if (!carousel) return;
+    const center = carousel.scrollLeft + carousel.clientWidth / 2;
+    let closest: { id: number; dist: number } | null = null;
 
-    const handleMobileScroll = () => {
-      if (isClickScrolling.current) return;
+    for (const account of filteredAccounts) {
+      if (!account.id) continue;
+      const el = mobileCardRefs.current[account.id];
+      if (!el) continue;
+      const cardCenter = el.offsetLeft + el.offsetWidth / 2;
+      const dist = Math.abs(cardCenter - center);
+      if (!closest || dist < closest.dist) {
+        closest = { id: account.id, dist };
+      }
+    }
+
+    if (!closest && filteredAccounts.length > 0 && carousel.clientWidth > 0) {
       const stride = carousel.clientWidth;
-      if (stride === 0) return;
       const idx = Math.round(carousel.scrollLeft / stride);
       const clamped = Math.max(0, Math.min(filteredAccounts.length - 1, idx));
       const account = filteredAccounts[clamped];
-      if (account && account.id && account.id !== selectedAccountIdRef.current) {
-        setSelectedAccountId(account.id);
+      if (account && account.id) {
+        closest = { id: account.id, dist: 0 };
       }
-    };
+    }
 
-    carousel.addEventListener('scroll', handleMobileScroll, { passive: true });
-    const t = setTimeout(handleMobileScroll, 150);
-    return () => {
-      carousel.removeEventListener('scroll', handleMobileScroll);
-      clearTimeout(t);
+    if (closest && closest.id !== selectedAccountIdRef.current) {
+      selectedAccountIdRef.current = closest.id;
+      setSelectedAccountId(closest.id);
+    }
+  }, [filteredAccounts]);
+
+  useEffect(() => {
+    const carousel = desktopCarouselRef.current;
+    if (!carousel || !isDesktop) return;
+    carousel.addEventListener('scroll', handleDesktopScroll, { passive: true });
+    return () => { carousel.removeEventListener('scroll', handleDesktopScroll); };
+  }, [handleDesktopScroll, isDesktop]);
+
+  useEffect(() => {
+    const carousel = mobileCarouselRef.current;
+    if (!carousel || isDesktop) return;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const onScroll = () => {
+      handleMobileScroll();
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(handleMobileScroll, 60);
     };
-  }, [filteredAccounts, isDesktop]);
+    carousel.addEventListener('scroll', onScroll, { passive: true });
+    return () => {
+      carousel.removeEventListener('scroll', onScroll);
+      if (timer) clearTimeout(timer);
+    };
+  }, [handleMobileScroll, isDesktop]);
 
   const handleCardClick = useCallback((id: number) => {
     isClickScrolling.current = true;
@@ -856,6 +884,7 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
                     {/* Desktop Horizontal Scroll Area */}
                     <div
                       ref={desktopCarouselRef}
+                      onScroll={handleDesktopScroll}
                       className="flex gap-4 overflow-x-auto pb-4 pt-1 snap-x snap-mandatory scrollbar-none scroll-smooth touch-scroll [scroll-padding-left:50%] [scroll-padding-right:50%] w-full"
                     >
                       {/* Left spacer allows first card to snap to center */}
@@ -997,6 +1026,9 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
                   /* Mobile 1-Card-At-A-Time Carousel */
                   <div
                     ref={mobileCarouselRef}
+                    onScroll={handleMobileScroll}
+                    onTouchStart={() => { isClickScrolling.current = false; }}
+                    onPointerDown={() => { isClickScrolling.current = false; }}
                     className="flex overflow-x-auto pb-3 pt-1 snap-x snap-mandatory scrollbar-none scroll-smooth touch-scroll w-full"
                   >
                     {filteredAccounts.map((account) => {

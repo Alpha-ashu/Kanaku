@@ -9,6 +9,7 @@ import { createdAtKeysetOrder, createdAtPosition, readKeysetPage, sliceKeysetPag
 import { getSocketManager } from '../../sockets';
 import { inviteParticipants, resolveContactDetailsForFriend } from '../collaboration/invitation.service';
 import { notify } from '../notifications/notify';
+import { owedAmount } from '../groups/group.allocation';
 
 async function findUserByEmailOrPhone(email?: string | null, phone?: string | null): Promise<any> {
   if (email) {
@@ -186,12 +187,13 @@ export const getFriends = async (req: AuthRequest, res: Response, next: NextFunc
     const memberRows = await prisma.groupExpenseMember.findMany({
       where: {
         deletedAt: null,
+        groupExpense: { deletedAt: null },
         OR: [
           { friendId: { in: friends.map(f => f.id) } },
           ...(friendEmails.length ? [{ email: { in: friendEmails } }] : []),
         ],
       },
-      select: { friendId: true, email: true, shareAmount: true, hasPaid: true },
+      select: { friendId: true, email: true, shareAmount: true, contributedAmount: true, hasPaid: true },
     });
     // Build a quick email→friendId lookup so email-matched rows can be attributed
     const emailToFriendId = new Map(friends.filter(f => f.email).map(f => [f.email!.toLowerCase(), f.id]));
@@ -201,7 +203,9 @@ export const getFriends = async (req: AuthRequest, res: Response, next: NextFunc
       if (!fid) continue;
       const entry = totalsByFriend.get(fid) || { totalExpenses: 0, outstanding: 0 };
       entry.totalExpenses += 1;
-      if (!m.hasPaid) entry.outstanding += Number(m.shareAmount);
+      // Outstanding is what the friend still owes: their share less what they
+      // paid towards the bill themselves.
+      if (!m.hasPaid) entry.outstanding += owedAmount(m.shareAmount, m.contributedAmount);
       totalsByFriend.set(fid, entry);
     }
 
@@ -247,6 +251,7 @@ export const getFriendDetail = async (req: AuthRequest, res: Response, next: Nex
     const members = await prisma.groupExpenseMember.findMany({
       where: {
         deletedAt: null,
+        groupExpense: { deletedAt: null },
         OR: [{ friendId: friend.id }, ...friendEmailCondition],
       },
       include: { groupExpense: { select: { id: true, name: true, date: true, totalAmount: true, category: true } } },
@@ -262,12 +267,14 @@ export const getFriendDetail = async (req: AuthRequest, res: Response, next: Nex
         category: m.groupExpense!.category,
         totalAmount: Number(m.groupExpense!.totalAmount),
         shareAmount: Number(m.shareAmount),
+        contributedAmount: Number(m.contributedAmount),
+        owedAmount: owedAmount(m.shareAmount, m.contributedAmount),
         status: m.hasPaid ? 'paid' : 'pending',
         paidAt: m.paidAt,
       }));
 
-    const totalOutstanding = expenses.filter(e => e.status === 'pending').reduce((sum, e) => sum + e.shareAmount, 0);
-    const totalPaid = expenses.filter(e => e.status === 'paid').reduce((sum, e) => sum + e.shareAmount, 0);
+    const totalOutstanding = expenses.filter(e => e.status === 'pending').reduce((sum, e) => sum + e.owedAmount, 0);
+    const totalPaid = expenses.filter(e => e.status === 'paid').reduce((sum, e) => sum + e.owedAmount, 0);
 
     res.json({
       success: true,

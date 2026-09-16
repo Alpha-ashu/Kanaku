@@ -950,8 +950,13 @@ model GroupExpense {
   description          String?
   category             String?
   subcategory          String?
-  splitType            String?
+  splitType            String? // equal | custom | percentage | shares
   yourShare            Decimal?             @db.Decimal(12, 2)
+  // Creator's side of the member-level allocation (the creator has no
+  // GroupExpenseMember row). yourPaidAmount NULL = legacy row: creator paid the bill.
+  yourPaidAmount       Decimal?             @db.Decimal(12, 2)
+  yourSplitValue       Decimal?             @db.Decimal(12, 4)
+  yourSettledAt        DateTime?
   expenseTransactionId String?
   createdBy            String?
   createdByName        String?
@@ -975,21 +980,26 @@ model GroupExpense {
 }
 
 model GroupExpenseMember {
-  id             String       @id @default(uuid())
-  groupExpenseId String
-  userId         String? // Optional: may be a friend without user account
-  friendId       String? // Links to the Friend record for management/profile views
-  name           String // Display name
-  email          String?
-  phone          String?
-  shareAmount    Decimal      @default(0) @db.Decimal(12, 2)
-  hasPaid        Boolean      @default(false)
-  paidAt         DateTime?
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
-  deletedAt      DateTime?
-  groupExpense   GroupExpense @relation(fields: [groupExpenseId], references: [id], onDelete: Cascade)
-  friend         Friend?      @relation(fields: [friendId], references: [id], onDelete: SetNull)
+  id                String       @id @default(uuid())
+  groupExpenseId    String
+  userId            String? // Optional: may be a friend without user account
+  friendId          String? // Links to the Friend record for management/profile views
+  name              String // Display name
+  email             String?
+  phone             String?
+  shareAmount       Decimal      @default(0) @db.Decimal(12, 2)
+  // What this member paid towards the bill at the time (not a later settlement).
+  contributedAmount Decimal      @default(0) @db.Decimal(12, 2)
+  // Raw split input: custom amount / percent / share units. NULL = auto.
+  splitValue        Decimal?     @db.Decimal(12, 4)
+  // Member has settled what they owe (share − contributedAmount).
+  hasPaid           Boolean      @default(false)
+  paidAt            DateTime?
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  deletedAt         DateTime?
+  groupExpense      GroupExpense @relation(fields: [groupExpenseId], references: [id], onDelete: Cascade)
+  friend            Friend?      @relation(fields: [friendId], references: [id], onDelete: SetNull)
 
   @@index([groupExpenseId])
   @@index([userId])

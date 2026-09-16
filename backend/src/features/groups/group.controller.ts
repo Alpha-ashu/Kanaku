@@ -12,6 +12,7 @@ import { inviteParticipants } from '../collaboration/invitation.service';
 import { notifyGroupExpenseChanged } from '../notifications/triggers';
 import { FinancialEventDispatcher, GroupExpenseCreatedEvent, GroupSettlementCompletedEvent } from '../transactions/dispatcher';
 import { FinancialLedgerService } from '../transactions/ledger.service';
+import { findAllocationError, isAllocationAware, owedAmount } from './group.allocation';
 
 
 async function findUserByEmailOrPhone(email?: string | null, phone?: string | null, client: any = prisma): Promise<any> {
@@ -48,6 +49,8 @@ const assembleGroupResponse = (
     return {
       name: m.name,
       share: Number(m.shareAmount),
+      contribution: Number(m.contributedAmount ?? 0),
+      splitValue: m.splitValue != null ? Number(m.splitValue) : null,
       paid: m.hasPaid,
       isCurrentUser: m.userId === requestingUserId,
       paidAmount: m.hasPaid ? Number(m.shareAmount) : 0,
@@ -60,14 +63,20 @@ const assembleGroupResponse = (
 
   const isCreatorMe = group.userId === requestingUserId;
   const creatorShare = Number(group.yourShare ?? (group.totalAmount / (members.length + 1)));
+  // Rows from before member-level payments have no yourPaidAmount: the creator
+  // paid the whole bill, which is what those expenses always meant.
+  const creatorContribution = group.yourPaidAmount != null ? Number(group.yourPaidAmount) : Number(group.totalAmount);
+  const creatorSettled = Boolean(group.yourSettledAt) || owedAmount(creatorShare, creatorContribution) === 0;
 
   const creatorMember = {
     name: isCreatorMe ? 'You' : (creatorName || 'Creator'),
     share: creatorShare,
-    paid: true,
+    contribution: creatorContribution,
+    splitValue: group.yourSplitValue != null ? Number(group.yourSplitValue) : null,
+    paid: creatorSettled,
     isCurrentUser: isCreatorMe,
-    paidAmount: creatorShare,
-    paymentStatus: 'paid' as const,
+    paidAmount: creatorSettled ? creatorShare : 0,
+    paymentStatus: creatorSettled ? 'paid' as const : 'pending' as const,
   };
 
   return {
@@ -83,6 +92,9 @@ const assembleGroupResponse = (
     category: group.category,
     splitType: group.splitType,
     yourShare: creatorShare,
+    yourPaidAmount: creatorContribution,
+    yourSplitValue: group.yourSplitValue != null ? Number(group.yourSplitValue) : null,
+    yourSettled: creatorSettled,
     status: group.status || 'pending',
     createdAt: group.createdAt,
     updatedAt: group.updatedAt,
@@ -231,15 +243,45 @@ export const getGroup = async (req: AuthRequest, res: Response) => {
   }
 };
 
-const findMatchingExistingMember = (newM: any, existingList: any[]) => {
-  return existingList.find(extM => {
-    if (newM.userId && extM.userId === newM.userId) return true;
-    if (newM.friendId && extM.friendId === newM.friendId) return true;
-    if (newM.email && extM.email && newM.email.trim().toLowerCase() === extM.email.trim().toLowerCase()) return true;
-    if (newM.name && extM.name && newM.name.trim().toLowerCase() === extM.name.trim().toLowerCase()) return true;
-    return false;
+const normalizeEmail = (value?: string | null) => (value || '').trim().toLowerCase() || null;
+const normalizePhone = (value?: string | null) => (value || '').replace(/\D/g, '') || null;
+
+// Finds the stored row an incoming member refers to, strongest identity first.
+// A bare name only matches when the two sides carry no conflicting contact
+// details, since friends may share a display name. `taken` stops one stored row
+// from absorbing two incoming members.
+const findMatchingExistingMember = (incoming: any, existingList: any[], taken: Set<string> = new Set()) => {
+  const available = existingList.filter((m) => !taken.has(m.id));
+  const friendId = incoming.friendId ? String(incoming.friendId) : null;
+  const email = normalizeEmail(incoming.email);
+  const phone = normalizePhone(incoming.phone);
+  const name = (incoming.name || '').trim().toLowerCase();
+  return (
+    (incoming.userId && available.find((m) => m.userId === incoming.userId)) ||
+    (friendId && available.find((m) => m.friendId === friendId)) ||
+    (email && available.find((m) => normalizeEmail(m.email) === email)) ||
+    (phone && available.find((m) => normalizePhone(m.phone) === phone)) ||
+    available.find((m) =>
+      Boolean(name) && (m.name || '').trim().toLowerCase() === name &&
+      !(email && m.email) && !(phone && m.phone),
+    ) ||
+    null
+  );
+};
+
+// The client sends the friend's server id when it has one; two friends can share
+// a display name, so the name is only a fallback.
+const findOwnFriend = async (tx: any, userId: string, member: { friendId?: unknown; name: string }) => {
+  if (typeof member.friendId === 'string' && member.friendId) {
+    const byId = await tx.friend.findFirst({ where: { id: member.friendId, userId, deletedAt: null } });
+    if (byId) return byId;
+  }
+  return tx.friend.findFirst({
+    where: { userId, name: { equals: member.name, mode: 'insensitive' }, deletedAt: null },
   });
 };
+
+const toOptionalDecimal = (value: unknown) => (value === undefined ? undefined : value === null ? null : Number(value));
 
 export const createGroup = async (req: AuthRequest, res: Response) => {
   try {
@@ -256,6 +298,7 @@ export const createGroup = async (req: AuthRequest, res: Response) => {
       where: {
         userId,
         name: body.name,
+        totalAmount: body.totalAmount,
         date: {
           gte: startOfDay,
           lte: endOfDay
@@ -268,6 +311,13 @@ export const createGroup = async (req: AuthRequest, res: Response) => {
       logger.info(`Duplicate group expense creation prevented: "${body.name}" on ${targetDate.toDateString()}`);
       const data = await buildGroupResponse(duplicate, userId);
       return res.status(200).json({ success: true, data });
+    }
+
+    if (isAllocationAware(body)) {
+      const allocationError = findAllocationError(body);
+      if (allocationError) {
+        return res.status(400).json({ success: false, error: allocationError, code: 'ALLOCATION_MISMATCH' });
+      }
     }
 
     const invitationsToSend: { email: string | null; phone: string | null; name: string; friendId: string | null; share: number }[] = [];
@@ -288,6 +338,9 @@ export const createGroup = async (req: AuthRequest, res: Response) => {
           category: body.category,
           splitType: body.splitType || 'equal',
           yourShare: body.yourShare,
+          yourPaidAmount: toOptionalDecimal(body.yourPaidAmount),
+          yourSplitValue: toOptionalDecimal(body.yourSplitValue),
+          yourSettledAt: body.yourSettled ? new Date() : null,
           status: body.status || 'pending',
           syncStatus: 'synced'
         }
@@ -305,7 +358,10 @@ export const createGroup = async (req: AuthRequest, res: Response) => {
         }
         return {
           name: m.name,
+          friendId: m.friendId,
           share: m.share ?? (body.totalAmount / (rawMembers.length + 1)),
+          contribution: m.contribution ?? 0,
+          splitValue: m.splitValue ?? null,
           paid: m.paid || m.paymentStatus === 'paid' || false,
           email: m.email,
           phone: m.phone,
@@ -318,9 +374,7 @@ export const createGroup = async (req: AuthRequest, res: Response) => {
 
       // Create GroupExpenseMember entries and notifications
       for (const m of participants) {
-        let friend = await tx.friend.findFirst({
-          where: { userId, name: { equals: m.name, mode: 'insensitive' }, deletedAt: null }
-        });
+        let friend = await findOwnFriend(tx, userId, m);
 
         const memberEmail = (m.email || '').trim().toLowerCase() || null;
         const memberPhone = (m.phone || '').trim() || null;
@@ -363,7 +417,10 @@ export const createGroup = async (req: AuthRequest, res: Response) => {
             email,
             phone,
             shareAmount: m.share,
+            contributedAmount: m.contribution ?? 0,
+            splitValue: m.splitValue ?? null,
             hasPaid: m.paid,
+            paidAt: m.paid ? new Date() : null,
           }
         });
 
@@ -478,6 +535,16 @@ export const updateGroup = async (req: AuthRequest, res: Response) => {
       return res.status(403).json({ success: false, error: 'Access denied' });
     }
 
+    if (isCreator && body.members && isAllocationAware(body)) {
+      const allocationError = findAllocationError({
+        ...body,
+        totalAmount: body.totalAmount ?? Number(existing.totalAmount),
+      });
+      if (allocationError) {
+        return res.status(400).json({ success: false, error: allocationError, code: 'ALLOCATION_MISMATCH' });
+      }
+    }
+
     let updatedGroup: any;
     // Only members added by THIS edit are invited; everyone already in the
     // group gets a "changed" notice instead (notifyGroupExpenseChanged below).
@@ -502,12 +569,18 @@ export const updateGroup = async (req: AuthRequest, res: Response) => {
             category: body.category !== undefined ? body.category : undefined,
             splitType: body.splitType !== undefined ? body.splitType : undefined,
             yourShare: body.yourShare !== undefined ? body.yourShare : undefined,
+            yourPaidAmount: toOptionalDecimal(body.yourPaidAmount),
+            yourSplitValue: toOptionalDecimal(body.yourSplitValue),
+            yourSettledAt: body.yourSettled === undefined
+              ? undefined
+              : body.yourSettled ? (existing.yourSettledAt ?? new Date()) : null,
             status: body.status !== undefined ? body.status : undefined,
             updatedAt: new Date()
           }
         });
 
-        const transitions: { member: any; email: string | null; targetUserId: string | null; friendId: string | null; oldMemberId?: string | null }[] = [];
+        // Members who settled with this edit — each books one settlement.
+        const transitions: { memberId: string; targetUserId: string | null; owed: number }[] = [];
 
         // Update members if provided
         if (body.members) {
@@ -518,12 +591,17 @@ export const updateGroup = async (req: AuthRequest, res: Response) => {
               return {
                 name: m,
                 share: (body.totalAmount ?? Number(existing.totalAmount)) / (rawMembers.length + 1),
+                contribution: 0,
+                splitValue: null,
                 paid: false
               };
             }
             return {
               name: m.name,
+              friendId: m.friendId,
               share: m.share ?? ((body.totalAmount ?? Number(existing.totalAmount)) / (rawMembers.length + 1)),
+              contribution: m.contribution ?? 0,
+              splitValue: m.splitValue ?? null,
               paid: m.paid || m.paymentStatus === 'paid' || false,
               email: m.email,
               phone: m.phone,
@@ -533,31 +611,15 @@ export const updateGroup = async (req: AuthRequest, res: Response) => {
 
           const participants = normalizedMembers.filter((m: any) => !m.isCurrentUser && m.name.toLowerCase() !== 'you');
 
+          // Reconcile rows in place — one row per member for the life of the
+          // expense. Replacing them on every edit churned member ids (which are the
+          // settlement references) and left nothing stopping a duplicate set.
+          const matchedIds = new Set<string>();
           for (const m of participants) {
-            const existingMember = findMatchingExistingMember(m, existingMembers);
-            const wasPaid = existingMember?.hasPaid || false;
-            const nextPaid = m.paid || false;
+            const existingMember = findMatchingExistingMember(m, existingMembers, matchedIds);
+            if (existingMember) matchedIds.add(existingMember.id);
 
-            if (nextPaid && !wasPaid) {
-              transitions.push({
-                member: m,
-                email: m.email || existingMember?.email || null,
-                targetUserId: existingMember?.userId || null,
-                friendId: existingMember?.friendId || null,
-                oldMemberId: existingMember?.id || null
-              });
-            }
-          }
-
-          // Soft delete/hard delete existing members first
-          await tx.groupExpenseMember.deleteMany({
-            where: { groupExpenseId: id }
-          });
-
-          for (const m of participants) {
-            let friend = await tx.friend.findFirst({
-              where: { userId, name: { equals: m.name, mode: 'insensitive' }, deletedAt: null }
-            });
+            let friend = await findOwnFriend(tx, userId, m);
 
             const memberEmail = (m.email || '').trim().toLowerCase() || null;
             const memberPhone = (m.phone || '').trim() || null;
@@ -579,34 +641,38 @@ export const updateGroup = async (req: AuthRequest, res: Response) => {
 
             const targetUser = await findUserByEmailOrPhone(friend?.email, friend?.phone, tx);
             const email = memberEmail || friend?.email || null;
+            const phone = friend?.phone || memberPhone;
+            const wasPaid = existingMember?.hasPaid || false;
+            const nextPaid = Boolean(m.paid);
 
-            const createdMember = await tx.groupExpenseMember.create({
-              data: {
-                groupExpenseId: id,
-                userId: targetUser ? targetUser.id : null,
-                friendId: friend?.id || null,
-                name: m.name,
-                email,
-                phone: friend?.phone || memberPhone,
-                shareAmount: m.share,
-                hasPaid: m.paid,
-              }
-            });
+            const memberData = {
+              userId: targetUser ? targetUser.id : (existingMember?.userId ?? null),
+              friendId: friend?.id || existingMember?.friendId || null,
+              name: m.name,
+              email,
+              phone,
+              shareAmount: m.share,
+              contributedAmount: m.contribution ?? 0,
+              splitValue: m.splitValue ?? null,
+              hasPaid: nextPaid,
+              paidAt: nextPaid ? (wasPaid ? (existingMember?.paidAt ?? new Date()) : new Date()) : null,
+            };
+            const savedMember = existingMember
+              ? await tx.groupExpenseMember.update({ where: { id: existingMember.id }, data: memberData })
+              : await tx.groupExpenseMember.create({ data: { groupExpenseId: id, ...memberData } });
 
-            const matchingTransition = transitions.find(t =>
-              t.member.name === m.name ||
-              (t.member.userId && t.member.userId === targetUser?.id) ||
-              (t.member.email && t.member.email.toLowerCase() === email?.toLowerCase())
-            );
-            if (matchingTransition) {
-              matchingTransition.member.newId = createdMember.id;
+            if (nextPaid && !wasPaid) {
+              transitions.push({
+                memberId: savedMember.id,
+                targetUserId: savedMember.userId,
+                owed: owedAmount(m.share, m.contribution ?? 0),
+              });
             }
 
-            const isNewMember = !findMatchingExistingMember(m, existingMembers);
-            if (isNewMember && (email || friend?.phone || memberPhone)) {
+            if (!existingMember && (email || phone)) {
               invitationsToSend.push({
                 email,
-                phone: friend?.phone || memberPhone,
+                phone,
                 name: m.name,
                 share: m.share,
                 totalAmount: Number(updated.totalAmount),
@@ -615,6 +681,18 @@ export const updateGroup = async (req: AuthRequest, res: Response) => {
             }
             if (targetUser) {
               socketNotificationsToSend.push({ targetUserId: targetUser.id, groupExpenseId: id });
+            }
+          }
+
+          // Members this edit removed: their allocation goes with them.
+          const removedMembers = existingMembers.filter((m) => !matchedIds.has(m.id));
+          if (removedMembers.length > 0) {
+            await tx.groupExpenseMember.updateMany({
+              where: { id: { in: removedMembers.map((m) => m.id) } },
+              data: { deletedAt: new Date() },
+            });
+            for (const m of removedMembers) {
+              if (m.userId) socketNotificationsToSend.push({ targetUserId: m.userId, groupExpenseId: id });
             }
           }
         } else {
@@ -642,22 +720,21 @@ export const updateGroup = async (req: AuthRequest, res: Response) => {
 
           if (accountId) {
             for (const t of transitions) {
-              const settlementId = t.member.newId;
-              if (!settlementId) continue;
+              // A member who paid at least their share owes nothing to settle.
+              if (t.owed <= 0) continue;
 
               await FinancialEventDispatcher.publish(tx, new GroupSettlementCompletedEvent(
                 updated.userId,
                 id,
-                settlementId,
+                t.memberId,
                 t.targetUserId,
                 updated.userId,
-                Number(t.member.share),
+                t.owed,
                 accountId,
                 updated.category || 'Group Expense',
                 `Settlement Received - ${updated.name}`,
                 new Date(),
-                `group-settlement-${id}-${settlementId}`,
-                t.oldMemberId
+                `group-settlement-${id}-${t.memberId}`
               ));
             }
           }
@@ -717,7 +794,8 @@ export const updateGroup = async (req: AuthRequest, res: Response) => {
                 }
               });
 
-              if (FinancialLedgerService.isEnabled('groups')) {
+              const owed = owedAmount(existingMember.shareAmount, existingMember.contributedAmount);
+              if (owed > 0 && FinancialLedgerService.isEnabled('groups')) {
                 let accountId = existing.paidBy;
                 if (!accountId) {
                   const defaultAccount = await tx.account.findFirst({
@@ -734,7 +812,7 @@ export const updateGroup = async (req: AuthRequest, res: Response) => {
                     existingMember.id,
                     userId,
                     existing.userId,
-                    Number(existingMember.shareAmount),
+                    owed,
                     accountId,
                     existing.category || 'Group Expense',
                     `Settlement Received - ${existing.name}`,
@@ -963,18 +1041,25 @@ export const deleteGroup = async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ success: false, error: 'Group not found' });
     }
 
-    await prisma.groupExpense.update({
-      where: { id },
-      data: {
-        deletedAt: new Date(),
-        updatedAt: new Date()
-      }
-    });
-
-    // Notify participants of deletion
     const existingMembers = await prisma.groupExpenseMember.findMany({
       where: { groupExpenseId: id, deletedAt: null }
     });
+
+    // The member allocations are removed with the expense, stamped with the same
+    // instant so the deletion notice can still find who to tell.
+    const deletedAt = new Date();
+    await prisma.$transaction([
+      prisma.groupExpense.update({
+        where: { id },
+        data: { deletedAt, updatedAt: deletedAt },
+      }),
+      prisma.groupExpenseMember.updateMany({
+        where: { groupExpenseId: id, deletedAt: null },
+        data: { deletedAt },
+      }),
+    ]);
+
+    // Notify participants of deletion
 
     for (const m of existingMembers) {
       if (m.userId) {
@@ -1033,7 +1118,8 @@ export const getGroupAnalytics = async (req: AuthRequest, res: Response) => {
     const categoryStatsMap = new Map<string, number>();
 
     for (const m of members) {
-      const share = Number(m.shareAmount);
+      // What the member owes the bill — someone who paid part of it owes less.
+      const share = owedAmount(m.shareAmount, m.contributedAmount);
       totalMembersCount++;
 
       const friendKey = m.name || 'Unknown';

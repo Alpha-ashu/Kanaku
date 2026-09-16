@@ -1,4 +1,5 @@
 import { z } from '../../middleware/validate';
+import { GROUP_SPLIT_TYPES } from './group.allocation';
 
 const groupMemberSchema = z.object({
   name: z.string().min(1),
@@ -10,6 +11,10 @@ const groupMemberSchema = z.object({
   isCurrentUser: z.boolean().optional(),
   paidAmount: z.number().optional(),
   paymentStatus: z.string().optional(),
+  // Amount this member paid towards the bill (not a later settlement).
+  contribution: z.number().nonnegative().nullable().optional(),
+  // Raw split input — custom amount, percent or share units; null = auto.
+  splitValue: z.number().nonnegative().nullable().optional(),
 });
 
 const groupItemSchema = z.object({
@@ -27,8 +32,11 @@ export const groupCreateSchema = z.object({
   items: z.array(groupItemSchema).optional(),
   description: z.string().optional(),
   category: z.string().optional(),
-  splitType: z.enum(['equal', 'custom']).optional(),
+  splitType: z.enum(GROUP_SPLIT_TYPES).optional(),
   yourShare: z.number().optional(),
+  yourPaidAmount: z.number().nonnegative().nullable().optional(),
+  yourSplitValue: z.number().nonnegative().nullable().optional(),
+  yourSettled: z.boolean().optional(),
   status: z.enum(['pending', 'settled']).optional(),
 });
 

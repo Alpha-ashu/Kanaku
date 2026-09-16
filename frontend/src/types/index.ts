@@ -65,7 +65,7 @@ export interface Transaction {
   expenseMode?: 'individual' | 'group';
   groupExpenseId?: string;
   groupName?: string;
-  splitType?: 'equal' | 'custom';
+  splitType?: 'equal' | 'custom' | 'percentage' | 'shares';
   // Transfer specific
   transferToAccountId?: string;
   transferType?: 'self-transfer' | 'other-transfer';
@@ -187,7 +187,7 @@ export interface GroupExpense {
   members: GroupMember[];
   category?: string;
   subcategory?: string;
-  splitType?: 'equal' | 'custom';
+  splitType?: 'equal' | 'custom' | 'percentage' | 'shares';
   yourShare?: number;
   expenseTransactionId?: string;
   settled: boolean;

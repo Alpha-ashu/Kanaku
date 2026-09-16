@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useApp } from '@/contexts/AppContext';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { PageHeader } from '@/app/components/ui/PageHeader';
@@ -21,7 +21,9 @@ import {
 
 export const EditInvestment: React.FC = () => {
  const { accounts, investments, currency, setCurrentPage, refreshData } = useApp();
- const activeAccounts = accounts.filter((account) => account.isActive);
+ // Memoized: a fresh array every render made both effects below re-run on every
+ // render, and the prefill's setFormData looped ("Maximum update depth exceeded").
+ const activeAccounts = useMemo(() => accounts.filter((account) => account.isActive), [accounts]);
  const [formData, setFormData] = useState({
  assetType: 'stock' as 'stock' | 'crypto' | 'forex' | 'gold' | 'silver' | 'platinum' | 'bronze' | 'real_estate' | 'business' | 'other',
  assetName: '',
@@ -44,6 +46,10 @@ export const EditInvestment: React.FC = () => {
  selectedInvestment?.purchaseFeeTransactionId,
  );
 
+ // Prefill once per investment. `investments` is a live query that re-emits on
+ // any Dexie write, so re-applying it would overwrite what the user is typing.
+ const prefilledIdRef = useRef<number | null>(null);
+
  // Get the investment to edit from localStorage or context
  useEffect(() => {
  const editingId = localStorage.getItem('editingInvestmentId');
@@ -51,7 +57,8 @@ export const EditInvestment: React.FC = () => {
  const id = parseInt(editingId);
  setSelectedId(id);
  const investment = investments.find(i => i.id === id);
- if (investment) {
+ if (investment && prefilledIdRef.current !== id) {
+ prefilledIdRef.current = id;
  setAssetCurrencyCode(inferInvestmentAssetCurrency(investment));
  setFormData({
  assetType: investment.assetType,

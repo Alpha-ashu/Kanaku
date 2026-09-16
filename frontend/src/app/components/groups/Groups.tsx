@@ -1,11 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useApp, useSubFeature } from '@/contexts/AppContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/database';
 import { backendService } from '@/lib/backend-api';
 import { queueTransactionDeleteSync } from '@/lib/auth-sync-integration';
 import { Avatar, AvatarFallback, AvatarImage } from '@/app/components/ui/avatar';
 import { getCategoryCartoonIcon, getCategoryColor } from '@/app/components/ui/CartoonCategoryIcons';
-import { Plus, Users, Trash2, Edit2, Check, X, CalendarDays, ArrowLeft, Clock, FileText } from 'lucide-react';
+import { Plus, Users, Trash2, Edit2, Check, CalendarDays, ArrowLeft, Clock, FileText, ChevronDown, ArrowRight } from 'lucide-react';
 import { Button } from '@/app/components/ui/button';
 import { toast } from 'sonner';
 import { DeleteConfirmModal } from '@/app/components/shared/DeleteConfirmModal';
@@ -13,6 +14,8 @@ import { readVoiceDraft, VOICE_GROUP_DRAFT_KEY, type VoiceGroupDraft } from '@/l
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { formatCurrencyAmount } from '@/lib/currencyUtils';
 import { cn } from '@/lib/utils';
+import { SPLIT_TYPE_LABELS, getGroupExpenseSettlement, normalizeSplitType } from '@/lib/groupSplit';
+import type { GroupExpense } from '@/lib/database';
 
 const avatarToneClasses = [
   'bg-rose-100 text-rose-700',
@@ -35,6 +38,11 @@ const formatDateLabel = (value: Date) =>
     year: 'numeric',
   }).format(new Date(value));
 
+// Your own bills: created on this device (no owner recorded) or by your account.
+// Rows you were only added to list their creator first, not you.
+const isOwnGroupExpense = (expense: GroupExpense, userId?: string) =>
+  expense.createdBy ? expense.createdBy === userId : expense.members?.[0]?.isCurrentUser !== false;
+
 const formatDisplayName = (value: string) =>
   value
     .trim()
@@ -45,6 +53,7 @@ const formatDisplayName = (value: string) =>
 
 export const Groups: React.FC = () => {
   const { groupExpenses, friends, currency, setCurrentPage } = useApp();
+  const { user } = useAuth();
   const canCreate = useSubFeature('groups', 'createGroup');
   const canEdit = useSubFeature('groups', 'editGroup');
   const canAddMember = useSubFeature('groups', 'addMember');
@@ -52,9 +61,7 @@ export const Groups: React.FC = () => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [groupToDelete, setGroupToDelete] = useState<{ id: number; name: string } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [editingGroupId, setEditingGroupId] = useState<number | null>(null);
-  const [editedName, setEditedName] = useState('');
-  const [isSaving, setIsSaving] = useState(false);
+  const [expandedGroupId, setExpandedGroupId] = useState<number | null>(null);
 
   useEffect(() => {
     const pendingDraft = readVoiceDraft<VoiceGroupDraft>(VOICE_GROUP_DRAFT_KEY);
@@ -83,6 +90,9 @@ export const Groups: React.FC = () => {
 
   const formatCurrency = (amount: number) =>
     formatCurrencyAmount(amount, currency);
+  // Tighter figures for the settlement table columns (₹5,000 rather than ₹5,000.00).
+  const formatCompact = (amount: number) =>
+    formatCurrencyAmount(amount, currency, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 
   const openGroupExpenseForm = () => {
     localStorage.setItem('quickFormType', 'expense');
@@ -157,55 +167,29 @@ export const Groups: React.FC = () => {
     }
   };
 
-  const handleEditClick = (groupId: number, groupName: string) => {
-    setEditingGroupId(groupId);
-    setEditedName(groupName);
+  // Edits the whole expense — amount, split method, members, amounts, payer —
+  // in the same form it was created with.
+  const openGroupExpenseEditor = (groupId: number) => {
+    localStorage.setItem('editGroupExpenseId', String(groupId));
+    localStorage.setItem('quickFormType', 'expense');
+    localStorage.setItem('quickExpenseMode', 'group');
+    localStorage.setItem('quickBackPage', 'groups');
+    setCurrentPage('add-transaction');
   };
 
-  const handleSaveEdit = async (groupId: number) => {
-    if (!editedName.trim()) {
-      toast.error('Group name cannot be empty');
-      return;
-    }
-    setIsSaving(true);
-    try {
-      const group = groupExpenses.find((expense) => expense.id === groupId);
-      await db.groupExpenses.update(groupId, { name: editedName.trim(), updatedAt: new Date() });
-      if (group?.expenseTransactionId) {
-        const linkedTransaction = await db.transactions.get(group.expenseTransactionId);
-        if (linkedTransaction) {
-          const transactionUpdates: {
-            groupName: string;
-            updatedAt: Date;
-            description?: string;
-          } = {
-            groupName: editedName.trim(),
-            updatedAt: new Date(),
-          };
-          if (!linkedTransaction.description || linkedTransaction.description === group.name) {
-            transactionUpdates.description = editedName.trim();
-          }
-          await db.transactions.update(group.expenseTransactionId, transactionUpdates);
-        }
-      }
-      toast.success('Group name updated successfully');
-      setEditingGroupId(null);
-    } catch (error) {
-      console.error('Failed to update group:', error);
-      toast.error('Failed to update group name');
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleToggleMemberPayment = async (groupId: number, memberIndex: number, paid: boolean) => {
+  // Marks what a member owes as settled (or reopens it). Members who owe nothing —
+  // they paid at least their share — have nothing to toggle.
+  const handleToggleMemberPayment = async (groupId: number, memberIndex: number) => {
     try {
       const group = groupExpenses.find((expense) => expense.id === groupId);
       if (!group) return;
 
+      const balance = getGroupExpenseSettlement(group).balances[memberIndex];
+      if (!balance || balance.owes <= 0) return;
+
       const updatedMembers = [...group.members];
       const targetMember = updatedMembers[memberIndex];
-      const nextPaidState = !paid;
+      const nextPaidState = !balance.settled;
 
       updatedMembers[memberIndex] = {
         ...targetMember,
@@ -214,16 +198,14 @@ export const Groups: React.FC = () => {
         paymentStatus: nextPaidState ? 'paid' : 'pending',
       };
 
-      const hasPendingFriends = updatedMembers.some(
-        (member) => !member.isCurrentUser && member.share > 0 && !(member.paymentStatus === 'paid' || member.paid),
-      );
-
+      const after = getGroupExpenseSettlement({ ...group, members: updatedMembers });
       await db.groupExpenses.update(groupId, {
         members: updatedMembers,
-        status: hasPendingFriends ? 'pending' : 'settled',
+        status: after.isSettled ? 'settled' : 'pending',
+        ...(targetMember.isCurrentUser ? { yourSettled: nextPaidState } : {}),
         updatedAt: new Date(),
       });
-      toast.success(`Member marked as ${nextPaidState ? 'paid' : 'pending'}`);
+      toast.success(`${targetMember.isCurrentUser ? 'Your share' : targetMember.name} marked as ${nextPaidState ? 'settled' : 'pending'}`);
     } catch (error) {
       console.error('Failed to update member payment:', error);
       toast.error('Failed to update member status');
@@ -337,17 +319,32 @@ export const Groups: React.FC = () => {
 
         <div className="space-y-4">
           {sortedExpenses.map((expense) => {
-            const allMembersWithIndex = expense.members.map((member, index) => ({ ...member, originalIndex: index }));
+            const settlement = getGroupExpenseSettlement(expense);
+            const allMembersWithIndex = expense.members.map((member, index) => ({
+              ...member,
+              originalIndex: index,
+              balance: settlement.balances[index],
+            }));
             const friendMembers = allMembersWithIndex.filter((member) => !member.isCurrentUser);
-            const yourShare = expense.yourShare ?? allMembersWithIndex.find((member) => member.isCurrentUser)?.share ?? 0;
-            const pendingCollection = friendMembers
-              .filter((member) => !(member.paymentStatus === 'paid' || member.paid))
-              .reduce((sum, member) => sum + Number(member.share || 0), 0);
-            const paidFriendsCount = friendMembers.filter((m) => m.paymentStatus === 'paid' || m.paid).length;
-            const totalFriendsCount = friendMembers.length;
-            const paidPercent = totalFriendsCount > 0 ? Math.round((paidFriendsCount / totalFriendsCount) * 100) : 100;
-            const groupStatus = expense.status
-              ?? (friendMembers.some((member) => !(member.paymentStatus === 'paid' || member.paid) && member.share > 0) ? 'pending' : 'settled');
+            const me = allMembersWithIndex.find((member) => member.isCurrentUser);
+            const yourShare = me?.balance?.share ?? expense.yourShare ?? 0;
+            const youOwe = me?.balance && me.balance.owes > 0 ? me.balance.outstanding : 0;
+            const youCollect = me?.balance && me.balance.receives > 0 ? me.balance.outstanding : 0;
+            const unsettledTotal = settlement.balances.reduce((sum, b) => sum + (b.owes > 0 ? b.outstanding : 0), 0);
+            // Progress counts the people who owed something, not everyone on the bill.
+            const debtors = settlement.balances.filter((b) => b.owes > 0);
+            const settledDebtorsCount = debtors.filter((b) => b.settled).length;
+            const paidPercent = debtors.length > 0 ? Math.round((settledDebtorsCount / debtors.length) * 100) : 100;
+            const groupStatus = settlement.isSettled || expense.status === 'settled' ? 'settled' : 'pending';
+            const splitLabel = SPLIT_TYPE_LABELS[normalizeSplitType(expense.splitType)];
+            const isOwner = isOwnGroupExpense(expense, user?.id);
+            const isExpanded = expandedGroupId === expense.id;
+            const memberName = (index: number) => {
+              const m = expense.members[index];
+              return !m ? 'Someone' : m.isCurrentUser ? 'You' : m.name;
+            };
+            // Chips: friends, plus you when someone else paid and you owe them.
+            const breakdownMembers = youOwe > 0 && me ? [me, ...friendMembers] : friendMembers;
             const coverColor = getCategoryColor(expense.category || 'Miscellaneous');
 
             return (
@@ -371,82 +368,54 @@ export const Groups: React.FC = () => {
 
                     {/* Name, Category, Date, Status */}
                     <div className="min-w-0 flex-1">
-                      {editingGroupId === expense.id ? (
-                        <div className="flex items-center gap-2">
-                          <input
-                            data-testid={`groups-expense-name-${expense.id}`}
-                            type="text"
-                            value={editedName}
-                            onChange={(e) => setEditedName(e.target.value)}
-                            className="min-w-0 flex-1 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500"
-                            placeholder="Enter expense name"
-                            aria-label="Expense name"
-                          />
-                          <button
-                            data-testid={`groups-save-${expense.id}`}
-                            onClick={() => handleSaveEdit(expense.id!)}
-                            disabled={isSaving}
-                            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 hover:bg-emerald-100 cursor-pointer shadow-2xs transition-colors"
-                            title="Save"
-                          >
-                            <Check size={15} strokeWidth={2.5} />
-                          </button>
-                          <button
-                            data-testid={`groups-cancel-${expense.id}`}
-                            onClick={() => setEditingGroupId(null)}
-                            disabled={isSaving}
-                            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 cursor-pointer shadow-2xs transition-colors"
-                            title="Cancel"
-                          >
-                            <X size={15} strokeWidth={2.5} />
-                          </button>
+                      <div>
+                        <h3 className="truncate text-base sm:text-lg font-black tracking-tight text-slate-900">
+                          {expense.name}
+                        </h3>
+                        <p className="text-xs font-semibold text-slate-500 truncate" data-testid={`groups-split-method-${expense.id}`}>
+                          {splitLabel} • {expense.members.length} {expense.members.length === 1 ? 'Member' : 'Members'}
+                        </p>
+                        <div className="mt-1 flex flex-wrap items-center gap-1.5 sm:gap-2">
+                          <span className="inline-flex items-center gap-1 text-xs font-semibold text-slate-400">
+                            <CalendarDays size={12} className="shrink-0" />
+                            <span>{formatDateLabel(expense.date)}</span>
+                          </span>
+                          <span className="text-slate-200">•</span>
+                          <span className="rounded-full bg-slate-100/90 px-2 py-0.5 text-2xs font-bold text-slate-600">
+                            {expense.category || 'Miscellaneous'}
+                          </span>
+                          <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-2xs font-bold ${
+                            groupStatus === 'settled'
+                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/60'
+                              : 'bg-amber-50 text-amber-700 border border-amber-200/60'
+                          }`}>
+                            {groupStatus === 'settled' ? (
+                              <>
+                                <Check size={10} strokeWidth={3} /> Settled
+                              </>
+                            ) : (
+                              <>
+                                <Clock size={10} /> Pending
+                              </>
+                            )}
+                          </span>
                         </div>
-                      ) : (
-                        <div>
-                          <h3 className="truncate text-base sm:text-lg font-black tracking-tight text-slate-900">
-                            {expense.name}
-                          </h3>
-                          <div className="mt-1 flex flex-wrap items-center gap-1.5 sm:gap-2">
-                            <span className="inline-flex items-center gap-1 text-xs font-semibold text-slate-400">
-                              <CalendarDays size={12} className="shrink-0" />
-                              <span>{formatDateLabel(expense.date)}</span>
-                            </span>
-                            <span className="text-slate-200">•</span>
-                            <span className="rounded-full bg-slate-100/90 px-2 py-0.5 text-2xs font-bold text-slate-600">
-                              {expense.category || 'Miscellaneous'}
-                            </span>
-                            <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-2xs font-bold ${
-                              groupStatus === 'settled'
-                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/60'
-                                : 'bg-amber-50 text-amber-700 border border-amber-200/60'
-                            }`}>
-                              {groupStatus === 'settled' ? (
-                                <>
-                                  <Check size={10} strokeWidth={3} /> Settled
-                                </>
-                              ) : (
-                                <>
-                                  <Clock size={10} /> Pending
-                                </>
-                              )}
-                            </span>
-                          </div>
-                        </div>
-                      )}
+                      </div>
                     </div>
                   </div>
 
                   {/* Right side: Action Buttons */}
-                  {editingGroupId !== expense.id && (
                     <div className="flex items-center gap-1.5 shrink-0">
                       {canEdit && (
                         <button
                           data-testid={`groups-edit-group-name-${expense.id}`}
-                          onClick={() => handleEditClick(expense.id!, expense.name)}
-                          className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200/80 bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-800 shadow-2xs cursor-pointer active:scale-95 transition-all"
-                          title="Edit group name"
+                          onClick={() => openGroupExpenseEditor(expense.id!)}
+                          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border border-slate-200/80 bg-white text-slate-700 hover:bg-purple-50 hover:text-purple-700 hover:border-purple-200/70 shadow-2xs cursor-pointer active:scale-95 transition-all text-xs font-bold"
+                          title="Edit group expense and split"
+                          aria-label={`Edit ${expense.name}`}
                         >
-                          <Edit2 size={13} />
+                          <Edit2 size={12} className="text-purple-600" />
+                          <span className="hidden sm:inline">Edit</span>
                         </button>
                       )}
                       {canSettle && (
@@ -460,10 +429,8 @@ export const Groups: React.FC = () => {
                         </button>
                       )}
                     </div>
-                  )}
                 </div>
 
-                {editingGroupId !== expense.id && (
                   <>
                     {/* 3-METRIC CONSOLIDATED STATS STRIP (Always 3 columns, never stacked vertically) */}
                     <div className="grid grid-cols-3 divide-x divide-slate-200/60 rounded-2xl bg-slate-50/90 border border-slate-100/90 p-2.5 sm:p-3 text-center">
@@ -481,25 +448,27 @@ export const Groups: React.FC = () => {
                       </div>
                       <div className="px-1 sm:px-2">
                         <p className="text-2xs font-black uppercase tracking-wider text-slate-400 truncate">
-                          {groupStatus === 'settled' ? 'Status' : 'To Collect'}
+                          {groupStatus === 'settled' ? 'Status' : youOwe > 0 ? 'You Owe' : youCollect > 0 ? 'To Collect' : 'Unsettled'}
                         </p>
                         <p className={cn(
                           "mt-0.5 text-xs sm:text-sm font-black truncate",
-                          groupStatus === 'settled' ? "text-emerald-600 flex items-center justify-center gap-1" : "text-amber-600"
+                          groupStatus === 'settled'
+                            ? "text-emerald-600 flex items-center justify-center gap-1"
+                            : youOwe > 0 ? "text-rose-600" : "text-amber-600"
                         )}>
                           {groupStatus === 'settled' ? (
                             <>
                               <Check size={12} strokeWidth={3} /> Settled
                             </>
                           ) : (
-                            formatCurrency(pendingCollection)
+                            formatCurrency(youOwe > 0 ? youOwe : youCollect > 0 ? youCollect : unsettledTotal)
                           )}
                         </p>
                       </div>
                     </div>
 
                     {/* SETTLEMENT PROGRESS BAR */}
-                    {friendMembers.length > 0 && (
+                    {debtors.length > 0 && (
                       <div className="space-y-1.5 px-0.5">
                         <div className="flex items-center justify-between text-xs font-bold">
                           <div className="flex items-center gap-1.5 text-slate-500">
@@ -508,9 +477,9 @@ export const Groups: React.FC = () => {
                               groupStatus === 'settled' ? "bg-emerald-500" : "bg-amber-500"
                             )} />
                             <span>
-                              {groupStatus === 'settled' 
-                                ? 'All friends settled' 
-                                : `${paidFriendsCount} of ${totalFriendsCount} friends settled`}
+                              {groupStatus === 'settled'
+                                ? 'Everyone settled'
+                                : `${settledDebtorsCount} of ${debtors.length} ${debtors.length === 1 ? 'person' : 'people'} settled`}
                             </span>
                           </div>
                           <span className={groupStatus === 'settled' ? 'text-emerald-600 font-black' : 'text-slate-600 font-black'}>
@@ -540,49 +509,55 @@ export const Groups: React.FC = () => {
                     )}
 
                     {/* MEMBER SETTLEMENT CHIPS */}
-                    {friendMembers.length > 0 && (
+                    {breakdownMembers.length > 0 && (
                       <div className="space-y-2 pt-1">
                         <div className="flex items-center justify-between px-0.5">
                           <span className="text-2xs font-black uppercase tracking-wider text-slate-400">
                             Friends Breakdown
                           </span>
-                          {canSettle && (
+                          {canSettle && debtors.length > 0 && (
                             <span className="text-2xs font-semibold text-purple-600">
-                              Tap friend to toggle status
+                              Tap to toggle settled
                             </span>
                           )}
                         </div>
                         <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
-                          {friendMembers.map((member) => {
-                            const isPaid = member.paymentStatus === 'paid' || member.paid;
+                          {breakdownMembers.map((member) => {
+                            const owes = (member.balance?.owes ?? 0) > 0;
+                            const receives = (member.balance?.receives ?? 0) > 0;
+                            const isPaid = owes ? Boolean(member.balance?.settled) : true;
                             const avatarSrc = member.friendId ? friendAvatarById.get(member.friendId) : undefined;
+                            const displayName = member.isCurrentUser ? 'You' : member.name;
                             return (
                               <button
                                 data-testid={`groups-can-settle-toggle-payment-${`${expense.id}-${member.originalIndex}-${member.name}`}`}
                                 key={`${expense.id}-${member.originalIndex}-${member.name}`}
                                 onClick={() => {
+                                  if (!owes) return;
                                   if (!canSettle) {
                                     toast.error('You do not have permission to settle expenses.');
                                     return;
                                   }
-                                  handleToggleMemberPayment(expense.id!, member.originalIndex, member.paid);
+                                  handleToggleMemberPayment(expense.id!, member.originalIndex);
                                 }}
-                                disabled={!canSettle}
+                                disabled={!canSettle || !owes}
                                 className={cn(
                                   "shrink-0 rounded-2xl border px-3 py-2 text-left transition-all cursor-pointer shadow-2xs flex items-center gap-2.5",
-                                  !canSettle
+                                  !owes
+                                    ? "cursor-default border-slate-200/80 bg-slate-50/80 text-slate-700"
+                                    : !canSettle
                                     ? "opacity-60 cursor-not-allowed border-slate-100 bg-slate-50 text-slate-400"
                                     : isPaid
                                     ? "border-emerald-200/80 bg-emerald-50/80 hover:bg-emerald-100/80 active:scale-95 text-emerald-900"
                                     : "border-amber-200/80 bg-amber-50/80 hover:bg-amber-100/80 active:scale-95 text-amber-900"
                                 )}
-                                title={canSettle ? `Tap to mark ${member.name} as ${isPaid ? 'pending' : 'paid'}` : "Settle permission required"}
+                                title={!owes ? `${displayName} owes nothing on this bill` : canSettle ? `Tap to mark ${displayName} as ${isPaid ? 'pending' : 'settled'}` : "Settle permission required"}
                               >
                                 <div className="relative shrink-0">
                                   <Avatar className="h-7 w-7 rounded-full shadow-2xs">
-                                    <AvatarImage src={avatarSrc} alt={member.name} className="object-cover" />
+                                    <AvatarImage src={avatarSrc} alt={displayName} className="object-cover" />
                                     <AvatarFallback className={`${getToneClass(member.name)} text-2xs font-bold`}>
-                                      {member.name.charAt(0).toUpperCase()}
+                                      {displayName.charAt(0).toUpperCase()}
                                     </AvatarFallback>
                                   </Avatar>
                                   <div className={cn(
@@ -594,13 +569,17 @@ export const Groups: React.FC = () => {
                                 </div>
                                 <div className="min-w-0 pr-1">
                                   <p className="truncate text-xs font-bold text-slate-800 leading-tight">
-                                    {member.name}
+                                    {displayName}
                                   </p>
                                   <p className={cn(
                                     "text-2xs font-black tracking-tight mt-0.5",
-                                    isPaid ? "text-emerald-700" : "text-amber-700"
+                                    !owes ? (receives ? "text-indigo-700" : "text-slate-500") : isPaid ? "text-emerald-700" : "text-amber-700"
                                   )}>
-                                    {isPaid ? 'Paid' : 'Pending'} {formatCurrency(member.share)}
+                                    {!owes
+                                      ? receives
+                                        ? member.balance!.outstanding > 0 ? `Gets ${formatCurrency(member.balance!.outstanding)}` : `Received ${formatCurrency(member.balance!.receives)}`
+                                        : member.share > 0 ? 'Paid own share' : 'No share'
+                                      : `${isPaid ? 'Paid' : 'Pending'} ${formatCurrency(member.balance!.owes)}`}
                                   </p>
                                 </div>
                               </button>
@@ -609,8 +588,97 @@ export const Groups: React.FC = () => {
                         </div>
                       </div>
                     )}
+
+                    {/* SETTLEMENT DETAILS */}
+                    <div className="border-t border-slate-100 pt-2">
+                      <button
+                        type="button"
+                        onClick={() => setExpandedGroupId(isExpanded ? null : expense.id!)}
+                        aria-expanded={isExpanded}
+                        data-testid={`groups-settlement-toggle-${expense.id}`}
+                        className="flex w-full items-center justify-between px-0.5 py-1 text-2xs font-black uppercase tracking-wider text-slate-500 hover:text-slate-900 cursor-pointer"
+                      >
+                        <span>Settlement details</span>
+                        <ChevronDown size={14} className={cn('transition-transform', isExpanded && 'rotate-180')} />
+                      </button>
+
+                      {isExpanded && (
+                        <div className="mt-2 space-y-3" data-testid={`groups-settlement-details-${expense.id}`}>
+                          <div className="overflow-hidden rounded-2xl border border-slate-100">
+                            <table className="w-full table-fixed text-left">
+                              <thead className="bg-slate-50/90">
+                                <tr className="text-2xs font-black uppercase tracking-wider text-slate-400">
+                                  <th className="px-2.5 py-2 w-[34%]">Member</th>
+                                  <th className="px-1.5 py-2 text-right">Share</th>
+                                  <th className="px-1.5 py-2 text-right">Paid</th>
+                                  <th className="px-2.5 py-2 text-right">Balance</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-slate-100">
+                                {allMembersWithIndex.map((member) => {
+                                  const b = member.balance;
+                                  if (!b) return null;
+                                  return (
+                                    <tr key={`${expense.id}-row-${member.originalIndex}`} className="text-xs">
+                                      <td className="px-2.5 py-2 font-bold text-slate-800 truncate">
+                                        {memberName(member.originalIndex)}
+                                      </td>
+                                      <td className="px-1.5 py-2 text-right font-semibold text-slate-600 truncate">{formatCompact(b.share)}</td>
+                                      <td className="px-1.5 py-2 text-right font-semibold text-slate-600 truncate">{formatCompact(b.paid)}</td>
+                                      <td className={cn(
+                                        'px-2.5 py-2 text-right font-black truncate',
+                                        b.balance > 0 ? 'text-emerald-600' : b.balance < 0 ? 'text-rose-600' : 'text-slate-400',
+                                      )}>
+                                        {b.balance > 0 ? '+' : b.balance < 0 ? '−' : ''}{formatCompact(Math.abs(b.balance))}
+                                      </td>
+                                    </tr>
+                                  );
+                                })}
+                              </tbody>
+                            </table>
+                          </div>
+                          <p className="px-0.5 text-2xs font-semibold text-slate-400">
+                            + receives money · − pays money
+                          </p>
+
+                          {settlement.transfers.length > 0 && (
+                            <ul className="space-y-1.5">
+                              {settlement.transfers.map((t) => (
+                                <li
+                                  key={`${expense.id}-${t.from}-${t.to}`}
+                                  className={cn(
+                                    'flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-semibold',
+                                    t.settled ? 'border-emerald-100 bg-emerald-50/60 text-emerald-800' : 'border-slate-100 bg-slate-50/60 text-slate-700',
+                                  )}
+                                >
+                                  <span className="max-w-[35%] truncate font-bold">{memberName(Number(t.from))}</span>
+                                  <ArrowRight size={11} className="shrink-0 opacity-60" />
+                                  <span className="max-w-[35%] truncate font-bold">{memberName(Number(t.to))}</span>
+                                  <span className="ml-auto shrink-0 font-black">
+                                    {t.settled && <Check size={11} strokeWidth={3} className="mr-1 inline" />}
+                                    {formatCurrency(t.amount)}
+                                  </span>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+
+                          {canEdit && (
+                            <div className="pt-2 flex justify-end">
+                              <button
+                                type="button"
+                                onClick={() => openGroupExpenseEditor(expense.id!)}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs font-bold transition-all active:scale-95 cursor-pointer border border-purple-200/60"
+                              >
+                                <Edit2 size={12} />
+                                <span>Edit Expense & Split</span>
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </>
-                )}
               </div>
             );
           })}

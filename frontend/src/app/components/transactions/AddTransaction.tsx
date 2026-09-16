@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useApp, useAICapability } from '@/contexts/AppContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { db } from '@/lib/database';
-import { saveTransactionWithBackendSync, updateTransactionWithBackendSync, queueRecordUpsertSync, runWithCloudSyncSuppressed } from '@/lib/auth-sync-integration';
+import { db, type GroupExpense, type GroupMember } from '@/lib/database';
+import { saveTransactionWithBackendSync, updateTransactionWithBackendSync, deleteTransactionWithBackendSync, queueRecordUpsertSync, runWithCloudSyncSuppressed } from '@/lib/auth-sync-integration';
 import { applyTransactionAccountImpact, applyAccountBalanceDeltas, getTransactionAccountDeltas } from '@/lib/transactionAggregation';
 import { DocumentManagementService } from '@/services/documentManagementService';
 import { backendService } from '@/lib/backend-api';
@@ -10,7 +10,7 @@ import {
  ArrowDownLeft,
  CalendarDays, Wallet, Tag, AlignLeft, Sparkles,
  CreditCard, Banknote,
- ChevronDown, Check, Users, UserPlus, Trash2,
+ ChevronDown, Check, Users, UserPlus,
  Plus, ArrowRightLeft, ArrowDown, Info, ArrowLeft,
  User, X, ScanLine, Paperclip, ArrowUpRight, AlertTriangle, Search
 } from 'lucide-react';
@@ -40,6 +40,21 @@ import { FloatingSaveBar } from '@/app/components/ui/FloatingSaveBar';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { decodeQuotedPrintable } from '@/services/contactsService';
 import { useSubmitLock } from '@/hooks/useSubmitLock';
+import { SplitEditor } from '@/app/components/groups/SplitEditor';
+import {
+  SELF_SPLIT_KEY,
+  describeSplitProblem,
+  evaluateSplitDraft,
+  fromPaise,
+  getGroupExpenseSettlement,
+  normalizeSplitType,
+  resolveSettledAfterEdit,
+  toPaise,
+  toSettlementInputs,
+  type PayerSelection,
+  type SplitDraftRow,
+  type SplitType,
+} from '@/lib/groupSplit';
 
 // --- Types ---
 type TransactionType = 'expense' | 'income' | 'transfer' | 'withdrawal';
@@ -54,6 +69,14 @@ interface GroupParticipantDraft {
  share: number;
  email?: string;
  phone?: string;
+ /** Takes part in the split (unticked = not in this expense). */
+ included: boolean;
+ /** Raw split input — amount / percent / shares; '' = auto. */
+ valueInput: string;
+ /** Raw amount this person paid, when several people paid. */
+ paidInput: string;
+ /** Index of this person in the members of the expense being edited. */
+ sourceIndex?: number;
 }
 
 // --- Constants & Helpers ---
@@ -78,8 +101,13 @@ const createEmptyParticipant = (seed: Partial<GroupParticipantDraft> = {}): Grou
  id: createDraftId(),
  name: '',
  share: 0,
+ included: true,
+ valueInput: '',
+ paidInput: '',
  ...seed,
 });
+
+const NEGATIVE_BALANCE_ACCOUNT_TYPES = ['credit', 'credit_card', 'overdraft', 'loan'];
 
 const formatAccountBalance = (v: number, currency: string) =>
   formatCurrencyAmount(v, currency);
@@ -281,6 +309,12 @@ export function AddTransaction() {
     return num && Number.isFinite(num) ? num : null;
   });
   const [originalTransaction, setOriginalTransaction] = useState<any>(null);
+  // Set by the Groups page: edit that group expense's split instead of adding one.
+  const [editingGroupExpenseId, setEditingGroupExpenseId] = useState<number | null>(() => {
+    const raw = localStorage.getItem('editGroupExpenseId');
+    const num = raw ? Number(raw) : null;
+    return num && Number.isFinite(num) ? num : null;
+  });
 
  // State
  const [formData, setFormData] = useState(() => {
@@ -312,6 +346,7 @@ export function AddTransaction() {
    localStorage.removeItem('quickExpenseMode');
    localStorage.removeItem('quickBackPage');
    localStorage.removeItem('editTransactionId');
+   localStorage.removeItem('editGroupExpenseId');
  };
 
   // Pre-fill form when editing an existing transaction
@@ -320,6 +355,13 @@ export function AddTransaction() {
 
     db.transactions.get(editingTransactionId).then(existing => {
       if (!existing) return;
+      if (existing.groupExpenseId) {
+        localStorage.setItem('editGroupExpenseId', String(existing.groupExpenseId));
+        localStorage.setItem('quickFormType', 'expense');
+        localStorage.setItem('quickExpenseMode', 'group');
+        setEditingGroupExpenseId(existing.groupExpenseId);
+        return;
+      }
       setOriginalTransaction(existing);
       const isTransfer = existing.type === 'transfer';
       const existingDateKey = toLocalDateKey(new Date(existing.date)) ?? defaultDateKey;
@@ -343,6 +385,81 @@ export function AddTransaction() {
       }
     });
   }, [editingTransactionId, accounts, defaultDateKey]);
+
+  // Pre-fill the split editor when editing an existing group expense
+  useEffect(() => {
+    if (!editingGroupExpenseId) return;
+    let cancelled = false;
+
+    db.groupExpenses.get(editingGroupExpenseId).then((group) => {
+      if (cancelled) return;
+      if (!group) {
+        toast.error('This group expense no longer exists');
+        return;
+      }
+
+      const members = group.members ?? [];
+      const creatorIndex = Math.max(0, members.findIndex((m) => m.isCurrentUser));
+      const type = normalizeSplitType(group.splitType);
+      // Custom splits saved before split inputs were stored: keep their amounts fixed.
+      const legacyCustom = type === 'custom' && members.every((m) => m.splitValue == null);
+      const paidByIndex = toSettlementInputs(group).map((m) => m.paid);
+      const valueFor = (m: GroupMember) =>
+        type === 'equal' ? '' : m.splitValue != null ? String(m.splitValue) : legacyCustom ? String(m.share ?? 0) : '';
+      // Only an equal split can tell "not in this expense" apart from a ₹0 share.
+      const includedFor = (m: GroupMember) => !(type === 'equal' && toPaise(m.share) === 0);
+      const moneyInput = (amount: number) => (toPaise(amount) > 0 ? String(fromPaise(toPaise(amount))) : '');
+
+      const creator = members[creatorIndex];
+      setSelfSplit({
+        included: creator ? includedFor(creator) : true,
+        valueInput: creator ? valueFor(creator) : '',
+        paidInput: moneyInput(paidByIndex[creatorIndex] ?? 0),
+      });
+
+      const drafts = members
+        .map((m, index) => ({ m, index }))
+        .filter(({ index }) => index !== creatorIndex)
+        .map(({ m, index }) => createEmptyParticipant({
+          name: m.name,
+          friendId: m.friendId,
+          email: m.email,
+          phone: m.phone,
+          included: includedFor(m),
+          valueInput: valueFor(m),
+          paidInput: moneyInput(paidByIndex[index] ?? 0),
+          sourceIndex: index,
+        }));
+      setGroupParticipants(drafts);
+      setSplitType(type);
+
+      const payers = paidByIndex.map((paid, index) => ({ paid, index })).filter((p) => toPaise(p.paid) > 0);
+      const soleDraft = payers.length === 1 ? drafts.find((d) => d.sourceIndex === payers[0].index) : undefined;
+      if (payers.length === 1 && toPaise(payers[0].paid) === toPaise(group.totalAmount) && (payers[0].index === creatorIndex || soleDraft)) {
+        setPayer({ mode: 'single', key: payers[0].index === creatorIndex ? SELF_SPLIT_KEY : soleDraft!.id });
+      } else {
+        setPayer({ mode: 'multiple' });
+      }
+
+      const total = Number(group.totalAmount) || 0;
+      setExpenseMode('group');
+      setManualExpenseCategory(true);
+      setFormData((prev) => ({
+        ...prev,
+        type: 'expense',
+        amount: total,
+        accountId: group.paidBy || prev.accountId,
+        category: group.category || prev.category,
+        subcategory: group.subcategory || '',
+        description: group.name || '',
+        date: toLocalDateKey(new Date(group.date)) ?? prev.date,
+        notes: group.description || '',
+      }));
+      setAmountStr(total ? String(total) : '');
+    });
+
+    return () => { cancelled = true; };
+  }, [editingGroupExpenseId]);
 
  const [isSubmitting, setIsSubmitting] = useState(false);
  const [showScanner, setShowScanner] = useState(false);
@@ -376,6 +493,9 @@ export function AddTransaction() {
  transferMethod: 'bank' as 'bank' | 'cash'
  });
  const [groupParticipants, setGroupParticipants] = useState<GroupParticipantDraft[]>([]);
+ const [splitType, setSplitType] = useState<SplitType>('equal');
+ const [selfSplit, setSelfSplit] = useState({ included: true, valueInput: '', paidInput: '' });
+ const [payer, setPayer] = useState<PayerSelection>({ mode: 'single', key: SELF_SPLIT_KEY });
  const [returnPage] = useState(() => localStorage.getItem('quickBackPage') || 'transactions');
  const [remoteCategorySuggestion, setRemoteCategorySuggestion] = useState<any>(null);
  const [manualExpenseCategory, setManualExpenseCategory] = useState(false);
@@ -407,6 +527,7 @@ export function AddTransaction() {
     let isMounted = true;
 
     async function loadPendingDrafts() {
+      if (editingGroupExpenseId) return;
       // 1. Check SMS transaction draft
       try {
         const smsDraft = await resolvePendingSmsTransactionDraft();
@@ -468,7 +589,7 @@ export function AddTransaction() {
     return () => {
       isMounted = false;
     };
-  }, [accounts]);
+  }, [accounts, editingGroupExpenseId]);
 
   const handleCreateCustomCategory = guardSubmit(async () => {
     const name = newCatName.trim();
@@ -550,6 +671,128 @@ export function AddTransaction() {
 
  const selectedAccount = accounts.find(a => a.id === formData.accountId);
  const targetAccount = accounts.find(a => a.id === formData.toAccountId);
+
+ const isGroupSplit = isExpense && expenseMode === 'group';
+ const splitRows = useMemo<SplitDraftRow[]>(() => [
+   { key: SELF_SPLIT_KEY, name: 'You', isCurrentUser: true, ...selfSplit },
+   ...groupParticipants.map((p) => ({ key: p.id, name: p.name, included: p.included, valueInput: p.valueInput, paidInput: p.paidInput })),
+ ], [selfSplit, groupParticipants]);
+ const splitEvaluation = useMemo(
+   () => evaluateSplitDraft(formData.amount, splitType, splitRows, payer),
+   [formData.amount, splitType, splitRows, payer],
+ );
+ // In a split, your account is only charged what you paid at the counter.
+ const yourSplitContribution = splitEvaluation.contributions[SELF_SPLIT_KEY] ?? 0;
+
+ const handleSplitRowChange = (key: string, patch: Partial<SplitDraftRow>) => {
+   const changes: Partial<Pick<SplitDraftRow, 'included' | 'valueInput' | 'paidInput'>> = {};
+   if (patch.included !== undefined) changes.included = patch.included;
+   if (patch.valueInput !== undefined) changes.valueInput = patch.valueInput;
+   if (patch.paidInput !== undefined) changes.paidInput = patch.paidInput;
+   if (key === SELF_SPLIT_KEY) {
+     setSelfSplit((prev) => ({ ...prev, ...changes }));
+   } else {
+     setGroupParticipants((prev) => prev.map((p) => (p.id === key ? { ...p, ...changes } : p)));
+   }
+ };
+
+ const handleSplitTypeChange = (next: SplitType) => {
+   if (next === splitType) return;
+   // A typed value means something different per method (₹ / % / shares) — start clean.
+   setSelfSplit((prev) => ({ ...prev, valueInput: '' }));
+   setGroupParticipants((prev) => prev.map((p) => ({ ...p, valueInput: '' })));
+   setSplitType(next);
+ };
+
+ const handleRemoveSplitRow = (key: string) => {
+   setGroupParticipants((prev) => prev.filter((p) => p.id !== key));
+   setPayer((prev) => (prev.mode === 'single' && prev.key === key ? { mode: 'single', key: SELF_SPLIT_KEY } : prev));
+ };
+
+ const handlePayerChange = (next: PayerSelection) => {
+   // Switching to several payers starts from "the current payer covered the bill".
+   if (next.mode === 'multiple' && payer.mode === 'single' && splitRows.every((r) => r.paidInput === '')) {
+     const covered = formData.amount > 0 ? String(fromPaise(toPaise(formData.amount))) : '';
+     handleSplitRowChange(payer.key, { paidInput: covered });
+   }
+   setPayer(next);
+ };
+
+ /** An account a set of balance deltas would overdraw, if any. */
+ const findOverdraw = (deltas: Map<number, number>) => {
+   for (const [accountId, delta] of deltas.entries()) {
+     if (delta >= 0) continue;
+     const account = accounts.find((a) => a.id === accountId);
+     if (!account || NEGATIVE_BALANCE_ACCOUNT_TYPES.includes(String(account.type || '').toLowerCase())) continue;
+     const available = Number(account.balance ?? 0);
+     if (-delta > available) {
+       return { available, entered: -delta, accountName: account.name, currency: account.currency || 'INR' };
+     }
+   }
+   return null;
+ };
+
+ /**
+  * Members + creator fields for the group expense record. When editing, a
+  * member keeps "settled" only while what they owe is unchanged.
+  */
+ const buildGroupExpenseRecord = (previous?: GroupExpense | null) => {
+   const { split, contributions, splitValues, settlement } = splitEvaluation;
+   const owesByKey = new Map(settlement.balances.map((b) => [b.key, b.owes]));
+   const previousMembers = previous?.members ?? [];
+   const previousBalances = previous ? getGroupExpenseSettlement(previous).balances : [];
+   const previousAt = (index?: number) => {
+     const balance = index != null ? previousBalances[index] : undefined;
+     return balance ? { owes: balance.owes, settled: balance.settled } : undefined;
+   };
+   const creatorIndex = previous ? Math.max(0, previousMembers.findIndex((m) => m.isCurrentUser)) : undefined;
+
+   const selfShare = split.shares[SELF_SPLIT_KEY] ?? 0;
+   const selfSettled = resolveSettledAfterEdit(owesByKey.get(SELF_SPLIT_KEY) ?? 0, previousAt(creatorIndex));
+   const members: GroupMember[] = [
+     {
+       name: 'You',
+       isCurrentUser: true,
+       share: selfShare,
+       contribution: contributions[SELF_SPLIT_KEY] ?? 0,
+       splitValue: splitValues[SELF_SPLIT_KEY] ?? null,
+       paid: selfSettled,
+       paidAmount: selfSettled ? selfShare : 0,
+       paymentStatus: selfSettled ? 'paid' : 'pending',
+     },
+     // Unticked people who paid nothing are simply not part of this expense.
+     ...groupParticipants
+       .filter((p) => p.included || (contributions[p.id] ?? 0) > 0)
+       .map((p): GroupMember => {
+         const friend = p.friendId ? friends.find((f) => f.id === p.friendId) : friends.find((f) => f.name.toLowerCase() === p.name.toLowerCase());
+         const share = split.shares[p.id] ?? 0;
+         const settled = resolveSettledAfterEdit(owesByKey.get(p.id) ?? 0, previousAt(p.sourceIndex));
+         return {
+           name: p.name,
+           share,
+           contribution: contributions[p.id] ?? 0,
+           splitValue: splitValues[p.id] ?? null,
+           paid: settled,
+           isCurrentUser: false,
+           paidAmount: settled ? share : 0,
+           paymentStatus: settled ? 'paid' : 'pending',
+           friendId: p.friendId ?? friend?.id,
+           email: p.email ?? friend?.email,
+           phone: p.phone ?? (friend as any)?.phone,
+           reminderSentAt: p.sourceIndex != null ? previousMembers[p.sourceIndex]?.reminderSentAt : undefined,
+         };
+       }),
+   ];
+
+   return {
+     members,
+     yourShare: selfShare,
+     yourPaidAmount: contributions[SELF_SPLIT_KEY] ?? 0,
+     yourSplitValue: splitValues[SELF_SPLIT_KEY] ?? null,
+     yourSettled: selfSettled,
+     status: (members.every((m) => m.paid) ? 'settled' : 'pending') as 'settled' | 'pending',
+   };
+ };
 
  // Helper: save a new person as a Friend in the DB (temporary record)
  const saveNewFriend = guardSubmit(async (name: string): Promise<void> => {
@@ -658,9 +901,131 @@ export function AddTransaction() {
       ? runWithCloudSyncSuppressed(() => applyTransactionAccountImpact(saved, at))
       : applyTransactionAccountImpact(saved, at);
 
+  /**
+   * Saves an edited group expense in place: the record keeps its id (the sync
+   * queue PUTs it), and your own transaction follows what you paid — updated,
+   * removed when someone else now covers the bill, or added when you now pay.
+   */
+  const saveGroupExpenseEdit = async () => {
+    const group = editingGroupExpenseId ? await db.groupExpenses.get(editingGroupExpenseId) : undefined;
+    if (!group?.id) {
+      toast.error('This group expense no longer exists');
+      return;
+    }
+
+    const now = new Date();
+    const record = buildGroupExpenseRecord(group);
+    const name = formData.description.trim() || formData.category || 'Group Expense';
+    const category = normalizeCategorySelection(formData.category, 'expense');
+    const date = toLocalDateKey(new Date(group.date)) === formData.date
+      ? new Date(group.date)
+      : withEntryTime(parseDateInputValue(formData.date));
+    const yourPaid = record.yourPaidAmount;
+    const creatorIndex = Math.max(0, (group.members ?? []).findIndex((m) => m.isCurrentUser));
+    const previousYourPaid = toSettlementInputs(group)[creatorIndex]?.paid ?? 0;
+
+    const linked = group.expenseTransactionId ? await db.transactions.get(group.expenseTransactionId) : undefined;
+    const linkedTransaction = linked && !linked.deletedAt
+      ? linked
+      : await db.transactions.filter((t) => t.groupExpenseId === group.id && !t.deletedAt).first();
+    let expenseTransactionId = linkedTransaction?.id;
+
+    if (linkedTransaction?.id) {
+      const oldDeltas = getTransactionAccountDeltas(linkedTransaction);
+      if (yourPaid > 0) {
+        const updates = {
+          amount: yourPaid,
+          accountId: formData.accountId,
+          category,
+          subcategory: formData.subcategory,
+          description: name,
+          date,
+          splitType,
+          groupName: name,
+          updatedAt: now,
+        };
+        const combinedDeltas = new Map<number, number>();
+        for (const [accId, delta] of oldDeltas.entries()) combinedDeltas.set(accId, (combinedDeltas.get(accId) || 0) - delta);
+        for (const [accId, delta] of getTransactionAccountDeltas({ ...linkedTransaction, ...updates }).entries()) {
+          combinedDeltas.set(accId, (combinedDeltas.get(accId) || 0) + delta);
+        }
+        const overdraw = findOverdraw(combinedDeltas);
+        if (overdraw) { setBalanceError(overdraw); return; }
+
+        await updateTransactionWithBackendSync(linkedTransaction.id, updates);
+        await applyAccountBalanceDeltas(combinedDeltas, now);
+        for (const accId of combinedDeltas.keys()) queueRecordUpsertSync('accounts', accId);
+      } else {
+        // You no longer paid any of it — the bill never left your account.
+        const reverseDeltas = new Map(Array.from(oldDeltas.entries()).map(([accId, delta]) => [accId, -delta]));
+        await deleteTransactionWithBackendSync(linkedTransaction.id);
+        await applyAccountBalanceDeltas(reverseDeltas, now);
+        for (const accId of reverseDeltas.keys()) queueRecordUpsertSync('accounts', accId);
+        expenseTransactionId = undefined;
+      }
+    } else if (yourPaid > 0 && previousYourPaid <= 0) {
+      // Someone else had paid, so there was no transaction; now you paid too.
+      // (A missing link while you had paid means it lives on another device —
+      // creating one here would double-book it.)
+      const overdraw = findOverdraw(new Map([[formData.accountId, -yourPaid]]));
+      if (overdraw) { setBalanceError(overdraw); return; }
+      const created = await saveTransactionWithBackendSync({
+        type: 'expense',
+        amount: yourPaid,
+        accountId: formData.accountId,
+        category,
+        subcategory: formData.subcategory,
+        description: name,
+        date,
+        notes: formData.notes,
+        expenseMode: 'group',
+        splitType,
+        updatedAt: now,
+      });
+      await applyLocalAccountImpact(created, now);
+      expenseTransactionId = created?.id;
+    }
+
+    // Unsuppressed on purpose: the sync queue sends this edit as a PUT to the
+    // same server record, so the expense and its allocations are updated in place.
+    await db.groupExpenses.update(group.id, {
+      name,
+      totalAmount: formData.amount,
+      paidBy: formData.accountId,
+      date,
+      members: record.members,
+      category,
+      subcategory: formData.subcategory || undefined,
+      description: formData.notes || undefined,
+      splitType,
+      yourShare: record.yourShare,
+      yourPaidAmount: record.yourPaidAmount,
+      yourSplitValue: record.yourSplitValue,
+      yourSettled: record.yourSettled,
+      status: record.status,
+      expenseTransactionId,
+      updatedAt: now,
+    });
+    if (expenseTransactionId && expenseTransactionId !== linkedTransaction?.id) {
+      await db.transactions.update(expenseTransactionId, { groupExpenseId: group.id, groupName: name, updatedAt: now });
+    }
+
+    toast.success('Group expense updated');
+    clearQuickStorage();
+    setCurrentPage(returnPage);
+  };
+
   const handleSubmit = guardSubmit(async () => {
     if (!selectedAccount) { toast.error('Select an account'); return; }
     if (!formData.amount || formData.amount <= 0) { toast.error('Enter amount'); return; }
+
+    // A split must be fully allocated — and fully paid — before it can be saved.
+    if (isGroupSplit) {
+      if (groupParticipants.length === 0) { toast.error('Add at least one person to split with'); return; }
+      const problem = describeSplitProblem(splitEvaluation, splitType, (v) => formatCurrencyAmount(v, currency));
+      if (problem) { toast.error(problem); return; }
+    }
+    const debitAmount = isGroupSplit ? yourSplitContribution : formData.amount;
 
     // No-overdraw guard (mirrors the backend INSUFFICIENT_BALANCE check): a debit
     // — expense, transfer, or withdrawal — may not exceed the source account's
@@ -668,10 +1033,11 @@ export function AddTransaction() {
     // loan account types (none exist yet) may carry a negative and are exempt.
     {
       const isDebit = formData.type === 'expense' || formData.type === 'transfer' || formData.type === 'withdrawal';
-      const allowsNegative = ['credit', 'credit_card', 'overdraft', 'loan'].includes(String(selectedAccount.type || '').toLowerCase());
+      const allowsNegative = NEGATIVE_BALANCE_ACCOUNT_TYPES.includes(String(selectedAccount.type || '').toLowerCase());
       const available = Number(selectedAccount.balance ?? 0);
-      if (isDebit && !allowsNegative && formData.amount > available) {
-        setBalanceError({ available, entered: formData.amount, accountName: selectedAccount.name, currency: selectedAccount.currency || 'INR' });
+      // Editing a split checks only the change against its existing transaction (below).
+      if (isDebit && !allowsNegative && !editingGroupExpenseId && debitAmount > available) {
+        setBalanceError({ available, entered: debitAmount, accountName: selectedAccount.name, currency: selectedAccount.currency || 'INR' });
         return; // prevent save — nothing written locally or to the backend
       }
     }
@@ -703,6 +1069,11 @@ export function AddTransaction() {
     setIsSubmitting(true);
     let intentionalDuplicate = false;
     try {
+      if (editingGroupExpenseId) {
+        await saveGroupExpenseEdit();
+        return;
+      }
+
       // ── Duplicate detection: same amount + same category + same date (±0 days) ──
       // This is a broader check than the 10-second window, catching the case where
       // a user manually enters a transaction that matches a recurring or previous one.
@@ -715,7 +1086,7 @@ export function AddTransaction() {
       const dayEnd = new Date(transactionDate);
       dayEnd.setHours(23, 59, 59, 999);
 
-      if (!editingTransactionId) {
+      if (!editingTransactionId && debitAmount > 0) {
         // Narrow by the indexed accountId first — a bare .filter() walks every
         // transaction the user has ever recorded before each save.
         const similarTransactions = await db.transactions
@@ -724,7 +1095,7 @@ export function AddTransaction() {
           .filter(t =>
             !t.deletedAt &&
             t.type === formData.type &&
-            t.amount === formData.amount &&
+            t.amount === debitAmount &&
             t.category === normalizeCategorySelection(formData.category, formData.type as 'expense' | 'income') &&
             !!t.date &&
             new Date(t.date).getTime() >= dayStart.getTime() &&
@@ -837,6 +1208,7 @@ export function AddTransaction() {
  } else {
  const payload: any = {
   ...formData,
+  amount: debitAmount,
   category: normalizeCategorySelection(formData.category, formData.type as 'expense' | 'income'),
   date: transactionDate,
   expenseMode: isExpense ? expenseMode : undefined,
@@ -845,9 +1217,10 @@ export function AddTransaction() {
   };
 
  if (isExpense && expenseMode === 'group') {
+ payload.splitType = splitType;
  payload.participants = groupParticipants.map(p => ({
  name: p.name,
- share: p.share || (formData.amount / (groupParticipants.length || 1)),
+ share: splitEvaluation.split.shares[p.id] ?? 0,
  }));
  } else if (isExpense && expenseMode === 'loan') {
  payload.loanType = loanType;
@@ -863,41 +1236,16 @@ export function AddTransaction() {
  payload.emiDeductionAccount = loanDraft.emiDeductionAccount;
  }
 
+ // Someone else paid the whole bill: nothing left your account, so there is no
+ // transaction. The group expense below still records your share.
+ if (!(isGroupSplit && debitAmount <= 0)) {
  result = await saveTransactionWithBackendSync(payload);
  await applyLocalAccountImpact(result, now);
+ }
 
  // Create GroupExpense record so it appears in the Groups page 
- if (isExpense && expenseMode === 'group' && result?.id && groupParticipants.length > 0) {
- const perHead = formData.amount / (groupParticipants.length + 1); // +1 for current user
- // Enrich each participant with email/phone from their Friend record so the
- // backend can look them up and send the correct invitation email.
- const enrichedParticipants = groupParticipants.map((p) => {
-   const friend = p.friendId ? friends.find(f => f.id === p.friendId) : friends.find((f) => f.name.toLowerCase() === p.name.toLowerCase());
-   return {
-     name: p.name,
-     share: p.share && p.share > 0 ? p.share : perHead,
-     paid: false,
-     isCurrentUser: false,
-     paidAmount: 0,
-     paymentStatus: 'pending' as const,
-     friendId: p.friendId ?? friend?.id,
-     email: p.email ?? friend?.email,
-     phone: p.phone ?? (friend as any)?.phone,
-   };
- });
- const members: import('@/lib/database').GroupMember[] = [
- // Current user's share first
- {
- name: 'You',
- share: perHead,
- paid: true,
- isCurrentUser: true,
- paidAmount: perHead,
- paymentStatus: 'paid',
- },
- ...enrichedParticipants,
- ];
-
+ if (isGroupSplit && groupParticipants.length > 0) {
+ const record = buildGroupExpenseRecord();
  const groupExpenseName = formData.description || formData.category || 'Group Expense';
  // Suppressed: this block does its own POST /groups below. An unsuppressed add
  // ALSO queues a create, and at Sydney round-trip latency the 250 ms queue timer
@@ -910,14 +1258,17 @@ export function AddTransaction() {
  totalAmount: formData.amount,
  paidBy: formData.accountId,
  date: transactionDate,
- members,
+ members: record.members,
  category: formData.category,
  subcategory: formData.subcategory || undefined,
  description: formData.notes || undefined,
- yourShare: perHead,
- splitType: 'equal',
- status: 'pending',
- expenseTransactionId: result.id,
+ yourShare: record.yourShare,
+ yourPaidAmount: record.yourPaidAmount,
+ yourSplitValue: record.yourSplitValue,
+ yourSettled: record.yourSettled,
+ splitType,
+ status: record.status,
+ expenseTransactionId: result?.id,
  syncStatus: 'pending',
  createdAt: now,
  updatedAt: now,
@@ -928,19 +1279,7 @@ export function AddTransaction() {
  try {
    // Resolve local Dexie IDs → backend cloudIds before sending to the API.
    // The backend schema uses UUID foreign keys (Account.id, Friend.id).
-   const selectedAccount = accounts.find((a) => a.id === formData.accountId);
    const paidByCloudId = selectedAccount?.cloudId ?? null;
-
-   const backendMembers = [
-     { name: 'You', share: perHead, paid: true, isCurrentUser: true },
-     ...enrichedParticipants.map((p) => {
-       const friend = friends.find((f) => f.id === p.friendId);
-       return {
-         ...p,
-         friendId: friend?.cloudId ?? undefined, // backend UUID, not local integer
-       };
-     }),
-   ];
 
    const backendResp = await backendService.api.post('/groups', {
      clientRequestId: groupClientRequestId,
@@ -950,10 +1289,16 @@ export function AddTransaction() {
      date: transactionDate.toISOString(),
      category: formData.category,
      description: formData.notes || undefined,
-     splitType: 'equal',
-     yourShare: perHead,
-     status: 'pending',
-     members: backendMembers,
+     splitType,
+     yourShare: record.yourShare,
+     yourPaidAmount: record.yourPaidAmount,
+     yourSplitValue: record.yourSplitValue,
+     yourSettled: record.yourSettled,
+     status: record.status,
+     members: record.members.map((m) => (m.isCurrentUser
+       ? m
+       // backend UUID, not the local integer id
+       : { ...m, friendId: friends.find((f) => f.id === m.friendId)?.cloudId ?? undefined })),
    });
    const cloudId = backendResp.data?.id ?? backendResp.data?.data?.id;
    if (cloudId) {
@@ -969,11 +1314,13 @@ export function AddTransaction() {
  }
 
  // Back-link: store groupExpenseId on the transaction
+ if (result?.id) {
  await db.transactions.update(result.id, {
  groupExpenseId: groupExpenseId as number,
  groupName: groupExpenseName,
  updatedAt: now,
  });
+ }
  } else if (isExpense && expenseMode === 'loan' && result?.id) {
  // Create Loan record 
  await db.loans.add({
@@ -1010,7 +1357,7 @@ if (linkedDocId) {
  }
  }
 
- toast.success('Transaction saved');
+ toast.success(isGroupSplit ? 'Group expense saved' : 'Transaction saved');
  clearQuickStorage();
  setCurrentPage(returnPage);
  } catch (err: any) {
@@ -1050,12 +1397,19 @@ if (linkedDocId) {
               <ArrowLeft size={18} className="text-slate-700" />
             </button>
             <h1 className="font-page-title text-slate-900 tracking-tight leading-none truncate">
-              {editingTransactionId ? 'Edit Transaction' : 'Add Transaction'}
+              {editingGroupExpenseId ? 'Edit Group Expense' : editingTransactionId ? 'Edit Transaction' : 'Add Transaction'}
             </h1>
+            {editingGroupExpenseId && (
+              <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-purple-50 border border-purple-200/60 text-purple-700 text-2xs font-bold shrink-0">
+                <Users size={11} />
+                <span>Split & Members</span>
+              </span>
+            )}
           </div>
         </div>
 
         {/* Centered Mode Navigation Suite: Main Type Tabs + Sub-mode Selection */}
+        {!editingGroupExpenseId && (
         <div className="flex flex-col items-center justify-center gap-2.5 sm:gap-3 w-full mx-auto">
           {/* Main Type Tabs (Expense / Income / Transfer) */}
           <div className="flex items-center justify-center bg-white/95 rounded-full p-1 border border-slate-200/80 shadow-xs gap-1 mx-auto">
@@ -1163,6 +1517,7 @@ if (linkedDocId) {
             </div>
           )}
         </div>
+        )}
 
         {/* Main Single-Page Content Area */}
         <main className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 w-full pb-48 no-scrollbar">
@@ -1491,69 +1846,20 @@ if (linkedDocId) {
  </div>
  )}
 
- {/* Split Mode: Participant List Display */}
+ {/* Split Mode: member-level allocation */}
  {expenseMode === 'group' && (
- <div className="space-y-3">
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[160px] overflow-y-auto pr-1 scrollbar-none">
- {/* Fixed "You" */}
- <div className="flex items-center gap-2.5 p-2.5 bg-slate-100/70 rounded-2xl border border-slate-100">
- <div className="w-7 h-7 rounded-full bg-[#18181B] flex items-center justify-center text-2xs font-black text-white shrink-0">ME</div>
- <div className="flex-1 min-w-0">
-  <p className="text-xs font-black text-slate-900 truncate">You (Included)</p>
-  <p className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Payer / Equal share</p>
- </div>
- </div>
-
- {groupParticipants.map(p => (
- <div key={p.id} className="flex items-center gap-2 p-2.5 bg-white rounded-2xl border border-slate-100 group shadow-2xs hover:border-slate-200 transition-all">
- <div className="w-7 h-7 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-2xs font-black text-indigo-600 uppercase shrink-0">
- {p.name?.[0] || '?'}
- </div>
- <input
- data-testid={`add-transaction-participant-name-${p.id}`}
- type="text"
- value={p.name}
- onChange={e => setGroupParticipants(prev => prev.map(i => i.id === p.id ? { ...i, name: e.target.value } : i))}
- aria-label="Participant name"
- className="flex-1 bg-transparent border-none p-0 text-xs font-bold text-slate-900 focus:ring-0"
+ <SplitEditor
+   currency={currency}
+   totalAmount={formData.amount}
+   splitType={splitType}
+   onSplitTypeChange={handleSplitTypeChange}
+   rows={splitRows}
+   onRowChange={handleSplitRowChange}
+   onRemoveRow={handleRemoveSplitRow}
+   payer={payer}
+   onPayerChange={handlePayerChange}
+   evaluation={splitEvaluation}
  />
- <button
- data-testid={`add-transaction-remove-participant-${p.id}`}
- type="button"
- title="Remove participant"
- onClick={() => setGroupParticipants(prev => prev.filter(i => i.id !== p.id))}
- className="w-6 h-6 rounded-full flex items-center justify-center text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-all opacity-0 group-hover:opacity-100 cursor-pointer"
- >
- <Trash2 size={12} strokeWidth={2.5} />
- </button>
- </div>
- ))}
- </div>
-
- {/* Live Split Calculation Summary Card */}
- <div className="p-4 bg-[#18181B] rounded-2xl text-white flex items-center justify-between shadow-md">
- <div>
-  <p className="text-2xs font-bold text-white/50 uppercase tracking-wider">
-  Equal Split ({groupParticipants.length + 1} people)
-  </p>
- <p className="text-xs font-bold text-white mt-0.5">
- {formData.amount > 0 ? (
- <>
- <span className="text-white/40">{currency}</span> {(formData.amount / (groupParticipants.length + 1)).toFixed(2)} <span className="text-white/40 font-normal">/ head</span>
- </>
- ) : (
- <span className="text-white/40">Enter amount above to view split</span>
- )}
- </p>
- </div>
- <div className="text-right">
-  <p className="text-2xs font-bold text-white/50 uppercase tracking-wider">Your Share</p>
- <p className="text-sm sm:text-base font-black text-purple-300">
- {currency} {formData.amount > 0 ? (formData.amount / (groupParticipants.length + 1)).toFixed(2) : '0'}
- </p>
- </div>
- </div>
- </div>
  )}
  </div>
  )}
@@ -1844,6 +2150,13 @@ if (linkedDocId) {
  placeholder="Account"
  triggerClassName="h-10 sm:h-11 border border-slate-200/80 bg-slate-50 rounded-xl font-semibold text-xs sm:text-sm shadow-none"
  />
+ {isGroupSplit && formData.amount > 0 && splitEvaluation.payment.status === 'balanced' && toPaise(yourSplitContribution) !== toPaise(formData.amount) && (
+ <p className="text-2xs font-semibold text-slate-500" data-testid="split-account-hint">
+ {yourSplitContribution > 0
+ ? `Only what you paid (${formatCurrencyAmount(yourSplitContribution, currency)}) is deducted from this account.`
+ : 'Nothing is deducted from your account — someone else paid.'}
+ </p>
+ )}
  </div>
 
  {/* To Account Bank Transfer: self */}
@@ -2331,7 +2644,7 @@ if (linkedDocId) {
       onSave={handleSubmit}
       onDiscard={() => { clearQuickStorage(); setCurrentPage(returnPage); }}
       isSaving={isSubmitting}
-      saveLabel="Save Transaction"
+      saveLabel={isGroupSplit ? 'Save Expense' : 'Save Transaction'}
     />
       </div>
     </CenteredLayout>

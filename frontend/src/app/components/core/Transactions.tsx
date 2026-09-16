@@ -28,6 +28,7 @@ import { coerceDate, formatLocalDate } from '@/lib/dateUtils';
 import { backendService } from '@/lib/backend-api';
 import type { TaxComponent } from '@/types/receipt.types';
 import { formatCurrencyAmount } from '@/lib/currencyUtils';
+import { SPLIT_TYPE_LABELS, normalizeSplitType } from '@/lib/groupSplit';
 import { DocumentManagementService } from '@/services/documentManagementService';
 import { calculateTaxSummary } from '@/lib/taxService';
 import { useLiveQuery } from 'dexie-react-hooks';
@@ -903,7 +904,14 @@ export const Transactions: React.FC = () => {
                             size="icon"
                             className="h-8 w-8 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                             onClick={() => {
-                              localStorage.setItem('editTransactionId', transaction.id?.toString() || '');
+                              if (transaction.groupExpenseId) {
+                                localStorage.setItem('editGroupExpenseId', transaction.groupExpenseId.toString());
+                                localStorage.setItem('quickFormType', 'expense');
+                                localStorage.setItem('quickExpenseMode', 'group');
+                                localStorage.setItem('quickBackPage', 'transactions');
+                              } else {
+                                localStorage.setItem('editTransactionId', transaction.id?.toString() || '');
+                              }
                               setCurrentPage('add-transaction');
                             }}
                             title="Edit transaction"
@@ -1184,7 +1192,7 @@ export const Transactions: React.FC = () => {
                             </span>
                             {tx.splitType && (
                               <span className="text-2xs font-semibold text-indigo-600 block">
-                                {tx.splitType === 'equal' ? 'Split Equally' : 'Custom Split'}
+                                {SPLIT_TYPE_LABELS[normalizeSplitType(tx.splitType)]}
                               </span>
                             )}
                           </div>
@@ -1316,7 +1324,14 @@ export const Transactions: React.FC = () => {
                         <button
                           data-testid="transactions-edit"
                           onClick={() => {
-                            localStorage.setItem('editTransactionId', tx.id?.toString() || '');
+                            if (tx.groupExpenseId) {
+                              localStorage.setItem('editGroupExpenseId', tx.groupExpenseId.toString());
+                              localStorage.setItem('quickFormType', 'expense');
+                              localStorage.setItem('quickExpenseMode', 'group');
+                              localStorage.setItem('quickBackPage', 'transactions');
+                            } else {
+                              localStorage.setItem('editTransactionId', tx.id?.toString() || '');
+                            }
                             setCurrentPage('add-transaction');
                             setSelectedTransaction(null);
                           }}
@@ -1346,60 +1361,130 @@ export const Transactions: React.FC = () => {
           document.body
         )}
 
-        {/* Transaction Type Modal */}
+        {/* Transaction Type Picker - Floating Action Pills */}
         {showTransactionTypeModal && typeof document !== 'undefined' && createPortal(
-          <div className="fixed inset-0 flex items-center justify-center z-[120] p-4">
-            <div
+          <div className="fixed inset-0 flex flex-col items-center justify-center z-[120] p-4">
+            <motion.div
               data-testid="transactions-div-2"
-              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="absolute inset-0 bg-slate-950/60 backdrop-blur-md transition-opacity cursor-pointer"
               onClick={() => setShowTransactionTypeModal(false)}
             />
+            
             <motion.div
-              initial={{ scale: 0.95, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              className="relative bg-white/95 backdrop-blur-2xl rounded-[28px] sm:rounded-[32px] p-5 sm:p-8 w-full max-w-md shadow-2xl border border-white/50 z-10 max-h-[calc(100dvh-2rem-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px))] overflow-y-auto"
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              variants={{
+                hidden: { opacity: 0 },
+                visible: {
+                  opacity: 1,
+                  transition: { staggerChildren: 0.07, delayChildren: 0.04 }
+                },
+                exit: {
+                  opacity: 0,
+                  transition: { staggerChildren: 0.04, staggerDirection: -1 }
+                }
+              }}
+              className="relative z-10 flex flex-col items-center gap-3 w-full max-w-[280px] sm:max-w-[300px]"
             >
-              <h3 className="text-lg sm:text-xl md:text-2xl font-black text-slate-900 tracking-tight mb-1 text-center">New Transaction</h3>
-              <p className="text-slate-500 font-medium text-xs md:text-sm mb-4 sm:mb-6 text-center">What kind of transaction is this?</p>
-
-              <div className="space-y-2 sm:space-y-2.5">
-                {[
-                  { type: 'expense', label: 'Expense', desc: 'Money spent', color: 'bg-rose-50 text-rose-700 hover:bg-rose-100', icon: ArrowDownLeft },
-                  { type: 'income', label: 'Income', desc: 'Money received', color: 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100', icon: ArrowUpRight },
-                  { type: 'transfer', label: 'Transfer', desc: 'Move between accounts', color: 'bg-blue-50 text-blue-700 hover:bg-blue-100', icon: Repeat2 },
-                ].map((opt) => (
-                  <button
-                    key={opt.type}
-                    data-testid={`transaction-modal-type-${opt.type}-button`}
-                    onClick={() => {
-                      setShowTransactionTypeModal(false);
-                      localStorage.setItem('quickFormType', opt.type);
-                      setCurrentPage('add-transaction');
-                    }}
-                    className={cn(
-                      "w-full p-2.5 sm:p-3.5 flex items-center justify-center gap-3 sm:gap-4 rounded-2xl transition-all border border-transparent hover:scale-[1.01] active:scale-[0.98] cursor-pointer",
-                      opt.color
-                    )}
-                  >
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-white/80 rounded-xl flex items-center justify-center shadow-xs shrink-0">
-                      <opt.icon size={18} />
+              {[
+                {
+                  type: 'expense',
+                  label: 'Expense',
+                  icon: ArrowDownLeft,
+                  border: 'hover:border-rose-300 active:border-rose-400',
+                  iconStyle: 'bg-rose-50 text-rose-600 border-rose-200/80 group-hover:bg-rose-600 group-hover:text-white',
+                  textStyle: 'group-hover:text-rose-600',
+                  glow: 'hover:shadow-[0_14px_32px_-6px_rgba(244,63,94,0.32)]',
+                },
+                {
+                  type: 'income',
+                  label: 'Income',
+                  icon: ArrowUpRight,
+                  border: 'hover:border-emerald-300 active:border-emerald-400',
+                  iconStyle: 'bg-emerald-50 text-emerald-600 border-emerald-200/80 group-hover:bg-emerald-600 group-hover:text-white',
+                  textStyle: 'group-hover:text-emerald-600',
+                  glow: 'hover:shadow-[0_14px_32px_-6px_rgba(16,185,129,0.32)]',
+                },
+                {
+                  type: 'transfer',
+                  label: 'Transfer',
+                  icon: Repeat2,
+                  border: 'hover:border-indigo-300 active:border-indigo-400',
+                  iconStyle: 'bg-indigo-50 text-indigo-600 border-indigo-200/80 group-hover:bg-indigo-600 group-hover:text-white',
+                  textStyle: 'group-hover:text-indigo-600',
+                  glow: 'hover:shadow-[0_14px_32px_-6px_rgba(99,102,241,0.32)]',
+                },
+              ].map((opt) => (
+                <motion.button
+                  key={opt.type}
+                  data-testid={`transaction-modal-type-${opt.type}-button`}
+                  variants={{
+                    hidden: { opacity: 0, scale: 0.82, y: 22 },
+                    visible: {
+                      opacity: 1,
+                      scale: 1,
+                      y: 0,
+                      transition: { type: "spring", stiffness: 440, damping: 24 }
+                    },
+                    exit: { opacity: 0, scale: 0.85, y: 12, transition: { duration: 0.15 } }
+                  }}
+                  whileHover={{ scale: 1.035, y: -2 }}
+                  whileTap={{ scale: 0.96 }}
+                  onClick={() => {
+                    setShowTransactionTypeModal(false);
+                    localStorage.setItem('quickFormType', opt.type);
+                    setCurrentPage('add-transaction');
+                  }}
+                  className={cn(
+                    "group w-full py-3 px-4 flex items-center justify-between rounded-full bg-white/95 backdrop-blur-xl border border-white/70 shadow-[0_10px_28px_-4px_rgba(0,0,0,0.18)] transition-all duration-200 cursor-pointer text-left select-none",
+                    opt.border,
+                    opt.glow
+                  )}
+                >
+                  <div className="flex items-center gap-3.5 min-w-0">
+                    <div className={cn(
+                      "w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center border transition-all duration-200 shrink-0 shadow-2xs",
+                      opt.iconStyle
+                    )}>
+                      <opt.icon size={18} className="stroke-[2.5]" />
                     </div>
-                    <div className="text-left flex-1">
-                      <p className="font-bold text-xs sm:text-sm md:text-base leading-tight">{opt.label}</p>
-                      <p className="text-2xs sm:text-xs opacity-80 font-medium leading-tight">{opt.desc}</p>
-                    </div>
-                  </button>
-                ))}
-              </div>
+                    <span className={cn("font-bold text-sm sm:text-base text-slate-900 tracking-tight transition-colors", opt.textStyle)}>
+                      {opt.label}
+                    </span>
+                  </div>
+                  <div className="w-7 h-7 rounded-full bg-slate-50 group-hover:bg-slate-100 flex items-center justify-center text-slate-400 group-hover:text-slate-700 transition-all duration-200 shrink-0 mr-0.5">
+                    <ChevronRight size={14} className="stroke-[2.5] group-hover:translate-x-0.5 transition-transform" />
+                  </div>
+                </motion.button>
+              ))}
 
-              <Button
+              {/* Floating Close Button */}
+              <motion.button
                 data-testid="transactions-cancel"
-                variant="ghost"
+                variants={{
+                  hidden: { opacity: 0, scale: 0.6, y: 14 },
+                  visible: {
+                    opacity: 1,
+                    scale: 1,
+                    y: 0,
+                    transition: { type: "spring", stiffness: 440, damping: 24 }
+                  },
+                  exit: { opacity: 0, scale: 0.6, y: 8, transition: { duration: 0.15 } }
+                }}
+                whileHover={{ scale: 1.08 }}
+                whileTap={{ scale: 0.92 }}
                 onClick={() => setShowTransactionTypeModal(false)}
-                className="w-full mt-4 sm:mt-6 py-5 rounded-2xl font-bold text-xs sm:text-sm text-slate-500 hover:bg-slate-100 cursor-pointer"
+                className="mt-2 w-10 h-10 rounded-full bg-white/90 hover:bg-white text-slate-500 hover:text-slate-900 backdrop-blur-xl border border-white/60 shadow-[0_8px_24px_-4px_rgba(0,0,0,0.2)] flex items-center justify-center transition-all cursor-pointer"
+                aria-label="Close"
+                title="Close"
               >
-                Cancel
-              </Button>
+                <X size={17} className="stroke-[2.5]" />
+              </motion.button>
             </motion.div>
           </div>,
           document.body

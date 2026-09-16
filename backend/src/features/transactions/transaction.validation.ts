@@ -36,7 +36,7 @@ export const transactionCreateSchema = z.object({
   expenseMode: z.enum(['individual', 'group', 'loan']).optional(),
   groupExpenseId: z.string().trim().min(1).optional(),
   groupName: z.string().trim().max(100).optional(),
-  splitType: z.enum(['equal', 'custom']).optional(),
+  splitType: z.enum(['equal', 'custom', 'percentage', 'shares']).optional(),
   // Loan sub-feature fields on transaction
   loanType: z.enum(['borrowed', 'lent']).optional(),
   contactName: z.string().trim().max(100).optional(),

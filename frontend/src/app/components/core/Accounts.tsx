@@ -21,6 +21,7 @@ import {
     Landmark,
     Eye,
     EyeOff,
+    ChevronRight,
 } from "lucide-react";
 
 import { toast } from "sonner";
@@ -253,53 +254,90 @@ export const Accounts: React.FC = () => {
         selectedAccountIdRef.current = selectedAccountId;
     }, [selectedAccountId]);
 
-    //"EUR"EUR Desktop scroll listener"EUR"EUR
+    // Desktop scroll calculation
+    const handleDesktopScroll = useCallback(() => {
+        if (isClickScrolling.current) return;
+        const carousel = carouselRef.current;
+        if (!carousel) return;
+        const center = carousel.scrollLeft + carousel.clientWidth / 2;
+        let closest: { id: number; dist: number } | null = null;
+        for (const account of filteredAccounts) {
+            if (!account.id) continue;
+            const el = cardRefs.current[account.id];
+            if (!el) continue;
+            const dist = Math.abs((el.offsetLeft + el.offsetWidth / 2) - center);
+            if (!closest || dist < closest.dist) {
+                closest = { id: account.id, dist };
+            }
+        }
+        if (closest && closest.id !== selectedAccountIdRef.current) {
+            selectedAccountIdRef.current = closest.id;
+            setSelectedAccountId(closest.id);
+        }
+    }, [filteredAccounts]);
+
+    // Mobile scroll calculation (exact center distance matching mobileCardRefs, with stride fallback)
+    const handleMobileScroll = useCallback(() => {
+        if (isClickScrolling.current) return;
+        const carousel = mobileCarouselRef.current;
+        if (!carousel) return;
+
+        const center = carousel.scrollLeft + carousel.clientWidth / 2;
+        let closest: { id: number; dist: number } | null = null;
+
+        for (const account of filteredAccounts) {
+            if (!account.id) continue;
+            const el = mobileCardRefs.current[account.id];
+            if (!el) continue;
+            const cardCenter = el.offsetLeft + el.offsetWidth / 2;
+            const dist = Math.abs(cardCenter - center);
+            if (!closest || dist < closest.dist) {
+                closest = { id: account.id, dist };
+            }
+        }
+
+        // Fallback using stride if elements aren't measured yet
+        if (!closest && filteredAccounts.length > 0 && carousel.clientWidth > 0) {
+            const stride = carousel.clientWidth;
+            const idx = Math.round(carousel.scrollLeft / stride);
+            const clamped = Math.max(0, Math.min(filteredAccounts.length - 1, idx));
+            const account = filteredAccounts[clamped];
+            if (account && account.id) {
+                closest = { id: account.id, dist: 0 };
+            }
+        }
+
+        if (closest && closest.id !== selectedAccountIdRef.current) {
+            selectedAccountIdRef.current = closest.id;
+            setSelectedAccountId(closest.id);
+        }
+    }, [filteredAccounts]);
+
+    // Passive listener + debounce fallback for desktop & mobile
     useEffect(() => {
         const carousel = carouselRef.current;
         if (!carousel) return;
+        carousel.addEventListener("scroll", handleDesktopScroll, { passive: true });
+        return () => { carousel.removeEventListener("scroll", handleDesktopScroll); };
+    }, [handleDesktopScroll]);
 
-        const handleScroll = () => {
-            if (isClickScrolling.current) return;
-            const center = carousel.scrollLeft + carousel.clientWidth / 2;
-            let closest: any = null;
-            filteredAccounts.forEach((account) => {
-                const el = cardRefs.current[account.id!];
-                if (!el) return;
-                const dist = Math.abs((el.offsetLeft + el.offsetWidth / 2) - center);
-                if (!closest || dist < closest.dist) closest = { id: account.id!, dist };
-            });
-            if (closest && closest.id !== selectedAccountIdRef.current) {
-                setSelectedAccountId(closest.id);
-            }
-        };
-
-        carousel.addEventListener("scroll", handleScroll, { passive: true });
-        const t = setTimeout(handleScroll, 150);
-        return () => { carousel.removeEventListener("scroll", handleScroll); clearTimeout(t); };
-    }, [filteredAccounts]);
-
-    //"EUR"EUR Mobile scroll listener (index-based EUR" stride = full clientWidth)"EUR"EUR
     useEffect(() => {
         const carousel = mobileCarouselRef.current;
         if (!carousel) return;
 
-        const handleMobileScroll = () => {
-            if (isClickScrolling.current) return;
-            // Each card slot is exactly one clientWidth wide (w-screen wrapper, no gap)
-            const stride = carousel.clientWidth;
-            if (stride === 0) return;
-            const idx = Math.round(carousel.scrollLeft / stride);
-            const clamped = Math.max(0, Math.min(filteredAccounts.length - 1, idx));
-            const account = filteredAccounts[clamped];
-            if (account && account.id !== selectedAccountIdRef.current) {
-                setSelectedAccountId(account.id!);
-            }
+        let timer: ReturnType<typeof setTimeout> | null = null;
+        const onScroll = () => {
+            handleMobileScroll();
+            if (timer) clearTimeout(timer);
+            timer = setTimeout(handleMobileScroll, 60);
         };
 
-        carousel.addEventListener("scroll", handleMobileScroll, { passive: true });
-        const t = setTimeout(handleMobileScroll, 150);
-        return () => { carousel.removeEventListener("scroll", handleMobileScroll); clearTimeout(t); };
-    }, [filteredAccounts]);
+        carousel.addEventListener("scroll", onScroll, { passive: true });
+        return () => {
+            carousel.removeEventListener("scroll", onScroll);
+            if (timer) clearTimeout(timer);
+        };
+    }, [handleMobileScroll]);
 
     const handleCardClick = (id: number) => {
         isClickScrolling.current = true;
@@ -502,6 +540,9 @@ export const Accounts: React.FC = () => {
                     <>
                         <div
                             ref={mobileCarouselRef}
+                            onScroll={handleMobileScroll}
+                            onTouchStart={() => { isClickScrolling.current = false; }}
+                            onPointerDown={() => { isClickScrolling.current = false; }}
                             className="flex overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide touch-scroll"
                         >
                             {filteredAccounts.map((account) => {
@@ -726,6 +767,7 @@ export const Accounts: React.FC = () => {
                             {/* Carousel Container */}
                             <div
                                 ref={carouselRef}
+                                onScroll={handleDesktopScroll}
                                 className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide scroll-smooth touch-scroll [scroll-padding-left:50%] [scroll-padding-right:50%]"
                             >
                                 {/* Left spacer EUR" allows first card to snap to center */}
@@ -1305,62 +1347,133 @@ export const Accounts: React.FC = () => {
                 />
             )}
 
-            {/* Transaction Type Picker Modal */}
+            {/* Transaction Type Picker - Floating Action Pills */}
             {showTransactionTypeModal && typeof document !== 'undefined' && createPortal(
-                <div className="fixed inset-0 flex items-center justify-center z-[120] p-4 sm:p-6">
-                    <div data-testid="accounts-div-2"
-                        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                <div className="fixed inset-0 flex flex-col items-center justify-center z-[120] p-4">
+                    <motion.div
+                        data-testid="accounts-div-2"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="absolute inset-0 bg-slate-950/60 backdrop-blur-md transition-opacity cursor-pointer"
                         onClick={() => setShowTransactionTypeModal(false)}
                     />
+                    
                     <motion.div
-                        initial={{ scale: 0.95, opacity: 0, y: 20 }}
-                        animate={{ scale: 1, opacity: 1, y: 0 }}
-                        exit={{ scale: 0.95, opacity: 0, y: 20 }}
-                        className="relative bg-white/95 backdrop-blur-2xl rounded-[32px] p-6 sm:p-8 w-full max-w-md shadow-2xl border border-white/50 z-10 max-h-[calc(100dvh-2rem-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px))] overflow-y-auto"
+                        initial="hidden"
+                        animate="visible"
+                        exit="exit"
+                        variants={{
+                            hidden: { opacity: 0 },
+                            visible: {
+                                opacity: 1,
+                                transition: { staggerChildren: 0.07, delayChildren: 0.04 }
+                            },
+                            exit: {
+                                opacity: 0,
+                                transition: { staggerChildren: 0.04, staggerDirection: -1 }
+                            }
+                        }}
+                        className="relative z-10 flex flex-col items-center gap-3 w-full max-w-[280px] sm:max-w-[300px]"
                     >
-                        <h3 className="text-2xl font-black text-slate-900 tracking-tight mb-1">New Transaction</h3>
-                        <p className="text-slate-500 font-medium mb-8">What kind of transaction is this?</p>
-
-                        <div className="space-y-3">
-                            {[
-                                { type: 'expense', label: 'Expense', desc: 'Money spent', color: 'bg-rose-50 text-rose-700 hover:bg-rose-100', icon: ArrowDownLeft },
-                                { type: 'income', label: 'Income', desc: 'Money received', color: 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100', icon: ArrowUpRight },
-                                { type: 'transfer', label: 'Transfer', desc: 'Move between accounts', color: 'bg-blue-50 text-blue-700 hover:bg-blue-100', icon: Repeat2 },
-                            ].map((opt) => (
-                                <button
-                                    key={opt.type}
-                                    data-testid={`transaction-modal-type-${opt.type}-button`}
-                                    onClick={() => {
-                                        setShowTransactionTypeModal(false);
-                                        if (activeCardAccountId) {
-                                            localStorage.setItem('quickFormAccountId', activeCardAccountId.toString());
-                                        }
-                                        localStorage.setItem('quickFormType', opt.type);
-                                        setCurrentPage('add-transaction');
-                                    }}
-                                    className={cn(
-                                        "w-full p-4 flex items-center gap-4 rounded-2xl transition-all border border-transparent hover:scale-[1.02] active:scale-[0.98]",
-                                        opt.color
-                                    )}
-                                >
-                                    <div className="w-12 h-12 bg-white/80 rounded-xl flex items-center justify-center shadow-sm shrink-0">
-                                        <opt.icon size={22} />
+                        {[
+                            {
+                                type: 'expense',
+                                label: 'Expense',
+                                icon: ArrowDownLeft,
+                                border: 'hover:border-rose-300 active:border-rose-400',
+                                iconStyle: 'bg-rose-50 text-rose-600 border-rose-200/80 group-hover:bg-rose-600 group-hover:text-white',
+                                textStyle: 'group-hover:text-rose-600',
+                                glow: 'hover:shadow-[0_14px_32px_-6px_rgba(244,63,94,0.32)]',
+                            },
+                            {
+                                type: 'income',
+                                label: 'Income',
+                                icon: ArrowUpRight,
+                                border: 'hover:border-emerald-300 active:border-emerald-400',
+                                iconStyle: 'bg-emerald-50 text-emerald-600 border-emerald-200/80 group-hover:bg-emerald-600 group-hover:text-white',
+                                textStyle: 'group-hover:text-emerald-600',
+                                glow: 'hover:shadow-[0_14px_32px_-6px_rgba(16,185,129,0.32)]',
+                            },
+                            {
+                                type: 'transfer',
+                                label: 'Transfer',
+                                icon: Repeat2,
+                                border: 'hover:border-indigo-300 active:border-indigo-400',
+                                iconStyle: 'bg-indigo-50 text-indigo-600 border-indigo-200/80 group-hover:bg-indigo-600 group-hover:text-white',
+                                textStyle: 'group-hover:text-indigo-600',
+                                glow: 'hover:shadow-[0_14px_32px_-6px_rgba(99,102,241,0.32)]',
+                            },
+                        ].map((opt) => (
+                            <motion.button
+                                key={opt.type}
+                                data-testid={`transaction-modal-type-${opt.type}-button`}
+                                variants={{
+                                    hidden: { opacity: 0, scale: 0.82, y: 22 },
+                                    visible: {
+                                        opacity: 1,
+                                        scale: 1,
+                                        y: 0,
+                                        transition: { type: "spring", stiffness: 440, damping: 24 }
+                                    },
+                                    exit: { opacity: 0, scale: 0.85, y: 12, transition: { duration: 0.15 } }
+                                }}
+                                whileHover={{ scale: 1.035, y: -2 }}
+                                whileTap={{ scale: 0.96 }}
+                                onClick={() => {
+                                    setShowTransactionTypeModal(false);
+                                    if (activeCardAccountId) {
+                                        localStorage.setItem('quickFormAccountId', activeCardAccountId.toString());
+                                    }
+                                    localStorage.setItem('quickFormType', opt.type);
+                                    setCurrentPage('add-transaction');
+                                }}
+                                className={cn(
+                                    "group w-full py-3 px-4 flex items-center justify-between rounded-full bg-white/95 backdrop-blur-xl border border-white/70 shadow-[0_10px_28px_-4px_rgba(0,0,0,0.18)] transition-all duration-200 cursor-pointer text-left select-none",
+                                    opt.border,
+                                    opt.glow
+                                )}
+                            >
+                                <div className="flex items-center gap-3.5 min-w-0">
+                                    <div className={cn(
+                                        "w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center border transition-all duration-200 shrink-0 shadow-2xs",
+                                        opt.iconStyle
+                                    )}>
+                                        <opt.icon size={18} className="stroke-[2.5]" />
                                     </div>
-                                    <div className="text-left">
-                                        <p className="font-bold text-lg leading-tight">{opt.label}</p>
-                                        <p className="text-sm opacity-80 font-medium leading-tight">{opt.desc}</p>
-                                    </div>
-                                </button>
-                            ))}
-                        </div>
+                                    <span className={cn("font-bold text-sm sm:text-base text-slate-900 tracking-tight transition-colors", opt.textStyle)}>
+                                        {opt.label}
+                                    </span>
+                                </div>
+                                <div className="w-7 h-7 rounded-full bg-slate-50 group-hover:bg-slate-100 flex items-center justify-center text-slate-400 group-hover:text-slate-700 transition-all duration-200 shrink-0 mr-0.5">
+                                    <ChevronRight size={14} className="stroke-[2.5] group-hover:translate-x-0.5 transition-transform" />
+                                </div>
+                            </motion.button>
+                        ))}
 
-                        <Button data-testid="accounts-cancel-2"
-                            variant="ghost"
-                            className="w-full mt-6 rounded-xl hover:bg-slate-100 text-slate-500 font-bold"
+                        {/* Floating Close Button */}
+                        <motion.button
+                            data-testid="accounts-cancel-2"
+                            variants={{
+                                hidden: { opacity: 0, scale: 0.6, y: 14 },
+                                visible: {
+                                    opacity: 1,
+                                    scale: 1,
+                                    y: 0,
+                                    transition: { type: "spring", stiffness: 440, damping: 24 }
+                                },
+                                exit: { opacity: 0, scale: 0.6, y: 8, transition: { duration: 0.15 } }
+                            }}
+                            whileHover={{ scale: 1.08 }}
+                            whileTap={{ scale: 0.92 }}
                             onClick={() => setShowTransactionTypeModal(false)}
+                            className="mt-2 w-10 h-10 rounded-full bg-white/90 hover:bg-white text-slate-500 hover:text-slate-900 backdrop-blur-xl border border-white/60 shadow-[0_8px_24px_-4px_rgba(0,0,0,0.2)] flex items-center justify-center transition-all cursor-pointer"
+                            aria-label="Close"
+                            title="Close"
                         >
-                            Cancel
-                        </Button>
+                            <X size={17} className="stroke-[2.5]" />
+                        </motion.button>
                     </motion.div>
                 </div>,
                 document.body

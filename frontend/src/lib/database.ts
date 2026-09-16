@@ -208,8 +208,14 @@ export interface GroupExpense {
   description?: string;
   category?: string;
   subcategory?: string;
-  splitType?: 'equal' | 'custom';
+  splitType?: 'equal' | 'custom' | 'percentage' | 'shares';
   yourShare?: number;
+  /** What the creator paid towards the bill. Absent on older rows (creator paid it all). */
+  yourPaidAmount?: number;
+  /** The creator's raw split input (custom amount / percent / share units). */
+  yourSplitValue?: number | null;
+  /** The creator has settled what they owed (only meaningful when someone else paid). */
+  yourSettled?: boolean;
   expenseTransactionId?: number;
   createdBy?: string;
   createdByName?: string;
@@ -224,8 +230,14 @@ export interface GroupExpense {
 
 export interface GroupMember {
   name: string;
+  /** What this member owes towards the bill. */
   share: number;
+  /** Has settled what they owe (share − contribution). */
   paid: boolean;
+  /** What this member actually paid towards the bill at the time. */
+  contribution?: number;
+  /** Raw split input: custom amount / percent / share units; null = auto. */
+  splitValue?: number | null;
   friendId?: number;
   email?: string;
   phone?: string;

@@ -308,12 +308,17 @@ export async function notifyGroupExpenseChanged(input: {
   const skip = new Set((input.skipEmails ?? []).map((e) => e.trim().toLowerCase()));
   const group = await prisma.groupExpense.findUnique({
     where: { id: input.groupExpenseId },
-    select: { id: true, name: true, totalAmount: true, userId: true, updatedAt: true },
+    select: { id: true, name: true, totalAmount: true, userId: true, updatedAt: true, deletedAt: true },
   });
   if (!group) return;
 
+  // A deleted expense's member rows are soft-deleted in the same instant as the
+  // expense itself — those are still the people to tell.
   const members = await prisma.groupExpenseMember.findMany({
-    where: { groupExpenseId: group.id, deletedAt: null },
+    where: {
+      groupExpenseId: group.id,
+      deletedAt: input.change === 'deleted' && group.deletedAt ? group.deletedAt : null,
+    },
     select: { userId: true, email: true, name: true, shareAmount: true, hasPaid: true },
   });
   const actor = await prisma.user.findUnique({ where: { id: input.actorUserId }, select: { name: true } });

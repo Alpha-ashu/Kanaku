@@ -646,8 +646,8 @@ export const Settings: React.FC = () => {
           </div>
         </div>
 
-        {/* ─── Mobile Horizontal Filter Category Pills (hidden on desktop) ─── */}
-        <div className="flex lg:hidden items-center gap-1.5 overflow-x-auto scrollbar-hide py-1 -mx-2 px-2">
+        {/* ─── Mobile Category Grid (Column × Row responsive layout, hidden on desktop) ─── */}
+        <div className="grid lg:hidden grid-cols-2 min-[440px]:grid-cols-3 sm:grid-cols-5 gap-1.5 sm:gap-2 w-full py-1">
           {categoryTabs.map((tab) => {
             const Icon = tab.icon;
             const isSelected = selectedCategory === tab.id;
@@ -658,14 +658,14 @@ export const Settings: React.FC = () => {
                 onClick={() => setSelectedCategory(tab.id)}
                 data-testid={`settings-pill-${tab.id}`}
                 className={cn(
-                  "flex items-center gap-1.5 px-3.5 py-1.5 sm:py-2 rounded-full text-xs font-bold transition-all whitespace-nowrap shrink-0 border cursor-pointer",
+                  "flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl text-2xs sm:text-xs font-bold transition-all border cursor-pointer text-center whitespace-nowrap active:scale-95 shadow-2xs",
                   isSelected
-                    ? "bg-[#18181B] text-white border-[#18181B] shadow-xs"
-                    : "bg-white text-slate-600 border-slate-200/80 hover:bg-slate-50"
+                    ? "bg-[#18181B] text-white border-[#18181B] shadow-xs scale-[1.01]"
+                    : "bg-white text-slate-600 border-slate-200/80 hover:bg-slate-50 hover:text-slate-900"
                 )}
               >
-                <Icon size={13} className={isSelected ? "text-indigo-300" : "text-slate-400"} />
-                <span>{tab.label}</span>
+                <Icon size={14} className={cn("shrink-0", isSelected ? "text-indigo-300" : "text-slate-400")} />
+                <span className="truncate">{tab.label}</span>
               </button>
             );
           })}
