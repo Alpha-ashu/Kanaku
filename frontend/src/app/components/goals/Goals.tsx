@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useApp, useSubFeature } from '@/contexts/AppContext';
 import { db } from '@/lib/database';
 import { addGoalContribution } from '@/lib/goalContributions';
 import { getGoalCategoryMeta, getGoalProgress, getMilestoneLabel, getMonthlySuggestion, GOAL_CATEGORIES } from '@/lib/goal-utils';
 import { getCategoryCartoonIcon } from '@/app/components/ui/CartoonCategoryIcons';
-import { Edit2, Plus, Target, Trash2, Users, ArrowLeft } from 'lucide-react';
+import { Edit2, Plus, Target, Trash2, Users, ArrowLeft, X, UserPlus, Check, Contact, Search, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
 import { DeleteConfirmModal } from '@/app/components/shared/DeleteConfirmModal';
 import { Button } from '@/app/components/ui/button';
@@ -13,9 +14,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { VOICE_GOAL_DRAFT_KEY, takeVoiceDraft, type VoiceGoalDraft } from '@/lib/voiceDrafts';
 import { formatCurrencyAmount } from '@/lib/currencyUtils';
+import { decodeQuotedPrintable, sanitizeContactName } from '@/services/contactsService';
 
 export const Goals: React.FC = () => {
- const { goals, accounts, currency, setCurrentPage } = useApp();
+ const { goals, accounts, currency, setCurrentPage, friends = [] } = useApp();
  const canCreateGoal = useSubFeature('goals', 'createGoal');
  const canEditGoal = useSubFeature('goals', 'editGoal');
  const canDeleteGoal = useSubFeature('goals', 'deleteGoal');
@@ -25,11 +27,30 @@ export const Goals: React.FC = () => {
  const [showVoiceGoalPicker, setShowVoiceGoalPicker] = useState(false);
  const [editingGoalId, setEditingGoalId] = useState<number | null>(null);
  const [editFormData, setEditFormData] = useState<any>({});
- const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [showEditFriendPicker, setShowEditFriendPicker] = useState(false);
+  const [editFriendSearch, setEditFriendSearch] = useState('');
+  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
+  const [categoryFilter, setCategoryFilter] = useState('');
+  const categoryDropdownRef = useRef<HTMLDivElement>(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
  const [goalToDelete, setGoalToDelete] = useState<{ id: number; name: string } | null>(null);
  const [isDeleting, setIsDeleting] = useState(false);
 
- const selectedGoalKey = 'selected_goal_id';
+  const selectedGoalKey = 'selected_goal_id';
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(event.target as Node)) {
+        setIsCategoryOpen(false);
+      }
+    };
+    if (isCategoryOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isCategoryOpen]);
 
  useEffect(() => {
  const draft = takeVoiceDraft<VoiceGoalDraft>(VOICE_GOAL_DRAFT_KEY);
@@ -101,20 +122,46 @@ export const Goals: React.FC = () => {
  setCurrentPage('add-goal');
  };
 
- const handleEditClick = (goal: any) => {
- setEditingGoalId(goal.id);
- setEditFormData({ ...goal });
- };
+  const handleEditClick = (goal: any) => {
+    setEditingGoalId(goal.id);
+    setEditFormData({ ...goal });
+    setShowEditFriendPicker(false);
+    setIsCategoryOpen(false);
+    setCategoryFilter('');
+  };
 
  const handleSaveEdit = async () => {
  if (!editingGoalId) return;
  try {
+ const isGroup = editFormData.isGroupGoal !== undefined
+ ? !!editFormData.isGroupGoal
+ : (Array.isArray(editFormData.members) && editFormData.members.length > 0);
+
+ // Validate unique email & phone across collaborators (names can be duplicate)
+ if (isGroup && Array.isArray(editFormData.members)) {
+ const contactsSet = new Set<string>();
+ for (const m of editFormData.members) {
+ if (m.contactValue && m.contactValue.trim()) {
+ const key = m.contactType === 'phone'
+ ? m.contactValue.replace(/\D/g, '')
+ : m.contactValue.trim().toLowerCase();
+ if (contactsSet.has(key)) {
+ toast.error(`Duplicate contact "${m.contactValue}". All collaborators must have unique email/phone numbers.`);
+ return;
+ }
+ contactsSet.add(key);
+ }
+ }
+ }
+
  const updated = await db.goals.update(editingGoalId, {
  name: editFormData.name,
- targetAmount: editFormData.targetAmount,
- currentAmount: editFormData.currentAmount,
+ targetAmount: Number(editFormData.targetAmount) || 0,
+ currentAmount: Number(editFormData.currentAmount) || 0,
  targetDate: editFormData.targetDate ? new Date(editFormData.targetDate) : undefined,
  category: editFormData.category,
+ isGroupGoal: isGroup,
+ members: editFormData.members || [],
  updatedAt: new Date(),
  });
 
@@ -439,8 +486,8 @@ export const Goals: React.FC = () => {
   />
   )}
 
-  {showVoiceGoalPicker && pendingVoiceGoalDraft && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+  {showVoiceGoalPicker && pendingVoiceGoalDraft && typeof document !== 'undefined' && createPortal(
+  <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/65 p-4 backdrop-blur-sm">
   <motion.div
   initial={{ opacity: 0, scale: 0.96 }}
   animate={{ opacity: 1, scale: 1 }}
@@ -499,125 +546,518 @@ export const Goals: React.FC = () => {
   </button>
   </div>
   </motion.div>
-  </div>
+  </div>,
+  document.body
   )}
 
-  {/* Edit Goal Modal */}
-  {editingGoalId !== null && (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 p-4 backdrop-blur-sm" onClick={() => setEditingGoalId(null)}>
+  {/* Edit Goal Modal — Standardized Floating Card Modal via Portal */}
+  {editingGoalId !== null && typeof document !== 'undefined' && createPortal(
+    <div
+      className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/65 backdrop-blur-sm p-3.5 sm:p-6 overflow-y-auto"
+      onClick={() => setEditingGoalId(null)}
+    >
       <motion.div
-        initial={{ opacity: 0, y: 40 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 40 }}
-        transition={{ type: 'spring', damping: 24, stiffness: 300 }}
+        initial={{ opacity: 0, scale: 0.94, y: 16 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.94, y: 16 }}
+        transition={{ type: 'spring', damping: 26, stiffness: 320 }}
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-md rounded-[28px] bg-white p-5 sm:p-6 shadow-2xl border border-slate-100"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="edit-goal-title"
+        className="relative w-full max-w-lg bg-white rounded-[28px] sm:rounded-[36px] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.4)] border border-slate-100 flex flex-col overflow-hidden my-auto max-h-[82vh] pointer-events-auto"
       >
-        {/* Modal Header */}
-        <div className="flex items-center gap-3 mb-5">
-          <div className="w-10 h-10 rounded-[12px] flex items-center justify-center bg-purple-50 border border-purple-100/60 shrink-0">
-            {getCategoryCartoonIcon(editFormData.category, 20)}
+        {/* Card Header */}
+        <div className="flex items-center gap-3.5 px-5 sm:px-6 pt-5 pb-4 border-b border-slate-100 bg-white shrink-0">
+          <div className="w-11 h-11 rounded-2xl flex items-center justify-center bg-violet-50 border border-violet-100/80 shadow-xs shrink-0">
+            {getCategoryCartoonIcon(editFormData.category, 22)}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Edit Goal</p>
-            <h3 className="text-base font-bold text-slate-900 truncate">{editFormData.name || 'Unnamed Goal'}</h3>
+            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-violet-50 text-violet-600 font-extrabold text-[10px] tracking-wider uppercase">
+              <span className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse" />
+              Edit Goal
+            </div>
+            <h2 id="edit-goal-title" className="text-base sm:text-lg font-black text-slate-900 truncate leading-snug mt-0.5">
+              {editFormData.name || 'Unnamed Goal'}
+            </h2>
           </div>
           <button
+            type="button"
             onClick={() => setEditingGoalId(null)}
-            className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 transition-colors shrink-0"
-            aria-label="Close"
+            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-slate-100/80 hover:bg-slate-200/80 active:scale-95 flex items-center justify-center text-slate-600 hover:text-slate-900 transition-all shrink-0 cursor-pointer"
+            aria-label="Close modal"
           >
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+            <X size={18} />
           </button>
         </div>
 
-        <div className="space-y-3.5">
+        {/* Card Scrollable Form Body */}
+        <div className="overflow-y-auto flex-1 px-5 sm:px-6 py-5 space-y-4">
           {/* Goal Name */}
           <div>
-            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Goal Name</label>
+            <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+              Goal Name
+            </label>
             <input
               type="text"
-              value={editFormData.name}
+              value={editFormData.name || ''}
               onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
               placeholder="e.g. Goa Trip"
               data-testid="goals-edit-name-input"
-              className="w-full px-3.5 py-2.5 bg-slate-50/80 border border-slate-200/80 rounded-xl text-sm font-semibold text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-300 transition-all"
+              className="w-full px-4 py-2.5 sm:py-3 bg-slate-50 hover:bg-slate-100/60 focus:bg-white border border-slate-200/90 rounded-2xl text-sm font-semibold text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 transition-all"
             />
           </div>
 
-          {/* Category */}
-          <div>
-            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Category</label>
+          {/* Category Dropdown */}
+          <div className="relative" ref={categoryDropdownRef}>
+            <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+              Category
+            </label>
+            <button
+              type="button"
+              onClick={() => {
+                setIsCategoryOpen(prev => !prev);
+                setCategoryFilter('');
+              }}
+              data-testid="goals-edit-category-trigger"
+              className={cn(
+                "w-full flex items-center justify-between gap-3 px-3.5 py-2.5 sm:py-3 bg-slate-50 hover:bg-slate-100/70 border border-slate-200/90 rounded-2xl transition-all cursor-pointer",
+                isCategoryOpen && "ring-2 ring-violet-500/20 border-violet-400 bg-white"
+              )}
+              aria-haspopup="listbox"
+              aria-expanded={isCategoryOpen}
+            >
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                <div className="w-7 h-7 rounded-full bg-violet-100/80 flex items-center justify-center shrink-0 shadow-2xs">
+                  {getCategoryCartoonIcon(editFormData.category || 'custom', 20)}
+                </div>
+                <span className="text-sm font-semibold text-slate-900 truncate text-left">
+                  {GOAL_CATEGORIES.find(c => c.key === (editFormData.category || 'custom'))?.label || 'Custom'}
+                </span>
+              </div>
+              <ChevronDown
+                size={18}
+                className={cn(
+                  "text-slate-400 shrink-0 transition-transform duration-200",
+                  isCategoryOpen && "rotate-180 text-violet-600"
+                )}
+              />
+            </button>
+
+            {/* Hidden native select for accessibility and automated test compatibility */}
             <select
               value={editFormData.category || 'custom'}
               onChange={(e) => setEditFormData({ ...editFormData, category: e.target.value })}
               data-testid="goals-edit-category-select"
-              className="w-full px-3.5 py-2.5 bg-slate-50/80 border border-slate-200/80 rounded-xl text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-300 transition-all appearance-none"
+              className="sr-only"
+              tabIndex={-1}
+              aria-hidden="true"
             >
               {GOAL_CATEGORIES.map((cat) => (
                 <option key={cat.key} value={cat.key}>{cat.label}</option>
               ))}
             </select>
+
+            {/* Popover Dropdown Menu */}
+            <AnimatePresence>
+              {isCategoryOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                  transition={{ duration: 0.15, ease: 'easeOut' }}
+                  className="absolute left-0 right-0 top-full mt-1.5 z-50 bg-white rounded-2xl shadow-xl border border-slate-200/90 overflow-hidden flex flex-col max-h-64"
+                >
+                  {/* Category Search Input */}
+                  <div className="p-2 border-b border-slate-100 bg-slate-50/70">
+                    <div className="relative">
+                      <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                      <input
+                        type="text"
+                        value={categoryFilter}
+                        onChange={(e) => setCategoryFilter(e.target.value)}
+                        placeholder="Search category..."
+                        className="w-full pl-7 pr-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-violet-400"
+                        autoFocus
+                      />
+                    </div>
+                  </div>
+
+                  {/* Categories List */}
+                  <div className="overflow-y-auto p-1.5 space-y-0.5">
+                    {GOAL_CATEGORIES.filter(c => !categoryFilter || c.label.toLowerCase().includes(categoryFilter.toLowerCase()) || c.key.toLowerCase().includes(categoryFilter.toLowerCase())).map((cat) => {
+                      const isSelected = (editFormData.category || 'custom') === cat.key;
+                      return (
+                        <button
+                          key={cat.key}
+                          type="button"
+                          onClick={() => {
+                            setEditFormData({ ...editFormData, category: cat.key });
+                            setIsCategoryOpen(false);
+                            setCategoryFilter('');
+                          }}
+                          data-testid={`goals-edit-category-option-${cat.key}`}
+                          className={cn(
+                            "w-full flex items-center justify-between gap-2.5 px-3 py-2 rounded-xl transition-all text-left cursor-pointer",
+                            isSelected
+                              ? "bg-violet-50 text-violet-900 font-bold"
+                              : "hover:bg-slate-50 text-slate-700 font-medium"
+                          )}
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                            <div className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center shrink-0">
+                              {getCategoryCartoonIcon(cat.key, 18)}
+                            </div>
+                            <span className="text-xs sm:text-sm truncate">
+                              {cat.label}
+                            </span>
+                          </div>
+                          {isSelected && <Check size={16} className="text-violet-600 shrink-0" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
-          {/* Amounts row */}
+          {/* Amounts: Target & Saved */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Target Amount</label>
+              <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                Target ({currency})
+              </label>
               <input
                 type="number"
-                value={editFormData.targetAmount}
+                value={editFormData.targetAmount ?? ''}
                 onChange={(e) => setEditFormData({ ...editFormData, targetAmount: parseFloat(e.target.value) || 0 })}
                 placeholder="0.00"
                 data-testid="goals-edit-target-input"
-                className="w-full px-3.5 py-2.5 bg-slate-50/80 border border-slate-200/80 rounded-xl text-sm font-semibold text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-300 transition-all"
+                className="w-full px-3.5 py-2.5 sm:py-3 bg-slate-50 hover:bg-slate-100/60 focus:bg-white border border-slate-200/90 rounded-2xl text-sm font-semibold text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 transition-all"
               />
             </div>
             <div>
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Saved So Far</label>
+              <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                Saved ({currency})
+              </label>
               <input
                 type="number"
-                value={editFormData.currentAmount}
+                value={editFormData.currentAmount ?? ''}
                 onChange={(e) => setEditFormData({ ...editFormData, currentAmount: parseFloat(e.target.value) || 0 })}
                 placeholder="0.00"
                 data-testid="goals-edit-current-input"
-                className="w-full px-3.5 py-2.5 bg-slate-50/80 border border-slate-200/80 rounded-xl text-sm font-semibold text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-300 transition-all"
+                className="w-full px-3.5 py-2.5 sm:py-3 bg-slate-50 hover:bg-slate-100/60 focus:bg-white border border-slate-200/90 rounded-2xl text-sm font-semibold text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 transition-all"
               />
             </div>
           </div>
 
           {/* Target Date */}
           <div>
-            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Target Date</label>
+            <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+              Target Date
+            </label>
             <input
               type="date"
               value={editFormData.targetDate ? new Date(editFormData.targetDate).toISOString().split('T')[0] : ''}
               onChange={(e) => setEditFormData({ ...editFormData, targetDate: e.target.value })}
               data-testid="goals-edit-date-input"
-              className="w-full px-3.5 py-2.5 bg-slate-50/80 border border-slate-200/80 rounded-xl text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-300 transition-all"
+              className="w-full px-4 py-2.5 sm:py-3 bg-slate-50 hover:bg-slate-100/60 focus:bg-white border border-slate-200/90 rounded-2xl text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 transition-all cursor-pointer"
             />
           </div>
+
+          {/* Group Goal Toggle Card */}
+          <div className="flex items-center justify-between p-3.5 bg-slate-50/80 border border-slate-200/80 rounded-2xl">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-violet-100 text-violet-700 flex items-center justify-center shrink-0">
+                <Users size={16} />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-slate-900">Group Goal</p>
+                <p className="text-[10px] text-slate-500">Collaborate with multiple members</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                const nextIsGroup = !editFormData.isGroupGoal;
+                setEditFormData({
+                  ...editFormData,
+                  isGroupGoal: nextIsGroup,
+                  members: nextIsGroup && (!editFormData.members || editFormData.members.length === 0)
+                    ? [{ name: '', contactType: 'email', contactValue: '' }]
+                    : editFormData.members,
+                });
+              }}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer shrink-0 ${
+                editFormData.isGroupGoal ? 'bg-violet-600' : 'bg-slate-200'
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-xs transition-transform ${
+                  editFormData.isGroupGoal ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
+            </button>
+          </div>
+
+          {/* Group Members Section */}
+          {editFormData.isGroupGoal && (
+            <div className="space-y-3 pt-1">
+              <div className="flex items-center justify-between">
+                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                  Collaborators ({editFormData.members?.length || 0})
+                </label>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (friends.length === 0) {
+                        toast.info('No friends in your contacts list yet. Opening Add Friends to import contacts.');
+                        setEditingGoalId(null);
+                        setCurrentPage('add-friends');
+                      } else {
+                        setShowEditFriendPicker(p => !p);
+                      }
+                    }}
+                    data-testid="goals-edit-friends-picker-button"
+                    className={cn(
+                      "flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wider transition-all cursor-pointer",
+                      showEditFriendPicker
+                        ? "bg-violet-600 text-white shadow-xs"
+                        : "text-violet-700 bg-violet-50 hover:bg-violet-100"
+                    )}
+                  >
+                    <Users size={12} /> {friends.length > 0 ? 'Friends' : 'Import Contacts'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const members = Array.isArray(editFormData.members) ? editFormData.members : [];
+                      setEditFormData({
+                        ...editFormData,
+                        members: [...members, { name: '', contactType: 'email', contactValue: '' }],
+                      });
+                      setShowEditFriendPicker(false);
+                    }}
+                    data-testid="goals-edit-add-member-button"
+                    className="flex items-center gap-1 text-xs font-bold text-[#4F46E5] bg-[#EEF2FF] hover:bg-[#E0E7FF] px-3 py-1.5 rounded-full uppercase tracking-wider transition-all cursor-pointer"
+                  >
+                    <UserPlus size={12} /> NEW
+                  </button>
+                </div>
+              </div>
+
+              {/* Friends Quick-Pick Panel in Edit Modal */}
+              {showEditFriendPicker && friends.length > 0 && (
+                <div className="p-3.5 bg-violet-50/80 rounded-2xl border border-violet-100/90 space-y-2.5 animate-in zoom-in-95 duration-200">
+                  <div className="flex items-center justify-between">
+                    <p className="text-[11px] font-bold text-violet-700 uppercase tracking-wider">
+                      Tap contact to add as collaborator
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowEditFriendPicker(false);
+                        setEditFriendSearch('');
+                      }}
+                      className="text-[11px] font-bold text-violet-500 hover:text-violet-700 cursor-pointer"
+                    >
+                      Close
+                    </button>
+                  </div>
+
+                  {/* Search box for filtering contacts */}
+                  <div className="relative">
+                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-violet-400 pointer-events-none" />
+                    <input
+                      type="text"
+                      value={editFriendSearch}
+                      onChange={(e) => setEditFriendSearch(e.target.value)}
+                      placeholder="Search contact by name or number..."
+                      data-testid="goals-edit-friend-search-input"
+                      className="w-full pl-8 pr-7 py-1.5 bg-white border border-violet-200/80 rounded-xl text-xs font-semibold text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 transition-all"
+                    />
+                    {editFriendSearch && (
+                      <button
+                        type="button"
+                        onClick={() => setEditFriendSearch('')}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                      >
+                        <X size={12} />
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="flex flex-wrap gap-2 max-h-44 overflow-y-auto pr-1">
+                    {(() => {
+                      const query = editFriendSearch.toLowerCase().trim();
+                      const queryDigits = editFriendSearch.replace(/\D/g, '');
+                      const filtered = friends.filter(f => {
+                        if (!query) return true;
+                        const decoded = sanitizeContactName(f.name).toLowerCase();
+                        const raw = f.name.toLowerCase();
+                        const email = (f.email || '').toLowerCase();
+                        const phoneDigits = (f.phone || '').replace(/\D/g, '');
+                        return decoded.includes(query) || raw.includes(query) || email.includes(query) || (queryDigits && phoneDigits.includes(queryDigits));
+                      });
+
+                      if (filtered.length === 0) {
+                        return (
+                          <p className="text-xs text-violet-400 py-2 w-full text-center">
+                            No contacts match "{editFriendSearch}"
+                          </p>
+                        );
+                      }
+
+                      return filtered.map(f => {
+                        const cleanName = sanitizeContactName(f.name, { email: f.email, phone: f.phone });
+                        const isAdded = (editFormData.members || []).some((m: any) =>
+                          (f.email && m.contactType === 'email' && m.contactValue?.trim().toLowerCase() === f.email.trim().toLowerCase()) ||
+                          (f.phone && m.contactType === 'phone' && m.contactValue?.replace(/\D/g, '') === f.phone.replace(/\D/g, '')) ||
+                          (!f.email && !f.phone && m.name?.trim().toLowerCase() === cleanName.trim().toLowerCase() && !m.contactValue)
+                        );
+                        return (
+                          <button
+                            key={f.id}
+                            type="button"
+                            disabled={isAdded}
+                            onClick={() => {
+                              const currentMembers = Array.isArray(editFormData.members) ? [...editFormData.members] : [];
+                              if (f.email) {
+                                const fEmail = f.email.trim().toLowerCase();
+                                const emailDup = currentMembers.find(m => m.contactType === 'email' && m.contactValue?.trim().toLowerCase() === fEmail);
+                                if (emailDup) {
+                                  toast.error(`Email ${f.email} is already used by ${emailDup.name}`);
+                                  return;
+                                }
+                              }
+                              if (f.phone) {
+                                const pDigits = f.phone.replace(/\D/g, '');
+                                const phoneDup = currentMembers.find(m => m.contactType === 'phone' && m.contactValue?.replace(/\D/g, '') === pDigits);
+                                if (phoneDup) {
+                                  toast.error(`Phone ${f.phone} is already used by ${phoneDup.name}`);
+                                  return;
+                                }
+                              }
+                              setEditFormData({
+                                ...editFormData,
+                                members: [
+                                  ...currentMembers,
+                                  {
+                                    name: cleanName,
+                                    contactType: f.email ? 'email' : 'phone',
+                                    contactValue: f.email || f.phone || '',
+                                  },
+                                ],
+                              });
+                              toast.success(`Added ${cleanName} to goal`);
+                            }}
+                            className={cn(
+                              "px-3 py-1.5 rounded-full text-xs font-bold transition-all border flex items-center gap-1.5 cursor-pointer",
+                              isAdded
+                                ? "bg-indigo-100/80 border-indigo-200 text-indigo-800 opacity-60 cursor-not-allowed"
+                                : "bg-white border-violet-200 text-violet-800 hover:bg-violet-600 hover:text-white hover:border-violet-600 shadow-2xs active:scale-95"
+                            )}
+                          >
+                            <span className="w-4 h-4 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center text-[9px] font-black uppercase">
+                              {cleanName ? cleanName[0] : '?'}
+                            </span>
+                            <span>{cleanName}</span>
+                            {isAdded && <Check size={12} className="text-indigo-700" />}
+                          </button>
+                        );
+                      });
+                    })()}
+                  </div>
+                </div>
+              )}
+
+              {/* Collaborators List */}
+              <div className="space-y-2.5">
+                {(editFormData.members || []).map((member: any, idx: number) => (
+                  <div key={idx} className="bg-slate-50/90 border border-slate-200/90 rounded-2xl p-3 sm:p-3.5 space-y-2.5">
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-full bg-violet-100 border border-violet-200/60 flex items-center justify-center text-violet-700 font-bold text-xs shrink-0">
+                        {member.name ? member.name.charAt(0).toUpperCase() : (idx + 1)}
+                      </div>
+                      <span className="text-xs font-bold text-slate-700 flex-1 truncate">
+                        {member.name || `Collaborator ${idx + 1}`}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = (editFormData.members || []).filter((_: any, i: number) => i !== idx);
+                          setEditFormData({ ...editFormData, members: updated });
+                        }}
+                        className="w-6 h-6 rounded-full bg-rose-50 text-rose-500 hover:bg-rose-100 hover:text-rose-600 flex items-center justify-center transition-colors shrink-0 cursor-pointer"
+                        aria-label="Remove collaborator"
+                      >
+                        <X size={12} />
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <input
+                        type="text"
+                        value={member.name || ''}
+                        onChange={(e) => {
+                          const updated = [...(editFormData.members || [])];
+                          updated[idx] = { ...updated[idx], name: e.target.value };
+                          setEditFormData({ ...editFormData, members: updated });
+                        }}
+                        placeholder="Full name"
+                        className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400/30 focus:border-violet-300 transition-all"
+                      />
+                      <input
+                        type="text"
+                        value={member.contactValue || ''}
+                        onChange={(e) => {
+                          const updated = [...(editFormData.members || [])];
+                          updated[idx] = {
+                            ...updated[idx],
+                            contactValue: e.target.value,
+                            contactType: e.target.value.includes('@') ? 'email' : 'phone',
+                          };
+                          setEditFormData({ ...editFormData, members: updated });
+                        }}
+                        placeholder="Email or phone"
+                        className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400/30 focus:border-violet-300 transition-all"
+                      />
+                    </div>
+                  </div>
+                ))}
+                {(!editFormData.members || editFormData.members.length === 0) && (
+                  <div className="text-center py-4 px-3 text-xs text-slate-400 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
+                    No collaborators added yet. Tap <span className="font-semibold text-violet-600">Friends</span> to pick from your contacts or <span className="font-semibold text-violet-600">NEW</span> to add manually.
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Actions */}
-        <div className="flex gap-2.5 mt-5">
+        {/* Card Sticky Footer */}
+        <div className="px-5 sm:px-6 py-4 border-t border-slate-100 bg-white shrink-0 flex items-center gap-3">
           <button
-            onClick={handleSaveEdit}
-            data-testid="goals-edit-save-button"
-            className="flex-1 py-3 bg-[#18181B] hover:bg-black text-white rounded-full text-sm font-bold transition-all shadow-xs cursor-pointer active:scale-95"
-          >
-            Save Changes
-          </button>
-          <button
+            type="button"
             onClick={() => setEditingGoalId(null)}
             data-testid="goals-edit-cancel-button"
-            className="flex-1 py-3 bg-slate-100 border border-slate-200/80 text-slate-700 rounded-full text-sm font-bold hover:bg-slate-200 transition-all cursor-pointer active:scale-95"
+            className="flex-1 py-3 px-4 rounded-2xl text-xs sm:text-sm font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 active:scale-[0.98] transition-all cursor-pointer"
           >
             Cancel
           </button>
+          <button
+            type="button"
+            onClick={handleSaveEdit}
+            data-testid="goals-edit-save-button"
+            className="flex-1 py-3 px-4 rounded-2xl text-xs sm:text-sm font-bold text-white bg-slate-900 hover:bg-black shadow-md shadow-slate-900/10 active:scale-[0.98] transition-all cursor-pointer"
+          >
+            Save Changes
+          </button>
         </div>
       </motion.div>
-    </div>
+    </div>,
+    document.body
   )}
 
   <DeleteConfirmModal
@@ -648,119 +1088,173 @@ const ContributeModal: React.FC<{
   const [amount, setAmount] = useState(initialAmount || 0);
   const [accountId, setAccountId] = useState(accounts[0]?.id || 0);
   const [notes, setNotes] = useState(initialNotes || '');
+  const [goal, setGoal] = useState<any>(null);
+  const [contributorMember, setContributorMember] = useState('Me');
 
   useEffect(() => {
-  setAmount(initialAmount || 0);
-  setNotes(initialNotes || '');
+    setAmount(initialAmount || 0);
+    setNotes(initialNotes || '');
   }, [initialAmount, initialNotes]);
 
+  useEffect(() => {
+    db.goals.get(goalId).then(g => setGoal(g || null));
+  }, [goalId]);
+
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  const goal = await db.goals.get(goalId);
-  if (!goal) return;
+    const targetGoal = goal || await db.goals.get(goalId);
+    if (!targetGoal) return;
 
-  const account = accounts.find((item) => item.id === accountId);
-  if (!account) {
-  toast.error('Select an account for this contribution');
-  return;
-  }
+    const account = accounts.find((item) => item.id === accountId);
+    if (!account) {
+      toast.error('Select an account for this contribution');
+      return;
+    }
 
-  try {
-  await addGoalContribution({ goal, account, amount, notes });
-  } catch (error) {
-  toast.error(error instanceof Error ? error.message : 'Could not add the contribution');
-  return;
-  }
+    try {
+      await addGoalContribution({
+        goal: targetGoal,
+        account,
+        amount,
+        notes,
+        memberName: targetGoal.isGroupGoal ? (contributorMember === 'Me' ? 'You' : contributorMember) : undefined,
+        status: targetGoal.isGroupGoal ? 'paid' : undefined,
+      });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Could not add the contribution');
+      return;
+    }
 
-  toast.success('Contribution added successfully');
-  onClose();
+    toast.success('Contribution added successfully');
+    onClose();
   };
 
-  return (
-  <div data-testid="goals-div" className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
-  <motion.div data-testid="goals-div-2"
-  initial={{ opacity: 0, scale: 0.95 }}
-  animate={{ opacity: 1, scale: 1 }}
-  exit={{ opacity: 0, scale: 0.95 }}
-  onClick={(e) => e.stopPropagation()}
-  className="bg-white rounded-[28px] sm:rounded-[32px] p-6 sm:p-7 w-full max-w-md shadow-2xl border border-slate-100"
-  >
-  <h3 className="text-xl sm:text-2xl font-bold mb-5 text-slate-900">Add Contribution</h3>
-  <form data-testid="goals-form" onSubmit={handleSubmit} className="space-y-4">
-  <div>
-  <label htmlFor="goal-contribution-amount" className="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">Amount</label>
-  <div className="relative">
-  <input
-  id="goal-contribution-amount"
-  type="number"
-  step="0.01"
-  value={amount || ''}
-  onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
-  data-testid="goals-contribution-amount-input"
-  className="w-full px-4 py-3 bg-slate-50 border border-slate-200/80 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 font-bold text-slate-900"
-  required
-  autoFocus
-  aria-label="Contribution amount"
-  title="Contribution amount"
-  placeholder="0.00"
-  />
-  </div>
-  </div>
+  const modalContent = (
+    <div
+      data-testid="goals-div"
+      className="fixed inset-0 bg-black/65 backdrop-blur-sm flex items-center justify-center z-[99999] p-4 overflow-y-auto"
+      onClick={onClose}
+    >
+      <motion.div
+        data-testid="goals-div-2"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        onClick={(e) => e.stopPropagation()}
+        className="bg-white rounded-[28px] sm:rounded-[32px] p-6 sm:p-7 w-full max-w-md shadow-2xl border border-slate-100 my-auto pointer-events-auto"
+      >
+        <div className="flex items-center justify-between mb-5">
+          <div>
+            <h3 className="text-xl sm:text-2xl font-bold text-slate-900">Add Contribution</h3>
+            {goal?.name && (
+              <p className="text-xs font-semibold text-violet-600 mt-0.5">{goal.name}</p>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition-colors cursor-pointer"
+            aria-label="Close"
+          >
+            <X size={16} />
+          </button>
+        </div>
 
-  <div>
-  <label htmlFor="goal-contribution-account" className="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">From Account</label>
-  <select
-  id="goal-contribution-account"
-  value={accountId}
-  onChange={(e) => setAccountId(parseInt(e.target.value))}
-  data-testid="goals-contribution-account-select"
-  className="w-full px-4 py-3 bg-slate-50 border border-slate-200/80 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 font-bold text-slate-900 appearance-none text-sm"
-  aria-label="Select account"
-  title="Select account"
-  >
-  {accounts.map(acc => (
-  <option data-testid={`goals-option-${acc.id}`} key={acc.id} value={acc.id}>{acc.name} ({formatCurrencyAmount(acc.balance, currency)})</option>
-  ))}
-  </select>
-  </div>
+        <form data-testid="goals-form" onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label htmlFor="goal-contribution-amount" className="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">Amount</label>
+            <div className="relative">
+              <input
+                id="goal-contribution-amount"
+                type="number"
+                step="0.01"
+                value={amount || ''}
+                onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
+                data-testid="goals-contribution-amount-input"
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200/80 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 font-bold text-slate-900"
+                required
+                autoFocus
+                aria-label="Contribution amount"
+                title="Contribution amount"
+                placeholder="0.00"
+              />
+            </div>
+          </div>
 
-  <div>
-  <label htmlFor="goal-contribution-notes" className="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">Notes (Optional)</label>
-  <textarea
-  id="goal-contribution-notes"
-  value={notes}
-  onChange={(e) => setNotes(e.target.value)}
-  data-testid="goals-contribution-notes-textarea"
-  className="w-full rounded-2xl bg-slate-50 border border-slate-200/80 px-4 py-3 font-medium text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 min-h-[72px]"
-  rows={2}
-  placeholder="Added contribution details..."
-  />
-  </div>
+          <div>
+            <label htmlFor="goal-contribution-account" className="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">From Account</label>
+            <select
+              id="goal-contribution-account"
+              value={accountId}
+              onChange={(e) => setAccountId(parseInt(e.target.value))}
+              data-testid="goals-contribution-account-select"
+              className="w-full px-4 py-3 bg-slate-50 border border-slate-200/80 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 font-bold text-slate-900 appearance-none text-sm cursor-pointer"
+              aria-label="Select account"
+              title="Select account"
+            >
+              {accounts.map(acc => (
+                <option data-testid={`goals-option-${acc.id}`} key={acc.id} value={acc.id}>{acc.name} ({formatCurrencyAmount(acc.balance, currency)})</option>
+              ))}
+            </select>
+          </div>
 
-  <div className="flex gap-2.5 pt-3">
-  <button
-  type="button"
-  onClick={onClose}
-  data-testid="goals-contribution-cancel-button"
-  className="flex-1 py-3 bg-white border border-slate-200/80 rounded-full hover:bg-slate-50 transition-all font-bold text-xs text-slate-700 cursor-pointer active:scale-95"
-  aria-label="Cancel contribution"
-  title="Cancel contribution"
-  >
-  Cancel
-  </button>
-  <button
-  type="submit"
-  data-testid="goals-contribution-submit-button"
-  className="flex-1 py-3 bg-[#18181B] text-white rounded-full hover:bg-black transition-all font-bold text-xs shadow-xs cursor-pointer active:scale-95"
-  aria-label="Add contribution"
-  title="Add contribution"
-  >
-  Add Contribution
-  </button>
-  </div>
-  </form>
-  </motion.div>
-  </div>
+          {goal?.isGroupGoal && (
+            <div>
+              <label htmlFor="goal-contribution-member" className="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">Group Member</label>
+              <select
+                id="goal-contribution-member"
+                value={contributorMember}
+                onChange={(e) => setContributorMember(e.target.value)}
+                data-testid="goals-contribution-member-select"
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200/80 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 font-bold text-slate-900 appearance-none text-sm cursor-pointer"
+              >
+                <option value="Me">You (Owner)</option>
+                {(goal.members || []).map((m: any) => (
+                  <option key={m.name} value={m.name}>{m.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          <div>
+            <label htmlFor="goal-contribution-notes" className="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">Notes (Optional)</label>
+            <textarea
+              id="goal-contribution-notes"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              data-testid="goals-contribution-notes-textarea"
+              className="w-full rounded-2xl bg-slate-50 border border-slate-200/80 px-4 py-3 font-medium text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 min-h-[72px]"
+              rows={2}
+              placeholder="Added contribution details..."
+            />
+          </div>
+
+          <div className="flex gap-2.5 pt-3">
+            <button
+              type="button"
+              onClick={onClose}
+              data-testid="goals-contribution-cancel-button"
+              className="flex-1 py-3 bg-white border border-slate-200/80 rounded-full hover:bg-slate-50 transition-all font-bold text-xs text-slate-700 cursor-pointer active:scale-95"
+              aria-label="Cancel contribution"
+              title="Cancel contribution"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              data-testid="goals-contribution-submit-button"
+              className="flex-1 py-3 bg-[#18181B] text-white rounded-full hover:bg-black transition-all font-bold text-xs shadow-xs cursor-pointer active:scale-95"
+              aria-label="Add contribution"
+              title="Add contribution"
+            >
+              Add Contribution
+            </button>
+          </div>
+        </form>
+      </motion.div>
+    </div>
   );
+
+  return typeof document !== 'undefined' ? createPortal(modalContent, document.body) : modalContent;
 };

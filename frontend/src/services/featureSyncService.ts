@@ -33,6 +33,26 @@ export interface FeatureSyncResult {
 
 const EMPTY_RESULT: FeatureSyncResult = { pulled: 0, pushed: 0, removed: 0 };
 
+/**
+ * A stable idempotency key for a row whose primary key is not globally unique.
+ *
+ * Recurring transactions use a Dexie auto-increment id, so it must NOT be used
+ * as the key: `rec_local_3` on a phone and `rec_local_3` on a laptop are the
+ * same key for the same user, and the server's idempotency cache would answer
+ * the second device with the first device's row. Budgets and categories already
+ * carry a persisted `crypto.randomUUID()` primary key and use that directly.
+ */
+const newClientRequestId = (): string => {
+  try {
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+      return crypto.randomUUID();
+    }
+  } catch {
+    // Non-secure context / old WebView.
+  }
+  return `cri_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 12)}`;
+};
+
 interface BudgetApiRow {
   id: string;
   category: string;
@@ -169,12 +189,19 @@ export const syncBudgets = async (): Promise<FeatureSyncResult> => {
         const validAmount = Number(local.amount) > 0 ? Number(local.amount) : 1;
         const validThreshold = Math.min(100, Math.max(1, Math.round(Number(local.threshold) || 85)));
 
+        // Stable per-row key: this push is retried on every sync pass until it
+        // links, so without one a create whose response was lost would be sent
+        // again under a fresh key and the server would hold two budgets.
+        // `Budget.id` is a persisted crypto.randomUUID(), so it is already the
+        // globally unique, crash-surviving key this needs.
+        const clientRequestId = String(local.id);
         const response = await apiClient.post<{ success: boolean; data: { id: string } }>('/budgets', {
           category: normalizeBudgetCategory(local.category),
           amount: validAmount,
           period: validPeriod,
           threshold: validThreshold,
-        }, { showErrorToast: false });
+          clientRequestId,
+        }, { showErrorToast: false, idempotencyKey: clientRequestId });
         const cloudId = unwrapId(response.data);
         if (cloudId) {
           await db.budgets.update(local.id, { cloudId, syncStatus: 'synced' });
@@ -400,7 +427,9 @@ export const createCategoryEverywhere = async (input: {
         icon: local.icon,
         createdFromImport: local.createdFromImport,
       },
-      { showErrorToast: false },
+      // `AppCategory.id` is a persisted crypto.randomUUID() minted just above, so
+      // a retry of this create replays rather than adding a second category.
+      { showErrorToast: false, idempotencyKey: String(local.id) },
     );
     const cloudId = unwrapId(response.data);
     if (cloudId) {
@@ -524,7 +553,11 @@ export const syncRecurringTransactions = async (): Promise<FeatureSyncResult> =>
       if (!PUSHABLE_INTERVALS.has(local.frequency)) continue;
 
       try {
-        const clientRequestId = (local as any).clientRequestId || `rec_local_${local.id}`;
+        let clientRequestId = (local as { clientRequestId?: string }).clientRequestId;
+        if (!clientRequestId) {
+          clientRequestId = newClientRequestId();
+          await db.recurringTransactions.update(local.id, { clientRequestId } as Partial<RecurringTransaction>);
+        }
         const response = await apiClient.post<any>('/recurring', {
           title: local.name,
           amount: Number(local.amount),
@@ -534,7 +567,10 @@ export const syncRecurringTransactions = async (): Promise<FeatureSyncResult> =>
           nextDueDate: new Date(local.nextDueDate).toISOString(),
           description: local.notes || undefined,
           clientRequestId,
-        }, { showErrorToast: false });
+          // The body copy alone is not enough: `api.ts` always sets an
+          // Idempotency-Key header, and the server prefers the header, so a
+          // random one per attempt shadowed this key entirely.
+        }, { showErrorToast: false, idempotencyKey: clientRequestId });
 
         const cloudId = unwrapId(response.data);
         if (cloudId) {

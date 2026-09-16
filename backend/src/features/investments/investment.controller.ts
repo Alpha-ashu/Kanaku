@@ -1,6 +1,7 @@
 import { Response, NextFunction } from 'express';
 import { AuthRequest, getUserId } from '../../middleware/auth';
 import { prisma } from '../../db/prisma';
+import { transactionRepository } from '../transactions/transaction.repository';
 import { AppError } from '../../utils/AppError';
 import { isDatabaseUnavailableError } from '../../utils/databaseAvailability';
 import { cacheDeleteByPrefix } from '../../cache/redis';
@@ -126,16 +127,16 @@ export const createInvestment = async (req: AuthRequest, res: Response, next: Ne
           },
         });
 
-        await tx.transaction.create({
-          data: {
-            userId,
-            accountId: body.accountId,
-            type: 'expense',
-            amount: totalInvested,
-            category: 'Investment',
-            description: `Investment purchase: ${investment.assetName} (${investment.assetType})`,
-            date: toDate(body.purchaseDate),
-          },
+        // Keyed on the investment: one purchase transaction per investment, no
+        // matter how often this create is retried or replayed.
+        await transactionRepository.createSideEffectTransaction(tx, 'investment-purchase', investment.id, {
+          userId,
+          accountId: body.accountId,
+          type: 'expense',
+          amount: totalInvested,
+          category: 'Investment',
+          description: `Investment purchase: ${investment.assetName} (${investment.assetType})`,
+          date: toDate(body.purchaseDate),
         });
 
         if (FinancialLedgerService.isEnabled('investments')) {

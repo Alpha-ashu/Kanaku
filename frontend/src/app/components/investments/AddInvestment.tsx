@@ -13,7 +13,7 @@ import { FloatingSaveBar } from '@/app/components/ui/FloatingSaveBar';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { Button } from '@/app/components/ui/button';
 import { applyAccountBalanceDeltas } from '@/lib/transactionAggregation';
-import { queueRecordUpsertSync, processPendingSyncQueue } from '@/lib/auth-sync-integration';
+import { queueRecordUpsertSync, processPendingSyncQueue, runWithCloudSyncSuppressed } from '@/lib/auth-sync-integration';
 
 import {
   MainCategoryCode,
@@ -163,8 +163,20 @@ export const AddInvestment: React.FC = () => {
       const price = formData.purchasePrice;
       const curPrice = formData.currentPrice || price;
 
-      // 1. Create Core Investment in Dexie
-      const invId = await db.investments.add({
+      // 1. Create Core Investment in Dexie.
+      //
+      // Written with the sync hooks suppressed on purpose. This component does
+      // its OWN `POST /investments` further down (step 5), and an unsuppressed
+      // write also queues a create — two posts of the same investment under two
+      // different idempotency keys, which the server has no way to recognise as
+      // one record. The result was a duplicate investment plus, because only the
+      // direct post carries `accountId`, an extra "Investment purchase"
+      // transaction against the funding account.
+      //
+      // The queue is armed below only if the direct post fails.
+      const clientRequestId = crypto.randomUUID();
+      const invId = await runWithCloudSyncSuppressed(() => db.investments.add({
+        clientRequestId,
         assetType: (selectedSubcategory === 'gold' || selectedSubcategory === 'silver' ? selectedSubcategory : (selectedCategory === 'physical_assets' ? 'gold' : (selectedSubcategory === 'property' ? 'real_estate' : (selectedSubcategory === 'business' ? 'business' : 'stock')))) as any,
         assetName: formData.name || `${fdDetails.bankName || 'Fixed'} Deposit`,
         quantity: qty,
@@ -194,7 +206,7 @@ export const AddInvestment: React.FC = () => {
           fdDetails: (selectedSubcategory === 'fd' || selectedSubcategory === 'rd') ? fdDetails : undefined,
           documents: documents.length > 0 ? documents : undefined,
         },
-      } as any);
+      } as any));
 
       // 2. Gold Loan Auto-Creation (Cross-module sync to Loans)
       if (isPhysical && physicalDetails.isPledged && physicalDetails.loanAmount && physicalDetails.loanAmount > 0) {
@@ -280,10 +292,23 @@ export const AddInvestment: React.FC = () => {
         void processPendingSyncQueue();
       }
 
-      // 5. Sync to backend API if available
+      // 5. Publish to the backend.
+      //
+      // Posted through the raw API client, NOT `backendService.createInvestment`:
+      // that helper writes its own Dexie row via `RealtimeDataManager`, so calling
+      // it here produced a second local investment on top of the rich one built in
+      // step 1 — and that second row, written unsuppressed, queued a create of its
+      // own. One "Add investment" tap ended up as two local rows and two server
+      // records, the second of them carrying the funding account and therefore an
+      // extra "Investment purchase" transaction.
       try {
         const fundingAccount = activeAccounts.find(a => a.id === formData.fundingAccountId);
-        await backendService.createInvestment({
+        const created = await backendService.api.post('/investments', {
+          // Same key as the queued retry below, so a create the server committed
+          // but whose response was lost replays instead of adding a second row.
+          clientRequestId,
+          purchaseDate: new Date(formData.date).toISOString(),
+          lastUpdated: new Date().toISOString(),
           assetType: selectedSubcategory,
           assetName: formData.name || `${fdDetails.bankName} Deposit`,
           quantity: qty,
@@ -292,10 +317,11 @@ export const AddInvestment: React.FC = () => {
           totalInvested: calculatedTotalCapital,
           currentValue: qty * curPrice,
           profitLoss: (qty * curPrice) - calculatedTotalCapital,
-          purchaseDate: new Date(formData.date),
           broker: formData.broker,
           description: formData.description,
-          accountId: fundingAccount?.cloudId || (fundingAccount?.id ? String(fundingAccount.id) : undefined),
+          // Only a real backend UUID: a local Dexie id would make the server
+          // reject the whole create, and there is no account to move without one.
+          accountId: fundingAccount?.cloudId || undefined,
           metadata: {
             categoryCode: selectedCategory,
             subcategoryCode: selectedSubcategory,
@@ -304,8 +330,25 @@ export const AddInvestment: React.FC = () => {
             businessDetails,
           },
         });
-      } catch (e) {
-        // Backend optional fallback
+
+        // Link the local row to the server's. Without this the investment stayed
+        // unlinked forever, so every later edit and delete addressed a record the
+        // backend had never heard of, and the next pull inserted the server copy
+        // alongside the local one.
+        const body = created?.data as { id?: string; data?: { id?: string } } | undefined;
+        const remoteId = body?.data?.id ?? body?.id;
+        if (remoteId) {
+          await runWithCloudSyncSuppressed(() =>
+            db.investments.update(invId as number, { cloudId: String(remoteId), syncStatus: 'synced' }),
+          );
+        } else {
+          queueRecordUpsertSync('investments', invId as number);
+        }
+      } catch {
+        // Offline or server error — hand it to the sync queue, which retries under
+        // the same clientRequestId.
+        queueRecordUpsertSync('investments', invId as number);
+        void processPendingSyncQueue();
       }
 
       toast.success('Investment added successfully');

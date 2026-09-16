@@ -4,7 +4,7 @@ import { useApp } from '@/contexts/AppContext';
 import { db } from '@/lib/database';
 import { backendService } from '@/lib/backend-api';
 import { SearchableDropdown } from '@/app/components/ui/SearchableDropdown';
-import { pickDeviceContacts, isContactPickerSupported, parseVCardContent, parseCsvContacts } from '@/services/contactsService';
+import { pickDeviceContacts, isContactPickerSupported, parseVCardContent, parseCsvContacts, sanitizeContactName } from '@/services/contactsService';
 import { Users, UserPlus, X, ChevronLeft, Loader2, Check, Save, ArrowLeft, Mail, Phone, Heart, Briefcase, Home, User, Sparkles, Contact, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -28,51 +28,80 @@ export const AddFriends: React.FC = () => {
  const [formData, setFormData] = useState({ name: '', email: '', phone: '', relationship: 'friend' });
  const vcfInputRef = React.useRef<HTMLInputElement>(null);
 
- const addContactsToQueue = (newContacts: { name: string; email?: string; phone?: string }[]) => {
-   const existingNames = new Set([
-     ...(friends || []).map((f: any) => (f.name || '').toLowerCase().trim()),
-     ...queue.map(q => q.name.toLowerCase().trim()),
-   ]);
+  const addContactsToQueue = (newContacts: { name: string; email?: string; phone?: string }[]) => {
+    // Existing emails and phones (names can be duplicate, but email and phone must be unique)
+    const existingEmails = new Set<string>();
+    const existingPhones = new Set<string>();
 
-   let added = 0;
-   const toAdd: typeof queue = [];
+    for (const f of friends || []) {
+      if (f.email) existingEmails.add(f.email.trim().toLowerCase());
+      if (f.phone) existingPhones.add(f.phone.replace(/\D/g, ''));
+    }
+    for (const q of queue) {
+      if (q.email) existingEmails.add(q.email.trim().toLowerCase());
+      if (q.phone) existingPhones.add(q.phone.replace(/\D/g, ''));
+    }
 
-   for (const c of newContacts) {
-     const normName = (c.name || '').toLowerCase().trim();
-     if (!normName || existingNames.has(normName)) continue;
-     existingNames.add(normName);
-     toAdd.push({
-       name: c.name.trim(),
-       email: c.email || '',
-       phone: c.phone || '',
-       relationship: 'friend',
-     });
-     added++;
-   }
+    let added = 0;
+    let skipped = 0;
+    const toAdd: typeof queue = [];
 
-   if (added > 0) {
-     setQueue(prev => [...prev, ...toAdd]);
-     toast.success(`Added ${added} contact${added === 1 ? '' : 's'} to queue!`);
-   } else {
-     toast.info('Selected contacts are already in your list or queue.');
-   }
- };
+    for (const c of newContacts) {
+      const trimmedName = sanitizeContactName(c.name || '', { email: c.email, phone: c.phone });
+      if (!trimmedName) continue;
 
- const handlePickContacts = async () => {
-   if (isContactPickerSupported()) {
-     try {
-       const picked = await pickDeviceContacts();
-       if (picked.length > 0) {
-         addContactsToQueue(picked);
-       }
-     } catch (err: any) {
-       toast.error(err?.message || 'Could not access device contacts');
-     }
-   } else {
-     // Fallback to vcf file upload
-     vcfInputRef.current?.click();
-   }
- };
+      const cleanEmail = c.email ? c.email.trim().toLowerCase() : '';
+      const cleanPhone = c.phone ? c.phone.replace(/\D/g, '') : '';
+
+      // If email or phone already exists in contacts list or queue, skip duplicate
+      if (cleanEmail && existingEmails.has(cleanEmail)) {
+        skipped++;
+        continue;
+      }
+      if (cleanPhone && existingPhones.has(cleanPhone)) {
+        skipped++;
+        continue;
+      }
+
+      if (cleanEmail) existingEmails.add(cleanEmail);
+      if (cleanPhone) existingPhones.add(cleanPhone);
+
+      toAdd.push({
+        name: trimmedName,
+        email: c.email?.trim() || '',
+        phone: c.phone?.trim() || '',
+        relationship: 'friend',
+      });
+      added++;
+    }
+
+    if (added > 0) {
+      setQueue(prev => [...prev, ...toAdd]);
+      toast.success(`Added ${added} contact${added === 1 ? '' : 's'} to queue!`);
+    }
+    if (skipped > 0) {
+      toast.info(`${skipped} contact${skipped === 1 ? '' : 's'} skipped (duplicate email or phone number)`);
+    }
+    if (added === 0 && skipped === 0) {
+      toast.info('No valid contacts to add.');
+    }
+  };
+
+  const handlePickContacts = async () => {
+    if (isContactPickerSupported()) {
+      try {
+        const picked = await pickDeviceContacts();
+        if (picked.length > 0) {
+          addContactsToQueue(picked);
+        }
+      } catch (err: any) {
+        toast.error(err?.message || 'Could not access device contacts');
+      }
+    } else {
+      // Fallback to vcf file upload
+      vcfInputRef.current?.click();
+    }
+  };
 
   const handleContactFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -93,12 +122,42 @@ export const AddFriends: React.FC = () => {
     }
   };
 
- const addToQueue = () => {
- if (!formData.name.trim()) { toast.error('Name is required'); return; }
- if (queue.some((q) => q.name.toLowerCase() === formData.name.trim().toLowerCase())) { toast.error('Already in queue'); return; }
- setQueue([...queue, { ...formData, name: formData.name.trim() }]);
- setFormData({ name: '', email: '', phone: '', relationship: 'friend' });
- };
+  const addToQueue = () => {
+    const trimmedName = sanitizeContactName(formData.name.trim(), { email: formData.email, phone: formData.phone });
+    if (!trimmedName) { toast.error('Name is required'); return; }
+
+    const cleanEmail = formData.email ? formData.email.trim().toLowerCase() : '';
+    const cleanPhone = formData.phone ? formData.phone.trim().replace(/\D/g, '') : '';
+
+    // Validate email syntax if entered
+    if (cleanEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+      toast.error('Please enter a valid email address');
+      return;
+    }
+
+    // Check duplicate email (across existing friends and queue)
+    if (cleanEmail) {
+      const emailDup = (friends || []).find(f => f.email && f.email.trim().toLowerCase() === cleanEmail) ||
+        queue.find(q => q.email && q.email.trim().toLowerCase() === cleanEmail);
+      if (emailDup) {
+        toast.error(`A friend with email "${formData.email.trim()}" already exists`);
+        return;
+      }
+    }
+
+    // Check duplicate phone (across existing friends and queue)
+    if (cleanPhone) {
+      const phoneDup = (friends || []).find(f => f.phone && f.phone.replace(/\D/g, '') === cleanPhone) ||
+        queue.find(q => q.phone && q.phone.replace(/\D/g, '') === cleanPhone);
+      if (phoneDup) {
+        toast.error(`A friend with phone "${formData.phone.trim()}" already exists`);
+        return;
+      }
+    }
+
+    setQueue([...queue, { ...formData, name: trimmedName }]);
+    setFormData({ name: '', email: '', phone: '', relationship: 'friend' });
+  };
 
  const removeFromQueue = (i: number) => setQueue(queue.filter((_, idx) => idx !== i));
 

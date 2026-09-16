@@ -1,6 +1,7 @@
 import { Response, NextFunction } from 'express';
 import { AuthRequest, getUserId } from '../../middleware/auth';
 import { prisma } from '../../db/prisma';
+import { transactionRepository } from '../transactions/transaction.repository';
 import { sanitize } from '../../utils/sanitize';
 import { AppError } from '../../utils/AppError';
 import { logger } from '../../config/logger';
@@ -462,16 +463,18 @@ export const addGoalContribution = async (req: AuthRequest, res: Response, next:
         },
       });
 
-      await tx.transaction.create({
-        data: {
-          userId,
-          accountId,
-          type: 'expense',
-          amount: numericAmount,
-          category: 'Savings Goal',
-          description: `Contribution to ${goal.name}`,
-          date: new Date(),
-        },
+      // Keyed on the contribution row created just above: a retry of THIS
+      // contribution reuses its id and is skipped, while a genuine second
+      // contribution to the same goal on the same day gets its own id and stays
+      // its own transaction.
+      await transactionRepository.createSideEffectTransaction(tx, 'goal-contribution', created.id, {
+        userId,
+        accountId,
+        type: 'expense',
+        amount: numericAmount,
+        category: 'Savings Goal',
+        description: `Contribution to ${goal.name}`,
+        date: new Date(),
       });
 
       if (FinancialLedgerService.isEnabled('goals')) {
@@ -564,16 +567,14 @@ export const withdrawFromGoal = async (req: AuthRequest, res: Response, next: Ne
         },
       });
 
-      await tx.transaction.create({
-        data: {
-          userId,
-          accountId,
-          type: 'income',
-          amount: numericAmount,
-          category: 'Goal Withdrawal',
-          description: `Withdrawal from ${goal.name}`,
-          date: new Date(),
-        },
+      await transactionRepository.createSideEffectTransaction(tx, 'goal-withdrawal', created.id, {
+        userId,
+        accountId,
+        type: 'income',
+        amount: numericAmount,
+        category: 'Goal Withdrawal',
+        description: `Withdrawal from ${goal.name}`,
+        date: new Date(),
       });
 
       if (FinancialLedgerService.isEnabled('goals')) {

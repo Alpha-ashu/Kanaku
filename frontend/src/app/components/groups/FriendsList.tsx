@@ -6,9 +6,10 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/app/components/ui/avatar'
 import { Button } from '@/app/components/ui/button';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { formatCurrencyAmount } from '@/lib/currencyUtils';
-import { Plus, Search, Upload, ShieldCheck, UserCircle2, Trash2, Loader2, ArrowLeft, AlertCircle, Save, X } from 'lucide-react';
+import { Plus, Search, Upload, ShieldCheck, UserCircle2, Trash2, Loader2, ArrowLeft, AlertCircle, Save, X, Contact } from 'lucide-react';
 import { toast } from 'sonner';
 import { DeleteConfirmModal } from '@/app/components/shared/DeleteConfirmModal';
+import { pickDeviceContacts, isContactPickerSupported, parseVCardContent, parseCsvContacts, decodeQuotedPrintable, sanitizeContactName } from '@/services/contactsService';
 
 // A unified view of a friend — could be backend-synced or local-only (pending sync)
 interface DisplayFriend {
@@ -81,13 +82,39 @@ export const FriendsList: React.FC = () => {
         .filter((f) => !f.cloudId && !f.deletedAt)
         .toArray();
 
-      const syncedNames = new Set(backendFriends.map((f) => f.name.toLowerCase()));
+      // Clean up any local friends stored with raw quoted-printable or emoji/memoji artifacts
+      for (const lf of localFriends) {
+        if (lf.id) {
+          const cleaned = sanitizeContactName(lf.name, { email: lf.email, phone: lf.phone });
+          if (cleaned && cleaned !== lf.name) {
+            await db.friends.update(lf.id, { name: cleaned });
+            lf.name = cleaned;
+          }
+        }
+      }
+
+      const syncedEmails = new Set(
+        backendFriends.filter((f) => f.email).map((f) => f.email!.trim().toLowerCase())
+      );
+      const syncedPhones = new Set(
+        backendFriends.filter((f) => f.phone).map((f) => f.phone!.replace(/\D/g, ''))
+      );
+      const syncedNamesNoContact = new Set(
+        backendFriends.filter((f) => !f.email && !f.phone).map((f) => f.name.trim().toLowerCase())
+      );
 
       const pendingFriends: DisplayFriend[] = localFriends
-        .filter((f) => !syncedNames.has(f.name.toLowerCase())) // dedupe by name
+        .filter((f) => {
+          const fEmail = f.email?.trim().toLowerCase();
+          const fPhone = f.phone?.replace(/\D/g, '');
+          if (fEmail && syncedEmails.has(fEmail)) return false;
+          if (fPhone && syncedPhones.has(fPhone)) return false;
+          if (!fEmail && !fPhone && syncedNamesNoContact.has(f.name.trim().toLowerCase())) return false;
+          return true;
+        })
         .map((f) => ({
           localId: f.id,
-          name: f.name,
+          name: sanitizeContactName(f.name, { email: f.email, phone: f.phone }),
           email: f.email ?? null,
           phone: f.phone ?? null,
           isRegistered: false,
@@ -133,6 +160,22 @@ export const FriendsList: React.FC = () => {
       return;
     }
 
+    const allFriends = await db.friends.filter(f => !f.deletedAt && f.id !== localId).toArray();
+    if (email) {
+      const cleanEmail = email.toLowerCase();
+      if (allFriends.some(f => f.email && f.email.trim().toLowerCase() === cleanEmail)) {
+        toast.error(`A friend with email "${email}" already exists`);
+        return;
+      }
+    }
+    if (phone) {
+      const pDigits = phone.replace(/\D/g, '');
+      if (allFriends.some(f => f.phone && f.phone.replace(/\D/g, '') === pDigits)) {
+        toast.error(`A friend with phone "${phone}" already exists`);
+        return;
+      }
+    }
+
     setSavingLocal(true);
     try {
       // Update locally first
@@ -172,20 +215,55 @@ export const FriendsList: React.FC = () => {
     }
   };
 
-  const handleImportCsv = async (file: File) => {
+  const handlePickContacts = async () => {
+    if (isContactPickerSupported()) {
+      try {
+        const picked = await pickDeviceContacts();
+        if (picked.length > 0) {
+          await importParsedContacts(picked);
+        }
+      } catch (err: any) {
+        toast.error(err?.message || 'Could not access device contacts');
+      }
+    } else {
+      fileInputRef.current?.click();
+    }
+  };
+
+  const importParsedContacts = async (contacts: { name: string; email?: string; phone?: string }[]) => {
     setImporting(true);
     try {
-      const result = await backendService.importFriendsCsv(file);
-      toast.success(`Imported ${result.createdCount} friend${result.createdCount === 1 ? '' : 's'}.`);
+      const result = await backendService.createFriendsBulk(contacts);
+      if (result.createdCount > 0) {
+        toast.success(`Imported ${result.createdCount} contact${result.createdCount === 1 ? '' : 's'}.`);
+      }
       if (result.skippedCount > 0) {
-        toast.info(`${result.skippedCount} row(s) skipped (duplicates or missing info).`);
+        toast.info(`${result.skippedCount} contact${result.skippedCount === 1 ? '' : 's'} skipped (duplicate email or phone number)`);
       }
       await loadFriends();
       triggerSync();
-    } catch (error: any) {
-      toast.error(error?.response?.data?.error || 'Failed to import CSV');
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to import contacts');
     } finally {
       setImporting(false);
+    }
+  };
+
+  const handleContactFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const isCsv = file.name.toLowerCase().endsWith('.csv') || file.type.includes('csv');
+      const parsed = isCsv ? parseCsvContacts(text) : parseVCardContent(text);
+      if (parsed.length === 0) {
+        toast.info(`No valid contacts found in this ${isCsv ? '.csv' : '.vcf'} file.`);
+        return;
+      }
+      await importParsedContacts(parsed);
+    } catch {
+      toast.error('Could not read contacts file');
+    } finally {
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
@@ -210,12 +288,16 @@ export const FriendsList: React.FC = () => {
     }
   };
 
-  const filtered = friends.filter(
-    (f) =>
-      !search.trim() ||
-      f.name.toLowerCase().includes(search.toLowerCase()) ||
-      (f.email || '').toLowerCase().includes(search.toLowerCase()),
-  );
+  const filtered = friends.filter((f) => {
+    if (!search.trim()) return true;
+    const query = search.toLowerCase().trim();
+    const queryDigits = search.replace(/\D/g, '');
+    const decoded = sanitizeContactName(f.name).toLowerCase();
+    const raw = f.name.toLowerCase();
+    const email = (f.email || '').toLowerCase();
+    const phone = (f.phone || '').replace(/\D/g, '');
+    return decoded.includes(query) || raw.includes(query) || email.includes(query) || (queryDigits && phone.includes(queryDigits));
+  });
 
   return (
     <CenteredLayout>
@@ -238,22 +320,20 @@ export const FriendsList: React.FC = () => {
               data-testid="friends-list-input"
               ref={fileInputRef}
               type="file"
-              accept=".csv,text/csv"
+              accept=".vcf,.csv,text/vcard,text/csv"
               className="hidden"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) void handleImportCsv(file);
-              }}
+              onChange={handleContactFileChange}
             />
             <Button
               data-testid="friends-list-button"
               variant="secondary"
               disabled={importing}
-              onClick={() => fileInputRef.current?.click()}
+              onClick={handlePickContacts}
               className="border border-slate-200/80 bg-white hover:bg-slate-50 text-slate-700 h-9 sm:h-10 px-3.5 sm:px-4 rounded-full font-bold text-xs sm:text-sm flex items-center gap-1.5 shadow-xs active:scale-95 transition-all cursor-pointer"
+              title={isContactPickerSupported() ? 'Pick from device contacts' : 'Import contacts from .vcf or .csv file'}
             >
-              {importing ? <Loader2 size={15} className="animate-spin" /> : <Upload size={15} />}
-              <span className="hidden sm:inline">Import CSV</span>
+              {importing ? <Loader2 size={15} className="animate-spin" /> : <Contact size={15} className="text-purple-600" />}
+              <span>Import Contacts</span>
             </Button>
             <Button
               data-testid="friends-list-button-2"
@@ -350,14 +430,14 @@ export const FriendsList: React.FC = () => {
                         className="flex flex-1 items-center gap-3.5 text-left min-w-0 cursor-pointer"
                       >
                         <Avatar className="h-12 w-12 shrink-0 rounded-2xl shadow-xs">
-                          <AvatarImage src={undefined} alt={friend.name} />
+                          <AvatarImage src={undefined} alt={sanitizeContactName(friend.name)} />
                           <AvatarFallback className={`${getToneClass(friend.name)} font-bold rounded-2xl`}>
-                            {friend.name.charAt(0).toUpperCase()}
+                            {sanitizeContactName(friend.name).charAt(0).toUpperCase() || '?'}
                           </AvatarFallback>
                         </Avatar>
                         <div className="min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <p className="font-bold text-slate-900 truncate">{friend.name}</p>
+                            <p className="font-bold text-slate-900 truncate">{sanitizeContactName(friend.name)}</p>
                             {friend.isPendingSync ? (
                               <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-0.5 text-[10px] font-bold text-amber-700">
                                 <AlertCircle size={11} /> Not synced

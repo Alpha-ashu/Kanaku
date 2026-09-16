@@ -51,6 +51,17 @@ export const transactionCreateSchema = z.object({
   notes: z.string().trim().max(500).optional(),
   importSource: z.string().trim().max(80).optional(),
   importMetadata: z.record(z.string(), z.any()).optional(),
+  // The user answered "yes, record it anyway" to the client's duplicate prompt.
+  // zod strips unknown keys, so without this field the flag never reached
+  // `createTransaction`: the service kept matching the content dedupHash and
+  // handed back the existing row, and the entry the user had just confirmed
+  // silently failed to appear. Two identical ₹250 lunches are a real thing.
+  //
+  // Deliberately NOT accepting a client-supplied `dedupHash`: it is generated
+  // per save attempt, so honouring it would switch off the content-hash guard
+  // that catches an accidental double-submit. Retry safety comes from the
+  // Idempotency-Key header instead.
+  intentionalDuplicate: z.coerce.boolean().optional(),
 });
 
 export const transactionCreateValidatedSchema = transactionCreateSchema.superRefine((data, ctx) => {

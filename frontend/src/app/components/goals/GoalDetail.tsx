@@ -82,28 +82,29 @@ export const GoalDetail: React.FC = () => {
  const [withdrawNotes, setWithdrawNotes] = useState('');
  const [isSubmitting, setIsSubmitting] = useState(false);
 
- useEffect(() => {
- const selectedId = Number(localStorage.getItem(SELECTED_GOAL_ID_KEY));
- if (!Number.isFinite(selectedId)) {
- setCurrentPage('goals');
- return;
- }
+  useEffect(() => {
+    const selectedId = Number(localStorage.getItem(SELECTED_GOAL_ID_KEY));
+    if (!Number.isFinite(selectedId)) {
+      setCurrentPage('goals');
+      return;
+    }
 
- const load = async () => {
- const foundGoal = await db.goals.get(selectedId);
- if (!foundGoal) {
- setCurrentPage('goals');
- return;
- }
+    const load = async () => {
+      const foundGoal = await db.goals.get(selectedId);
+      if (!foundGoal) {
+        setCurrentPage('goals');
+        return;
+      }
 
- const rows = await db.goalContributions.where('goalId').equals(selectedId).reverse().sortBy('date');
- setGoal(foundGoal);
- setContributions(rows.reverse());
- setMemberName(foundGoal.members?.[0]?.name || '');
- };
+      const rows = await db.goalContributions.where('goalId').equals(selectedId).toArray();
+      rows.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      setGoal(foundGoal);
+      setContributions(rows);
+      setMemberName('Me');
+    };
 
- void load();
- }, [setCurrentPage]);
+    void load();
+  }, [setCurrentPage]);
 
  useEffect(() => {
  if (!goal?.id) {
@@ -139,21 +140,37 @@ export const GoalDetail: React.FC = () => {
  return [...grouped.entries()].map(([month, total]) => ({ month, total }));
  }, [contributions]);
 
- const memberRows: MemberContribution[] = useMemo(() => {
- if (!goal?.members || goal.members.length === 0) return [];
+  const memberRows: MemberContribution[] = useMemo(() => {
+    // 1. Current user's own contributions (unattributed or attributed to Me/You)
+    const userContributed = contributions
+      .filter((item) => !item.memberName || item.memberName === 'Me' || item.memberName === 'You')
+      .reduce((acc, item) => acc + item.amount, 0);
 
- return goal.members.map((member) => {
- const sum = contributions
- .filter((item) => item.memberName === member.name)
- .reduce((acc, item) => acc + item.amount, 0);
+    const youRow: MemberContribution = {
+      name: 'You (Owner)',
+      amount: userContributed,
+      status: (userContributed > 0 ? 'paid' : 'pending') as 'paid' | 'pending',
+    };
 
- return {
- name: member.name,
- amount: sum,
- status: sum > 0 ? 'paid' : 'pending',
- };
- });
- }, [goal?.members, contributions]);
+    if (!goal?.members || goal.members.length === 0) {
+      return [youRow];
+    }
+
+    // 2. Collaborators from goal.members
+    const otherMembers: MemberContribution[] = goal.members.map((member) => {
+      const sum = contributions
+        .filter((item) => item.memberName === member.name)
+        .reduce((acc, item) => acc + item.amount, 0);
+
+      return {
+        name: member.name,
+        amount: sum,
+        status: (sum > 0 ? 'paid' : 'pending') as 'paid' | 'pending',
+      };
+    });
+
+    return [youRow, ...otherMembers];
+  }, [goal?.members, contributions]);
 
  const sortedContributions = useMemo(
  () => [...contributions].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()),
@@ -206,7 +223,7 @@ export const GoalDetail: React.FC = () => {
           account,
           amount,
           notes,
-          memberName: goal.isGroupGoal ? memberName : undefined,
+          memberName: goal.isGroupGoal ? (memberName === 'Me' ? 'You' : memberName) : undefined,
           status: goal.isGroupGoal ? 'paid' : undefined,
         });
       } catch (error) {
@@ -219,9 +236,10 @@ export const GoalDetail: React.FC = () => {
       setNotes('');
 
       const updatedGoal = await db.goals.get(goal.id);
-      const rows = await db.goalContributions.where('goalId').equals(goal.id).reverse().sortBy('date');
+      const rows = await db.goalContributions.where('goalId').equals(goal.id).toArray();
+      rows.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
       setGoal(updatedGoal || null);
-      setContributions(rows.reverse());
+      setContributions(rows);
     } finally {
       setIsSubmitting(false);
     }
@@ -645,33 +663,104 @@ export const GoalDetail: React.FC = () => {
   )}
   </div>
 
-  <div className="bg-white dark:bg-card rounded-[24px] sm:rounded-[28px] p-4 sm:p-5 border border-slate-100/80 dark:border-border/60 shadow-[0_6px_20px_-4px_rgba(112,144,176,0.08)] h-fit">
-  <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white mb-4">Contribution History</h3>
-  <div className="space-y-3">
-  {timeline.length === 0 && (
-  <div className="text-center py-8">
-  <div className="w-12 h-12 bg-purple-50 text-purple-600 rounded-full flex items-center justify-center mx-auto mb-2">
-  <Target className="w-6 h-6" />
-  </div>
-  <p className="text-xs text-slate-400 font-medium">No contributions yet</p>
-  </div>
-  )}
-  {timeline.map((item) => {
-    const percent = Math.min(100, (item.total / Math.max(goal.targetAmount, 1)) * 100);
-    return (
-      <div key={item.month} className="flex items-center gap-2.5 sm:gap-3 group">
-        <div className="w-8 sm:w-10 text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">{item.month}</div>
-        <div className="flex-1 h-2 sm:h-2.5 bg-slate-100 dark:bg-muted rounded-full overflow-hidden">
-          <div 
-            className="h-full bg-gradient-to-r from-[#8B5CF6] to-[#7C3AED] rounded-full transition-all group-hover:opacity-90"
-            style={{ width: `${Math.max(4, percent)}%` }}
-          />
-        </div>
-        <div className="w-20 sm:w-24 text-right font-bold text-slate-900 dark:text-white text-[10px] sm:text-xs">{formatCurrency(item.total)}</div>
+  <div className="bg-white dark:bg-card rounded-[24px] sm:rounded-[28px] p-4 sm:p-5 border border-slate-100/80 dark:border-border/60 shadow-[0_6px_20px_-4px_rgba(112,144,176,0.08)] h-fit space-y-4">
+    <div className="flex items-center justify-between">
+      <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">Contribution History</h3>
+      <span className="text-[11px] font-bold text-slate-400">
+        {contributions.length} {contributions.length === 1 ? 'payment' : 'payments'}
+      </span>
+    </div>
+
+    {/* Monthly Breakdown Bars */}
+    {timeline.length > 0 && (
+      <div className="space-y-2 pb-3 border-b border-slate-100 dark:border-border/60">
+        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Monthly Breakdown</p>
+        {timeline.map((item) => {
+          const percent = Math.min(100, (item.total / Math.max(goal.targetAmount, 1)) * 100);
+          return (
+            <div key={item.month} className="flex items-center gap-2.5 sm:gap-3 group">
+              <div className="w-8 sm:w-10 text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">{item.month}</div>
+              <div className="flex-1 h-2 sm:h-2.5 bg-slate-100 dark:bg-muted rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-gradient-to-r from-[#8B5CF6] to-[#7C3AED] rounded-full transition-all group-hover:opacity-90"
+                  style={{ width: `${Math.max(4, percent)}%` }}
+                />
+              </div>
+              <div className="w-20 sm:w-24 text-right font-bold text-slate-900 dark:text-white text-[10px] sm:text-xs">{formatCurrency(item.total)}</div>
+            </div>
+          );
+        })}
       </div>
-    );
-  })}
-  </div>
+    )}
+
+    {/* Detailed Payment Records with Date, Time, Member, Account, Note */}
+    <div className="space-y-2.5">
+      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Payment Records</p>
+      {contributions.length === 0 ? (
+        <div className="text-center py-6">
+          <div className="w-10 h-10 bg-purple-50 text-purple-600 rounded-full flex items-center justify-center mx-auto mb-2">
+            <Target className="w-5 h-5" />
+          </div>
+          <p className="text-xs text-slate-400 font-medium">No contributions yet</p>
+        </div>
+      ) : (
+        <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
+          {contributions.map((c, idx) => {
+            const cDate = new Date(c.date);
+            const dateFormatted = cDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+            const timeFormatted = cDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+            const account = accounts.find((a) => a.id === c.accountId);
+            const contributorName = (!c.memberName || c.memberName === 'Me' || c.memberName === 'You')
+              ? 'You (Owner)'
+              : c.memberName;
+            const isUser = contributorName.startsWith('You');
+
+            return (
+              <div
+                key={c.id || idx}
+                className="flex items-center justify-between p-3 rounded-2xl bg-slate-50/80 dark:bg-muted/40 border border-slate-100 dark:border-border/40 hover:bg-slate-100/60 transition-all"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className={cn(
+                    "w-9 h-9 rounded-xl flex items-center justify-center text-xs font-black uppercase shrink-0 shadow-2xs",
+                    isUser
+                      ? "bg-violet-600 text-white"
+                      : "bg-white dark:bg-card text-slate-700 border border-slate-200"
+                  )}>
+                    {isUser ? 'ME' : contributorName.charAt(0)}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate">
+                        {contributorName}
+                      </p>
+                      {isUser && (
+                        <span className="px-1.5 py-0.5 rounded-full bg-violet-100 text-violet-700 text-[9px] font-extrabold uppercase tracking-wider">
+                          Owner
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[10px] text-slate-400 truncate mt-0.5">
+                      {dateFormatted} • {timeFormatted} {account ? `• ${account.name}` : ''}
+                    </p>
+                    {c.notes && (
+                      <p className="text-[10px] text-slate-500 italic truncate mt-0.5">
+                        "{c.notes}"
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <div className="text-right shrink-0 ml-3">
+                  <span className="text-xs sm:text-sm font-black text-emerald-600 dark:text-emerald-400">
+                    +{formatCurrency(c.amount)}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
   </div></div>
  </div>
  </div>

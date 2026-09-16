@@ -8,15 +8,16 @@ import { GOAL_CATEGORIES, getMonthlySuggestion } from '@/lib/goal-utils';
 import { getCategoryCartoonIcon } from '@/app/components/ui/CartoonCategoryIcons';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
- ArrowLeft, Target, Users, TrendingUp, Calendar, Wallet, Check, Trash2, 
- UserPlus, Mail, Phone, Link as LinkIcon, Sparkles, Store, AlignLeft, Info, Plus, Loader2,
- X, CalendarDays
+  ArrowLeft, Target, Users, TrendingUp, Calendar, Wallet, Check, Trash2, 
+  UserPlus, Mail, Phone, Link as LinkIcon, Sparkles, Store, AlignLeft, Info, Plus, Loader2,
+  X, CalendarDays, Search
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { takeVoiceDraft, VOICE_GOAL_DRAFT_KEY, type VoiceGoalDraft } from '@/lib/voiceDrafts';
 import { SearchableDropdown } from '@/app/components/ui/SearchableDropdown';
 import { formatCurrencyAmount } from '@/lib/currencyUtils';
+import { decodeQuotedPrintable, sanitizeContactName } from '@/services/contactsService';
 
 import { FloatingSaveBar } from '@/app/components/ui/FloatingSaveBar';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
@@ -37,7 +38,7 @@ const GoalCategoryGrid = ({
   const [activePage, setActivePage] = useState(0);
   const containerRef = React.useRef<HTMLDivElement>(null);
 
-  const itemsPerPage = 8;
+  const itemsPerPage = 12;
   const pages = useMemo(() => {
     const chunked: (typeof GOAL_CATEGORIES)[] = [];
     for (let i = 0; i < GOAL_CATEGORIES.length; i += itemsPerPage) {
@@ -66,38 +67,38 @@ const GoalCategoryGrid = ({
         {pages.map((pageItems, pageIdx) => (
           <div 
             key={pageIdx} 
-            className="w-full shrink-0 snap-align-start grid grid-cols-4 grid-rows-2 gap-2"
+            className="w-full shrink-0 snap-align-start grid grid-cols-4 sm:grid-cols-6 gap-2 sm:gap-2.5"
           >
             {pageItems.map(cat => (
-              <div 
+              <button
                 key={cat.key}
+                type="button"
                 onClick={() => onSelect(cat.key)}
                 data-testid={`goals-create-category-${cat.key}-button`}
-                className={cn(
-                  "flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all cursor-pointer group",
-                  selectedCategory === cat.key ? "bg-indigo-600 shadow-lg shadow-indigo-200" : "bg-slate-50 hover:bg-slate-100"
-                )}
+                className="flex flex-col items-center gap-1.5 p-1.5 rounded-2xl transition-all cursor-pointer group hover:scale-105 active:scale-95"
               >
-                <div className={cn("w-8 h-8 flex items-center justify-center rounded-lg transition-colors text-lg", selectedCategory === cat.key ? "bg-white/20" : "bg-white group-hover:bg-slate-50")}>
-                  {getCategoryCartoonIcon(cat.key, 24)}
+                <div className={cn(
+                  "w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center transition-all shadow-xs",
+                  selectedCategory === cat.key
+                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-300 ring-4 ring-indigo-100"
+                    : "bg-slate-50 group-hover:bg-slate-100 border border-slate-200/60"
+                )}>
+                  {getCategoryCartoonIcon(cat.key, 26)}
                 </div>
-                <span className={cn("text-[9px] font-black uppercase tracking-tight text-center leading-none truncate w-full px-0.5", selectedCategory === cat.key ? "text-white" : "text-slate-500")}>
+                <span className={cn(
+                  "text-[9px] sm:text-[10px] font-bold uppercase tracking-tight text-center leading-none truncate w-full px-0.5",
+                  selectedCategory === cat.key ? "text-indigo-600 font-extrabold" : "text-slate-500 group-hover:text-slate-700"
+                )}>
                   {cat.label}
                 </span>
-              </div>
+              </button>
             ))}
-            {/* Pad the last page if it doesn't have 8 items */}
-            {pageItems.length < itemsPerPage && 
-              Array.from({ length: itemsPerPage - pageItems.length }).map((_, idx) => (
-                <div key={`empty-${idx}`} className="opacity-0 pointer-events-none" />
-              ))
-            }
           </div>
         ))}
       </div>
       {/* Indicator Dots */}
       {pages.length > 1 && (
-        <div className="flex justify-center gap-1.5 mt-3">
+        <div className="flex justify-center gap-1.5 mt-2.5">
           {pages.map((_, idx) => (
             <button
               key={idx}
@@ -111,8 +112,8 @@ const GoalCategoryGrid = ({
               }}
               data-testid={`goals-create-category-page-${idx}-dot`}
               className={cn(
-                "w-1.5 h-1.5 rounded-full transition-all duration-300",
-                activePage === idx ? "bg-indigo-600 w-3.5" : "bg-slate-300 hover:bg-slate-400"
+                "h-1.5 rounded-full transition-all duration-300",
+                activePage === idx ? "bg-indigo-600 w-4" : "bg-slate-300 hover:bg-slate-400 w-1.5"
               )}
               aria-label={`Go to page ${idx + 1}`}
             />
@@ -143,6 +144,7 @@ export const AddGoal: React.FC = () => {
  const [members, setMembers] = useState<GoalMember[]>([]);
  const [showFriendPicker, setShowFriendPicker] = useState(false);
  const [showNewMemberInput, setShowNewMemberInput] = useState(false);
+ const [friendSearch, setFriendSearch] = useState('');
 
  const deadlineDate = formData.deadline ? new Date(formData.deadline) : null;
  const suggestion = deadlineDate
@@ -169,64 +171,59 @@ export const AddGoal: React.FC = () => {
  }, [suggestion?.monthlyAmount, formData.monthlySavingPlan]);
 
   const handleSubmit = async () => {
-  if (!formData.name.trim()) { toast.error('Enter goal name'); return; }
-  if (formData.targetAmount <= 0) { toast.error('Enter target amount'); return; }
-  if (!formData.deadline) { toast.error('Select a target date'); return; }
-  if (formData.goalType === 'group') {
-    if (members.length === 0) { toast.error('Add at least one collaborator'); return; }
-    const contactsSet = new Set<string>();
-    const namesSet = new Set<string>();
-    for (const m of members) {
-      const c = m.contactType === 'phone' ? m.contactValue.replace(/\D/g, '') : m.contactValue.trim().toLowerCase();
-      const n = m.name.trim().toLowerCase();
-      if (contactsSet.has(c)) {
-        toast.error(`Duplicate collaborator contact: "${m.contactValue}". All collaborators must have unique contacts.`);
-        return;
+    if (!formData.name.trim()) { toast.error('Enter goal name'); return; }
+    if (formData.targetAmount <= 0) { toast.error('Enter target amount'); return; }
+    if (!formData.deadline) { toast.error('Select a target date'); return; }
+    if (formData.goalType === 'group') {
+      if (members.length === 0) { toast.error('Add at least one collaborator'); return; }
+      const contactsSet = new Set<string>();
+      for (const m of members) {
+        if (m.contactValue && m.contactValue.trim()) {
+          const c = m.contactType === 'phone' ? m.contactValue.replace(/\D/g, '') : m.contactValue.trim().toLowerCase();
+          if (contactsSet.has(c)) {
+            toast.error(`Duplicate collaborator contact: "${m.contactValue}". All collaborators must have unique contacts.`);
+            return;
+          }
+          contactsSet.add(c);
+        }
       }
-      if (namesSet.has(n)) {
-        toast.error(`Duplicate collaborator name: "${m.name}". All collaborator names must be unique.`);
-        return;
-      }
-      contactsSet.add(c);
-      namesSet.add(n);
     }
-  }
 
- setIsSubmitting(true);
- try {
-   const existingGoal = await db.goals
-     .filter(g => 
-       g.name.toLowerCase() === formData.name.trim().toLowerCase() &&
-       !g.deletedAt
-     )
-     .first();
+    setIsSubmitting(true);
+    try {
+      const existingGoal = await db.goals
+        .filter(g => 
+          g.name.toLowerCase() === formData.name.trim().toLowerCase() &&
+          !g.deletedAt
+        )
+        .first();
 
-   if (existingGoal) {
-     toast.error('A goal with the same name already exists.');
-     setIsSubmitting(false);
-     return;
-   }
+      if (existingGoal) {
+        toast.error('A goal with the same name already exists.');
+        setIsSubmitting(false);
+        return;
+      }
 
- await saveGoalWithBackendSync({
- name: formData.name,
- category: formData.category,
- description: formData.description,
- targetAmount: formData.targetAmount,
- currentAmount: formData.currentAmount,
- monthlySavingPlan: formData.monthlySavingPlan,
- targetDate: new Date(formData.deadline),
- isGroupGoal: formData.goalType === 'group',
- members: formData.goalType === 'group' ? members : [],
- });
- toast.success('Goal created successfully');
- refreshData();
- setCurrentPage('goals');
- } catch (error) {
- toast.error('Failed to create goal');
- } finally {
- setIsSubmitting(false);
- }
- };
+      await saveGoalWithBackendSync({
+        name: formData.name,
+        category: formData.category,
+        description: formData.description,
+        targetAmount: formData.targetAmount,
+        currentAmount: formData.currentAmount,
+        monthlySavingPlan: formData.monthlySavingPlan,
+        targetDate: new Date(formData.deadline),
+        isGroupGoal: formData.goalType === 'group',
+        members: formData.goalType === 'group' ? members : [],
+      });
+      toast.success('Goal created successfully');
+      refreshData();
+      setCurrentPage('goals');
+    } catch (error) {
+      toast.error('Failed to create goal');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const addMember = () => {
     const trimmedName = memberInput.name.trim();
@@ -259,7 +256,7 @@ export const AddGoal: React.FC = () => {
       }
     }
 
-    // Duplicate contact check (unique email & phone across collaborators)
+    // Duplicate contact check (unique email & phone across collaborators - names CAN be duplicate)
     const duplicateContact = members.find(m => {
       if (memberInput.contactType === 'email' && m.contactType === 'email') {
         return m.contactValue.trim().toLowerCase() === trimmedContact.toLowerCase();
@@ -273,14 +270,7 @@ export const AddGoal: React.FC = () => {
     });
 
     if (duplicateContact) {
-      toast.error(`"${trimmedContact}" is already added for collaborator "${duplicateContact.name}". Each collaborator must be unique.`);
-      return;
-    }
-
-    // Duplicate name check
-    const duplicateName = members.find(m => m.name.trim().toLowerCase() === trimmedName.toLowerCase());
-    if (duplicateName) {
-      toast.error(`A collaborator named "${trimmedName}" has already been added.`);
+      toast.error(`"${trimmedContact}" is already added for collaborator "${duplicateContact.name}". Each collaborator must have a unique email or phone.`);
       return;
     }
 
@@ -297,13 +287,7 @@ export const AddGoal: React.FC = () => {
   };
 
   const handlePickFriend = (friend: typeof friends[0]) => {
-    // Check if friend name is already added
-    if (members.some(m => m.name.trim().toLowerCase() === friend.name.trim().toLowerCase())) {
-      toast.error(`"${friend.name}" is already added as a collaborator.`);
-      return;
-    }
-
-    // Check if friend's email or phone is already taken by another collaborator
+    // Check if friend's email or phone is already taken by another collaborator (names CAN be duplicate)
     if (friend.email) {
       const emailDup = members.find(m => m.contactType === 'email' && m.contactValue.trim().toLowerCase() === friend.email!.trim().toLowerCase());
       if (emailDup) {
@@ -316,6 +300,14 @@ export const AddGoal: React.FC = () => {
       const phoneDup = members.find(m => m.contactType === 'phone' && m.contactValue.replace(/\D/g, '') === pDigits);
       if (phoneDup) {
         toast.error(`Phone ${friend.phone} is already used by ${phoneDup.name}.`);
+        return;
+      }
+    }
+
+    if (!friend.email && !friend.phone) {
+      const alreadyAdded = members.some(m => m.name.trim().toLowerCase() === friend.name.trim().toLowerCase() && !m.contactValue);
+      if (alreadyAdded) {
+        toast.error(`"${friend.name}" is already added.`);
         return;
       }
     }
@@ -439,78 +431,132 @@ export const AddGoal: React.FC = () => {
   </label>
   
   <div className="flex items-center gap-2">
-  {friends.length > 0 && (
-  <button
-  type="button"
-  onClick={() => { setShowFriendPicker(p => !p); setShowNewMemberInput(false); }}
-  data-testid="goals-create-friends-picker-button"
-  className={cn(
-    "flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wider transition-all cursor-pointer",
-    showFriendPicker
-      ? "bg-violet-600 text-white shadow-xs"
-      : "text-violet-700 bg-violet-50 hover:bg-violet-100"
-  )}
-  >
-  <Users size={12} /> Friends
-  </button>
-  )}
-  <button
-  type="button"
-  onClick={() => { setShowNewMemberInput(p => !p); setShowFriendPicker(false); }}
-  data-testid="goals-create-add-member-toggle-button"
-  className={cn(
-    "flex items-center gap-1.5 text-xs font-bold px-3.5 py-1.5 rounded-full uppercase tracking-wider transition-all cursor-pointer",
-    showNewMemberInput
-      ? "bg-[#4F46E5] text-white shadow-xs"
-      : "text-[#4F46E5] bg-[#EEF2FF] hover:bg-[#E0E7FF]"
-  )}
-  >
-  <UserPlus size={13} /> NEW
-  </button>
+    <button
+      type="button"
+      onClick={() => {
+        if (friends.length === 0) {
+          toast.info('No friends in your contacts list yet. Opening Add Friends to import contacts.');
+          setCurrentPage('add-friends');
+        } else {
+          setShowFriendPicker(p => !p);
+          setShowNewMemberInput(false);
+        }
+      }}
+      data-testid="goals-create-friends-picker-button"
+      className={cn(
+        "flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wider transition-all cursor-pointer",
+        showFriendPicker
+          ? "bg-violet-600 text-white shadow-xs"
+          : "text-violet-700 bg-violet-50 hover:bg-violet-100"
+      )}
+    >
+      <Users size={12} /> {friends.length > 0 ? 'Friends' : 'Import Contacts'}
+    </button>
+    <button
+      type="button"
+      onClick={() => { setShowNewMemberInput(p => !p); setShowFriendPicker(false); }}
+      data-testid="goals-create-add-member-toggle-button"
+      className={cn(
+        "flex items-center gap-1.5 text-xs font-bold px-3.5 py-1.5 rounded-full uppercase tracking-wider transition-all cursor-pointer",
+        showNewMemberInput
+          ? "bg-[#4F46E5] text-white shadow-xs"
+          : "text-[#4F46E5] bg-[#EEF2FF] hover:bg-[#E0E7FF]"
+      )}
+    >
+      <UserPlus size={13} /> NEW
+    </button>
   </div>
   </div>
 
   {/* Friends quick-add / Selection Panel */}
   {showFriendPicker && friends.length > 0 && (
-  <div className="p-3.5 bg-violet-50/70 rounded-2xl border border-violet-100 animate-in zoom-in-95 duration-200 space-y-2">
+  <div className="p-3.5 bg-violet-50/70 rounded-2xl border border-violet-100 animate-in zoom-in-95 duration-200 space-y-2.5">
   <div className="flex items-center justify-between">
     <p className="text-[11px] font-bold text-violet-600 uppercase tracking-wider">Tap friend to add uniquely</p>
     <button
       type="button"
-      onClick={() => setShowFriendPicker(false)}
-      className="text-violet-400 hover:text-violet-600 text-[11px] font-semibold"
+      onClick={() => {
+        setShowFriendPicker(false);
+        setFriendSearch('');
+      }}
+      className="text-violet-400 hover:text-violet-600 text-[11px] font-semibold cursor-pointer"
     >
       Close
     </button>
   </div>
+
+  {/* Search box for filtering contacts */}
+  <div className="relative">
+    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-violet-400 pointer-events-none" />
+    <input
+      type="text"
+      value={friendSearch}
+      onChange={(e) => setFriendSearch(e.target.value)}
+      placeholder="Search contact by name or number..."
+      data-testid="goals-create-friend-search-input"
+      className="w-full pl-8 pr-7 py-1.5 bg-white border border-violet-200/80 rounded-xl text-xs font-semibold text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 transition-all"
+    />
+    {friendSearch && (
+      <button
+        type="button"
+        onClick={() => setFriendSearch('')}
+        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+      >
+        <X size={12} />
+      </button>
+    )}
+  </div>
+
   <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto pr-1">
-  {friends.map(f => {
-  const isAdded = members.some(m =>
-    m.name.trim().toLowerCase() === f.name.trim().toLowerCase() ||
-    (f.email && m.contactType === 'email' && m.contactValue.trim().toLowerCase() === f.email.trim().toLowerCase()) ||
-    (f.phone && m.contactType === 'phone' && m.contactValue.replace(/\D/g, '') === f.phone.replace(/\D/g, ''))
-  );
-  return (
-  <button
-  key={f.id}
-  type="button"
-  disabled={isAdded}
-  onClick={() => handlePickFriend(f)}
-  className={cn(
-  "px-3 py-1.5 rounded-full text-xs font-bold transition-all border flex items-center gap-1.5 cursor-pointer",
-  isAdded
-  ?"bg-indigo-100/80 border-indigo-200 text-indigo-800 opacity-60 cursor-not-allowed"
-  :"bg-white border-violet-200/80 text-violet-800 hover:bg-violet-600 hover:text-white hover:border-violet-600 shadow-2xs active:scale-95"
-  )}
-  >
-  <span className="w-4 h-4 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center text-[9px] font-black uppercase">
-    {f.name[0] || '?'}
-  </span>
-  <span>{f.name}</span>
-  {isAdded && <Check size={12} className="text-indigo-700" />}
-  </button>
-  );
-  })}
+  {(() => {
+    const query = friendSearch.toLowerCase().trim();
+    const queryDigits = friendSearch.replace(/\D/g, '');
+    const filtered = friends.filter(f => {
+      if (!query) return true;
+      const decoded = sanitizeContactName(f.name).toLowerCase();
+      const raw = f.name.toLowerCase();
+      const email = (f.email || '').toLowerCase();
+      const phoneDigits = (f.phone || '').replace(/\D/g, '');
+      return decoded.includes(query) || raw.includes(query) || email.includes(query) || (queryDigits && phoneDigits.includes(queryDigits));
+    });
+
+    if (filtered.length === 0) {
+      return (
+        <p className="text-xs text-violet-400 py-2 w-full text-center">
+          No contacts match "{friendSearch}"
+        </p>
+      );
+    }
+
+    return filtered.map(f => {
+      const cleanName = sanitizeContactName(f.name, { email: f.email, phone: f.phone });
+      const isAdded = members.some(m =>
+        (f.email && m.contactType === 'email' && m.contactValue.trim().toLowerCase() === f.email.trim().toLowerCase()) ||
+        (f.phone && m.contactType === 'phone' && m.contactValue.replace(/\D/g, '') === f.phone.replace(/\D/g, '')) ||
+        (!f.email && !f.phone && m.name.trim().toLowerCase() === cleanName.trim().toLowerCase() && !m.contactValue)
+      );
+      return (
+        <button
+          key={f.id}
+          type="button"
+          disabled={isAdded}
+          onClick={() => handlePickFriend({ ...f, name: cleanName })}
+          className={cn(
+            "px-3 py-1.5 rounded-full text-xs font-bold transition-all border flex items-center gap-1.5 cursor-pointer",
+            isAdded
+              ? "bg-indigo-100/80 border-indigo-200 text-indigo-800 opacity-60 cursor-not-allowed"
+              : "bg-white border-violet-200/80 text-violet-800 hover:bg-violet-600 hover:text-white hover:border-violet-600 shadow-2xs active:scale-95"
+          )}
+        >
+          <span className="w-4 h-4 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center text-[9px] font-black uppercase">
+            {cleanName[0] || '?'}
+          </span>
+          <span>{cleanName}</span>
+          {isAdded && <Check size={12} className="text-indigo-700" />}
+        </button>
+      );
+    });
+  })()}
   </div>
   </div>
   )}

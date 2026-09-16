@@ -12,7 +12,7 @@ import {
  CreditCard, Banknote,
  ChevronDown, Check, Users, UserPlus, Trash2,
  Plus, ArrowRightLeft, ArrowDown, Info, ArrowLeft,
- User, X, ScanLine, Paperclip, ArrowUpRight, AlertTriangle
+ User, X, ScanLine, Paperclip, ArrowUpRight, AlertTriangle, Search
 } from 'lucide-react';
 
 import { toast } from 'sonner';
@@ -38,6 +38,7 @@ import {
 
 import { FloatingSaveBar } from '@/app/components/ui/FloatingSaveBar';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
+import { decodeQuotedPrintable } from '@/services/contactsService';
 
 // --- Types ---
 type TransactionType = 'expense' | 'income' | 'transfer' | 'withdrawal';
@@ -50,6 +51,8 @@ interface GroupParticipantDraft {
  friendId?: number;
  name: string;
  share: number;
+ email?: string;
+ phone?: string;
 }
 
 // --- Constants & Helpers ---
@@ -375,6 +378,7 @@ export function AddTransaction() {
  const [remoteCategorySuggestion, setRemoteCategorySuggestion] = useState<any>(null);
  const [manualExpenseCategory, setManualExpenseCategory] = useState(false);
  const [showFriendPicker, setShowFriendPicker] = useState(false);
+ const [friendSearch, setFriendSearch] = useState('');
  const [newPersonName, setNewPersonName] = useState('');
  const [showNewPersonInput, setShowNewPersonInput] = useState(false);
  const [showLoanFriendPicker, setShowLoanFriendPicker] = useState(false);
@@ -555,21 +559,44 @@ export function AddTransaction() {
  refreshData();
  };
 
- // Add participant from friends list or as new temp person
- const addParticipantFromFriend = async (name: string) => {
- if (groupParticipants.some(p => p.name.toLowerCase() === name.toLowerCase())) return;
- await saveNewFriend(name);
- setGroupParticipants(prev => [...prev, createEmptyParticipant({ name })]);
- setShowFriendPicker(false);
- };
+  // Add participant from friends list
+  const addParticipantFromFriend = async (friend: typeof friends[0]) => {
+    const fEmail = friend.email ? friend.email.trim().toLowerCase() : '';
+    const fPhone = friend.phone ? friend.phone.replace(/\D/g, '') : '';
 
- const confirmNewSplitPerson = async () => {
- const name = newPersonName.trim();
- if (!name) return;
- await addParticipantFromFriend(name);
- setNewPersonName('');
- setShowNewPersonInput(false);
- };
+    const isDuplicate = groupParticipants.some(p => {
+      if (p.friendId && p.friendId === friend.id) return true;
+      if (fEmail && p.email && p.email.trim().toLowerCase() === fEmail) return true;
+      if (fPhone && p.phone && p.phone.replace(/\D/g, '') === fPhone) return true;
+      if (!fEmail && !fPhone && !p.email && !p.phone && p.name.trim().toLowerCase() === friend.name.trim().toLowerCase()) return true;
+      return false;
+    });
+
+    if (isDuplicate) {
+      toast.error(`${friend.name} is already added as a participant`);
+      return;
+    }
+
+    setGroupParticipants(prev => [
+      ...prev,
+      createEmptyParticipant({
+        name: friend.name,
+        friendId: friend.id,
+        email: friend.email,
+        phone: (friend as any)?.phone,
+      }),
+    ]);
+    setShowFriendPicker(false);
+  };
+
+  const confirmNewSplitPerson = async () => {
+    const name = newPersonName.trim();
+    if (!name) return;
+    await saveNewFriend(name);
+    setGroupParticipants(prev => [...prev, createEmptyParticipant({ name })]);
+    setNewPersonName('');
+    setShowNewPersonInput(false);
+  };
 
  const confirmNewLoanPerson = async () => {
  const name = newLoanPersonName.trim();
@@ -644,6 +671,30 @@ export function AddTransaction() {
       if (isDebit && !allowsNegative && formData.amount > available) {
         setBalanceError({ available, entered: formData.amount, accountName: selectedAccount.name, currency: selectedAccount.currency || 'INR' });
         return; // prevent save — nothing written locally or to the backend
+      }
+    }
+
+    // Group mode unique contact validation (names CAN be duplicate, but emails and phones must be unique)
+    if (isExpense && expenseMode === 'group' && groupParticipants.length > 0) {
+      const emailSet = new Set<string>();
+      const phoneSet = new Set<string>();
+      for (const p of groupParticipants) {
+        if (p.email) {
+          const e = p.email.trim().toLowerCase();
+          if (emailSet.has(e)) {
+            toast.error(`Duplicate participant email "${p.email}". All participants must have unique emails.`);
+            return;
+          }
+          emailSet.add(e);
+        }
+        if (p.phone) {
+          const ph = p.phone.replace(/\D/g, '');
+          if (phoneSet.has(ph)) {
+            toast.error(`Duplicate participant phone "${p.phone}". All participants must have unique phone numbers.`);
+            return;
+          }
+          phoneSet.add(ph);
+        }
       }
     }
 
@@ -819,7 +870,7 @@ export function AddTransaction() {
  // Enrich each participant with email/phone from their Friend record so the
  // backend can look them up and send the correct invitation email.
  const enrichedParticipants = groupParticipants.map((p) => {
-   const friend = friends.find((f) => f.name.toLowerCase() === p.name.toLowerCase());
+   const friend = p.friendId ? friends.find(f => f.id === p.friendId) : friends.find((f) => f.name.toLowerCase() === p.name.toLowerCase());
    return {
      name: p.name,
      share: p.share && p.share > 0 ? p.share : perHead,
@@ -827,9 +878,9 @@ export function AddTransaction() {
      isCurrentUser: false,
      paidAmount: 0,
      paymentStatus: 'pending' as const,
-     friendId: friend?.id,
-     email: friend?.email,
-     phone: (friend as any)?.phone,
+     friendId: p.friendId ?? friend?.id,
+     email: p.email ?? friend?.email,
+     phone: p.phone ?? (friend as any)?.phone,
    };
  });
  const members: import('@/lib/database').GroupMember[] = [
@@ -846,7 +897,13 @@ export function AddTransaction() {
  ];
 
  const groupExpenseName = formData.description || formData.category || 'Group Expense';
- const groupExpenseId = await db.groupExpenses.add({
+ // Suppressed: this block does its own POST /groups below. An unsuppressed add
+ // ALSO queues a create, and at Sydney round-trip latency the 250 ms queue timer
+ // regularly fired before the direct post came back with a cloudId — so the
+ // queue posted the same group a second time under a different idempotency key.
+ const groupClientRequestId = crypto.randomUUID();
+ const groupExpenseId = await runWithCloudSyncSuppressed(() => db.groupExpenses.add({
+ clientRequestId: groupClientRequestId,
  name: groupExpenseName,
  totalAmount: formData.amount,
  paidBy: formData.accountId,
@@ -862,7 +919,7 @@ export function AddTransaction() {
  syncStatus: 'pending',
  createdAt: now,
  updatedAt: now,
- });
+ } as any));
 
  // Push to backend immediately so invitations fire and data persists in the DB.
  // The local Dexie record (syncStatus='pending') is the fallback if this fails.
@@ -884,6 +941,7 @@ export function AddTransaction() {
    ];
 
    const backendResp = await backendService.api.post('/groups', {
+     clientRequestId: groupClientRequestId,
      name: groupExpenseName,
      totalAmount: formData.amount,
      paidBy: paidByCloudId,       // backend Account UUID (or null)
@@ -895,12 +953,17 @@ export function AddTransaction() {
      status: 'pending',
      members: backendMembers,
    });
-   if (backendResp.data?.id || backendResp.data?.data?.id) {
-     const cloudId = String(backendResp.data?.id ?? backendResp.data?.data?.id);
-     await db.groupExpenses.update(groupExpenseId as number, { cloudId, syncStatus: 'synced' });
+   const cloudId = backendResp.data?.id ?? backendResp.data?.data?.id;
+   if (cloudId) {
+     await runWithCloudSyncSuppressed(() =>
+       db.groupExpenses.update(groupExpenseId as number, { cloudId: String(cloudId), syncStatus: 'synced' }),
+     );
+   } else {
+     queueRecordUpsertSync('group_expenses', groupExpenseId as number);
    }
  } catch {
-   // Keep syncStatus='pending'; background sync will retry.
+   // Offline or server error — the queue retries under the same key.
+   queueRecordUpsertSync('group_expenses', groupExpenseId as number);
  }
 
  // Back-link: store groupExpenseId on the transaction
@@ -1275,44 +1338,113 @@ if (linkedDocId) {
  </div>
  )}
 
- {/* Friends quick-add / Selection Panel */}
- {showFriendPicker && friends.length > 0 && (
- <div className="p-3.5 bg-purple-50/70 rounded-2xl border border-purple-100/90 animate-in zoom-in-95 duration-200">
- <p className="text-[9px] font-black text-purple-600 uppercase tracking-widest mb-2">Tap to select friend</p>
- <div className="flex flex-wrap gap-2">
- {friends.map(f => {
- const isSelected = expenseMode === 'group' 
- ? groupParticipants.some(p => p.name.toLowerCase() === f.name.toLowerCase())
- : (formData.payee === f.name || loanDraft.contactName === f.name);
- 
- return (
- <button
- data-testid={`add-transaction-button-3-${f.id}`}
- key={f.id}
- type="button"
- onClick={() => {
- if (expenseMode === 'group') {
- if (!isSelected) addParticipantFromFriend(f.name);
- } else {
- setFormData(prev => ({ ...prev, payee: f.name }));
- setLoanDraft(prev => ({ ...prev, contactName: f.name }));
- setShowFriendPicker(false);
- }
- }}
- className={cn(
-"px-3 py-1.5 rounded-full text-[10px] font-bold transition-all border cursor-pointer shadow-2xs",
- isSelected
- ? "bg-[#18181B] border-[#18181B] text-white shadow-xs"
- : "bg-white border-purple-200 text-purple-700 hover:bg-purple-600 hover:text-white hover:border-purple-600"
- )}
- >
- {f.name}
- </button>
- );
- })}
- </div>
- </div>
- )}
+      {/* Friends quick-add / Selection Panel */}
+      {showFriendPicker && friends.length > 0 && (
+        <div className="p-3.5 bg-purple-50/70 rounded-2xl border border-purple-100/90 animate-in zoom-in-95 duration-200 space-y-2.5">
+          <div className="flex items-center justify-between">
+            <p className="text-[10px] font-black text-purple-600 uppercase tracking-widest">Tap to select friend</p>
+            <button
+              type="button"
+              onClick={() => {
+                setShowFriendPicker(false);
+                setFriendSearch('');
+              }}
+              className="text-purple-400 hover:text-purple-600 text-[10px] font-bold uppercase cursor-pointer"
+            >
+              Close
+            </button>
+          </div>
+
+          {/* Search box for filtering contacts */}
+          <div className="relative">
+            <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-purple-400 pointer-events-none" />
+            <input
+              type="text"
+              value={friendSearch}
+              onChange={(e) => setFriendSearch(e.target.value)}
+              placeholder="Search contact by name or number..."
+              data-testid="transaction-friend-search-input"
+              className="w-full pl-8 pr-7 py-1.5 bg-white border border-purple-200/80 rounded-xl text-xs font-semibold text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 transition-all"
+            />
+            {friendSearch && (
+              <button
+                type="button"
+                onClick={() => setFriendSearch('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+              >
+                <X size={12} />
+              </button>
+            )}
+          </div>
+
+          <div className="flex flex-wrap gap-2 max-h-44 overflow-y-auto pr-1">
+            {(() => {
+              const query = friendSearch.toLowerCase().trim();
+              const queryDigits = friendSearch.replace(/\D/g, '');
+              const filtered = friends.filter(f => {
+                if (!query) return true;
+                const decoded = decodeQuotedPrintable(f.name).toLowerCase();
+                const raw = f.name.toLowerCase();
+                const email = (f.email || '').toLowerCase();
+                const phoneDigits = (f.phone || '').replace(/\D/g, '');
+                return decoded.includes(query) || raw.includes(query) || email.includes(query) || (queryDigits && phoneDigits.includes(queryDigits));
+              });
+
+              if (filtered.length === 0) {
+                return (
+                  <p className="text-xs text-purple-400 py-2 w-full text-center">
+                    No contacts match "{friendSearch}"
+                  </p>
+                );
+              }
+
+              return filtered.map(f => {
+                const cleanName = decodeQuotedPrintable(f.name);
+                const fEmail = f.email?.trim().toLowerCase();
+                const fPhone = f.phone?.replace(/\D/g, '');
+                const isSelected = expenseMode === 'group' 
+                  ? groupParticipants.some(p =>
+                      (p.friendId && p.friendId === f.id) ||
+                      (fEmail && p.email && p.email.trim().toLowerCase() === fEmail) ||
+                      (fPhone && p.phone && p.phone.replace(/\D/g, '') === fPhone) ||
+                      (!fEmail && !fPhone && !p.email && !p.phone && p.name.trim().toLowerCase() === cleanName.trim().toLowerCase())
+                    )
+                  : (formData.payee === cleanName || loanDraft.contactName === cleanName);
+
+                return (
+                  <button
+                    data-testid={`add-transaction-button-3-${f.id}`}
+                    key={f.id}
+                    type="button"
+                    onClick={() => {
+                      if (expenseMode === 'group') {
+                        if (!isSelected) addParticipantFromFriend({ ...f, name: cleanName });
+                      } else {
+                        setFormData(prev => ({ ...prev, payee: cleanName }));
+                        setLoanDraft(prev => ({ ...prev, contactName: cleanName }));
+                        setShowFriendPicker(false);
+                      }
+                    }}
+                    className={cn(
+                      "px-3 py-1.5 rounded-full text-[10px] font-bold transition-all border cursor-pointer shadow-2xs flex items-center gap-1.5",
+                      isSelected
+                        ? "bg-[#18181B] border-[#18181B] text-white shadow-xs"
+                        : "bg-white border-purple-200 text-purple-700 hover:bg-purple-600 hover:text-white hover:border-purple-600"
+                    )}
+                  >
+                    <span>{cleanName}</span>
+                    {f.email ? (
+                      <span className="text-[9px] opacity-70">({f.email})</span>
+                    ) : f.phone ? (
+                      <span className="text-[9px] opacity-70">({f.phone})</span>
+                    ) : null}
+                  </button>
+                );
+              });
+            })()}
+          </div>
+        </div>
+      )}
 
  {/* New Person Input */}
  {showNewPersonInput && (

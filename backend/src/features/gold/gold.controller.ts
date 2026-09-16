@@ -1,6 +1,7 @@
 import { Response, NextFunction } from 'express';
 import { AuthRequest, getUserId } from '../../middleware/auth';
 import { prisma } from '../../db/prisma';
+import { transactionRepository } from '../transactions/transaction.repository';
 import { sanitize } from '../../utils/sanitize';
 import { AppError } from '../../utils/AppError';
 import { logger } from '../../config/logger';
@@ -88,17 +89,15 @@ export const createGoldAsset = async (req: AuthRequest, res: Response, next: Nex
           },
         });
 
-        await tx.transaction.create({
-          data: {
-            userId,
-            accountId: body.accountId,
-            type: 'expense',
-            amount: totalCost,
-            category: 'Investment',
-            subcategory: 'Gold',
-            description: `Gold asset purchase: ${goldAsset.type} (${goldAsset.quantity} ${goldAsset.unit})`,
-            date: new Date(body.purchaseDate),
-          },
+        await transactionRepository.createSideEffectTransaction(tx, 'gold-purchase', goldAsset.id, {
+          userId,
+          accountId: body.accountId,
+          type: 'expense',
+          amount: totalCost,
+          category: 'Investment',
+          subcategory: 'Gold',
+          description: `Gold asset purchase: ${goldAsset.type} (${goldAsset.quantity} ${goldAsset.unit})`,
+          date: new Date(body.purchaseDate),
         });
 
         if (FinancialLedgerService.isEnabled('investments')) {

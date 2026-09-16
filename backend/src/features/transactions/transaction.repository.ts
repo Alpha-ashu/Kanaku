@@ -41,6 +41,50 @@ export class TransactionRepository {
     return createHash('sha256').update(payload).digest('hex');
   }
 
+  /**
+   * Fingerprint for a transaction that some OTHER feature posts as a side effect
+   * — a loan disbursement, a goal contribution or withdrawal, an investment or
+   * gold purchase.
+   *
+   * These are written with raw `tx.transaction.create` rather than through
+   * `transactionService.createTransaction`, so they never got a `dedupHash`. And
+   * because `Transaction.dedupHash` is `String? @unique`, Postgres permits an
+   * unlimited number of NULLs — so the one guard that stops a double-submitted
+   * expense becoming two rows did not apply to any of them. A double-tapped
+   * "Contribute", a retried request, a re-run disbursement: each one posted
+   * another identical transaction, and nothing anywhere would collapse them.
+   *
+   * Keyed on the record that CAUSED the side effect rather than on the money, so
+   * that (a) a repeat of the same operation is recognised no matter how the
+   * amount or wording is rendered, and (b) two genuinely separate operations
+   * — two contributions to one goal on one day — stay two transactions.
+   */
+  sideEffectDedupHash(userId: string, source: string, sourceId: string): string {
+    return createHash('sha256')
+      .update(`${userId}:side-effect:${source}:${sourceId}`)
+      .digest('hex');
+  }
+
+  /**
+   * Post a side-effect transaction at most once.
+   *
+   * `createMany({ skipDuplicates: true })` rather than `create`: a unique-constraint
+   * violation inside an interactive Prisma transaction aborts the WHOLE transaction,
+   * which would take the loan/goal/investment write down with it. Skipping is a
+   * no-op at the database level and needs no read-then-write race window.
+   */
+  async createSideEffectTransaction(
+    tx: { transaction: { createMany: (args: any) => Promise<{ count: number }> } },
+    source: string,
+    sourceId: string,
+    data: Record<string, unknown> & { userId: string },
+  ): Promise<void> {
+    await tx.transaction.createMany({
+      data: [{ ...data, dedupHash: this.sideEffectDedupHash(data.userId, source, sourceId) }],
+      skipDuplicates: true,
+    });
+  }
+
   serializeTags(tags: unknown): string | null {
     if (tags == null) return null;
     if (Array.isArray(tags)) {

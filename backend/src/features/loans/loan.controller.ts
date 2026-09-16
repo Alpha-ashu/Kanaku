@@ -1,6 +1,7 @@
 import { Response, NextFunction } from 'express';
 import { AuthRequest, getUserId } from '../../middleware/auth';
 import { prisma } from '../../db/prisma';
+import { transactionRepository } from '../transactions/transaction.repository';
 import { sanitize } from '../../utils/sanitize';
 import { AppError } from '../../utils/AppError';
 import { logger } from '../../config/logger';
@@ -114,16 +115,16 @@ export const createLoan = async (req: AuthRequest, res: Response, next: NextFunc
             },
           });
 
-          await tx.transaction.create({
-            data: {
-              userId,
-              accountId,
-              type: type === 'borrowed' ? 'income' : 'expense',
-              amount: numericPrincipal,
-              category: 'Loan',
-              description: `Loan disbursement: ${createdLoan.name}`,
-              date: new Date(),
-            },
+          // Keyed on the loan: a loan is disbursed exactly once, however many
+          // times this create is retried or replayed.
+          await transactionRepository.createSideEffectTransaction(tx, 'loan-disbursement', createdLoan.id, {
+            userId,
+            accountId,
+            type: type === 'borrowed' ? 'income' : 'expense',
+            amount: numericPrincipal,
+            category: 'Loan',
+            description: `Loan disbursement: ${createdLoan.name}`,
+            date: new Date(),
           });
 
           if (FinancialLedgerService.isEnabled('loans')) {

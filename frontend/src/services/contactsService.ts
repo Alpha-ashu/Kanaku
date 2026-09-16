@@ -43,12 +43,12 @@ export async function pickDeviceContacts(): Promise<DeviceContact[]> {
       const rawEmail = Array.isArray(c.email) ? c.email[0] : c.email;
       const rawTel = Array.isArray(c.tel) ? c.tel[0] : c.tel;
 
-      const name = (rawName || '').trim();
-      if (!name) continue;
-
       const email = (rawEmail || '').trim().toLowerCase() || undefined;
       let phone = (rawTel || '').trim().replace(/[\s\-()]/g, '');
       if (!phone) phone = undefined as any;
+
+      const name = sanitizeContactName(rawName || '', { email, phone });
+      if (!name) continue;
 
       contacts.push({ name, email, phone });
     }
@@ -63,50 +63,259 @@ export async function pickDeviceContacts(): Promise<DeviceContact[]> {
 }
 
 /**
+ * Decode Quoted-Printable encoded strings (e.g. from vCard FN;ENCODING=QUOTED-PRINTABLE).
+ * Converts hex byte sequences like =E2=9D=A4 to proper UTF-8 characters.
+ */
+export function decodeQuotedPrintable(str: string): string {
+  if (!str) return '';
+  if (!str.includes('=')) return str;
+
+  // Remove soft line breaks (= followed by CRLF or LF)
+  const normalized = str.replace(/=[\r\n]+/g, '');
+  const bytes: number[] = [];
+
+  for (let i = 0; i < normalized.length; i++) {
+    if (normalized[i] === '=' && i + 2 < normalized.length) {
+      const hex = normalized.slice(i + 1, i + 3);
+      if (/^[0-9A-Fa-f]{2}$/.test(hex)) {
+        bytes.push(parseInt(hex, 16));
+        i += 2;
+        continue;
+      }
+    }
+    const charCode = normalized.charCodeAt(i);
+    if (charCode < 128) {
+      bytes.push(charCode);
+    } else {
+      const encoded = new TextEncoder().encode(normalized[i]);
+      for (const b of encoded) bytes.push(b);
+    }
+  }
+
+  try {
+    return new TextDecoder('utf-8', { fatal: false, ignoreBOM: true }).decode(new Uint8Array(bytes));
+  } catch {
+    return str.replace(/(=[A-Fa-f0-9]{2})+/g, '');
+  }
+}
+
+/**
+ * Remove emojis, memojis, pictographs, stray punctuation clusters (like -:;)=d),
+ * and leftover encoding artifacts from a contact name so it imports cleanly.
+ */
+export function removeEmojisAndMemojis(rawName: string): string {
+  if (!rawName) return '';
+
+  // 1. Decode quoted-printable first (if encoded)
+  let name = decodeQuotedPrintable(rawName);
+
+  // 2. Unescape vCard escape sequences (\;, \,, \:, \n, \r)
+  name = name.replace(/\\[,;:nN]/g, ' ').replace(/\\/g, '');
+
+  // 3. Remove Unicode emojis, memojis, pictographs, symbols, dingbats, and variation selectors
+  name = name
+    .replace(/\p{Extended_Pictographic}/gu, '')
+    .replace(/[\u{1F300}-\u{1F9FF}\u{1FA00}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '')
+    .replace(/[\uFE00-\uFE0F\u200B-\u200D\u2060\uFEFF]/g, '')
+    .replace(/[\uD800-\uDFFF]/g, '');
+
+  // 4. Strip any residual quoted-printable hex markers (=XX)
+  name = name.replace(/(=[A-Fa-f0-9]{2})+/g, '');
+
+  // 5. Remove ascii emoticons and symbol clusters (like -:;)=d, :-), :D, =D, etc.)
+  name = name.replace(/[^\p{L}\p{N}\s]{2,}[a-zA-Z0-9]?/gu, ' ');
+  name = name.replace(/(?:^|\s)(?:[-:;=8][oO\-]?[)\]\(\[dDpP/\\|*]|[<>]?[:;=8][)\]\(\[dDpP/\\|*])(?:\s|$)/gi, ' ');
+  name = name.replace(/(?:^|\s)[=:;]-?[)\]\(\[dDpP](?:\s|$)/gi, ' ');
+
+  // 6. Clean dangling punctuation from start and end (preserving valid parenthesis if balanced)
+  name = name.replace(/^[-:;=,._~#*+|/\\s]+|[-:;=,._~#*+|/\\s]+$/gu, '');
+
+  // 7. Collapse whitespace
+  name = name.replace(/\s+/g, ' ').trim();
+
+  return name;
+}
+
+/**
+ * Sanitize and clean a contact's display name by removing emojis/memojis.
+ * If the resulting name is empty, provides a fallback from email, phone, org, or nickname.
+ */
+export function sanitizeContactName(
+  rawName: string,
+  fallback?: { email?: string; phone?: string; org?: string; nickname?: string }
+): string {
+  const cleaned = removeEmojisAndMemojis(rawName);
+  if (cleaned.length > 0) {
+    return cleaned;
+  }
+
+  // Fallback 1: Nickname (cleaned)
+  if (fallback?.nickname) {
+    const cleanNick = removeEmojisAndMemojis(fallback.nickname);
+    if (cleanNick) return cleanNick;
+  }
+
+  // Fallback 2: Organization (cleaned)
+  if (fallback?.org) {
+    const cleanOrg = removeEmojisAndMemojis(fallback.org);
+    if (cleanOrg) return cleanOrg;
+  }
+
+  // Fallback 3: Email prefix (e.g. "alex" from "alex@gmail.com")
+  if (fallback?.email) {
+    const prefix = fallback.email.split('@')[0].trim();
+    if (prefix) {
+      return prefix.charAt(0).toUpperCase() + prefix.slice(1);
+    }
+  }
+
+  // Fallback 4: Phone number digits
+  if (fallback?.phone) {
+    const digits = fallback.phone.replace(/\D/g, '');
+    if (digits) {
+      return `Contact (${digits.slice(-4)})`;
+    }
+  }
+
+  return 'Contact';
+}
+
+/** Alias for backward compatibility */
+export const cleanContactName = sanitizeContactName;
+
+/**
  * Parse standard vCard (.vcf) format files exported from iOS / Android Contacts.
+ * Automatically decodes Quoted-Printable strings, unfolds continuation lines,
+ * strips emojis and memojis, and returns clean, properly named contacts.
  */
 export function parseVCardContent(vcfText: string): DeviceContact[] {
   const contacts: DeviceContact[] = [];
-  const lines = vcfText.split(/\r\n|\r|\n/);
 
-  let currentContact: Partial<DeviceContact> | null = null;
+  // Step 1: Unfold lines according to RFC 2426 and Quoted-Printable rules
+  const rawLines = vcfText.split(/\r\n|\r|\n/);
+  const unfoldedLines: string[] = [];
+  let inPhoto = false;
 
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
+  for (let i = 0; i < rawLines.length; i++) {
+    let line = rawLines[i];
+    const trimmed = line.trim();
 
-    if (line.startsWith('BEGIN:VCARD')) {
-      currentContact = {};
-    } else if (line.startsWith('END:VCARD')) {
-      if (currentContact && currentContact.name) {
-        contacts.push({
-          name: currentContact.name.trim(),
-          email: currentContact.email?.trim().toLowerCase() || undefined,
-          phone: currentContact.phone?.trim() || undefined,
+    // Skip heavy base64 PHOTO blocks to keep parsing fast and prevent memory bloat
+    if (trimmed.toUpperCase().startsWith('PHOTO;') || trimmed.toUpperCase().startsWith('PHOTO:')) {
+      inPhoto = true;
+    }
+    if (inPhoto) {
+      if (i + 1 < rawLines.length) {
+        const next = rawLines[i + 1];
+        if (next.startsWith(' ') || next.startsWith('\t') || next.endsWith('=')) {
+          continue; // skip photo continuation lines
+        }
+      }
+      inPhoto = false;
+      continue;
+    }
+
+    // Unfold QP soft line breaks (ending with '=')
+    while (line.endsWith('=') && i + 1 < rawLines.length) {
+      i++;
+      line = line.slice(0, -1) + rawLines[i].trimStart();
+    }
+
+    // Unfold RFC 2426 continuation lines (starting with space or tab)
+    while (i + 1 < rawLines.length && (rawLines[i + 1].startsWith(' ') || rawLines[i + 1].startsWith('\t'))) {
+      i++;
+      const nextPart = rawLines[i].slice(1);
+      if (line.endsWith('=')) {
+        line = line.slice(0, -1) + nextPart;
+      } else {
+        line = line + nextPart;
+      }
+    }
+
+    unfoldedLines.push(line);
+  }
+
+  // Step 2: Parse vCard cards
+  let current: {
+    fn?: string;
+    n?: string;
+    nickname?: string;
+    org?: string;
+    phone?: string;
+    email?: string;
+  } | null = null;
+
+  for (const line of unfoldedLines) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+
+    if (trimmed.toUpperCase().startsWith('BEGIN:VCARD')) {
+      current = {};
+      continue;
+    }
+
+    if (trimmed.toUpperCase().startsWith('END:VCARD')) {
+      if (current) {
+        const rawName = current.fn || current.n || current.nickname || current.org || '';
+        const name = sanitizeContactName(rawName, {
+          email: current.email,
+          phone: current.phone,
+          org: current.org,
+          nickname: current.nickname,
         });
+
+        if (name || current.email || current.phone) {
+          contacts.push({
+            name: name || current.email || current.phone || 'Contact',
+            email: current.email,
+            phone: current.phone,
+          });
+        }
       }
-      currentContact = null;
-    } else if (currentContact) {
-      // Full Name
-      if (line.startsWith('FN:') || line.startsWith('FN;')) {
-        const val = line.substring(line.indexOf(':') + 1).trim();
-        if (val) currentContact.name = val;
-      } else if (!currentContact.name && (line.startsWith('N:') || line.startsWith('N;'))) {
-        const parts = line.substring(line.indexOf(':') + 1).split(';');
-        const lastName = parts[0]?.trim() || '';
-        const firstName = parts[1]?.trim() || '';
-        const constructed = `${firstName} ${lastName}`.trim();
-        if (constructed) currentContact.name = constructed;
+      current = null;
+      continue;
+    }
+
+    if (!current) continue;
+
+    const colonIdx = trimmed.indexOf(':');
+    if (colonIdx === -1) continue;
+
+    const propHeader = trimmed.slice(0, colonIdx).trim();
+    const rawVal = trimmed.slice(colonIdx + 1).trim();
+
+    // Remove group prefixes like "item1.FN" -> "FN"
+    const propWithoutGroup = propHeader.replace(/^[a-zA-Z0-9_-]+\./, '');
+    const semiIdx = propWithoutGroup.indexOf(';');
+    const propName = (semiIdx === -1 ? propWithoutGroup : propWithoutGroup.slice(0, semiIdx)).toUpperCase();
+    const propParams = (semiIdx === -1 ? '' : propWithoutGroup.slice(semiIdx + 1)).toUpperCase();
+
+    const isQP = propParams.includes('QUOTED-PRINTABLE') || propHeader.toUpperCase().includes('QUOTED-PRINTABLE');
+    const val = isQP ? decodeQuotedPrintable(rawVal) : rawVal;
+
+    if (propName === 'FN') {
+      current.fn = val;
+    } else if (propName === 'N' && !current.fn) {
+      const parts = val.split(';');
+      const lastName = parts[0]?.trim() || '';
+      const firstName = parts[1]?.trim() || '';
+      const middleName = parts[2]?.trim() || '';
+      const constructed = [firstName, middleName, lastName].filter(Boolean).join(' ');
+      if (constructed) current.n = constructed;
+    } else if (propName === 'TEL') {
+      const cleanPhone = val.replace(/[\s\-()]/g, '');
+      if (cleanPhone && !current.phone) {
+        current.phone = cleanPhone;
       }
-      // Phone
-      else if (line.startsWith('TEL') && !currentContact.phone) {
-        const val = line.substring(line.indexOf(':') + 1).trim().replace(/[\s\-()]/g, '');
-        if (val) currentContact.phone = val;
+    } else if (propName === 'EMAIL') {
+      const cleanEmail = val.trim().toLowerCase();
+      if (cleanEmail && !current.email) {
+        current.email = cleanEmail;
       }
-      // Email
-      else if (line.startsWith('EMAIL') && !currentContact.email) {
-        const val = line.substring(line.indexOf(':') + 1).trim();
-        if (val) currentContact.email = val;
-      }
+    } else if (propName === 'NICKNAME' && !current.nickname) {
+      current.nickname = val;
+    } else if (propName === 'ORG' && !current.org) {
+      current.org = val;
     }
   }
 
@@ -167,23 +376,23 @@ export function parseCsvContacts(csvText: string): DeviceContact[] {
 
   for (const line of dataLines) {
     const cells = splitRow(line);
-    let name = '';
+    let rawName = '';
     if (nameIdx >= 0 && cells[nameIdx]) {
-      name = cells[nameIdx];
+      rawName = cells[nameIdx];
     } else if (givenNameIdx >= 0 || familyNameIdx >= 0) {
       const first = givenNameIdx >= 0 ? cells[givenNameIdx] || '' : '';
       const last = familyNameIdx >= 0 ? cells[familyNameIdx] || '' : '';
-      name = `${first} ${last}`.trim();
+      rawName = `${first} ${last}`.trim();
     }
 
-    name = name.trim();
     const email = emailIdx >= 0 && cells[emailIdx] ? cells[emailIdx].trim().toLowerCase() : undefined;
     const rawPhone = phoneIdx >= 0 && cells[phoneIdx] ? cells[phoneIdx].trim() : undefined;
     const phone = rawPhone ? rawPhone.replace(/[\s\-()]/g, '') : undefined;
+    const name = sanitizeContactName(rawName, { email, phone });
 
     if (name || email || phone) {
       contacts.push({
-        name: name || email || phone || 'Unnamed Contact',
+        name: name || email || phone || 'Contact',
         email: email || undefined,
         phone: phone || undefined,
       });

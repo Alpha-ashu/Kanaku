@@ -3,9 +3,10 @@ import React, { useState, useEffect } from 'react';
 import { useApp } from '@/contexts/AppContext';
 import { backendService } from '@/lib/backend-api';
 import { SearchableDropdown } from '@/app/components/ui/SearchableDropdown';
-import { Users, UserPlus, X, Check, ArrowLeft, Loader2, Calculator, Tag, AlignLeft, Calendar, Info, Sparkles, Trash2, Plus } from 'lucide-react';
+import { Users, UserPlus, X, Check, ArrowLeft, Loader2, Calculator, Tag, AlignLeft, Calendar, Info, Sparkles, Trash2, Plus, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { decodeQuotedPrintable, sanitizeContactName } from '@/services/contactsService';
 
 import { FloatingSaveBar } from '@/app/components/ui/FloatingSaveBar';
 import { db } from '@/lib/database';
@@ -28,188 +29,266 @@ const groupCategoryOptions = GROUP_CATEGORIES.map((category) => ({
  icon: <span className="text-lg">{category.icon}</span>
 }));
 
+interface GroupParticipantItem {
+  id: string;
+  name: string;
+  friendId?: number;
+  email?: string;
+  phone?: string;
+}
+
+const createParticipantItem = (seed: Partial<GroupParticipantItem> = {}): GroupParticipantItem => ({
+  id: Math.random().toString(36).slice(2, 9),
+  name: '',
+  ...seed,
+});
+
 export const AddGroup: React.FC = () => {
- const { setCurrentPage, currency, friends, refreshData } = useApp();
- const [isSubmitting, setIsSubmitting] = useState(false);
- const [showFriendPicker, setShowFriendPicker] = useState(false);
- 
- const [formData, setFormData] = useState({
- name: '',
- description: '',
- participants: [''] as string[],
- totalAmount: 0,
- category: 'general',
- date: new Date().toISOString().split('T')[0],
- });
+  const { setCurrentPage, currency, friends, refreshData } = useApp();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showFriendPicker, setShowFriendPicker] = useState(false);
+  const [friendSearch, setFriendSearch] = useState('');
+  
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    participants: [createParticipantItem()] as GroupParticipantItem[],
+    totalAmount: 0,
+    category: 'general',
+    date: new Date().toISOString().split('T')[0],
+  });
 
- const [amountStr, setAmountStr] = useState('');
+  const [amountStr, setAmountStr] = useState('');
 
- const validParticipants = formData.participants.filter((p) => p.trim());
- const totalNum = formData.totalAmount;
- const perPerson = validParticipants.length > 0 ? totalNum / (validParticipants.length + 1) : totalNum;
- 
- const formatCurrency = (v: number) => formatCurrencyAmount(v, currency);
+  const validParticipants = formData.participants.filter((p) => p.name.trim());
+  const totalNum = formData.totalAmount;
+  const perPerson = validParticipants.length > 0 ? totalNum / (validParticipants.length + 1) : totalNum;
+  
+  const formatCurrency = (v: number) => formatCurrencyAmount(v, currency);
 
- const addParticipant = () => setFormData(prev => ({ ...prev, participants: [...prev.participants, ''] }));
- 
- const removeParticipant = (i: number) => 
- setFormData(prev => ({ ...prev, participants: prev.participants.filter((_, idx) => idx !== i) }));
- 
- const updateParticipant = (i: number, val: string) => {
- const next = [...formData.participants];
- next[i] = val;
- setFormData(prev => ({ ...prev, participants: next }));
- };
+  const addParticipant = () => setFormData(prev => ({
+    ...prev,
+    participants: [...prev.participants, createParticipantItem()]
+  }));
+  
+  const removeParticipant = (i: number) => 
+    setFormData(prev => ({ ...prev, participants: prev.participants.filter((_, idx) => idx !== i) }));
+  
+  const updateParticipantName = (i: number, name: string) => {
+    const next = [...formData.participants];
+    next[i] = { ...next[i], name };
+    setFormData(prev => ({ ...prev, participants: next }));
+  };
 
- // Save a name as a Friend in the DB if not already there (temp record)
- const saveNewFriend = async (name: string) => {
- const trimmed = name.trim();
- if (!trimmed) return;
- const existing = friends.find(f => f.name.toLowerCase() === trimmed.toLowerCase());
- if (existing) return;
- await db.friends.add({ name: trimmed, createdAt: new Date(), updatedAt: new Date(), syncStatus: 'pending' });
- refreshData();
- };
+  // Save a name as a Friend in the DB if not already there (temp record)
+  const saveNewFriend = async (p: GroupParticipantItem) => {
+    const trimmed = p.name.trim();
+    if (!trimmed) return;
+    const cleanEmail = p.email?.trim().toLowerCase();
+    const cleanPhone = p.phone?.replace(/\D/g, '');
 
- const addFriend = (name: string) => {
- if (formData.participants.some((p) => p.toLowerCase() === name.toLowerCase())) { 
- toast.error(`${name} already added`); 
- return; 
- }
- const emptyIdx = formData.participants.findIndex((p) => !p.trim());
- if (emptyIdx !== -1) { 
- const next = [...formData.participants]; 
- next[emptyIdx] = name; 
- setFormData(prev => ({ ...prev, participants: next })); 
- } else { 
- setFormData(prev => ({ ...prev, participants: [...prev.participants, name] })); 
- }
- setShowFriendPicker(false);
- };
+    const existing = friends.find(f => {
+      if (p.friendId && f.id === p.friendId) return true;
+      if (cleanEmail && f.email && f.email.trim().toLowerCase() === cleanEmail) return true;
+      if (cleanPhone && f.phone && f.phone.replace(/\D/g, '') === cleanPhone) return true;
+      if (!cleanEmail && !cleanPhone && !f.email && !f.phone && f.name.toLowerCase() === trimmed.toLowerCase()) return true;
+      return false;
+    });
+    if (existing) return;
+    await db.friends.add({
+      name: trimmed,
+      email: p.email?.trim() || undefined,
+      phone: p.phone?.trim() || undefined,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      syncStatus: 'pending',
+    });
+    refreshData();
+  };
 
- // New person: add inline by name and immediately save to friends DB
- const [newPersonInput, setNewPersonInput] = useState('');
- const [showNewPersonInput, setShowNewPersonInput] = useState(false);
+  const addFriend = (friend: typeof friends[0]) => {
+    const fEmail = friend.email ? friend.email.trim().toLowerCase() : '';
+    const fPhone = friend.phone ? friend.phone.replace(/\D/g, '') : '';
 
- const confirmNewPerson = async () => {
- const name = newPersonInput.trim();
- if (!name) return;
- if (formData.participants.some(p => p.toLowerCase() === name.toLowerCase())) {
- toast.error(`${name} already added`);
- return;
- }
- await saveNewFriend(name);
- const emptyIdx = formData.participants.findIndex(p => !p.trim());
- if (emptyIdx !== -1) {
- const next = [...formData.participants];
- next[emptyIdx] = name;
- setFormData(prev => ({ ...prev, participants: next }));
- } else {
- setFormData(prev => ({ ...prev, participants: [...formData.participants, name] }));
- }
- setNewPersonInput('');
- setShowNewPersonInput(false);
- };
+    const isDup = formData.participants.some(p => {
+      if (p.friendId && p.friendId === friend.id) return true;
+      if (fEmail && p.email && p.email.trim().toLowerCase() === fEmail) return true;
+      if (fPhone && p.phone && p.phone.replace(/\D/g, '') === fPhone) return true;
+      if (!fEmail && !fPhone && !p.email && !p.phone && p.name.trim().toLowerCase() === friend.name.trim().toLowerCase()) return true;
+      return false;
+    });
 
- const handleSubmit = async () => {
- if (!formData.name.trim()) { toast.error('Group name is required'); return; }
- if (validParticipants.length < 1) { toast.error('Add at least one participant'); return; }
- if (totalNum <= 0) { toast.error('Total amount must be greater than 0'); return; }
+    if (isDup) { 
+      toast.error(`${friend.name} is already added`); 
+      return; 
+    }
 
- setIsSubmitting(true);
- try {
- const expenseDate = new Date(formData.date);
- const targetDateStr = expenseDate.toDateString();
- const existingGroup = await db.groupExpenses
-  .filter(g =>
-   g.name.toLowerCase() === formData.name.trim().toLowerCase() &&
-   new Date(g.date).toDateString() === targetDateStr &&
-   !g.deletedAt
-  )
-  .first();
+    const newPart: GroupParticipantItem = {
+      id: Math.random().toString(36).slice(2, 9),
+      name: friend.name,
+      friendId: friend.id,
+      email: friend.email,
+      phone: (friend as any)?.phone,
+    };
 
- if (existingGroup) {
-  toast.error('A group expense with the same name and date already exists.');
-  setIsSubmitting(false);
-  return;
- }
+    const emptyIdx = formData.participants.findIndex((p) => !p.name.trim() && !p.friendId);
+    if (emptyIdx !== -1) { 
+      const next = [...formData.participants]; 
+      next[emptyIdx] = newPart; 
+      setFormData(prev => ({ ...prev, participants: next })); 
+    } else { 
+      setFormData(prev => ({ ...prev, participants: [...prev.participants, newPart] })); 
+    }
+    setShowFriendPicker(false);
+    toast.success(`Added ${friend.name} to group`);
+  };
 
- // Auto-save all new participant names as Friends in the DB
- await Promise.all(validParticipants.map(name => saveNewFriend(name)));
+  // New person: add inline by name and immediately save to friends DB
+  const [newPersonInput, setNewPersonInput] = useState('');
+  const [showNewPersonInput, setShowNewPersonInput] = useState(false);
 
- // Build enriched member list for both local record and backend
- const enrichedParticipants = validParticipants.map((name) => {
-   const friend = friends.find((f) => f.name.toLowerCase() === name.toLowerCase());
-   return {
-     name,
-     share: perPerson,
-     paid: false,
-     isCurrentUser: false as const,
-     paidAmount: 0,
-     paymentStatus: 'pending' as const,
-     friendId: friend?.id,
-     email: friend?.email,
-     phone: (friend as any)?.phone,
-   };
- });
+  const confirmNewPerson = async () => {
+    const name = newPersonInput.trim();
+    if (!name) return;
 
- const members = [
-   { name: 'You', share: perPerson, paid: true, isCurrentUser: true as const, paidAmount: perPerson, paymentStatus: 'paid' as const },
-   ...enrichedParticipants,
- ];
+    const newPart: GroupParticipantItem = {
+      id: Math.random().toString(36).slice(2, 9),
+      name,
+    };
 
- const now = new Date();
+    await saveNewFriend(newPart);
+    const emptyIdx = formData.participants.findIndex(p => !p.name.trim() && !p.friendId);
+    if (emptyIdx !== -1) {
+      const next = [...formData.participants];
+      next[emptyIdx] = newPart;
+      setFormData(prev => ({ ...prev, participants: next }));
+    } else {
+      setFormData(prev => ({ ...prev, participants: [...formData.participants, newPart] }));
+    }
+    setNewPersonInput('');
+    setShowNewPersonInput(false);
+  };
 
- // Write to Dexie first so the Groups page shows it immediately (offline-first)
- const localId = await db.groupExpenses.add({
-   name: formData.name.trim(),
-   totalAmount: totalNum,
-   paidBy: 0,
-   date: expenseDate,
-   members,
-   description: formData.description || undefined,
-   category: formData.category,
-   splitType: 'equal',
-   yourShare: perPerson,
-   status: 'pending',
-   syncStatus: 'pending',
-   createdAt: now,
-   updatedAt: now,
- });
+  const handleSubmit = async () => {
+    if (!formData.name.trim()) { toast.error('Group name is required'); return; }
+    if (validParticipants.length < 1) { toast.error('Add at least one participant'); return; }
+    if (totalNum <= 0) { toast.error('Total amount must be greater than 0'); return; }
 
- toast.success('Group expense created! Participants saved to contacts.');
- setCurrentPage('groups');
+    // Validate uniqueness of email and phone (user names CAN be duplicate)
+    const emailSet = new Set<string>();
+    const phoneSet = new Set<string>();
+    for (const p of validParticipants) {
+      if (p.email) {
+        const e = p.email.trim().toLowerCase();
+        if (emailSet.has(e)) {
+          toast.error(`Duplicate collaborator email "${p.email}". All participants must have unique emails.`);
+          return;
+        }
+        emailSet.add(e);
+      }
+      if (p.phone) {
+        const ph = p.phone.replace(/\D/g, '');
+        if (phoneSet.has(ph)) {
+          toast.error(`Duplicate collaborator phone "${p.phone}". All participants must have unique phone numbers.`);
+          return;
+        }
+        phoneSet.add(ph);
+      }
+    }
 
- // Push to backend in background; update cloudId on success
- try {
-   const backendResp = await backendService.api.post('/groups', {
-     name: formData.name.trim(),
-     totalAmount: totalNum,
-     paidBy: 0,
-     date: expenseDate.toISOString(),
-     category: formData.category,
-     description: formData.description || undefined,
-     splitType: 'equal',
-     yourShare: perPerson,
-     status: 'pending',
-     members: [
-       { name: 'You', share: perPerson, paid: true, isCurrentUser: true },
-       ...enrichedParticipants.map(p => ({ name: p.name, share: p.share, paid: p.paid, email: p.email, phone: p.phone })),
-     ],
-   });
-   if (backendResp.data?.id || backendResp.data?.data?.id) {
-     const cloudId = String(backendResp.data?.id ?? backendResp.data?.data?.id);
-     await db.groupExpenses.update(localId as number, { cloudId, syncStatus: 'synced' });
-   }
- } catch {
-   // Keep syncStatus='pending'; background sync will retry
- }
- } catch (error) {
- toast.error('Failed to create group expense');
- } finally {
- setIsSubmitting(false);
- }
- };
+    setIsSubmitting(true);
+    try {
+      const expenseDate = new Date(formData.date);
+      const targetDateStr = expenseDate.toDateString();
+      const existingGroup = await db.groupExpenses
+        .filter(g =>
+          g.name.toLowerCase() === formData.name.trim().toLowerCase() &&
+          new Date(g.date).toDateString() === targetDateStr &&
+          !g.deletedAt
+        )
+        .first();
+
+      if (existingGroup) {
+        toast.error('A group expense with the same name and date already exists.');
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Auto-save any new participant names to Friends DB
+      await Promise.all(validParticipants.filter(p => !p.friendId).map(p => saveNewFriend(p)));
+
+      // Build enriched member list for both local record and backend
+      const enrichedParticipants = validParticipants.map((p) => {
+        return {
+          name: p.name,
+          share: perPerson,
+          paid: false,
+          isCurrentUser: false as const,
+          paidAmount: 0,
+          paymentStatus: 'pending' as const,
+          friendId: p.friendId,
+          email: p.email,
+          phone: p.phone,
+        };
+      });
+
+      const members = [
+        { name: 'You', share: perPerson, paid: true, isCurrentUser: true as const, paidAmount: perPerson, paymentStatus: 'paid' as const },
+        ...enrichedParticipants,
+      ];
+
+      const now = new Date();
+
+      // Write to Dexie first so the Groups page shows it immediately (offline-first)
+      const localId = await db.groupExpenses.add({
+        name: formData.name.trim(),
+        totalAmount: totalNum,
+        paidBy: 0,
+        date: expenseDate,
+        members,
+        description: formData.description || undefined,
+        category: formData.category,
+        splitType: 'equal',
+        yourShare: perPerson,
+        status: 'pending',
+        syncStatus: 'pending',
+        createdAt: now,
+        updatedAt: now,
+      });
+
+      toast.success('Group expense created! Participants saved to contacts.');
+      setCurrentPage('groups');
+
+      // Push to backend in background; update cloudId on success
+      try {
+        const backendResp = await backendService.api.post('/groups', {
+          name: formData.name.trim(),
+          totalAmount: totalNum,
+          paidBy: 0,
+          date: expenseDate.toISOString(),
+          category: formData.category,
+          description: formData.description || undefined,
+          splitType: 'equal',
+          yourShare: perPerson,
+          status: 'pending',
+          members: [
+            { name: 'You', share: perPerson, paid: true, isCurrentUser: true },
+            ...enrichedParticipants.map(p => ({ name: p.name, share: p.share, paid: p.paid, email: p.email, phone: p.phone })),
+          ],
+        });
+        if (backendResp.data?.id || backendResp.data?.data?.id) {
+          const cloudId = String(backendResp.data?.id ?? backendResp.data?.data?.id);
+          await db.groupExpenses.update(localId as number, { cloudId, syncStatus: 'synced' });
+        }
+      } catch {
+        // Keep syncStatus='pending'; background sync will retry
+      }
+    } catch (error) {
+      toast.error('Failed to create group expense');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
  return (
  <div className="flex flex-col min-h-screen bg-white">
@@ -307,105 +386,205 @@ export const AddGroup: React.FC = () => {
  <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">
  Split with Participants ({validParticipants.length + 1})
  </label>
- <div className="flex gap-2">
- {friends && friends.length > 0 && (
- <button data-testid="add-group-friends" 
- type="button" 
- onClick={() => { setShowFriendPicker(!showFriendPicker); setShowNewPersonInput(false); }}
- className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-violet-600 bg-violet-50 px-2.5 py-1.5 rounded-lg flex items-center gap-1"
- >
- <Users size={10} /> Friends
- </button>
- )}
- <button data-testid="add-group-new-person" 
- type="button" 
- onClick={() => { setShowNewPersonInput(!showNewPersonInput); setShowFriendPicker(false); }}
- className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2.5 py-1.5 rounded-lg flex items-center gap-1"
- >
- <UserPlus size={10} /> New Person
- </button>
- </div>
- </div>
+  <div className="flex gap-2">
+  {friends && friends.length > 0 ? (
+  <button data-testid="add-group-friends" 
+  type="button" 
+  onClick={() => { setShowFriendPicker(!showFriendPicker); setShowNewPersonInput(false); }}
+  className={cn(
+    "text-[10px] sm:text-[11px] font-bold uppercase tracking-wider px-2.5 py-1.5 rounded-lg flex items-center gap-1 transition-all cursor-pointer",
+    showFriendPicker ? "bg-violet-600 text-white" : "text-violet-600 bg-violet-50 hover:bg-violet-100"
+  )}
+  >
+  <Users size={10} /> Friends ({friends.length})
+  </button>
+  ) : (
+  <button
+  type="button"
+  onClick={() => {
+    toast.info('No friends in your contacts yet. Redirecting to Add Friends...');
+    setCurrentPage('add-friends');
+  }}
+  className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-violet-600 bg-violet-50 hover:bg-violet-100 px-2.5 py-1.5 rounded-lg flex items-center gap-1 cursor-pointer"
+  >
+  <UserPlus size={10} /> Add Friends
+  </button>
+  )}
+  <button data-testid="add-group-new-person" 
+  type="button" 
+  onClick={() => { setShowNewPersonInput(!showNewPersonInput); setShowFriendPicker(false); }}
+  className={cn(
+    "text-[10px] sm:text-[11px] font-bold uppercase tracking-wider px-2.5 py-1.5 rounded-lg flex items-center gap-1 transition-all cursor-pointer",
+    showNewPersonInput ? "bg-indigo-600 text-white" : "text-indigo-600 bg-indigo-50 hover:bg-indigo-100"
+  )}
+  >
+  <UserPlus size={10} /> New Person
+  </button>
+  </div>
+  </div>
 
- {/* Friends quick-pick panel */}
- {showFriendPicker && friends.length > 0 && (
- <div className="p-3 bg-violet-50/60 rounded-xl border border-violet-100 animate-in slide-in-from-top-2">
- <p className="text-[10px] sm:text-[11px] font-bold text-violet-400 uppercase tracking-wider mb-2">Tap to add</p>
- <div className="flex flex-wrap gap-2">
- {friends.map(f => {
- const already = formData.participants.some(p => p.toLowerCase() === f.name.toLowerCase());
- return (
- <button data-testid={`add-group-button-${f.id}`} 
- key={f.id}
- type="button"
- onClick={() => !already && addFriend(f.name)}
- disabled={already}
- className={cn(
-"px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all",
- already
- ?"bg-slate-100 text-slate-300 cursor-not-allowed line-through"
- :"bg-white border border-violet-100 text-violet-700 hover:bg-violet-600 hover:text-white shadow-sm"
- )}
- >
- {f.name}
- </button>
- );
- })}
- </div>
- </div>
- )}
+  {/* Friends quick-pick panel */}
+  {showFriendPicker && friends.length > 0 && (
+  <div className="p-3 bg-violet-50/70 rounded-xl border border-violet-100 animate-in slide-in-from-top-2 space-y-2.5">
+  <div className="flex items-center justify-between">
+    <p className="text-[10px] sm:text-[11px] font-bold text-violet-600 uppercase tracking-wider">Tap friend to add to group</p>
+    <button
+      type="button"
+      onClick={() => {
+        setShowFriendPicker(false);
+        setFriendSearch('');
+      }}
+      className="text-violet-400 hover:text-violet-600 text-[10px] font-bold uppercase cursor-pointer"
+    >
+      Close
+    </button>
+  </div>
 
- {/* Inline new person input */}
- {showNewPersonInput && (
- <div className="flex items-center gap-2 p-2.5 bg-indigo-50/60 rounded-xl border border-indigo-100 animate-in slide-in-from-top-2">
- <UserPlus size={14} className="text-indigo-400 shrink-0" />
- <input data-testid="add-group-type-name-press-enter"
- type="text"
- value={newPersonInput}
- onChange={e => setNewPersonInput(e.target.value)}
- onKeyDown={e => e.key === 'Enter' && confirmNewPerson()}
- className="flex-1 bg-transparent border-none p-0 text-xs font-bold text-slate-900 focus:ring-0 placeholder:text-slate-300"
- placeholder="Type name & press Enter"
- autoFocus
- />
- <button data-testid="add-group-confirm" type="button" onClick={confirmNewPerson} title="Confirm" className="p-1.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all">
- <Check size={12} strokeWidth={3} />
- </button>
- <button data-testid="add-group-cancel" type="button" onClick={() => { setShowNewPersonInput(false); setNewPersonInput(''); }} title="Cancel" className="p-1.5 text-slate-400 hover:text-slate-600 transition-all">
- <X size={12} strokeWidth={3} />
- </button>
- </div>
- )}
+  {/* Search box for filtering contacts */}
+  <div className="relative">
+    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-violet-400 pointer-events-none" />
+    <input
+      type="text"
+      value={friendSearch}
+      onChange={(e) => setFriendSearch(e.target.value)}
+      placeholder="Search contact by name or number..."
+      data-testid="add-group-friend-search-input"
+      className="w-full pl-8 pr-7 py-1.5 bg-white border border-violet-200/80 rounded-xl text-xs font-semibold text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 transition-all"
+    />
+    {friendSearch && (
+      <button
+        type="button"
+        onClick={() => setFriendSearch('')}
+        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+      >
+        <X size={12} />
+      </button>
+    )}
+  </div>
 
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[250px] lg:max-h-[400px] overflow-y-auto no-scrollbar">
- {/* Fixed"You" Participant */}
- <div className="flex items-center gap-2 p-2.5 bg-slate-100/50 rounded-xl border border-slate-100">
- <div className="w-8 h-8 rounded-full bg-violet-600 flex items-center justify-center text-[10px] font-black text-white">ME</div>
- <div className="flex-1">
- <p className="text-xs font-bold text-slate-900">You (Included)</p>
- <p className="text-[10px] sm:text-[11px] font-medium text-slate-400 uppercase">Always part of split</p>
- </div>
- </div>
+  <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto pr-1">
+  {(() => {
+    const query = friendSearch.toLowerCase().trim();
+    const queryDigits = friendSearch.replace(/\D/g, '');
+    const filtered = friends.filter(f => {
+      if (!query) return true;
+      const decoded = sanitizeContactName(f.name).toLowerCase();
+      const raw = f.name.toLowerCase();
+      const email = (f.email || '').toLowerCase();
+      const phoneDigits = (f.phone || '').replace(/\D/g, '');
+      return decoded.includes(query) || raw.includes(query) || email.includes(query) || (queryDigits && phoneDigits.includes(queryDigits));
+    });
 
- {formData.participants.map((p, i) => (
- <div key={i} className="flex items-center gap-2 p-2 bg-white border border-slate-100 rounded-xl group">
- <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-[10px] font-black text-indigo-500 uppercase">
- {p ? p.charAt(0) : <Plus size={12} />}
- </div>
- <input data-testid={`add-group-person-${i}`} 
- type="text" 
- value={p} 
- onChange={e => updateParticipant(i, e.target.value)}
- onBlur={e => saveNewFriend(e.target.value)}
- className="flex-1 bg-transparent border-none p-0 text-[11px] font-bold text-slate-900 focus:ring-0" 
- placeholder={`Person ${i + 1}`} 
- />
- <button data-testid={`add-group-remove-participant-${i}`} type="button" onClick={() => removeParticipant(i)} title="Remove participant" className="text-slate-300 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-all">
- <Trash2 size={14} />
- </button>
- </div>
- ))}
- </div>
+    if (filtered.length === 0) {
+      return (
+        <p className="text-xs text-violet-400 py-2 w-full text-center">
+          No contacts match "{friendSearch}"
+        </p>
+      );
+    }
+
+    return filtered.map(f => {
+      const cleanName = sanitizeContactName(f.name, { email: f.email, phone: f.phone });
+      const isAdded = formData.participants.some(p =>
+        (p.friendId && p.friendId === f.id) ||
+        (f.email && p.email && p.email.trim().toLowerCase() === f.email.trim().toLowerCase()) ||
+        (f.phone && p.phone && p.phone.replace(/\D/g, '') === f.phone.replace(/\D/g, '')) ||
+        (!f.email && !f.phone && !p.email && !p.phone && p.name.trim().toLowerCase() === cleanName.trim().toLowerCase())
+      );
+      return (
+        <button
+          data-testid={`add-group-button-${f.id}`} 
+          key={f.id}
+          type="button"
+          onClick={() => !isAdded && addFriend({ ...f, name: cleanName })}
+          disabled={isAdded}
+          className={cn(
+            "px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer",
+            isAdded
+              ? "bg-slate-100 text-slate-400 cursor-not-allowed line-through"
+              : "bg-white border border-violet-100 text-violet-700 hover:bg-violet-600 hover:text-white shadow-2xs"
+          )}
+        >
+          <span>{cleanName}</span>
+          {f.email ? (
+            <span className="text-[10px] opacity-70">({f.email})</span>
+          ) : f.phone ? (
+            <span className="text-[10px] opacity-70">({f.phone})</span>
+          ) : null}
+        </button>
+      );
+    });
+  })()}
+  </div>
+  </div>
+  )}
+
+  {/* Inline new person input */}
+  {showNewPersonInput && (
+  <div className="flex items-center gap-2 p-2.5 bg-indigo-50/60 rounded-xl border border-indigo-100 animate-in slide-in-from-top-2">
+  <UserPlus size={14} className="text-indigo-400 shrink-0" />
+  <input data-testid="add-group-type-name-press-enter"
+  type="text"
+  value={newPersonInput}
+  onChange={e => setNewPersonInput(e.target.value)}
+  onKeyDown={e => e.key === 'Enter' && confirmNewPerson()}
+  className="flex-1 bg-transparent border-none p-0 text-xs font-bold text-slate-900 focus:ring-0 placeholder:text-slate-300"
+  placeholder="Type name & press Enter"
+  autoFocus
+  />
+  <button data-testid="add-group-confirm" type="button" onClick={confirmNewPerson} title="Confirm" className="p-1.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all cursor-pointer">
+  <Check size={12} strokeWidth={3} />
+  </button>
+  <button data-testid="add-group-cancel" type="button" onClick={() => { setShowNewPersonInput(false); setNewPersonInput(''); }} title="Cancel" className="p-1.5 text-slate-400 hover:text-slate-600 transition-all cursor-pointer">
+  <X size={12} strokeWidth={3} />
+  </button>
+  </div>
+  )}
+
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[250px] lg:max-h-[400px] overflow-y-auto no-scrollbar">
+  {/* Fixed "You" Participant */}
+  <div className="flex items-center gap-2 p-2.5 bg-slate-100/50 rounded-xl border border-slate-100">
+  <div className="w-8 h-8 rounded-full bg-violet-600 flex items-center justify-center text-[10px] font-black text-white">ME</div>
+  <div className="flex-1">
+  <p className="text-xs font-bold text-slate-900">You (Included)</p>
+  <p className="text-[10px] sm:text-[11px] font-medium text-slate-400 uppercase">Always part of split</p>
+  </div>
+  </div>
+
+  {formData.participants.map((p, i) => (
+  <div key={p.id || i} className="flex items-center gap-2 p-2 bg-white border border-slate-100 rounded-xl group">
+  <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-[10px] font-black text-indigo-500 uppercase shrink-0">
+  {p.name ? p.name.charAt(0) : <Plus size={12} />}
+  </div>
+  <div className="flex-1 min-w-0">
+  <input data-testid={`add-group-person-${i}`} 
+  type="text" 
+  value={p.name} 
+  onChange={e => updateParticipantName(i, e.target.value)}
+  onBlur={() => saveNewFriend(p)}
+  className="w-full bg-transparent border-none p-0 text-[11px] font-bold text-slate-900 focus:ring-0" 
+  placeholder={`Person ${i + 1}`} 
+  />
+  {(p.email || p.phone) && (
+    <p className="text-[9px] text-slate-400 truncate">
+      {p.email || p.phone}
+    </p>
+  )}
+  </div>
+  <button data-testid={`add-group-remove-participant-${i}`} type="button" onClick={() => removeParticipant(i)} title="Remove participant" className="text-slate-300 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-all cursor-pointer p-1">
+  <Trash2 size={14} />
+  </button>
+  </div>
+  ))}
+  </div>
+  <button
+    type="button"
+    onClick={addParticipant}
+    className="w-full py-2 text-xs font-bold text-violet-600 bg-violet-50/70 hover:bg-violet-100 rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+  >
+    <Plus size={14} />
+    <span>Add Another Participant Slot</span>
+  </button>
  </div>
  </div>
  </div>
@@ -494,7 +673,7 @@ export const AddGroup: React.FC = () => {
               <div className="flex -space-x-2">
                 <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-violet-500 border-2 border-slate-900 flex items-center justify-center text-[8px] sm:text-[9px] font-black">YOU</div>
                 {validParticipants.slice(0, 3).map((p, i) => (
-                  <div key={i} className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-700 border-2 border-slate-900 flex items-center justify-center text-[8px] sm:text-[9px] font-black uppercase">{p[0] || '?'}</div>
+                  <div key={i} className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-700 border-2 border-slate-900 flex items-center justify-center text-[8px] sm:text-[9px] font-black uppercase">{p.name[0] || '?'}</div>
                 ))}
                 {validParticipants.length > 3 && <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-800 border-2 border-slate-900 flex items-center justify-center text-[8px] sm:text-[9px] font-black">+{validParticipants.length - 3}</div>}
               </div>

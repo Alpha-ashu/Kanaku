@@ -56,7 +56,18 @@ interface SyncQueueItem {
   table: SyncedTableName;
   operation: SyncOperation;
   localId: number;
-  remoteId?: number;
+  /**
+   * The server-side identity of the record, captured when the item was queued.
+   *
+   * Backend-first mode addresses rows by their UUID `cloudId`; the legacy direct
+   * Supabase path used a numeric `remoteId`. Both land here, so the field must
+   * stay wide: narrowing it to `number` silently turned every UUID into NaN, and
+   * `processPendingSyncQueueBackend` then treated the queued delete as "nothing
+   * to send" and dropped it. The row survived on the server and the next pull
+   * inserted it straight back — the delete-then-reappear loop that made
+   * duplicates look unkillable in every feature.
+   */
+  remoteId?: number | string;
   queuedAt: string;
   retryCount?: number;
 }
@@ -286,6 +297,19 @@ const isMissingRemoteRow = (error: any) =>
   String(error?.message || '').toLowerCase().includes('0 rows');
 
 /**
+ * The server answering "you already used this Idempotency-Key with a different
+ * body". It is a 409, so `isPermanentValidationError` would otherwise silently
+ * bin the queue item — but unlike a real validation failure it means the record
+ * WAS created, and the local row just needs linking to it.
+ */
+export const isIdempotencyReplayConflict = (error: any) => {
+  const status = Number(error?.status ?? error?.statusCode ?? error?.response?.status ?? 0);
+  if (status !== 409) return false;
+  const errCode = error?.code ?? error?.details?.code ?? error?.response?.data?.code;
+  return errCode === 'IDEMPOTENCY_KEY_CONFLICT';
+};
+
+/**
  * A permanent validation rejection: the backend deterministically refuses this
  * payload (4xx), so retrying the identical record can never succeed — it only
  * spams the console and the API. INSUFFICIENT_BALANCE is the deliberate
@@ -406,6 +430,30 @@ const removeSyncQueueKeys = (keys: string[]) => {
   writeSyncQueue(readSyncQueue().filter((item) => !keySet.has(item.key)));
 };
 
+/**
+ * A stable, client-generated idempotency key for one local record.
+ *
+ * It is minted once, when the row is first written to Dexie, and never changes.
+ * `syncLocalRecordToBackendAPI` sends it as the `Idempotency-Key` header on the
+ * create, so a POST that the server committed but whose response never reached
+ * the client (timeout, dropped connection, killed tab, 5xx at the edge) replays
+ * the original response on retry instead of creating a second row.
+ *
+ * The previous behaviour — `backend-api.ts` minting a fresh random key per HTTP
+ * attempt — made the server's idempotency middleware inert for exactly the case
+ * it exists to cover: the retry always arrived under a brand-new key.
+ */
+function newClientRequestId(): string {
+  try {
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+      return crypto.randomUUID();
+    }
+  } catch {
+    // Non-secure context / old WebView — fall through to the manual form.
+  }
+  return `cri_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 12)}`;
+}
+
 export const isCloudSyncSuppressed = () => syncState.suppressionDepth > 0;
 
 export async function runWithCloudSyncSuppressed<T>(work: () => Promise<T>): Promise<T> {
@@ -461,7 +509,7 @@ function parseMissingColumnName(error: any): string | null {
   return match?.[1] ?? null;
 }
 
-export function queueRecordUpsertSync(table: SyncedTableName, localId: number, remoteId?: number) {
+export function queueRecordUpsertSync(table: SyncedTableName, localId: number, remoteId?: number | string) {
   enqueueSyncItem({
     key: `${table}:${localId}`,
     table,
@@ -472,7 +520,7 @@ export function queueRecordUpsertSync(table: SyncedTableName, localId: number, r
   });
 }
 
-export function queueRecordDeleteSync(table: SyncedTableName, localId: number, remoteId?: number) {
+export function queueRecordDeleteSync(table: SyncedTableName, localId: number, remoteId?: number | string) {
   enqueueSyncItem({
     key: `${table}:${localId}`,
     table,
@@ -483,14 +531,37 @@ export function queueRecordDeleteSync(table: SyncedTableName, localId: number, r
   });
 }
 
+/**
+ * The server's identity for a local row, whichever sync generation wrote it.
+ *
+ * Backend-first rows carry a UUID in `cloudId`; rows written by the older direct
+ * Supabase path carry a number in `remoteId`. A delete has to be addressed with
+ * whichever one exists — reading only `remoteId` is what made every queued
+ * delete of a backend row a no-op.
+ */
+function serverIdOf(record: any): number | string | undefined {
+  const cloudId = record?.cloudId;
+  if (cloudId != null && String(cloudId).trim() !== '') return String(cloudId).trim();
+  const remoteId = toNumber(record?.remoteId);
+  return remoteId || undefined;
+}
+
 function bindTableHooks(table: SyncedTableName) {
   const localTable: any = getLocalTable(table);
 
   localTable.hook('creating', function (this: any, _primKey: any, obj: any) {
     if (isCloudSyncSuppressed()) return;
 
+    // Stamp the idempotency key before the row is written, so it is already
+    // durable if the tab dies between the local write and the first POST. Every
+    // later retry of this record reuses it and the server replays the original
+    // response instead of creating a second row.
+    if (obj && !obj.clientRequestId) {
+      obj.clientRequestId = newClientRequestId();
+    }
+
     this.onsuccess = (primaryKey: number) => {
-      queueRecordUpsertSync(table, Number(primaryKey), toNumber(obj?.remoteId));
+      queueRecordUpsertSync(table, Number(primaryKey), serverIdOf(obj));
     };
   });
 
@@ -498,7 +569,7 @@ function bindTableHooks(table: SyncedTableName) {
     if (isCloudSyncSuppressed()) return;
 
     this.onsuccess = () => {
-      queueRecordUpsertSync(table, Number(primKey), toNumber(obj?.remoteId));
+      queueRecordUpsertSync(table, Number(primKey), serverIdOf(obj));
     };
   });
 
@@ -506,7 +577,7 @@ function bindTableHooks(table: SyncedTableName) {
     if (isCloudSyncSuppressed()) return;
 
     this.onsuccess = () => {
-      queueRecordDeleteSync(table, Number(primKey), toNumber(obj?.remoteId));
+      queueRecordDeleteSync(table, Number(primKey), serverIdOf(obj));
     };
   });
 }
@@ -1035,6 +1106,15 @@ async function syncLocalRecordToBackendAPI(table: SyncedTableName, localId: numb
   delete payload.syncStatus;
   delete payload.remoteId;
 
+  // Local bookkeeping the server neither reads nor needs. Stripping it also keeps
+  // the create body byte-stable across retries: the idempotency middleware hashes
+  // the body and answers a replayed key whose body changed with 409 instead of
+  // the original response, and `updatedAt` alone churns on every Dexie write.
+  delete payload.lastSyncedAt;
+  delete payload.syncedAt;
+  delete payload.pendingSync;
+  delete payload.updatedAt;
+
   // Resolve local ID references to their backend/cloud UUID equivalents
   try {
     if (table === 'transactions') {
@@ -1069,11 +1149,23 @@ async function syncLocalRecordToBackendAPI(table: SyncedTableName, localId: numb
         if (!f?.cloudId) return false;
         payload.friendId = f.cloudId;
       }
-      if (record.accountId) {
-        const acc = await db.accounts.get(Number(record.accountId));
-        if (!acc?.cloudId) return false;
-        payload.accountId = acc.cloudId;
-      }
+      // NEVER send accountId on a loan create.
+      //
+      // `POST /loans` posts its OWN "Loan disbursement: <name>" transaction and
+      // moves the account balance whenever an account is attached
+      // (loan.controller.ts). Every client path that writes a loan has already
+      // recorded that cash movement as a transaction of its own — AddTransaction's
+      // loan mode, the voice command centre and the statement importer all do
+      // `db.transactions.add(...)` immediately before `db.loans.add({ accountId })`.
+      // Forwarding the account therefore booked the same money twice: the user's
+      // own row plus a server-generated twin, and the balance moved twice with it.
+      //
+      // `saveLoanWithBackendSync` has always stripped it for exactly this reason,
+      // but that guard only covered its own callers; every loan written straight
+      // to Dexie reached the server through here instead. The account link stays
+      // on the local row — it is what the UI uses to show which account funded
+      // the loan — it simply never goes out on the wire.
+      delete payload.accountId;
     } else if (table === 'investments') {
       if (record.fundingAccountId) {
         const acc = await db.accounts.get(Number(record.fundingAccountId));
@@ -1133,8 +1225,24 @@ async function syncLocalRecordToBackendAPI(table: SyncedTableName, localId: numb
     }
   }
 
+  // ── Idempotency for creates ────────────────────────────────────────────────
+  // Mint the key and persist it BEFORE the POST goes out. If we generated it
+  // per attempt (or only after a failure) the retry would carry a different key
+  // and the server's idempotency middleware would happily create a second row —
+  // which is how a single offline save became two, three, four entries.
+  let clientRequestId: string | undefined = record.clientRequestId
+    ? String(record.clientRequestId)
+    : undefined;
+
+  if (!record.cloudId && !clientRequestId) {
+    clientRequestId = newClientRequestId();
+    await runWithCloudSyncSuppressed(() =>
+      localTable.update(localId, { clientRequestId }),
+    );
+  }
+
   let response;
-  const reqConfig = { showErrorToast: false, headers: { 'x-sync-mode': 'true' } };
+  const reqConfig: any = { showErrorToast: false, headers: { 'x-sync-mode': 'true' } };
   if (record.cloudId) {
     // The server owns `balance` (balance = openingBalance + Σ ledger deltas) and
     // already applied each transaction's delta when it was posted. Every local
@@ -1148,13 +1256,25 @@ async function syncLocalRecordToBackendAPI(table: SyncedTableName, localId: numb
     }
     response = await apiClient.put(`${path}/${record.cloudId}`, payload, reqConfig);
   } else {
+    // `idempotencyKey` (not a raw header) is the supported hook in `api.ts`: it
+    // is applied AFTER `fetchConfig.headers`, so a hand-set `Idempotency-Key`
+    // would be overwritten by the random key the client mints by default.
+    //
+    // The body copy is kept for the endpoints that persist `clientRequestId` as
+    // a unique column (accounts, goals, loans, investments) — that gives those
+    // tables a second, durable guard that outlives the middleware's 24h cache.
+    // Endpoints without the column simply have it stripped by their validator.
+    const createConfig = { ...reqConfig, idempotencyKey: clientRequestId };
+    const createPayload = { ...payload, clientRequestId };
+
     if (table === 'to_do_list_shares') {
       response = await apiClient.post(`/todos/lists/${payload.listId}/share`, {
         sharedWithEmail: payload.sharedWithUserId,
         permission: payload.permission,
-      }, reqConfig);
+        clientRequestId,
+      }, createConfig);
     } else {
-      response = await apiClient.post(path, payload, reqConfig);
+      response = await apiClient.post(path, createPayload, createConfig);
     }
   }
 
@@ -1198,6 +1318,22 @@ async function deleteLocalRecordFromBackend(table: SyncedTableName, cloudId: str
   return true;
 }
 
+/**
+ * The server id a queued item should act on. Older queue entries (written before
+ * `remoteId` was widened) may hold `NaN` or a stringified `"NaN"` from the days
+ * when a UUID was pushed through `toNumber` — treat those as "no id" rather than
+ * sending `DELETE /transactions/NaN`.
+ */
+function resolveQueuedServerId(item: SyncQueueItem): string | undefined {
+  const raw = item.remoteId;
+  if (raw == null) return undefined;
+  const value = String(raw).trim();
+  if (!value || value === 'NaN' || value === 'undefined' || value === 'null' || value === '0') {
+    return undefined;
+  }
+  return value;
+}
+
 async function processPendingSyncQueueBackend(userId: string, pendingItems: SyncQueueItem[]): Promise<void> {
   const queue = [...pendingItems].sort((left, right) => {
     const byPriority = TABLE_PRIORITY[left.table] - TABLE_PRIORITY[right.table];
@@ -1207,6 +1343,7 @@ async function processPendingSyncQueueBackend(userId: string, pendingItems: Sync
 
   const completedKeys: string[] = [];
   const deferredItems: SyncQueueItem[] = [];
+  const relinkTables = new Set<SyncedTableName>();
   let outageDeferral = false;
 
   for (let index = 0; index < queue.length; index += 1) {
@@ -1222,10 +1359,14 @@ async function processPendingSyncQueueBackend(userId: string, pendingItems: Sync
     try {
       let synced = false;
       if (item.operation === 'delete') {
-        const cloudId = item.remoteId ? String(item.remoteId) : undefined;
+        const cloudId = resolveQueuedServerId(item);
         if (cloudId) {
           synced = await deleteLocalRecordFromBackend(item.table, cloudId);
         } else {
+          // No server identity was ever recorded for this row, so there is
+          // nothing to delete remotely. (Before `serverIdOf`, UUID cloudIds were
+          // coerced through `toNumber` into NaN and every real delete landed
+          // here — the row lived on server-side and the next pull restored it.)
           synced = true;
         }
       } else {
@@ -1246,6 +1387,18 @@ async function processPendingSyncQueueBackend(userId: string, pendingItems: Sync
         deferredItems.push(...queue.slice(index));
         break;
       }
+      if (isIdempotencyReplayConflict(error)) {
+        // The server already created this record under our key; only the body
+        // moved on since (the user edited the row before it ever synced). Posting
+        // again under a fresh key is exactly how a duplicate is born, so stop
+        // pushing and let a forced pull link the local row to the server's copy.
+        console.warn(
+          `[Sync] ${item.table}:${item.localId} already exists on the server (idempotent replay conflict) — relinking via pull.`,
+        );
+        completedKeys.push(item.key);
+        relinkTables.add(item.table);
+        continue;
+      }
       if (isPermanentValidationError(error)) {
         // Server will never accept this payload — park it instead of burning
         // MAX_SYNC_RETRIES attempts on a deterministic 4xx.
@@ -1260,6 +1413,14 @@ async function processPendingSyncQueueBackend(userId: string, pendingItems: Sync
 
   if (completedKeys.length > 0) {
     removeSyncQueueKeys(completedKeys);
+  }
+
+  if (relinkTables.size > 0) {
+    // Force past the 90s per-table cooldown: the whole point is to pull the
+    // server row we just learned about and attach it to the orphaned local one.
+    void syncUserDataFromBackend(Array.from(relinkTables), true).catch((err) =>
+      console.warn('[Sync] Relink pull failed (non-fatal):', err),
+    );
   }
 
   if (deferredItems.length > 0) {
@@ -1291,7 +1452,13 @@ async function processPendingSyncQueueBackend(userId: string, pendingItems: Sync
 export async function processPendingSyncQueue() {
   initializeBackendSync();
 
-  if (syncState.processingQueue || isCloudSyncSuppressed()) return;
+  if (syncState.processingQueue || isCloudSyncSuppressed()) {
+    // A pull is mid-merge (or another drain is running). Come back rather than
+    // dropping the trigger — otherwise pending writes sit until some unrelated
+    // event happens to restart the queue.
+    if (readSyncQueue().length > 0) scheduleQueueProcessing(1_000);
+    return;
+  }
   if (typeof navigator !== 'undefined' && !navigator.onLine) return;
   if (DIRECT_CLOUD_SYNC_ENABLED && shouldSkipDirectSupabaseRequests()) return;
 
@@ -1454,12 +1621,16 @@ export async function deduplicateLocalData() {
         return (toDate(b.updatedAt)?.getTime() ?? 0) - (toDate(a.updatedAt)?.getTime() ?? 0);
       });
 
+      const seenByClientRequestId = new Map<string, number>(); // clientRequestId -> localId
+
       for (const row of sorted) {
         const rid = toNumber(row.remoteId);
         const cid = row.cloudId ? String(row.cloudId).trim() : undefined;
+        const crid = row.clientRequestId ? String(row.clientRequestId).trim() : undefined;
         const nameKey = nameKeyFn(row);
         const lid = Number(row.id);
 
+        // ── Hard identity: two local rows standing for ONE server row ─────────
         if (rid) {
           if (seenByRemoteId.has(rid)) {
             toDelete.add(lid);
@@ -1476,11 +1647,38 @@ export async function deduplicateLocalData() {
           seenByCloudId.set(cid, lid);
         }
 
-        if (nameKey) {
+        if (crid) {
+          if (seenByClientRequestId.has(crid)) {
+            toDelete.add(lid);
+            continue;
+          }
+          seenByClientRequestId.set(crid, lid);
+        }
+
+        // ── Soft identity: only ever applied to rows the server does not know ─
+        //
+        // A row that carries its own distinct cloudId/remoteId IS a distinct
+        // server record. Deleting it here only ever looked like it worked: the
+        // delete ran under `runWithCloudSyncSuppressed`, so the server was never
+        // told, and the very next pull inserted the row straight back. That is
+        // the loop that made duplicates feel permanent across every feature —
+        // and on legitimately identical entries (two ₹500 lunches on the same
+        // day, two contributions of the same amount) it was silent data loss,
+        // because the soft key cannot tell a real repeat from a duplicate.
+        //
+        // So the soft key now only collapses rows with no server identity: an
+        // unlinked local shadow of a row that did sync. Genuine server-side
+        // duplicates are prevented at the source by the stable Idempotency-Key
+        // on every create, not guessed at after the fact.
+        const hasServerIdentity = !!(rid || cid);
+        if (nameKey && !hasServerIdentity) {
           if (seenByNameKey.has(nameKey)) {
             toDelete.add(lid);
             continue;
           }
+        }
+
+        if (nameKey && !seenByNameKey.has(nameKey)) {
           seenByNameKey.set(nameKey, lid);
         }
       }
@@ -1656,36 +1854,45 @@ async function mergeRemoteTable(table: SyncedTableName, remoteRows: any[], nextR
   if (nextRows.length > 0) {
     // Build a map of existing records by remoteId for quick lookup
     const existingByRemoteId = new Map<number, any>();
+    const existingIds = new Set<number>();
     for (const row of existingRows) {
       const rid = toNumber(row.remoteId);
       if (rid) {
         existingByRemoteId.set(rid, row);
       }
+      const id = Number(row.id);
+      if (Number.isFinite(id)) existingIds.add(id);
     }
 
     // Separate into updates and inserts
     const toUpdate: any[] = [];
     const toInsert: any[] = [];
+    // See mergeBackendTable: one local row can only stand for one remote row,
+    // an id that already exists must never reach bulkAdd, and a remote row
+    // repeated in the response must only be applied once.
+    const claimedLocalIds = new Set<number>();
+    const seenRemoteIds = new Set<number>();
 
     for (const nextRow of nextRows) {
-      const remoteId = nextRow.remoteId;
-      if (!remoteId) {
-        // No remoteId = local-only record, insert as-is
-        toInsert.push(nextRow);
+      const remoteId = toNumber(nextRow.remoteId);
+
+      if (remoteId) {
+        if (seenRemoteIds.has(remoteId)) continue;
+        seenRemoteIds.add(remoteId);
+      }
+      const existing = remoteId ? existingByRemoteId.get(remoteId) : undefined;
+      const mappedId = Number(nextRow.id);
+      const candidateId = Number(existing?.id)
+        || (Number.isFinite(mappedId) && existingIds.has(mappedId) ? mappedId : NaN);
+
+      if (Number.isFinite(candidateId) && !claimedLocalIds.has(candidateId)) {
+        claimedLocalIds.add(candidateId);
+        toUpdate.push({ ...nextRow, id: candidateId });
         continue;
       }
 
-      const existing = existingByRemoteId.get(remoteId);
-      if (existing?.id) {
-        // Record with this remoteId exists - update it with the existing local ID
-        toUpdate.push({
-          ...nextRow,
-          id: existing.id,  // Preserve the local ID to avoid creating duplicates
-        });
-      } else {
-        // New remoteId - insert (bulkAdd will assign auto ID if not provided)
-        toInsert.push(nextRow);
-      }
+      const { id: _discarded, ...insertRow } = nextRow;
+      toInsert.push(insertRow);
     }
 
     // Execute updates first (safer than inserts when dealing with FK constraints)
@@ -1708,10 +1915,29 @@ async function mergeRemoteTable(table: SyncedTableName, remoteRows: any[], nextR
   }
 }
 
-const resolveLocalBackendId = (cloudId: string | undefined, existingRows: any[], matcher?: () => any) => {
+const resolveLocalBackendId = (
+  cloudId: string | undefined,
+  existingRows: any[],
+  matcher?: () => any,
+  clientRequestId?: string | null,
+) => {
   if (cloudId) {
-    const byCloudId = existingRows.find((row) => row.cloudId === cloudId);
+    const byCloudId = existingRows.find((row) => String(row.cloudId ?? '') === String(cloudId));
     if (byCloudId?.id) return Number(byCloudId.id);
+  }
+
+  // The client minted `clientRequestId` before the row was ever pushed, so it is
+  // the only exact link back to a local row that has no cloudId yet — e.g. one
+  // whose create response was lost in flight. Without this tier the pull had to
+  // fall back to guessing by name/amount/date, and a near-miss (a description the
+  // server sanitised, a rounded amount) produced a second local copy of a row the
+  // user had saved once.
+  const requestId = clientRequestId ? String(clientRequestId).trim() : '';
+  if (requestId) {
+    const byRequestId = existingRows.find(
+      (row) => !row.cloudId && String(row.clientRequestId ?? '').trim() === requestId,
+    );
+    if (byRequestId?.id) return Number(byRequestId.id);
   }
 
   const matched = matcher?.();
@@ -1738,39 +1964,62 @@ const mergeBackendTable = async (table: SyncedTableName, backendRows: any[], nex
 
   const localTable: any = getLocalTable(table);
 
-  // IDEMPOTENT merge: prevent duplicates by checking cloudId before insert/update
+  // IDEMPOTENT merge: every server row lands on exactly one local row.
   if (nextRows.length > 0) {
     // Build a map of existing records by cloudId for quick lookup
     const existingByCloudId = new Map<string, any>();
+    const existingIds = new Set<number>();
     for (const row of existingRows) {
       if (row.cloudId) {
         existingByCloudId.set(String(row.cloudId), row);
       }
+      const id = Number(row.id);
+      if (Number.isFinite(id)) existingIds.add(id);
     }
 
     // Separate into updates and inserts
     const toUpdate: any[] = [];
     const toInsert: any[] = [];
+    // One local row may only be claimed by ONE server row. Without this, two
+    // server rows that soft-match the same local row both wrote to that key —
+    // the second overwrote the first and one server record vanished locally.
+    const claimedLocalIds = new Set<number>();
+    // …and one SERVER row may only be applied once. A keyset page that overlaps
+    // its neighbour (or any list endpoint that repeats a row) hands us the same
+    // cloudId twice; the first copy claims the local row and the second would
+    // otherwise fall through to bulkAdd as a brand-new record — a duplicate
+    // manufactured by the pull itself, in whichever feature the overlap landed.
+    const seenCloudIds = new Set<string>();
 
     for (const nextRow of nextRows) {
       const cloudId = nextRow.cloudId;
-      if (!cloudId) {
-        // No cloudId = local-only record, insert as-is
-        toInsert.push(nextRow);
+
+      if (cloudId) {
+        const cloudKey = String(cloudId);
+        if (seenCloudIds.has(cloudKey)) continue;
+        seenCloudIds.add(cloudKey);
+      }
+
+      // cloudId is the hard link and always wins; the id the mapper resolved by
+      // soft-matching (name/amount/date) is the fallback for a local row that
+      // was created offline and has not been linked to the server yet.
+      const byCloudId = cloudId ? existingByCloudId.get(String(cloudId)) : undefined;
+      const mappedId = Number(nextRow.id);
+      const candidateId = Number(byCloudId?.id)
+        || (Number.isFinite(mappedId) && existingIds.has(mappedId) ? mappedId : NaN);
+
+      if (Number.isFinite(candidateId) && !claimedLocalIds.has(candidateId)) {
+        claimedLocalIds.add(candidateId);
+        toUpdate.push({ ...nextRow, id: candidateId });
         continue;
       }
 
-      const existing = existingByCloudId.get(String(cloudId));
-      if (existing?.id) {
-        // Record with this cloudId exists - update it with the existing local ID
-        toUpdate.push({
-          ...nextRow,
-          id: existing.id,  // Preserve the local ID to avoid duplicates
-        });
-      } else {
-        // New cloudId - insert (will assign auto ID if not provided)
-        toInsert.push(nextRow);
-      }
+      // Nothing to attach to (or the match was already taken) — insert a fresh
+      // row. The resolved id MUST be dropped: passing an id that already exists
+      // makes bulkAdd raise a ConstraintError, which aborted the whole merge
+      // transaction and left every pending local row unlinked and re-postable.
+      const { id: _discarded, ...insertRow } = nextRow;
+      toInsert.push(insertRow);
     }
 
     // Execute updates first
@@ -2009,7 +2258,7 @@ async function _syncUserDataFromBackendInner(
       row.type === remoteType &&
       normalizeText(row.currency) === normalizeText(account.currency)
     );
-    const localId = resolveLocalBackendId(cloudId, localAccounts, () => localRecord);
+    const localId = resolveLocalBackendId(cloudId, localAccounts, () => localRecord, account.clientRequestId);
 
     // Compute txDeltas for this account from backendTransactions. Include
     // transfers where this account is the DESTINATION — otherwise incoming
@@ -2053,6 +2302,7 @@ async function _syncUserDataFromBackendInner(
       openingBalance: account.openingBalance != null
         ? Number(account.openingBalance)
         : (localRecord?.openingBalance ?? (Number(account.balance ?? 0) - txDeltas)),
+      clientRequestId: account.clientRequestId ?? undefined,
       createdAt: toDate(account.createdAt) ?? new Date(),
       updatedAt: toDate(account.updatedAt),
       deletedAt: toDate(account.deletedAt),
@@ -2132,9 +2382,11 @@ async function _syncUserDataFromBackendInner(
           !row.cloudId &&
           normalizeText(row.name) === normalizeText(goal.name) &&
           Number(row.targetAmount ?? 0) === Number(goal.targetAmount ?? 0),
-        )
+        ),
+        goal.clientRequestId,
       ),
       cloudId: String(goal.id),
+      clientRequestId: goal.clientRequestId ?? undefined,
       name: goal.name,
       description: goal.description ?? undefined,
       targetAmount: Number(goal.targetAmount ?? 0),
@@ -2155,9 +2407,11 @@ async function _syncUserDataFromBackendInner(
           normalizeText(row.assetName) === normalizeText(investment.assetName) &&
           row.assetType === investment.assetType &&
           Number(row.quantity ?? 0) === Number(investment.quantity ?? 0),
-        )
+        ),
+        investment.clientRequestId,
       ),
       cloudId: String(investment.id),
+      clientRequestId: investment.clientRequestId ?? undefined,
       assetType: investment.assetType,
       assetName: investment.assetName,
       quantity: Number(investment.quantity ?? 0),
@@ -2255,9 +2509,11 @@ async function _syncUserDataFromBackendInner(
           normalizeText(row.name) === normalizeText(loan.name) &&
           row.type === loan.type &&
           Number(row.principalAmount ?? 0) === Number(loan.principalAmount ?? 0),
-        )
+        ),
+        loan.clientRequestId,
       ),
       cloudId: String(loan.id),
+      clientRequestId: loan.clientRequestId ?? undefined,
       type: loan.type,
       name: loan.name,
       principalAmount: Number(loan.principalAmount ?? 0),
@@ -3045,14 +3301,14 @@ export function subscribeToUserCloudSync(userId: string) {
 }
 
 export function queueTransactionInsertSync(localId: number, transaction?: any) {
-  queueRecordUpsertSync('transactions', localId, toNumber(transaction?.remoteId));
+  queueRecordUpsertSync('transactions', localId, serverIdOf(transaction));
 }
 
 export function queueTransactionUpdateSync(localId: number, transaction?: any) {
-  queueRecordUpsertSync('transactions', localId, toNumber(transaction?.remoteId));
+  queueRecordUpsertSync('transactions', localId, serverIdOf(transaction));
 }
 
-export function queueTransactionDeleteSync(localId: number, remoteId?: number) {
+export function queueTransactionDeleteSync(localId: number, remoteId?: number | string) {
   queueRecordDeleteSync('transactions', localId, remoteId);
 }
 
@@ -3117,8 +3373,16 @@ export async function saveTransactionWithBackendSync(transaction: any) {
             transferToAccountId: transferTargetAccount?.cloudId,
             transferType: transaction.transferType,
             dedupHash: activeDedupHash,
+            // The user answered the client's "you already have one like this"
+            // prompt. Without forwarding it the server matched its content hash
+            // and returned the earlier row, so the confirmed entry vanished.
+            intentionalDuplicate: transaction.intentionalDuplicate ? true : undefined,
           }, {
             showErrorToast: false,
+            // Stable key, so an axios-layer retry (auth refresh, rate-limit
+            // backoff) or a resend after a dropped response replays the original
+            // transaction instead of posting a second one.
+            idempotencyKey: activeDedupHash,
           });
 
           const remote = response.data as any;
@@ -3171,17 +3435,24 @@ export async function saveTransactionWithBackendSync(transaction: any) {
   }
 
   // Local-only save (also used as fallback from backend-unavailable path above)
+  // `intentionalDuplicate` rides along on the row on purpose: the queued create
+  // is what eventually reaches the server, and without the flag the content hash
+  // would swallow an entry the user explicitly confirmed.
   const now = new Date();
   const dbTransaction = {
     ...transaction,
     dedupHash: activeDedupHash,
+    // Same value as the Idempotency-Key the direct POST above used. If that POST
+    // committed server-side and only the response was lost, the queued retry now
+    // arrives under the identical key and replays instead of creating a twin.
+    clientRequestId: transaction.clientRequestId || activeDedupHash,
     syncStatus: 'pending' as const,
     createdAt: transaction.createdAt ?? now,
     updatedAt: now,
   };
 
   const savedId = await db.transactions.add(dbTransaction);
-  queueRecordUpsertSync('transactions', savedId, toNumber(transaction?.remoteId));
+  queueRecordUpsertSync('transactions', savedId, serverIdOf(transaction));
 
   return { ...dbTransaction, id: savedId };
 }
@@ -3258,7 +3529,7 @@ export async function updateTransactionWithBackendSync(localId: number, updates:
           syncStatus: 'pending' as const,
           updatedAt: new Date(),
         });
-        queueRecordUpsertSync('transactions', localId, toNumber(existing.remoteId));
+        queueRecordUpsertSync('transactions', localId, serverIdOf(existing));
         return;
       }
     } else {
@@ -3268,7 +3539,7 @@ export async function updateTransactionWithBackendSync(localId: number, updates:
         syncStatus: 'pending' as const,
         updatedAt: new Date(),
       });
-      queueRecordUpsertSync('transactions', localId, toNumber(existing.remoteId));
+      queueRecordUpsertSync('transactions', localId, serverIdOf(existing));
       return;
     }
   }
@@ -3279,7 +3550,7 @@ export async function updateTransactionWithBackendSync(localId: number, updates:
     updatedAt: new Date(),
   });
 
-  queueRecordUpsertSync('transactions', localId, toNumber(existing.remoteId));
+  queueRecordUpsertSync('transactions', localId, serverIdOf(existing));
 }
 
 export async function deleteTransactionWithBackendSync(localId: number) {
@@ -3303,7 +3574,7 @@ export async function deleteTransactionWithBackendSync(localId: number) {
   }
 
   await db.transactions.delete(localId);
-  queueRecordDeleteSync('transactions', localId, toNumber(existing.remoteId));
+  queueRecordDeleteSync('transactions', localId, serverIdOf(existing));
 }
 
 export async function saveTransactionAndUpdateAccountWithBackendSync(
@@ -3353,6 +3624,7 @@ export async function saveAccountWithBackendSync(account: any) {
         clientRequestId: activeClientRequestId,
       }, {
         showErrorToast: false,
+        idempotencyKey: activeClientRequestId,
       });
 
       const remote = response.data as any;
@@ -3410,7 +3682,7 @@ export async function saveAccountWithBackendSync(account: any) {
 
 
       const savedId = await db.accounts.add(dbAccount);
-      queueRecordUpsertSync('accounts', savedId, toNumber(account?.remoteId));
+      queueRecordUpsertSync('accounts', savedId, serverIdOf(account));
       return { ...dbAccount, id: savedId };
     }
   }
@@ -3423,7 +3695,7 @@ export async function saveAccountWithBackendSync(account: any) {
   };
 
   const savedId = await db.accounts.add(dbAccount);
-  queueRecordUpsertSync('accounts', savedId, toNumber(account?.remoteId));
+  queueRecordUpsertSync('accounts', savedId, serverIdOf(account));
 
   return { ...dbAccount, id: savedId };
 }
@@ -3502,13 +3774,13 @@ export async function updateAccountWithBackendSync(accountId: number, updates: a
           markOptionalBackendUnavailable();
         }
         nextUpdates = { ...nextUpdates, syncStatus: 'pending' as const };
-        queueRecordUpsertSync('accounts', accountId, toNumber(existing?.remoteId));
+        queueRecordUpsertSync('accounts', accountId, serverIdOf(existing));
       }
     } else {
       console.info('[updateAccountWithBackendSync] No cloudId found, updating locally and queuing for sync.');
       nextUpdates = { ...nextUpdates, syncStatus: 'pending' as const };
       await db.accounts.update(accountId, nextUpdates);
-      queueRecordUpsertSync('accounts', accountId, toNumber(existing?.remoteId));
+      queueRecordUpsertSync('accounts', accountId, serverIdOf(existing));
       return;
     }
 
@@ -3522,7 +3794,7 @@ export async function updateAccountWithBackendSync(accountId: number, updates: a
     updatedAt: new Date(),
   });
 
-  queueRecordUpsertSync('accounts', accountId, toNumber(updates?.remoteId ?? existing?.remoteId));
+  queueRecordUpsertSync('accounts', accountId, serverIdOf(existing) ?? serverIdOf(updates));
 }
 
 export async function saveGoalWithBackendSync(goal: any) {
@@ -3541,6 +3813,7 @@ export async function saveGoalWithBackendSync(goal: any) {
         clientRequestId: activeClientRequestId,
       }, {
         showErrorToast: false,
+        idempotencyKey: activeClientRequestId,
       });
 
       const remote = response.data as any;
@@ -3578,7 +3851,7 @@ export async function saveGoalWithBackendSync(goal: any) {
   };
 
   const savedId = await db.goals.add(dbGoal);
-  queueRecordUpsertSync('goals', savedId, toNumber(goal?.remoteId));
+  queueRecordUpsertSync('goals', savedId, serverIdOf(goal));
 
   return { ...dbGoal, id: savedId };
 }
@@ -3668,7 +3941,7 @@ export async function saveLoanWithBackendSync(loan: LoanSaveInput) {
   };
 
   const savedId = await runWithCloudSyncSuppressed(() => db.loans.add(dbLoan));
-  queueRecordUpsertSync('loans', savedId, toNumber(loan?.remoteId));
+  queueRecordUpsertSync('loans', savedId, serverIdOf(loan));
 
   return { ...dbLoan, id: savedId };
 }
@@ -3681,18 +3954,25 @@ export async function checkBackendConnectivity(): Promise<boolean> {
 export async function saveToDoListWithBackendSync(list: any) {
   initializeBackendSync();
 
+  // One key for the POST and for the local row, so the queue retries this exact
+  // create rather than asking the server for a second list.
+  const activeClientRequestId = list.clientRequestId || newClientRequestId();
+
   if (isBackendFirstSyncMode()) {
     try {
       const response = await apiClient.post<any>('/todos/lists', {
         name: list.name,
         description: list.description ?? undefined,
+        clientRequestId: activeClientRequestId,
       }, {
         showErrorToast: false,
+        idempotencyKey: activeClientRequestId,
       });
 
       const remote = response.data?.data || response.data;
       const dbList = {
         ...list,
+        clientRequestId: activeClientRequestId,
         cloudId: String(remote?.id),
         createdAt: toDate(remote?.createdAt) ?? list.createdAt ?? new Date(),
         updatedAt: toDate(remote?.updatedAt) ?? new Date(),
@@ -3719,6 +3999,7 @@ export async function saveToDoListWithBackendSync(list: any) {
       const now = new Date();
       const dbList = {
         ...list,
+        clientRequestId: activeClientRequestId,
         cloudId: undefined,
         syncStatus: 'pending' as const,
         createdAt: list.createdAt ?? now,
@@ -3734,6 +4015,7 @@ export async function saveToDoListWithBackendSync(list: any) {
   const now = new Date();
   const dbList = {
     ...list,
+    clientRequestId: activeClientRequestId,
     createdAt: list.createdAt ?? now,
     updatedAt: now,
   };
@@ -3830,12 +4112,14 @@ export async function deleteToDoListWithBackendSync(listId: number) {
   await db.toDoListShares.where('listId').equals(listId).delete();
   
   if (existing.cloudId) {
-    queueRecordDeleteSync('to_do_lists', listId, toNumber(existing.cloudId));
+    queueRecordDeleteSync('to_do_lists', listId, serverIdOf(existing));
   }
 }
 
 export async function saveToDoItemWithBackendSync(item: any, opts: { idempotencyKey?: string } = {}) {
   initializeBackendSync();
+
+  const activeClientRequestId = opts.idempotencyKey || item.clientRequestId || newClientRequestId();
 
   const numListId = typeof item.listId === 'string' ? parseInt(item.listId, 10) : item.listId;
   let list = Number.isFinite(numListId) ? await db.toDoLists.get(numListId) : null;
@@ -3851,14 +4135,16 @@ export async function saveToDoItemWithBackendSync(item: any, opts: { idempotency
         description: item.description ?? undefined,
         priority: item.priority ?? 'medium',
         dueDate: item.dueDate ? toIsoString(item.dueDate) : undefined,
+        clientRequestId: activeClientRequestId,
       }, {
         showErrorToast: false,
-        ...(opts.idempotencyKey ? { idempotencyKey: opts.idempotencyKey } : {}),
+        idempotencyKey: activeClientRequestId,
       });
 
       const remote = response.data?.data || response.data;
       const dbItem = {
         ...item,
+        clientRequestId: activeClientRequestId,
         cloudId: String(remote?.id),
         createdAt: toDate(remote?.createdAt) ?? item.createdAt ?? new Date(),
         updatedAt: toDate(remote?.updatedAt) ?? new Date(),
@@ -3884,6 +4170,7 @@ export async function saveToDoItemWithBackendSync(item: any, opts: { idempotency
       const now = new Date();
       const dbItem = {
         ...item,
+        clientRequestId: activeClientRequestId,
         cloudId: undefined,
         syncStatus: 'pending' as const,
         createdAt: item.createdAt ?? now,
@@ -3899,6 +4186,7 @@ export async function saveToDoItemWithBackendSync(item: any, opts: { idempotency
   const now = new Date();
   const dbItem = {
     ...item,
+    clientRequestId: activeClientRequestId,
     createdAt: item.createdAt ?? now,
     updatedAt: now,
   };
@@ -4001,7 +4289,7 @@ export async function deleteToDoItemWithBackendSync(itemId: number) {
 
   await db.toDoItems.delete(itemId);
   if (existing.cloudId) {
-    queueRecordDeleteSync('to_do_items', itemId, toNumber(existing.cloudId));
+    queueRecordDeleteSync('to_do_items', itemId, serverIdOf(existing));
   }
 }
 
@@ -4153,7 +4441,7 @@ export async function deleteToDoListShareWithBackendSync(shareId: number) {
 
   await db.toDoListShares.delete(shareId);
   if (existing.cloudId) {
-    queueRecordDeleteSync('to_do_list_shares', shareId, toNumber(existing.cloudId));
+    queueRecordDeleteSync('to_do_list_shares', shareId, serverIdOf(existing));
   }
 }
 

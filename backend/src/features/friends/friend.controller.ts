@@ -22,6 +22,71 @@ async function findUserByEmailOrPhone(email?: string | null, phone?: string | nu
   return null;
 }
 
+export function cleanFriendName(rawName?: string | null, fallback?: { email?: string | null; phone?: string | null }): string {
+  if (!rawName) return fallback?.email ? fallback.email.split('@')[0] : (fallback?.phone ? `Contact (${fallback.phone.replace(/\D/g, '').slice(-4)})` : 'Contact');
+  let name = String(rawName);
+
+  // 1. Decode Quoted-Printable if it contains hex sequences (=XX)
+  if (name.includes('=')) {
+    try {
+      const normalized = name.replace(/=[\r\n]+/g, '');
+      const bytes: number[] = [];
+      for (let i = 0; i < normalized.length; i++) {
+        if (normalized[i] === '=' && i + 2 < normalized.length) {
+          const hex = normalized.slice(i + 1, i + 3);
+          if (/^[0-9A-Fa-f]{2}$/.test(hex)) {
+            bytes.push(parseInt(hex, 16));
+            i += 2;
+            continue;
+          }
+        }
+        const code = normalized.charCodeAt(i);
+        if (code < 128) {
+          bytes.push(code);
+        } else {
+          const enc = Buffer.from(normalized[i], 'utf8');
+          for (const b of enc) bytes.push(b);
+        }
+      }
+      name = Buffer.from(bytes).toString('utf8');
+    } catch {}
+  }
+
+  // 2. Unescape vCard escape sequences
+  name = name.replace(/\\[,;:nN]/g, ' ').replace(/\\/g, '');
+
+  // 3. Remove Unicode emojis, memojis, pictographs, symbols
+  name = name
+    .replace(/\p{Extended_Pictographic}/gu, '')
+    .replace(/[\u{1F300}-\u{1F9FF}\u{1FA00}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '')
+    .replace(/[\uFE00-\uFE0F\u200B-\u200D\u2060\uFEFF]/g, '')
+    .replace(/[\uD800-\uDFFF]/g, '');
+
+  // 4. Strip residual quoted printable patterns
+  name = name.replace(/(=[A-Fa-f0-9]{2})+/g, '');
+
+  // 5. Remove emoticons and punctuation clusters (like -:;)=d, :-), =D)
+  name = name.replace(/[^\p{L}\p{N}\s]{2,}[a-zA-Z0-9]?/gu, ' ');
+  name = name.replace(/(?:^|\s)(?:[-:;=8][oO\-]?[)\]\(\[dDpP/\\|*]|[<>]?[:;=8][)\]\(\[dDpP/\\|*])(?:\s|$)/gi, ' ');
+  name = name.replace(/(?:^|\s)[=:;]-?[)\]\(\[dDpP](?:\s|$)/gi, ' ');
+
+  // 6. Clean dangling punctuation from start/end
+  name = name.replace(/^[-:;=,._~#*+|/\s]+|[-:;=,._~#*+|/\s]+$/gu, '');
+  name = name.replace(/\s+/g, ' ').trim();
+
+  if (name.length > 0) return name;
+
+  if (fallback?.email) {
+    const prefix = fallback.email.split('@')[0].trim();
+    if (prefix) return prefix.charAt(0).toUpperCase() + prefix.slice(1);
+  }
+  if (fallback?.phone) {
+    const digits = fallback.phone.replace(/\D/g, '');
+    if (digits) return `Contact (${digits.slice(-4)})`;
+  }
+  return 'Contact';
+}
+
 async function linkStaleGroupMembersForFriend(friend: any, userId: string) {
   try {
     const matchedStaleMembers = await prisma.groupExpenseMember.findMany({
@@ -241,30 +306,31 @@ export const createFriend = async (req: AuthRequest, res: Response, next: NextFu
     // required later for invites/settlement emails, not for existing as a
     // ledger counterparty — the name-based duplicate check below still applies.
 
-    const cleanName = name.trim();
     const cleanEmail = email ? String(email).trim().toLowerCase() : null;
     const cleanPhone = phone ? String(phone).trim() : null;
+    const cleanName = cleanFriendName(name, { email: cleanEmail, phone: cleanPhone });
 
-    // 1. Prevent duplicate friend records — no two friends of the same user
-    // may share a name, email, or phone number.
-    const existing = await prisma.friend.findFirst({
-      where: {
-        userId,
-        OR: [
-          { name: { equals: cleanName, mode: 'insensitive' } },
-          cleanEmail ? { email: cleanEmail } : null,
-          cleanPhone ? { phone: cleanPhone } : null,
-        ].filter(Boolean) as any,
-      },
-    });
+    // 1. Prevent duplicate friend records — unique email and unique phone per user.
+    // User name CAN be duplicate (e.g. multiple friends can share display names).
+    const contactConditions = [
+      cleanEmail ? { email: { equals: cleanEmail, mode: 'insensitive' } } : null,
+      cleanPhone ? { phone: cleanPhone } : null,
+    ].filter(Boolean) as any;
+
+    const existing = contactConditions.length > 0
+      ? await prisma.friend.findFirst({
+          where: {
+            userId,
+            OR: contactConditions,
+          },
+        })
+      : null;
 
     if (existing) {
       if (existing.deletedAt === null) {
-        const reason = existing.name.toLowerCase() === cleanName.toLowerCase()
-          ? 'A friend with this name already exists.'
-          : (cleanEmail && existing.email === cleanEmail)
-            ? 'A friend with this email already exists.'
-            : 'A friend with this phone number already exists.';
+        const reason = (cleanEmail && existing.email?.toLowerCase() === cleanEmail.toLowerCase())
+          ? 'A friend with this email already exists.'
+          : 'A friend with this phone number already exists.';
         throw AppError.badRequest(reason, 'FRIEND_ALREADY_EXISTS');
       } else {
         // Restore soft-deleted friend!
@@ -362,14 +428,21 @@ export const createFriend = async (req: AuthRequest, res: Response, next: NextFu
       const code = (err as { code?: string })?.code;
       if (code !== 'P2002') throw err;
       const winner = await prisma.friend.findFirst({
-        where: { userId, deletedAt: null, name: { equals: cleanName, mode: 'insensitive' } },
+        where: {
+          userId,
+          deletedAt: null,
+          OR: [
+            cleanEmail ? { email: { equals: cleanEmail, mode: 'insensitive' } } : null,
+            cleanPhone ? { phone: cleanPhone } : null,
+          ].filter(Boolean) as any,
+        },
       });
       if (!winner) throw err;
       logger.warn('[Duplicate prevented] Friend create lost a concurrent race', {
         userId,
         entity: 'Friend',
         existingRecordId: winner.id,
-        detectionReason: 'unique index Friend_userId_name_ci_key',
+        detectionReason: 'unique contact conflict',
         action: 'returned existing record',
       });
       return res.status(200).json({ success: true, data: winner, deduplicated: true });
@@ -463,24 +536,26 @@ export const updateFriend = async (req: AuthRequest, res: Response, next: NextFu
     const nextEmail = email !== undefined ? (email ? String(email).trim().toLowerCase() : null) : existing.email;
     const nextPhone = phone !== undefined ? (phone ? String(phone).trim() : null) : existing.phone;
 
-    const conflict = await prisma.friend.findFirst({
-      where: {
-        userId,
-        deletedAt: null,
-        id: { not: id },
-        OR: [
-          { name: { equals: nextName, mode: 'insensitive' } },
-          nextEmail ? { email: nextEmail } : null,
-          nextPhone ? { phone: nextPhone } : null,
-        ].filter(Boolean) as any,
-      },
-    });
+    const contactConditions = [
+      nextEmail ? { email: { equals: nextEmail, mode: 'insensitive' } } : null,
+      nextPhone ? { phone: nextPhone } : null,
+    ].filter(Boolean) as any;
+
+    const conflict = contactConditions.length > 0
+      ? await prisma.friend.findFirst({
+          where: {
+            userId,
+            deletedAt: null,
+            id: { not: id },
+            OR: contactConditions,
+          },
+        })
+      : null;
+
     if (conflict) {
-      const reason = conflict.name.toLowerCase() === nextName.toLowerCase()
-        ? 'Another friend with this name already exists.'
-        : (nextEmail && conflict.email === nextEmail)
-          ? 'Another friend with this email already exists.'
-          : 'Another friend with this phone number already exists.';
+      const reason = (nextEmail && conflict.email?.toLowerCase() === nextEmail.toLowerCase())
+        ? 'Another friend with this email already exists.'
+        : 'Another friend with this phone number already exists.';
       throw AppError.badRequest(reason, 'FRIEND_ALREADY_EXISTS');
     }
 
@@ -534,34 +609,36 @@ export const bulkCreateFriends = async (req: AuthRequest, res: Response, next: N
     }
 
     const existing = await prisma.friend.findMany({ where: { userId, deletedAt: null } });
-    const existingNameKeys = new Set(existing.map(f => f.name.toLowerCase()));
     const existingContactKeys = new Set(
-      existing.flatMap(f => [f.email?.toLowerCase(), f.phone].filter(Boolean) as string[])
+      existing.flatMap(f => [
+        f.email ? f.email.toLowerCase().trim() : null,
+        f.phone ? f.phone.trim() : null,
+      ].filter(Boolean) as string[])
     );
 
     const toCreate: { name: string; email: string | null; phone: string | null }[] = [];
     const skipped: { name: string; reason: string }[] = [];
 
     for (const row of rawList) {
-      const name = String(row?.name || '').trim();
       const cleanEmail = row?.email ? String(row.email).trim().toLowerCase() : null;
       const cleanPhone = row?.phone ? String(row.phone).trim() : null;
+      const name = cleanFriendName(row?.name, { email: cleanEmail, phone: cleanPhone });
 
       if (!name) {
         skipped.push({ name: name || '(unnamed)', reason: 'Name is required' });
         continue;
       }
-      if (existingNameKeys.has(name.toLowerCase())) {
-        skipped.push({ name, reason: 'A friend with this name already exists' });
+      // Note: User name CAN be duplicate. Only email and phone must be unique!
+      if (cleanEmail && existingContactKeys.has(cleanEmail)) {
+        skipped.push({ name, reason: `Email ${cleanEmail} already exists` });
         continue;
       }
-      if ((cleanEmail && existingContactKeys.has(cleanEmail)) || (cleanPhone && existingContactKeys.has(cleanPhone))) {
-        skipped.push({ name, reason: 'Already added' });
+      if (cleanPhone && existingContactKeys.has(cleanPhone)) {
+        skipped.push({ name, reason: `Phone ${cleanPhone} already exists` });
         continue;
       }
 
       toCreate.push({ name, email: cleanEmail, phone: cleanPhone });
-      existingNameKeys.add(name.toLowerCase());
       if (cleanEmail) existingContactKeys.add(cleanEmail);
       if (cleanPhone) existingContactKeys.add(cleanPhone);
     }
