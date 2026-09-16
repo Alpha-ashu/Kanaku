@@ -1382,14 +1382,14 @@ export const Transactions: React.FC = () => {
                 hidden: { opacity: 0 },
                 visible: {
                   opacity: 1,
-                  transition: { staggerChildren: 0.07, delayChildren: 0.04 }
+                  transition: { staggerChildren: 0.05, delayChildren: 0.02 }
                 },
                 exit: {
                   opacity: 0,
-                  transition: { staggerChildren: 0.04, staggerDirection: -1 }
+                  transition: { staggerChildren: 0.03, staggerDirection: -1 }
                 }
               }}
-              className="relative z-10 flex flex-col items-center gap-3 w-full max-w-[280px] sm:max-w-[300px]"
+              className="relative z-10 flex flex-col items-center gap-1.5 w-full max-w-[170px] sm:max-w-[185px]"
             >
               {[
                 {
@@ -1399,7 +1399,7 @@ export const Transactions: React.FC = () => {
                   border: 'hover:border-rose-300 active:border-rose-400',
                   iconStyle: 'bg-rose-50 text-rose-600 border-rose-200/80 group-hover:bg-rose-600 group-hover:text-white',
                   textStyle: 'group-hover:text-rose-600',
-                  glow: 'hover:shadow-[0_14px_32px_-6px_rgba(244,63,94,0.32)]',
+                  glow: 'hover:shadow-[0_6px_16px_-3px_rgba(244,63,94,0.25)]',
                 },
                 {
                   type: 'income',
@@ -1408,7 +1408,7 @@ export const Transactions: React.FC = () => {
                   border: 'hover:border-emerald-300 active:border-emerald-400',
                   iconStyle: 'bg-emerald-50 text-emerald-600 border-emerald-200/80 group-hover:bg-emerald-600 group-hover:text-white',
                   textStyle: 'group-hover:text-emerald-600',
-                  glow: 'hover:shadow-[0_14px_32px_-6px_rgba(16,185,129,0.32)]',
+                  glow: 'hover:shadow-[0_6px_16px_-3px_rgba(16,185,129,0.25)]',
                 },
                 {
                   type: 'transfer',
@@ -1417,23 +1417,23 @@ export const Transactions: React.FC = () => {
                   border: 'hover:border-indigo-300 active:border-indigo-400',
                   iconStyle: 'bg-indigo-50 text-indigo-600 border-indigo-200/80 group-hover:bg-indigo-600 group-hover:text-white',
                   textStyle: 'group-hover:text-indigo-600',
-                  glow: 'hover:shadow-[0_14px_32px_-6px_rgba(99,102,241,0.32)]',
+                  glow: 'hover:shadow-[0_6px_16px_-3px_rgba(99,102,241,0.25)]',
                 },
               ].map((opt) => (
                 <motion.button
                   key={opt.type}
                   data-testid={`transaction-modal-type-${opt.type}-button`}
                   variants={{
-                    hidden: { opacity: 0, scale: 0.82, y: 22 },
+                    hidden: { opacity: 0, scale: 0.82, y: 14 },
                     visible: {
                       opacity: 1,
                       scale: 1,
                       y: 0,
-                      transition: { type: "spring", stiffness: 440, damping: 24 }
+                      transition: { type: "spring", stiffness: 460, damping: 24 }
                     },
-                    exit: { opacity: 0, scale: 0.85, y: 12, transition: { duration: 0.15 } }
+                    exit: { opacity: 0, scale: 0.85, y: 8, transition: { duration: 0.12 } }
                   }}
-                  whileHover={{ scale: 1.035, y: -2 }}
+                  whileHover={{ scale: 1.035, y: -1 }}
                   whileTap={{ scale: 0.96 }}
                   onClick={() => {
                     setShowTransactionTypeModal(false);
@@ -1441,24 +1441,24 @@ export const Transactions: React.FC = () => {
                     setCurrentPage('add-transaction');
                   }}
                   className={cn(
-                    "group w-full py-3 px-4 flex items-center justify-between rounded-full bg-white/95 backdrop-blur-xl border border-white/70 shadow-[0_10px_28px_-4px_rgba(0,0,0,0.18)] transition-all duration-200 cursor-pointer text-left select-none",
+                    "group w-full py-1.5 px-2.5 sm:px-3 flex items-center justify-between rounded-full bg-white/95 backdrop-blur-xl border border-white/70 shadow-[0_4px_16px_-2px_rgba(0,0,0,0.12)] transition-all duration-150 cursor-pointer text-left select-none",
                     opt.border,
                     opt.glow
                   )}
                 >
-                  <div className="flex items-center gap-3.5 min-w-0">
+                  <div className="flex items-center gap-2 min-w-0">
                     <div className={cn(
-                      "w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center border transition-all duration-200 shrink-0 shadow-2xs",
+                      "w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center border transition-all duration-150 shrink-0 shadow-2xs",
                       opt.iconStyle
                     )}>
-                      <opt.icon size={18} className="stroke-[2.5]" />
+                      <opt.icon size={13} className="stroke-[2.5]" />
                     </div>
-                    <span className={cn("font-bold text-sm sm:text-base text-slate-900 tracking-tight transition-colors", opt.textStyle)}>
+                    <span className={cn("font-bold text-[11px] sm:text-xs text-slate-900 tracking-tight transition-colors", opt.textStyle)}>
                       {opt.label}
                     </span>
                   </div>
-                  <div className="w-7 h-7 rounded-full bg-slate-50 group-hover:bg-slate-100 flex items-center justify-center text-slate-400 group-hover:text-slate-700 transition-all duration-200 shrink-0 mr-0.5">
-                    <ChevronRight size={14} className="stroke-[2.5] group-hover:translate-x-0.5 transition-transform" />
+                  <div className="w-4 h-4 rounded-full bg-slate-50 group-hover:bg-slate-100 flex items-center justify-center text-slate-400 group-hover:text-slate-700 transition-all duration-150 shrink-0">
+                    <ChevronRight size={10} className="stroke-[2.5] group-hover:translate-x-0.5 transition-transform" />
                   </div>
                 </motion.button>
               ))}
@@ -1467,23 +1467,23 @@ export const Transactions: React.FC = () => {
               <motion.button
                 data-testid="transactions-cancel"
                 variants={{
-                  hidden: { opacity: 0, scale: 0.6, y: 14 },
+                  hidden: { opacity: 0, scale: 0.6, y: 8 },
                   visible: {
                     opacity: 1,
                     scale: 1,
                     y: 0,
-                    transition: { type: "spring", stiffness: 440, damping: 24 }
+                    transition: { type: "spring", stiffness: 460, damping: 24 }
                   },
-                  exit: { opacity: 0, scale: 0.6, y: 8, transition: { duration: 0.15 } }
+                  exit: { opacity: 0, scale: 0.6, y: 5, transition: { duration: 0.12 } }
                 }}
                 whileHover={{ scale: 1.08 }}
                 whileTap={{ scale: 0.92 }}
                 onClick={() => setShowTransactionTypeModal(false)}
-                className="mt-2 w-10 h-10 rounded-full bg-white/90 hover:bg-white text-slate-500 hover:text-slate-900 backdrop-blur-xl border border-white/60 shadow-[0_8px_24px_-4px_rgba(0,0,0,0.2)] flex items-center justify-center transition-all cursor-pointer"
+                className="mt-1 w-7 h-7 rounded-full bg-white/90 hover:bg-white text-slate-500 hover:text-slate-900 backdrop-blur-xl border border-white/60 shadow-[0_4px_14px_-2px_rgba(0,0,0,0.15)] flex items-center justify-center transition-all cursor-pointer"
                 aria-label="Close"
                 title="Close"
               >
-                <X size={17} className="stroke-[2.5]" />
+                <X size={13} className="stroke-[2.5]" />
               </motion.button>
             </motion.div>
           </div>,
