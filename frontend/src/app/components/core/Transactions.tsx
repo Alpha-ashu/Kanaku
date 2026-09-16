@@ -710,7 +710,7 @@ export const Transactions: React.FC = () => {
 
         {/* Filter & sort (opened from the header) */}
         {showFilters && (
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 w-full">
+          <div className="flex items-center justify-center gap-2 overflow-x-auto no-scrollbar py-0.5 w-full">
             {availableCategories.length > 0 && (
               <div className="relative shrink-0">
                 <select
@@ -763,7 +763,7 @@ export const Transactions: React.FC = () => {
         )}
 
         {/* Type pills */}
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar w-full py-0.5">
+        <div className="flex items-center justify-center gap-2 overflow-x-auto no-scrollbar w-full py-0.5">
           {[
             { type: 'all', label: 'All' },
             { type: 'expense', label: 'Expenses' },
@@ -793,7 +793,7 @@ export const Transactions: React.FC = () => {
             <button
               type="button"
               onClick={resetAllFilters}
-              className="ml-auto inline-flex items-center gap-1 px-3 py-2 rounded-full text-xs font-bold text-rose-600 hover:bg-rose-50 cursor-pointer transition-colors shrink-0 whitespace-nowrap"
+              className="inline-flex items-center gap-1 px-3 py-2 rounded-full text-xs font-bold text-rose-600 hover:bg-rose-50 cursor-pointer transition-colors shrink-0 whitespace-nowrap"
             >
               <X size={12} /> Reset
             </button>

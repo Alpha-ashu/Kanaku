@@ -58,6 +58,9 @@ const parseChannels = (value: unknown): string[] => {
   return Array.isArray(parsed) ? parsed.map(String) : [];
 };
 
+/** Notifications not delivered within this window are retired, not sent late. */
+const MAX_DELIVERY_AGE_MS = Number(process.env.NOTIFICATION_MAX_AGE_HOURS || 24) * 60 * 60 * 1000;
+
 /** A 'processing' row this old belongs to a pass that crashed; it may be taken over. */
 const STALE_PROCESSING_MS = 10 * 60 * 1000;
 
@@ -413,6 +416,20 @@ export async function drainNotificationOutbox(): Promise<number> {
   const endTimer = outboxDrainDuration.startTimer();
   try {
     const now = new Date();
+
+    // A reminder or "group expense updated" notice arriving days late is noise,
+    // so retire anything too old instead of delivering it. Without this, fixing
+    // the stuck-retry bug (claimChannelDelivery) would flush every notification
+    // stranded since the 2026-09-14 email outage in one burst.
+    await prisma.notification.updateMany({
+      where: {
+        ...deliverableWhere(now),
+        deletedAt: null,
+        createdAt: { lt: new Date(now.getTime() - MAX_DELIVERY_AGE_MS) },
+      },
+      data: { status: 'failed', errorMessage: 'Expired before delivery', nextRetryAt: null },
+    });
+
     const due = (await prisma.notification.findMany({
       where: {
         AND: [

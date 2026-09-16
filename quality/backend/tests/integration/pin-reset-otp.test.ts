@@ -127,6 +127,24 @@ describe('forgot-PIN OTP reset', () => {
     expect((await verify(second.body.code)).status).toBe(200);
   });
 
+  it('says why there is no code to check, instead of a generic "No active OTP"', async () => {
+    const neverSent = await verify('123456');
+    expect(neverSent.status).toBe(400);
+    expect(neverSent.body.code).toBe('OTP_NOT_REQUESTED');
+
+    const sent = await send(email);
+    expect((await verify(sent.body.code)).status).toBe(200);
+    // Used long ago: outside the re-verify window.
+    await prisma.otpRequest.updateMany({ where: { userId }, data: { verifiedAt: new Date(Date.now() - 60 * 60 * 1000) } });
+    const used = await verify(sent.body.code);
+    expect(used.status).toBe(400);
+    expect(used.body.code).toBe('OTP_ALREADY_USED');
+
+    await prisma.otpRequest.updateMany({ where: { userId }, data: { status: 'BLOCKED' } });
+    const blocked = await verify(sent.body.code);
+    expect(blocked.body.code).toBe('OTP_BLOCKED');
+  });
+
   it('refuses a security token without any recent proof', async () => {
     const sec = await request(app).post(`${API}/pin/verify-security`).set(headers).send({});
     expect(sec.status).toBe(403);

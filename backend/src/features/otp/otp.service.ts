@@ -246,7 +246,7 @@ class OtpService {
             return { success: true, message: 'OTP verified successfully.', verificationToken: randomUUID() };
           }
         }
-        return { success: false, message: 'No active OTP found. Please request a new one.' };
+        return this.explainMissingOtp(cleanDestination, purpose);
       }
 
       // Check expiry
@@ -255,7 +255,7 @@ class OtpService {
           where: { id: otpRecord.id },
           data: { status: 'EXPIRED' },
         });
-        return { success: false, message: 'OTP has expired. Please request a new one.' };
+        return { success: false, code: 'OTP_EXPIRED', message: 'OTP has expired. Please request a new one.' };
       }
 
       // Check max attempts
@@ -264,7 +264,7 @@ class OtpService {
           where: { id: otpRecord.id },
           data: { status: 'BLOCKED' },
         });
-        return { success: false, message: 'Maximum attempts exceeded. Please request a new OTP.' };
+        return { success: false, code: 'OTP_BLOCKED', message: 'Maximum attempts exceeded. Please request a new OTP.' };
       }
 
       // Increment attempt count
@@ -279,12 +279,9 @@ class OtpService {
       if (!isValid) {
         const remaining = otpRecord.maxAttempts - otpRecord.attempts - 1;
         logger.warn(`[OTP] Invalid attempt for ${destination.substring(0, 3)}*** (${remaining} remaining)`);
-        return {
-          success: false,
-          message: remaining > 0
-            ? `Incorrect OTP. ${remaining} attempt(s) remaining.`
-            : 'Maximum attempts exceeded. Please request a new OTP.',
-        };
+        return remaining > 0
+          ? { success: false, message: `Incorrect OTP. ${remaining} attempt(s) remaining.` }
+          : { success: false, code: 'OTP_BLOCKED', message: 'Maximum attempts exceeded. Please request a new OTP.' };
       }
 
       // Mark OTP as verified
@@ -309,6 +306,29 @@ class OtpService {
     } catch (error) {
       logger.error('[OTP] Verification error:', error);
       return { success: false, message: 'Verification failed. Please try again.' };
+    }
+  }
+
+  /**
+   * There is no active code to check against — say why, so the user knows to
+   * request a new one instead of retyping the same code. The generic "No active
+   * OTP found" gave no hint that the code was used, blocked, or never sent.
+   */
+  private async explainMissingOtp(destination: string, purpose: OtpPurpose): Promise<OtpVerifyResponse> {
+    const latest = await prisma.otpRequest.findFirst({
+      where: { destination, purpose },
+      orderBy: { createdAt: 'desc' },
+      select: { status: true },
+    });
+    switch (latest?.status) {
+      case undefined:
+        return { success: false, code: 'OTP_NOT_REQUESTED', message: 'No verification code has been sent yet. Tap "Send code" to get one.' };
+      case 'VERIFIED':
+        return { success: false, code: 'OTP_ALREADY_USED', message: 'This code was already used. Request a new code.' };
+      case 'BLOCKED':
+        return { success: false, code: 'OTP_BLOCKED', message: 'Too many incorrect attempts. Request a new code.' };
+      default:
+        return { success: false, code: 'OTP_EXPIRED', message: 'This code has expired or was replaced by a newer one. Request a new code.' };
     }
   }
 

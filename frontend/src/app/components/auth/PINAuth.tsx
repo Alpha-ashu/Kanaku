@@ -41,6 +41,8 @@ interface PINAuthProps {
  * cold or unreachable one never holds the keypad hostage.
  */
 const SERVER_VERIFY_BUDGET_MS = 1200;
+/** /otp/verify codes meaning there is no usable code left — the user must request a new one. */
+const CODE_NEEDS_NEW_OTP = new Set(['OTP_NOT_REQUESTED', 'OTP_ALREADY_USED', 'OTP_BLOCKED', 'OTP_EXPIRED']);
 const SERVER_VERIFY_PENDING = Symbol('pin-server-verify-pending');
 
 
@@ -762,6 +764,7 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
         purpose: 'sensitive_action',
       });
       verifiedResetCodeRef.current = null;
+      setResetOtpInputs(Array(6).fill(''));
       setResetOtpSent(true);
       toast.success('Verification code sent to your email.');
     } catch (err: any) {
@@ -823,6 +826,11 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
       toast.success('PIN reset successfully. Please create a new PIN.');
     } catch (err: any) {
       setResetError(err.message || 'Invalid verification code.');
+      if (typeof err?.code === 'string' && CODE_NEEDS_NEW_OTP.has(err.code)) {
+        // Nothing left to verify against — the only way forward is a new code.
+        verifiedResetCodeRef.current = null;
+        setResetOtpInputs(Array(6).fill(''));
+      }
     } finally {
       setIsResettingPin(false);
     }
@@ -1215,6 +1223,16 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
                 />
               ))}
             </div>
+            {/* Without this the only way to get a fresh code after a failure was Cancel + reopen. */}
+            <button
+              type="button"
+              onClick={handleSendOtp}
+              disabled={isResettingPin}
+              data-testid="pin-reset-resend-button"
+              className="self-center text-xs font-bold text-amber-600 hover:text-amber-700 disabled:opacity-50 disabled:cursor-not-allowed py-1"
+            >
+              Didn&apos;t get it, or code not working? Resend code
+            </button>
           </div>
         )}
 

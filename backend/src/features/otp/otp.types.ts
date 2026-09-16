@@ -46,6 +46,8 @@ export interface OtpResponse {
 export interface OtpVerifyResponse {
   success: boolean;
   message: string;
+  /** Why verification could not proceed (e.g. OTP_ALREADY_USED) — the app offers a new code for these. */
+  code?: 'OTP_NOT_REQUESTED' | 'OTP_ALREADY_USED' | 'OTP_BLOCKED' | 'OTP_EXPIRED';
   verificationToken?: string;
 }
 

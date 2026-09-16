@@ -185,6 +185,13 @@ let startupTimer: NodeJS.Timeout | null = null;
 
 export const startReminderWorker = (): void => {
   if (reminderJob) return;
+  // A local backend reads backend/.env, which points at the PRODUCTION database:
+  // starting this there would remind (and email) every real user from a dev
+  // machine. Production runs it; anywhere else it must be switched on explicitly.
+  if (process.env.NODE_ENV !== 'production' && process.env.REMINDER_WORKER_ENABLED !== 'true') {
+    logger.info('[reminder-worker] Not started (NODE_ENV != production; set REMINDER_WORKER_ENABLED=true to run it)');
+    return;
+  }
   if (!cron.validate(REMINDER_SCHEDULE)) {
     logger.error(`[reminder-worker] Invalid REMINDER_CRON "${REMINDER_SCHEDULE}" — reminders disabled`);
     return;
