@@ -631,7 +631,7 @@ export const Settings: React.FC = () => {
                 <p className="text-sm sm:text-base font-bold text-white truncate group-hover:text-indigo-200 transition-colors">
                   {profileData.displayName}
                 </p>
-                <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-white/15 text-indigo-200">
+                <span className="px-2 py-0.5 rounded-full text-2xs font-black uppercase tracking-wider bg-white/15 text-indigo-200">
                   {role ? role.toUpperCase() : 'USER'}
                 </span>
               </div>
@@ -670,7 +670,7 @@ export const Settings: React.FC = () => {
         <div className="lg:grid lg:grid-cols-[240px_1fr] lg:gap-8 lg:items-start">
           {/* Desktop Left Sidebar Category Navigation (hidden on mobile) */}
           <aside className="hidden lg:block sticky top-24 space-y-1 bg-white rounded-[28px] p-3 border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)]">
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-3 py-2">Categories</p>
+            <p className="text-2xs font-black uppercase tracking-widest text-slate-400 px-3 py-2">Categories</p>
             {categoryTabs.map((tab) => {
               const Icon = tab.icon;
               const isSelected = selectedCategory === tab.id;
@@ -712,7 +712,7 @@ export const Settings: React.FC = () => {
           {/* 1. GENERAL PREFERENCES */}
           {shouldShowSection('general') && (
             <div className="space-y-2">
-              <p className="text-[11px] font-black uppercase tracking-wider text-slate-400 px-2">
+              <p className="text-xs font-black uppercase tracking-wider text-slate-400 px-2">
                 Preferences
               </p>
               <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] divide-y divide-slate-100 overflow-hidden">
@@ -724,7 +724,7 @@ export const Settings: React.FC = () => {
                     </div>
                     <div className="min-w-0">
                       <p className="text-xs sm:text-sm font-bold text-slate-900">App Language</p>
-                      <p className="text-[11px] text-slate-400">Display language across views</p>
+                      <p className="text-xs text-slate-400">Display language across views</p>
                     </div>
                   </div>
                   <select
@@ -758,7 +758,7 @@ export const Settings: React.FC = () => {
                     </div>
                     <div className="min-w-0">
                       <p className="text-xs sm:text-sm font-bold text-slate-900">Primary Currency</p>
-                      <p className="text-[11px] text-slate-400">Default money unit</p>
+                      <p className="text-xs text-slate-400">Default money unit</p>
                     </div>
                   </div>
                   <select
@@ -789,7 +789,7 @@ export const Settings: React.FC = () => {
           {/* 2. SECURITY & ACCESS */}
           {shouldShowSection('security') && (
             <div className="space-y-2">
-              <p className="text-[11px] font-black uppercase tracking-wider text-slate-400 px-2">
+              <p className="text-xs font-black uppercase tracking-wider text-slate-400 px-2">
                 Security & Access
               </p>
               <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] divide-y divide-slate-100 overflow-hidden">
@@ -809,7 +809,7 @@ export const Settings: React.FC = () => {
                     </div>
                     <div className="min-w-0">
                       <p className="text-xs sm:text-sm font-bold text-slate-900">Lock App Now</p>
-                      <p className="text-[11px] text-slate-400">Lock session immediately with your PIN</p>
+                      <p className="text-xs text-slate-400">Lock session immediately with your PIN</p>
                     </div>
                   </div>
                   <span className="text-xs font-bold text-amber-700 bg-amber-100/70 border border-amber-200/60 px-3 py-1 rounded-full shrink-0">
@@ -825,7 +825,7 @@ export const Settings: React.FC = () => {
                     </div>
                     <div className="min-w-0">
                       <p className="text-xs sm:text-sm font-bold text-slate-900">Auto-Lock Inactivity</p>
-                      <p className="text-[11px] text-slate-400">Lock app when idle</p>
+                      <p className="text-xs text-slate-400">Lock app when idle</p>
                     </div>
                   </div>
                   <select
@@ -857,7 +857,7 @@ export const Settings: React.FC = () => {
                       </div>
                       <div className="min-w-0">
                         <p className="text-xs sm:text-sm font-bold text-slate-900">{biometric.label} Unlock</p>
-                        <p className="text-[11px] text-slate-400">Fast biometric authorization</p>
+                        <p className="text-xs text-slate-400">Fast biometric authorization</p>
                       </div>
                     </div>
                     <button
@@ -893,7 +893,7 @@ export const Settings: React.FC = () => {
                     </div>
                     <div className="min-w-0">
                       <p className="text-xs sm:text-sm font-bold text-slate-900">Change PIN & Credentials</p>
-                      <p className="text-[11px] text-slate-400">Security passcode settings</p>
+                      <p className="text-xs text-slate-400">Security passcode settings</p>
                     </div>
                   </div>
                   <ChevronRight size={16} className="text-slate-400 shrink-0" />
@@ -910,14 +910,14 @@ export const Settings: React.FC = () => {
                     </div>
                     <div className="min-w-0">
                       <p className="text-xs sm:text-sm font-bold text-slate-900">Registered Devices & Sessions</p>
-                      <p className="text-[11px] text-slate-400">
+                      <p className="text-xs text-slate-400">
                         {devices.length > 0 ? `${devices.length} linked device${devices.length > 1 ? 's' : ''}` : 'View and manage active logins'}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
                     {devices.some(d => d.isActive) && (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-semibold bg-emerald-100 text-emerald-800">
                         Active
                       </span>
                     )}
@@ -931,7 +931,7 @@ export const Settings: React.FC = () => {
           {/* 3. NOTIFICATIONS */}
           {shouldShowSection('notifications') && visibleFeatures?.notifications !== false && (
             <div className="space-y-2">
-              <p className="text-[11px] font-black uppercase tracking-wider text-slate-400 px-2">
+              <p className="text-xs font-black uppercase tracking-wider text-slate-400 px-2">
                 Alerts & Notifications
               </p>
               <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] divide-y divide-slate-100 overflow-hidden">
@@ -946,7 +946,7 @@ export const Settings: React.FC = () => {
                   <div key={key} className="p-3.5 sm:p-4 flex items-center justify-between gap-3">
                     <div className="min-w-0">
                       <p className="text-xs sm:text-sm font-bold text-slate-900 truncate">{label}</p>
-                      <p className="text-[11px] text-slate-400 truncate">{desc}</p>
+                      <p className="text-xs text-slate-400 truncate">{desc}</p>
                     </div>
                     <button
                       type="button"
@@ -975,7 +975,7 @@ export const Settings: React.FC = () => {
           {/* 4. DATA & BACKUP */}
           {shouldShowSection('data') && (
             <div className="space-y-2">
-              <p className="text-[11px] font-black uppercase tracking-wider text-slate-400 px-2">
+              <p className="text-xs font-black uppercase tracking-wider text-slate-400 px-2">
                 Data & Backups
               </p>
               <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] divide-y divide-slate-100 overflow-hidden">
@@ -987,7 +987,7 @@ export const Settings: React.FC = () => {
                     </div>
                     <div className="min-w-0">
                       <p className="text-xs sm:text-sm font-bold text-slate-900">Import Statements</p>
-                      <p className="text-[11px] text-slate-400">CSV, Excel, or JSON files</p>
+                      <p className="text-xs text-slate-400">CSV, Excel, or JSON files</p>
                     </div>
                   </div>
                   <button
@@ -1008,7 +1008,7 @@ export const Settings: React.FC = () => {
                     </div>
                     <div className="min-w-0">
                       <p className="text-xs sm:text-sm font-bold text-slate-900">Create Snapshot Backup</p>
-                      <p className="text-[11px] text-slate-400">Save full ledger data</p>
+                      <p className="text-xs text-slate-400">Save full ledger data</p>
                     </div>
                   </div>
                   <button
@@ -1039,7 +1039,7 @@ export const Settings: React.FC = () => {
                           <div key={backup.id ?? idx} className="p-3 bg-slate-50 rounded-xl flex items-center justify-between gap-2 text-xs">
                             <div className="min-w-0">
                               <p className="font-bold text-slate-900 truncate">{backup.filename}</p>
-                              <p className="text-[10px] text-slate-400">
+                              <p className="text-2xs text-slate-400">
                                 {new Date(backup.timestamp).toLocaleDateString()} • {(backup.size / 1024).toFixed(0)} KB
                               </p>
                             </div>
@@ -1076,7 +1076,7 @@ export const Settings: React.FC = () => {
           {/* 5. CUSTOM CATEGORIES */}
           {shouldShowSection('categories') && (
             <div className="space-y-2">
-              <p className="text-[11px] font-black uppercase tracking-wider text-slate-400 px-2">
+              <p className="text-xs font-black uppercase tracking-wider text-slate-400 px-2">
                 Category Customization
               </p>
               <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] p-4 sm:p-5">
@@ -1088,7 +1088,7 @@ export const Settings: React.FC = () => {
           {/* 6. SMS AUTOMATION */}
           {shouldShowSection('sms') && (
             <div className="space-y-3">
-              <p className="text-[11px] font-black uppercase tracking-wider text-slate-400 px-2">
+              <p className="text-xs font-black uppercase tracking-wider text-slate-400 px-2">
                 SMS Transaction Tracking
               </p>
 
@@ -1101,7 +1101,7 @@ export const Settings: React.FC = () => {
                     </div>
                     <div className="min-w-0">
                       <p className="text-xs sm:text-sm font-bold text-slate-900">Auto-Detect Bank SMS</p>
-                      <p className="text-[11px] text-slate-400">
+                      <p className="text-xs text-slate-400">
                         {smsStatus.supported ? 'On-device background SMS reader (Android)' : 'Automatic background SMS reader requires Android'}
                       </p>
                     </div>
@@ -1144,7 +1144,7 @@ export const Settings: React.FC = () => {
                 ) : (
                   <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-100 text-xs text-slate-500">
                     <p className="font-bold text-slate-700 mb-1">ℹ️ Platform Notes:</p>
-                    <ul className="list-disc pl-4 space-y-0.5 text-[11px]">
+                    <ul className="list-disc pl-4 space-y-0.5 text-xs">
                       <li><strong>Android App:</strong> Install the Full-SMS APK (`kanaku-full-release.apk`) to enable background SMS reading.</li>
                       <li><strong>iOS App / Web:</strong> Apple iOS sandbox restricts apps from background SMS inbox access. Use the quick paste tool below to log transactions instantly from any copied message.</li>
                     </ul>
@@ -1160,7 +1160,7 @@ export const Settings: React.FC = () => {
                   </div>
                   <div>
                     <p className="text-xs sm:text-sm font-bold text-slate-900">Quick Paste & Parse Bank Alert</p>
-                    <p className="text-[11px] text-slate-400">Paste SMS, UPI, or banking alert text to auto-log</p>
+                    <p className="text-xs text-slate-400">Paste SMS, UPI, or banking alert text to auto-log</p>
                   </div>
                 </div>
 
@@ -1199,7 +1199,7 @@ export const Settings: React.FC = () => {
           {/* 7. LEGAL & POLICIES */}
           {shouldShowSection('legal') && (
             <div className="space-y-2">
-              <p className="text-[11px] font-black uppercase tracking-wider text-slate-400 px-2">
+              <p className="text-xs font-black uppercase tracking-wider text-slate-400 px-2">
                 Legal & Privacy
               </p>
               <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] divide-y divide-slate-100 overflow-hidden">
@@ -1233,13 +1233,13 @@ export const Settings: React.FC = () => {
           {/* 8. DANGER ZONE */}
           {(selectedCategory === 'all' || selectedCategory === 'legal') && (
             <div className="space-y-2 pt-2">
-              <p className="text-[11px] font-black uppercase tracking-wider text-rose-500 px-2">
+              <p className="text-xs font-black uppercase tracking-wider text-rose-500 px-2">
                 Danger Zone
               </p>
               <div className="bg-rose-50/50 rounded-[24px] sm:rounded-[28px] border border-rose-100/80 p-4 sm:p-5 flex items-center justify-between gap-3">
                 <div className="min-w-0">
                   <p className="text-xs sm:text-sm font-bold text-rose-950">Factory Reset / Clear All</p>
-                  <p className="text-[11px] text-rose-700">Wipe all local and cloud ledger data</p>
+                  <p className="text-xs text-rose-700">Wipe all local and cloud ledger data</p>
                 </div>
                 <button
                   type="button"
@@ -1331,18 +1331,18 @@ export const Settings: React.FC = () => {
                                 {device.deviceName || 'Device'}
                               </p>
                               {isCurrent && (
-                                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700">
+                                <span className="px-1.5 py-0.5 rounded text-2xs font-bold bg-blue-100 text-blue-700">
                                   This Device
                                 </span>
                               )}
                               <span className={cn(
-                                "px-1.5 py-0.5 rounded text-[10px] font-semibold",
+                                "px-1.5 py-0.5 rounded text-2xs font-semibold",
                                 device.isActive ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"
                               )}>
                                 {device.isActive ? 'Active' : 'Revoked'}
                               </span>
                             </div>
-                            <p className="text-[11px] text-slate-400 mt-0.5 truncate">
+                            <p className="text-xs text-slate-400 mt-0.5 truncate">
                               {device.osType || 'OS'}{device.osVersion ? ` (${device.osVersion})` : ''} • {device.deviceType || 'device'} • Last seen {new Date(device.lastSyncedAt || device.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                             </p>
                           </div>

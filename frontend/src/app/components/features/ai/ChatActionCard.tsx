@@ -188,7 +188,7 @@ export const ChatActionCard: React.FC<ChatActionCardProps> = ({ messageId, promp
       data-testid="kai-chat-action-card"
       className="w-full min-w-[240px] max-w-sm rounded-2xl border border-purple-100 bg-white p-3.5 shadow-2xs"
     >
-      <p className="text-[11px] font-black uppercase tracking-wider text-purple-700">{title}</p>
+      <p className="text-xs font-black uppercase tracking-wider text-purple-700">{title}</p>
 
       <dl className="mt-2 divide-y divide-slate-100 text-xs">
         {rows

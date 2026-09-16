@@ -11,6 +11,8 @@ import { decodeQuotedPrintable, sanitizeContactName } from '@/services/contactsS
 import { FloatingSaveBar } from '@/app/components/ui/FloatingSaveBar';
 import { db } from '@/lib/database';
 import { formatCurrencyAmount } from '@/lib/currencyUtils';
+import { useSubmitLock } from '@/hooks/useSubmitLock';
+import { queueRecordUpsertSync, runWithCloudSyncSuppressed } from '@/lib/auth-sync-integration';
 
 // --- Constants ---
 const GROUP_CATEGORIES = [
@@ -44,6 +46,7 @@ const createParticipantItem = (seed: Partial<GroupParticipantItem> = {}): GroupP
 });
 
 export const AddGroup: React.FC = () => {
+  const guardSubmit = useSubmitLock();
   const { setCurrentPage, currency, friends, refreshData } = useApp();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showFriendPicker, setShowFriendPicker] = useState(false);
@@ -81,7 +84,7 @@ export const AddGroup: React.FC = () => {
   };
 
   // Save a name as a Friend in the DB if not already there (temp record)
-  const saveNewFriend = async (p: GroupParticipantItem) => {
+  const saveNewFriend = guardSubmit(async (p: GroupParticipantItem) => {
     const trimmed = p.name.trim();
     if (!trimmed) return;
     const cleanEmail = p.email?.trim().toLowerCase();
@@ -104,7 +107,7 @@ export const AddGroup: React.FC = () => {
       syncStatus: 'pending',
     });
     refreshData();
-  };
+  });
 
   const addFriend = (friend: typeof friends[0]) => {
     const fEmail = friend.email ? friend.email.trim().toLowerCase() : '';
@@ -169,7 +172,7 @@ export const AddGroup: React.FC = () => {
     setShowNewPersonInput(false);
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = guardSubmit(async () => {
     if (!formData.name.trim()) { toast.error('Group name is required'); return; }
     if (validParticipants.length < 1) { toast.error('Add at least one participant'); return; }
     if (totalNum <= 0) { toast.error('Total amount must be greater than 0'); return; }
@@ -239,8 +242,16 @@ export const AddGroup: React.FC = () => {
 
       const now = new Date();
 
-      // Write to Dexie first so the Groups page shows it immediately (offline-first)
-      const localId = await db.groupExpenses.add({
+      // Write to Dexie first so the Groups page shows it immediately (offline-first).
+      //
+      // Suppressed, because this handler posts the group itself just below. An
+      // unsuppressed add also queues a create, and the 250 ms queue timer usually
+      // beats a Sydney round trip — so the same group was posted twice under two
+      // different keys and appeared twice. The queue is armed only if the direct
+      // post fails, and both attempts share `clientRequestId`.
+      const clientRequestId = crypto.randomUUID();
+      const localId = await runWithCloudSyncSuppressed(() => db.groupExpenses.add({
+        clientRequestId,
         name: formData.name.trim(),
         totalAmount: totalNum,
         paidBy: 0,
@@ -254,7 +265,7 @@ export const AddGroup: React.FC = () => {
         syncStatus: 'pending',
         createdAt: now,
         updatedAt: now,
-      });
+      } as any));
 
       toast.success('Group expense created! Participants saved to contacts.');
       setCurrentPage('groups');
@@ -262,6 +273,7 @@ export const AddGroup: React.FC = () => {
       // Push to backend in background; update cloudId on success
       try {
         const backendResp = await backendService.api.post('/groups', {
+          clientRequestId,
           name: formData.name.trim(),
           totalAmount: totalNum,
           paidBy: 0,
@@ -276,19 +288,24 @@ export const AddGroup: React.FC = () => {
             ...enrichedParticipants.map(p => ({ name: p.name, share: p.share, paid: p.paid, email: p.email, phone: p.phone })),
           ],
         });
-        if (backendResp.data?.id || backendResp.data?.data?.id) {
-          const cloudId = String(backendResp.data?.id ?? backendResp.data?.data?.id);
-          await db.groupExpenses.update(localId as number, { cloudId, syncStatus: 'synced' });
+        const cloudId = backendResp.data?.id ?? backendResp.data?.data?.id;
+        if (cloudId) {
+          await runWithCloudSyncSuppressed(() =>
+            db.groupExpenses.update(localId as number, { cloudId: String(cloudId), syncStatus: 'synced' }),
+          );
+        } else {
+          queueRecordUpsertSync('group_expenses', localId as number);
         }
       } catch {
-        // Keep syncStatus='pending'; background sync will retry
+        // Offline or server error — the sync queue retries under the same key.
+        queueRecordUpsertSync('group_expenses', localId as number);
       }
     } catch (error) {
       toast.error('Failed to create group expense');
     } finally {
       setIsSubmitting(false);
     }
-  };
+  });
 
  return (
  <div className="flex flex-col min-h-screen bg-white">
@@ -319,7 +336,7 @@ export const AddGroup: React.FC = () => {
  
         <div className="bg-white rounded-[28px] sm:rounded-[32px] p-6 sm:p-8 border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] space-y-5">
           <div className="space-y-1.5">
-            <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Group / Expense Name</label>
+            <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Group / Expense Name</label>
             <div className="relative">
               <Tag className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={15} />
               <input data-testid="add-group-e-g-weekend-trip" 
@@ -334,7 +351,7 @@ export const AddGroup: React.FC = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Category</label>
+              <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Category</label>
               <SearchableDropdown testId="add-group-category"
                 options={groupCategoryOptions}
                 value={formData.category}
@@ -344,7 +361,7 @@ export const AddGroup: React.FC = () => {
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Date</label>
+              <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Date</label>
               <div className="relative group">
                 <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-violet-500 transition-colors z-10" size={15} />
                 <div className="w-full bg-slate-50 border border-slate-200/80 rounded-xl pl-10 pr-3.5 font-semibold text-xs sm:text-sm text-slate-900 group-hover:bg-slate-100/50 transition-all flex items-center h-10 sm:h-11">
@@ -368,7 +385,7 @@ export const AddGroup: React.FC = () => {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Description (Optional)</label>
+            <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Description (Optional)</label>
             <div className="relative">
               <AlignLeft className="absolute left-3.5 top-3.5 text-slate-400" size={15} />
               <textarea data-testid="add-group-what-was-this-for" 
@@ -382,8 +399,8 @@ export const AddGroup: React.FC = () => {
 
  {/* Participants Section */}
  <div className="space-y-4 pt-4 border-t border-slate-100">
- <div className="flex items-center justify-between">
- <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+ <div className="flex flex-wrap items-center justify-between gap-2">
+ <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">
  Split with Participants ({validParticipants.length + 1})
  </label>
   <div className="flex gap-2">
@@ -392,7 +409,7 @@ export const AddGroup: React.FC = () => {
   type="button" 
   onClick={() => { setShowFriendPicker(!showFriendPicker); setShowNewPersonInput(false); }}
   className={cn(
-    "text-[10px] sm:text-[11px] font-bold uppercase tracking-wider px-2.5 py-1.5 rounded-lg flex items-center gap-1 transition-all cursor-pointer",
+    "text-2xs font-bold uppercase tracking-wider whitespace-nowrap shrink-0 px-2.5 py-1.5 rounded-lg flex items-center gap-1 transition-all cursor-pointer",
     showFriendPicker ? "bg-violet-600 text-white" : "text-violet-600 bg-violet-50 hover:bg-violet-100"
   )}
   >
@@ -405,7 +422,7 @@ export const AddGroup: React.FC = () => {
     toast.info('No friends in your contacts yet. Redirecting to Add Friends...');
     setCurrentPage('add-friends');
   }}
-  className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-violet-600 bg-violet-50 hover:bg-violet-100 px-2.5 py-1.5 rounded-lg flex items-center gap-1 cursor-pointer"
+  className="text-2xs font-bold uppercase tracking-wider text-violet-600 bg-violet-50 hover:bg-violet-100 px-2.5 py-1.5 rounded-lg flex items-center gap-1 cursor-pointer"
   >
   <UserPlus size={10} /> Add Friends
   </button>
@@ -414,7 +431,7 @@ export const AddGroup: React.FC = () => {
   type="button" 
   onClick={() => { setShowNewPersonInput(!showNewPersonInput); setShowFriendPicker(false); }}
   className={cn(
-    "text-[10px] sm:text-[11px] font-bold uppercase tracking-wider px-2.5 py-1.5 rounded-lg flex items-center gap-1 transition-all cursor-pointer",
+    "text-2xs font-bold uppercase tracking-wider whitespace-nowrap shrink-0 px-2.5 py-1.5 rounded-lg flex items-center gap-1 transition-all cursor-pointer",
     showNewPersonInput ? "bg-indigo-600 text-white" : "text-indigo-600 bg-indigo-50 hover:bg-indigo-100"
   )}
   >
@@ -427,14 +444,14 @@ export const AddGroup: React.FC = () => {
   {showFriendPicker && friends.length > 0 && (
   <div className="p-3 bg-violet-50/70 rounded-xl border border-violet-100 animate-in slide-in-from-top-2 space-y-2.5">
   <div className="flex items-center justify-between">
-    <p className="text-[10px] sm:text-[11px] font-bold text-violet-600 uppercase tracking-wider">Tap friend to add to group</p>
+    <p className="text-2xs font-bold text-violet-600 uppercase tracking-wider">Tap friend to add to group</p>
     <button
       type="button"
       onClick={() => {
         setShowFriendPicker(false);
         setFriendSearch('');
       }}
-      className="text-violet-400 hover:text-violet-600 text-[10px] font-bold uppercase cursor-pointer"
+      className="text-violet-400 hover:text-violet-600 text-2xs font-bold uppercase cursor-pointer"
     >
       Close
     </button>
@@ -507,9 +524,9 @@ export const AddGroup: React.FC = () => {
         >
           <span>{cleanName}</span>
           {f.email ? (
-            <span className="text-[10px] opacity-70">({f.email})</span>
+            <span className="text-2xs opacity-70">({f.email})</span>
           ) : f.phone ? (
-            <span className="text-[10px] opacity-70">({f.phone})</span>
+            <span className="text-2xs opacity-70">({f.phone})</span>
           ) : null}
         </button>
       );
@@ -544,16 +561,16 @@ export const AddGroup: React.FC = () => {
   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[250px] lg:max-h-[400px] overflow-y-auto no-scrollbar">
   {/* Fixed "You" Participant */}
   <div className="flex items-center gap-2 p-2.5 bg-slate-100/50 rounded-xl border border-slate-100">
-  <div className="w-8 h-8 rounded-full bg-violet-600 flex items-center justify-center text-[10px] font-black text-white">ME</div>
+  <div className="w-8 h-8 rounded-full bg-violet-600 flex items-center justify-center text-2xs font-black text-white">ME</div>
   <div className="flex-1">
   <p className="text-xs font-bold text-slate-900">You (Included)</p>
-  <p className="text-[10px] sm:text-[11px] font-medium text-slate-400 uppercase">Always part of split</p>
+  <p className="text-2xs font-medium text-slate-400 uppercase">Always part of split</p>
   </div>
   </div>
 
   {formData.participants.map((p, i) => (
   <div key={p.id || i} className="flex items-center gap-2 p-2 bg-white border border-slate-100 rounded-xl group">
-  <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-[10px] font-black text-indigo-500 uppercase shrink-0">
+  <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-2xs font-black text-indigo-500 uppercase shrink-0">
   {p.name ? p.name.charAt(0) : <Plus size={12} />}
   </div>
   <div className="flex-1 min-w-0">
@@ -562,11 +579,11 @@ export const AddGroup: React.FC = () => {
   value={p.name} 
   onChange={e => updateParticipantName(i, e.target.value)}
   onBlur={() => saveNewFriend(p)}
-  className="w-full bg-transparent border-none p-0 text-[11px] font-bold text-slate-900 focus:ring-0" 
+  className="w-full bg-transparent border-none p-0 text-xs font-bold text-slate-900 focus:ring-0" 
   placeholder={`Person ${i + 1}`} 
   />
   {(p.email || p.phone) && (
-    <p className="text-[9px] text-slate-400 truncate">
+    <p className="text-2xs text-slate-400 truncate">
       {p.email || p.phone}
     </p>
   )}
@@ -598,7 +615,7 @@ export const AddGroup: React.FC = () => {
           <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-indigo-500/5 blur-[80px] rounded-full pointer-events-none z-0" />
           
           <div className="relative z-10 flex flex-col items-center w-full">
-            <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-4">Total Group Bill</span>
+            <span className="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-4">Total Group Bill</span>
             
             <div className="flex items-center justify-center w-full my-4">
               {/* Left Side: Currency */}
@@ -654,7 +671,7 @@ export const AddGroup: React.FC = () => {
         <div className="bg-white rounded-[28px] sm:rounded-[32px] p-6 sm:p-7 border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] space-y-5">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Split Calculation</p>
+              <p className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Split Calculation</p>
               <p className="text-xs font-bold text-slate-700">Equally between {validParticipants.length + 1} people</p>
             </div>
             <div className="w-10 h-10 rounded-2xl bg-violet-50 flex items-center justify-center text-violet-600">
@@ -664,20 +681,20 @@ export const AddGroup: React.FC = () => {
 
           <div className="p-5 bg-slate-900 rounded-[24px] text-white relative overflow-hidden">
             <div className="absolute -top-6 -right-6 w-20 h-20 bg-white/5 blur-[20px] rounded-full" />
-            <p className="text-[9px] font-black text-white/40 uppercase tracking-widest mb-1">Your Share</p>
+            <p className="text-2xs font-black text-white/40 uppercase tracking-widest mb-1">Your Share</p>
             <div className="flex items-baseline gap-2">
               <span className="text-sm sm:text-lg font-black text-white/30">{currency}</span>
               <span className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tighter">{perPerson.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
             </div>
             <div className="mt-4 flex items-center gap-3">
               <div className="flex -space-x-2">
-                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-violet-500 border-2 border-slate-900 flex items-center justify-center text-[8px] sm:text-[9px] font-black">YOU</div>
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-violet-500 border-2 border-slate-900 flex items-center justify-center text-2xs font-black">YOU</div>
                 {validParticipants.slice(0, 3).map((p, i) => (
-                  <div key={i} className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-700 border-2 border-slate-900 flex items-center justify-center text-[8px] sm:text-[9px] font-black uppercase">{p.name[0] || '?'}</div>
+                  <div key={i} className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-700 border-2 border-slate-900 flex items-center justify-center text-2xs font-black uppercase">{p.name[0] || '?'}</div>
                 ))}
-                {validParticipants.length > 3 && <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-800 border-2 border-slate-900 flex items-center justify-center text-[8px] sm:text-[9px] font-black">+{validParticipants.length - 3}</div>}
+                {validParticipants.length > 3 && <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-800 border-2 border-slate-900 flex items-center justify-center text-2xs font-black">+{validParticipants.length - 3}</div>}
               </div>
-              <span className="text-[10px] sm:text-[11px] font-bold text-white/60 uppercase tracking-wider">Total {validParticipants.length + 1} People</span>
+              <span className="text-2xs font-bold text-white/60 uppercase tracking-wider">Total {validParticipants.length + 1} People</span>
             </div>
           </div>
         </div>
@@ -685,7 +702,7 @@ export const AddGroup: React.FC = () => {
         <div className="mt-auto p-4 bg-indigo-50/80 border border-indigo-100 rounded-2xl flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center shrink-0"><Sparkles size={16} className="text-white" /></div>
           <div>
-            <p className="text-[9px] font-black text-indigo-700 uppercase tracking-widest">Smart Split Tip</p>
+            <p className="text-2xs font-black text-indigo-700 uppercase tracking-widest">Smart Split Tip</p>
             <p className="text-xs font-medium text-slate-700">Add group name for better expense tracking.</p>
           </div>
         </div>
@@ -695,12 +712,12 @@ export const AddGroup: React.FC = () => {
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center"><Users size={20} className="text-white" /></div>
             <div>
-              <p className="text-[9px] font-black text-white/70 uppercase tracking-widest">Group Summary</p>
+              <p className="text-2xs font-black text-white/70 uppercase tracking-widest">Group Summary</p>
               <p className="text-xs font-black truncate max-w-[140px]">{formData.name || 'New Group bill'}</p>
             </div>
           </div>
           <div className="text-right">
-            <p className="text-[9px] font-black text-white/70 uppercase tracking-widest">Total Bill</p>
+            <p className="text-2xs font-black text-white/70 uppercase tracking-widest">Total Bill</p>
             <p className="text-xl sm:text-2xl font-black tracking-tighter">{currency} {totalNum.toLocaleString()}</p>
           </div>
         </div>

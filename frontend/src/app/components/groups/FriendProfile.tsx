@@ -143,11 +143,11 @@ export const FriendProfile: React.FC = () => {
             <div className="flex items-center gap-2">
               <p className="text-lg font-bold text-slate-900 truncate">{friend.name}</p>
               {friend.isRegistered ? (
-                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700">
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-2xs font-bold text-emerald-700">
                   <ShieldCheck size={11} /> Kanaku User
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] font-bold text-slate-500">
+                <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 text-2xs font-bold text-slate-500">
                   <UserCircle2 size={11} /> Guest
                 </span>
               )}
@@ -228,7 +228,7 @@ export const FriendProfile: React.FC = () => {
                   </div>
                   <div className="text-right shrink-0">
                     <p className="font-black text-slate-900">{formatCurrency(expense.shareAmount)}</p>
-                    <span className={`text-[10px] font-bold uppercase tracking-wider ${expense.status === 'paid' ? 'text-emerald-600' : 'text-amber-600'}`}>
+                    <span className={`text-2xs font-bold uppercase tracking-wider ${expense.status === 'paid' ? 'text-emerald-600' : 'text-amber-600'}`}>
                       {expense.status}
                     </span>
                   </div>

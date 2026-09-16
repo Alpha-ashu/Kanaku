@@ -57,7 +57,7 @@ export const AppFeatureSlides: React.FC<AppFeatureSlidesProps> = ({ onComplete }
               <div className="bg-indigo-500 h-full w-[30%]" />
             </div>
           </div>
-          <div className="pt-1 flex justify-between items-center text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2 py-1.5 rounded-lg border border-emerald-100">
+          <div className="pt-1 flex justify-between items-center text-2xs text-emerald-600 font-bold bg-emerald-50 px-2 py-1.5 rounded-lg border border-emerald-100">
             <span>Daily average spend down 12%</span>
             <span>₹800/day</span>
           </div>
@@ -75,21 +75,21 @@ export const AppFeatureSlides: React.FC<AppFeatureSlidesProps> = ({ onComplete }
         <div className="w-full flex flex-col gap-3.5 p-4 bg-white/70 backdrop-blur-md rounded-2xl border border-white/50 shadow-lg">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-gray-800">🚗 New Car Goal</span>
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold">70% Met</span>
+            <span className="text-2xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold">70% Met</span>
           </div>
           <div className="flex justify-between items-end">
             <div>
-              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Saved So Far</p>
+              <p className="text-2xs text-gray-400 font-bold uppercase tracking-wider">Saved So Far</p>
               <p className="text-lg font-black text-gray-900">₹7,00,000</p>
             </div>
-            <p className="text-[10px] text-gray-500 font-semibold mb-0.5">Target: ₹10,00,000</p>
+            <p className="text-2xs text-gray-500 font-semibold mb-0.5">Target: ₹10,00,000</p>
           </div>
           <div className="relative pt-1">
             <div className="overflow-hidden h-3 text-xs flex rounded-full bg-gray-200">
               <div className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-gradient-to-r from-emerald-400 to-teal-500 transition-all duration-500 w-[70%]" />
             </div>
           </div>
-          <div className="flex gap-2 text-[10px] font-semibold text-gray-500 bg-gray-50 p-2 rounded-xl">
+          <div className="flex gap-2 text-2xs font-semibold text-gray-500 bg-gray-50 p-2 rounded-xl">
             <Award className="w-4 h-4 text-amber-500 flex-shrink-0" />
             <span>On track to reach your goal by December 2026</span>
           </div>
@@ -107,19 +107,19 @@ export const AppFeatureSlides: React.FC<AppFeatureSlidesProps> = ({ onComplete }
         <div className="w-full flex flex-col gap-3 p-4 bg-white/70 backdrop-blur-md rounded-2xl border border-white/50 shadow-lg">
           <div className="flex items-center justify-between pb-2 border-b border-gray-100">
             <span className="text-xs font-bold text-gray-800">✈️ Goa Trip 2026</span>
-            <span className="text-[10px] font-medium text-purple-600">3 Friends</span>
+            <span className="text-2xs font-medium text-purple-600">3 Friends</span>
           </div>
           <div className="space-y-2.5">
             <div className="flex items-center justify-between text-xs">
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center font-bold text-[10px] text-blue-700">SA</div>
+                <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center font-bold text-2xs text-blue-700">SA</div>
                 <span className="font-semibold text-gray-700">Shaik Ashraf</span>
               </div>
               <span className="text-emerald-600 font-bold">Owes you ₹4,500</span>
             </div>
             <div className="flex items-center justify-between text-xs">
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-full bg-pink-100 flex items-center justify-center font-bold text-[10px] text-pink-700">JD</div>
+                <div className="w-6 h-6 rounded-full bg-pink-100 flex items-center justify-center font-bold text-2xs text-pink-700">JD</div>
                 <span className="font-semibold text-gray-700">John Doe</span>
               </div>
               <span className="text-rose-600 font-bold">You owe ₹1,200</span>
@@ -152,14 +152,14 @@ export const AppFeatureSlides: React.FC<AppFeatureSlidesProps> = ({ onComplete }
             <div className="p-2 bg-amber-50 border border-amber-100 rounded-xl flex items-center gap-2">
               <Gem className="w-4 h-4 text-amber-500" />
               <div>
-                <p className="text-[9px] text-gray-500 font-semibold">Gold</p>
+                <p className="text-2xs text-gray-500 font-semibold">Gold</p>
                 <p className="font-bold text-gray-800">₹32,580</p>
               </div>
             </div>
             <div className="p-2 bg-blue-50 border border-blue-100 rounded-xl flex items-center gap-2">
               <BarChart3 className="w-4 h-4 text-blue-500" />
               <div>
-                <p className="text-[9px] text-gray-500 font-semibold">Stocks</p>
+                <p className="text-2xs text-gray-500 font-semibold">Stocks</p>
                 <p className="font-bold text-gray-800">₹1,20,000</p>
               </div>
             </div>
@@ -181,11 +181,11 @@ export const AppFeatureSlides: React.FC<AppFeatureSlidesProps> = ({ onComplete }
           </div>
           <div className="text-center space-y-1.5">
             <p className="text-xs font-black text-gray-900">Device-Level Encryption Active</p>
-            <p className="text-[10px] text-gray-500 max-w-[200px] leading-relaxed">
+            <p className="text-2xs text-gray-500 max-w-[200px] leading-relaxed">
               Your financial records are locked behind your PIN and sent over TLS.
             </p>
           </div>
-          <div className="flex gap-1.5 items-center bg-gray-50 px-2 py-1 rounded-full border border-gray-100 text-[9px] font-bold text-gray-600">
+          <div className="flex gap-1.5 items-center bg-gray-50 px-2 py-1 rounded-full border border-gray-100 text-2xs font-bold text-gray-600">
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
             <span>Local-First Sync Ready</span>
           </div>
@@ -290,7 +290,7 @@ export const AppFeatureSlides: React.FC<AppFeatureSlidesProps> = ({ onComplete }
                 {/* Text Content */}
                 <div className="text-center px-4 space-y-2.5">
                   <div className="flex items-center justify-center gap-2">
-                    <span className={`text-[10px] font-black uppercase tracking-[0.2em] px-2.5 py-0.5 rounded-full ${slide.accentColor} text-white`}>
+                    <span className={`text-2xs font-black uppercase tracking-[0.2em] px-2.5 py-0.5 rounded-full ${slide.accentColor} text-white`}>
                       {slide.tagline}
                     </span>
                   </div>

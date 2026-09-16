@@ -23,6 +23,7 @@ const { tables, apiPost, apiPut } = vi.hoisted(() => {
         return id;
       }),
       get: vi.fn(async (id: number) => rows.get(Number(id))),
+      toArray: vi.fn(async () => Array.from(rows.values())),
       update: vi.fn(async (id: number, mods: any) => {
         const existing = rows.get(Number(id));
         if (!existing) return 0;
@@ -52,13 +53,21 @@ const { tables, apiPost, apiPut } = vi.hoisted(() => {
   };
 });
 
-vi.mock('@/lib/database', () => ({ db: tables }));
+vi.mock('@/lib/database', () => ({
+  db: {
+    ...tables,
+    // Server-confirmed rows are stored inside a read-write transaction so a
+    // concurrent pull cannot insert a second copy; the mock just runs the body.
+    transaction: vi.fn(async (_mode: string, _tables: unknown, work: () => Promise<unknown>) => work()),
+  },
+}));
 vi.mock('@/lib/api', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/lib/api')>();
   return { ...actual, apiClient: { post: apiPost, put: apiPut, get: vi.fn(), delete: vi.fn() } };
 });
 
 import { saveTransactionWithBackendSync, updateTransactionWithBackendSync } from '@/lib/auth-sync-integration';
+import { resetSubmitGuard } from '@/lib/submitGuard';
 
 const SYNC_QUEUE_STORAGE_KEY = 'KANAKU_sync_queue_v3';
 const queuedKeys = (): string[] =>
@@ -82,6 +91,9 @@ describe('backend-first transaction saves', () => {
       clear: () => { store.clear(); },
     });
     Object.values(tables).forEach((table) => table.rows.clear());
+    // Every test here saves the same expense; without a reset the create
+    // coalescer (correctly) folds each one into the previous test's save.
+    resetSubmitGuard();
     tables.accounts.rows.set(1, { id: 1, name: 'Bank', cloudId: 'cloud-acc-1', balance: 1000 });
     apiPost.mockReset();
     apiPut.mockReset();

@@ -75,14 +75,14 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
         <button
           type="button"
           data-testid="public-navbar-div"
-          className="rounded-[10px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/60"
+          className="shrink-0 whitespace-nowrap rounded-[10px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/60"
           onClick={() => handleLinkClick('landing')}
           aria-label="KANAKU home"
         >
           <KanakuWordmark />
         </button>
 
-        <nav className="hidden md:flex items-center gap-1" aria-label="Main">
+        <nav className="hidden lg:flex items-center gap-1" aria-label="Main">
           {navLinks.map((link) => {
             const isActive = currentPage === link.id;
             return (
@@ -104,12 +104,12 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
           })}
         </nav>
 
-        <div className="hidden md:flex items-center gap-2">
+        <div className="hidden lg:flex items-center gap-2 shrink-0">
           <button
             type="button"
             data-testid="public-navbar-log-in"
             onClick={onLogin}
-            className="px-3.5 py-2 text-sm font-semibold text-slate-700 hover:text-slate-950 rounded-[10px] hover:bg-slate-100/70 transition-colors"
+            className="px-3.5 py-2 whitespace-nowrap text-sm font-semibold text-slate-700 hover:text-slate-950 rounded-[10px] hover:bg-slate-100/70 transition-colors"
           >
             Log in
           </button>
@@ -117,7 +117,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
             type="button"
             data-testid="public-navbar-get-started"
             onClick={onGetStarted}
-            className="group inline-flex items-center gap-1.5 px-4 py-2 rounded-[10px] bg-slate-950 text-white text-sm font-semibold hover:bg-violet-700 transition-colors shadow-sm"
+            className="group inline-flex items-center gap-1.5 px-4 py-2 whitespace-nowrap rounded-[10px] bg-slate-950 text-white text-sm font-semibold hover:bg-violet-700 transition-colors shadow-sm"
           >
             Get started
             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
@@ -127,7 +127,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
         <button
           type="button"
           data-testid="public-navbar-menu"
-          className="md:hidden -mr-1 p-2 rounded-[10px] text-slate-700 hover:bg-slate-100 transition-colors"
+          className="lg:hidden -mr-1 p-2 rounded-[10px] text-slate-700 hover:bg-slate-100 transition-colors"
           onClick={() => setMenuOpen(!menuOpen)}
           aria-label="Toggle navigation menu"
           aria-expanded={menuOpen}
@@ -137,7 +137,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
       </div>
 
       {menuOpen && (
-        <div className="md:hidden border-t border-slate-200/80 bg-white px-4 pt-2 pb-4 shadow-lg">
+        <div className="lg:hidden border-t border-slate-200/80 bg-white px-4 pt-2 pb-4 shadow-lg">
           <nav className="flex flex-col" aria-label="Mobile">
             {navLinks.map((link) => (
               <button
@@ -145,7 +145,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
                 data-testid={`public-navbar-button-2-${link.id}`}
                 key={link.id}
                 onClick={() => handleLinkClick(link.id, link.section)}
-                className={`text-left px-2 py-3 text-[15px] font-medium border-b border-slate-100 transition-colors ${
+                className={`text-left px-2 py-3 text-base font-medium border-b border-slate-100 transition-colors ${
                   currentPage === link.id ? 'text-violet-700' : 'text-slate-700 hover:text-slate-950'
                 }`}
               >

@@ -17,6 +17,7 @@ import {
  ResultsView,
  type ScanFieldUpdater,
 } from '@/app/components/receipt-scanner/ReceiptScannerViews';
+import { useSubmitLock } from '@/hooks/useSubmitLock';
 
 export type { ReceiptScanPayload } from '@/types/receipt.types';
 
@@ -43,6 +44,7 @@ export const ReceiptScanner: React.FC<ReceiptScannerProps> = ({
  initialAccountId,
  initialMode = null,
 }) => {
+ const guardSubmit = useSubmitLock();
  const { accounts, currency, setCurrentPage } = useApp();
  const { user } = useAuth();
  const isOcrCapability = useAICapability('ocrEngine', 'transactionOCR');
@@ -147,7 +149,7 @@ export const ReceiptScanner: React.FC<ReceiptScannerProps> = ({
  if (result) setStep('results');
  };
 
- const handleCreateTransaction = async () => {
+ const handleCreateTransaction = guardSubmit(async () => {
  if (!scanResult || !selectedAccountId) {
  toast.error('Please select an account to continue');
  return;
@@ -179,7 +181,7 @@ export const ReceiptScanner: React.FC<ReceiptScannerProps> = ({
  handleClose();
  setCurrentPage('transactions');
  });
- };
+ });
 
  const handleApplyScanToForm = async () => {
  if (!scanResult || !selectedAccountId) {

@@ -16,7 +16,7 @@ const DISPLAY_FONT = "'Manrope', 'Inter', system-ui, sans-serif";
 const topics = ['General support', 'Bug report', 'Feature idea', 'Account & security', 'Partnership'];
 
 const fieldClass =
-  'w-full px-4 py-3 rounded-[12px] bg-slate-50 border border-slate-200 text-slate-900 text-[15px] focus:bg-white focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 outline-none transition-colors';
+  'w-full px-4 py-3 rounded-[12px] bg-slate-50 border border-slate-200 text-slate-900 text-base focus:bg-white focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 outline-none transition-colors';
 
 export const ContactPage: React.FC<ContactPageProps> = ({ onGetStarted, onNavigate, onLogin }) => {
   const [topic, setTopic] = useState(topics[0]);
@@ -47,7 +47,7 @@ export const ContactPage: React.FC<ContactPageProps> = ({ onGetStarted, onNaviga
       <main className="bg-gradient-to-b from-violet-50/80 via-white to-white">
         <section className="max-w-3xl mx-auto px-4 sm:px-6 pt-28 sm:pt-36 pb-12 text-center">
           <p className="text-sm font-semibold text-violet-700">Support</p>
-          <h1 className="mt-3 text-[36px] sm:text-[52px] leading-[1.06] font-extrabold tracking-[-0.035em] text-slate-950">
+          <h1 className="mt-3 text-4xl sm:text-5xl leading-[1.06] font-extrabold tracking-[-0.035em] text-slate-950">
             How can we help?
           </h1>
           <p className="mt-5 text-base sm:text-lg leading-relaxed text-slate-600">
@@ -153,7 +153,7 @@ export const ContactPage: React.FC<ContactPageProps> = ({ onGetStarted, onNaviga
                 <button
                   data-testid="contact-page-button"
                   type="submit"
-                  className="w-full inline-flex items-center justify-center gap-2 rounded-[14px] bg-violet-600 px-6 py-3.5 text-[15px] font-semibold text-white hover:bg-violet-700 transition-colors"
+                  className="w-full inline-flex items-center justify-center gap-2 rounded-[14px] bg-violet-600 px-6 py-3.5 text-base font-semibold text-white hover:bg-violet-700 transition-colors"
                 >
                   <Send className="w-4 h-4" />
                   Continue in your email app

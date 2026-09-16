@@ -656,7 +656,7 @@ export const AdminAIDashboard: React.FC = () => {
  <thead>
  <tr className="border-b border-gray-100">
  {['User', 'Spend Score', 'Risk Score', 'Risk', 'Savings Rate', 'Top Category', 'Avg Spend', ''].map((h) => (
- <th key={h} className="py-2.5 pr-4 text-left text-[11px] font-medium uppercase tracking-wider text-gray-500">
+ <th key={h} className="py-2.5 pr-4 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
  {h}
  </th>
  ))}
@@ -677,7 +677,7 @@ export const AdminAIDashboard: React.FC = () => {
  >
  <td className="py-3 pr-4">
  <p className="font-medium text-gray-900 truncate max-w-[140px]">{u.name}</p>
- <p className="text-[11px] text-gray-400 truncate max-w-[140px]">{u.email}</p>
+ <p className="text-xs text-gray-400 truncate max-w-[140px]">{u.email}</p>
  </td>
  <td className="py-3 pr-4">
  <div className="flex items-center gap-2">
@@ -712,7 +712,7 @@ export const AdminAIDashboard: React.FC = () => {
  document.getElementById('raw-viewer')?.scrollIntoView({ behavior: 'smooth' });
  }, 100);
  }}
- className="flex items-center gap-1 text-[11px] font-medium text-indigo-600 hover:text-indigo-700 border border-indigo-200 hover:bg-indigo-50 px-2.5 py-1 rounded-lg transition-colors"
+ className="flex items-center gap-1 text-xs font-medium text-indigo-600 hover:text-indigo-700 border border-indigo-200 hover:bg-indigo-50 px-2.5 py-1 rounded-lg transition-colors"
  >
  <Eye size={11} /> Inspect
  </button>
@@ -835,7 +835,7 @@ export const AdminAIDashboard: React.FC = () => {
  onChange={(e) => updateConfigField('ocr', 'confidenceThreshold', parseFloat(e.target.value))}
  className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
  />
- <span className="text-[10px] text-slate-400">Scans with confidence below this threshold will prompt manual review.</span>
+ <span className="text-2xs text-slate-400">Scans with confidence below this threshold will prompt manual review.</span>
  </div>
  <div className="grid grid-cols-2 gap-3">
  <div>
@@ -935,7 +935,7 @@ export const AdminAIDashboard: React.FC = () => {
  { key: 'category', label: 'Category column aliases' }
  ].map((item) => (
  <div key={item.key}>
- <label className="block text-[11px] font-semibold text-slate-500 mb-1 capitalize">{item.label}</label>
+ <label className="block text-xs font-semibold text-slate-500 mb-1 capitalize">{item.label}</label>
  <input data-testid={`admin-aidashboard-e-g-amount-value-${item.key}`}
  type="text"
  defaultValue={aiConfig.import.columnAliases[item.key].join(', ')}
@@ -946,7 +946,7 @@ export const AdminAIDashboard: React.FC = () => {
  </div>
  ))}
  </div>
- <p className="text-[10px] text-slate-400 mt-2">Enter aliases separated by commas. These aliases are matched fuzzy style during import parsing.</p>
+ <p className="text-2xs text-slate-400 mt-2">Enter aliases separated by commas. These aliases are matched fuzzy style during import parsing.</p>
  </div>
  </div>
  )}
@@ -1018,7 +1018,7 @@ export const AdminAIDashboard: React.FC = () => {
  onChange={(e) => updateConfigField('voice', 'autoSaveThreshold', parseFloat(e.target.value))}
  className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-violet-600"
  />
- <span className="text-[10px] text-slate-400">Transcribed segments with intent confidence below this will prompt approval.</span>
+ <span className="text-2xs text-slate-400">Transcribed segments with intent confidence below this will prompt approval.</span>
  </div>
  </div>
  )}
@@ -1039,7 +1039,7 @@ export const AdminAIDashboard: React.FC = () => {
  {/* Add keyword rule */}
  <div className="bg-white border border-slate-200 rounded-xl p-3 grid gap-3 sm:grid-cols-3 items-end">
  <div>
- <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase">Keyword</label>
+ <label className="block text-2xs font-bold text-slate-500 mb-1 uppercase">Keyword</label>
  <input data-testid="admin-aidashboard-e-g-starbucks-fuel"
  type="text"
  value={newKeyword}
@@ -1049,7 +1049,7 @@ export const AdminAIDashboard: React.FC = () => {
  />
  </div>
  <div>
- <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase">Map to Category</label>
+ <label className="block text-2xs font-bold text-slate-500 mb-1 uppercase">Map to Category</label>
  <select data-testid="admin-aidashboard-select-3"
  value={newKeywordCategory}
  onChange={(e) => setNewKeywordCategory(e.target.value)}
@@ -1135,7 +1135,7 @@ export const AdminAIDashboard: React.FC = () => {
  onChange={(e) => updateConfigField('deployment', 'rolloutPercentage', parseInt(e.target.value))}
  className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-slate-600"
  />
- <span className="text-[10px] text-slate-400">Controls what percentage of users receive the advanced AI feature set.</span>
+ <span className="text-2xs text-slate-400">Controls what percentage of users receive the advanced AI feature set.</span>
  </div>
  <div>
  <label className="block text-xs font-semibold text-slate-600 mb-1">Active Release Version</label>

@@ -6,12 +6,14 @@ import { SearchableDropdown } from '@/app/components/ui/SearchableDropdown';
 import { UserPlus, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { useSubmitLock } from '@/hooks/useSubmitLock';
 
 interface AddLoanModalWithFriendsProps {
  onClose: () => void;
 }
 
 export const AddLoanModalWithFriends: React.FC<AddLoanModalWithFriendsProps> = ({ onClose }) => {
+  const guardSubmit = useSubmitLock();
   const { friends, accounts, refreshData } = useApp();
   const [showAddFriend, setShowAddFriend] = useState(false);
   const [formData, setFormData] = useState({
@@ -42,7 +44,7 @@ export const AddLoanModalWithFriends: React.FC<AddLoanModalWithFriendsProps> = (
  group: 'Friends',
  }));
 
- const handleAddFriend = async () => {
+ const handleAddFriend = guardSubmit(async () => {
  if (!newFriend.name.trim()) {
  toast.error('Please enter friend name');
  return;
@@ -63,7 +65,7 @@ export const AddLoanModalWithFriends: React.FC<AddLoanModalWithFriendsProps> = (
  } catch (error) {
  toast.error('Failed to add friend');
  }
- };
+ });
 
  const handleFriendSelect = (friendId: number) => {
  const friend = friends.find(f => f.id === friendId);
@@ -76,7 +78,7 @@ export const AddLoanModalWithFriends: React.FC<AddLoanModalWithFriendsProps> = (
  }
  };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = guardSubmit(async (e: React.FormEvent) => {
     e.preventDefault();
 
     const { friendId, ...loanData } = formData;
@@ -104,7 +106,7 @@ export const AddLoanModalWithFriends: React.FC<AddLoanModalWithFriendsProps> = (
     } catch (error: any) {
       toast.error(error?.response?.data?.error || 'Failed to add loan');
     }
-  };
+  });
 
  return (
  <ModalWrapper
@@ -179,7 +181,7 @@ export const AddLoanModalWithFriends: React.FC<AddLoanModalWithFriendsProps> = (
         <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
           {formData.type === 'borrowed' ? 'Deposit Principal Into' : formData.type === 'lent' ? 'Disburse From Account' : 'Linked Account (Optional)'}
         </label>
-        <span className="text-[11px] text-slate-400 font-semibold">Optional</span>
+        <span className="text-xs text-slate-400 font-semibold">Optional</span>
       </div>
       <select
         value={formData.accountId || ''}

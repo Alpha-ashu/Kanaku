@@ -149,7 +149,7 @@ export const LiveMarketTicker: React.FC = () => {
  <div className="z-10 flex flex-shrink-0 items-center gap-2 border-r border-gray-200 bg-[#f8f9fc] px-4 text-xs font-bold uppercase tracking-[0.24em] text-gray-500">
  <Activity size={14} className="text-gray-400" />
  Market Flash
- <span className="hidden rounded-full bg-white px-2 py-1 text-[10px] tracking-[0.18em] text-gray-400 sm:inline-flex">
+ <span className="hidden rounded-full bg-white px-2 py-1 text-2xs tracking-[0.18em] text-gray-400 sm:inline-flex">
  {countryLabel} + Global
  </span>
  </div>
@@ -172,7 +172,7 @@ export const LiveMarketTicker: React.FC = () => {
  className="inline-flex min-w-max items-center gap-3 border-r border-gray-200 px-5"
  >
  <span className={cn(
- 'rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-[0.18em]',
+ 'rounded-full px-2 py-1 text-2xs font-bold uppercase tracking-[0.18em]',
  getBadgeToneClasses(item.tone),
  )}>
  {item.badge}

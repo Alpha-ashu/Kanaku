@@ -440,9 +440,9 @@ export const TopBar: React.FC = () => {
             {/* User Details */}
             <div className="flex-1 min-w-0">
               <h3 className="text-xs font-black text-slate-800 truncate">{displayName}</h3>
-              <p className="text-[10px] text-slate-400 truncate font-semibold text-left">{email}</p>
+              <p className="text-2xs text-slate-400 truncate font-semibold text-left">{email}</p>
               <div className="text-left mt-0.5">
-                <span className="inline-flex px-1.5 py-0.5 rounded text-[10px] sm:text-[11px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600">
+                <span className="inline-flex px-1.5 py-0.5 rounded text-2xs font-bold uppercase tracking-wider bg-slate-100 text-slate-600">
                   {roleName}
                 </span>
               </div>
@@ -492,7 +492,7 @@ export const TopBar: React.FC = () => {
  className="KANAKU-search-bar"
  />
  {!searchQuery && (
- <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-300 border border-slate-200 px-1.5 py-0.5 rounded-md pointer-events-none group-hover:border-slate-300 transition-colors">
+ <span className="absolute right-4 top-1/2 -translate-y-1/2 text-2xs font-bold text-slate-300 border border-slate-200 px-1.5 py-0.5 rounded-md pointer-events-none group-hover:border-slate-300 transition-colors">
  ⌘K
  </span>
  )}
@@ -507,7 +507,7 @@ export const TopBar: React.FC = () => {
       {searchResults.length > 0 ? (
  <div className="space-y-4">
  <div className="px-4 pb-1 flex items-center justify-between">
- <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">{searchResults.length} result{searchResults.length !== 1 ? 's' : ''}</p>
+ <p className="text-2xs font-black text-slate-300 uppercase tracking-widest">{searchResults.length} result{searchResults.length !== 1 ? 's' : ''}</p>
  </div>
  {(['page', 'account', 'transaction'] as const).map((type) => {
  const matches = searchResults.filter(r => r.type === type);
@@ -521,7 +521,7 @@ export const TopBar: React.FC = () => {
 
  return (
  <div key={type} className="px-2">
- <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-3 mb-2">{groupLabel}</p>
+ <p className="text-2xs font-black text-slate-400 uppercase tracking-widest px-3 mb-2">{groupLabel}</p>
                 <div className="space-y-0.5">
                   {matches.map((result) => {
                     const globalIdx = searchResults.indexOf(result);
@@ -547,7 +547,7 @@ export const TopBar: React.FC = () => {
                         </div>
                         <div className="min-w-0 flex-1">
                           <p className="text-xs font-bold text-slate-900 truncate leading-tight">{result.title}</p>
-                          <p className="text-[10px] text-slate-400 font-medium truncate mt-0.5 leading-tight">{result.description}</p>
+                          <p className="text-2xs text-slate-400 font-medium truncate mt-0.5 leading-tight">{result.description}</p>
                         </div>
                       </button>
                     );
@@ -561,7 +561,7 @@ export const TopBar: React.FC = () => {
         <div className="py-8 text-center text-slate-400">
           <Search size={24} className="mx-auto mb-2 opacity-30" />
           <p className="text-xs font-bold text-slate-700">No results for "{searchQuery}"</p>
-          <p className="text-[10px] text-slate-400 font-medium mt-0.5">Try a different search term</p>
+          <p className="text-2xs text-slate-400 font-medium mt-0.5">Try a different search term</p>
         </div>
       )}
     </div>
@@ -703,7 +703,7 @@ export const TopBar: React.FC = () => {
 
                     return (
                       <div key={type} className="space-y-2">
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">{groupLabel}</p>
+                        <p className="text-2xs font-black text-slate-400 uppercase tracking-widest px-1">{groupLabel}</p>
                         <div className="space-y-1 bg-white dark:bg-slate-900 rounded-3xl p-2 border border-slate-100 dark:border-slate-800 shadow-xs">
                           {matches.map((result) => {
                             const Icon = result.icon;

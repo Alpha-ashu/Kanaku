@@ -420,27 +420,27 @@ export const AdminDashboard: React.FC = () => {
               {userMetrics && (
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
                   <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm">
-                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Total Users</span>
+                    <span className="text-2xs font-black text-slate-400 uppercase tracking-widest block mb-1">Total Users</span>
                     <span className="text-xl font-black text-slate-900">{userMetrics.total}</span>
                   </div>
                   <div className="bg-emerald-50/60 border border-emerald-100/80 rounded-2xl p-4 shadow-sm">
-                    <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest block mb-1">Active</span>
+                    <span className="text-2xs font-black text-emerald-600 uppercase tracking-widest block mb-1">Active</span>
                     <span className="text-xl font-black text-emerald-700">{userMetrics.active}</span>
                   </div>
                   <div className="bg-rose-50/60 border border-rose-100/80 rounded-2xl p-4 shadow-sm">
-                    <span className="text-[10px] font-black text-rose-600 uppercase tracking-widest block mb-1">Disabled</span>
+                    <span className="text-2xs font-black text-rose-600 uppercase tracking-widest block mb-1">Disabled</span>
                     <span className="text-xl font-black text-rose-700">{userMetrics.disabled}</span>
                   </div>
                   <div className="bg-amber-50/60 border border-amber-100/80 rounded-2xl p-4 shadow-sm">
-                    <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest block mb-1">Pending Verify</span>
+                    <span className="text-2xs font-black text-amber-600 uppercase tracking-widest block mb-1">Pending Verify</span>
                     <span className="text-xl font-black text-amber-700">{userMetrics.pending}</span>
                   </div>
                   <div className="bg-indigo-50/60 border border-indigo-100/80 rounded-2xl p-4 shadow-sm">
-                    <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest block mb-1">Demo Accounts</span>
+                    <span className="text-2xs font-black text-indigo-600 uppercase tracking-widest block mb-1">Demo Accounts</span>
                     <span className="text-xl font-black text-indigo-700">{userMetrics.demo}</span>
                   </div>
                   <div className="bg-blue-50/60 border border-blue-100/80 rounded-2xl p-4 shadow-sm">
-                    <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest block mb-1">Normal Users</span>
+                    <span className="text-2xs font-black text-blue-600 uppercase tracking-widest block mb-1">Normal Users</span>
                     <span className="text-xl font-black text-blue-700">{userMetrics.normal}</span>
                   </div>
                 </div>
@@ -451,7 +451,7 @@ export const AdminDashboard: React.FC = () => {
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm flex items-center justify-between">
                     <div>
-                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Advisors</span>
+                      <span className="text-2xs font-black text-slate-400 uppercase tracking-widest block">Advisors</span>
                       <span className="text-lg font-black text-slate-900">{userMetrics.advisors}</span>
                     </div>
                     <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold">
@@ -460,7 +460,7 @@ export const AdminDashboard: React.FC = () => {
                   </div>
                   <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm flex items-center justify-between">
                     <div>
-                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Managers</span>
+                      <span className="text-2xs font-black text-slate-400 uppercase tracking-widest block">Managers</span>
                       <span className="text-lg font-black text-slate-900">{userMetrics.managers}</span>
                     </div>
                     <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
@@ -469,7 +469,7 @@ export const AdminDashboard: React.FC = () => {
                   </div>
                   <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm flex items-center justify-between">
                     <div>
-                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Administrators</span>
+                      <span className="text-2xs font-black text-slate-400 uppercase tracking-widest block">Administrators</span>
                       <span className="text-lg font-black text-slate-900">{userMetrics.admins}</span>
                     </div>
                     <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
@@ -478,7 +478,7 @@ export const AdminDashboard: React.FC = () => {
                   </div>
                   <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm flex items-center justify-between">
                     <div>
-                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Regular Users</span>
+                      <span className="text-2xs font-black text-slate-400 uppercase tracking-widest block">Regular Users</span>
                       <span className="text-lg font-black text-slate-900">{userMetrics.users}</span>
                     </div>
                     <div className="w-10 h-10 rounded-xl bg-slate-50 text-slate-600 flex items-center justify-center font-bold">
@@ -509,7 +509,7 @@ export const AdminDashboard: React.FC = () => {
                       <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
                         <div className="h-full bg-blue-600 rounded-full transition-all duration-1000" style={{ width: `${stats?.system.cpu.load ?? 0}%` }} />
                       </div>
-                      <p className="text-[10px] text-slate-400 font-medium">{stats?.system.cpu.cores ?? 1} Cores • {stats?.system.cpu.model.split('@')[0] ?? 'Node.js'}</p>
+                      <p className="text-2xs text-slate-400 font-medium">{stats?.system.cpu.cores ?? 1} Cores • {stats?.system.cpu.model.split('@')[0] ?? 'Node.js'}</p>
                     </div>
 
                     {/* RAM Usage */}
@@ -521,7 +521,7 @@ export const AdminDashboard: React.FC = () => {
                       <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
                         <div className="h-full bg-indigo-600 rounded-full transition-all duration-1000" style={{ width: `${stats?.system.memory.percent ?? 0}%` }} />
                       </div>
-                      <p className="text-[10px] text-slate-400 font-medium">{formatBytes(stats?.system.memory.used ?? 0)} / {formatBytes(stats?.system.memory.total ?? 0)}</p>
+                      <p className="text-2xs text-slate-400 font-medium">{formatBytes(stats?.system.memory.used ?? 0)} / {formatBytes(stats?.system.memory.total ?? 0)}</p>
                     </div>
 
                     {/* Storage */}
@@ -533,7 +533,7 @@ export const AdminDashboard: React.FC = () => {
                       <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
                         <div className="h-full bg-emerald-600 rounded-full transition-all duration-1000" style={{ width: `${((stats?.system.storage.usedBytes ?? 0) / (stats?.system.storage.totalBytes ?? 1) * 100)}%` }} />
                       </div>
-                      <p className="text-[10px] text-slate-400 font-medium">{formatBytes(stats?.system.storage.usedBytes ?? 0)} consumed</p>
+                      <p className="text-2xs text-slate-400 font-medium">{formatBytes(stats?.system.storage.usedBytes ?? 0)} consumed</p>
                     </div>
                   </div>
                 </div>
@@ -625,7 +625,7 @@ export const AdminDashboard: React.FC = () => {
                   <div className="p-4 border-b border-slate-50 flex items-center justify-between">
                     <div>
                       <h3 className="text-sm font-black text-slate-900 uppercase tracking-wider">User Directory</h3>
-                      <p className="text-[11px] text-slate-400 font-medium">{users.length} matching accounts</p>
+                      <p className="text-xs text-slate-400 font-medium">{users.length} matching accounts</p>
                     </div>
                   </div>
                   <div className="flex-1 overflow-y-auto divide-y divide-slate-50">
@@ -649,15 +649,15 @@ export const AdminDashboard: React.FC = () => {
                           <div className="flex items-center gap-1.5">
                             <p className="text-xs font-bold text-slate-900 truncate">{u.name}</p>
                             {u.accountType === 'DEMO' && (
-                              <span className="text-[9px] font-black bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded-md">DEMO</span>
+                              <span className="text-2xs font-black bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded-md">DEMO</span>
                             )}
                           </div>
-                          <p className="text-[10px] text-slate-400 truncate">{u.email}</p>
+                          <p className="text-2xs text-slate-400 truncate">{u.email}</p>
                           <div className="flex items-center gap-2 mt-0.5">
-                            <span className="text-[9px] font-bold uppercase text-slate-500">{u.role}</span>
-                            <span className="text-[9px] text-slate-300">•</span>
+                            <span className="text-2xs font-bold uppercase text-slate-500">{u.role}</span>
+                            <span className="text-2xs text-slate-300">•</span>
                             <span className={cn(
-                              'text-[9px] font-semibold',
+                              'text-2xs font-semibold',
                               u.status === 'blocked' ? 'text-rose-500' :
                               u.emailVerified === false ? 'text-amber-500' : 'text-emerald-600'
                             )}>
@@ -684,7 +684,7 @@ export const AdminDashboard: React.FC = () => {
                       >
                         <ChevronLeft size={14} />
                       </button>
-                      <span className="text-[11px] font-bold text-slate-600">Page {usersPage} of {totalPages}</span>
+                      <span className="text-xs font-bold text-slate-600">Page {usersPage} of {totalPages}</span>
                       <button
                         onClick={() => setUsersPage(p => Math.min(totalPages, p + 1))}
                         disabled={usersPage === totalPages}
@@ -714,7 +714,7 @@ export const AdminDashboard: React.FC = () => {
                             <div className="flex items-center gap-2">
                               <h3 className="text-base font-black text-slate-900">{selectedUser.name}</h3>
                               {selectedUser.accountType === 'DEMO' && (
-                                <span className="text-[10px] font-black bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-lg">DEMO</span>
+                                <span className="text-2xs font-black bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-lg">DEMO</span>
                               )}
                             </div>
                             <p className="text-xs text-slate-400 font-medium">{selectedUser.email}</p>
@@ -749,7 +749,7 @@ export const AdminDashboard: React.FC = () => {
                       {/* User Metadata Cards */}
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                         <div className="bg-slate-50/60 p-3 rounded-2xl border border-slate-100">
-                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Role</span>
+                          <span className="text-2xs font-black text-slate-400 uppercase tracking-widest block mb-1">Role</span>
                           <select
                             value={selectedUser.role}
                             onChange={(e) => handleRoleChange(selectedUser, e.target.value as any)}
@@ -763,7 +763,7 @@ export const AdminDashboard: React.FC = () => {
                         </div>
 
                         <div className="bg-slate-50/60 p-3 rounded-2xl border border-slate-100">
-                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Status</span>
+                          <span className="text-2xs font-black text-slate-400 uppercase tracking-widest block mb-1">Status</span>
                           <span className={cn(
                             'text-xs font-bold uppercase tracking-wider',
                             selectedUser.status === 'blocked' ? 'text-rose-600' : 'text-emerald-600'
@@ -773,14 +773,14 @@ export const AdminDashboard: React.FC = () => {
                         </div>
 
                         <div className="bg-slate-50/60 p-3 rounded-2xl border border-slate-100">
-                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Email Verified</span>
+                          <span className="text-2xs font-black text-slate-400 uppercase tracking-widest block mb-1">Email Verified</span>
                           <span className="text-xs font-bold text-slate-900">
                             {selectedUser.emailVerified !== false ? 'Yes' : 'Pending'}
                           </span>
                         </div>
 
                         <div className="bg-slate-50/60 p-3 rounded-2xl border border-slate-100">
-                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Joined</span>
+                          <span className="text-2xs font-black text-slate-400 uppercase tracking-widest block mb-1">Joined</span>
                           <span className="text-xs font-bold text-slate-900">
                             {selectedUser.createdAt ? new Date(selectedUser.createdAt).toLocaleDateString() : 'N/A'}
                           </span>
@@ -797,23 +797,23 @@ export const AdminDashboard: React.FC = () => {
                           <h4 className="text-xs font-black text-slate-700 uppercase tracking-widest mb-3">Resource Allocation</h4>
                           <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
                             <div className="bg-white p-2 rounded-xl border border-slate-100">
-                              <span className="text-slate-400 text-[10px] block">Transactions</span>
+                              <span className="text-slate-400 text-2xs block">Transactions</span>
                               <span className="font-bold text-slate-800">{userStorageStats.stats.transactions}</span>
                             </div>
                             <div className="bg-white p-2 rounded-xl border border-slate-100">
-                              <span className="text-slate-400 text-[10px] block">Accounts</span>
+                              <span className="text-slate-400 text-2xs block">Accounts</span>
                               <span className="font-bold text-slate-800">{userStorageStats.stats.accounts}</span>
                             </div>
                             <div className="bg-white p-2 rounded-xl border border-slate-100">
-                              <span className="text-slate-400 text-[10px] block">Goals</span>
+                              <span className="text-slate-400 text-2xs block">Goals</span>
                               <span className="font-bold text-slate-800">{userStorageStats.stats.goals}</span>
                             </div>
                             <div className="bg-white p-2 rounded-xl border border-slate-100">
-                              <span className="text-slate-400 text-[10px] block">Loans</span>
+                              <span className="text-slate-400 text-2xs block">Loans</span>
                               <span className="font-bold text-slate-800">{userStorageStats.stats.loans}</span>
                             </div>
                             <div className="bg-white p-2 rounded-xl border border-slate-100">
-                              <span className="text-slate-400 text-[10px] block">Investments</span>
+                              <span className="text-slate-400 text-2xs block">Investments</span>
                               <span className="font-bold text-slate-800">{userStorageStats.stats.investments}</span>
                             </div>
                           </div>
@@ -880,7 +880,7 @@ export const AdminDashboard: React.FC = () => {
                 ) : (
                   <table className="w-full text-left text-xs">
                     <thead>
-                      <tr className="border-b border-slate-100 text-slate-400 uppercase tracking-widest text-[10px]">
+                      <tr className="border-b border-slate-100 text-slate-400 uppercase tracking-widest text-2xs">
                         <th className="pb-3 font-black">Identity</th>
                         <th className="pb-3 font-black">Role</th>
                         <th className="pb-3 font-black">Demo Status</th>
@@ -893,11 +893,11 @@ export const AdminDashboard: React.FC = () => {
                         <tr key={demoUser.id} className="hover:bg-slate-50/50 transition-colors">
                           <td className="py-3.5 pr-4">
                             <p className="font-bold text-slate-900 text-sm">{demoUser.name}</p>
-                            <p className="text-slate-400 text-[11px] font-mono">{demoUser.email}</p>
+                            <p className="text-slate-400 text-xs font-mono">{demoUser.email}</p>
                           </td>
                           <td className="py-3.5 pr-4">
                             <span className={cn(
-                              'px-2 py-0.5 rounded-md font-bold uppercase text-[10px]',
+                              'px-2 py-0.5 rounded-md font-bold uppercase text-2xs',
                               demoUser.role === 'admin' ? 'bg-red-50 text-red-700' :
                               demoUser.role === 'manager' ? 'bg-blue-50 text-blue-700' :
                               demoUser.role === 'advisor' ? 'bg-purple-50 text-purple-700' : 'bg-slate-100 text-slate-700'
@@ -907,14 +907,14 @@ export const AdminDashboard: React.FC = () => {
                           </td>
                           <td className="py-3.5 pr-4">
                             <span className={cn(
-                              'inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black tracking-wider uppercase',
+                              'inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-2xs font-black tracking-wider uppercase',
                               demoUser.demoStatus === 'ENABLED' ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'
                             )}>
                               {demoUser.demoStatus === 'ENABLED' ? <Check size={12} /> : <Ban size={12} />}
                               {demoUser.demoStatus}
                             </span>
                           </td>
-                          <td className="py-3.5 pr-4 text-[11px] text-slate-600">
+                          <td className="py-3.5 pr-4 text-xs text-slate-600">
                             {demoUser._count ? (
                               <span>{demoUser._count.transactions} txs • {demoUser._count.accounts} accts • {demoUser._count.goals} goals</span>
                             ) : (
@@ -991,7 +991,7 @@ export const AdminDashboard: React.FC = () => {
                           <div className="flex items-center gap-2">
                             <span className="font-black text-slate-900 text-xs uppercase tracking-wider">{req.actionType.replace(/_/g, ' ')}</span>
                             <span className={cn(
-                              'px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider',
+                              'px-2 py-0.5 rounded-md text-2xs font-black uppercase tracking-wider',
                               req.status === 'PENDING' ? 'bg-amber-100 text-amber-800' :
                               req.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
                             )}>
@@ -1006,7 +1006,7 @@ export const AdminDashboard: React.FC = () => {
                           </p>
                           {req.reason && <p className="text-xs text-slate-500 italic">Reason: &ldquo;{req.reason}&rdquo;</p>}
                           {req.rejectionReason && <p className="text-xs text-rose-500">Rejection note: {req.rejectionReason}</p>}
-                          <p className="text-[10px] text-slate-400">{new Date(req.createdAt).toLocaleString()}</p>
+                          <p className="text-2xs text-slate-400">{new Date(req.createdAt).toLocaleString()}</p>
                         </div>
 
                         {req.status === 'PENDING' && (
@@ -1063,7 +1063,7 @@ export const AdminDashboard: React.FC = () => {
                 ) : (
                   <table className="w-full text-left text-xs">
                     <thead>
-                      <tr className="border-b border-slate-100 text-slate-400 uppercase tracking-widest text-[10px]">
+                      <tr className="border-b border-slate-100 text-slate-400 uppercase tracking-widest text-2xs">
                         <th className="pb-3 font-black">Timestamp</th>
                         <th className="pb-3 font-black">Action</th>
                         <th className="pb-3 font-black">Resource</th>
@@ -1073,14 +1073,14 @@ export const AdminDashboard: React.FC = () => {
                     </thead>
                     <tbody className="divide-y divide-slate-50">
                       {auditLogs.map(log => (
-                        <tr key={log.id} className="hover:bg-slate-50/50 font-mono text-[11px]">
+                        <tr key={log.id} className="hover:bg-slate-50/50 font-mono text-xs">
                           <td className="py-3 text-slate-500">{new Date(log.timestamp).toLocaleString()}</td>
                           <td className="py-3 font-bold text-slate-900">{log.action}</td>
                           <td className="py-3 text-slate-600">{log.resource || '—'}</td>
                           <td className="py-3 text-slate-500 truncate max-w-[120px]">{log.userId}</td>
                           <td className="py-3">
                             <span className={cn(
-                              'px-2 py-0.5 rounded text-[9px] font-bold uppercase',
+                              'px-2 py-0.5 rounded text-2xs font-bold uppercase',
                               log.status === 'success' ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'
                             )}>
                               {log.status}

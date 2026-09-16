@@ -84,7 +84,11 @@
   /* for compact spacing, and rem-based text would shrink with it. The phone     */
   /* values live in the (width < 40rem) block below.                             */
 
-  /* Tailwind text-* utilities resolve to these (tablet / desktop values) */
+  /* Tailwind text-* utilities resolve to these (tablet / desktop values).     */
+  /* This is the ONLY size scale: never use arbitrary sizes like text-[10px] —  */
+  /* they stay fixed on every device and skip the phone values below.           */
+  /* text-2xs is the smallest readable step (badges, micro labels, meta).       */
+  --text-2xs:  11px;
   --text-xs:   12px;
   --text-sm:   14px;
   --text-base: 16px;
@@ -94,6 +98,8 @@
   --text-3xl:  30px;
   --text-4xl:  36px;
   --text-5xl:  48px;
+  --text-6xl:  60px;
+  --text-7xl:  72px;
 
   /* Standard text for every regular form field (input, select, textarea) */
   --font-size-field: var(--text-sm);
@@ -104,9 +110,9 @@
   --font-size-card-title:    15px;                     /* card headers */
   --font-size-body:          14px;                     /* standard body text */
   --font-size-body-sm:       13px;                     /* dense body, list items */
-  --font-size-label:         11px;                     /* uppercase labels */
-  --font-size-caption:       10px;                     /* timestamps, meta */
-  --font-size-watermark:     9px;                      /* watermarks, footer notes */
+  --font-size-label:         var(--text-2xs);          /* uppercase labels */
+  --font-size-caption:       var(--text-2xs);          /* timestamps, meta */
+  --font-size-watermark:     var(--text-2xs);          /* watermarks, footer notes */
 
   /* Financial number tiers — clamp() provides fluid scaling on all viewports */
   --font-size-fin-xl:   clamp(28px, 6vw, 44px);        /* Hero net worth, large dashboard */
@@ -152,6 +158,7 @@
 /* keeping every step readable and in order (xs 11 < sm 13 < base 15 ...).     */
 @media (width < 40rem) {
   :root {
+    --text-2xs:  10px;
     --text-xs:   11px;
     --text-sm:   13px;
     --text-base: 15px;
@@ -161,11 +168,12 @@
     --text-3xl:  26px;
     --text-4xl:  30px;
     --text-5xl:  36px;
+    --text-6xl:  42px;
+    --text-7xl:  48px;
 
     --font-size-card-title: 14px;
     --font-size-body:       13px;
     --font-size-body-sm:    12px;
-    --font-size-label:      10px;
     --font-size-fin-sm:     15px;
     --font-size-fin-xs:     13px;
     --font-size-fin-2xs:    11px;
@@ -254,8 +262,7 @@
   padding: 0 var(--space-xl);
   border-radius: var(--radius-md);
   font-weight: 900;
-  font-size: 0.625rem;
-  /* 10px */
+  font-size: var(--text-2xs);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   display: flex;
@@ -331,8 +338,7 @@
 /* Typography & Alignment Utilities */
 
 .KANAKU-label {
-  font-size: 0.625rem;
-  /* 10px */
+  font-size: var(--text-2xs);
   font-weight: 900;
   color: #94A3B8;
   text-transform: uppercase;
@@ -576,7 +582,7 @@
 }
 
 .page-subtitle {
-  font-size: 0.625rem;
+  font-size: var(--text-2xs);
   font-weight: 800;
   color: #94A3B8;
   text-transform: uppercase;
@@ -595,7 +601,7 @@
 .segment-btn {
   padding: 6px 20px;
   border-radius: var(--radius-full);
-  font-size: 0.625rem;
+  font-size: var(--text-2xs);
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -756,8 +762,7 @@
     textarea,
     select
   ):is(
-    .text-xs, .text-sm, .text-base,
-    .text-[10px], .text-[11px], .text-[12px], .text-[13px], .text-[14px], .text-[15px]
+    .text-2xs, .text-xs, .text-sm, .text-base
   ):not(
     .app-select-compact,
     [class*="text-lg"], [class*="text-xl"], [class*="text-2xl"], [class*="text-3xl"],

@@ -17,6 +17,7 @@ import { formatCurrencyAmount } from '@/lib/currencyUtils';
 import { backendService } from '@/lib/backend-api';
 import { queueRecordUpsertSync, processPendingSyncQueue } from '@/lib/auth-sync-integration';
 import { cn } from '@/lib/utils';
+import { useSubmitLock } from '@/hooks/useSubmitLock';
 
 const SELECTED_GOAL_ID_KEY = 'selected_goal_id';
 
@@ -69,6 +70,7 @@ const getCategoryIcon = (categoryKey?: string) => {
 };
 
 export const GoalDetail: React.FC = () => {
+ const guardSubmit = useSubmitLock();
  const { setCurrentPage, currency, accounts } = useApp();
  const [goal, setGoal] = useState<Goal | null>(null);
  const [contributions, setContributions] = useState<GoalContribution[]>([]);
@@ -196,7 +198,7 @@ export const GoalDetail: React.FC = () => {
  return null;
  }, [goal, sortedContributions, lastContributionDate]);
 
-  const addContribution = async (e: React.FormEvent) => {
+  const addContribution = guardSubmit(async (e: React.FormEvent) => {
     e.preventDefault();
     if (!goal?.id) return;
     if (amount <= 0) {
@@ -243,9 +245,9 @@ export const GoalDetail: React.FC = () => {
     } finally {
       setIsSubmitting(false);
     }
-  };
+  });
 
-  const handleWithdraw = async (e: React.FormEvent) => {
+  const handleWithdraw = guardSubmit(async (e: React.FormEvent) => {
     e.preventDefault();
     if (!goal?.id) return;
     if (withdrawAmount <= 0) {
@@ -309,7 +311,7 @@ export const GoalDetail: React.FC = () => {
     } finally {
       setIsSubmitting(false);
     }
-  };
+  });
 
  if (!goal) {
  return null;
@@ -347,7 +349,7 @@ export const GoalDetail: React.FC = () => {
       {/* Top Row: Amount & Translucent Squircle Icon (Matches Image 2) */}
       <div className="relative z-10 flex items-start justify-between gap-4">
         <div>
-          <p className="text-[10px] sm:text-xs font-semibold text-purple-100/90 tracking-wide uppercase">
+          <p className="text-2xs sm:text-xs font-semibold text-purple-100/90 tracking-wide uppercase">
             Saved so far
           </p>
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white mt-0.5">
@@ -369,7 +371,7 @@ export const GoalDetail: React.FC = () => {
             style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
           />
         </div>
-        <div className="flex items-center justify-between text-[10px] sm:text-xs font-semibold text-purple-100/90 mt-1.5">
+        <div className="flex items-center justify-between text-2xs sm:text-xs font-semibold text-purple-100/90 mt-1.5">
           <span>{progress.toFixed(0)}% completed {milestone ? `• ${milestone}` : ''}</span>
           <span>Target: {formatCurrency(goal.targetAmount)}</span>
         </div>
@@ -382,7 +384,7 @@ export const GoalDetail: React.FC = () => {
           {/* (You) Bubble */}
           <div
             className={cn(
-              "w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center font-black text-[11px] sm:text-xs ring-2 ring-[#7C3AED] shadow-xs shrink-0 z-10",
+              "w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center font-black text-xs ring-2 ring-[#7C3AED] shadow-xs shrink-0 z-10",
               AVATAR_PALETTE[0].bg,
               AVATAR_PALETTE[0].text
             )}
@@ -400,7 +402,7 @@ export const GoalDetail: React.FC = () => {
                 <div
                   key={m.name}
                   className={cn(
-                    "w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center font-black text-[11px] sm:text-xs ring-2 ring-[#7C3AED] shadow-xs shrink-0",
+                    "w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center font-black text-xs ring-2 ring-[#7C3AED] shadow-xs shrink-0",
                     palette.bg,
                     palette.text
                   )}
@@ -415,7 +417,7 @@ export const GoalDetail: React.FC = () => {
 
           {goal.isGroupGoal && goal.members && goal.members.length > 3 && (
             <div
-              className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center font-black text-[10px] sm:text-[11px] bg-[#F472B6] text-[#831843] ring-2 ring-[#7C3AED] shadow-xs shrink-0 z-0"
+              className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center font-black text-2xs bg-[#F472B6] text-[#831843] ring-2 ring-[#7C3AED] shadow-xs shrink-0 z-0"
               title={`${goal.members.length - 3} more collaborators`}
             >
               +{goal.members.length - 3}
@@ -428,7 +430,7 @@ export const GoalDetail: React.FC = () => {
         </div>
 
         {/* Pill Badge matching "You are owed ₹4,850" from Reference Image 2 */}
-        <div className="bg-white/20 hover:bg-white/25 backdrop-blur-md px-3 sm:px-4 py-1.5 sm:py-2 rounded-full font-bold text-white text-[10px] sm:text-xs tracking-wide shadow-xs border border-white/10 shrink-0">
+        <div className="bg-white/20 hover:bg-white/25 backdrop-blur-md px-3 sm:px-4 py-1.5 sm:py-2 rounded-full font-bold text-white text-2xs sm:text-xs tracking-wide shadow-xs border border-white/10 shrink-0">
           {Math.max(0, goal.targetAmount - goal.currentAmount) <= 0
             ? 'Goal Completed 🎉'
             : `${formatCurrency(Math.max(0, goal.targetAmount - goal.currentAmount))} remaining`}
@@ -439,21 +441,21 @@ export const GoalDetail: React.FC = () => {
     {/* Financial Metric Cards */}
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
       <div className="p-3 sm:p-4 rounded-[20px] bg-white dark:bg-card border border-slate-100/80 dark:border-border/60 shadow-2xs">
-        <p className="text-[9px] sm:text-[10px] font-bold text-slate-400 tracking-wider uppercase mb-0.5">Target</p>
+        <p className="text-2xs font-bold text-slate-400 tracking-wider uppercase mb-0.5">Target</p>
         <p className="text-sm sm:text-base font-black text-slate-900 dark:text-white truncate">{formatCurrency(goal.targetAmount)}</p>
       </div>
       <div className="p-3 sm:p-4 rounded-[20px] bg-white dark:bg-card border border-slate-100/80 dark:border-border/60 shadow-2xs">
-        <p className="text-[9px] sm:text-[10px] font-bold text-slate-400 tracking-wider uppercase mb-0.5">Saved</p>
+        <p className="text-2xs font-bold text-slate-400 tracking-wider uppercase mb-0.5">Saved</p>
         <p className="text-sm sm:text-base font-black text-slate-900 dark:text-white truncate">{formatCurrency(goal.currentAmount)}</p>
       </div>
       <div className="p-3 sm:p-4 rounded-[20px] bg-white dark:bg-card border border-slate-100/80 dark:border-border/60 shadow-2xs">
-        <p className="text-[9px] sm:text-[10px] font-bold text-slate-400 tracking-wider uppercase mb-0.5">Monthly</p>
+        <p className="text-2xs font-bold text-slate-400 tracking-wider uppercase mb-0.5">Monthly</p>
         <p className="text-sm sm:text-base font-black text-slate-900 dark:text-white truncate">
-          {formatCurrency(monthlySuggestion.monthlyAmount)}<span className="text-[10px] font-semibold text-slate-400">/mo</span>
+          {formatCurrency(monthlySuggestion.monthlyAmount)}<span className="text-2xs font-semibold text-slate-400">/mo</span>
         </p>
       </div>
       <div className="p-3 sm:p-4 rounded-[20px] bg-white dark:bg-card border border-slate-100/80 dark:border-border/60 shadow-2xs">
-        <p className="text-[9px] sm:text-[10px] font-bold text-slate-400 tracking-wider uppercase mb-0.5">Due Date</p>
+        <p className="text-2xs font-bold text-slate-400 tracking-wider uppercase mb-0.5">Due Date</p>
         <p className="text-xs sm:text-sm font-black text-slate-900 dark:text-white truncate">
           {new Date(goal.targetDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
         </p>
@@ -464,11 +466,11 @@ export const GoalDetail: React.FC = () => {
     <div className="rounded-[20px] border border-slate-100/90 dark:border-border/40 bg-white dark:bg-card p-3 sm:p-4 shadow-2xs flex flex-wrap items-center justify-between gap-2">
       <div className="flex items-center gap-2">
         <Sparkles className="w-3.5 h-3.5 text-purple-600 shrink-0" />
-        <span className="text-[11px] sm:text-xs font-bold text-slate-700 dark:text-slate-200">
+        <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
           Suggested: <span className="text-purple-600 font-extrabold">{formatCurrency(monthlySuggestion.monthlyAmount)}/mo</span> for {monthlySuggestion.months} month(s)
         </span>
       </div>
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] sm:text-xs text-slate-500 font-medium">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-2xs sm:text-xs text-slate-500 font-medium">
         <span className="flex items-center gap-1">
           <div className="w-1 h-1 rounded-full bg-slate-300" />
           Last: {lastContributionDate
@@ -518,7 +520,7 @@ export const GoalDetail: React.FC = () => {
           {activeTab === 'contribute' ? (
             <form data-testid="goal-detail-form" onSubmit={addContribution} className="space-y-3">
               <div>
-                <label className="block text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Amount</label>
+                <label className="block text-2xs sm:text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Amount</label>
                 <input
                   type="number"
                   step="0.01"
@@ -531,7 +533,7 @@ export const GoalDetail: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">From Account</label>
+                <label className="block text-2xs sm:text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">From Account</label>
                 <select
                   value={accountId}
                   onChange={(e) => setAccountId(parseInt(e.target.value, 10))}
@@ -545,7 +547,7 @@ export const GoalDetail: React.FC = () => {
               </div>
               {goal.isGroupGoal && (
                 <div>
-                  <label className="block text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Group Member</label>
+                  <label className="block text-2xs sm:text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Group Member</label>
                   <select
                     value={memberName}
                     onChange={(e) => setMemberName(e.target.value)}
@@ -561,7 +563,7 @@ export const GoalDetail: React.FC = () => {
                 </div>
               )}
               <div>
-                <label className="block text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Notes</label>
+                <label className="block text-2xs sm:text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Notes</label>
                 <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
@@ -584,8 +586,8 @@ export const GoalDetail: React.FC = () => {
             <form data-testid="goal-detail-withdraw-form" onSubmit={handleWithdraw} className="space-y-4">
               <div>
                 <div className="flex justify-between items-center mb-2">
-                  <label className="block text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider">Withdraw Amount</label>
-                  <span className="text-[10px] sm:text-xs text-gray-500 font-medium">Available: {formatCurrency(goal.currentAmount)}</span>
+                  <label className="block text-2xs sm:text-xs font-bold text-gray-400 uppercase tracking-wider">Withdraw Amount</label>
+                  <span className="text-2xs sm:text-xs text-gray-500 font-medium">Available: {formatCurrency(goal.currentAmount)}</span>
                 </div>
                 <input
                   type="number"
@@ -600,7 +602,7 @@ export const GoalDetail: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Deposit To Account</label>
+                <label className="block text-2xs sm:text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Deposit To Account</label>
                 <select
                   value={withdrawAccountId}
                   onChange={(e) => setWithdrawAccountId(parseInt(e.target.value, 10))}
@@ -613,7 +615,7 @@ export const GoalDetail: React.FC = () => {
                 </select>
               </div>
               <div>
-                <label className="block text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Notes</label>
+                <label className="block text-2xs sm:text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Notes</label>
                 <textarea
                   value={withdrawNotes}
                   onChange={(e) => setWithdrawNotes(e.target.value)}
@@ -652,7 +654,7 @@ export const GoalDetail: React.FC = () => {
   </div>
   <div>
   <p className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm">{row.name}</p>
-  <p className="text-[10px] text-slate-400">{row.status === 'paid' ? 'Contributed' : 'Pending'}</p>
+  <p className="text-2xs text-slate-400">{row.status === 'paid' ? 'Contributed' : 'Pending'}</p>
   </div>
   </div>
   <span className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm">{formatCurrency(row.amount)}</span>
@@ -666,7 +668,7 @@ export const GoalDetail: React.FC = () => {
   <div className="bg-white dark:bg-card rounded-[24px] sm:rounded-[28px] p-4 sm:p-5 border border-slate-100/80 dark:border-border/60 shadow-[0_6px_20px_-4px_rgba(112,144,176,0.08)] h-fit space-y-4">
     <div className="flex items-center justify-between">
       <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">Contribution History</h3>
-      <span className="text-[11px] font-bold text-slate-400">
+      <span className="text-xs font-bold text-slate-400">
         {contributions.length} {contributions.length === 1 ? 'payment' : 'payments'}
       </span>
     </div>
@@ -674,19 +676,19 @@ export const GoalDetail: React.FC = () => {
     {/* Monthly Breakdown Bars */}
     {timeline.length > 0 && (
       <div className="space-y-2 pb-3 border-b border-slate-100 dark:border-border/60">
-        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Monthly Breakdown</p>
+        <p className="text-2xs font-bold uppercase tracking-wider text-slate-400">Monthly Breakdown</p>
         {timeline.map((item) => {
           const percent = Math.min(100, (item.total / Math.max(goal.targetAmount, 1)) * 100);
           return (
             <div key={item.month} className="flex items-center gap-2.5 sm:gap-3 group">
-              <div className="w-8 sm:w-10 text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">{item.month}</div>
+              <div className="w-8 sm:w-10 text-2xs font-bold text-slate-400 uppercase tracking-wider">{item.month}</div>
               <div className="flex-1 h-2 sm:h-2.5 bg-slate-100 dark:bg-muted rounded-full overflow-hidden">
                 <div 
                   className="h-full bg-gradient-to-r from-[#8B5CF6] to-[#7C3AED] rounded-full transition-all group-hover:opacity-90"
                   style={{ width: `${Math.max(4, percent)}%` }}
                 />
               </div>
-              <div className="w-20 sm:w-24 text-right font-bold text-slate-900 dark:text-white text-[10px] sm:text-xs">{formatCurrency(item.total)}</div>
+              <div className="w-20 sm:w-24 text-right font-bold text-slate-900 dark:text-white text-2xs sm:text-xs">{formatCurrency(item.total)}</div>
             </div>
           );
         })}
@@ -695,7 +697,7 @@ export const GoalDetail: React.FC = () => {
 
     {/* Detailed Payment Records with Date, Time, Member, Account, Note */}
     <div className="space-y-2.5">
-      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Payment Records</p>
+      <p className="text-2xs font-bold uppercase tracking-wider text-slate-400">Payment Records</p>
       {contributions.length === 0 ? (
         <div className="text-center py-6">
           <div className="w-10 h-10 bg-purple-50 text-purple-600 rounded-full flex items-center justify-center mx-auto mb-2">
@@ -735,16 +737,16 @@ export const GoalDetail: React.FC = () => {
                         {contributorName}
                       </p>
                       {isUser && (
-                        <span className="px-1.5 py-0.5 rounded-full bg-violet-100 text-violet-700 text-[9px] font-extrabold uppercase tracking-wider">
+                        <span className="px-1.5 py-0.5 rounded-full bg-violet-100 text-violet-700 text-2xs font-extrabold uppercase tracking-wider">
                           Owner
                         </span>
                       )}
                     </div>
-                    <p className="text-[10px] text-slate-400 truncate mt-0.5">
+                    <p className="text-2xs text-slate-400 truncate mt-0.5">
                       {dateFormatted} • {timeFormatted} {account ? `• ${account.name}` : ''}
                     </p>
                     {c.notes && (
-                      <p className="text-[10px] text-slate-500 italic truncate mt-0.5">
+                      <p className="text-2xs text-slate-500 italic truncate mt-0.5">
                         "{c.notes}"
                       </p>
                     )}

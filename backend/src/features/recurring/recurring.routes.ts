@@ -4,6 +4,7 @@ import { pinGate } from '../../middleware/pinGate';
 import { validateBody, validateParams, validateQuery } from '../../middleware/validate';
 import { requireFeature } from '../../middleware/featureGate';
 import { idempotency } from '../../middleware/idempotency';
+import { duplicateSubmitGuard } from '../../middleware/duplicateSubmitGuard';
 import * as RecurringController from './recurring.controller';
 import {
   recurringCreateSchema,
@@ -23,6 +24,7 @@ router.post(
   '/',
   idempotency({ scope: 'recurring.create' }),
   validateBody(recurringCreateSchema),
+  duplicateSubmitGuard({ scope: 'recurring.create' }),
   RecurringController.createRecurringTransaction,
 );
 router.get('/:id', validateParams(recurringIdParamSchema), RecurringController.getRecurringTransaction);

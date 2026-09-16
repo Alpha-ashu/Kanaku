@@ -9,6 +9,7 @@ import { saveTransactionWithBackendSync } from '@/lib/auth-sync-integration';
 import { formatCurrencyAmount, formatNativeMoney, getConversionRateFromQuotes } from '@/lib/currencyUtils';
 import { fetchCurrencyConversionRate, getInvestmentDisplayName, getInvestmentMetrics } from '@/lib/investmentUtils';
 import { StockQuote } from '@/lib/stockApi';
+import { useSubmitLock } from '@/hooks/useSubmitLock';
 
 interface CloseInvestmentModalProps {
  investment: Investment | null;
@@ -25,6 +26,7 @@ export const CloseInvestmentModal: React.FC<CloseInvestmentModalProps> = ({
  onClose,
  onCompleted,
 }) => {
+ const guardSubmit = useSubmitLock();
  const { accounts, currency, refreshData } = useApp();
  const activeAccounts = useMemo(
  () => accounts.filter((account) => account.isActive),
@@ -64,7 +66,7 @@ export const CloseInvestmentModal: React.FC<CloseInvestmentModalProps> = ({
  const netProceeds = grossProceeds - fees;
  const realizedProfit = netProceeds - metrics.totalInvested;
 
- const handleSubmit = async (event: React.FormEvent) => {
+ const handleSubmit = guardSubmit(async (event: React.FormEvent) => {
  event.preventDefault();
 
  if (!investment.id) {
@@ -190,7 +192,7 @@ export const CloseInvestmentModal: React.FC<CloseInvestmentModalProps> = ({
  } finally {
  setSubmitting(false);
  }
- };
+ });
 
   return (
     <div className="fixed inset-0 z-[80] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
@@ -213,11 +215,11 @@ export const CloseInvestmentModal: React.FC<CloseInvestmentModalProps> = ({
         <form data-testid="close-investment-modal-form" onSubmit={handleSubmit} className="px-6 py-5 space-y-5">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="rounded-2xl bg-slate-50/60 border border-slate-100 px-4 py-3">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Quantity</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Quantity</p>
               <p className="mt-1 text-lg font-bold text-slate-900">{investment.quantity}</p>
             </div>
             <div className="rounded-2xl bg-slate-50/60 border border-slate-100 px-4 py-3">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Invested</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Invested</p>
               <p className="mt-1 text-lg font-bold text-slate-900">{formatCurrencyAmount(metrics.totalInvested, currency)}</p>
             </div>
           </div>

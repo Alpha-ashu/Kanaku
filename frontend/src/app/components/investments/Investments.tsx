@@ -86,7 +86,7 @@ const PortfolioGrowthLine: React.FC<{
         <path d={`M0,${height} L${points.join(' L')} L${width},${height} Z`} fill={`url(#${gradientId})`} />
         <polyline points={points.join(' ')} fill="none" stroke="#c4b5fd" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
       </svg>
-      <p className="mt-1 text-[10px] sm:text-[11px] font-medium text-white/50">Invested since {firstPurchase} → today&apos;s value</p>
+      <p className="mt-1 text-2xs font-medium text-white/50">Invested since {firstPurchase} → today&apos;s value</p>
     </div>
   );
 };
@@ -397,7 +397,7 @@ export const Investments: React.FC = () => {
                   <p className={cn('relative mt-1 text-xs sm:text-sm font-bold', isProfit ? 'text-emerald-300' : 'text-rose-300')}>
                     {isProfit ? '+' : ''}{formatCurrency(portfolioStats.profitLoss)} ({isProfit ? '+' : ''}{portfolioStats.profitLossPercent.toFixed(1)}%) all time
                   </p>
-                  <div data-testid="investments-card" className="relative mt-3 flex items-center gap-4 text-[11px] sm:text-xs font-semibold text-white/60">
+                  <div data-testid="investments-card" className="relative mt-3 flex items-center gap-4 text-xs font-semibold text-white/60">
                     <span>Total invested <span className="text-white">{formatCurrency(portfolioStats.totalInvested)}</span></span>
                     <span>{openInvestments.length} {openInvestments.length === 1 ? 'holding' : 'holdings'}</span>
                   </div>
@@ -407,7 +407,7 @@ export const Investments: React.FC = () => {
                 {/* Allocation */}
                 {allocation.length > 0 && (
                   <div data-testid="investments-card-4" className={cn(cardClass, 'p-5 sm:p-6 flex flex-col justify-center')}>
-                    <p className="text-[11px] sm:text-xs font-extrabold uppercase tracking-wider text-slate-400">Asset allocation</p>
+                    <p className="text-xs font-extrabold uppercase tracking-wider text-slate-400">Asset allocation</p>
                     <div className="mt-3 flex h-3 gap-1 overflow-hidden rounded-full">
                       {allocation.map((item) => (
                         <span key={item.name} className="h-full rounded-full" style={{ width: `${item.pct}%`, backgroundColor: item.color }} title={`${item.name} ${item.pct.toFixed(0)}%`} />
@@ -431,11 +431,11 @@ export const Investments: React.FC = () => {
             {holdings.length > 0 && (
               <div>
                 <div className="flex items-center justify-between px-1 mb-2">
-                  <p className="text-[11px] sm:text-xs font-extrabold uppercase tracking-wider text-slate-400">
+                  <p className="text-xs font-extrabold uppercase tracking-wider text-slate-400">
                     Holdings
                     {Object.keys(liveQuotes).length > 0 && <span className="ml-2 normal-case tracking-normal text-emerald-600">● Live prices</span>}
                   </p>
-                  <span className="text-[11px] sm:text-xs font-bold text-slate-400">Tap for details</span>
+                  <span className="text-xs font-bold text-slate-400">Tap for details</span>
                 </div>
                 <div data-testid="investments-card-6" className={cn(cardClass, 'px-4 sm:px-5 divide-y divide-slate-100')}>
                   {holdings.map((inv) => {
@@ -474,21 +474,21 @@ export const Investments: React.FC = () => {
                           <div className="mt-3 rounded-2xl bg-slate-50 border border-slate-100 p-3.5">
                             <div className="grid grid-cols-2 gap-x-4 gap-y-2.5 text-xs">
                               <div>
-                                <p className="font-bold uppercase tracking-wider text-[10px] text-slate-400">Buy price</p>
+                                <p className="font-bold uppercase tracking-wider text-2xs text-slate-400">Buy price</p>
                                 <p className="font-bold text-slate-900 mt-0.5">{formatNativeMoney(metrics.nativeBuyPrice, metrics.assetCurrency)}</p>
                               </div>
                               <div>
-                                <p className="font-bold uppercase tracking-wider text-[10px] text-slate-400">Current price</p>
+                                <p className="font-bold uppercase tracking-wider text-2xs text-slate-400">Current price</p>
                                 <p className={cn('font-bold mt-0.5', metrics.isLive ? 'text-emerald-700' : 'text-slate-900')}>
                                   {formatNativeMoney(metrics.nativeCurrentPrice, metrics.assetCurrency)}
                                 </p>
                               </div>
                               <div>
-                                <p className="font-bold uppercase tracking-wider text-[10px] text-slate-400">Invested</p>
+                                <p className="font-bold uppercase tracking-wider text-2xs text-slate-400">Invested</p>
                                 <p className="font-bold text-slate-900 mt-0.5">{formatCurrency(metrics.totalInvested)}</p>
                               </div>
                               <div>
-                                <p className="font-bold uppercase tracking-wider text-[10px] text-slate-400">Profit / loss</p>
+                                <p className="font-bold uppercase tracking-wider text-2xs text-slate-400">Profit / loss</p>
                                 <p className={cn('font-bold mt-0.5', gain ? 'text-emerald-600' : 'text-rose-600')}>
                                   {gain ? '+' : ''}{formatCurrency(metrics.profitLoss)}
                                 </p>
@@ -547,8 +547,8 @@ export const Investments: React.FC = () => {
             {completedInvestments.length > 0 && (
               <div>
                 <div className="flex items-center justify-between px-1 mb-2">
-                  <p className="text-[11px] sm:text-xs font-extrabold uppercase tracking-wider text-slate-400">Completed orders</p>
-                  <span className="text-[11px] sm:text-xs font-bold text-slate-400">{completedInvestments.length} closed</span>
+                  <p className="text-xs font-extrabold uppercase tracking-wider text-slate-400">Completed orders</p>
+                  <span className="text-xs font-bold text-slate-400">{completedInvestments.length} closed</span>
                 </div>
                 <div data-testid="investments-card-9" className={cn(cardClass, 'px-4 sm:px-5 divide-y divide-slate-100')}>
                   {completedInvestments.map((investment) => {

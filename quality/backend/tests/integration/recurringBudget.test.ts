@@ -134,7 +134,7 @@ describe('Phase 8A — Financial Infrastructure Integration Tests', () => {
           );
           throw new Error('Forced Rollback');
         }, { timeout: 30000 });
-      } catch (err) {
+      } catch (err: any) {
         expect(err.message).toBe('Forced Rollback');
       }
 

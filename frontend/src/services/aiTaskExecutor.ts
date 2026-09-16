@@ -93,7 +93,8 @@ export async function saveBudget(input: { category: string; amount: number; peri
   });
 
   try {
-    const resp = await backendService.createBudget({ category, amount, period, threshold: 85 });
+    // Same key syncBudgets() uses for this row (its persisted UUID primary key).
+    const resp = await backendService.createBudget({ category, amount, period, threshold: 85, clientRequestId: budgetId });
     if (resp?.id) {
       await db.budgets.update(budgetId, { cloudId: resp.id, syncStatus: 'synced' });
     }

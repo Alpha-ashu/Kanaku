@@ -4,6 +4,7 @@ import { pinGate } from '../../middleware/pinGate';
 import { validateBody, validateParams } from '../../middleware/validate';
 import { requireFeature } from '../../middleware/featureGate';
 import { idempotency } from '../../middleware/idempotency';
+import { duplicateSubmitGuard } from '../../middleware/duplicateSubmitGuard';
 import * as GroupController from './group.controller';
 import { groupCreateSchema, groupIdParamSchema, groupUpdateSchema } from './group.validation';
 
@@ -22,6 +23,7 @@ router.post(
   '/',
   idempotency({ scope: 'groups.create' }),
   validateBody(groupCreateSchema),
+  duplicateSubmitGuard({ scope: 'groups.create' }),
   GroupController.createGroup,
 );
 router.get('/:id', validateParams(groupIdParamSchema), GroupController.getGroup);

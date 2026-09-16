@@ -195,7 +195,7 @@ export const ManagerAdvisorVerification: React.FC = () => {
 
   const detail = (label: string, value: React.ReactNode, icon?: React.ReactNode) => (
     <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-      <p className="text-[10px] text-slate-400 font-black uppercase tracking-wider mb-0.5 flex items-center gap-1">{icon}{label}</p>
+      <p className="text-2xs text-slate-400 font-black uppercase tracking-wider mb-0.5 flex items-center gap-1">{icon}{label}</p>
       <div className="text-slate-900 font-bold text-sm break-words">{value}</div>
     </div>
   );
@@ -395,7 +395,7 @@ export const ManagerAdvisorVerification: React.FC = () => {
                                   <span className="text-xs font-bold text-slate-800 block">
                                     {doc.label} {!doc.required && <span className="font-medium text-slate-400">(optional)</span>}
                                   </span>
-                                  <span className={cn('text-[10px] font-semibold flex items-center gap-1', present ? 'text-emerald-600' : doc.required ? 'text-amber-600' : 'text-slate-400')}>
+                                  <span className={cn('text-2xs font-semibold flex items-center gap-1', present ? 'text-emerald-600' : doc.required ? 'text-amber-600' : 'text-slate-400')}>
                                     {present ? <CheckCircle2 size={10} /> : <AlertTriangle size={10} />}
                                     {present ? 'Uploaded' : 'Not provided'}
                                   </span>
@@ -524,7 +524,7 @@ export const ManagerAdvisorVerification: React.FC = () => {
                     </div>
                     <div className="min-w-0">
                       <h3 className="text-sm font-black text-white truncate">{viewingDoc.title}</h3>
-                      <p className="text-[11px] text-slate-400 truncate">Uploaded by {viewingDoc.app.fullName}</p>
+                      <p className="text-xs text-slate-400 truncate">Uploaded by {viewingDoc.app.fullName}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">

@@ -12,7 +12,7 @@ import {
   UserPlus, Mail, Phone, Link as LinkIcon, Sparkles, Store, AlignLeft, Info, Plus, Loader2,
   X, CalendarDays, Search
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, softHyphenate } from '@/lib/utils';
 import { toast } from 'sonner';
 import { takeVoiceDraft, VOICE_GOAL_DRAFT_KEY, type VoiceGoalDraft } from '@/lib/voiceDrafts';
 import { SearchableDropdown } from '@/app/components/ui/SearchableDropdown';
@@ -21,6 +21,7 @@ import { decodeQuotedPrintable, sanitizeContactName } from '@/services/contactsS
 
 import { FloatingSaveBar } from '@/app/components/ui/FloatingSaveBar';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
+import { useSubmitLock } from '@/hooks/useSubmitLock';
 
 // --- Helpers ---
 const formatCurrency = (v: number, currency: string) =>
@@ -86,10 +87,10 @@ const GoalCategoryGrid = ({
                   {getCategoryCartoonIcon(cat.key, 26)}
                 </div>
                 <span className={cn(
-                  "text-[9px] sm:text-[10px] font-bold uppercase tracking-tight text-center leading-none truncate w-full px-0.5",
+                  "text-2xs font-bold text-center leading-tight line-clamp-2 break-words hyphens-auto w-full",
                   selectedCategory === cat.key ? "text-indigo-600 font-extrabold" : "text-slate-500 group-hover:text-slate-700"
                 )}>
-                  {cat.label}
+                  {softHyphenate(cat.label)}
                 </span>
               </button>
             ))}
@@ -125,6 +126,7 @@ const GoalCategoryGrid = ({
 };
 
 export const AddGoal: React.FC = () => {
+ const guardSubmit = useSubmitLock();
  const { setCurrentPage, currency, refreshData, friends } = useApp();
  const [isSubmitting, setIsSubmitting] = useState(false);
  const [formData, setFormData] = useState({
@@ -170,7 +172,7 @@ export const AddGoal: React.FC = () => {
  }
  }, [suggestion?.monthlyAmount, formData.monthlySavingPlan]);
 
-  const handleSubmit = async () => {
+  const handleSubmit = guardSubmit(async () => {
     if (!formData.name.trim()) { toast.error('Enter goal name'); return; }
     if (formData.targetAmount <= 0) { toast.error('Enter target amount'); return; }
     if (!formData.deadline) { toast.error('Select a target date'); return; }
@@ -223,7 +225,7 @@ export const AddGoal: React.FC = () => {
     } finally {
       setIsSubmitting(false);
     }
-  };
+  });
 
   const addMember = () => {
     const trimmedName = memberInput.name.trim();
@@ -389,19 +391,19 @@ export const AddGoal: React.FC = () => {
   <div className="flex items-center gap-3">
   <div className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center backdrop-blur-sm"><Target size={18} className="text-purple-300" /></div>
   <div>
-  <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Goal Preview</p>
+  <p className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Goal Preview</p>
   <p className="text-sm font-bold truncate max-w-[160px] sm:max-w-[200px] text-white">{formData.name || 'New Goal'}</p>
   </div>
   </div>
   <div className="text-right">
-  <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Target</p>
+  <p className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Target</p>
   <p className="text-xl sm:text-2xl font-black tracking-tight text-white">{currency} {formData.targetAmount.toLocaleString()}</p>
   </div>
   </div>
 
   <div className="bg-white rounded-[28px] sm:rounded-[32px] p-5 sm:p-6 border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] space-y-4">
   <div className="space-y-1.5">
-  <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Goal Name</label>
+  <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Goal Name</label>
   <div className="relative">
   <Target className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
   <input id="goal-name" name="name" aria-label="Goal name" type="text" value={formData.name} onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))} data-testid="goals-create-name-input" className="w-full h-10 sm:h-11 bg-slate-50 border border-slate-200/80 rounded-xl pl-10 pr-3.5 font-semibold text-slate-900 text-xs sm:text-sm placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 outline-none transition-all" placeholder="e.g. New Macbook Pro" />
@@ -409,12 +411,12 @@ export const AddGoal: React.FC = () => {
   </div>
 
   <div className="space-y-2">
-  <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Category</label>
+  <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Category</label>
   <GoalCategoryGrid selectedCategory={formData.category} onSelect={cat => setFormData(prev => ({ ...prev, category: cat }))} />
   </div>
 
   <div className="space-y-1.5">
-  <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Description / Note</label>
+  <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Description / Note</label>
   <div className="relative">
   <AlignLeft className="absolute left-3.5 top-3 text-slate-400" size={16} />
   <textarea id="goal-description" name="description" aria-label="Goal description or note" value={formData.description} onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))} data-testid="goals-create-description-textarea" className="w-full bg-slate-50 border border-slate-200/80 rounded-xl p-3 pl-10 font-medium text-slate-900 text-xs sm:text-sm min-h-[72px] resize-none placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 outline-none transition-all" placeholder="What is this goal for?" />
@@ -426,7 +428,7 @@ export const AddGoal: React.FC = () => {
   {formData.goalType === 'group' && (
   <div className="bg-white rounded-[28px] sm:rounded-[32px] p-5 sm:p-6 border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)] space-y-4 animate-in slide-in-from-bottom-2 duration-300">
   <div className="flex items-center justify-between">
-  <label className="text-xs sm:text-[13px] font-bold text-slate-500 uppercase tracking-wider">
+  <label className="text-xs sm:text-sm font-bold text-slate-500 uppercase tracking-wider">
   COLLABORATORS ({members.length})
   </label>
   
@@ -472,14 +474,14 @@ export const AddGoal: React.FC = () => {
   {showFriendPicker && friends.length > 0 && (
   <div className="p-3.5 bg-violet-50/70 rounded-2xl border border-violet-100 animate-in zoom-in-95 duration-200 space-y-2.5">
   <div className="flex items-center justify-between">
-    <p className="text-[11px] font-bold text-violet-600 uppercase tracking-wider">Tap friend to add uniquely</p>
+    <p className="text-xs font-bold text-violet-600 uppercase tracking-wider">Tap friend to add uniquely</p>
     <button
       type="button"
       onClick={() => {
         setShowFriendPicker(false);
         setFriendSearch('');
       }}
-      className="text-violet-400 hover:text-violet-600 text-[11px] font-semibold cursor-pointer"
+      className="text-violet-400 hover:text-violet-600 text-xs font-semibold cursor-pointer"
     >
       Close
     </button>
@@ -548,7 +550,7 @@ export const AddGoal: React.FC = () => {
               : "bg-white border-violet-200/80 text-violet-800 hover:bg-violet-600 hover:text-white hover:border-violet-600 shadow-2xs active:scale-95"
           )}
         >
-          <span className="w-4 h-4 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center text-[9px] font-black uppercase">
+          <span className="w-4 h-4 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center text-2xs font-black uppercase">
             {cleanName[0] || '?'}
           </span>
           <span>{cleanName}</span>
@@ -615,7 +617,7 @@ export const AddGoal: React.FC = () => {
   <Plus size={14} /> Add
   </button>
   </div>
-  <p className="text-[11px] text-slate-400 flex items-center gap-1">
+  <p className="text-xs text-slate-400 flex items-center gap-1">
     <Info size={12} className="shrink-0 text-slate-400" />
     Duplicate emails or phone numbers are not allowed.
   </p>
@@ -628,7 +630,7 @@ export const AddGoal: React.FC = () => {
   <div className="text-center py-6 border border-dashed border-slate-200 rounded-2xl bg-slate-50/50">
     <Users className="w-8 h-8 mx-auto text-slate-300 mb-1.5" />
     <p className="text-xs font-bold text-slate-500">No collaborators added yet</p>
-    <p className="text-[11px] text-slate-400">Add friends or new members with unique contact details</p>
+    <p className="text-xs text-slate-400">Add friends or new members with unique contact details</p>
   </div>
   ) : (
   <div className="flex flex-col gap-2.5">
@@ -677,7 +679,7 @@ export const AddGoal: React.FC = () => {
    <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-indigo-500/5 blur-[80px] rounded-full pointer-events-none z-0" />
 
     <div className="relative z-10 flex flex-col items-center w-full">
-    <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3">Target Goal Amount</span>
+    <span className="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-3">Target Goal Amount</span>
 
     <div className="flex items-center justify-center w-full my-2 sm:my-3 gap-2 overflow-hidden px-2">
     <span className="text-2xl sm:text-4xl font-extrabold text-slate-300 select-none tracking-tight shrink-0">{currency}</span>
@@ -718,14 +720,14 @@ export const AddGoal: React.FC = () => {
     <div className="bg-white rounded-[28px] sm:rounded-[32px] p-5 sm:p-6 border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] space-y-4">
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
     <div className="space-y-1.5">
-    <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Initial Deposit</label>
+    <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Initial Deposit</label>
     <div className="flex items-center w-full bg-slate-50 border border-slate-200/80 rounded-xl h-10 sm:h-11 px-3.5 focus-within:ring-2 focus-within:ring-purple-500/20 focus-within:border-purple-400 transition-all">
     <span className="text-slate-400 text-xs font-bold select-none mr-1.5 shrink-0">{currency}</span>
     <input id="goal-initial-deposit" name="initialDeposit" aria-label="Initial deposit" type="number" value={initialAmtStr} onChange={e => { setInitialAmtStr(e.target.value); setFormData(prev => ({ ...prev, currentAmount: parseFloat(e.target.value) || 0 })); }} data-testid="goals-create-initial-deposit-input" className="flex-1 bg-transparent border-none p-0 font-semibold text-xs sm:text-sm focus:ring-0 text-slate-900 placeholder:text-slate-400 outline-none" placeholder="0" />
     </div>
     </div>
     <div className="space-y-1.5">
-    <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Target Date</label>
+    <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Target Date</label>
     <div data-testid="goals-create-target-date-container" className="relative group cursor-pointer" onClick={(e) => {
     const input = e.currentTarget.querySelector('input');
     if (input) (input as any).showPicker();
@@ -752,14 +754,14 @@ export const AddGoal: React.FC = () => {
    </div>
 
     <div className="space-y-1.5">
-    <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Monthly Saving Plan</label>
+    <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Monthly Saving Plan</label>
     <div className="flex gap-2.5">
     <div className="flex-1 flex items-center bg-slate-50 border border-slate-200/80 rounded-xl h-10 sm:h-11 px-3.5 focus-within:ring-2 focus-within:ring-purple-500/20 focus-within:border-purple-400 transition-all">
     <span className="text-slate-400 text-xs font-bold select-none mr-1.5 shrink-0">{currency}</span>
     <input type="number" value={formData.monthlySavingPlan || ''} onChange={e => setFormData(prev => ({ ...prev, monthlySavingPlan: parseFloat(e.target.value) || 0 }))} aria-label="Monthly saving plan" data-testid="goals-create-monthly-plan-input" className="flex-1 bg-transparent border-none p-0 font-semibold text-xs sm:text-sm focus:ring-0 text-slate-900 placeholder:text-slate-400 outline-none" placeholder="0" />
     </div>
    {suggestion && (
-   <button type="button" onClick={() => setFormData(prev => ({ ...prev, monthlySavingPlan: Math.ceil(suggestion.monthlyAmount) }))} data-testid="goals-create-suggest-button" className="px-3.5 bg-purple-50 text-purple-700 border border-purple-200/60 rounded-xl text-[10px] sm:text-[11px] font-bold uppercase tracking-wider hover:bg-purple-100 transition-colors shrink-0 cursor-pointer h-10 sm:h-11 flex items-center">
+   <button type="button" onClick={() => setFormData(prev => ({ ...prev, monthlySavingPlan: Math.ceil(suggestion.monthlyAmount) }))} data-testid="goals-create-suggest-button" className="px-3.5 bg-purple-50 text-purple-700 border border-purple-200/60 rounded-xl text-2xs font-bold uppercase tracking-wider hover:bg-purple-100 transition-colors shrink-0 cursor-pointer h-10 sm:h-11 flex items-center">
    Auto: {formatCurrency(suggestion.monthlyAmount, currency)}
    </button>
    )}
@@ -770,7 +772,7 @@ export const AddGoal: React.FC = () => {
    <div className="p-3.5 bg-slate-900 rounded-2xl text-white flex items-center gap-3">
    <div className="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center shrink-0"><Sparkles size={16} className="text-purple-400" /></div>
    <div>
-   <p className="text-[10px] sm:text-[11px] font-bold text-white/60 uppercase tracking-wider">Plan Estimate</p>
+   <p className="text-2xs font-bold text-white/60 uppercase tracking-wider">Plan Estimate</p>
    <p className="text-xs font-semibold text-slate-200">Achieve your goal in <span className="font-bold text-white">{suggestion.months} months</span> with this plan.</p>
    </div>
    </div>

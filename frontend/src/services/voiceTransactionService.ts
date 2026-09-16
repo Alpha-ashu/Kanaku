@@ -2,7 +2,6 @@ import type { ParsedTransaction, ParsedGroupExpense } from '@/services/voiceComm
 import { db } from '@/lib/database';
 import { queueRecordUpsertSync } from '@/lib/auth-sync-integration';
 import { applyTransactionAccountImpact } from '@/lib/transactionAggregation';
-import { backendService } from '@/lib/backend-api';
 import { TokenManager } from '@/lib/api';
 import { getPinUnlockToken } from '@/lib/pinUnlockCoordinator';
 
@@ -75,22 +74,12 @@ export class VoiceTransactionService {
       queueRecordUpsertSync('transactions', localId as number);
       queueRecordUpsertSync('accounts', targetAccountId);
 
-      // 3. Best-effort server-side sync when online
-      try {
-        const response = await backendService.api.post('/transactions', {
-          description,
-          amount,
-          category,
-          type: txType,
-          date: now.toISOString(),
-          accountId: targetAccountId,
-          userId,
-        });
-        results.push(response.data?.data || response.data || { id: localId, ...localRecord });
-      } catch (syncErr) {
-        // Safe offline fallback: Dexie + queueRecordUpsertSync guarantees eventual delivery
-        results.push({ id: localId, ...localRecord });
-      }
+      // The sync queue is the ONE publisher for this row. There used to be a
+      // "best-effort" direct POST here as well: a second, unlinked publish of the
+      // same transaction under a different idempotency key, sent with the local
+      // Dexie account id where the API needs the account's UUID. The queue maps
+      // those ids, stamps a stable key and writes the server id back.
+      results.push({ id: localId, ...localRecord });
     }
 
     return results;
@@ -164,23 +153,10 @@ export class VoiceTransactionService {
     queueRecordUpsertSync('transactions', parentTxId as number);
     queueRecordUpsertSync('accounts', targetAccountId);
 
-    // 3. Best-effort sync to canonical backend endpoint: /groups (replacing broken /group-expenses)
-    try {
-      await backendService.api.post('/groups', {
-        name: groupExpenseRecord.name,
-        totalAmount,
-        paidBy: targetAccountId,
-        date: now.toISOString(),
-        members,
-        description: groupExpenseRecord.description,
-        category: groupExpenseRecord.category,
-        splitType: groupExpenseRecord.splitType,
-        yourShare: share,
-        status: 'pending',
-      });
-    } catch (syncErr) {
-      // Eventual consistency via Dexie sync queue
-    }
+    // 3. Published by the sync queue (queued in step 1), and only by it. A direct
+    // POST /groups here duplicated the group on the server: it carried no link
+    // back to this row and sent local friend/account ids the queue would have
+    // mapped to their cloud ids.
 
     return {
       id: groupExpenseId,
@@ -217,13 +193,8 @@ export class VoiceTransactionService {
         } as any);
         queueRecordUpsertSync('friends', newId as number);
         friend = await db.friends.get(newId as number);
-
-        // Best effort backend sync
-        try {
-          await backendService.api.post('/friends', { name: cleanName });
-        } catch {
-          // Handled by sync queue
-        }
+        // No direct POST /friends: the queued upsert above publishes this friend
+        // and links it. Posting here as well created the friend twice.
       }
 
       if (friend) {

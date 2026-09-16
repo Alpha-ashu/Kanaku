@@ -14,6 +14,7 @@ import { syncBudgets, pushBudgetUpdate, deleteBudgetEverywhere } from '@/service
 import { formatCurrencyAmount } from '@/lib/currencyUtils';
 import { cn } from '@/lib/utils';
 import { getCategoryCartoonIcon, getCategoryColor } from '@/app/components/ui/CartoonCategoryIcons';
+import { useSubmitLock } from '@/hooks/useSubmitLock';
 
 interface AlertEvent {
   id: number;
@@ -67,13 +68,14 @@ const BudgetGauge: React.FC<{ pct: number; over: boolean; value: string; caption
         <span className={cn('text-sm sm:text-base font-black leading-tight truncate max-w-full', over ? 'text-rose-600' : 'text-slate-900')}>
           {value}
         </span>
-        <span className="text-[11px] font-medium text-slate-400">{caption}</span>
+        <span className="text-xs font-medium text-slate-400">{caption}</span>
       </div>
     </div>
   );
 };
 
 export const BudgetAlertsPage: React.FC = () => {
+  const guardSubmit = useSubmitLock();
   const { currency } = useApp();
   const [showAddModal, setShowAddModal] = useState(false);
   const [newCategory, setNewCategory] = useState('');
@@ -196,7 +198,7 @@ export const BudgetAlertsPage: React.FC = () => {
     toast.info('Alert event dismissed');
   };
 
-  const handleAddBudget = async () => {
+  const handleAddBudget = guardSubmit(async () => {
     if (!newCategory.trim()) {
       toast.error('Category is required');
       return;
@@ -231,6 +233,9 @@ export const BudgetAlertsPage: React.FC = () => {
           amount: newLimit,
           period: 'monthly',
           threshold: newThreshold,
+          // Same key syncBudgets() uses for this row, so this post and a
+          // background retry of it resolve to one server budget.
+          clientRequestId: budgetId,
         });
         if (resp?.id) {
           await db.budgets.update(budgetId, { cloudId: resp.id, syncStatus: 'synced' });
@@ -242,7 +247,7 @@ export const BudgetAlertsPage: React.FC = () => {
       console.error('Failed to add budget:', error);
       toast.error('Failed to save budget');
     }
-  };
+  });
 
   const handleDeleteBudget = async (id: string) => {
     try {
@@ -310,7 +315,7 @@ export const BudgetAlertsPage: React.FC = () => {
                 </p>
                 <span
                   className={cn(
-                    'mt-2.5 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold',
+                    'mt-2.5 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold',
                     breachesCount > 0
                       ? 'bg-rose-50 text-rose-700'
                       : warningsCount > 0
@@ -383,8 +388,8 @@ export const BudgetAlertsPage: React.FC = () => {
             {/* Category budgets */}
             <div>
               <div className="flex items-center justify-between px-1 mb-2">
-                <p className="text-[11px] sm:text-xs font-extrabold uppercase tracking-wider text-slate-400">Category budgets</p>
-                <span className="text-[11px] sm:text-xs font-bold text-slate-400">{limits.length} active</span>
+                <p className="text-xs font-extrabold uppercase tracking-wider text-slate-400">Category budgets</p>
+                <span className="text-xs font-bold text-slate-400">{limits.length} active</span>
               </div>
 
               {limits.length === 0 ? (
@@ -434,7 +439,7 @@ export const BudgetAlertsPage: React.FC = () => {
                                 {(isOver || isNear) && (
                                   <span
                                     className={cn(
-                                      'px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider shrink-0',
+                                      'px-2 py-0.5 rounded-full text-2xs font-black uppercase tracking-wider shrink-0',
                                       isOver ? 'bg-rose-50 text-rose-700' : 'bg-amber-50 text-amber-700'
                                     )}
                                   >
@@ -495,7 +500,7 @@ export const BudgetAlertsPage: React.FC = () => {
                       );
                     })}
                   </div>
-                  <p className="mt-2 px-1 text-[11px] font-medium text-slate-400">Tap a budget to change its alert level or remove it.</p>
+                  <p className="mt-2 px-1 text-xs font-medium text-slate-400">Tap a budget to change its alert level or remove it.</p>
                 </>
               )}
             </div>
@@ -503,7 +508,7 @@ export const BudgetAlertsPage: React.FC = () => {
 
           {/* Alert channels */}
           <div className="lg:col-span-5 xl:col-span-4 min-w-0">
-            <p className="px-1 mb-2 text-[11px] sm:text-xs font-extrabold uppercase tracking-wider text-slate-400">Alert channels</p>
+            <p className="px-1 mb-2 text-xs font-extrabold uppercase tracking-wider text-slate-400">Alert channels</p>
             <div data-testid="budget-alerts-page-card-2" className={cn(cardClass, 'px-4 sm:px-5 divide-y divide-slate-100')}>
               {channels.map((channel) => {
                 const Icon = channel.icon;
@@ -589,7 +594,7 @@ export const BudgetAlertsPage: React.FC = () => {
                       type="button"
                       onClick={() => setNewCategory(cat)}
                       className={cn(
-                        "px-2.5 py-1 rounded-full text-[10px] font-bold transition-all cursor-pointer border",
+                        "px-2.5 py-1 rounded-full text-2xs font-bold transition-all cursor-pointer border",
                         newCategory === cat
                           ? "bg-[#18181B] text-white border-black"
                           : "bg-slate-50 hover:bg-slate-100 text-slate-600 border-slate-200/60"

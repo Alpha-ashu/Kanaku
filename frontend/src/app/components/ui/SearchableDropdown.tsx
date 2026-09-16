@@ -281,7 +281,7 @@ export const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
  </div>
  <div className="flex-1 min-w-0">
  <p className="text-sm font-bold text-indigo-600 truncate">Add"{query}"</p>
- <p className="text-[10px] text-indigo-400 font-bold uppercase tracking-widest">New Entry</p>
+ <p className="text-2xs text-indigo-400 font-bold uppercase tracking-widest">New Entry</p>
  </div>
  </button>
  )}
@@ -294,7 +294,7 @@ export const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
  Object.entries(groupedOptions).map(([group, opts]) => (
  <div key={group}>
  {group && (
- <div className="px-3 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-white/80 border-b border-gray-100">
+ <div className="px-3 py-1.5 text-2xs font-bold text-gray-400 uppercase tracking-widest bg-white/80 border-b border-gray-100">
  {group}
  </div>
  )}

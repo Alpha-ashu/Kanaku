@@ -3,6 +3,7 @@ import { authMiddleware } from '../../middleware/auth';
 import { pinGate } from '../../middleware/pinGate';
 import { validateBody, validateParams, validateQuery } from '../../middleware/validate';
 import { idempotency } from '../../middleware/idempotency';
+import { duplicateSubmitGuard } from '../../middleware/duplicateSubmitGuard';
 import * as TransactionController from './transaction.controller';
 import { responseCache } from '../../middleware/cache';
 import { CACHE_TTL_SECONDS } from '../../cache/cache-policy';
@@ -34,6 +35,7 @@ router.post(
 	requireFeature('transactions', 'addTransaction'),
 	idempotency({ scope: 'transactions.create' }),
 	validateBody(transactionCreateValidatedSchema),
+	duplicateSubmitGuard({ scope: 'transactions.create' }),
 	TransactionController.createTransaction
 );
 // Sub-feature operations: Export & Third-Party integration

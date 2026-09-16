@@ -3,6 +3,7 @@ import { authMiddleware } from '../../middleware/auth';
 import { pinGate } from '../../middleware/pinGate';
 import { validateBody, validateParams } from '../../middleware/validate';
 import { idempotency } from '../../middleware/idempotency';
+import { duplicateSubmitGuard } from '../../middleware/duplicateSubmitGuard';
 import { responseCache } from '../../middleware/cache';
 import { CACHE_TTL_SECONDS } from '../../cache/cache-policy';
 import { requireFeature } from '../../middleware/featureGate';
@@ -21,7 +22,7 @@ router.use(requireFeature('loans'));
 // Gate at API level with borrowMoney (the more common path); lendMoney is a
 // client-side concern enforced via the admin panel sub-feature config.
 router.get('/', responseCache({ prefix: 'loans:list', ttlSeconds: CACHE_TTL_SECONDS.loans.list }), LoanController.getLoans);
-router.post('/', requireFeature('loans', 'borrowMoney'), idempotency({ scope: 'loans.create' }), validateBody(loanCreateSchema), LoanController.createLoan);
+router.post('/', requireFeature('loans', 'borrowMoney'), idempotency({ scope: 'loans.create' }), validateBody(loanCreateSchema), duplicateSubmitGuard({ scope: 'loans.create' }), LoanController.createLoan);
 router.put(
   '/:id',
   idempotency({ scope: 'loans.update' }),
@@ -39,6 +40,9 @@ router.post(
   validateParams(loanIdParamSchema),
   idempotency({ scope: 'loans.payment' }),
   validateBody(loanPaymentSchema),
+  // Same double-debit risk as the idempotency note above, for the case it cannot
+  // see: a second tap arrives under its own fresh Idempotency-Key.
+  duplicateSubmitGuard({ scope: 'loans.payment' }),
   LoanController.addLoanPayment,
 );
 
@@ -49,6 +53,7 @@ router.post(
   requireFeature('loans', 'loanSettlement'),
   validateParams(loanIdParamSchema),
   idempotency({ scope: 'loans.settle' }),
+  duplicateSubmitGuard({ scope: 'loans.settle' }),
   LoanController.settleLoan,
 );
 

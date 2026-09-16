@@ -135,12 +135,12 @@ export const QuickActionSettingsSection: React.FC = () => {
                         {action.label}
                       </p>
                       {slotIndex && (
-                        <span className="text-[9.5px] font-bold text-blue-600 bg-blue-100/70 px-1.5 py-0.2 rounded-full shrink-0">
+                        <span className="text-2xs font-bold text-blue-600 bg-blue-100/70 px-1.5 py-0.2 rounded-full shrink-0">
                           #{slotIndex}
                         </span>
                       )}
                     </div>
-                    <p className="text-[10.5px] text-slate-400 font-medium truncate mt-0.5">
+                    <p className="text-2xs text-slate-400 font-medium truncate mt-0.5">
                       {action.description}
                     </p>
                   </div>

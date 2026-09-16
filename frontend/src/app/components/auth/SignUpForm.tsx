@@ -399,7 +399,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
         <div className="flex justify-between items-center mb-1.5">
           <div className="flex items-center gap-1.5">
             <span className="text-xs font-semibold text-slate-700">Account Setup</span>
-            <span className="text-[11px] font-medium text-slate-400">
+            <span className="text-xs font-medium text-slate-400">
               &bull; {5 - fieldsRemaining} of 5 completed
             </span>
           </div>
@@ -643,7 +643,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
         {formData.password && (
           <div className="mt-2 space-y-1.5">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] text-slate-500 font-medium">Password strength</span>
+              <span className="text-xs text-slate-500 font-medium">Password strength</span>
               {getStrengthLabel()}
             </div>
             <div className="flex gap-1 h-1.5 w-full">
@@ -657,7 +657,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
         {/* Requirements Checklist */}
         {formData.password && (
           <div className="mt-2.5 bg-slate-50/80 border border-slate-100 rounded-xl p-3 space-y-1.5">
-            <span className="text-[11px] font-semibold text-slate-500 block mb-1">Password Requirements</span>
+            <span className="text-xs font-semibold text-slate-500 block mb-1">Password Requirements</span>
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div className="flex items-center gap-1.5 text-slate-500">
                 <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center transition-colors ${hasMinLength ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-200 text-slate-400'}`}>

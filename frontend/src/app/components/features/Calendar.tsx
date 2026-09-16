@@ -300,7 +300,7 @@ export const Calendar: React.FC = () => {
 
  const today = new Date();
  const isCurrentMonth = today.getMonth() === currentDate.getMonth() && today.getFullYear() === currentDate.getFullYear();
- const summaryAmountClass = 'w-full text-center text-[clamp(0.98rem,1.55vw,1.55rem)] font-bold tracking-[-0.03em] leading-tight tabular-nums break-words [overflow-wrap:anywhere]';
+ const summaryAmountClass = 'w-full text-center text-sm sm:text-base xl:text-xl font-bold tracking-[-0.03em] leading-tight tabular-nums break-words [overflow-wrap:anywhere]';
   const summaryCardClass = 'rounded-[24px] sm:rounded-[28px] px-3 py-4 sm:px-4 sm:py-4.5 border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] transition-transform hover:-translate-y-0.5 min-w-0';
 
   return (
@@ -342,7 +342,7 @@ export const Calendar: React.FC = () => {
   className={cn(summaryCardClass, 'bg-white')}
   >
   <div className="space-y-1.5 min-w-0 text-center">
-  <p className="text-[11px] sm:text-xs font-black uppercase tracking-wider text-slate-400">Income</p>
+  <p className="text-xs font-black uppercase tracking-wider text-slate-400">Income</p>
   <div className="min-h-[2.2rem] sm:min-h-[2.5rem] flex items-center justify-center">
   <p className={cn(summaryAmountClass, 'text-emerald-600')}>
   {formatSignedCurrency(summaryStats.income)}
@@ -358,7 +358,7 @@ export const Calendar: React.FC = () => {
   className={cn(summaryCardClass, 'bg-white')}
   >
   <div className="space-y-1.5 min-w-0 text-center">
-  <p className="text-[11px] sm:text-xs font-black uppercase tracking-wider text-slate-400">Expense</p>
+  <p className="text-xs font-black uppercase tracking-wider text-slate-400">Expense</p>
   <div className="min-h-[2.2rem] sm:min-h-[2.5rem] flex items-center justify-center">
   <p className={cn(summaryAmountClass, 'text-rose-600')}>
   {formatSignedCurrency(-summaryStats.expense)}
@@ -374,7 +374,7 @@ export const Calendar: React.FC = () => {
   className={cn(summaryCardClass, 'bg-white')}
   >
   <div className="space-y-1.5 min-w-0 text-center">
-  <p className="text-[11px] sm:text-xs font-black uppercase tracking-wider text-slate-400">Net</p>
+  <p className="text-xs font-black uppercase tracking-wider text-slate-400">Net</p>
   <div className="min-h-[2.2rem] sm:min-h-[2.5rem] flex items-center justify-center">
   <p className={cn(
   summaryAmountClass,
@@ -423,14 +423,14 @@ export const Calendar: React.FC = () => {
           <button
             type="button"
             onClick={handleToday}
-            className="px-2 py-0.5 rounded-full bg-pink-500/30 text-pink-300 hover:bg-pink-500/50 text-[10px] font-bold transition-colors flex items-center gap-1"
+            className="px-2 py-0.5 rounded-full bg-pink-500/30 text-pink-300 hover:bg-pink-500/50 text-2xs font-bold transition-colors flex items-center gap-1"
             title="Jump to current month"
           >
             <RotateCcw size={10} /> Today
           </button>
         )}
       </div>
-      <p className="text-[10px] sm:text-[11px] text-gray-400 mt-0.5">
+      <p className="text-2xs text-gray-400 mt-0.5">
         {filteredTransactions.length} transaction{filteredTransactions.length === 1 ? '' : 's'} · {reminders.length} reminder{reminders.length === 1 ? '' : 's'}
       </p>
     </div>
@@ -463,7 +463,7 @@ export const Calendar: React.FC = () => {
  {/* Day Headers */}
  <div className="grid grid-cols-7 gap-1 sm:gap-1.5 mb-2.5">
  {DAYS.map((day) => (
- <div key={day} className="text-center font-medium text-gray-400 text-[11px] sm:text-xs py-1.5">
+ <div key={day} className="text-center font-medium text-gray-400 text-xs py-1.5">
  {day}
  </div>
  ))}

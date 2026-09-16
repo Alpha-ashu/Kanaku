@@ -73,14 +73,14 @@ export const MarketAssetsForm: React.FC<MarketAssetsFormProps> = ({
       <div className="space-y-3 sm:space-y-4 bg-slate-50/80 border border-slate-200/80 p-3.5 sm:p-5 rounded-2xl">
         <div className="flex items-center gap-2 border-b border-slate-200/60 pb-2.5">
           <Building2 size={15} className="text-indigo-600" />
-          <h3 className="text-[10px] sm:text-xs font-bold text-slate-700 uppercase tracking-wider">
+          <h3 className="text-2xs sm:text-xs font-bold text-slate-700 uppercase tracking-wider">
             {subcategory === 'fd' ? 'Fixed Deposit Details' : 'Recurring Deposit Details'}
           </h3>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <div className="space-y-1 sm:space-y-1.5">
-            <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Bank / Financial Institution</label>
+            <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Bank / Financial Institution</label>
             <input
               type="text"
               value={fdDetails.bankName || ''}
@@ -95,7 +95,7 @@ export const MarketAssetsForm: React.FC<MarketAssetsFormProps> = ({
           </div>
 
           <div className="space-y-1 sm:space-y-1.5">
-            <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Deposit Amount ({currency})</label>
+            <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Deposit Amount ({currency})</label>
             <input
               type="number"
               value={fdDetails.depositAmount || formData.purchasePrice || ''}
@@ -110,7 +110,7 @@ export const MarketAssetsForm: React.FC<MarketAssetsFormProps> = ({
           </div>
 
           <div className="space-y-1 sm:space-y-1.5">
-            <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Annual Interest Rate (%)</label>
+            <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Annual Interest Rate (%)</label>
             <input
               type="number"
               value={fdDetails.interestRate || ''}
@@ -124,7 +124,7 @@ export const MarketAssetsForm: React.FC<MarketAssetsFormProps> = ({
           </div>
 
           <div className="space-y-1 sm:space-y-1.5">
-            <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Compounding Type</label>
+            <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Compounding Type</label>
             <select
               value={fdDetails.compoundingType || 'quarterly'}
               onChange={e => setFdDetails(prev => ({ ...prev, compoundingType: e.target.value as any }))}
@@ -139,7 +139,7 @@ export const MarketAssetsForm: React.FC<MarketAssetsFormProps> = ({
           </div>
 
           <div className="space-y-1 sm:space-y-1.5">
-            <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Start Date</label>
+            <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Start Date</label>
             <input
               type="date"
               value={fdDetails.startDate || formData.date || ''}
@@ -153,7 +153,7 @@ export const MarketAssetsForm: React.FC<MarketAssetsFormProps> = ({
           </div>
 
           <div className="space-y-1 sm:space-y-1.5">
-            <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Maturity Date</label>
+            <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Maturity Date</label>
             <input
               type="date"
               value={fdDetails.maturityDate || ''}
@@ -163,7 +163,7 @@ export const MarketAssetsForm: React.FC<MarketAssetsFormProps> = ({
           </div>
 
           <div className="sm:col-span-2 space-y-1 sm:space-y-1.5">
-            <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Estimated Maturity Amount ({currency})</label>
+            <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Estimated Maturity Amount ({currency})</label>
             <input
               type="number"
               value={fdDetails.maturityAmount || ''}
@@ -184,7 +184,7 @@ export const MarketAssetsForm: React.FC<MarketAssetsFormProps> = ({
     <div className="space-y-3 sm:space-y-4">
       {/* Symbol Search & Asset Name */}
       <div className="space-y-1 sm:space-y-1.5 relative">
-        <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+        <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">
           {subcategory === 'stocks' ? 'Search Company / Symbol' :
            subcategory === 'crypto' ? 'Search Crypto Coin' :
            subcategory === 'mutual_funds' ? 'Mutual Fund Name / Scheme' :
@@ -216,7 +216,7 @@ export const MarketAssetsForm: React.FC<MarketAssetsFormProps> = ({
         {showSuggestions && (searchResults.length > 0 || searching) && (
           <div className="absolute z-50 top-full left-0 right-0 mt-1.5 bg-white border border-slate-200/90 rounded-xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95">
             {searching ? (
-              <div className="p-3 text-center text-[10px] sm:text-xs font-semibold text-slate-400">Searching market symbols...</div>
+              <div className="p-3 text-center text-2xs sm:text-xs font-semibold text-slate-400">Searching market symbols...</div>
             ) : (
               searchResults.slice(0, 6).map(r => (
                 <button
@@ -227,7 +227,7 @@ export const MarketAssetsForm: React.FC<MarketAssetsFormProps> = ({
                 >
                   <div className="min-w-0 pr-2">
                     <p className="text-xs sm:text-sm font-bold text-slate-900">{displaySymbol(r.symbol)}</p>
-                    <p className="text-[10px] sm:text-xs font-medium text-slate-400 truncate max-w-[200px] sm:max-w-[260px]">{r.companyName}</p>
+                    <p className="text-2xs sm:text-xs font-medium text-slate-400 truncate max-w-[200px] sm:max-w-[260px]">{r.companyName}</p>
                   </div>
                   <ArrowUpRight size={14} className="text-slate-400 shrink-0" />
                 </button>
@@ -242,7 +242,7 @@ export const MarketAssetsForm: React.FC<MarketAssetsFormProps> = ({
         {subcategory === 'stocks' && (
           <>
             <div className="space-y-1 sm:space-y-1.5">
-              <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Exchange</label>
+              <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Exchange</label>
               <input
                 type="text"
                 value={formData.exchange || ''}
@@ -252,7 +252,7 @@ export const MarketAssetsForm: React.FC<MarketAssetsFormProps> = ({
               />
             </div>
             <div className="space-y-1 sm:space-y-1.5">
-              <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Market Region / Country</label>
+              <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Market Region / Country</label>
               <select
                 value={formData.country || 'IN'}
                 onChange={e => setFormData((prev: any) => ({ ...prev, country: e.target.value }))}
@@ -268,7 +268,7 @@ export const MarketAssetsForm: React.FC<MarketAssetsFormProps> = ({
 
         {(subcategory === 'crypto' || subcategory === 'forex') && (
           <div className="space-y-1 sm:space-y-1.5">
-            <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Exchange / Platform</label>
+            <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Exchange / Platform</label>
             <input
               type="text"
               value={formData.broker || ''}

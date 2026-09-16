@@ -3,6 +3,7 @@ import { authMiddleware } from '../../middleware/auth';
 import { pinGate } from '../../middleware/pinGate';
 import { validateBody, validateParams, validateQuery } from '../../middleware/validate';
 import { idempotency } from '../../middleware/idempotency';
+import { duplicateSubmitGuard } from '../../middleware/duplicateSubmitGuard';
 import * as GoldController from './gold.controller';
 import {
   goldCreateSchema,
@@ -21,6 +22,7 @@ router.post(
   '/',
   idempotency({ scope: 'gold.create' }),
   validateBody(goldCreateSchema),
+  duplicateSubmitGuard({ scope: 'gold.create' }),
   GoldController.createGoldAsset,
 );
 router.get('/:id', validateParams(goldIdParamSchema), GoldController.getGoldAsset);

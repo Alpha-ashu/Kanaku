@@ -21,7 +21,7 @@ export const CardNetworkLogo: React.FC<{ network: string }> = ({ network }) => {
  if (normalized === 'rupay') {
  return (
  <div className="flex flex-col items-end opacity-80 leading-none">
- <span className="text-[10px] font-black italic tracking-tighter text-white">RuPay</span>
+ <span className="text-2xs font-black italic tracking-tighter text-white">RuPay</span>
  <div className="h-[2px] w-8 bg-gradient-to-r from-orange-400 via-white to-green-500 rounded-full mt-0.5" />
  </div>
  );
@@ -29,7 +29,7 @@ export const CardNetworkLogo: React.FC<{ network: string }> = ({ network }) => {
  if (normalized === 'paytm') {
  return (
  <div className="flex flex-col items-end opacity-80 leading-none">
- <span className="text-[11px] font-black tracking-tight text-white flex items-center">
+ <span className="text-xs font-black tracking-tight text-white flex items-center">
  Pay<span className="text-sky-300">tm</span>
  </span>
  </div>
@@ -262,7 +262,7 @@ export const getBankCardLogo = (name: string, isActive: boolean, size: 'sm' | 'm
  
  return (
  <div className={cn(size === 'sm' ? 'w-[52px] h-8' : 'w-16 h-10', 'flex items-center justify-center rounded-lg', theme.bgClass)}>
- <span className={cn(theme.textClass, size === 'sm' ? 'text-[15px]' : 'text-[18px]', 'font-extrabold font-sans')}>{initials}</span>
+ <span className={cn(theme.textClass, size === 'sm' ? 'text-base' : 'text-lg', 'font-extrabold font-sans')}>{initials}</span>
  </div>
  );
 };

@@ -90,7 +90,7 @@ function BillCard({
           </div>
         )}
         {/* Status badge */}
-        <span className={cn('absolute top-2 left-2 flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold z-10', statusMeta.cls)}>
+        <span className={cn('absolute top-2 left-2 flex items-center gap-1 rounded-full px-2 py-0.5 text-2xs font-bold z-10', statusMeta.cls)}>
           {statusMeta.icon}
           {statusMeta.label}
         </span>
@@ -170,7 +170,7 @@ function BillCard({
           ) : (
             <span className="text-xs font-semibold text-slate-400 italic">Processing</span>
           )}
-          <span className="text-[11px] text-gray-400">
+          <span className="text-xs text-gray-400">
             {dateVal.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: '2-digit' })}
           </span>
         </div>
@@ -222,7 +222,7 @@ function BillDetailModal({ doc, tx, currency, onClose, onDelete }: { doc: Docume
             </div>
             <div>
               <h2 className="text-sm font-black text-slate-900 leading-none">Receipt Details</h2>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">Scanned Document</p>
+              <p className="text-2xs font-bold text-slate-400 uppercase tracking-wider mt-1">Scanned Document</p>
             </div>
           </div>
           <div className="flex items-center gap-1.5">
@@ -263,22 +263,22 @@ function BillDetailModal({ doc, tx, currency, onClose, onDelete }: { doc: Docume
                   </div>
                   <div>
                     <h3 className="text-xs font-black text-slate-900 leading-tight">{merchantName}</h3>
-                    <span className="text-[10px] font-bold text-slate-400">{category}</span>
+                    <span className="text-2xs font-bold text-slate-400">{category}</span>
                   </div>
                 </div>
-                <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[9px] font-black border border-emerald-200/60">
+                <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-2xs font-black border border-emerald-200/60">
                   Verified
                 </span>
               </div>
 
               <div className="text-center py-2 bg-slate-50 rounded-xl border border-slate-100">
-                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-0.5">Amount</span>
+                <span className="text-2xs font-bold text-slate-400 uppercase tracking-widest block mb-0.5">Amount</span>
                 <span className="text-xl font-black text-slate-900">
                   {amount > 0 ? formatCurrencyAmount(amount, currency) : '₹0.00'}
                 </span>
               </div>
 
-              <div className="flex items-center justify-between text-[10px] text-slate-500 font-medium pt-1">
+              <div className="flex items-center justify-between text-2xs text-slate-500 font-medium pt-1">
                 <span>Date: {dateStr}</span>
                 <span className="flex items-center gap-1 text-emerald-600 font-bold">
                   <CheckCircle2 size={11} /> Processed
@@ -292,28 +292,28 @@ function BillDetailModal({ doc, tx, currency, onClose, onDelete }: { doc: Docume
         <div className="p-6 space-y-4 bg-white">
           <div className="grid grid-cols-2 gap-3.5">
             <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Merchant</span>
+              <span className="text-2xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Merchant</span>
               <p className="text-xs font-black text-slate-900 leading-snug break-words">{merchantName}</p>
             </div>
             <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Category</span>
+              <span className="text-2xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Category</span>
               <p className="text-xs font-black text-slate-900 truncate">{category}</p>
             </div>
             <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Total Amount</span>
+              <span className="text-2xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Total Amount</span>
               <p className="text-xs font-black text-emerald-600">
                 {amount > 0 ? formatCurrencyAmount(amount, currency) : '₹0.00'}
               </p>
             </div>
             <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Date</span>
+              <span className="text-2xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Date</span>
               <p className="text-xs font-black text-slate-900 truncate">{dateStr}</p>
             </div>
           </div>
 
           {doc.notes && (
             <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Notes</span>
+              <span className="text-2xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Notes</span>
               <p className="text-xs font-medium text-slate-700">{doc.notes}</p>
             </div>
           )}
@@ -457,29 +457,29 @@ export const ReceiptScannerPage: React.FC = () => {
               </div>
             </div>
             <div className="text-left sm:text-right">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Total Tax Extracted</span>
+              <span className="text-2xs font-bold uppercase tracking-wider text-slate-400 block">Total Tax Extracted</span>
               <p className="text-xl font-black text-orange-900">{formatCurrencyAmount(taxSummary.totalTax, currency)}</p>
             </div>
           </div>
 
           <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-4">
             <div className="rounded-xl bg-white/80 border border-orange-100 p-2.5 sm:p-3">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">Total Tax</span>
+              <span className="text-2xs font-bold uppercase tracking-wider text-slate-400 block mb-0.5">Total Tax</span>
               <p className="text-sm sm:text-base font-black text-slate-900">{formatCurrencyAmount(taxSummary.totalTax, currency)}</p>
             </div>
             <div className="rounded-xl bg-white/80 border border-orange-100 p-2.5 sm:p-3">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">This Week</span>
+              <span className="text-2xs font-bold uppercase tracking-wider text-slate-400 block mb-0.5">This Week</span>
               <p className="text-sm sm:text-base font-black text-orange-700">{formatCurrencyAmount(taxSummary.weeklyTax, currency)}</p>
             </div>
             <div className="rounded-xl bg-white/80 border border-orange-100 p-2.5 sm:p-3">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">This Month</span>
+              <span className="text-2xs font-bold uppercase tracking-wider text-slate-400 block mb-0.5">This Month</span>
               <p className="text-sm sm:text-base font-black text-orange-900">{formatCurrencyAmount(taxSummary.monthlyTax, currency)}</p>
             </div>
           </div>
 
           {taxSummary.topCategories.length > 0 && (
             <div className="space-y-1.5 mb-3">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-1">Top Tax Categories</span>
+              <span className="text-2xs font-bold uppercase tracking-wider text-slate-400 px-1">Top Tax Categories</span>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {taxSummary.topCategories.map(([cat, amt]) => (
                   <div key={cat} className="rounded-xl bg-white/70 border border-orange-100 px-3 py-2">
@@ -493,7 +493,7 @@ export const ReceiptScannerPage: React.FC = () => {
 
           {taxSummary.topTaxTypes.length > 0 && (
             <div className="space-y-1.5">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-1">Tax Components (GST / VAT / Cess)</span>
+              <span className="text-2xs font-bold uppercase tracking-wider text-slate-400 px-1">Tax Components (GST / VAT / Cess)</span>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {taxSummary.topTaxTypes.map(([name, amt]) => (
                   <div key={name} className="rounded-xl bg-white/70 border border-orange-100 px-3 py-2">
@@ -522,7 +522,7 @@ export const ReceiptScannerPage: React.FC = () => {
               {tab.label}
               {counts[tab.key] > 0 && (
                 <span className={cn(
-                  'rounded-full px-1.5 py-0.5 text-[10px] font-bold',
+                  'rounded-full px-1.5 py-0.5 text-2xs font-bold',
                   activeTab === tab.key ? 'bg-white/20 text-white' : 'bg-slate-200/80 text-slate-600'
                 )}>
                   {counts[tab.key]}

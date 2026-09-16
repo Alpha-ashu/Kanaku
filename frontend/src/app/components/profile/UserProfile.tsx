@@ -1044,7 +1044,7 @@ export const UserProfile: React.FC = () => {
   <div className="mt-4 w-full max-w-3xl rounded-[28px] sm:rounded-[32px] border border-slate-100 bg-white p-6 shadow-md">
   <div className="flex items-center justify-between mb-4">
   <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Choose your style</p>
-  <span className="text-[10px] bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full font-bold">
+  <span className="text-2xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full font-bold">
  {AVATAR_OPTIONS.length} OPTIONS
  </span>
  </div>
@@ -1088,7 +1088,7 @@ export const UserProfile: React.FC = () => {
  
  <div className="mt-6 pt-4 border-t border-gray-100 flex items-center justify-center gap-2">
  <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
- <p className="text-[11px] text-gray-500 font-medium">
+ <p className="text-xs text-gray-500 font-medium">
  Scroll to see more characters
  </p>
  </div>
@@ -1462,7 +1462,7 @@ export const UserProfile: React.FC = () => {
   <option data-testid="user-profile-cny-chinese-yuan" value="CNY">CNY - Chinese Yuan</option>
   <option data-testid="user-profile-sgd-singapore-dollar" value="SGD">SGD - Singapore Dollar</option>
   </select>
-  <p className="mt-2 text-[10px] text-slate-400 italic">
+  <p className="mt-2 text-2xs text-slate-400 italic">
   Currency updates automatically based on selected city, but can be overridden manually.
   </p>
   </div>
@@ -2018,11 +2018,11 @@ export const UserProfile: React.FC = () => {
         className="flex items-center gap-1.5 flex-shrink-0"
        >
         <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse flex-shrink-0" />
-        <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest whitespace-nowrap">Unsaved Changes</span>
+        <span className="text-2xs font-black text-amber-600 uppercase tracking-widest whitespace-nowrap">Unsaved Changes</span>
        </motion.div>
       )}
       {!hasDirtyChanges && (
-       <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Editing Profile</span>
+       <span className="text-2xs font-black text-slate-400 uppercase tracking-widest">Editing Profile</span>
       )}
      </div>
 

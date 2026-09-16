@@ -67,7 +67,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onGetStarted, onNaviga
         <section className="relative bg-gradient-to-b from-violet-50/80 via-white to-white">
           <div className="max-w-3xl mx-auto px-4 sm:px-6 pt-28 sm:pt-36 pb-12 text-center">
             <p className="text-sm font-semibold text-violet-700">Pricing</p>
-            <h1 className="mt-3 text-[36px] sm:text-[52px] leading-[1.06] font-extrabold tracking-[-0.035em] text-slate-950">
+            <h1 className="mt-3 text-4xl sm:text-5xl leading-[1.06] font-extrabold tracking-[-0.035em] text-slate-950">
               Free. Every feature.
             </h1>
             <p className="mt-5 text-base sm:text-lg leading-relaxed text-slate-600">
@@ -88,7 +88,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onGetStarted, onNaviga
 
               <ul className="mt-8 space-y-3">
                 {included.map((item) => (
-                  <li key={item} className="flex items-start gap-3 text-[15px] text-slate-700">
+                  <li key={item} className="flex items-start gap-3 text-base text-slate-700">
                     <Check className="mt-0.5 w-4 h-4 shrink-0 text-violet-600" />
                     {item}
                   </li>
@@ -99,7 +99,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onGetStarted, onNaviga
                 type="button"
                 data-testid="pricing-page-button-0"
                 onClick={onGetStarted}
-                className="group mt-9 w-full inline-flex items-center justify-center gap-2 rounded-[14px] bg-violet-600 px-6 py-3.5 text-[15px] font-semibold text-white hover:bg-violet-700 transition-colors"
+                className="group mt-9 w-full inline-flex items-center justify-center gap-2 rounded-[14px] bg-violet-600 px-6 py-3.5 text-base font-semibold text-white hover:bg-violet-700 transition-colors"
               >
                 Create free account
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
@@ -123,7 +123,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onGetStarted, onNaviga
         </section>
 
         <section className="max-w-3xl mx-auto px-4 sm:px-6 py-20">
-          <h2 className="text-[28px] sm:text-[36px] leading-[1.1] font-bold tracking-[-0.03em] text-slate-950 text-center">
+          <h2 className="text-3xl sm:text-4xl leading-[1.1] font-bold tracking-[-0.03em] text-slate-950 text-center">
             Questions, answered
           </h2>
           <div className="mt-10 divide-y divide-slate-200 border-y border-slate-200">
@@ -142,7 +142,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onGetStarted, onNaviga
                     <ChevronDown className={`w-5 h-5 shrink-0 text-slate-400 transition-transform ${open ? 'rotate-180' : ''}`} />
                   </button>
                   <div id={`pricing-faq-${idx}`} hidden={!open} className="pb-5 pr-10">
-                    <p className="text-[15px] leading-relaxed text-slate-600">{item.a}</p>
+                    <p className="text-base leading-relaxed text-slate-600">{item.a}</p>
                   </div>
                 </div>
               );

@@ -90,7 +90,7 @@ export const FloatingSaveBar: React.FC<FloatingSaveBarProps> = ({
             background: '#f1f5f9',
             color: '#334155',
           }}
-          className="flex items-center justify-center gap-1.5 px-3 sm:px-4 py-1.5 min-h-[34px] sm:min-h-[36px] rounded-full text-[10px] sm:text-[11px] font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 active:scale-95 transition-all disabled:opacity-40 shrink-0 cursor-pointer border border-slate-200/80 shadow-xs"
+          className="flex items-center justify-center gap-1.5 px-3 sm:px-4 py-1.5 min-h-[34px] sm:min-h-[36px] rounded-full text-2xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 active:scale-95 transition-all disabled:opacity-40 shrink-0 cursor-pointer border border-slate-200/80 shadow-xs"
         >
           <RotateCcw size={12} strokeWidth={2.5} className="text-slate-600 shrink-0 w-3 h-3" />
           <span style={{ color: '#334155', fontWeight: '700' }}>{discardLabel}</span>
@@ -107,7 +107,7 @@ export const FloatingSaveBar: React.FC<FloatingSaveBarProps> = ({
             boxShadow: '0 3px 12px rgba(79, 70, 229, 0.3)',
           }}
           className={cn(
-            'flex-1 lg:flex-none flex items-center justify-center gap-1.5 px-3.5 sm:px-5 py-1.5 min-h-[34px] sm:min-h-[36px] rounded-full text-[10px] sm:text-[11px] font-bold text-white active:scale-95 transition-all disabled:opacity-50 cursor-pointer',
+            'flex-1 lg:flex-none flex items-center justify-center gap-1.5 px-3.5 sm:px-5 py-1.5 min-h-[34px] sm:min-h-[36px] rounded-full text-2xs font-bold text-white active:scale-95 transition-all disabled:opacity-50 cursor-pointer',
             accentClass
           )}
         >

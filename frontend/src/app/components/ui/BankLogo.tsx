@@ -10,7 +10,7 @@ interface BankLogoProps {
 
 export const BankLogo: React.FC<BankLogoProps> = ({ bank, size = 'md', className }) => {
  const sizeClasses = {
- xs: 'w-6 h-6 text-[8px] rounded-lg',
+ xs: 'w-6 h-6 text-2xs rounded-lg',
  sm: 'w-9 h-9 text-xs rounded-xl',
  md: 'w-11 h-11 text-sm rounded-xl',
  lg: 'w-14 h-14 text-base rounded-2xl',

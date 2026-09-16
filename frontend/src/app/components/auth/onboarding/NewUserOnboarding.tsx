@@ -192,10 +192,10 @@ export const NewUserOnboarding: React.FC = () => {
         <div className="inline-flex items-center gap-3 mb-2">
           <KanakuWordmark
             logoClassName="w-8 h-8 sm:w-9 sm:h-9 drop-shadow-[0_4px_12px_rgba(139,92,246,0.3)]"
-            textClassName="text-2xl sm:text-[26px]"
+            textClassName="text-2xl"
             isDark={true}
           />
-          <span className="text-[10px] uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full bg-violet-500/15 text-violet-300 border border-violet-500/25 shadow-sm backdrop-blur-sm">
+          <span className="text-2xs uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full bg-violet-500/15 text-violet-300 border border-violet-500/25 shadow-sm backdrop-blur-sm">
             Setup Wizard
           </span>
         </div>

@@ -131,7 +131,7 @@ export const Header: React.FC = () => {
  </div>
 ...
  <nav className="flex-1 p-4 overflow-y-auto">
- <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3 px-2">Navigation</p>
+ <p className="text-2xs font-bold uppercase tracking-widest text-slate-400 mb-3 px-2">Navigation</p>
  <Reorder.Group
  axis="y"
  values={orderedItems}
@@ -173,7 +173,7 @@ export const Header: React.FC = () => {
 
  <div className="flex items-center gap-4 lg:gap-6">
  <div className="text-right hidden sm:block">
- <p className="text-[10px] text-slate-400 uppercase tracking-widest font-black">Total Balance</p>
+ <p className="text-2xs text-slate-400 uppercase tracking-widest font-black">Total Balance</p>
  <p className="text-lg font-black text-slate-900 leading-none mt-1">{formatCurrency(totalBalance)}</p>
  </div>
 
@@ -236,7 +236,7 @@ export const Header: React.FC = () => {
  <p className="text-xs text-slate-500 mt-1 leading-relaxed">
  {notification.message}
  </p>
- <p className="text-[9px] text-slate-400 mt-2 font-black uppercase tracking-widest">
+ <p className="text-2xs text-slate-400 mt-2 font-black uppercase tracking-widest">
  {new Date(notification.createdAt).toLocaleDateString()}
  </p>
  </div>

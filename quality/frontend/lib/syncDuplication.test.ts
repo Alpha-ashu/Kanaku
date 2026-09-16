@@ -122,6 +122,7 @@ import {
   processPendingSyncQueue,
   queueRecordUpsertSync,
 } from '@/lib/auth-sync-integration';
+import { resetSubmitGuard } from '@/lib/submitGuard';
 
 const SYNC_QUEUE_STORAGE_KEY = 'KANAKU_sync_queue_v3';
 
@@ -159,6 +160,7 @@ describe('sync duplication guards', () => {
     vi.stubGlobal('navigator', { onLine: true });
 
     Object.values(tables).forEach((table: any) => table.rows.clear());
+    resetSubmitGuard();
     tables.accounts.seed({ id: 1, name: 'Bank', type: 'bank', currency: 'INR', cloudId: 'cloud-acc-1', balance: 1000 });
 
     apiPost.mockReset();
@@ -433,6 +435,82 @@ describe('sync duplication guards', () => {
       const [, body] = apiPost.mock.calls[0];
       expect(body).toMatchObject({ friendId: 'cloud-friend-2' });
       expect(body).not.toHaveProperty('accountId');
+    });
+  });
+
+  describe('to-do tasks: one Add, one task', () => {
+    const task = () => ({
+      listId: 1,
+      title: 'Buy milk',
+      priority: 'medium',
+      completed: false,
+      createdBy: 'user-b',
+      createdAt: new Date(),
+    });
+
+    beforeEach(() => {
+      tables.toDoLists.seed({ id: 1, name: 'Groceries', cloudId: '501' });
+    });
+
+    it('creates one task when Add fires twice during the round trip', async () => {
+      const { saveToDoItemWithBackendSync } = await import('@/lib/auth-sync-integration');
+      let release!: () => void;
+      apiPost.mockImplementation(
+        () => new Promise((resolve) => { release = () => resolve({ data: { data: { id: 9001 } } }); }),
+      );
+
+      // Enter pressed twice (or Enter + button) before the first save came back.
+      const first = saveToDoItemWithBackendSync(task());
+      const second = saveToDoItemWithBackendSync(task());
+      await flushBackgroundWork();
+      release();
+      const [a, b] = await Promise.all([first, second]);
+
+      expect(apiPost).toHaveBeenCalledTimes(1);
+      expect(a.id).toBe(b.id);
+      expect(await tables.toDoItems.toArray()).toHaveLength(1);
+    });
+
+    it('stores one task when the realtime refresh inserted it first', async () => {
+      const { saveToDoItemWithBackendSync } = await import('@/lib/auth-sync-integration');
+
+      // The server emits `todo_updated` to the creating device too. Its pull can
+      // insert the new task before this save gets its own response back.
+      apiPost.mockImplementation(async () => {
+        tables.toDoItems.seed({ id: 77, listId: 1, title: 'Buy milk', cloudId: '9002', syncStatus: 'synced' });
+        return { data: { data: { id: 9002 } } };
+      });
+
+      const saved = await saveToDoItemWithBackendSync(task());
+
+      const rows = await tables.toDoItems.toArray();
+      expect(rows).toHaveLength(1);
+      expect(rows[0]).toMatchObject({ id: 77, cloudId: '9002' });
+      expect(saved.id).toBe(77);
+    });
+
+    it('still creates two tasks with different titles', async () => {
+      const { saveToDoItemWithBackendSync } = await import('@/lib/auth-sync-integration');
+      apiPost
+        .mockResolvedValueOnce({ data: { data: { id: 9003 } } })
+        .mockResolvedValueOnce({ data: { data: { id: 9004 } } });
+
+      await saveToDoItemWithBackendSync(task());
+      await saveToDoItemWithBackendSync({ ...task(), title: 'Buy bread' });
+
+      expect(apiPost).toHaveBeenCalledTimes(2);
+      expect(await tables.toDoItems.toArray()).toHaveLength(2);
+    });
+
+    it('creates one list when Create fires twice', async () => {
+      const { saveToDoListWithBackendSync } = await import('@/lib/auth-sync-integration');
+      apiPost.mockResolvedValue({ data: { data: { id: 601 } } });
+
+      const list = () => ({ name: 'Weekend', ownerId: 'user-b', listType: 'individual', archived: false, createdAt: new Date() });
+      await Promise.all([saveToDoListWithBackendSync(list()), saveToDoListWithBackendSync(list())]);
+
+      expect(apiPost).toHaveBeenCalledTimes(1);
+      expect((await tables.toDoLists.toArray()).filter((row: any) => row.name === 'Weekend')).toHaveLength(1);
     });
   });
 

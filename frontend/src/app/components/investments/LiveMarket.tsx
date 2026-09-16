@@ -225,7 +225,7 @@ const StockDetail: React.FC<{
  <div className="grid grid-cols-2 gap-3">
  {rows.map(({ label, value }) => (
  <div key={label} className="bg-white rounded-xl px-3 py-2.5">
- <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{label}</p>
+ <p className="text-2xs font-bold text-gray-400 uppercase tracking-widest">{label}</p>
  <p className="text-sm font-bold text-gray-900 mt-0.5">{value}</p>
  </div>
  ))}
@@ -548,7 +548,7 @@ export const LiveMarket: React.FC = () => {
   ) : (
   <WifiOff size={10} className="text-red-400" />
   )}
-  <p className="text-[10px] text-slate-400 font-medium">
+  <p className="text-2xs text-slate-400 font-medium">
   {!isOnline ? (
   'Offline - cached data'
   ) : usingCache ? (
@@ -694,7 +694,7 @@ export const LiveMarket: React.FC = () => {
  <Activity size={24} className="text-gray-300" />
  <p className="text-xs text-gray-500 font-medium">Unable to load market data</p>
  {setupHint && (
- <p className="max-w-[18rem] text-center text-[11px] text-gray-400">
+ <p className="max-w-[18rem] text-center text-xs text-gray-400">
  {setupHint}
  </p>
  )}
@@ -756,7 +756,7 @@ export const LiveMarket: React.FC = () => {
  <div className="px-4 py-3 border-t border-gray-100 flex flex-wrap items-center justify-between gap-3">
  <div className="flex items-center gap-2">
  <BarChart2 size={12} className="text-gray-300" />
- <p className="text-[10px] text-gray-400">
+ <p className="text-2xs text-gray-400">
  {`Showing ${pageSymbols.length} of ${watchlist.length} symbols Auto-refresh every 8s`}
  </p>
  </div>
@@ -776,7 +776,7 @@ export const LiveMarket: React.FC = () => {
  {mobilePageItems.map((item) => {
  if (item.type === 'ellipsis') {
  return (
- <span key={item.key} className="px-1 text-[11px] text-gray-400">
+ <span key={item.key} className="px-1 text-xs text-gray-400">
  ...
  </span>
  );
@@ -788,7 +788,7 @@ export const LiveMarket: React.FC = () => {
  type="button"
  onClick={() => setCurrentPageIndex(item.value)}
  className={cn(
- 'h-7 min-w-7 rounded-lg border px-1 text-[11px] font-semibold transition-colors',
+ 'h-7 min-w-7 rounded-lg border px-1 text-xs font-semibold transition-colors',
  currentPage === item.value
  ? 'border-gray-900 bg-gray-900 text-white'
  : 'border-gray-200 text-gray-500 hover:bg-gray-50',
@@ -808,7 +808,7 @@ export const LiveMarket: React.FC = () => {
  type="button"
  onClick={() => setCurrentPageIndex(page)}
  className={cn(
- 'h-7 min-w-7 rounded-lg border px-1 text-[11px] font-semibold transition-colors',
+ 'h-7 min-w-7 rounded-lg border px-1 text-xs font-semibold transition-colors',
  currentPage === page
  ? 'border-gray-900 bg-gray-900 text-white'
  : 'border-gray-200 text-gray-500 hover:bg-gray-50',
@@ -820,7 +820,7 @@ export const LiveMarket: React.FC = () => {
  </button>
  ))}
  </div>
- <span className="min-w-[88px] text-center text-[11px] font-semibold text-gray-500">
+ <span className="min-w-[88px] text-center text-xs font-semibold text-gray-500">
  Page {currentPage} / {totalPages}
  </span>
  <button data-testid="live-market-next-market-page"
@@ -845,14 +845,14 @@ export const LiveMarket: React.FC = () => {
  goToPage();
  }
  }}
- className="h-7 w-14 rounded-lg border border-gray-200 px-2 text-[11px] font-semibold text-gray-600 outline-none focus:border-gray-400"
+ className="h-7 w-14 rounded-lg border border-gray-200 px-2 text-xs font-semibold text-gray-600 outline-none focus:border-gray-400"
  aria-label="Jump to market page"
  title="Jump to page"
  />
  <button data-testid="live-market-go"
  type="button"
  onClick={goToPage}
- className="h-7 rounded-lg border border-gray-200 px-2 text-[11px] font-semibold text-gray-600 hover:bg-gray-50"
+ className="h-7 rounded-lg border border-gray-200 px-2 text-xs font-semibold text-gray-600 hover:bg-gray-50"
  >
  Go
  </button>

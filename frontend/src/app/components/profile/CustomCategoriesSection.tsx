@@ -11,6 +11,7 @@ import {
 } from '@/services/featureSyncService';
 import { useCategoryOptions, type CategoryType } from '@/hooks/useCategoryOptions';
 import { cn } from '@/lib/utils';
+import { useSubmitLock } from '@/hooks/useSubmitLock';
 
 /** Swatches offered when creating a category — enough choice without a picker. */
 const COLOR_CHOICES = [
@@ -42,6 +43,7 @@ const emptyDraft = (): DraftState => ({ name: '', color: COLOR_CHOICES[0], icon:
  * change reaches the backend too, rather than living on one device.
  */
 export const CustomCategoriesSection: React.FC = () => {
+  const guardSubmit = useSubmitLock();
   const [activeType, setActiveType] = useState<CategoryType>('expense');
   const [isCreating, setIsCreating] = useState(false);
   const [draft, setDraft] = useState<DraftState>(emptyDraft);
@@ -60,7 +62,7 @@ export const CustomCategoriesSection: React.FC = () => {
   const customOptions = useMemo(() => options.filter((option) => option.isCustom), [options]);
   const builtinOptions = useMemo(() => options.filter((option) => !option.isCustom), [options]);
 
-  const handleCreate = async () => {
+  const handleCreate = guardSubmit(async () => {
     const name = draft.name.trim();
     if (!name) {
       toast.error('Give the category a name');
@@ -83,7 +85,7 @@ export const CustomCategoriesSection: React.FC = () => {
     } finally {
       setBusy(false);
     }
-  };
+  });
 
   const beginEdit = (record: AppCategory) => {
     setEditingId(record.id);

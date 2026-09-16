@@ -68,12 +68,12 @@ export const OtherInvestmentsForm: React.FC<OtherInvestmentsFormProps> = ({
         <div className="bg-slate-50/80 border border-slate-200/80 p-3.5 sm:p-5 rounded-2xl space-y-3 sm:space-y-4">
           <div className="flex items-center gap-2 border-b border-slate-200/60 pb-2.5">
             <Home size={15} className="text-emerald-600" />
-            <h3 className="text-[10px] sm:text-xs font-bold text-slate-700 uppercase tracking-wider">Property Details</h3>
+            <h3 className="text-2xs sm:text-xs font-bold text-slate-700 uppercase tracking-wider">Property Details</h3>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div className="space-y-1 sm:space-y-1.5">
-              <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Property Type</label>
+              <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Property Type</label>
               <select
                 value={propertyDetails.propertyType || 'residential'}
                 onChange={e => setPropertyDetails(prev => ({ ...prev, propertyType: e.target.value as PropertyType }))}
@@ -88,7 +88,7 @@ export const OtherInvestmentsForm: React.FC<OtherInvestmentsFormProps> = ({
             </div>
 
             <div className="space-y-1 sm:space-y-1.5">
-              <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Location / City</label>
+              <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Location / City</label>
               <input
                 type="text"
                 value={propertyDetails.location || ''}
@@ -99,7 +99,7 @@ export const OtherInvestmentsForm: React.FC<OtherInvestmentsFormProps> = ({
             </div>
 
             <div className="space-y-1 sm:space-y-1.5">
-              <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Ownership (%)</label>
+              <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Ownership (%)</label>
               <input
                 type="number"
                 value={propertyDetails.ownershipPercentage || 100}
@@ -110,7 +110,7 @@ export const OtherInvestmentsForm: React.FC<OtherInvestmentsFormProps> = ({
             </div>
 
             <div className="space-y-1 sm:space-y-1.5">
-              <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Co-owner Name (if any)</label>
+              <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Co-owner Name (if any)</label>
               <input
                 type="text"
                 value={propertyDetails.coOwner || ''}
@@ -121,7 +121,7 @@ export const OtherInvestmentsForm: React.FC<OtherInvestmentsFormProps> = ({
             </div>
 
             <div className="space-y-1 sm:space-y-1.5 sm:col-span-2">
-              <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Area (sq.ft)</label>
+              <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Area (sq.ft)</label>
               <input
                 type="number"
                 value={propertyDetails.areaSqft || ''}
@@ -139,13 +139,13 @@ export const OtherInvestmentsForm: React.FC<OtherInvestmentsFormProps> = ({
             <div className="flex items-center gap-2">
               <DollarSign size={16} className="text-emerald-700 shrink-0" />
               <div>
-                <h3 className="text-[10px] sm:text-xs font-bold text-emerald-900 uppercase tracking-wider">Rental Income Integration</h3>
-                <p className="text-[9px] sm:text-[10px] text-emerald-700 font-medium">Link this property to Income & Cash Flow</p>
+                <h3 className="text-2xs sm:text-xs font-bold text-emerald-900 uppercase tracking-wider">Rental Income Integration</h3>
+                <p className="text-2xs text-emerald-700 font-medium">Link this property to Income & Cash Flow</p>
               </div>
             </div>
 
             <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-              <span className="text-[10px] sm:text-xs font-bold text-slate-700">Rental?</span>
+              <span className="text-2xs sm:text-xs font-bold text-slate-700">Rental?</span>
               <button
                 type="button"
                 onClick={() => setPropertyDetails(prev => ({ ...prev, isRental: !prev.isRental }))}
@@ -167,7 +167,7 @@ export const OtherInvestmentsForm: React.FC<OtherInvestmentsFormProps> = ({
           {propertyDetails.isRental && (
             <div className="pt-2.5 sm:pt-3 border-t border-emerald-200/60 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 animate-in fade-in zoom-in-95">
               <div className="space-y-1 sm:space-y-1.5">
-                <label className="text-[10px] sm:text-[11px] font-bold text-emerald-900 uppercase tracking-wider">Monthly Rental Income ({currency})</label>
+                <label className="text-2xs font-bold text-emerald-900 uppercase tracking-wider">Monthly Rental Income ({currency})</label>
                 <input
                   type="number"
                   value={propertyDetails.monthlyRentalIncome || ''}
@@ -181,7 +181,7 @@ export const OtherInvestmentsForm: React.FC<OtherInvestmentsFormProps> = ({
               </div>
 
               <div className="space-y-1 sm:space-y-1.5">
-                <label className="text-[10px] sm:text-[11px] font-bold text-emerald-900 uppercase tracking-wider">Annual Rental Income ({currency})</label>
+                <label className="text-2xs font-bold text-emerald-900 uppercase tracking-wider">Annual Rental Income ({currency})</label>
                 <input
                   type="number"
                   value={propertyDetails.annualRentalIncome || ''}
@@ -192,7 +192,7 @@ export const OtherInvestmentsForm: React.FC<OtherInvestmentsFormProps> = ({
               </div>
 
               <div className="space-y-1 sm:space-y-1.5">
-                <label className="text-[10px] sm:text-[11px] font-bold text-emerald-900 uppercase tracking-wider">Tenant Since</label>
+                <label className="text-2xs font-bold text-emerald-900 uppercase tracking-wider">Tenant Since</label>
                 <input
                   type="date"
                   value={propertyDetails.tenantSince || ''}
@@ -202,12 +202,12 @@ export const OtherInvestmentsForm: React.FC<OtherInvestmentsFormProps> = ({
               </div>
 
               <div className="flex items-center justify-between sm:col-span-2 pt-1.5">
-                <span className="text-[10px] sm:text-xs font-bold text-emerald-900">Auto-create Recurring Rental Income?</span>
+                <span className="text-2xs sm:text-xs font-bold text-emerald-900">Auto-create Recurring Rental Income?</span>
                 <button
                   type="button"
                   onClick={() => setPropertyDetails(prev => ({ ...prev, recurringIncomeEnabled: !prev.recurringIncomeEnabled }))}
                   className={cn(
-                    'px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[10px] sm:text-xs font-bold transition-all cursor-pointer',
+                    'px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg text-2xs sm:text-xs font-bold transition-all cursor-pointer',
                     propertyDetails.recurringIncomeEnabled
                       ? 'bg-emerald-600 text-white shadow-xs'
                       : 'bg-white text-slate-700 border border-slate-300'
@@ -226,13 +226,13 @@ export const OtherInvestmentsForm: React.FC<OtherInvestmentsFormProps> = ({
             <div className="flex items-center gap-2">
               <ShieldCheck size={16} className="text-indigo-700 shrink-0" />
               <div>
-                <h3 className="text-[10px] sm:text-xs font-bold text-indigo-900 uppercase tracking-wider">Property Loan Integration</h3>
-                <p className="text-[9px] sm:text-[10px] text-indigo-700 font-medium">Link this property to a Home Loan in Loans Module</p>
+                <h3 className="text-2xs sm:text-xs font-bold text-indigo-900 uppercase tracking-wider">Property Loan Integration</h3>
+                <p className="text-2xs text-indigo-700 font-medium">Link this property to a Home Loan in Loans Module</p>
               </div>
             </div>
 
             <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-              <span className="text-[10px] sm:text-xs font-bold text-slate-700">Financed?</span>
+              <span className="text-2xs sm:text-xs font-bold text-slate-700">Financed?</span>
               <button
                 type="button"
                 onClick={() => setPropertyDetails(prev => ({ ...prev, isFinanced: !prev.isFinanced }))}
@@ -254,7 +254,7 @@ export const OtherInvestmentsForm: React.FC<OtherInvestmentsFormProps> = ({
           {propertyDetails.isFinanced && (
             <div className="pt-2.5 sm:pt-3 border-t border-indigo-200/60 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 animate-in fade-in zoom-in-95">
               <div className="space-y-1 sm:space-y-1.5">
-                <label className="text-[10px] sm:text-[11px] font-bold text-indigo-900 uppercase tracking-wider">Mortgage Bank / Institution</label>
+                <label className="text-2xs font-bold text-indigo-900 uppercase tracking-wider">Mortgage Bank / Institution</label>
                 <input
                   type="text"
                   value={propertyDetails.bankName || ''}
@@ -265,7 +265,7 @@ export const OtherInvestmentsForm: React.FC<OtherInvestmentsFormProps> = ({
               </div>
 
               <div className="space-y-1 sm:space-y-1.5">
-                <label className="text-[10px] sm:text-[11px] font-bold text-indigo-900 uppercase tracking-wider">Home Loan Amount ({currency})</label>
+                <label className="text-2xs font-bold text-indigo-900 uppercase tracking-wider">Home Loan Amount ({currency})</label>
                 <input
                   type="number"
                   value={propertyDetails.loanAmount || ''}
@@ -276,7 +276,7 @@ export const OtherInvestmentsForm: React.FC<OtherInvestmentsFormProps> = ({
               </div>
 
               <div className="space-y-1 sm:space-y-1.5">
-                <label className="text-[10px] sm:text-[11px] font-bold text-indigo-900 uppercase tracking-wider">Interest Rate (%)</label>
+                <label className="text-2xs font-bold text-indigo-900 uppercase tracking-wider">Interest Rate (%)</label>
                 <input
                   type="number"
                   value={propertyDetails.interestRate || ''}
@@ -287,7 +287,7 @@ export const OtherInvestmentsForm: React.FC<OtherInvestmentsFormProps> = ({
               </div>
 
               <div className="space-y-1 sm:space-y-1.5">
-                <label className="text-[10px] sm:text-[11px] font-bold text-indigo-900 uppercase tracking-wider">Loan Start Date</label>
+                <label className="text-2xs font-bold text-indigo-900 uppercase tracking-wider">Loan Start Date</label>
                 <input
                   type="date"
                   value={propertyDetails.loanDate || formData.date || ''}
@@ -304,12 +304,12 @@ export const OtherInvestmentsForm: React.FC<OtherInvestmentsFormProps> = ({
           <div className="flex items-center justify-between border-b border-slate-200/60 pb-2.5">
             <div className="flex items-center gap-2">
               <Paperclip size={15} className="text-slate-600" />
-              <h3 className="text-[10px] sm:text-xs font-bold text-slate-700 uppercase tracking-wider">Property Documents (Optional)</h3>
+              <h3 className="text-2xs sm:text-xs font-bold text-slate-700 uppercase tracking-wider">Property Documents (Optional)</h3>
             </div>
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] sm:text-xs font-bold transition-all shadow-xs cursor-pointer"
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-2xs sm:text-xs font-bold transition-all shadow-xs cursor-pointer"
             >
               <Upload size={13} /> Upload
             </button>
@@ -332,7 +332,7 @@ export const OtherInvestmentsForm: React.FC<OtherInvestmentsFormProps> = ({
                     <FileText size={15} className="text-indigo-600 shrink-0" />
                     <div className="min-w-0">
                       <p className="text-xs font-bold text-slate-800 truncate">{doc.documentName}</p>
-                      <p className="text-[9px] sm:text-[10px] text-slate-400 uppercase font-semibold">{doc.documentType.replace('_', ' ')}</p>
+                      <p className="text-2xs text-slate-400 uppercase font-semibold">{doc.documentType.replace('_', ' ')}</p>
                     </div>
                   </div>
                   <button
@@ -347,7 +347,7 @@ export const OtherInvestmentsForm: React.FC<OtherInvestmentsFormProps> = ({
             </div>
           ) : (
             <div className="text-center py-3.5 border-2 border-dashed border-slate-200/80 rounded-xl">
-              <p className="text-[10px] sm:text-xs font-medium text-slate-400">Sale Deed, Tax Receipt, Valuation Reports</p>
+              <p className="text-2xs sm:text-xs font-medium text-slate-400">Sale Deed, Tax Receipt, Valuation Reports</p>
             </div>
           )}
         </div>
@@ -360,12 +360,12 @@ export const OtherInvestmentsForm: React.FC<OtherInvestmentsFormProps> = ({
       <div className="space-y-3 sm:space-y-4 bg-slate-50/80 border border-slate-200/80 p-3.5 sm:p-5 rounded-2xl">
         <div className="flex items-center gap-2 border-b border-slate-200/60 pb-2.5">
           <Building2 size={15} className="text-emerald-600" />
-          <h3 className="text-[10px] sm:text-xs font-bold text-slate-700 uppercase tracking-wider">Business Investment Details</h3>
+          <h3 className="text-2xs sm:text-xs font-bold text-slate-700 uppercase tracking-wider">Business Investment Details</h3>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <div className="space-y-1 sm:space-y-1.5">
-            <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Business Name</label>
+            <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Business Name</label>
             <input
               type="text"
               value={businessDetails.businessName || formData.name || ''}
@@ -380,7 +380,7 @@ export const OtherInvestmentsForm: React.FC<OtherInvestmentsFormProps> = ({
           </div>
 
           <div className="space-y-1 sm:space-y-1.5">
-            <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Business Type / Industry</label>
+            <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Business Type / Industry</label>
             <input
               type="text"
               value={businessDetails.businessType || ''}
@@ -391,7 +391,7 @@ export const OtherInvestmentsForm: React.FC<OtherInvestmentsFormProps> = ({
           </div>
 
           <div className="space-y-1 sm:space-y-1.5">
-            <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Ownership (%)</label>
+            <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Ownership (%)</label>
             <input
               type="number"
               value={businessDetails.ownershipPercentage || ''}
@@ -403,7 +403,7 @@ export const OtherInvestmentsForm: React.FC<OtherInvestmentsFormProps> = ({
           </div>
 
           <div className="space-y-1 sm:space-y-1.5">
-            <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Estimated Current Value ({currency})</label>
+            <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Estimated Current Value ({currency})</label>
             <input
               type="number"
               value={businessDetails.estimatedValue || formData.currentPrice || ''}
@@ -418,7 +418,7 @@ export const OtherInvestmentsForm: React.FC<OtherInvestmentsFormProps> = ({
           </div>
 
           <div className="space-y-1 sm:space-y-1.5">
-            <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Annual Revenue ({currency})</label>
+            <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Annual Revenue ({currency})</label>
             <input
               type="number"
               value={businessDetails.annualRevenue || ''}
@@ -429,7 +429,7 @@ export const OtherInvestmentsForm: React.FC<OtherInvestmentsFormProps> = ({
           </div>
 
           <div className="space-y-1 sm:space-y-1.5">
-            <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Annual Profit ({currency})</label>
+            <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Annual Profit ({currency})</label>
             <input
               type="number"
               value={businessDetails.annualProfit || ''}
@@ -440,7 +440,7 @@ export const OtherInvestmentsForm: React.FC<OtherInvestmentsFormProps> = ({
           </div>
 
           <div className="space-y-1 sm:space-y-1.5">
-            <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">GSTIN / Registration No. (Optional)</label>
+            <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">GSTIN / Registration No. (Optional)</label>
             <input
               type="text"
               value={businessDetails.gstNumber || ''}
@@ -451,7 +451,7 @@ export const OtherInvestmentsForm: React.FC<OtherInvestmentsFormProps> = ({
           </div>
 
           <div className="space-y-1 sm:space-y-1.5">
-            <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Business PAN (Optional)</label>
+            <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Business PAN (Optional)</label>
             <input
               type="text"
               value={businessDetails.panNumber || ''}
@@ -468,7 +468,7 @@ export const OtherInvestmentsForm: React.FC<OtherInvestmentsFormProps> = ({
   return (
     <div className="space-y-3 sm:space-y-4 bg-slate-50/80 border border-slate-200/80 p-3.5 sm:p-5 rounded-2xl">
       <div className="space-y-1 sm:space-y-1.5">
-        <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Investment Name</label>
+        <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Investment Name</label>
         <input
           type="text"
           value={formData.name || ''}

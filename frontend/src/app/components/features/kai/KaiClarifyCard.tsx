@@ -21,7 +21,7 @@ export const KaiClarifyCard: React.FC<Props> = ({ action, currency, onAnswer, on
       data-testid="kai-clarify-card"
     >
       <div className="flex items-center justify-between gap-2">
-        <p className="flex items-center gap-1.5 text-[11px] sm:text-xs font-black uppercase tracking-wider text-purple-700">
+        <p className="flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-purple-700">
           <Sparkles size={13} /> Quick question
         </p>
         <button

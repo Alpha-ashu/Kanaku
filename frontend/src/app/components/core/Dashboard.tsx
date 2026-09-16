@@ -4,10 +4,10 @@ import { PageHeader } from '@/app/components/ui/PageHeader';
 import {
  TrendingUp, CreditCard, Wallet, Banknote, Smartphone,
  ArrowUpRight, ArrowDownLeft, Target, TrendingDown,
- AlertCircle, Calendar, Users, BarChart3, ChevronRight,
+ AlertCircle, Calendar, Users, BarChart3, ChevronRight, ChevronLeft,
  Clock, CheckCircle2, AlertTriangle, BadgeDollarSign,
  HandCoins, Activity, Landmark, Receipt, Sparkles,
- Eye, EyeOff
+ Eye, EyeOff, Wifi, X
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Card } from '@/app/components/ui/card';
@@ -121,6 +121,25 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
     return accounts.filter(a => a.type === activeTab);
   }, [accounts, activeTab]);
 
+  const [selectedAccountId, setSelectedAccountId] = useState<number | null>(null);
+  const [showAllTransactions, setShowAllTransactions] = useState(false);
+
+  // Auto-select first account when filteredAccounts changes
+  useEffect(() => {
+    if (filteredAccounts.length > 0) {
+      if (selectedAccountId === null || !filteredAccounts.find(a => a.id === selectedAccountId)) {
+        setSelectedAccountId(filteredAccounts[0].id!);
+      }
+    } else {
+      setSelectedAccountId(null);
+    }
+  }, [filteredAccounts]);
+
+  const selectedAccount = useMemo(() => {
+    if (!selectedAccountId) return null;
+    return accounts.find((a) => a.id === selectedAccountId) || null;
+  }, [accounts, selectedAccountId]);
+
   const filterReferenceDate = useMemo(() => {
     if (transactions.length === 0) return new Date();
     return transactions.reduce((latest, transaction) => {
@@ -161,7 +180,19 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
     };
   }, [accounts, timeFilteredTransactions]);
 
-  const recentTransactions = useMemo(() => filteredTransactions.slice(0, 5), [filteredTransactions]);
+  const accountSpecificTransactions = useMemo(() => {
+    if (!selectedAccountId) return [];
+    return filteredTransactions.filter(
+      (t) => t.accountId === selectedAccountId || t.transferToAccountId === selectedAccountId
+    );
+  }, [filteredTransactions, selectedAccountId]);
+
+  const recentTransactions = useMemo(() => {
+    if (!selectedAccountId || showAllTransactions) {
+      return filteredTransactions.slice(0, 5);
+    }
+    return accountSpecificTransactions.slice(0, 5);
+  }, [filteredTransactions, selectedAccountId, showAllTransactions, accountSpecificTransactions]);
 
   const activeGoals = useMemo(() => goals.filter(g => !g.deletedAt && g.currentAmount < g.targetAmount).slice(0, 3), [goals]);
 
@@ -370,35 +401,132 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
     });
   }, [hideBalances]);
 
-  // Accounts & Wallets Carousel state for mobile single-card view & pagination dots
-  const accountsCarouselRef = useRef<HTMLDivElement>(null);
-  const [activeAccountIndex, setActiveAccountIndex] = useState(0);
-
-  const handleAccountsScroll = useCallback(() => {
-    const el = accountsCarouselRef.current;
-    if (!el) return;
-    const scrollLeft = el.scrollLeft;
-    const cardWidth = el.offsetWidth;
-    if (cardWidth > 0) {
-      const newIndex = Math.round(scrollLeft / cardWidth);
-      setActiveAccountIndex(Math.max(0, Math.min(filteredAccounts.length - 1, newIndex)));
-    }
-  }, [filteredAccounts.length]);
-
-  const scrollToAccount = useCallback((index: number) => {
-    const el = accountsCarouselRef.current;
-    if (!el) return;
-    const cardWidth = el.offsetWidth;
-    el.scrollTo({ left: index * cardWidth, behavior: 'smooth' });
-    setActiveAccountIndex(index);
-  }, []);
+  // Desktop vs Mobile detection matching Accounts.tsx
+  const [isDesktop, setIsDesktop] = useState(false);
 
   useEffect(() => {
-    setActiveAccountIndex(0);
-    if (accountsCarouselRef.current) {
-      accountsCarouselRef.current.scrollLeft = 0;
+    const mediaQuery = window.matchMedia('(min-width: 1024px)');
+    setIsDesktop(mediaQuery.matches);
+    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener('change', handler);
+      return () => mediaQuery.removeEventListener('change', handler);
+    } else {
+      mediaQuery.addListener(handler);
+      return () => mediaQuery.removeListener(handler);
+    }
+  }, []);
+
+  // Accounts & Wallets Carousel refs and scroll handling
+  const desktopCarouselRef = useRef<HTMLDivElement>(null);
+  const mobileCarouselRef = useRef<HTMLDivElement>(null);
+  const desktopCardRefs = useRef<Record<number, HTMLDivElement | null>>({});
+  const mobileCardRefs = useRef<Record<number, HTMLDivElement | null>>({});
+  const isClickScrolling = useRef(false);
+  const selectedAccountIdRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    selectedAccountIdRef.current = selectedAccountId;
+  }, [selectedAccountId]);
+
+  useEffect(() => {
+    if (desktopCarouselRef.current) {
+      desktopCarouselRef.current.scrollLeft = 0;
+    }
+    if (mobileCarouselRef.current) {
+      mobileCarouselRef.current.scrollLeft = 0;
     }
   }, [activeTab]);
+
+  // Desktop center-detection scroll listener
+  useEffect(() => {
+    const carousel = desktopCarouselRef.current;
+    if (!carousel || !isDesktop) return;
+
+    const handleScroll = () => {
+      if (isClickScrolling.current) return;
+      const center = carousel.scrollLeft + carousel.clientWidth / 2;
+      let closest: { id: number; dist: number } | null = null;
+      for (const account of filteredAccounts) {
+        if (!account.id) continue;
+        const el = desktopCardRefs.current[account.id];
+        if (!el) continue;
+        const dist = Math.abs((el.offsetLeft + el.offsetWidth / 2) - center);
+        if (!closest || dist < closest.dist) {
+          closest = { id: account.id, dist };
+        }
+      }
+      if (closest && closest.id !== selectedAccountIdRef.current) {
+        setSelectedAccountId(closest.id);
+      }
+    };
+
+    carousel.addEventListener('scroll', handleScroll, { passive: true });
+    const t = setTimeout(handleScroll, 150);
+    return () => {
+      carousel.removeEventListener('scroll', handleScroll);
+      clearTimeout(t);
+    };
+  }, [filteredAccounts, isDesktop]);
+
+  // Mobile index-based scroll listener (stride = clientWidth)
+  useEffect(() => {
+    const carousel = mobileCarouselRef.current;
+    if (!carousel || isDesktop) return;
+
+    const handleMobileScroll = () => {
+      if (isClickScrolling.current) return;
+      const stride = carousel.clientWidth;
+      if (stride === 0) return;
+      const idx = Math.round(carousel.scrollLeft / stride);
+      const clamped = Math.max(0, Math.min(filteredAccounts.length - 1, idx));
+      const account = filteredAccounts[clamped];
+      if (account && account.id && account.id !== selectedAccountIdRef.current) {
+        setSelectedAccountId(account.id);
+      }
+    };
+
+    carousel.addEventListener('scroll', handleMobileScroll, { passive: true });
+    const t = setTimeout(handleMobileScroll, 150);
+    return () => {
+      carousel.removeEventListener('scroll', handleMobileScroll);
+      clearTimeout(t);
+    };
+  }, [filteredAccounts, isDesktop]);
+
+  const handleCardClick = useCallback((id: number) => {
+    isClickScrolling.current = true;
+    setSelectedAccountId(id);
+    const index = filteredAccounts.findIndex(a => a.id === id);
+
+    if (isDesktop) {
+      const cardEl = desktopCardRefs.current[id];
+      if (cardEl) {
+        cardEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      }
+    } else {
+      const mobileCarousel = mobileCarouselRef.current;
+      if (mobileCarousel && index >= 0) {
+        mobileCarousel.scrollTo({ left: index * mobileCarousel.clientWidth, behavior: 'smooth' });
+      }
+    }
+
+    setTimeout(() => {
+      isClickScrolling.current = false;
+    }, 700);
+  }, [filteredAccounts, isDesktop]);
+
+  const scrollDirection = useCallback((dir: 'left' | 'right') => {
+    if (filteredAccounts.length <= 1) return;
+    const currentIndex = filteredAccounts.findIndex(a => a.id === selectedAccountId);
+    let nextIndex = dir === 'left' ? currentIndex - 1 : currentIndex + 1;
+    if (nextIndex < 0) nextIndex = 0;
+    if (nextIndex >= filteredAccounts.length) nextIndex = filteredAccounts.length - 1;
+    const nextAccount = filteredAccounts[nextIndex];
+    if (nextAccount && nextAccount.id) {
+      handleCardClick(nextAccount.id);
+    }
+  }, [filteredAccounts, selectedAccountId, handleCardClick]);
 
   const SectionHeader = ({ title, onViewAll, viewLabel = 'View All', extra }: { title: string; onViewAll?: () => void; viewLabel?: string; extra?: React.ReactNode }) => (
     <div className="flex items-center justify-between mb-3 px-1">
@@ -486,7 +614,7 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
                   <span className="text-xs sm:text-sm font-black leading-tight text-slate-900 truncate max-w-[78px]">
                     {formatCurrency(stats.monthlyExpense)}
                   </span>
-                  <span className="mt-0.5 text-[9px] sm:text-[10px] font-medium text-slate-400 truncate max-w-[78px]">
+                  <span className="mt-0.5 text-2xs font-medium text-slate-400 truncate max-w-[78px]">
                     {stats.monthlyIncome > 0 ? `of ${formatCurrency(stats.monthlyIncome)}` : 'Expenses'}
                   </span>
                 </div>
@@ -506,7 +634,7 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
                 <span className="text-xs sm:text-base font-black text-slate-900 tracking-tight">
                   {formatCurrency(stats.monthlyExpense)}
                 </span>
-                <span className="text-[10px] sm:text-xs font-medium text-slate-400 mb-1.5 sm:mb-2">Expenses</span>
+                <span className="text-2xs sm:text-xs font-medium text-slate-400 mb-1.5 sm:mb-2">Expenses</span>
                 <div className="relative flex h-[38px] w-[38px] sm:h-[44px] sm:w-[44px] items-center justify-center">
                   <Ring
                     size={42}
@@ -528,7 +656,7 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
                 <span className="text-xs sm:text-base font-black text-slate-900 tracking-tight">
                   {formatCurrency(stats.monthlyIncome)}
                 </span>
-                <span className="text-[10px] sm:text-xs font-medium text-slate-400 mb-1.5 sm:mb-2">Income</span>
+                <span className="text-2xs sm:text-xs font-medium text-slate-400 mb-1.5 sm:mb-2">Income</span>
                 <div className="relative flex h-[38px] w-[38px] sm:h-[44px] sm:w-[44px] items-center justify-center">
                   <Ring
                     size={42}
@@ -550,7 +678,7 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
                 <span className="text-xs sm:text-base font-black text-slate-900 tracking-tight">
                   {formatCurrency(netCashflow)}
                 </span>
-                <span className="text-[10px] sm:text-xs font-medium text-slate-400 mb-1.5 sm:mb-2">Cashflow</span>
+                <span className="text-2xs sm:text-xs font-medium text-slate-400 mb-1.5 sm:mb-2">Cashflow</span>
                 <div className="relative flex h-[38px] w-[38px] sm:h-[44px] sm:w-[44px] items-center justify-center">
                   <Ring
                     size={42}
@@ -570,17 +698,17 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
         {/* Quick summary stats strip: Total Assets, Active Accounts, Savings Rate */}
         <div className="grid grid-cols-3 gap-2 sm:gap-3">
           <div className="px-3 py-2.5 rounded-2xl bg-white border border-slate-100/80 shadow-[0_6px_20px_-4px_rgba(112,144,176,0.06)] text-center">
-            <span className="font-bold text-slate-400 block text-[9px] sm:text-[10px] uppercase tracking-wider">Total Assets</span>
+            <span className="font-bold text-slate-400 block text-2xs uppercase tracking-wider">Total Assets</span>
             <strong className="text-slate-900 font-extrabold text-xs sm:text-sm">
               {formatCurrency(stats.totalBalance + investmentStats.currentValue)}
             </strong>
           </div>
           <div className="px-3 py-2.5 rounded-2xl bg-white border border-slate-100/80 shadow-[0_6px_20px_-4px_rgba(112,144,176,0.06)] text-center">
-            <span className="font-bold text-slate-400 block text-[9px] sm:text-[10px] uppercase tracking-wider">Active Accounts</span>
+            <span className="font-bold text-slate-400 block text-2xs uppercase tracking-wider">Active Accounts</span>
             <strong className="text-slate-900 font-extrabold text-xs sm:text-sm">{accounts.length}</strong>
           </div>
           <div className="px-3 py-2.5 rounded-2xl bg-white border border-slate-100/80 shadow-[0_6px_20px_-4px_rgba(112,144,176,0.06)] text-center">
-            <span className="font-bold text-slate-400 block text-[9px] sm:text-[10px] uppercase tracking-wider">Savings Rate</span>
+            <span className="font-bold text-slate-400 block text-2xs uppercase tracking-wider">Savings Rate</span>
             <strong className={cn("font-extrabold text-xs sm:text-sm", stats.savingsRate >= 0 ? "text-emerald-600" : "text-rose-600")}>
               {stats.savingsRate}%
             </strong>
@@ -631,15 +759,15 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
               </div>
               <div className="grid grid-cols-3 gap-4 sm:gap-6 text-center sm:text-right pt-3 sm:pt-0 border-t sm:border-t-0 border-slate-100">
                 <div>
-                  <p className="text-[10px] uppercase font-bold text-slate-400">Total Tax</p>
+                  <p className="text-2xs uppercase font-bold text-slate-400">Total Tax</p>
                   <p className="text-sm sm:text-base font-black text-amber-600">{formatCurrency(taxSummary.totalTax)}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] uppercase font-bold text-slate-400">This Month</p>
+                  <p className="text-2xs uppercase font-bold text-slate-400">This Month</p>
                   <p className="text-sm sm:text-base font-black text-slate-900">{formatCurrency(taxSummary.monthlyTax)}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] uppercase font-bold text-slate-400">This Week</p>
+                  <p className="text-2xs uppercase font-bold text-slate-400">This Week</p>
                   <p className="text-sm sm:text-base font-black text-slate-900">{formatCurrency(taxSummary.weeklyTax)}</p>
                 </div>
               </div>
@@ -693,118 +821,333 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
             </div>
 
             {filteredAccounts.length > 0 ? (
-              <div>
-                <div
-                  ref={accountsCarouselRef}
-                  onScroll={handleAccountsScroll}
-                  className="flex overflow-x-auto pb-2 pt-1 snap-x snap-mandatory scrollbar-none scroll-smooth touch-scroll w-full -mx-1 px-1"
-                >
-                  {filteredAccounts.map((account) => {
-                    const style = getCardStyle(account);
-                    const accountKey = String(account.id ?? account.name);
-                    const isHidden = accountBalanceOverrides[accountKey] !== undefined
-                      ? accountBalanceOverrides[accountKey]
-                      : hideBalances;
-                    return (
-                      <div
-                        key={account.id ?? account.name}
-                        className="w-full min-w-full shrink-0 snap-center px-0.5"
-                      >
-                        <Card
-                          className={cn(
-                            "p-5 sm:p-6 w-full min-h-[160px] sm:min-h-[175px] hover:shadow-2xl transition-all cursor-pointer relative overflow-hidden group border-none text-white rounded-[24px] sm:rounded-[28px] flex flex-col justify-between",
-                            style.bgClass
-                          )}
-                          style={style.background ? { backgroundColor: style.background } : {}}
-                          onClick={() => setCurrentPage?.('accounts')}
-                        >
-                          {/* Glow & subtle overlay */}
-                          <div className={cn("absolute -top-16 -right-16 w-36 h-36 rounded-full blur-3xl opacity-30", style.glow)} />
-                          <div className="absolute top-1/2 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-
-                          {/* Top row */}
-                          <div className="relative z-10 flex items-center justify-between mb-4">
-                            <div className="flex items-center gap-2.5">
-                              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center bg-white/15 backdrop-blur-md border border-white/20 text-white shadow-sm">
-                                {account.type === 'bank' && <Landmark size={18} />}
-                                {account.type === 'card' && <CreditCard size={18} />}
-                                {account.type === 'wallet' && <Wallet size={18} />}
-                                {account.type === 'cash' && <Banknote size={18} />}
-                              </div>
-                              <div className="drop-shadow-md rounded-lg overflow-hidden">
-                                {getBankCardLogo(account.name, true, 'sm')}
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                              {account.subType && (
-                                <div className="scale-90 opacity-90">
-                                  <CardNetworkLogo network={account.subType} />
-                                </div>
-                              )}
-                              {!account.isActive && (
-                                <span className="text-[9px] font-bold text-white/60 bg-white/10 px-2 py-0.5 rounded-full backdrop-blur-sm border border-white/10">
-                                  INACTIVE
-                                </span>
-                              )}
-                            </div>
-                          </div>
-
-                          {/* Bottom info */}
-                          <div className="relative z-10 space-y-1.5 mt-auto">
-                            <h4 className="text-sm sm:text-base font-semibold text-white/95 tracking-tight leading-snug truncate">
-                              {account.name}
-                            </h4>
-                            <div className="flex items-center justify-between pt-0.5">
-                              <div className="flex items-center gap-2">
-                                <p className="text-lg sm:text-xl font-bold text-white tracking-tight">
-                                  {isHidden ? (
-                                    <span className="tracking-wider select-none font-semibold text-white/90">****</span>
-                                  ) : (
-                                    formatCurrencyAmount(account.balance || 0, account.currency ?? currency)
-                                  )}
-                                </p>
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    toggleAccountBalance(accountKey);
-                                  }}
-                                  className="p-1 rounded-full text-white/60 hover:text-white hover:bg-white/15 active:scale-95 transition-all cursor-pointer"
-                                  title={isHidden ? "Show balance" : "Hide balance"}
-                                  aria-label={isHidden ? "Show balance" : "Hide balance"}
-                                >
-                                  {isHidden ? <Eye size={14} /> : <EyeOff size={14} />}
-                                </button>
-                              </div>
-                              <p className="text-[10px] font-bold text-white/80 uppercase tracking-wider bg-white/15 px-2.5 py-1 rounded-lg backdrop-blur-sm border border-white/10">
-                                {account.type}
-                              </p>
-                            </div>
-                          </div>
-                        </Card>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* Pagination Dots below card when multiple accounts exist */}
-                {filteredAccounts.length > 1 && (
-                  <div className="flex items-center justify-center gap-1.5 mt-3">
-                    {filteredAccounts.map((acc, idx) => (
+              <div className="w-full">
+                {isDesktop ? (
+                  /* Desktop Center-Focused Multi-Card Carousel with Chevrons */
+                  <div className="relative group">
+                    {/* Previous Button */}
+                    {filteredAccounts.length > 1 && (
                       <button
-                        key={acc.id ?? idx}
                         type="button"
-                        onClick={() => scrollToAccount(idx)}
-                        className={cn(
-                          "transition-all duration-300 rounded-full cursor-pointer",
-                          idx === activeAccountIndex
-                            ? "w-6 h-2 bg-slate-900 shadow-xs"
-                            : "w-2 h-2 bg-slate-200 hover:bg-slate-300"
-                        )}
-                        aria-label={`Go to account ${idx + 1}`}
-                        title={`Go to account ${idx + 1} (${acc.name})`}
-                      />
-                    ))}
+                        onClick={() => scrollDirection('left')}
+                        disabled={filteredAccounts.findIndex(a => a.id === selectedAccountId) === 0}
+                        className="absolute left-2 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-white/90 hover:bg-white text-slate-800 shadow-lg border border-slate-200/80 flex items-center justify-center transition-all disabled:opacity-0 disabled:pointer-events-none cursor-pointer backdrop-blur-md hover:scale-105 active:scale-95"
+                        aria-label="Previous card"
+                        title="Previous card"
+                      >
+                        <ChevronLeft size={20} />
+                      </button>
+                    )}
+
+                    {/* Next Button */}
+                    {filteredAccounts.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => scrollDirection('right')}
+                        disabled={filteredAccounts.findIndex(a => a.id === selectedAccountId) === filteredAccounts.length - 1}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-white/90 hover:bg-white text-slate-800 shadow-lg border border-slate-200/80 flex items-center justify-center transition-all disabled:opacity-0 disabled:pointer-events-none cursor-pointer backdrop-blur-md hover:scale-105 active:scale-95"
+                        aria-label="Next card"
+                        title="Next card"
+                      >
+                        <ChevronRight size={20} />
+                      </button>
+                    )}
+
+                    {/* Desktop Horizontal Scroll Area */}
+                    <div
+                      ref={desktopCarouselRef}
+                      className="flex gap-4 overflow-x-auto pb-4 pt-1 snap-x snap-mandatory scrollbar-none scroll-smooth touch-scroll [scroll-padding-left:50%] [scroll-padding-right:50%] w-full"
+                    >
+                      {/* Left spacer allows first card to snap to center */}
+                      <div className="shrink-0 w-[calc(50%-210px)] min-w-8" aria-hidden />
+
+                      {filteredAccounts.map((account) => {
+                        const isActive = selectedAccountId === account.id;
+                        const style = getCardStyle(account);
+                        const accountKey = String(account.id ?? account.name);
+                        const isHidden = accountBalanceOverrides[accountKey] !== undefined
+                          ? accountBalanceOverrides[accountKey]
+                          : hideBalances;
+
+                        return (
+                          <div
+                            key={account.id ?? account.name}
+                            ref={(el) => {
+                              if (account.id) desktopCardRefs.current[account.id] = el;
+                            }}
+                            className="snap-center shrink-0 [scroll-snap-align:center] [scroll-snap-stop:always]"
+                          >
+                            <div
+                              className={cn(
+                                "transition-all duration-300 ease-in-out transform",
+                                isActive
+                                  ? "scale-100 opacity-100 shadow-2xl z-10"
+                                  : "scale-90 opacity-50 hover:opacity-75 hover:scale-95 cursor-pointer"
+                              )}
+                            >
+                              <Card
+                                className={cn(
+                                  "w-[420px] h-[230px] rounded-[24px] shrink-0 relative overflow-hidden group border-none text-white flex flex-col justify-between p-5 sm:p-6 transition-all duration-300 cursor-pointer select-none",
+                                  isActive ? "shadow-2xl ring-1 ring-white/20" : "shadow-md",
+                                  style.bgClass
+                                )}
+                                style={style.background ? { backgroundColor: style.background } : {}}
+                                onClick={() => {
+                                  if (account.id) handleCardClick(account.id);
+                                }}
+                              >
+                                {/* Background Glow */}
+                                <div className={cn("absolute -top-16 -right-16 w-36 h-36 rounded-full blur-3xl opacity-30", style.glow)} />
+
+                                {/* Shimmer diagonal lines */}
+                                <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 420 230" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                                  <line x1="-60" y1="330" x2="400" y2="-100" stroke="white" strokeOpacity="0.05" strokeWidth="50" />
+                                  <line x1="60" y1="330" x2="520" y2="-100" stroke="white" strokeOpacity="0.03" strokeWidth="35" />
+                                </svg>
+
+                                {/* Top row */}
+                                <div className="relative z-10 flex items-center justify-between">
+                                  <div className="flex items-center gap-2.5">
+                                    <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center bg-white/15 backdrop-blur-md border border-white/20 text-white shadow-xs">
+                                      {account.type === 'bank' && <Landmark size={18} />}
+                                      {account.type === 'card' && <CreditCard size={18} />}
+                                      {account.type === 'wallet' && <Wallet size={18} />}
+                                      {account.type === 'cash' && <Banknote size={18} />}
+                                    </div>
+                                    <div className="drop-shadow-md rounded-lg overflow-hidden">
+                                      {getBankCardLogo(account.name, true, 'sm')}
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    {account.subType && (
+                                      <div className="scale-90 opacity-90">
+                                        <CardNetworkLogo network={account.subType} />
+                                      </div>
+                                    )}
+                                    {!account.isActive ? (
+                                      <span className="text-2xs font-bold text-white/60 bg-white/10 px-2 py-0.5 rounded-full backdrop-blur-sm border border-white/10">
+                                        INACTIVE
+                                      </span>
+                                    ) : isActive ? (
+                                      <span className="text-2xs font-bold tracking-wider text-emerald-300 border border-emerald-400/40 bg-emerald-500/15 px-2 py-0.5 rounded-full backdrop-blur-sm">
+                                        ACTIVE
+                                      </span>
+                                    ) : null}
+                                  </div>
+                                </div>
+
+                                {/* Middle: EMV Chip & Contactless waves */}
+                                <div className="relative z-10 flex items-center gap-3 my-auto pt-1">
+                                  <div className="w-9 h-6.5 rounded-md bg-gradient-to-br from-amber-200 via-amber-300 to-amber-500 p-0.5 shadow-inner border border-amber-400/40 flex flex-col justify-between overflow-hidden relative opacity-90">
+                                    <div className="absolute inset-0 border border-amber-600/30 rounded-xs m-[2px]" />
+                                    <div className="h-px bg-amber-700/40 w-full mt-1.5" />
+                                    <div className="h-px bg-amber-700/40 w-full mb-1.5" />
+                                  </div>
+                                  <Wifi className="rotate-90 text-white/60" size={16} />
+                                </div>
+
+                                {/* Balance & Account info */}
+                                <div className="relative z-10 space-y-1">
+                                  <p className="text-2xs font-semibold tracking-[0.2em] uppercase text-white/55">
+                                    Current Balance
+                                  </p>
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                      <p className="text-xl sm:text-2xl font-bold text-white tracking-tight leading-none drop-shadow-sm">
+                                        {isHidden ? (
+                                          <span className="tracking-wider select-none font-semibold text-white/90">****</span>
+                                        ) : (
+                                          formatCurrencyAmount(account.balance || 0, account.currency ?? currency)
+                                        )}
+                                      </p>
+                                      <button
+                                        type="button"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          toggleAccountBalance(accountKey);
+                                        }}
+                                        className="p-1 rounded-full text-white/60 hover:text-white hover:bg-white/15 active:scale-95 transition-all cursor-pointer"
+                                        title={isHidden ? "Show balance" : "Hide balance"}
+                                        aria-label={isHidden ? "Show balance" : "Hide balance"}
+                                      >
+                                        {isHidden ? <Eye size={14} /> : <EyeOff size={14} />}
+                                      </button>
+                                    </div>
+                                    <p className="text-2xs font-bold text-white/80 uppercase tracking-wider bg-white/15 px-2.5 py-1 rounded-lg backdrop-blur-sm border border-white/10">
+                                      {account.type}
+                                    </p>
+                                  </div>
+                                  <div className="flex items-center justify-between pt-1">
+                                    <h4 className="text-xs sm:text-sm font-semibold text-white/90 tracking-tight leading-snug truncate max-w-[220px]">
+                                      {account.name}
+                                    </h4>
+                                  </div>
+                                </div>
+                              </Card>
+                            </div>
+                          </div>
+                        );
+                      })}
+
+                      {/* Right spacer allows last card to snap to center */}
+                      <div className="shrink-0 w-[calc(50%-210px)] min-w-8" aria-hidden />
+                    </div>
+                  </div>
+                ) : (
+                  /* Mobile 1-Card-At-A-Time Carousel */
+                  <div
+                    ref={mobileCarouselRef}
+                    className="flex overflow-x-auto pb-3 pt-1 snap-x snap-mandatory scrollbar-none scroll-smooth touch-scroll w-full"
+                  >
+                    {filteredAccounts.map((account) => {
+                      const isActive = selectedAccountId === account.id;
+                      const style = getCardStyle(account);
+                      const accountKey = String(account.id ?? account.name);
+                      const isHidden = accountBalanceOverrides[accountKey] !== undefined
+                        ? accountBalanceOverrides[accountKey]
+                        : hideBalances;
+
+                      return (
+                        <div
+                          key={account.id ?? account.name}
+                          ref={(el) => {
+                            if (account.id) mobileCardRefs.current[account.id] = el;
+                          }}
+                          className="snap-center shrink-0 w-full px-4 [scroll-snap-stop:always]"
+                        >
+                          <div
+                            className={cn(
+                              "transition-all duration-300 ease-in-out",
+                              isActive ? "scale-100 opacity-100" : "scale-95 opacity-70"
+                            )}
+                          >
+                            <Card
+                              className={cn(
+                                "w-full h-[200px] sm:h-[215px] rounded-[24px] sm:rounded-[28px] relative overflow-hidden group border-none text-white flex flex-col justify-between p-5 sm:p-6 transition-all duration-300 cursor-pointer select-none",
+                                isActive ? "shadow-2xl ring-1 ring-white/20" : "shadow-md",
+                                style.bgClass
+                              )}
+                              style={style.background ? { backgroundColor: style.background } : {}}
+                              onClick={() => {
+                                if (account.id) handleCardClick(account.id);
+                              }}
+                            >
+                              {/* Background Glow */}
+                              <div className={cn("absolute -top-16 -right-16 w-36 h-36 rounded-full blur-3xl opacity-30", style.glow)} />
+
+                              {/* Shimmer diagonal lines */}
+                              <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 420 230" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                                <line x1="-60" y1="330" x2="400" y2="-100" stroke="white" strokeOpacity="0.05" strokeWidth="50" />
+                                <line x1="60" y1="330" x2="520" y2="-100" stroke="white" strokeOpacity="0.03" strokeWidth="35" />
+                              </svg>
+
+                              {/* Top row */}
+                              <div className="relative z-10 flex items-center justify-between">
+                                <div className="flex items-center gap-2.5">
+                                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center bg-white/15 backdrop-blur-md border border-white/20 text-white shadow-xs">
+                                    {account.type === 'bank' && <Landmark size={18} />}
+                                    {account.type === 'card' && <CreditCard size={18} />}
+                                    {account.type === 'wallet' && <Wallet size={18} />}
+                                    {account.type === 'cash' && <Banknote size={18} />}
+                                  </div>
+                                  <div className="drop-shadow-md rounded-lg overflow-hidden">
+                                    {getBankCardLogo(account.name, true, 'sm')}
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  {account.subType && (
+                                    <div className="scale-90 opacity-90">
+                                      <CardNetworkLogo network={account.subType} />
+                                    </div>
+                                  )}
+                                  {!account.isActive ? (
+                                    <span className="text-2xs font-bold text-white/60 bg-white/10 px-2 py-0.5 rounded-full backdrop-blur-sm border border-white/10">
+                                      INACTIVE
+                                    </span>
+                                  ) : isActive ? (
+                                    <span className="text-2xs font-bold tracking-wider text-emerald-300 border border-emerald-400/40 bg-emerald-500/15 px-2 py-0.5 rounded-full backdrop-blur-sm">
+                                      ACTIVE
+                                    </span>
+                                  ) : null}
+                                </div>
+                              </div>
+
+                              {/* Middle: EMV Chip & Contactless waves */}
+                              <div className="relative z-10 flex items-center gap-3 my-auto pt-1">
+                                <div className="w-9 h-6.5 rounded-md bg-gradient-to-br from-amber-200 via-amber-300 to-amber-500 p-0.5 shadow-inner border border-amber-400/40 flex flex-col justify-between overflow-hidden relative opacity-90">
+                                  <div className="absolute inset-0 border border-amber-600/30 rounded-xs m-[2px]" />
+                                  <div className="h-px bg-amber-700/40 w-full mt-1.5" />
+                                  <div className="h-px bg-amber-700/40 w-full mb-1.5" />
+                                </div>
+                                <Wifi className="rotate-90 text-white/60" size={16} />
+                              </div>
+
+                              {/* Balance & Account info */}
+                              <div className="relative z-10 space-y-1">
+                                <p className="text-2xs font-semibold tracking-[0.2em] uppercase text-white/55">
+                                  Current Balance
+                                </p>
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-2">
+                                    <p className="text-xl sm:text-2xl font-bold text-white tracking-tight leading-none drop-shadow-sm">
+                                      {isHidden ? (
+                                        <span className="tracking-wider select-none font-semibold text-white/90">****</span>
+                                      ) : (
+                                        formatCurrencyAmount(account.balance || 0, account.currency ?? currency)
+                                      )}
+                                    </p>
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        toggleAccountBalance(accountKey);
+                                      }}
+                                      className="p-1 rounded-full text-white/60 hover:text-white hover:bg-white/15 active:scale-95 transition-all cursor-pointer"
+                                      title={isHidden ? "Show balance" : "Hide balance"}
+                                      aria-label={isHidden ? "Show balance" : "Hide balance"}
+                                    >
+                                      {isHidden ? <Eye size={14} /> : <EyeOff size={14} />}
+                                    </button>
+                                  </div>
+                                  <p className="text-2xs font-bold text-white/80 uppercase tracking-wider bg-white/15 px-2.5 py-1 rounded-lg backdrop-blur-sm border border-white/10">
+                                    {account.type}
+                                  </p>
+                                </div>
+                                <div className="flex items-center justify-between pt-1">
+                                  <h4 className="text-xs sm:text-sm font-semibold text-white/90 tracking-tight leading-snug truncate max-w-[220px]">
+                                    {account.name}
+                                  </h4>
+                                </div>
+                              </div>
+                            </Card>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Pagination Dots */}
+                {filteredAccounts.length > 1 && (
+                  <div className="flex items-center justify-center gap-1.5 mt-2 mb-2">
+                    {filteredAccounts.map((acc, idx) => {
+                      const isActive = selectedAccountId === acc.id;
+                      return (
+                        <button
+                          key={acc.id ?? idx}
+                          type="button"
+                          onClick={() => acc.id && handleCardClick(acc.id)}
+                          className={cn(
+                            "transition-all duration-300 rounded-full cursor-pointer",
+                            isActive
+                              ? "w-7 h-2 bg-slate-900 shadow-xs"
+                              : "w-2 h-2 bg-slate-200 hover:bg-slate-300"
+                          )}
+                          aria-label={`Go to account ${acc.name}`}
+                          title={`Go to account ${acc.name}`}
+                        />
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -819,7 +1162,39 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
         {/* 5. Lower Dashboard Section 2: Recent Transactions (Reference Today's Meals Style) */}
         {visibleFeatures?.transactions !== false && (
           <motion.div {...fadeUp} className="mb-6 lg:mb-8">
-            <SectionHeader title="Recent Transactions" onViewAll={() => setCurrentPage?.('transactions')} />
+            <div className="flex items-center justify-between mb-3 px-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="font-section-title text-slate-900 tracking-tight">Recent Transactions</h3>
+                {selectedAccount && !showAllTransactions && (
+                  <span className="inline-flex items-center gap-1.5 text-2xs font-bold px-2.5 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200/70">
+                    <span>{selectedAccount.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => setShowAllTransactions(true)}
+                      className="hover:text-purple-900 p-0.5 rounded-full hover:bg-purple-100 transition-colors cursor-pointer"
+                      title="Show all transactions"
+                    >
+                      <X size={11} />
+                    </button>
+                  </span>
+                )}
+                {showAllTransactions && selectedAccount && (
+                  <button
+                    type="button"
+                    onClick={() => setShowAllTransactions(false)}
+                    className="text-2xs font-bold text-slate-500 hover:text-purple-600 bg-slate-100 hover:bg-slate-200 px-2.5 py-0.5 rounded-full transition-colors cursor-pointer"
+                  >
+                    Filter by {selectedAccount.name}
+                  </button>
+                )}
+              </div>
+              <button
+                onClick={() => setCurrentPage?.('transactions')}
+                className="text-xs font-bold text-purple-600 hover:text-purple-700 flex items-center gap-1 cursor-pointer transition-colors"
+              >
+                View All <ChevronRight size={14} />
+              </button>
+            </div>
             {recentTransactions.length > 0 ? (
               <Card data-testid="dashboard-card-3" className="divide-y divide-slate-100/90 !p-0 overflow-hidden bg-white rounded-[28px] border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)]">
                 {recentTransactions.map((transaction) => (
@@ -834,7 +1209,7 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
                         {getCategoryCartoonIcon(transaction.category || 'Miscellaneous', 24)}
                       </div>
                       <div>
-                        <p className="font-bold text-slate-900 text-sm sm:text-[15px] leading-snug">
+                        <p className="font-bold text-slate-900 text-sm sm:text-base leading-snug">
                           {transaction.description || transaction.category}
                         </p>
                         <p className="text-xs text-slate-400 font-medium mt-0.5">{transaction.category}</p>
@@ -844,7 +1219,7 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
                       <p className={cn("font-black text-sm sm:text-base tracking-tight", transaction.type === 'income' ? "text-emerald-600" : "text-slate-900")}>
                         {transaction.type === 'income' ? '+' : '-'}{formatCurrency(transaction.amount)}
                       </p>
-                      <p className="text-[11px] text-slate-400 font-medium mt-0.5">
+                      <p className="text-xs text-slate-400 font-medium mt-0.5">
                         {formatLocalDate(transaction.date, 'en-IN', { day: 'numeric', month: 'short' })}
                       </p>
                     </div>
@@ -853,7 +1228,13 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
               </Card>
             ) : (
               <Card data-testid="dashboard-card-4" className="cursor-pointer hover:shadow-md transition-shadow rounded-[28px]" onClick={() => setCurrentPage?.('transactions')}>
-                <EmptyWidget icon={CreditCard} message="No transactions - tap to view activity" />
+                <EmptyWidget
+                  icon={CreditCard}
+                  message={selectedAccount && !showAllTransactions
+                    ? `No recent transactions for ${selectedAccount.name} - tap to view all activity`
+                    : "No transactions - tap to view activity"
+                  }
+                />
               </Card>
             )}
           </motion.div>
@@ -947,7 +1328,7 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
                         <div>
                           <p className="font-bold text-slate-900 text-sm">{event.label}</p>
                           <div className="flex items-center gap-2 mt-0.5">
-                            <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full", timeBadge.cls)}>{timeBadge.label}</span>
+                            <span className={cn("text-2xs font-bold px-2 py-0.5 rounded-full", timeBadge.cls)}>{timeBadge.label}</span>
                             <span className="text-xs text-slate-400 font-medium">
                               {event.date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
                             </span>
@@ -984,37 +1365,37 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
                     <div className="bg-red-50 rounded-2xl p-3">
                       <div className="flex items-center gap-1.5 mb-1">
                         <HandCoins size={14} className="text-red-500" />
-                        <span className="text-[10px] font-bold text-red-500 uppercase tracking-wide">You Owe</span>
+                        <span className="text-2xs font-bold text-red-500 uppercase tracking-wide">You Owe</span>
                       </div>
                       <p className="text-base font-bold text-gray-900">{formatCurrency(groupStats.borrowed)}</p>
-                      <p className="text-[10px] text-gray-400 mt-0.5">Borrowed</p>
+                      <p className="text-2xs text-gray-400 mt-0.5">Borrowed</p>
                     </div>
 
                     <div className="bg-green-50 rounded-2xl p-3">
                       <div className="flex items-center gap-1.5 mb-1">
                         <BadgeDollarSign size={14} className="text-green-500" />
-                        <span className="text-[10px] font-bold text-green-500 uppercase tracking-wide">Owed to You</span>
+                        <span className="text-2xs font-bold text-green-500 uppercase tracking-wide">Owed to You</span>
                       </div>
                       <p className="text-base font-bold text-gray-900">{formatCurrency(groupStats.lent)}</p>
-                      <p className="text-[10px] text-gray-400 mt-0.5">Lent out</p>
+                      <p className="text-2xs text-gray-400 mt-0.5">Lent out</p>
                     </div>
 
                     <div className="bg-amber-50 rounded-2xl p-3">
                       <div className="flex items-center gap-1.5 mb-1">
                         <AlertCircle size={14} className="text-amber-500" />
-                        <span className="text-[10px] font-bold text-amber-500 uppercase tracking-wide">Pending</span>
+                        <span className="text-2xs font-bold text-amber-500 uppercase tracking-wide">Pending</span>
                       </div>
                       <p className="text-base font-bold text-gray-900">{formatCurrency(groupStats.pendingSettlements)}</p>
-                      <p className="text-[10px] text-gray-400 mt-0.5">Unsettled</p>
+                      <p className="text-2xs text-gray-400 mt-0.5">Unsettled</p>
                     </div>
 
                     <div className="bg-blue-50 rounded-2xl p-3">
                       <div className="flex items-center gap-1.5 mb-1">
                         <Users size={14} className="text-blue-500" />
-                        <span className="text-[10px] font-bold text-blue-500 uppercase tracking-wide">Groups</span>
+                        <span className="text-2xs font-bold text-blue-500 uppercase tracking-wide">Groups</span>
                       </div>
                       <p className="text-base font-bold text-gray-900">{groupStats.activeGroups}</p>
-                      <p className="text-[10px] text-gray-400 mt-0.5">Active</p>
+                      <p className="text-2xs text-gray-400 mt-0.5">Active</p>
                     </div>
                   </div>
                   <div className="flex items-center justify-end mt-3 text-xs text-gray-400 gap-1">
@@ -1040,14 +1421,14 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
                     <div className="bg-purple-50 rounded-2xl p-3">
                       <div className="flex items-center gap-1.5 mb-1">
                         <Activity size={14} className="text-purple-600" />
-                        <span className="text-[10px] font-bold text-purple-700 uppercase tracking-wide">Invested</span>
+                        <span className="text-2xs font-bold text-purple-700 uppercase tracking-wide">Invested</span>
                       </div>
                       <p className="text-base font-bold text-slate-900">{formatCurrency(investmentStats.totalInvested)}</p>
                     </div>
                     <div className="bg-indigo-50 rounded-2xl p-3">
                       <div className="flex items-center gap-1.5 mb-1">
                         <BarChart3 size={14} className="text-indigo-600" />
-                        <span className="text-[10px] font-bold text-indigo-700 uppercase tracking-wide">Current Value</span>
+                        <span className="text-2xs font-bold text-indigo-700 uppercase tracking-wide">Current Value</span>
                       </div>
                       <p className="text-base font-bold text-slate-900">{formatCurrency(investmentStats.currentValue)}</p>
                     </div>
@@ -1056,7 +1437,7 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
                         {investmentStats.totalReturns >= 0
                           ? <TrendingUp size={14} className="text-emerald-600" />
                           : <TrendingDown size={14} className="text-red-500" />}
-                        <span className={cn("text-[10px] font-bold uppercase tracking-wide", investmentStats.totalReturns >= 0 ? "text-emerald-700" : "text-red-700")}>Returns</span>
+                        <span className={cn("text-2xs font-bold uppercase tracking-wide", investmentStats.totalReturns >= 0 ? "text-emerald-700" : "text-red-700")}>Returns</span>
                       </div>
                       <p className={cn("text-base font-bold", investmentStats.totalReturns >= 0 ? "text-emerald-700" : "text-red-700")}>
                         {investmentStats.totalReturns >= 0 ? '+' : ''}{formatCurrency(investmentStats.totalReturns)}
@@ -1065,7 +1446,7 @@ export function Dashboard({ setCurrentPage: propSetCurrentPage }: DashboardProps
                     <div className="bg-slate-50 rounded-2xl p-3">
                       <div className="flex items-center gap-1.5 mb-1">
                         <BarChart3 size={14} className="text-slate-500" />
-                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Holdings</span>
+                        <span className="text-2xs font-bold text-slate-500 uppercase tracking-wide">Holdings</span>
                       </div>
                       <p className="text-base font-bold text-slate-900">{investmentStats.count}</p>
                     </div>

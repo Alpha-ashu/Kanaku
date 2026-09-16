@@ -38,16 +38,16 @@ export const KaiReportCard: React.FC<Props> = ({ meta, currency }) => {
 
   return (
     <div className="rounded-[24px] border border-slate-100 bg-white/95 backdrop-blur-md shadow-[0_10px_30px_-8px_rgba(112,144,176,0.22)] p-4 sm:p-5" data-testid="kai-report-card">
-      <p className="text-[11px] font-bold uppercase tracking-wide text-slate-400">{meta.period ? `${meta.period} · ` : ''}Expense report</p>
+      <p className="text-xs font-bold uppercase tracking-wide text-slate-400">{meta.period ? `${meta.period} · ` : ''}Expense report</p>
       <div className="flex items-end justify-between gap-3 mt-1">
         <div>
           <p className="text-2xl font-black text-slate-900 leading-tight">{formatMoney(currency, total)}</p>
-          <p className="text-[11px] font-medium text-slate-500">Total spent{typeof meta.count === 'number' ? ` · ${meta.count} transaction${meta.count === 1 ? '' : 's'}` : ''}</p>
+          <p className="text-xs font-medium text-slate-500">Total spent{typeof meta.count === 'number' ? ` · ${meta.count} transaction${meta.count === 1 ? '' : 's'}` : ''}</p>
         </div>
         {typeof meta.income === 'number' && meta.income > 0 && (
           <div className="text-right">
             <p className="text-sm font-bold text-emerald-600">{formatMoney(currency, meta.income)}</p>
-            <p className="text-[11px] font-medium text-slate-500">Income</p>
+            <p className="text-xs font-medium text-slate-500">Income</p>
           </div>
         )}
       </div>
@@ -61,7 +61,7 @@ export const KaiReportCard: React.FC<Props> = ({ meta, currency }) => {
                 <div className="min-w-0">
                   <div className="flex items-baseline justify-between gap-2">
                     <span className="text-xs font-semibold text-slate-800 truncate">{row.category}</span>
-                    <span className="text-[11px] font-medium text-slate-500 shrink-0">{pct}%</span>
+                    <span className="text-xs font-medium text-slate-500 shrink-0">{pct}%</span>
                   </div>
                   <div className="mt-1 h-2 rounded-full overflow-hidden" style={{ background: TRACK }} aria-hidden="true">
                     <div

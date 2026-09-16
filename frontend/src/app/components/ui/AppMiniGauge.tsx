@@ -79,12 +79,12 @@ export const AppMiniGauge: React.FC<AppMiniGaugeProps> = ({
         <p className="text-base sm:text-lg font-black text-slate-900 tracking-tight leading-tight truncate">
           {value}
         </p>
-        <p className="text-[11px] sm:text-xs font-medium text-slate-400 truncate mt-0.5">
+        <p className="text-xs font-medium text-slate-400 truncate mt-0.5">
           {label}
         </p>
         {subLabel && (
           <span
-            className="inline-block mt-1 px-2 py-0.5 text-[10px] font-bold rounded-full"
+            className="inline-block mt-1 px-2 py-0.5 text-2xs font-bold rounded-full"
             style={{ backgroundColor: config.badgeBg, color: config.badgeText }}
           >
             {subLabel}

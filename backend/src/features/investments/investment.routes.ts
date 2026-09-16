@@ -4,6 +4,7 @@ import { pinGate } from '../../middleware/pinGate';
 import { validateBody, validateParams } from '../../middleware/validate';
 import { requireFeature } from '../../middleware/featureGate';
 import { idempotency } from '../../middleware/idempotency';
+import { duplicateSubmitGuard } from '../../middleware/duplicateSubmitGuard';
 import * as InvestmentController from './investment.controller';
 import { investmentCreateSchema, investmentIdParamSchema, investmentUpdateSchema } from './investment.validation';
 
@@ -21,6 +22,7 @@ router.post(
   idempotency({ scope: 'investments.create' }),
   requireFeature('investments', 'addInvestment'),
   validateBody(investmentCreateSchema),
+  duplicateSubmitGuard({ scope: 'investments.create' }),
   InvestmentController.createInvestment,
 );
 router.put(

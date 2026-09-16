@@ -80,7 +80,7 @@ export const InfiniteScrollFooter: React.FC<InfiniteScrollFooterProps> = ({
           data-testid="infinite-scroll-end-of-list"
         >
           <div className="h-px bg-slate-200/80 flex-1" />
-          <span className="text-[11px] font-semibold tracking-tight text-slate-400 select-none">
+          <span className="text-xs font-semibold tracking-tight text-slate-400 select-none">
             {endOfListText}
           </span>
           <div className="h-px bg-slate-200/80 flex-1" />

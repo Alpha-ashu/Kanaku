@@ -3,6 +3,7 @@ import { authMiddleware } from '../../middleware/auth';
 import { pinGate } from '../../middleware/pinGate';
 import { validateBody, validateParams, validateQuery } from '../../middleware/validate';
 import { idempotency } from '../../middleware/idempotency';
+import { duplicateSubmitGuard } from '../../middleware/duplicateSubmitGuard';
 import * as CategoryController from './category.controller';
 import {
   categoryCreateSchema,
@@ -26,6 +27,7 @@ router.post(
   '/',
   idempotency({ scope: 'categories.create' }),
   validateBody(categoryCreateSchema),
+  duplicateSubmitGuard({ scope: 'categories.create' }),
   CategoryController.createCategory,
 );
 router.post(

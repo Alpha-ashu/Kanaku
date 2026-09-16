@@ -38,7 +38,7 @@ function getStatusBadge(status: string) {
  completed: { color: 'bg-slate-100 text-slate-600 border border-slate-200', label: 'Completed' },
  };
  const s = map[status] ?? map.pending;
- return <span className={cn('px-2.5 py-1 rounded-full text-[11px] font-bold', s.color)}>{s.label}</span>;
+ return <span className={cn('px-2.5 py-1 rounded-full text-xs font-bold', s.color)}>{s.label}</span>;
 }
 
 export const AdvisorWorkspace: React.FC = () => {
@@ -319,7 +319,7 @@ export const AdvisorWorkspace: React.FC = () => {
  data-testid={`advisor-ws-tab-${tab.id}-button`}
  >
  <tab.icon size={15} />{tab.label}
- {tab.badge ? <span className="ml-1 px-1.5 py-0.5 bg-red-500 text-white rounded-full text-[10px] font-black leading-none">{tab.badge}</span> : null}
+ {tab.badge ? <span className="ml-1 px-1.5 py-0.5 bg-red-500 text-white rounded-full text-2xs font-black leading-none">{tab.badge}</span> : null}
  </button>
  ))}
  </div>
@@ -334,7 +334,7 @@ export const AdvisorWorkspace: React.FC = () => {
  <div className="space-y-6">
  {pending.length > 0 && (
  <section>
- <h2 className="text-[11px] font-bold uppercase tracking-widest text-amber-600 mb-3 flex items-center gap-2"><Bell size={13} /> Pending Review ({pending.length})</h2>
+ <h2 className="text-xs font-bold uppercase tracking-widest text-amber-600 mb-3 flex items-center gap-2"><Bell size={13} /> Pending Review ({pending.length})</h2>
  <div className="space-y-3">
  {pending.map(b => (
  <div key={b.id} className="bg-white rounded-2xl border-2 border-amber-200 p-5 shadow-sm">
@@ -373,7 +373,7 @@ export const AdvisorWorkspace: React.FC = () => {
  </section>
  )}
  <section>
- <h2 className="text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-3">Upcoming Sessions ({confirmed.length})</h2>
+ <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">Upcoming Sessions ({confirmed.length})</h2>
  {confirmed.length === 0 ? (
  <div className="text-center py-10 bg-white rounded-2xl border border-gray-100"><Calendar size={32} className="mx-auto text-gray-300 mb-2" /><p className="text-gray-500 text-sm">No confirmed sessions</p></div>
  ) : confirmed.map(b => (
@@ -401,7 +401,7 @@ export const AdvisorWorkspace: React.FC = () => {
 
  {activeTab === 'clients' && (
  <div className="space-y-4">
- <h2 className="text-[11px] font-bold uppercase tracking-widest text-gray-400">All Clients ({[...new Set(sessions.map((s: any) => s.clientId))].length})</h2>
+ <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400">All Clients ({[...new Set(sessions.map((s: any) => s.clientId))].length})</h2>
  {sessions.length === 0 ? (
  <div className="text-center py-16 bg-white rounded-2xl border border-gray-100"><Users size={40} className="mx-auto text-gray-300 mb-3" /><p className="text-gray-500">No clients yet</p></div>
  ) : (
@@ -415,7 +415,7 @@ export const AdvisorWorkspace: React.FC = () => {
  <p className="font-bold text-gray-900">{s.client?.name ?? `Client ${s.clientId?.slice(-6)}`}</p>
  <p className="text-xs text-gray-500 truncate">{s.client?.email}</p>
  </div>
- <span className="px-2 py-1 bg-indigo-50 text-indigo-600 rounded-lg text-[11px] font-bold border border-indigo-100">
+ <span className="px-2 py-1 bg-indigo-50 text-indigo-600 rounded-lg text-xs font-bold border border-indigo-100">
  {sessions.filter((ss: any) => ss.clientId === s.clientId).length} sessions
  </span>
  </div>
@@ -440,13 +440,13 @@ export const AdvisorWorkspace: React.FC = () => {
  </div>
  <div className="flex gap-2 flex-1">
  <div className="flex-1">
- <label className="text-[10px] font-bold text-gray-400 block mb-1">From</label>
+ <label className="text-2xs font-bold text-gray-400 block mb-1">From</label>
  <input type="time" id={`avail-start-${idx}`} defaultValue={slot?.startTime ?? '09:00'}
  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
  data-testid={`advisor-ws-sched-start-${idx}`} />
  </div>
  <div className="flex-1">
- <label className="text-[10px] font-bold text-gray-400 block mb-1">To</label>
+ <label className="text-2xs font-bold text-gray-400 block mb-1">To</label>
  <input type="time" id={`avail-end-${idx}`} defaultValue={slot?.endTime ?? '17:00'}
  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
  data-testid={`advisor-ws-sched-end-${idx}`} />
@@ -485,7 +485,7 @@ export const AdvisorWorkspace: React.FC = () => {
  <p className="text-sm text-gray-500 mt-0.5">Sessions Done</p>
  </div>
  </div>
- <h2 className="text-[11px] font-bold uppercase tracking-widest text-gray-400">Session History</h2>
+ <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400">Session History</h2>
  {sessions.length === 0 ? (
  <div className="text-center py-10 bg-white rounded-2xl border border-gray-100"><IndianRupee size={32} className="mx-auto text-gray-300 mb-2" /><p className="text-gray-500 text-sm">No sessions yet</p></div>
  ) : sessions.map((s: any) => (
@@ -503,9 +503,9 @@ export const AdvisorWorkspace: React.FC = () => {
     {getStatusBadge(s.status)}
     {s.status === 'completed' && (
       s.payment?.status === 'completed' ? (
-        <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">Paid</span>
+        <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">Paid</span>
       ) : (
-        <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200">Pending</span>
+        <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">Pending</span>
       )
     )}
   </div>
@@ -568,7 +568,7 @@ export const AdvisorWorkspace: React.FC = () => {
  </div>
  </div>
 
- <h2 className="text-[11px] font-bold uppercase tracking-widest text-gray-400">Your updates</h2>
+ <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400">Your updates</h2>
  {posts.length === 0 ? (
  <div className="text-center py-10 bg-white rounded-2xl border border-gray-100">
  <Bell size={32} className="mx-auto text-gray-300 mb-2" />
@@ -578,10 +578,10 @@ export const AdvisorWorkspace: React.FC = () => {
  <div key={post.id} className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm">
  <div className="flex items-start justify-between gap-3">
  <div className="min-w-0">
- <span className="px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded-lg text-[10px] font-black uppercase">{post.category}</span>
+ <span className="px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded-lg text-2xs font-black uppercase">{post.category}</span>
  <h3 className="font-bold text-gray-900 text-sm mt-2">{post.title}</h3>
  <p className="text-xs text-gray-600 mt-1 whitespace-pre-line">{post.content}</p>
- <p className="text-[11px] text-gray-400 mt-2">
+ <p className="text-xs text-gray-400 mt-2">
  {new Date(post.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
  {' · '}{post.likes} like{post.likes === 1 ? '' : 's'}
  </p>
@@ -720,10 +720,10 @@ export const AdvisorWorkspace: React.FC = () => {
               return (
                 <div key={msg.id || `${msg.timestamp}-${msg.message}`} className={cn('flex flex-col', isMe ? 'items-end' : 'items-start')}>
                   <div className="flex items-center gap-1.5 mb-1 px-1">
-                    <span className="text-[10px] font-bold text-gray-400">
+                    <span className="text-2xs font-bold text-gray-400">
                       {isMe ? 'You (Advisor)' : (msg.sender?.name || 'Client')}
                     </span>
-                    <span className="text-[10px] text-gray-400">
+                    <span className="text-2xs text-gray-400">
                       {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>

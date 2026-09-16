@@ -111,22 +111,22 @@ export const KaiActionCard: React.FC<Props> = ({ action, currency, onEdit, onDel
       data-testid="kai-action-card"
     >
       <div className="flex items-center justify-between gap-2">
-        <p className="flex items-center gap-1.5 text-[11px] sm:text-xs font-black uppercase tracking-wider text-purple-700 min-w-0">
+        <p className="flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-purple-700 min-w-0">
           <Sparkles size={13} className="shrink-0" />
           <span className="truncate">{TITLE[action.kind] ?? KIND_LABEL[action.kind]}</span>
         </p>
         {action.status === 'saved' && (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-[10px] font-bold text-emerald-700 shrink-0">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-2xs font-bold text-emerald-700 shrink-0">
             <CheckCircle2 size={11} /> Saved
           </span>
         )}
         {busy && (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 text-[10px] font-bold text-slate-500 shrink-0">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 text-2xs font-bold text-slate-500 shrink-0">
             <Loader2 size={11} className="animate-spin" /> Saving…
           </span>
         )}
         {failed && (
-          <span className="px-2 py-0.5 rounded-full bg-rose-50 text-[10px] font-bold text-rose-700 shrink-0">Not saved</span>
+          <span className="px-2 py-0.5 rounded-full bg-rose-50 text-2xs font-bold text-rose-700 shrink-0">Not saved</span>
         )}
       </div>
 

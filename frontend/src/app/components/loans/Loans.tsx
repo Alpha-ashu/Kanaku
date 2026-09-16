@@ -13,6 +13,7 @@ import { PageHeader } from '@/app/components/ui/PageHeader';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { formatCurrencyAmount } from '@/lib/currencyUtils';
 import { ReceiptScanner } from '@/app/components/transactions/ReceiptScanner';
+import { useSubmitLock } from '@/hooks/useSubmitLock';
 
 const isOpenLoan = (loan: { status?: string; outstandingBalance: number }) =>
  loan.outstandingBalance > 0 && loan.status !== 'completed';
@@ -344,7 +345,7 @@ export const Loans: React.FC = () => {
           <div className="w-8 h-8 sm:w-11 sm:h-11 bg-rose-50 text-rose-600 rounded-xl sm:rounded-2xl flex items-center justify-center mb-2 sm:mb-3 shadow-2xs">
             <Home className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
-          <p className="text-slate-400 font-bold mb-0.5 sm:mb-1 text-[10px] sm:text-xs uppercase tracking-wider">Total Borrowed</p>
+          <p className="text-slate-400 font-bold mb-0.5 sm:mb-1 text-2xs sm:text-xs uppercase tracking-wider">Total Borrowed</p>
           <h3 className="text-base sm:text-xl lg:text-2xl font-black text-slate-900 tracking-tight truncate">
             {formatCurrency(loanStats.totalBorrowed)}
           </h3>
@@ -358,7 +359,7 @@ export const Loans: React.FC = () => {
           <div className="w-8 h-8 sm:w-11 sm:h-11 bg-emerald-50 text-emerald-600 rounded-xl sm:rounded-2xl flex items-center justify-center mb-2 sm:mb-3 shadow-2xs">
             <Users className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
-          <p className="text-slate-400 font-bold mb-0.5 sm:mb-1 text-[10px] sm:text-xs uppercase tracking-wider">Total Lent</p>
+          <p className="text-slate-400 font-bold mb-0.5 sm:mb-1 text-2xs sm:text-xs uppercase tracking-wider">Total Lent</p>
           <h3 className="text-base sm:text-xl lg:text-2xl font-black text-slate-900 tracking-tight truncate">
             {formatCurrency(loanStats.totalLent)}
           </h3>
@@ -372,7 +373,7 @@ export const Loans: React.FC = () => {
           <div className="w-8 h-8 sm:w-11 sm:h-11 bg-purple-50 text-purple-600 rounded-xl sm:rounded-2xl flex items-center justify-center mb-2 sm:mb-3 shadow-2xs">
             <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
-          <p className="text-slate-400 font-bold mb-0.5 sm:mb-1 text-[10px] sm:text-xs uppercase tracking-wider">Monthly EMI</p>
+          <p className="text-slate-400 font-bold mb-0.5 sm:mb-1 text-2xs sm:text-xs uppercase tracking-wider">Monthly EMI</p>
           <h3 className="text-base sm:text-xl lg:text-2xl font-black text-slate-900 tracking-tight truncate">
             {formatCurrency(loanStats.totalEMI)}
           </h3>
@@ -386,7 +387,7 @@ export const Loans: React.FC = () => {
           <div className="w-8 h-8 sm:w-11 sm:h-11 bg-amber-50 text-amber-600 rounded-xl sm:rounded-2xl flex items-center justify-center mb-2 sm:mb-3 shadow-2xs">
             <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
-          <p className="text-slate-400 font-bold mb-0.5 sm:mb-1 text-[10px] sm:text-xs uppercase tracking-wider">Overdue</p>
+          <p className="text-slate-400 font-bold mb-0.5 sm:mb-1 text-2xs sm:text-xs uppercase tracking-wider">Overdue</p>
           <h3 className="text-base sm:text-xl lg:text-2xl font-black text-slate-900 tracking-tight truncate">
             {loanStats.overdueCount}
           </h3>
@@ -429,7 +430,7 @@ export const Loans: React.FC = () => {
       >
         <span>{tab.label}</span>
         <span className={cn(
-          "text-[10px] px-1.5 py-0.2 rounded-full font-black",
+          "text-2xs px-1.5 py-0.2 rounded-full font-black",
           activeCategory === tab.id ? "bg-white/20 text-white" : "bg-slate-100 text-slate-500"
         )}>
           {tab.count}
@@ -499,7 +500,7 @@ export const Loans: React.FC = () => {
                             <Trash2 size={13} />
                           </button>
                         )}
-                        <span className={cn("px-2.5 py-0.5 text-[11px] font-extrabold uppercase tracking-wide rounded-full", getLoanStatusColor(loan))}>
+                        <span className={cn("px-2.5 py-0.5 text-xs font-extrabold uppercase tracking-wide rounded-full", getLoanStatusColor(loan))}>
                           {effectiveStatus}
                         </span>
                       </div>
@@ -575,22 +576,22 @@ export const Loans: React.FC = () => {
                       <>
                         <div className="bg-white/90 border border-slate-200/60 rounded-2xl p-3 grid grid-cols-2 gap-2.5 mb-3 shadow-2xs">
                           <div>
-                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Principal</p>
+                            <p className="text-2xs text-slate-400 font-bold uppercase tracking-wider">Principal</p>
                             <p className="font-bold text-slate-900 text-sm mt-0.5">{formatCurrency(loan.principalAmount)}</p>
                           </div>
                           <div>
-                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Outstanding</p>
+                            <p className="text-2xs text-slate-400 font-bold uppercase tracking-wider">Outstanding</p>
                             <p className="font-bold text-slate-900 text-sm mt-0.5">{formatCurrency(loan.outstandingBalance)}</p>
                           </div>
                           {loan.emiAmount && (
                             <div>
-                              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">EMI Amount</p>
+                              <p className="text-2xs text-slate-400 font-bold uppercase tracking-wider">EMI Amount</p>
                               <p className="font-bold text-slate-900 text-sm mt-0.5">{formatCurrency(loan.emiAmount)}</p>
                             </div>
                           )}
                           {loan.dueDate && (
                             <div>
-                              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Due Date</p>
+                              <p className="text-2xs text-slate-400 font-bold uppercase tracking-wider">Due Date</p>
                               <p className="font-bold text-slate-900 text-sm mt-0.5">
                                 {new Date(loan.dueDate).toLocaleDateString()}
                               </p>
@@ -600,7 +601,7 @@ export const Loans: React.FC = () => {
 
                         {/* Continuous Gradient Progress Track */}
                         <div className="mb-3 space-y-1.5" role="progressbar" aria-label="Loan repayment progress" aria-valuenow={repaid} aria-valuemin={0} aria-valuemax={loan.principalAmount}>
-                          <div className="flex items-center justify-between text-[11px] font-bold">
+                          <div className="flex items-center justify-between text-xs font-bold">
                             <span className="text-slate-400 uppercase tracking-wider">Repaid {progressPct.toFixed(0)}%</span>
                             <span className="text-slate-700">{formatCurrency(repaid)} of {formatCurrency(loan.principalAmount)}</span>
                           </div>
@@ -613,7 +614,7 @@ export const Loans: React.FC = () => {
                         </div>
 
                         <div className="mb-3 rounded-2xl border border-slate-200/70 bg-white/80 px-3.5 py-2.5 shadow-2xs">
-                          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Payment Info</p>
+                          <p className="text-2xs font-bold uppercase tracking-wider text-slate-400">Payment Info</p>
                           <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-700">
                             <span>
                               Last paid: {loan.id && latestPaymentByLoan.get(loan.id)
@@ -686,7 +687,7 @@ export const Loans: React.FC = () => {
  <div className="flex items-start justify-between mb-3">
  <div className="flex-1">
  <h4 className="font-display font-bold text-gray-500 text-sm line-through decoration-gray-300">{loan.name}</h4>
- <span className="inline-block mt-1 px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[9px] font-black uppercase rounded-lg">Settled</span>
+ <span className="inline-block mt-1 px-2 py-0.5 bg-emerald-50 text-emerald-600 text-2xs font-black uppercase rounded-lg">Settled</span>
  </div>
  {canDelete && (
  <button data-testid={`loans-delete-record-${loan.id}`}
@@ -699,11 +700,11 @@ export const Loans: React.FC = () => {
  )}
  </div>
  <div className="flex items-center justify-between mt-auto">
- <p className="text-[10px] font-bold text-gray-400 uppercase">Paid: {formatCurrency(loan.principalAmount)}</p>
+ <p className="text-2xs font-bold text-gray-400 uppercase">Paid: {formatCurrency(loan.principalAmount)}</p>
  {loanPayments.some(p => p.loanId === loan.id && p.documentId) && (
  <button data-testid={`loans-view-bill-${loan.id}`}
  onClick={() => handleViewBill(loan.id!)}
- className="px-3 py-1.5 bg-white border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50 transition-all text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 shadow-sm"
+ className="px-3 py-1.5 bg-white border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50 transition-all text-2xs font-black uppercase tracking-widest flex items-center gap-1.5 shadow-sm"
  >
  <FileText size={12} />
  View Bill
@@ -739,10 +740,10 @@ export const Loans: React.FC = () => {
  className="w-full flex items-center justify-between p-3 bg-white hover:bg-gray-100 rounded-xl transition-all border border-transparent hover:border-gray-200 group text-left"
  >
  <div>
- <p className="text-[10px] font-black text-gray-900 uppercase tracking-tight">
+ <p className="text-2xs font-black text-gray-900 uppercase tracking-tight">
  {new Date(p.date).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
  </p>
- <p className="text-[9px] font-bold text-gray-400 uppercase">{formatCurrency(p.amount)}</p>
+ <p className="text-2xs font-bold text-gray-400 uppercase">{formatCurrency(p.amount)}</p>
  </div>
  <ExternalLink size={14} className="text-gray-300 group-hover:text-indigo-600 transition-colors" />
  </button>
@@ -785,6 +786,7 @@ interface PaymentModalProps {
 }
 
 const PaymentModal: React.FC<PaymentModalProps> = ({ loanId, accounts, onClose }) => {
+ const guardSubmit = useSubmitLock();
  const [amount, setAmount] = useState(0);
  const [accountId, setAccountId] = useState(accounts[0]?.id || 0);
  const [notes, setNotes] = useState('');
@@ -793,7 +795,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ loanId, accounts, onClose }
  const [documentId, setDocumentId] = useState<number | null>(null);
  const isOcrEnabled = useAICapability('ocrEngine', 'loanOCR');
 
- const handleSubmit = async (e: React.FormEvent) => {
+ const handleSubmit = guardSubmit(async (e: React.FormEvent) => {
  e.preventDefault();
 
  const loan = await db.loans.get(loanId);
@@ -826,7 +828,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ loanId, accounts, onClose }
 
  toast.success('Payment recorded successfully');
  onClose();
- };
+ });
 
  return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -851,7 +853,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ loanId, accounts, onClose }
           
           <form data-testid="loans-form" onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="loan-payment-amount" className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Amount</label>
+              <label htmlFor="loan-payment-amount" className="block text-2xs font-black text-slate-400 uppercase tracking-widest mb-1.5">Amount</label>
               <div className="relative">
                 <input
                   id="loan-payment-amount"
@@ -868,7 +870,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ loanId, accounts, onClose }
             </div>
 
             <div>
-              <label htmlFor="loan-payment-account" className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Pay From</label>
+              <label htmlFor="loan-payment-account" className="block text-2xs font-black text-slate-400 uppercase tracking-widest mb-1.5">Pay From</label>
               <select
                 id="loan-payment-account"
                 value={accountId}
@@ -888,9 +890,9 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ loanId, accounts, onClose }
               {/* Receipt Section */}
               <div className="p-4 rounded-2xl bg-slate-50/80 border border-slate-100/90 space-y-3">
                 <div className="flex items-center justify-between">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Receipt / Bill</label>
+                  <label className="text-2xs font-black text-slate-400 uppercase tracking-widest">Receipt / Bill</label>
                   {documentId && (
-                    <span className="flex items-center gap-1 text-[9px] font-black text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg uppercase tracking-wide">
+                    <span className="flex items-center gap-1 text-2xs font-black text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg uppercase tracking-wide">
                       <Check size={10} strokeWidth={3} /> Attached
                     </span>
                   )}
@@ -900,8 +902,8 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ loanId, accounts, onClose }
                   <div className="flex items-center gap-3 p-3 bg-emerald-50 rounded-xl border border-emerald-100">
                     <Paperclip size={16} className="text-emerald-600 shrink-0" />
                     <div className="flex-1">
-                      <p className="text-[10px] font-black text-emerald-700 uppercase">Bill Attached</p>
-                      <p className="text-[9px] font-semibold text-emerald-500">Document saved successfully</p>
+                      <p className="text-2xs font-black text-emerald-700 uppercase">Bill Attached</p>
+                      <p className="text-2xs font-semibold text-emerald-500">Document saved successfully</p>
                     </div>
                     <button
                       type="button"
@@ -934,8 +936,8 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ loanId, accounts, onClose }
                         <ScanLine size={16} />
                       </div>
                       <div className="text-center">
-                        <p className="text-[10px] font-black uppercase tracking-wide leading-none">Scan Bill</p>
-                        <p className={cn("text-[9px] font-semibold mt-0.5 leading-none", isOcrEnabled ? "text-white/50" : "text-slate-400/60")}>OCR auto-fill</p>
+                        <p className="text-2xs font-black uppercase tracking-wide leading-none">Scan Bill</p>
+                        <p className={cn("text-2xs font-semibold mt-0.5 leading-none", isOcrEnabled ? "text-white/50" : "text-slate-400/60")}>OCR auto-fill</p>
                       </div>
                     </button>
 
@@ -949,7 +951,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ loanId, accounts, onClose }
                         <Paperclip size={16} className="text-slate-600" />
                       </div>
                       <div className="text-center">
-                        <p className="text-[10px] font-black uppercase tracking-wide leading-none">Attach File</p>
+                        <p className="text-2xs font-black uppercase tracking-wide leading-none">Attach File</p>
                       </div>
                     </button>
                   </div>
@@ -958,7 +960,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ loanId, accounts, onClose }
             </div>
 
             <div>
-              <label htmlFor="loan-payment-notes" className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Notes (Optional)</label>
+              <label htmlFor="loan-payment-notes" className="block text-2xs font-black text-slate-400 uppercase tracking-widest mb-1.5">Notes (Optional)</label>
               <textarea
                 id="loan-payment-notes"
                 value={notes}

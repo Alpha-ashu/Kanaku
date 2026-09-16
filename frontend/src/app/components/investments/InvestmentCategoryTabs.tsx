@@ -81,7 +81,7 @@ export const InvestmentCategoryTabs: React.FC<InvestmentCategoryTabsProps> = ({
               onClick={() => onSelectCategory(cat.code, cat.subcategories[0].code)}
               data-testid={`investment-category-tab-${cat.code}`}
               className={cn(
-                'flex items-center justify-center gap-1 sm:gap-1.5 py-1.5 sm:py-2 px-1 sm:px-3 rounded-xl sm:rounded-full font-black text-[10px] sm:text-[11px] md:text-xs uppercase tracking-wider transition-all duration-200 cursor-pointer select-none text-center',
+                'flex items-center justify-center gap-1 sm:gap-1.5 py-1.5 sm:py-2 px-1 sm:px-3 rounded-xl sm:rounded-full font-black text-2xs md:text-xs uppercase tracking-wider transition-all duration-200 cursor-pointer select-none text-center',
                 isActive
                   ? 'bg-slate-900 text-white shadow-xs scale-[1.01]'
                   : 'text-slate-500 hover:text-slate-800 hover:bg-white/60'
@@ -109,7 +109,7 @@ export const InvestmentCategoryTabs: React.FC<InvestmentCategoryTabsProps> = ({
                 onClick={() => onSelectSubcategory(sub.code)}
                 data-testid={`investment-subcategory-pill-${sub.code}`}
                 className={cn(
-                  'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] sm:text-[11px] font-bold tracking-wider uppercase transition-all duration-150 cursor-pointer select-none shrink-0 whitespace-nowrap',
+                  'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-2xs font-bold tracking-wider uppercase transition-all duration-150 cursor-pointer select-none shrink-0 whitespace-nowrap',
                   isActive
                     ? 'bg-slate-900 text-white shadow-xs scale-[1.02] border border-slate-900'
                     : 'bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 border border-slate-200/80 shadow-2xs'

@@ -769,7 +769,7 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
                       <span>{badge}</span>
                     </div>
                   )}
-                  <h1 className="text-xl sm:text-2xl md:text-[1.65rem] font-extrabold text-slate-900 tracking-tight leading-snug">{title}</h1>
+                  <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight leading-snug">{title}</h1>
                   {subtitle && <p className="text-slate-500 mt-1.5 text-xs sm:text-sm font-normal leading-relaxed">{subtitle}</p>}
                 </div>
               )}
@@ -823,17 +823,17 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
                 <div className="p-3 bg-slate-50 border border-slate-100 rounded-2xl text-center">
                   <TrendingUp className="w-4 h-4 text-violet-600 mx-auto mb-1" />
                   <p className="text-xs font-bold text-slate-800">Insights</p>
-                  <p className="text-[10px] text-slate-400">Live Delta</p>
+                  <p className="text-2xs text-slate-400">Live Delta</p>
                 </div>
                 <div className="p-3 bg-slate-50 border border-slate-100 rounded-2xl text-center">
                   <Shield className="w-4 h-4 text-emerald-600 mx-auto mb-1" />
                   <p className="text-xs font-bold text-slate-800">Private</p>
-                  <p className="text-[10px] text-slate-400">PIN lock</p>
+                  <p className="text-2xs text-slate-400">PIN lock</p>
                 </div>
                 <div className="p-3 bg-slate-50 border border-slate-100 rounded-2xl text-center">
                   <Sparkles className="w-4 h-4 text-amber-500 mx-auto mb-1" />
                   <p className="text-xs font-bold text-slate-800">Smart</p>
-                  <p className="text-[10px] text-slate-400">AI Alerts</p>
+                  <p className="text-2xs text-slate-400">AI Alerts</p>
                 </div>
               </div>
 
@@ -1573,7 +1573,7 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
           </div>
 
           <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 space-y-2">
-            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Password Requirements</p>
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Password Requirements</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
               <div className="flex items-center gap-2">
                 <span className={`w-1.5 h-1.5 rounded-full ${requirements.minLength ? 'bg-emerald-500' : 'bg-slate-300'}`} />

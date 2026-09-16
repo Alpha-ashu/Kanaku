@@ -46,7 +46,7 @@ export const PhysicalAssetsForm: React.FC<PhysicalAssetsFormProps> = ({
       <div className="bg-slate-50/80 border border-slate-200/80 p-3.5 sm:p-5 rounded-2xl space-y-3 sm:space-y-4">
         <div className="flex items-center gap-2 border-b border-slate-200/60 pb-2.5">
           <Gem size={15} className="text-amber-600" />
-          <h3 className="text-[10px] sm:text-xs font-bold text-slate-700 uppercase tracking-wider">
+          <h3 className="text-2xs sm:text-xs font-bold text-slate-700 uppercase tracking-wider">
             {isGold ? 'Gold Asset Details' : isSilver ? 'Silver Asset Details' : 'Physical Metal / Asset Details'}
           </h3>
         </div>
@@ -54,7 +54,7 @@ export const PhysicalAssetsForm: React.FC<PhysicalAssetsFormProps> = ({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           {/* Asset Type */}
           <div className="space-y-1 sm:space-y-1.5">
-            <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Asset Type</label>
+            <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Asset Type</label>
             <select
               value={details.assetType || 'coins'}
               onChange={e => setDetails(prev => ({ ...prev, assetType: e.target.value as PhysicalAssetType }))}
@@ -68,7 +68,7 @@ export const PhysicalAssetsForm: React.FC<PhysicalAssetsFormProps> = ({
 
           {/* Weight & Unit */}
           <div className="space-y-1 sm:space-y-1.5">
-            <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Weight</label>
+            <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Weight</label>
             <div className="flex gap-2">
               <input
                 type="number"
@@ -96,7 +96,7 @@ export const PhysicalAssetsForm: React.FC<PhysicalAssetsFormProps> = ({
 
           {/* Purity */}
           <div className="space-y-1 sm:space-y-1.5">
-            <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Purity / Fineness</label>
+            <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Purity / Fineness</label>
             <input
               type="text"
               value={details.purity || ''}
@@ -108,7 +108,7 @@ export const PhysicalAssetsForm: React.FC<PhysicalAssetsFormProps> = ({
 
           {/* Storage Location */}
           <div className="space-y-1 sm:space-y-1.5">
-            <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Storage Location</label>
+            <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Storage Location</label>
             <input
               type="text"
               value={details.storageLocation || ''}
@@ -126,14 +126,14 @@ export const PhysicalAssetsForm: React.FC<PhysicalAssetsFormProps> = ({
           <div className="flex items-center gap-2">
             <ShieldAlert size={16} className="text-amber-700 shrink-0" />
             <div>
-              <h3 className="text-[10px] sm:text-xs font-bold text-amber-900 uppercase tracking-wider">Gold Loan Integration</h3>
-              <p className="text-[9px] sm:text-[10px] text-amber-700 font-medium">Link this physical asset to the Loans Module</p>
+              <h3 className="text-2xs sm:text-xs font-bold text-amber-900 uppercase tracking-wider">Gold Loan Integration</h3>
+              <p className="text-2xs text-amber-700 font-medium">Link this physical asset to the Loans Module</p>
             </div>
           </div>
 
           {/* Toggle */}
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-            <span className="text-[10px] sm:text-xs font-bold text-slate-700">Pledged?</span>
+            <span className="text-2xs sm:text-xs font-bold text-slate-700">Pledged?</span>
             <button
               type="button"
               onClick={() => setDetails(prev => ({ ...prev, isPledged: !prev.isPledged }))}
@@ -157,7 +157,7 @@ export const PhysicalAssetsForm: React.FC<PhysicalAssetsFormProps> = ({
         {details.isPledged && (
           <div className="pt-2.5 sm:pt-3 border-t border-amber-200/60 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 animate-in fade-in zoom-in-95">
             <div className="space-y-1 sm:space-y-1.5">
-              <label className="text-[10px] sm:text-[11px] font-bold text-amber-900 uppercase tracking-wider">Lending Bank / Institution</label>
+              <label className="text-2xs font-bold text-amber-900 uppercase tracking-wider">Lending Bank / Institution</label>
               <input
                 type="text"
                 value={details.bankName || ''}
@@ -168,7 +168,7 @@ export const PhysicalAssetsForm: React.FC<PhysicalAssetsFormProps> = ({
             </div>
 
             <div className="space-y-1 sm:space-y-1.5">
-              <label className="text-[10px] sm:text-[11px] font-bold text-amber-900 uppercase tracking-wider">Loan Amount ({currency})</label>
+              <label className="text-2xs font-bold text-amber-900 uppercase tracking-wider">Loan Amount ({currency})</label>
               <input
                 type="number"
                 value={details.loanAmount || ''}
@@ -179,7 +179,7 @@ export const PhysicalAssetsForm: React.FC<PhysicalAssetsFormProps> = ({
             </div>
 
             <div className="space-y-1 sm:space-y-1.5">
-              <label className="text-[10px] sm:text-[11px] font-bold text-amber-900 uppercase tracking-wider">Interest Rate (%)</label>
+              <label className="text-2xs font-bold text-amber-900 uppercase tracking-wider">Interest Rate (%)</label>
               <input
                 type="number"
                 value={details.interestRate || ''}
@@ -190,7 +190,7 @@ export const PhysicalAssetsForm: React.FC<PhysicalAssetsFormProps> = ({
             </div>
 
             <div className="space-y-1 sm:space-y-1.5">
-              <label className="text-[10px] sm:text-[11px] font-bold text-amber-900 uppercase tracking-wider">Loan Date</label>
+              <label className="text-2xs font-bold text-amber-900 uppercase tracking-wider">Loan Date</label>
               <input
                 type="date"
                 value={details.loanDate || formData.date || ''}
@@ -200,7 +200,7 @@ export const PhysicalAssetsForm: React.FC<PhysicalAssetsFormProps> = ({
             </div>
 
             <div className="sm:col-span-2 space-y-1 sm:space-y-1.5">
-              <label className="text-[10px] sm:text-[11px] font-bold text-amber-900 uppercase tracking-wider">Loan Account Number</label>
+              <label className="text-2xs font-bold text-amber-900 uppercase tracking-wider">Loan Account Number</label>
               <input
                 type="text"
                 value={details.loanAccountNumber || ''}

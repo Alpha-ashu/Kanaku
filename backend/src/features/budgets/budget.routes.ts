@@ -4,6 +4,7 @@ import { pinGate } from '../../middleware/pinGate';
 import { validateBody, validateParams, validateQuery } from '../../middleware/validate';
 import { requireFeature } from '../../middleware/featureGate';
 import { idempotency } from '../../middleware/idempotency';
+import { duplicateSubmitGuard } from '../../middleware/duplicateSubmitGuard';
 import * as BudgetController from './budget.controller';
 import {
   budgetCreateSchema,
@@ -23,6 +24,7 @@ router.post(
   '/',
   idempotency({ scope: 'budgets.create' }),
   validateBody(budgetCreateSchema),
+  duplicateSubmitGuard({ scope: 'budgets.create' }),
   BudgetController.createBudget,
 );
 router.get('/:id', validateParams(budgetIdParamSchema), BudgetController.getBudget);

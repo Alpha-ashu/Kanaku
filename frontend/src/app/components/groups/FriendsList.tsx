@@ -10,6 +10,7 @@ import { Plus, Search, Upload, ShieldCheck, UserCircle2, Trash2, Loader2, ArrowL
 import { toast } from 'sonner';
 import { DeleteConfirmModal } from '@/app/components/shared/DeleteConfirmModal';
 import { pickDeviceContacts, isContactPickerSupported, parseVCardContent, parseCsvContacts, decodeQuotedPrintable, sanitizeContactName } from '@/services/contactsService';
+import { useSubmitLock } from '@/hooks/useSubmitLock';
 
 // A unified view of a friend — could be backend-synced or local-only (pending sync)
 interface DisplayFriend {
@@ -40,6 +41,7 @@ const getToneClass = (seed: string) => {
 };
 
 export const FriendsList: React.FC = () => {
+  const guardSubmit = useSubmitLock();
   const { setCurrentPage, triggerSync, currency } = useApp();
   const [friends, setFriends] = useState<DisplayFriend[]>([]);
   const [loading, setLoading] = useState(true);
@@ -150,7 +152,7 @@ export const FriendsList: React.FC = () => {
   };
 
   /** Save edits to a local-only friend and try to push it to the backend */
-  const handleSaveLocalFriend = async (localId: number) => {
+  const handleSaveLocalFriend = guardSubmit(async (localId: number) => {
     const name = editForm.name.trim();
     const email = editForm.email.trim() || undefined;
     const phone = editForm.phone.trim() || undefined;
@@ -213,7 +215,7 @@ export const FriendsList: React.FC = () => {
     } finally {
       setSavingLocal(false);
     }
-  };
+  });
 
   const handlePickContacts = async () => {
     if (isContactPickerSupported()) {
@@ -439,15 +441,15 @@ export const FriendsList: React.FC = () => {
                           <div className="flex items-center gap-2 flex-wrap">
                             <p className="font-bold text-slate-900 truncate">{sanitizeContactName(friend.name)}</p>
                             {friend.isPendingSync ? (
-                              <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-0.5 text-[10px] font-bold text-amber-700">
+                              <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-0.5 text-2xs font-bold text-amber-700">
                                 <AlertCircle size={11} /> Not synced
                               </span>
                             ) : friend.isRegistered ? (
-                              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700">
+                              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-2xs font-bold text-emerald-700">
                                 <ShieldCheck size={11} /> Kanaku User
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] font-bold text-slate-500">
+                              <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 text-2xs font-bold text-slate-500">
                                 <UserCircle2 size={11} /> Guest
                               </span>
                             )}

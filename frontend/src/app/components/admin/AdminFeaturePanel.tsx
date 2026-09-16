@@ -680,7 +680,7 @@ export const AdminFeaturePanel: React.FC = () => {
 
                     {/* Master switch */}
                     <div className="flex items-center justify-between mb-6 bg-slate-50 rounded-2xl p-4 border border-slate-100">
-                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Gating Status</span>
+                      <span className="text-2xs font-black text-slate-400 uppercase tracking-widest">Gating Status</span>
                       <button
                         type="button"
                         title={f.enabled ? `Disable ${f.name}` : `Enable ${f.name}`}
@@ -704,12 +704,12 @@ export const AdminFeaturePanel: React.FC = () => {
                     <div className="mb-6 py-4 border-y border-slate-100">
                       <div className="flex items-center gap-1.5 mb-3 text-slate-400">
                         <Shield size={12} />
-                        <span className="text-[9px] font-black uppercase tracking-widest">Role Visibility Matrix</span>
+                        <span className="text-2xs font-black uppercase tracking-widest">Role Visibility Matrix</span>
                       </div>
                       <div className="grid grid-cols-4 gap-2">
                         {(['admin', 'manager', 'advisor', 'user'] as const).map(role => (
                           <div key={role} className="flex flex-col items-center gap-1">
-                            <span className="text-[9px] font-bold text-slate-500 capitalize">{role}</span>
+                            <span className="text-2xs font-bold text-slate-500 capitalize">{role}</span>
                             <button
                               type="button"
                               title={`${f.roleAccess[role] ? 'Revoke' : 'Grant'} ${role} access to ${f.name}`}
@@ -741,7 +741,7 @@ export const AdminFeaturePanel: React.FC = () => {
                           type="button"
                           onClick={() => setSelectedSubFeatureModule(f)}
                           data-testid={`admin-feature-${f.key}-subfeatures-button`}
-                          className="w-full flex items-center justify-center gap-2 text-indigo-600 hover:text-indigo-700 bg-indigo-50/50 hover:bg-indigo-100/70 active:scale-[0.98] transition-all font-black text-[10px] uppercase tracking-widest py-3.5 rounded-2xl border border-indigo-100/50"
+                          className="w-full flex items-center justify-center gap-2 text-indigo-600 hover:text-indigo-700 bg-indigo-50/50 hover:bg-indigo-100/70 active:scale-[0.98] transition-all font-black text-2xs uppercase tracking-widest py-3.5 rounded-2xl border border-indigo-100/50"
                         >
                           <Layers size={13} />
                           Configure Sub-features ({children.length})
@@ -832,7 +832,7 @@ export const AdminFeaturePanel: React.FC = () => {
                       <div className="flex items-center justify-between gap-4 mb-4">
                         <div>
                           <span className="text-sm font-black text-slate-900">{child.name}</span>
-                          <span className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">{child.key}</span>
+                          <span className="block text-2xs font-black text-slate-400 uppercase tracking-widest mt-0.5">{child.key}</span>
                         </div>
                         <button
                           type="button"
@@ -858,7 +858,7 @@ export const AdminFeaturePanel: React.FC = () => {
                       <div className="grid grid-cols-4 gap-2 pt-3 border-t border-slate-200/50">
                         {(['admin', 'manager', 'advisor', 'user'] as const).map(r => (
                           <div key={r} className="flex flex-col items-center gap-1.5">
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">{r}</span>
+                            <span className="text-2xs font-black text-slate-400 uppercase tracking-wider">{r}</span>
                             <button
                               type="button"
                               title={`${child.roleAccess[r] ? 'Revoke' : 'Grant'} ${r} access to ${child.name}`}

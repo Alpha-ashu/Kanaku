@@ -186,10 +186,10 @@ export const EditAccount: React.FC<{ accountId?: number }> = ({ accountId: propA
 
  <div className="relative z-10 flex items-end justify-between">
  <div>
- <p className="text-white/60 text-[10px] font-bold uppercase tracking-[0.2em] mb-1">Account Name</p>
+ <p className="text-white/60 text-2xs font-bold uppercase tracking-[0.2em] mb-1">Account Name</p>
  <h3 className="text-lg font-bold truncate max-w-[200px]">{account.name || 'Untitled Account'}</h3>
  </div>
- <div className="bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border border-white/20">
+ <div className="bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-2xs font-black uppercase tracking-wider border border-white/20">
  {account.type}
  </div>
  </div>

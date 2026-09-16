@@ -27,7 +27,7 @@ export const AuthShowcase: React.FC = () => {
           <div>
             <div className="flex items-center gap-2">
               <span className="font-extrabold tracking-[0.02em] text-xl text-white" style={{ fontFamily: DISPLAY_FONT }}>KANAKU</span>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider bg-violet-500/20 text-violet-300 border border-violet-500/30 uppercase">
+              <span className="px-2 py-0.5 rounded-full text-2xs font-bold tracking-wider bg-violet-500/20 text-violet-300 border border-violet-500/30 uppercase">
                 Pro
               </span>
             </div>
@@ -79,7 +79,7 @@ export const AuthShowcase: React.FC = () => {
               <div className="h-full bg-gradient-to-r from-cyan-400 to-blue-500 w-[28%]" title="High-Yield Deposits (28%)" />
               <div className="h-full rounded-r-full bg-gradient-to-r from-emerald-400 to-teal-500 w-[14%]" title="Liquid Cash (14%)" />
             </div>
-            <div className="flex items-center gap-4 text-[11px] text-slate-400 pt-1">
+            <div className="flex items-center gap-4 text-xs text-slate-400 pt-1">
               <span className="flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-violet-500" /> Equities 58%
               </span>
@@ -100,7 +100,7 @@ export const AuthShowcase: React.FC = () => {
             <div>
               <p className="text-xs font-bold text-violet-200 mb-0.5 flex items-center gap-2">
                 KAI Insight
-                <span className="text-[10px] font-semibold text-violet-300/80 bg-violet-500/20 px-1.5 py-0.2 rounded">Sample</span>
+                <span className="text-2xs font-semibold text-violet-300/80 bg-violet-500/20 px-1.5 py-0.2 rounded">Sample</span>
               </p>
               <p className="text-xs text-slate-300 leading-relaxed">
                 You've spent <strong className="text-white font-bold">₹11,580</strong> on food this month — ₹1,210 less than at this point last month.
@@ -114,17 +114,17 @@ export const AuthShowcase: React.FC = () => {
           <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/5 backdrop-blur-sm text-center">
             <Lock className="w-4 h-4 text-violet-400 mx-auto mb-1.5" />
             <p className="text-xs font-bold text-slate-200">App Lock</p>
-            <p className="text-[10px] text-slate-400">PIN & biometrics</p>
+            <p className="text-2xs text-slate-400">PIN & biometrics</p>
           </div>
           <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/5 backdrop-blur-sm text-center">
             <Zap className="w-4 h-4 text-amber-400 mx-auto mb-1.5" />
             <p className="text-xs font-bold text-slate-200">Local-First</p>
-            <p className="text-[10px] text-slate-400">Offline IndexedDB</p>
+            <p className="text-2xs text-slate-400">Offline IndexedDB</p>
           </div>
           <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/5 backdrop-blur-sm text-center">
             <ShieldCheck className="w-4 h-4 text-emerald-400 mx-auto mb-1.5" />
             <p className="text-xs font-bold text-slate-200">Zero-Tracking</p>
-            <p className="text-[10px] text-slate-400">No Data Resale</p>
+            <p className="text-2xs text-slate-400">No Data Resale</p>
           </div>
         </div>
       </div>
@@ -137,7 +137,7 @@ export const AuthShowcase: React.FC = () => {
           </div>
           <div>
             <p className="text-xs font-semibold text-slate-200">Shaik Ashraf K</p>
-            <p className="text-[10px] text-slate-500">Founder & CEO, Kanaku</p>
+            <p className="text-2xs text-slate-500">Founder & CEO, Kanaku</p>
           </div>
         </div>
         <div className="flex items-center gap-1.5 text-xs text-slate-400 font-medium">

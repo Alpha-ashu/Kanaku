@@ -98,7 +98,7 @@ export const BottomNavSettingsSection: React.FC = () => {
           <button
             type="button"
             onClick={handleResetDefaults}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-slate-200/80 transition-all cursor-pointer shadow-xs active:scale-95"
+            className="inline-flex shrink-0 items-center gap-1.5 px-3.5 py-1.5 whitespace-nowrap rounded-full text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-slate-200/80 transition-all cursor-pointer shadow-xs active:scale-95"
             title={`Reset to default ${DEFAULT_BOTTOM_NAV_IDS.length} items`}
           >
             <RotateCcw size={12} strokeWidth={2.2} />
@@ -109,7 +109,7 @@ export const BottomNavSettingsSection: React.FC = () => {
 
       {/* ── Live Dock Preview ── */}
       <div className="bg-slate-950 p-4 rounded-[28px] border border-white/10 shadow-lg flex flex-col items-center gap-2">
-        <span className="text-[10px] font-black text-slate-400 tracking-wider uppercase">
+        <span className="text-2xs font-black text-slate-400 tracking-wider uppercase">
           Live Dock Preview (Mobile)
         </span>
         <div className="bg-[#000000] border border-white/[0.12] rounded-full p-1.5 shadow-[0_12px_30px_rgba(0,0,0,0.6)] flex items-center gap-1 sm:gap-1.5 max-w-full overflow-x-auto">
@@ -161,11 +161,11 @@ export const BottomNavSettingsSection: React.FC = () => {
                       <span className="text-xs font-extrabold text-slate-900 truncate">
                         {item.label}
                       </span>
-                      <span className="px-1.5 py-0.2 rounded-full text-[10px] font-black bg-purple-100 text-purple-700">
+                      <span className="px-1.5 py-0.2 rounded-full text-2xs font-black bg-purple-100 text-purple-700">
                         #{index + 1}
                       </span>
                     </div>
-                    <p className="text-[11px] text-slate-400 truncate">{item.description}</p>
+                    <p className="text-xs text-slate-400 truncate">{item.description}</p>
                   </div>
                 </div>
 
@@ -232,7 +232,7 @@ export const BottomNavSettingsSection: React.FC = () => {
                       <span className="text-xs font-bold text-slate-800 group-hover:text-purple-600 transition-colors truncate block">
                         {item.label}
                       </span>
-                      <p className="text-[11px] text-slate-400 truncate">{item.description}</p>
+                      <p className="text-xs text-slate-400 truncate">{item.description}</p>
                     </div>
                   </div>
 

@@ -6,6 +6,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { toast } from 'sonner';
 import { ArrowRightLeft } from 'lucide-react';
 import type { Account } from '@/lib/database';
+import { useSubmitLock } from '@/hooks/useSubmitLock';
 
 interface TransferModalProps {
  isOpen: boolean;
@@ -18,6 +19,7 @@ export const TransferModal: React.FC<TransferModalProps> = ({
  onClose,
  currency,
 }) => {
+ const guardSubmit = useSubmitLock();
  const [formData, setFormData] = useState({
  fromAccountId: 0,
  toAccountId: 0,
@@ -29,7 +31,7 @@ export const TransferModal: React.FC<TransferModalProps> = ({
  const accounts = useLiveQuery(() => db.accounts.toArray(), []) || [];
  const activeAccounts = accounts.filter((account) => account.isActive);
 
- const handleSubmit = async (e: React.FormEvent) => {
+ const handleSubmit = guardSubmit(async (e: React.FormEvent) => {
  e.preventDefault();
 
  if (!formData.fromAccountId || !formData.toAccountId) {
@@ -100,7 +102,7 @@ export const TransferModal: React.FC<TransferModalProps> = ({
  console.error('Transfer failed:', error);
  toast.error(' Failed to transfer funds. Please try again.');
  }
- };
+ });
 
   if (!isOpen) return null;
 

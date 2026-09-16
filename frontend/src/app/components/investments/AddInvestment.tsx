@@ -32,8 +32,10 @@ import { PhysicalAssetsForm } from '@/app/components/investments/forms/PhysicalA
 import { OtherInvestmentsForm } from '@/app/components/investments/forms/OtherInvestmentsForm';
 import { mapLegacyAssetTypeToV2 } from '@/lib/v2InvestmentMigration';
 import { formatCurrencyAmount, formatNativeMoney, getCurrencySymbol, normalizeCurrencyCode } from '@/lib/currencyUtils';
+import { useSubmitLock } from '@/hooks/useSubmitLock';
 
 export const AddInvestment: React.FC = () => {
+  const guardSubmit = useSubmitLock();
   const { accounts, setCurrentPage, currency, refreshData } = useApp();
   const activeAccounts = accounts.filter(a => a.isActive);
 
@@ -137,7 +139,7 @@ export const AddInvestment: React.FC = () => {
 
   const calculatedTotalCapital = calculatedSubtotal + formData.purchaseFees;
 
-  const handleSubmit = async () => {
+  const handleSubmit = guardSubmit(async () => {
     if (!formData.name.trim() && selectedSubcategory !== 'fd' && selectedSubcategory !== 'rd') {
       toast.error('Enter investment asset name');
       return;
@@ -360,7 +362,7 @@ export const AddInvestment: React.FC = () => {
     } finally {
       setIsSubmitting(false);
     }
-  };
+  });
 
   return (
     <CenteredLayout enablePullToRefresh={false} className="pb-32">
@@ -379,7 +381,7 @@ export const AddInvestment: React.FC = () => {
               >
                 <ArrowLeft size={16} className="text-slate-700" />
               </button>
-              <h1 className="text-base sm:text-lg md:text-xl font-black text-slate-900 tracking-tight leading-none truncate">Add Investment</h1>
+              <h1 className="font-page-title text-slate-900 tracking-tight leading-none truncate">Add Investment</h1>
             </div>
           </div>
 
@@ -400,7 +402,7 @@ export const AddInvestment: React.FC = () => {
             <div className="absolute -right-6 -top-6 w-24 h-24 bg-indigo-500/15 rounded-full blur-xl pointer-events-none" />
             <div className="relative z-10 flex items-center justify-between gap-3">
               <div className="min-w-0">
-                <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white/10 border border-white/10 text-[9px] sm:text-[10px] font-black text-indigo-200 uppercase tracking-wider">
+                <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white/10 border border-white/10 text-2xs font-black text-indigo-200 uppercase tracking-wider">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                   <span>{selectedSubcategory.replace('_', ' ').toUpperCase()}</span>
                 </div>
@@ -409,7 +411,7 @@ export const AddInvestment: React.FC = () => {
                 </p>
               </div>
               <div className="text-right shrink-0">
-                <p className="text-[9px] sm:text-[10px] font-bold text-indigo-300 uppercase tracking-widest">Total Capital Required</p>
+                <p className="text-2xs font-bold text-indigo-300 uppercase tracking-widest">Total Capital Required</p>
                 <p className="text-lg sm:text-2xl md:text-3xl font-black tracking-tight text-white mt-0.5">
                   {formatCurrencyAmount(calculatedTotalCapital, currency)}
                 </p>
@@ -470,7 +472,7 @@ export const AddInvestment: React.FC = () => {
                 {selectedSubcategory !== 'fd' && selectedSubcategory !== 'rd' && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 pt-3 sm:pt-4 border-t border-slate-100">
                     <div className="space-y-1 sm:space-y-1.5">
-                      <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Broker / Platform</label>
+                      <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Broker / Platform</label>
                       <input
                         type="text"
                         value={formData.broker}
@@ -482,7 +484,7 @@ export const AddInvestment: React.FC = () => {
                     </div>
 
                     <div className="space-y-1 sm:space-y-1.5">
-                      <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Purchase Date</label>
+                      <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Purchase Date</label>
                       <input
                         type="date"
                         value={formData.date}
@@ -496,7 +498,7 @@ export const AddInvestment: React.FC = () => {
 
                 {/* Notes */}
                 <div className="space-y-1 sm:space-y-1.5">
-                  <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Notes / Strategy</label>
+                  <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Notes / Strategy</label>
                   <textarea
                     value={formData.description}
                     onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))}
@@ -514,14 +516,14 @@ export const AddInvestment: React.FC = () => {
                   <h2 className="text-xs sm:text-sm font-bold text-slate-900 uppercase tracking-wider">Payment Account</h2>
                 </div>
                 <div className="space-y-1 sm:space-y-1.5">
-                  <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Source Account</label>
+                  <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Source Account</label>
                   <SearchableDropdown
                     options={activeAccounts.map(a => ({
                       value: String(a.id),
                       label: a.name,
                       description: formatCurrencyAmount(a.balance, currency),
                       icon: (
-                        <div className="w-6 h-6 rounded-md bg-indigo-50 flex items-center justify-center text-indigo-700 font-bold text-[10px]">
+                        <div className="w-6 h-6 rounded-md bg-indigo-50 flex items-center justify-center text-indigo-700 font-bold text-2xs">
                           {(a.type || 'BK').substring(0, 2).toUpperCase()}
                         </div>
                       ),
@@ -550,7 +552,7 @@ export const AddInvestment: React.FC = () => {
                 {/* Quantity / Weight and Buy Price Inputs */}
                 <div className="grid grid-cols-2 gap-2.5 sm:gap-4">
                   <div className="bg-slate-50/80 border border-slate-200/80 rounded-xl sm:rounded-2xl p-2.5 sm:p-4 text-center space-y-1 focus-within:bg-white focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all">
-                    <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider block truncate">
+                    <span className="text-2xs font-bold text-slate-400 uppercase tracking-wider block truncate">
                       {selectedCategory === 'physical_assets' ? `Weight (${physicalDetails.weightUnit})` : 'Quantity'}
                     </span>
                     {selectedCategory === 'physical_assets' ? (
@@ -575,7 +577,7 @@ export const AddInvestment: React.FC = () => {
                   </div>
 
                   <div className="bg-slate-50/80 border border-slate-200/80 rounded-xl sm:rounded-2xl p-2.5 sm:p-4 text-center space-y-1 focus-within:bg-white focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all">
-                    <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider block truncate">
+                    <span className="text-2xs font-bold text-slate-400 uppercase tracking-wider block truncate">
                       {selectedCategory === 'physical_assets' ? `Price per unit` : `Buy Price (${assetCurrencySymbol})`}
                     </span>
                     <input
@@ -592,7 +594,7 @@ export const AddInvestment: React.FC = () => {
                 {/* Fees and Subtotal Row */}
                 <div className="flex items-center justify-between gap-3 sm:gap-4 pt-3 sm:pt-4 border-t border-slate-100">
                   <div className="w-1/2 space-y-1">
-                    <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Fees ({currency})</label>
+                    <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Fees ({currency})</label>
                     <input
                       type="number"
                       value={formData.purchaseFees || ''}
@@ -603,7 +605,7 @@ export const AddInvestment: React.FC = () => {
                     />
                   </div>
                   <div className="w-1/2 text-right">
-                    <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Subtotal</p>
+                    <p className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Subtotal</p>
                     <p className="text-base sm:text-xl md:text-2xl font-black text-slate-900 tracking-tight mt-0.5">
                       {formatNativeMoney(calculatedSubtotal, assetCurrencyCode)}
                     </p>

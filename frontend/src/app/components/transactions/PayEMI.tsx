@@ -8,8 +8,10 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { toast } from 'sonner';
 import { CreditCard, AlertCircle, DollarSign, Calendar } from 'lucide-react';
 import { formatCurrencyAmount } from '@/lib/currencyUtils';
+import { useSubmitLock } from '@/hooks/useSubmitLock';
 
 export const PayEMI: React.FC = () => {
+ const guardSubmit = useSubmitLock();
  const { currency, setCurrentPage } = useApp();
  const [selectedLoanId, setSelectedLoanId] = useState<number | null>(null);
  const [paymentAmount, setPaymentAmount] = useState<number>(0);
@@ -39,7 +41,7 @@ export const PayEMI: React.FC = () => {
  return formatCurrencyAmount(amount, currency);
  };
 
- const handleSubmit = async (e: React.FormEvent) => {
+ const handleSubmit = guardSubmit(async (e: React.FormEvent) => {
  e.preventDefault();
 
  if (!selectedLoanId) {
@@ -111,7 +113,7 @@ export const PayEMI: React.FC = () => {
  } finally {
  setIsProcessing(false);
  }
- };
+ });
 
  return (
  <CenteredLayout>

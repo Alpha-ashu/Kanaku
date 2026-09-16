@@ -566,7 +566,7 @@ export const Transactions: React.FC = () => {
             >
               <SlidersHorizontal size={18} />
               {refineCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-1 rounded-full bg-purple-600 text-white text-[9px] font-black flex items-center justify-center border-2 border-white">
+                <span className="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-1 rounded-full bg-purple-600 text-white text-2xs font-black flex items-center justify-center border-2 border-white">
                   {refineCount}
                 </span>
               )}
@@ -618,7 +618,7 @@ export const Transactions: React.FC = () => {
             </span>
             <p className="mt-3 text-xs sm:text-sm font-semibold text-slate-400">Income</p>
             <p className="text-lg sm:text-2xl font-black text-slate-900 tracking-tight truncate">{formatCurrency(stats.income)}</p>
-            <p className="text-[10px] sm:text-[11px] font-medium text-slate-400 truncate">
+            <p className="text-2xs font-medium text-slate-400 truncate">
               {counts.income} {counts.income === 1 ? 'credit' : 'credits'}
             </p>
           </div>
@@ -629,7 +629,7 @@ export const Transactions: React.FC = () => {
             </span>
             <p className="mt-3 text-xs sm:text-sm font-semibold text-slate-400">Expenses</p>
             <p className="text-lg sm:text-2xl font-black text-slate-900 tracking-tight truncate">{formatCurrency(stats.expenses)}</p>
-            <p className="text-[10px] sm:text-[11px] font-medium text-slate-400 truncate">
+            <p className="text-2xs font-medium text-slate-400 truncate">
               {counts.expense} {counts.expense === 1 ? 'debit' : 'debits'}
             </p>
           </div>
@@ -643,7 +643,7 @@ export const Transactions: React.FC = () => {
                 {stats.netFlow >= 0 ? <TrendingUp size={18} /> : <TrendingDown size={18} />}
               </span>
               <span className={cn(
-                'px-2 py-0.5 rounded-full text-[10px] font-bold',
+                'px-2 py-0.5 rounded-full text-2xs font-bold',
                 stats.netFlow >= 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'
               )}>
                 {stats.netFlow >= 0 ? 'Surplus' : 'Deficit'}
@@ -656,7 +656,7 @@ export const Transactions: React.FC = () => {
             )}>
               {stats.netFlow > 0 ? '+' : ''}{formatCurrency(stats.netFlow)}
             </p>
-            <p className="text-[10px] sm:text-[11px] font-medium text-slate-400 truncate">
+            <p className="text-2xs font-medium text-slate-400 truncate">
               {stats.netFlow >= 0 ? 'Kept this period' : 'Spent more than earned'}
             </p>
           </div>
@@ -669,14 +669,14 @@ export const Transactions: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setCurrentPage('receipt-scanner')}
-                className="text-[10px] sm:text-[11px] font-bold text-purple-700 hover:text-purple-900 inline-flex items-center gap-0.5 cursor-pointer"
+                className="text-2xs font-bold text-purple-700 hover:text-purple-900 inline-flex items-center gap-0.5 cursor-pointer"
               >
                 Bills <ChevronRight size={11} />
               </button>
             </div>
             <p className="mt-3 text-xs sm:text-sm font-semibold text-slate-400">Tax on bills</p>
             <p className="text-lg sm:text-2xl font-black text-slate-900 tracking-tight truncate">{formatCurrency(taxSummary.totalTax)}</p>
-            <p className="text-[10px] sm:text-[11px] font-medium text-slate-400 truncate">
+            <p className="text-2xs font-medium text-slate-400 truncate">
               {counts.withReceipt} {counts.withReceipt === 1 ? 'bill' : 'bills'} · {formatCurrency(taxSummary.monthlyTax)}/mo
             </p>
           </div>
@@ -804,7 +804,7 @@ export const Transactions: React.FC = () => {
         <div data-testid="transactions-card-4" className="space-y-5">
           {transactionGroups.map((group) => (
             <section key={group.key}>
-              <p className="px-1 text-[11px] sm:text-xs font-extrabold uppercase tracking-wider text-slate-400">
+              <p className="px-1 text-xs font-extrabold uppercase tracking-wider text-slate-400">
                 {group.label}
               </p>
               <div className="mt-2 rounded-[24px] sm:rounded-[28px] bg-white border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.10)] px-4 sm:px-5 divide-y divide-slate-100">
@@ -879,7 +879,7 @@ export const Transactions: React.FC = () => {
                           {transaction.type === 'transfer' ? '⇄ ' : displayType === 'income' ? '+' : '−'}
                           {formatCurrency(transaction.amount)}
                         </p>
-                        {sideText && <p className="text-[11px] sm:text-xs font-medium text-slate-400 mt-0.5">{sideText}</p>}
+                        {sideText && <p className="text-xs font-medium text-slate-400 mt-0.5">{sideText}</p>}
                       </div>
 
                       {/* Quick actions on hover (desktop) */}
@@ -1020,13 +1020,13 @@ export const Transactions: React.FC = () => {
                             {tx.description || tx.category}
                           </h3>
                           {tx.merchant && tx.merchant !== tx.description && (
-                            <span className="text-[9px] sm:text-[10px] font-bold text-slate-600 bg-slate-100 px-1.5 py-0.2 rounded-full">
+                            <span className="text-2xs font-bold text-slate-600 bg-slate-100 px-1.5 py-0.2 rounded-full">
                               {tx.merchant}
                             </span>
                           )}
                         </div>
                         <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                          <p className="text-[11px] text-slate-400 font-medium">
+                          <p className="text-xs text-slate-400 font-medium">
                             {formattedDateTime}
                           </p>
                           {attachedDocumentId && (
@@ -1034,7 +1034,7 @@ export const Transactions: React.FC = () => {
                               type="button"
                               data-testid="transactions-header-view-bill"
                               onClick={() => { handlePreviewBill(tx); setSelectedTransaction(null); }}
-                              className="inline-flex items-center gap-0.5 px-2 py-0.2 rounded-full bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200/70 text-[10px] font-bold shadow-xs transition-all active:scale-95 cursor-pointer"
+                              className="inline-flex items-center gap-0.5 px-2 py-0.2 rounded-full bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200/70 text-2xs font-bold shadow-xs transition-all active:scale-95 cursor-pointer"
                               title="View attached bill"
                             >
                               <Paperclip size={10} className="shrink-0" />
@@ -1058,7 +1058,7 @@ export const Transactions: React.FC = () => {
                         >
                           <ChevronLeft size={14} />
                         </button>
-                        <span className="text-[10px] sm:text-[11px] font-bold text-slate-600 px-1.5 sm:px-2 min-w-[38px] sm:min-w-[44px] text-center select-none">
+                        <span className="text-2xs font-bold text-slate-600 px-1.5 sm:px-2 min-w-[38px] sm:min-w-[44px] text-center select-none">
                           {currentTxIndex >= 0 ? `${currentTxIndex + 1}/${filteredTransactions.length}` : ''}
                         </span>
                         <button
@@ -1088,14 +1088,14 @@ export const Transactions: React.FC = () => {
                     {/* Amount hero card */}
                     <div className="p-3.5 sm:p-5 rounded-[20px] sm:rounded-[24px] bg-slate-50/90 border border-slate-100 flex items-center justify-between">
                       <div>
-                        <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Amount</p>
+                        <p className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Amount</p>
                         <p className={cn(
                           'text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight mt-0.5',
                           tx.type === 'transfer' ? 'text-purple-600' : displayType === 'income' ? 'text-emerald-600' : 'text-slate-900'
                         )}>
                           {tx.type === 'transfer' ? '⇄ ' : displayType === 'income' ? '+' : '-'}{formatCurrency(tx.amount)}
                         </p>
-                        <p className="text-[11px] text-slate-400 font-medium mt-0.5">
+                        <p className="text-xs text-slate-400 font-medium mt-0.5">
                           {tx.type === 'transfer'
                             ? `Transfer between linked accounts`
                             : displayType === 'income'
@@ -1104,7 +1104,7 @@ export const Transactions: React.FC = () => {
                         </p>
                       </div>
                       <span className={cn(
-                        'px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-black uppercase tracking-wider border shadow-xs shrink-0',
+                        'px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full text-xs font-black uppercase tracking-wider border shadow-xs shrink-0',
                         tx.type === 'transfer' ? 'bg-purple-50 text-purple-700 border-purple-200/70' :
                         displayType === 'income' ? 'bg-emerald-50 text-emerald-700 border-emerald-200/70' :
                         'bg-rose-50 text-rose-700 border-rose-200/70'
@@ -1117,7 +1117,7 @@ export const Transactions: React.FC = () => {
                     <div className="bg-white rounded-[20px] sm:rounded-[24px] border border-slate-100 divide-y divide-slate-100/80 overflow-hidden shadow-xs text-xs sm:text-sm">
                       {/* Category & Subcategory */}
                       <div className="flex items-center justify-between px-3.5 sm:px-4 py-2.5 sm:py-3 hover:bg-slate-50/50 transition-colors">
-                        <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Category</span>
+                        <span className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Category</span>
                         <div className="flex items-center gap-1.5 text-right">
                           <span className="text-xs font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded-full">
                             {tx.category}
@@ -1132,7 +1132,7 @@ export const Transactions: React.FC = () => {
 
                       {/* Account or Route */}
                       <div className="flex items-center justify-between px-3.5 sm:px-4 py-2.5 sm:py-3 hover:bg-slate-50/50 transition-colors">
-                        <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                        <span className="text-2xs font-bold text-slate-400 uppercase tracking-wider">
                           {tx.type === 'transfer' ? 'Route' : 'Account'}
                         </span>
                         {tx.type === 'transfer' && destAccount ? (
@@ -1146,7 +1146,7 @@ export const Transactions: React.FC = () => {
                             <Wallet size={12} className="text-slate-400" />
                             <span>{account?.name || 'Unassigned'}</span>
                             {account?.type && (
-                              <span className="text-[9px] text-slate-400 font-semibold bg-slate-100 px-1.5 py-0.2 rounded">
+                              <span className="text-2xs text-slate-400 font-semibold bg-slate-100 px-1.5 py-0.2 rounded">
                                 {account.type}
                               </span>
                             )}
@@ -1156,7 +1156,7 @@ export const Transactions: React.FC = () => {
 
                       {/* Exact Date & Time */}
                       <div className="flex items-center justify-between px-3.5 sm:px-4 py-2.5 sm:py-3 hover:bg-slate-50/50 transition-colors">
-                        <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Date & Time</span>
+                        <span className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Date & Time</span>
                         <span className="text-xs font-bold text-slate-800 text-right">
                           {formattedDateTime}
                         </span>
@@ -1165,7 +1165,7 @@ export const Transactions: React.FC = () => {
                       {/* Merchant / Payee */}
                       {tx.merchant && (
                         <div className="flex items-center justify-between px-3.5 sm:px-4 py-2.5 sm:py-3 hover:bg-slate-50/50 transition-colors">
-                          <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Merchant</span>
+                          <span className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Merchant</span>
                           <span className="text-xs font-bold text-slate-800 text-right">
                             {tx.merchant}
                           </span>
@@ -1175,7 +1175,7 @@ export const Transactions: React.FC = () => {
                       {/* Group Expense Info */}
                       {(tx.groupName || tx.expenseMode === 'group') && (
                         <div className="flex items-center justify-between px-3.5 sm:px-4 py-2.5 sm:py-3 hover:bg-slate-50/50 transition-colors bg-indigo-50/30">
-                          <span className="text-[10px] sm:text-[11px] font-bold text-indigo-500 uppercase tracking-wider flex items-center gap-1">
+                          <span className="text-2xs font-bold text-indigo-500 uppercase tracking-wider flex items-center gap-1">
                             <Users size={11} /> Group
                           </span>
                           <div className="text-right">
@@ -1183,7 +1183,7 @@ export const Transactions: React.FC = () => {
                               {tx.groupName || 'Group Expense'}
                             </span>
                             {tx.splitType && (
-                              <span className="text-[10px] font-semibold text-indigo-600 block">
+                              <span className="text-2xs font-semibold text-indigo-600 block">
                                 {tx.splitType === 'equal' ? 'Split Equally' : 'Custom Split'}
                               </span>
                             )}
@@ -1194,7 +1194,7 @@ export const Transactions: React.FC = () => {
                       {/* Loan Info */}
                       {(tx.contactName || tx.loanType) && (
                         <div className="flex items-center justify-between px-3.5 sm:px-4 py-2.5 sm:py-3 hover:bg-slate-50/50 transition-colors bg-amber-50/30">
-                          <span className="text-[10px] sm:text-[11px] font-bold text-amber-600 uppercase tracking-wider flex items-center gap-1">
+                          <span className="text-2xs font-bold text-amber-600 uppercase tracking-wider flex items-center gap-1">
                             <HandCoins size={11} /> Loan
                           </span>
                           <div className="text-right">
@@ -1202,7 +1202,7 @@ export const Transactions: React.FC = () => {
                               {tx.loanType === 'lent' ? 'Money Lent' : 'Money Borrowed'}
                             </span>
                             {tx.contactName && (
-                              <span className="text-[10px] font-semibold text-amber-700 block">
+                              <span className="text-2xs font-semibold text-amber-700 block">
                                 Contact: {tx.contactName}
                               </span>
                             )}
@@ -1213,12 +1213,12 @@ export const Transactions: React.FC = () => {
                       {/* Tags */}
                       {Array.isArray(tx.tags) && tx.tags.length > 0 && (
                         <div className="flex items-center justify-between px-3.5 sm:px-4 py-2.5 sm:py-3 hover:bg-slate-50/50 transition-colors">
-                          <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                          <span className="text-2xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
                             <Tag size={11} /> Tags
                           </span>
                           <div className="flex items-center gap-1 flex-wrap justify-end">
                             {tx.tags.map((tag, idx) => (
-                              <span key={idx} className="text-[10px] font-bold text-purple-700 bg-purple-50 border border-purple-200/50 px-1.5 py-0.2 rounded-md">
+                              <span key={idx} className="text-2xs font-bold text-purple-700 bg-purple-50 border border-purple-200/50 px-1.5 py-0.2 rounded-md">
                                 #{tag}
                               </span>
                             ))}
@@ -1229,7 +1229,7 @@ export const Transactions: React.FC = () => {
                       {/* Notes */}
                       {tx.notes && (
                         <div className="px-3.5 sm:px-4 py-2.5 sm:py-3 hover:bg-slate-50/50 transition-colors">
-                          <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Notes</span>
+                          <span className="text-2xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Notes</span>
                           <p className="text-xs text-slate-700 bg-slate-50 p-2 rounded-xl border border-slate-200/50 leading-relaxed italic">
                             "{tx.notes}"
                           </p>
@@ -1240,7 +1240,7 @@ export const Transactions: React.FC = () => {
                       {attachedTaxAmount > 0 && (
                         <div className="px-3.5 sm:px-4 py-2.5 sm:py-3 bg-purple-50/20">
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-[10px] sm:text-[11px] font-bold text-purple-700 uppercase tracking-wider flex items-center gap-1">
+                            <span className="text-2xs font-bold text-purple-700 uppercase tracking-wider flex items-center gap-1">
                               <Receipt size={11} /> Tax Details
                             </span>
                             <span className="text-xs font-black text-purple-900">
@@ -1250,7 +1250,7 @@ export const Transactions: React.FC = () => {
                           {taxBreakdown.length > 0 && (
                             <div className="space-y-1 mt-1.5 pt-1.5 border-t border-purple-100">
                               {taxBreakdown.map((t, idx) => (
-                                <div key={idx} className="flex justify-between text-[10px] sm:text-[11px] text-slate-600">
+                                <div key={idx} className="flex justify-between text-2xs text-slate-600">
                                   <span>{t.name} {t.rate ? `(${t.rate}%)` : ''}</span>
                                   <span className="font-bold">{formatCurrency(t.amount)}</span>
                                 </div>
@@ -1268,7 +1268,7 @@ export const Transactions: React.FC = () => {
                               <Receipt size={13} />
                             </span>
                             <div>
-                              <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider leading-none">Attached Bill</p>
+                              <p className="text-2xs font-bold text-slate-400 uppercase tracking-wider leading-none">Attached Bill</p>
                               <p className="text-xs font-bold text-purple-900 mt-0.5">Receipt document verified</p>
                             </div>
                           </div>
@@ -1360,7 +1360,7 @@ export const Transactions: React.FC = () => {
               className="relative bg-white/95 backdrop-blur-2xl rounded-[28px] sm:rounded-[32px] p-5 sm:p-8 w-full max-w-md shadow-2xl border border-white/50 z-10 max-h-[calc(100dvh-2rem-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px))] overflow-y-auto"
             >
               <h3 className="text-lg sm:text-xl md:text-2xl font-black text-slate-900 tracking-tight mb-1 text-center">New Transaction</h3>
-              <p className="text-slate-500 font-medium text-[11px] sm:text-xs md:text-sm mb-4 sm:mb-6 text-center">What kind of transaction is this?</p>
+              <p className="text-slate-500 font-medium text-xs md:text-sm mb-4 sm:mb-6 text-center">What kind of transaction is this?</p>
 
               <div className="space-y-2 sm:space-y-2.5">
                 {[
@@ -1386,7 +1386,7 @@ export const Transactions: React.FC = () => {
                     </div>
                     <div className="text-left flex-1">
                       <p className="font-bold text-xs sm:text-sm md:text-base leading-tight">{opt.label}</p>
-                      <p className="text-[10px] sm:text-xs opacity-80 font-medium leading-tight">{opt.desc}</p>
+                      <p className="text-2xs sm:text-xs opacity-80 font-medium leading-tight">{opt.desc}</p>
                     </div>
                   </button>
                 ))}

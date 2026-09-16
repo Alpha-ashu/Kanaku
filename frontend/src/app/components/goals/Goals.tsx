@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils';
 import { VOICE_GOAL_DRAFT_KEY, takeVoiceDraft, type VoiceGoalDraft } from '@/lib/voiceDrafts';
 import { formatCurrencyAmount } from '@/lib/currencyUtils';
 import { decodeQuotedPrintable, sanitizeContactName } from '@/services/contactsService';
+import { useSubmitLock } from '@/hooks/useSubmitLock';
 
 export const Goals: React.FC = () => {
  const { goals, accounts, currency, setCurrentPage, friends = [] } = useApp();
@@ -271,14 +272,14 @@ export const Goals: React.FC = () => {
           <div className="h-full rounded-full bg-white transition-all duration-700" style={{ width: `${Math.min(100, overallProgress)}%` }} />
         </div>
         <div className="relative mt-3 flex flex-wrap items-center gap-2">
-          <span data-testid="goals-card-4" className="rounded-full bg-white/20 px-3 py-1 text-[11px] sm:text-xs font-bold">
+          <span data-testid="goals-card-4" className="rounded-full bg-white/20 px-3 py-1 text-xs font-bold">
             {overallProgress.toFixed(0)}% overall
           </span>
-          <span data-testid="goals-card-3" className="rounded-full bg-white/20 px-3 py-1 text-[11px] sm:text-xs font-bold">
+          <span data-testid="goals-card-3" className="rounded-full bg-white/20 px-3 py-1 text-xs font-bold">
             {formatCurrency(totalRemainingAmount)} to go
           </span>
           {completedGoals > 0 && (
-            <span className="rounded-full bg-white/20 px-3 py-1 text-[11px] sm:text-xs font-bold">
+            <span className="rounded-full bg-white/20 px-3 py-1 text-xs font-bold">
               {completedGoals} completed 🎉
             </span>
           )}
@@ -289,7 +290,7 @@ export const Goals: React.FC = () => {
     {/* Goals */}
     <div className="space-y-2">
     {goals.length > 0 && (
-      <p className="px-1 text-[11px] sm:text-xs font-extrabold uppercase tracking-wider text-slate-400">Your goals</p>
+      <p className="px-1 text-xs font-extrabold uppercase tracking-wider text-slate-400">Your goals</p>
     )}
     <AnimatePresence>
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5 items-stretch">
@@ -390,7 +391,7 @@ export const Goals: React.FC = () => {
                       <p className="mt-3 text-center text-xs font-bold text-emerald-600">Goal achieved 🎉</p>
                     ) : (
                       milestone && (
-                        <p className="mt-3 self-start rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-bold text-emerald-700">
+                        <p className="mt-3 self-start rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">
                           {milestone}
                         </p>
                       )
@@ -573,7 +574,7 @@ export const Goals: React.FC = () => {
             {getCategoryCartoonIcon(editFormData.category, 22)}
           </div>
           <div className="min-w-0 flex-1">
-            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-violet-50 text-violet-600 font-extrabold text-[10px] tracking-wider uppercase">
+            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-violet-50 text-violet-600 font-extrabold text-2xs tracking-wider uppercase">
               <span className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse" />
               Edit Goal
             </div>
@@ -595,7 +596,7 @@ export const Goals: React.FC = () => {
         <div className="overflow-y-auto flex-1 px-5 sm:px-6 py-5 space-y-4">
           {/* Goal Name */}
           <div>
-            <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
               Goal Name
             </label>
             <input
@@ -610,7 +611,7 @@ export const Goals: React.FC = () => {
 
           {/* Category Dropdown */}
           <div className="relative" ref={categoryDropdownRef}>
-            <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
               Category
             </label>
             <button
@@ -725,7 +726,7 @@ export const Goals: React.FC = () => {
           {/* Amounts: Target & Saved */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
                 Target ({currency})
               </label>
               <input
@@ -738,7 +739,7 @@ export const Goals: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
                 Saved ({currency})
               </label>
               <input
@@ -754,7 +755,7 @@ export const Goals: React.FC = () => {
 
           {/* Target Date */}
           <div>
-            <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
               Target Date
             </label>
             <input
@@ -774,7 +775,7 @@ export const Goals: React.FC = () => {
               </div>
               <div>
                 <p className="text-xs font-bold text-slate-900">Group Goal</p>
-                <p className="text-[10px] text-slate-500">Collaborate with multiple members</p>
+                <p className="text-2xs text-slate-500">Collaborate with multiple members</p>
               </div>
             </div>
             <button
@@ -805,7 +806,7 @@ export const Goals: React.FC = () => {
           {editFormData.isGroupGoal && (
             <div className="space-y-3 pt-1">
               <div className="flex items-center justify-between">
-                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">
                   Collaborators ({editFormData.members?.length || 0})
                 </label>
                 <div className="flex items-center gap-1.5">
@@ -852,7 +853,7 @@ export const Goals: React.FC = () => {
               {showEditFriendPicker && friends.length > 0 && (
                 <div className="p-3.5 bg-violet-50/80 rounded-2xl border border-violet-100/90 space-y-2.5 animate-in zoom-in-95 duration-200">
                   <div className="flex items-center justify-between">
-                    <p className="text-[11px] font-bold text-violet-700 uppercase tracking-wider">
+                    <p className="text-xs font-bold text-violet-700 uppercase tracking-wider">
                       Tap contact to add as collaborator
                     </p>
                     <button
@@ -861,7 +862,7 @@ export const Goals: React.FC = () => {
                         setShowEditFriendPicker(false);
                         setEditFriendSearch('');
                       }}
-                      className="text-[11px] font-bold text-violet-500 hover:text-violet-700 cursor-pointer"
+                      className="text-xs font-bold text-violet-500 hover:text-violet-700 cursor-pointer"
                     >
                       Close
                     </button>
@@ -960,7 +961,7 @@ export const Goals: React.FC = () => {
                                 : "bg-white border-violet-200 text-violet-800 hover:bg-violet-600 hover:text-white hover:border-violet-600 shadow-2xs active:scale-95"
                             )}
                           >
-                            <span className="w-4 h-4 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center text-[9px] font-black uppercase">
+                            <span className="w-4 h-4 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center text-2xs font-black uppercase">
                               {cleanName ? cleanName[0] : '?'}
                             </span>
                             <span>{cleanName}</span>
@@ -1085,6 +1086,7 @@ const ContributeModal: React.FC<{
   initialNotes?: string;
   onClose: () => void;
 }> = ({ goalId, accounts, currency, initialAmount, initialNotes, onClose }) => {
+  const guardSubmit = useSubmitLock();
   const [amount, setAmount] = useState(initialAmount || 0);
   const [accountId, setAccountId] = useState(accounts[0]?.id || 0);
   const [notes, setNotes] = useState(initialNotes || '');
@@ -1100,7 +1102,7 @@ const ContributeModal: React.FC<{
     db.goals.get(goalId).then(g => setGoal(g || null));
   }, [goalId]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = guardSubmit(async (e: React.FormEvent) => {
     e.preventDefault();
 
     const targetGoal = goal || await db.goals.get(goalId);
@@ -1128,7 +1130,7 @@ const ContributeModal: React.FC<{
 
     toast.success('Contribution added successfully');
     onClose();
-  };
+  });
 
   const modalContent = (
     <div

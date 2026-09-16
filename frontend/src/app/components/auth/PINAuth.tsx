@@ -926,7 +926,7 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
         <div className="px-2 sm:px-6 md:px-8 flex flex-col gap-3.5 sm:gap-6">
           {/* Step label + back button for confirm stage */}
           <div className="flex flex-col items-center text-center">
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-0.5 sm:mb-1">
+            <p className="text-2xs font-black uppercase tracking-[0.2em] text-gray-400 mb-0.5 sm:mb-1">
               {isCreating ? `Step ${createStage === 'enter' ? '1' : '2'} of 2` : 'Secure Unlock'}
             </p>
             <h2 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight">{currentStepLabel}</h2>
@@ -975,14 +975,14 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
               type="button"
               onClick={() => setShowReveal(r => !r)}
               data-testid="pin-auth-reveal-toggle"
-              className="flex items-center gap-1.5 text-gray-400 hover:text-gray-900 text-[10px] font-bold transition-colors"
+              className="flex items-center gap-1.5 text-gray-400 hover:text-gray-900 text-2xs font-bold transition-colors"
             >
               {showReveal ? <EyeOff size={14} /> : <Eye size={14} />}
               {showReveal ? 'HIDE PIN' : 'SHOW PIN'}
             </button>
             <div className="h-4 mt-0.5 sm:mt-1">
               {errorMsg && (
-                <p className="text-red-500 text-[10px] font-bold text-center flex items-center justify-center gap-1">
+                <p className="text-red-500 text-2xs font-bold text-center flex items-center justify-center gap-1">
                   <AlertCircle size={12} /> {errorMsg}
                 </p>
               )}
@@ -1093,8 +1093,8 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
           <div className="bg-gray-50 border border-gray-100 rounded-2xl sm:rounded-[28px] p-3 sm:p-5 flex flex-col items-center text-center gap-1.5 sm:gap-2 mt-1 sm:mt-2 mb-2 sm:mb-4">
             <ShieldCheck className="text-emerald-500" size={18} />
             <div>
-              <p className="text-gray-900 text-[10px] sm:text-[11px] font-black uppercase tracking-wider mb-0.5">Secure Encryption</p>
-              <p className="text-gray-500 text-[9px] sm:text-[10px] leading-relaxed max-w-[240px]">
+              <p className="text-gray-900 text-2xs font-black uppercase tracking-wider mb-0.5">Secure Encryption</p>
+              <p className="text-gray-500 text-2xs leading-relaxed max-w-[240px]">
                 Your PIN never leaves this device — only a salted, slow-to-crack verifier is stored. Nothing financial loads or syncs until you unlock.
               </p>
             </div>
@@ -1185,7 +1185,7 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
 
         {resetOtpSent && (
           <div className="flex flex-col gap-2">
-            <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">
+            <label className="block text-2xs font-black uppercase tracking-widest text-slate-400 text-center">
               Verification Code
             </label>
             <div className="flex justify-between gap-1.5 max-w-[280px] mx-auto w-full">

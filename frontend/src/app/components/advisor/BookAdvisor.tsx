@@ -287,7 +287,7 @@ function getStatusBadge(status: string) {
   const s = map[status] ?? map.pending;
   const Icon = s.icon;
   return (
-    <span className={cn('px-2.5 py-1 rounded-xl text-[9px] font-black tracking-wider flex items-center gap-1 border', s.color)}>
+    <span className={cn('px-2.5 py-1 rounded-xl text-2xs font-black tracking-wider flex items-center gap-1 border', s.color)}>
       <Icon size={11} />
       {s.label}
     </span>
@@ -801,7 +801,7 @@ export const BookAdvisor: React.FC = () => {
             </button>
             <div>
               <h1 className="font-page-title text-slate-900 tracking-tight leading-none truncate">Book Advisor</h1>
-              <p className="text-[11px] sm:text-xs text-slate-500 font-medium mt-0.5 sm:mt-1 truncate max-w-[200px] sm:max-w-none">Verified financial planners & tax advisors</p>
+              <p className="text-xs text-slate-500 font-medium mt-0.5 sm:mt-1 truncate max-w-[200px] sm:max-w-none">Verified financial planners & tax advisors</p>
             </div>
           </div>
 
@@ -834,7 +834,7 @@ export const BookAdvisor: React.FC = () => {
                   {tab.badge !== undefined && tab.badge > 0 && (
                     <span
                       className={cn(
-                        'px-1.5 py-0.2 rounded-full text-[9px] font-black shrink-0',
+                        'px-1.5 py-0.2 rounded-full text-2xs font-black shrink-0',
                         isActive
                           ? 'bg-white/20 text-white'
                           : 'bg-slate-200/80 text-slate-700'
@@ -874,7 +874,7 @@ export const BookAdvisor: React.FC = () => {
               {/* Top Active Advisors Avatar Carousel */}
               {advisors.length > 0 && (
                 <div className="pt-2">
-                  <p className="text-[10px] font-black uppercase text-slate-400 tracking-wider mb-2.5 px-1">
+                  <p className="text-2xs font-black uppercase text-slate-400 tracking-wider mb-2.5 px-1">
                     Featured & Available Advisors
                   </p>
                   <div className="flex items-center gap-4 overflow-x-auto scrollbar-hide py-1 px-1">
@@ -894,7 +894,7 @@ export const BookAdvisor: React.FC = () => {
                             <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full shadow-xs" />
                           )}
                         </div>
-                        <span className="text-[11px] font-extrabold text-slate-800 truncate max-w-[76px] group-hover:text-slate-900 text-center">
+                        <span className="text-xs font-extrabold text-slate-800 truncate max-w-[76px] group-hover:text-slate-900 text-center">
                           {adv.name.split(' ')[0]}
                         </span>
                       </div>
@@ -984,7 +984,7 @@ export const BookAdvisor: React.FC = () => {
                         <button
                           onClick={() => void handleToggleFollow(adv.id)}
                           className={cn(
-                            'px-3 py-1.5 rounded-full text-[10px] font-bold transition-all flex items-center gap-1.5 cursor-pointer border shadow-2xs',
+                            'px-3 py-1.5 rounded-full text-2xs font-bold transition-all flex items-center gap-1.5 cursor-pointer border shadow-2xs',
                             isFollowed
                               ? 'bg-slate-100 text-slate-800 border-slate-200'
                               : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
@@ -1001,11 +1001,11 @@ export const BookAdvisor: React.FC = () => {
                           <h3 className="font-extrabold text-slate-900 text-sm truncate">{adv.name}</h3>
                           {adv.verified && <CheckCircle2 size={15} className="text-emerald-600 fill-emerald-100 shrink-0" />}
                         </div>
-                        <p className="text-[11px] font-bold text-slate-400 line-clamp-1 mt-0.5">{adv.title}</p>
+                        <p className="text-xs font-bold text-slate-400 line-clamp-1 mt-0.5">{adv.title}</p>
                       </div>
 
                       {/* Ratings & Rates */}
-                      <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 pt-2.5 border-t border-slate-100">
+                      <div className="flex items-center justify-between text-xs font-bold text-slate-500 pt-2.5 border-t border-slate-100">
                         <span className="flex items-center gap-1 text-amber-500 font-black">
                           <Star size={12} className="fill-current" />
                           {adv.rating.toFixed(1)} <span className="text-slate-400 font-normal">({adv.reviewCount})</span>
@@ -1013,7 +1013,7 @@ export const BookAdvisor: React.FC = () => {
                         <span className="text-slate-400 font-medium">{adv.experienceYears}y exp</span>
                         <span className="text-slate-900 font-black">
                           {adv.hourlyRate !== null ? (
-                            <>₹{adv.hourlyRate}<span className="text-[10px] font-normal text-slate-400">/hr</span></>
+                            <>₹{adv.hourlyRate}<span className="text-2xs font-normal text-slate-400">/hr</span></>
                           ) : (
                             <span className="text-slate-400 font-semibold">On request</span>
                           )}
@@ -1023,12 +1023,12 @@ export const BookAdvisor: React.FC = () => {
                       {/* Expertise Tags */}
                       <div className="flex flex-wrap gap-1 pt-1">
                         {adv.expertise.slice(0, 3).map(exp => (
-                          <span key={exp} className="px-2.5 py-0.5 bg-slate-50 text-slate-600 rounded-lg text-[9px] font-bold border border-slate-100">
+                          <span key={exp} className="px-2.5 py-0.5 bg-slate-50 text-slate-600 rounded-lg text-2xs font-bold border border-slate-100">
                             {exp}
                           </span>
                         ))}
                         {adv.expertise.length > 3 && (
-                          <span className="px-1.5 py-0.5 text-slate-400 text-[9px] font-bold">
+                          <span className="px-1.5 py-0.5 text-slate-400 text-2xs font-bold">
                             +{adv.expertise.length - 3}
                           </span>
                         )}
@@ -1064,26 +1064,26 @@ export const BookAdvisor: React.FC = () => {
             {/* Top Metric Strip */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               <div className="bg-white rounded-[24px] sm:rounded-[28px] p-4 sm:p-5 border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] flex flex-col justify-between">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total Consultations</span>
+                <span className="text-2xs font-bold uppercase tracking-wider text-slate-400">Total Consultations</span>
                 <p className="text-xl sm:text-2xl font-black text-slate-900 mt-2">{stats.total}</p>
-                <span className="text-[10px] font-semibold text-slate-500 mt-1">Booked sessions</span>
+                <span className="text-2xs font-semibold text-slate-500 mt-1">Booked sessions</span>
               </div>
               <div className="bg-white rounded-[24px] sm:rounded-[28px] p-4 sm:p-5 border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] flex flex-col justify-between">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Confirmed</span>
+                <span className="text-2xs font-bold uppercase tracking-wider text-slate-400">Confirmed</span>
                 <p className="text-xl sm:text-2xl font-black text-emerald-600 mt-2">{stats.confirmed}</p>
-                <span className="text-[10px] font-semibold text-emerald-700 mt-1">Ready to attend</span>
+                <span className="text-2xs font-semibold text-emerald-700 mt-1">Ready to attend</span>
               </div>
               <div className="bg-white rounded-[24px] sm:rounded-[28px] p-4 sm:p-5 border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] flex flex-col justify-between">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Pending Approval</span>
+                <span className="text-2xs font-bold uppercase tracking-wider text-slate-400">Pending Approval</span>
                 <p className="text-xl sm:text-2xl font-black text-amber-600 mt-2">{stats.pending}</p>
-                <span className="text-[10px] font-semibold text-amber-700 mt-1">Awaiting advisor</span>
+                <span className="text-2xs font-semibold text-amber-700 mt-1">Awaiting advisor</span>
               </div>
               <div className="bg-white rounded-[24px] sm:rounded-[28px] p-4 sm:p-5 border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] flex flex-col justify-between">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total Advisory Fees</span>
+                <span className="text-2xs font-bold uppercase tracking-wider text-slate-400">Total Advisory Fees</span>
                 <p className="text-xl sm:text-2xl font-black text-slate-900 mt-2">
                   <FinancialAmount value={stats.totalFees} />
                 </p>
-                <span className="text-[10px] font-semibold text-slate-500 mt-1">Settled & scheduled</span>
+                <span className="text-2xs font-semibold text-slate-500 mt-1">Settled & scheduled</span>
               </div>
             </div>
 
@@ -1111,7 +1111,7 @@ export const BookAdvisor: React.FC = () => {
                         <img src={bkg.advisorAvatar} alt={bkg.advisorName} className="w-10 h-10 rounded-2xl object-cover shadow-2xs" />
                         <div>
                           <h4 className="font-extrabold text-slate-900 text-xs">{bkg.advisorName}</h4>
-                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{bkg.sessionType} Session</span>
+                          <span className="text-2xs font-bold text-slate-400 uppercase tracking-wider">{bkg.sessionType} Session</span>
                         </div>
                       </div>
                       {getStatusBadge(bkg.status)}
@@ -1119,10 +1119,10 @@ export const BookAdvisor: React.FC = () => {
 
                     <div>
                       <h5 className="font-black text-slate-900 text-xs line-clamp-1">{bkg.topic}</h5>
-                      {bkg.notes && <p className="text-[11px] text-slate-600 mt-1 line-clamp-2 font-medium">{bkg.notes}</p>}
+                      {bkg.notes && <p className="text-xs text-slate-600 mt-1 line-clamp-2 font-medium">{bkg.notes}</p>}
                     </div>
 
-                    <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 pt-2 border-t border-slate-100">
+                    <div className="flex items-center justify-between text-xs font-bold text-slate-500 pt-2 border-t border-slate-100">
                       <span className="flex items-center gap-1.5"><Calendar size={12} className="text-slate-400" /> {bkg.proposedDate}</span>
                       <span className="flex items-center gap-1.5"><Clock size={12} className="text-slate-400" /> {bkg.proposedTime}</span>
                       <span className="text-slate-900 font-black">
@@ -1139,7 +1139,7 @@ export const BookAdvisor: React.FC = () => {
                     ) : (bkg.status === 'completed' || bkg.payment?.status === 'pending') ? (
                       <div className="flex items-center justify-between p-3 bg-amber-50/80 border border-amber-200/80 rounded-2xl">
                         <div className="min-w-0">
-                          <p className="text-[10px] font-black uppercase tracking-wider text-amber-700">Fee Pending</p>
+                          <p className="text-2xs font-black uppercase tracking-wider text-amber-700">Fee Pending</p>
                           <p className="text-xs font-black text-slate-900">
                             <FinancialAmount value={bkg.payment?.amount || bkg.amount} />
                           </p>
@@ -1166,19 +1166,19 @@ export const BookAdvisor: React.FC = () => {
                         setActiveTab('messages');
                       }}
                       disabled={!bkg.sessionId}
-                      className="py-2 bg-white border border-slate-200/80 hover:bg-slate-50 text-slate-700 rounded-full text-[10px] font-bold flex items-center justify-center gap-1 cursor-pointer shadow-2xs disabled:opacity-40 disabled:cursor-not-allowed"
+                      className="py-2 bg-white border border-slate-200/80 hover:bg-slate-50 text-slate-700 rounded-full text-2xs font-bold flex items-center justify-center gap-1 cursor-pointer shadow-2xs disabled:opacity-40 disabled:cursor-not-allowed"
                     >
                       <MessageSquare size={12} /> Chat
                     </button>
                     {bkg.status === 'pending' || bkg.status === 'accepted' ? (
                       <button
                         onClick={() => void handleCancelBooking(bkg.id)}
-                        className="py-2 bg-white border border-rose-200/80 hover:bg-rose-50 text-rose-600 rounded-full text-[10px] font-bold flex items-center justify-center gap-1 cursor-pointer shadow-2xs"
+                        className="py-2 bg-white border border-rose-200/80 hover:bg-rose-50 text-rose-600 rounded-full text-2xs font-bold flex items-center justify-center gap-1 cursor-pointer shadow-2xs"
                       >
                         <XCircle size={12} /> Cancel
                       </button>
                     ) : (
-                      <span className="py-2 text-center text-[10px] font-bold text-slate-300">
+                      <span className="py-2 text-center text-2xs font-bold text-slate-300">
                         —
                       </span>
                     )}
@@ -1188,7 +1188,7 @@ export const BookAdvisor: React.FC = () => {
                         if (adv) handleOpenBookingModal(adv);
                         else toast.error('This advisor is no longer available');
                       }}
-                      className="py-2 bg-[#18181B] hover:bg-black text-white rounded-full text-[10px] font-bold flex items-center justify-center gap-1 cursor-pointer shadow-2xs transition-all active:scale-95"
+                      className="py-2 bg-[#18181B] hover:bg-black text-white rounded-full text-2xs font-bold flex items-center justify-center gap-1 cursor-pointer shadow-2xs transition-all active:scale-95"
                     >
                       Re-book
                     </button>
@@ -1222,14 +1222,14 @@ export const BookAdvisor: React.FC = () => {
             <div className="w-full md:w-80 border-r border-slate-100 flex flex-col bg-white shrink-0">
               <div className="p-4 border-b border-slate-100 bg-white">
                 <h3 className="font-extrabold text-slate-900 text-sm">Consultation Chats</h3>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">Encrypted Direct Channel</p>
+                <p className="text-2xs font-bold text-slate-400 uppercase tracking-wider mt-0.5">Encrypted Direct Channel</p>
               </div>
               <div className="flex-1 overflow-y-auto p-2 space-y-1">
                 {chatThreads.length === 0 && (
                   <div className="p-8 text-center">
                     <MessageSquare size={28} className="mx-auto text-slate-300" />
                     <p className="text-xs font-bold text-slate-700 mt-3">No active chats</p>
-                    <p className="text-[11px] text-slate-400 font-medium mt-1">
+                    <p className="text-xs text-slate-400 font-medium mt-1">
                       A direct conversation unlocks automatically once an advisor accepts your booking.
                     </p>
                   </div>
@@ -1253,9 +1253,9 @@ export const BookAdvisor: React.FC = () => {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
                           <h4 className="font-extrabold text-slate-900 text-xs truncate">{thread.advisorName}</h4>
-                          {lastMsg && <span className="text-[9px] font-bold text-slate-400">{lastMsg.timestamp}</span>}
+                          {lastMsg && <span className="text-2xs font-bold text-slate-400">{lastMsg.timestamp}</span>}
                         </div>
-                        <p className="text-[11px] text-slate-500 truncate mt-0.5 font-medium">
+                        <p className="text-xs text-slate-500 truncate mt-0.5 font-medium">
                           {lastMsg ? lastMsg.text : thread.topic}
                         </p>
                       </div>
@@ -1280,11 +1280,11 @@ export const BookAdvisor: React.FC = () => {
                       </h3>
                       {activeThread && <CheckCircle2 size={14} className="text-emerald-600" />}
                     </div>
-                    <p className="text-[10px] font-bold text-slate-400">{activeThread?.topic ?? ''}</p>
+                    <p className="text-2xs font-bold text-slate-400">{activeThread?.topic ?? ''}</p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1.5 text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-200/60 text-[10px] font-black uppercase tracking-wider">
+                <div className="flex items-center gap-1.5 text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-200/60 text-2xs font-black uppercase tracking-wider">
                   <Lock size={12} />
                   <span>Encrypted Channel</span>
                 </div>
@@ -1312,7 +1312,7 @@ export const BookAdvisor: React.FC = () => {
                           <button
                             onClick={() => void handleOpenAttachment(msg.id)}
                             className={cn(
-                              'mt-2 p-2 rounded-xl flex items-center gap-2 text-[11px] font-bold border w-full text-left cursor-pointer transition-opacity hover:opacity-80',
+                              'mt-2 p-2 rounded-xl flex items-center gap-2 text-xs font-bold border w-full text-left cursor-pointer transition-opacity hover:opacity-80',
                               isMe ? 'bg-slate-800 text-white border-slate-700' : 'bg-slate-100 text-slate-700 border-slate-200'
                             )}
                             title="Open document"
@@ -1322,7 +1322,7 @@ export const BookAdvisor: React.FC = () => {
                           </button>
                         )}
                       </div>
-                      <span className="text-[9px] font-bold text-slate-400 mt-1 px-1">{msg.timestamp}</span>
+                      <span className="text-2xs font-bold text-slate-400 mt-1 px-1">{msg.timestamp}</span>
                     </div>
                   );
                 })}
@@ -1404,7 +1404,7 @@ export const BookAdvisor: React.FC = () => {
                     <img src={adv.avatar} alt={adv.name} className="w-10 h-10 rounded-2xl object-cover shrink-0 shadow-2xs" />
                     <div className="min-w-0">
                       <h4 className="font-extrabold text-slate-900 text-xs truncate">{adv.name}</h4>
-                      <p className="text-[10px] text-slate-400 font-bold line-clamp-1">{adv.title}</p>
+                      <p className="text-2xs text-slate-400 font-bold line-clamp-1">{adv.title}</p>
                     </div>
                   </div>
                   <button
@@ -1435,10 +1435,10 @@ export const BookAdvisor: React.FC = () => {
                       <img src={post.advisorAvatar} alt={post.advisorName} className="w-10 h-10 rounded-2xl object-cover shadow-2xs" />
                       <div>
                         <h4 className="font-extrabold text-slate-900 text-xs">{post.advisorName}</h4>
-                        <p className="text-[10px] text-slate-400 font-bold">{post.advisorTitle} · {post.timestamp}</p>
+                        <p className="text-2xs text-slate-400 font-bold">{post.advisorTitle} · {post.timestamp}</p>
                       </div>
                     </div>
-                    <span className="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-full text-[10px] font-black uppercase">
+                    <span className="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-full text-2xs font-black uppercase">
                       {post.category}
                     </span>
                   </div>
@@ -1522,7 +1522,7 @@ export const BookAdvisor: React.FC = () => {
                         className="px-3 py-1.5 text-slate-600 hover:text-slate-900 bg-white border border-slate-200/80 hover:bg-slate-50 rounded-full transition-colors cursor-pointer flex items-center gap-1.5 shadow-2xs"
                       >
                         <Download size={13} />
-                        <span className="text-[11px] font-bold">.ics</span>
+                        <span className="text-xs font-bold">.ics</span>
                       </button>
                     )}
 
@@ -1616,7 +1616,7 @@ export const BookAdvisor: React.FC = () => {
                       <CheckCircle2 size={16} className="text-emerald-400" />
                     </div>
                     <p className="text-xs text-slate-300 font-medium">{viewingProfileAdvisor.title}</p>
-                    <div className="flex items-center gap-2 mt-1 text-[11px] font-bold text-white/80">
+                    <div className="flex items-center gap-2 mt-1 text-xs font-bold text-white/80">
                       <span className="text-amber-400 font-black flex items-center gap-1">
                         <Star size={12} className="fill-current" /> {viewingProfileAdvisor.rating.toFixed(1)}
                       </span>
@@ -1630,25 +1630,25 @@ export const BookAdvisor: React.FC = () => {
               {/* Bio & Details */}
               <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto text-xs font-medium">
                 <div>
-                  <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-wider mb-1.5">About & Advisory Practice</h4>
+                  <h4 className="text-2xs font-black uppercase text-slate-400 tracking-wider mb-1.5">About & Advisory Practice</h4>
                   <p className="text-slate-700 leading-relaxed font-medium">{viewingProfileAdvisor.bio || 'Accredited advisory partner providing specialized financial planning and statutory compliance services.'}</p>
                 </div>
 
                 <div className="grid grid-cols-3 gap-2.5 p-3.5 bg-slate-50/80 rounded-2xl text-center border border-slate-100">
                   <div>
-                    <p className="text-[9px] font-bold uppercase text-slate-400 tracking-wider">Rating</p>
+                    <p className="text-2xs font-bold uppercase text-slate-400 tracking-wider">Rating</p>
                     <p className="font-black text-sm text-emerald-600 mt-0.5">
                       {viewingProfileAdvisor.reviewCount > 0 ? viewingProfileAdvisor.rating.toFixed(1) : '5.0'}
                     </p>
                   </div>
                   <div>
-                    <p className="text-[9px] font-bold uppercase text-slate-400 tracking-wider">Status</p>
+                    <p className="text-2xs font-bold uppercase text-slate-400 tracking-wider">Status</p>
                     <p className="font-black text-slate-900 text-sm mt-0.5">
                       {viewingProfileAdvisor.availability ? 'Available' : 'Booked'}
                     </p>
                   </div>
                   <div>
-                    <p className="text-[9px] font-bold uppercase text-slate-400 tracking-wider">Standard Fee</p>
+                    <p className="text-2xs font-bold uppercase text-slate-400 tracking-wider">Standard Fee</p>
                     <p className="font-black text-slate-900 text-sm mt-0.5">
                       {viewingProfileAdvisor.hourlyRate !== null ? `₹${viewingProfileAdvisor.hourlyRate}/hr` : 'On Request'}
                     </p>
@@ -1657,10 +1657,10 @@ export const BookAdvisor: React.FC = () => {
 
                 {viewingProfileAdvisor.expertise.length > 0 && (
                   <div>
-                    <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-wider mb-2">Specializations</h4>
+                    <h4 className="text-2xs font-black uppercase text-slate-400 tracking-wider mb-2">Specializations</h4>
                     <div className="flex flex-wrap gap-1.5">
                       {viewingProfileAdvisor.expertise.map(area => (
-                        <span key={area} className="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-[10px] font-bold">
+                        <span key={area} className="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-2xs font-bold">
                           {area}
                         </span>
                       ))}
@@ -1726,7 +1726,7 @@ export const BookAdvisor: React.FC = () => {
               {/* Header */}
               <div className="p-5 bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 text-white flex items-center justify-between">
                 <div>
-                  <p className="text-[10px] font-black uppercase text-slate-300 tracking-wider">Book Consultation</p>
+                  <p className="text-2xs font-black uppercase text-slate-300 tracking-wider">Book Consultation</p>
                   <h3 className="font-extrabold text-base truncate">{bookingAdvisor.name}</h3>
                 </div>
                 <button
@@ -1746,7 +1746,7 @@ export const BookAdvisor: React.FC = () => {
                 ].map(s => (
                   <div key={s.step} className="flex items-center gap-1.5">
                     <span className={cn(
-                      'w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black',
+                      'w-5 h-5 rounded-full flex items-center justify-center text-2xs font-black',
                       bookingStep === s.step
                         ? 'bg-[#18181B] text-white'
                         : bookingStep > s.step
@@ -1756,7 +1756,7 @@ export const BookAdvisor: React.FC = () => {
                       {bookingStep > s.step ? <Check size={10} /> : s.step}
                     </span>
                     <span className={cn(
-                      'text-[10px] font-bold',
+                      'text-2xs font-bold',
                       bookingStep === s.step ? 'text-slate-900' : 'text-slate-400'
                     )}>
                       {s.label}
@@ -1770,7 +1770,7 @@ export const BookAdvisor: React.FC = () => {
                 {bookingStep === 1 && (
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-2">Select Meeting Format</label>
+                      <label className="block text-2xs font-black text-slate-400 uppercase tracking-wider mb-2">Select Meeting Format</label>
                       <div className="grid grid-cols-3 gap-2">
                         {[
                           { id: 'video', label: 'Video Call', icon: Video },
@@ -1789,13 +1789,13 @@ export const BookAdvisor: React.FC = () => {
                             )}
                           >
                             <st.icon size={18} className={bookingForm.sessionType === st.id ? 'text-slate-900' : 'text-slate-400'} />
-                            <span className="text-[10px] font-extrabold uppercase tracking-wider">{st.label}</span>
+                            <span className="text-2xs font-extrabold uppercase tracking-wider">{st.label}</span>
                           </button>
                         ))}
                       </div>
                     </div>
 
-                    <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-100 text-slate-600 text-[11px] leading-relaxed">
+                    <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-100 text-slate-600 text-xs leading-relaxed">
                       <p className="font-bold text-slate-900 mb-0.5">Encrypted Consultation</p>
                       Sessions are protected end-to-end. Video calls use peer-to-peer WebRTC rooms.
                     </div>
@@ -1815,7 +1815,7 @@ export const BookAdvisor: React.FC = () => {
                   <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-2.5">
                       <div>
-                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1.5">Date</label>
+                        <label className="block text-2xs font-black text-slate-400 uppercase tracking-wider mb-1.5">Date</label>
                         <input
                           type="date"
                           value={bookingForm.date}
@@ -1824,7 +1824,7 @@ export const BookAdvisor: React.FC = () => {
                         />
                       </div>
                       <div>
-                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1.5">Time</label>
+                        <label className="block text-2xs font-black text-slate-400 uppercase tracking-wider mb-1.5">Time</label>
                         <input
                           type="time"
                           value={bookingForm.time}
@@ -1868,7 +1868,7 @@ export const BookAdvisor: React.FC = () => {
                 {bookingStep === 3 && (
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1.5">Consultation Topic *</label>
+                      <label className="block text-2xs font-black text-slate-400 uppercase tracking-wider mb-1.5">Consultation Topic *</label>
                       <input
                         type="text"
                         value={bookingForm.topic}
@@ -1879,7 +1879,7 @@ export const BookAdvisor: React.FC = () => {
                     </div>
 
                     <div>
-                      <label className="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1.5">Context & Documents (Optional)</label>
+                      <label className="block text-2xs font-black text-slate-400 uppercase tracking-wider mb-1.5">Context & Documents (Optional)</label>
                       <textarea
                         rows={2}
                         value={bookingForm.notes}
@@ -1971,11 +1971,11 @@ export const BookAdvisor: React.FC = () => {
                       <img src={payingBooking.advisorAvatar} alt={payingBooking.advisorName} className="w-9 h-9 rounded-xl object-cover shadow-2xs" />
                       <div>
                         <h4 className="font-extrabold text-slate-900 text-xs">{payingBooking.advisorName}</h4>
-                        <p className="text-[10px] text-slate-400 font-bold">{payingBooking.topic}</p>
+                        <p className="text-2xs text-slate-400 font-bold">{payingBooking.topic}</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <span className="text-[9px] font-black uppercase text-slate-400 block">Total Due</span>
+                      <span className="text-2xs font-black uppercase text-slate-400 block">Total Due</span>
                       <span className="text-base font-black text-slate-900">
                         <FinancialAmount value={payingBooking.payment?.amount || payingBooking.amount} />
                       </span>
@@ -1985,7 +1985,7 @@ export const BookAdvisor: React.FC = () => {
 
                 {/* Method Selection */}
                 <div>
-                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-2">
+                  <label className="block text-2xs font-black text-slate-400 uppercase tracking-wider mb-2">
                     Payment Method
                   </label>
                   <div className="grid grid-cols-2 gap-2">
@@ -2012,7 +2012,7 @@ export const BookAdvisor: React.FC = () => {
                         </div>
                         <div>
                           <p className="text-xs font-bold text-slate-900">{method.label}</p>
-                          <p className="text-[10px] font-medium text-slate-400 mt-0.5">{method.sub}</p>
+                          <p className="text-2xs font-medium text-slate-400 mt-0.5">{method.sub}</p>
                         </div>
                       </button>
                     ))}
@@ -2022,7 +2022,7 @@ export const BookAdvisor: React.FC = () => {
                 {/* Account Deduction Leg */}
                 {userAccounts.length > 0 && (
                   <div>
-                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1.5">
+                    <label className="block text-2xs font-black text-slate-400 uppercase tracking-wider mb-1.5">
                       Deduct from Kanaku Account
                     </label>
                     <select
@@ -2038,7 +2038,7 @@ export const BookAdvisor: React.FC = () => {
                       ))}
                     </select>
                     {selectedAccountId !== null && (
-                      <p className="text-[10px] font-semibold text-emerald-600 mt-1 flex items-center gap-1">
+                      <p className="text-2xs font-semibold text-emerald-600 mt-1 flex items-center gap-1">
                         <ShieldCheck size={12} /> Automatically debits balance and creates consultation expense entry
                       </p>
                     )}

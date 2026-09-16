@@ -14,7 +14,7 @@
  * on top of that double-counts.
  */
 import type { KaiEntityPatch } from '@kanaku/shared';
-import { db, type Account, type Friend, type Goal, type GroupMember, type Investment, type Loan, type Transaction } from '@/lib/database';
+import { db, type Account, type Friend, type Goal, type GroupExpense, type GroupMember, type Investment, type Loan, type Transaction } from '@/lib/database';
 import { apiClient } from '@/lib/api';
 import { backendService } from '@/lib/backend-api';
 import {
@@ -384,7 +384,11 @@ async function createGroupExpense(action: KaiAction, ctx: ExecutionContext): Pro
 
   // Suppressed: the Dexie creating-hook would queue its own POST /groups, which
   // races the explicit one below and can create the bill twice.
+  // One key for the direct post AND the queued retry: if the post commits but its
+  // response is lost, the retry must replay it rather than create a second bill.
+  const groupRequestId = deterministicUuid(`${action.actionId}:group`);
   const groupExpenseId = await runWithCloudSyncSuppressed(() => db.groupExpenses.add({
+    clientRequestId: groupRequestId,
     name,
     totalAmount: amount,
     paidBy: ctx.accountId,
@@ -399,7 +403,7 @@ async function createGroupExpense(action: KaiAction, ctx: ExecutionContext): Pro
     syncStatus: 'pending',
     createdAt: now,
     updatedAt: now,
-  }));
+  } as GroupExpense));
 
   try {
     const account = await db.accounts.get(ctx.accountId);
@@ -417,7 +421,7 @@ async function createGroupExpense(action: KaiAction, ctx: ExecutionContext): Pro
         { name: 'You', share: perHead, paid: true, isCurrentUser: true },
         ...participants.map((p, i) => ({ ...p, friendId: friends[i]?.cloudId ?? undefined })),
       ],
-    }, { idempotencyKey: deterministicUuid(`${action.actionId}:group`), showErrorToast: false });
+    }, { idempotencyKey: groupRequestId, showErrorToast: false });
     const remote = (response.data as { id?: string; data?: { id?: string } }) ?? {};
     const cloudId = remote.id ?? remote.data?.id;
     if (cloudId) {

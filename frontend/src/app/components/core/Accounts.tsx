@@ -436,7 +436,7 @@ export const Accounts: React.FC = () => {
                                     type="button"
                                     onClick={() => setActiveTab(tab.id as AssetType)}
                                     className={cn(
-                                        'flex-1 flex items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 rounded-full transition-all duration-150 font-bold select-none text-[11px] sm:text-xs cursor-pointer whitespace-nowrap min-w-0',
+                                        'flex-1 flex items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 rounded-full transition-all duration-150 font-bold select-none text-xs cursor-pointer whitespace-nowrap min-w-0',
                                         isActive
                                             ? 'bg-slate-900 text-white shadow-xs'
                                             : 'bg-transparent text-slate-500 hover:text-slate-900 hover:bg-slate-100/60'
@@ -631,7 +631,7 @@ export const Accounts: React.FC = () => {
                                                                 </div>
                                                                 {(account.openingBalance != null || snapshot?.hasActivity) && (
                                                                     <p className={cn(
-                                                                        "text-[10px] font-semibold mt-0.5 flex items-center gap-x-2 flex-wrap",
+                                                                        "text-2xs font-semibold mt-0.5 flex items-center gap-x-2 flex-wrap",
                                                                         isActive ? "text-white/50" : "text-slate-400"
                                                                     )}>
                                                                         {account.openingBalance != null && (
@@ -666,7 +666,7 @@ export const Accounts: React.FC = () => {
                                                                 <Button data-testid={`accounts-import-${account.id}`} size="sm"
                                                                     onClick={(e) => { e.stopPropagation(); setStatementImportOpen({ accountId: account.id!, accountName: account.name, accountType: account.type }); }}
                                                                     className={cn(
-                                                                        "h-7 px-2.5 rounded-full text-[10px] font-semibold",
+                                                                        "h-7 px-2.5 rounded-full text-2xs font-semibold",
                                                                         isActive
                                                                             ? "bg-white/20 hover:bg-white/30 text-white border border-white/20"
                                                                             : "bg-blue-600 text-white hover:bg-blue-700"
@@ -708,7 +708,7 @@ export const Accounts: React.FC = () => {
                                         />
                                     ))}
                                 </div>
-                                <div className="flex items-center text-[10px] text-gray-400 font-medium tracking-[0.22em] uppercase">
+                                <div className="flex items-center text-2xs text-gray-400 font-medium tracking-[0.22em] uppercase">
                                     <span className="animate-[pulse_2s_ease-in-out_infinite] mr-2"></span>
                                     Swipe to explore
                                     <span className="animate-[pulse_2s_ease-in-out_infinite] ml-2">'</span>
@@ -800,7 +800,7 @@ export const Accounts: React.FC = () => {
                                                                         <motion.span
                                                                             initial={{ opacity: 0, scale: 0.8 }}
                                                                             animate={{ opacity: 1, scale: 1 }}
-                                                                            className="text-[10px] font-bold tracking-widest text-emerald-300 border border-emerald-400/40 bg-emerald-500/10 px-2.5 py-1 rounded-full"
+                                                                            className="text-2xs font-bold tracking-widest text-emerald-300 border border-emerald-400/40 bg-emerald-500/10 px-2.5 py-1 rounded-full"
                                                                         >
                                                                             - ACTIVE
                                                                         </motion.span>
@@ -833,29 +833,29 @@ export const Accounts: React.FC = () => {
                                                         {/* Balance: Opening (start) → Previous (before last txn) → Current (now) */}
                                                         <div className="mt-4">
                                                             <p className={cn(
-                                                                "text-[10px] font-semibold tracking-[0.22em] uppercase mb-1",
+                                                                "text-2xs font-semibold tracking-[0.22em] uppercase mb-1",
                                                                 isActive ? "text-white/45" : "text-gray-400"
                                                             )}>Current Balance</p>
                                                             <p className={cn(
-                                                                "text-[32px] font-bold tracking-tight leading-none",
+                                                                "text-3xl font-bold tracking-tight leading-none",
                                                                 isActive ? "text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.35)]" : "text-gray-900"
                                                             )}>
                                                                 {formatCurrency(account.balance)}
                                                             </p>
                                                             {(account.openingBalance != null || snapshot?.hasActivity) && (
                                                                 <p className={cn(
-                                                                    "text-[11px] font-semibold mt-1.5 flex items-center gap-x-3 gap-y-0.5 flex-wrap",
+                                                                    "text-xs font-semibold mt-1.5 flex items-center gap-x-3 gap-y-0.5 flex-wrap",
                                                                     isActive ? "text-white/55" : "text-gray-500"
                                                                 )}>
                                                                     {account.openingBalance != null && (
                                                                         <span className="flex items-center gap-1">
-                                                                            <span className="uppercase tracking-wider text-[9px] font-bold opacity-70">Opening</span>
+                                                                            <span className="uppercase tracking-wider text-2xs font-bold opacity-70">Opening</span>
                                                                             {formatCurrency(account.openingBalance)}
                                                                         </span>
                                                                     )}
                                                                     {snapshot?.hasActivity && (
                                                                         <span className="flex items-center gap-1">
-                                                                            <span className="uppercase tracking-wider text-[9px] font-bold opacity-70">Previous</span>
+                                                                            <span className="uppercase tracking-wider text-2xs font-bold opacity-70">Previous</span>
                                                                             {formatCurrency(snapshot.previous)}
                                                                         </span>
                                                                     )}
@@ -867,7 +867,7 @@ export const Accounts: React.FC = () => {
                                                         <div className="flex justify-between items-end mt-auto">
                                                             <div className="min-w-0 pr-4">
                                                                 <p className={cn(
-                                                                    "text-[9px] font-semibold tracking-[0.18em] uppercase mb-0.5",
+                                                                    "text-2xs font-semibold tracking-[0.18em] uppercase mb-0.5",
                                                                     isActive ? "text-white/45" : "text-gray-400"
                                                                 )}>Account Holder</p>
                                                                 <h3 className={cn(
@@ -897,7 +897,7 @@ export const Accounts: React.FC = () => {
                                                                     <Button data-testid={`accounts-import-2-${account.id}`} size="sm"
                                                                         onClick={(e) => { e.stopPropagation(); setStatementImportOpen({ accountId: account.id!, accountName: account.name, accountType: account.type }); }}
                                                                         className={cn(
-                                                                            "h-7 px-2.5 rounded-full text-[10px] font-semibold",
+                                                                            "h-7 px-2.5 rounded-full text-2xs font-semibold",
                                                                             isActive
                                                                                 ? "bg-white/20 hover:bg-white/30 text-white border border-white/20"
                                                                                 : "bg-blue-600 text-white hover:bg-blue-700"
@@ -944,7 +944,7 @@ export const Accounts: React.FC = () => {
                                             />
                                         ))}
                                     </div>
-                                    <div className="flex items-center text-[10px] sm:text-xs text-gray-400 font-medium tracking-[0.22em] uppercase">
+                                    <div className="flex items-center text-2xs sm:text-xs text-gray-400 font-medium tracking-[0.22em] uppercase">
                                         <span className="animate-[pulse_2s_ease-in-out_infinite] mr-2"></span>
                                         Swipe to explore
                                         <span className="animate-[pulse_2s_ease-in-out_infinite] ml-2">'</span>
@@ -1243,7 +1243,7 @@ export const Accounts: React.FC = () => {
                                 <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
                                     <div>
                                         <p className="text-sm font-bold text-slate-900">Active Account</p>
-                                        <p className="text-[10px] text-slate-500 font-medium">Show this account in your portfolio</p>
+                                        <p className="text-2xs text-slate-500 font-medium">Show this account in your portfolio</p>
                                     </div>
                                     <button data-testid="accounts-toggle-account-active-state"
                                         onClick={() => setEditingAccount(prev => prev ? { ...prev, isActive: !prev.isActive } : null)}

@@ -220,7 +220,7 @@ export const Notifications: React.FC = () => {
                                 {notification.title}
                               </h3>
                               {isUnread && (
-                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border ${presentation.badgeBg}`}>
+                                <span className={`px-2 py-0.5 rounded-full text-2xs font-black uppercase tracking-wider border ${presentation.badgeBg}`}>
                                   Unread
                                 </span>
                               )}
@@ -246,12 +246,12 @@ export const Notifications: React.FC = () => {
                           <div className="flex items-center gap-3 text-slate-400 font-medium">
                             <span>{getTimeAgo(notification.createdAt)}</span>
                             {notification.category && (
-                              <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 font-bold text-[10px]">
+                              <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 font-bold text-2xs">
                                 {notification.category}
                               </span>
                             )}
                             {notification.source === 'supabase' && (
-                              <span className="inline-flex items-center gap-1 text-indigo-600 font-bold text-[10px]">
+                              <span className="inline-flex items-center gap-1 text-indigo-600 font-bold text-2xs">
                                 <Sparkles size={10} /> Realtime
                               </span>
                             )}

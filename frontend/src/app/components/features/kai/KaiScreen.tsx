@@ -150,7 +150,7 @@ export const KaiScreen: React.FC = () => {
         <div className="relative">
           <AIOrb size={132} state={ORB_STATE[kai.state]} onClick={() => void kai.toggleListening()} showStatusGlow />
           {listening && (
-            <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 px-2.5 py-0.5 rounded-full bg-white/95 text-[10px] font-bold text-purple-700 shadow-xs border border-purple-100 whitespace-nowrap">
+            <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 px-2.5 py-0.5 rounded-full bg-white/95 text-2xs font-bold text-purple-700 shadow-xs border border-purple-100 whitespace-nowrap">
               Tap to stop
             </span>
           )}
@@ -187,7 +187,7 @@ export const KaiScreen: React.FC = () => {
             <button
               type="button"
               onClick={() => kai.setMuted(!kai.muted)}
-              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold bg-white/70 border border-white/80 text-slate-600 hover:text-purple-700 transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white/70 border border-white/80 text-slate-600 hover:text-purple-700 transition-colors cursor-pointer"
               aria-pressed={!kai.muted}
             >
               {kai.muted ? <VolumeX size={12} /> : <Volume2 size={12} />}
@@ -195,7 +195,7 @@ export const KaiScreen: React.FC = () => {
             </button>
           )}
           {kai.offline && (
-            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-semibold bg-amber-50 border border-amber-200 text-amber-700">
+            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 border border-amber-200 text-amber-700">
               <WifiOff size={12} /> Basic mode
             </span>
           )}
@@ -214,13 +214,13 @@ export const KaiScreen: React.FC = () => {
             <div key={turn.key} className="space-y-2.5">
               {turn.prompt && (
                 <div className="flex justify-end">
-                  <p className="max-w-[85%] rounded-[22px] rounded-br-md bg-[#18181B] px-4 py-3 text-sm sm:text-[15px] font-medium leading-snug text-white shadow-[0_8px_20px_-12px_rgba(15,23,42,0.7)]">
+                  <p className="max-w-[85%] rounded-[22px] rounded-br-md bg-[#18181B] px-4 py-3 text-sm sm:text-base font-medium leading-snug text-white shadow-[0_8px_20px_-12px_rgba(15,23,42,0.7)]">
                     {turn.prompt}
                   </p>
                 </div>
               )}
               {turn.say && (
-                <p className="max-w-[92%] px-1 text-sm sm:text-[15px] font-medium leading-relaxed text-slate-700">{turn.say}</p>
+                <p className="max-w-[92%] px-1 text-sm sm:text-base font-medium leading-relaxed text-slate-700">{turn.say}</p>
               )}
               {turn.actions.map((action) => {
                 if (action.kind === 'query') {
@@ -252,7 +252,7 @@ export const KaiScreen: React.FC = () => {
           ))}
 
           {trailingLine && (
-            <p className="max-w-[92%] px-1 text-sm sm:text-[15px] font-medium leading-relaxed text-slate-700" data-testid="kai-say">
+            <p className="max-w-[92%] px-1 text-sm sm:text-base font-medium leading-relaxed text-slate-700" data-testid="kai-say">
               {trailingLine}
             </p>
           )}
@@ -267,7 +267,7 @@ export const KaiScreen: React.FC = () => {
         <div className="mt-6">
           <div className="flex items-center justify-between px-1 mb-3">
             <h3 className="text-xs font-black uppercase tracking-wider text-slate-400">Quick prompts to try</h3>
-            <span className="text-[11px] font-semibold text-purple-600">Tap any to ask</span>
+            <span className="text-xs font-semibold text-purple-600">Tap any to ask</span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {QUICK_PROMPTS.map((item) => (
@@ -281,7 +281,7 @@ export const KaiScreen: React.FC = () => {
                 <span className="min-w-0 flex-1">
                   <span className="flex items-center justify-between gap-2">
                     <span className="text-sm font-bold text-slate-900 group-hover:text-purple-700 transition-colors truncate">{item.title}</span>
-                    <span className="text-[10px] font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-full shrink-0">{item.category}</span>
+                    <span className="text-2xs font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-full shrink-0">{item.category}</span>
                   </span>
                   <span className="block text-xs text-slate-500 mt-0.5 truncate">“{item.text}”</span>
                 </span>

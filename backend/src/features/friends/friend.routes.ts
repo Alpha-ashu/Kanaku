@@ -4,6 +4,7 @@ import { authMiddleware } from '../../middleware/auth';
 import { pinGate } from '../../middleware/pinGate';
 import { validateBody, validateParams } from '../../middleware/validate';
 import { idempotency } from '../../middleware/idempotency';
+import { duplicateSubmitGuard } from '../../middleware/duplicateSubmitGuard';
 import * as FriendController from './friend.controller';
 import {
   friendCreateSchema,
@@ -23,6 +24,7 @@ router.post(
   '/',
   idempotency({ scope: 'friends.create' }),
   validateBody(friendCreateSchema),
+  duplicateSubmitGuard({ scope: 'friends.create' }),
   FriendController.createFriend,
 );
 router.post(

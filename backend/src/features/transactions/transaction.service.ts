@@ -244,32 +244,46 @@ export class TransactionService {
     const serializedTags = transactionRepository.serializeTags(tags);
     const balanceDeltas = this.getBalanceImpactDeltas({ type, amount: decimalAmount, accountId, transferToAccountId });
 
-    const newTx = await transactionRepository.createWithBalanceUpdate({
-      userId,
-      accountId,
-      type,
-      amount: decimalAmount,
-      category,
-      subcategory: subcategory || null,
-      description: description || null,
-      merchant: merchant || null,
-      date: txDate,
-      tags: serializedTags,
-      attachment: attachment || null,
-      transferToAccountId: type === 'transfer' ? transferToAccountId : null,
-      transferType: type === 'transfer' ? (transferType || 'manual') : null,
-      expenseMode: expenseMode || null,
-      groupExpenseId: groupExpenseId || null,
-      groupName: groupName || null,
-      splitType: splitType || null,
-      importSource: importSource || null,
-      importMetadata: importMetadata
-        ? (typeof importMetadata === 'string' ? importMetadata : JSON.stringify(importMetadata))
-        : null,
-      dedupHash: activeDedupHash,
-      synced: true,
-      syncStatus: 'synced',
-    }, balanceDeltas, options.enforceBalance ?? true);
+    let newTx;
+    try {
+      newTx = await transactionRepository.createWithBalanceUpdate({
+        userId,
+        accountId,
+        type,
+        amount: decimalAmount,
+        category,
+        subcategory: subcategory || null,
+        description: description || null,
+        merchant: merchant || null,
+        date: txDate,
+        tags: serializedTags,
+        attachment: attachment || null,
+        transferToAccountId: type === 'transfer' ? transferToAccountId : null,
+        transferType: type === 'transfer' ? (transferType || 'manual') : null,
+        expenseMode: expenseMode || null,
+        groupExpenseId: groupExpenseId || null,
+        groupName: groupName || null,
+        splitType: splitType || null,
+        importSource: importSource || null,
+        importMetadata: importMetadata
+          ? (typeof importMetadata === 'string' ? importMetadata : JSON.stringify(importMetadata))
+          : null,
+        dedupHash: activeDedupHash,
+        synced: true,
+        syncStatus: 'synced',
+      }, balanceDeltas, options.enforceBalance ?? true);
+    } catch (createErr: unknown) {
+      // Two requests for the same transaction can both pass the replay lookup
+      // above before either has inserted; the loser then trips the unique
+      // dedupHash index. That is not a failure — the transaction the user asked
+      // for exists — so answer with it instead of a 500 that sends the client
+      // into its offline fallback and queues yet another attempt.
+      if ((createErr as { code?: string })?.code === 'P2002' && !intentionalDuplicate) {
+        const winner = await transactionRepository.findFirst({ dedupHash: activeDedupHash, userId });
+        if (winner) return transactionRepository.normalizeTransaction(winner);
+      }
+      throw createErr;
+    }
 
     if (attachment) {
       const cleanBillId = String(attachment).replace(/^bill:/, '').trim();

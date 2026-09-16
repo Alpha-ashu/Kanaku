@@ -106,7 +106,7 @@ const ForecastSection: React.FC<{ transactions: any[]; accounts: any[]; currency
           </LineChart>
         </ResponsiveContainer>
       </div>
-      <div className="bg-purple-50/60 border border-purple-100 rounded-2xl p-3 text-[11px] font-medium text-purple-900">
+      <div className="bg-purple-50/60 border border-purple-100 rounded-2xl p-3 text-xs font-medium text-purple-900">
         ⚡ <strong>Insight:</strong> Keep your monthly expenses below average to track closer to the <strong>Optimistic</strong> trajectory.
       </div>
     </div>

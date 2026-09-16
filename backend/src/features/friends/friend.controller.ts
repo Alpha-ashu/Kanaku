@@ -55,36 +55,30 @@ export function cleanFriendName(rawName?: string | null, fallback?: { email?: st
   // 2. Unescape vCard escape sequences
   name = name.replace(/\\[,;:nN]/g, ' ').replace(/\\/g, '');
 
-  // 3. Remove Unicode emojis, memojis, pictographs, symbols
-  name = name
-    .replace(/\p{Extended_Pictographic}/gu, '')
-    .replace(/[\u{1F300}-\u{1F9FF}\u{1FA00}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '')
-    .replace(/[\uFE00-\uFE0F\u200B-\u200D\u2060\uFEFF]/g, '')
-    .replace(/[\uD800-\uDFFF]/g, '');
-
-  // 4. Strip residual quoted printable patterns
+  // 3. Strip residual quoted printable patterns (e.g. =2D, =3A)
   name = name.replace(/(=[A-Fa-f0-9]{2})+/g, '');
 
-  // 5. Remove emoticons and punctuation clusters (like -:;)=d, :-), =D)
-  name = name.replace(/[^\p{L}\p{N}\s]{2,}[a-zA-Z0-9]?/gu, ' ');
+  // 4. Remove emoticons and punctuation clusters (like -:;)=d, :-), =D)
+  name = name.replace(/[-:;=~_#*+!?,.]{2,}[a-zA-Z0-9]?/g, ' ');
   name = name.replace(/(?:^|\s)(?:[-:;=8][oO\-]?[)\]\(\[dDpP/\\|*]|[<>]?[:;=8][)\]\(\[dDpP/\\|*])(?:\s|$)/gi, ' ');
   name = name.replace(/(?:^|\s)[=:;]-?[)\]\(\[dDpP](?:\s|$)/gi, ' ');
 
-  // 6. Clean dangling punctuation from start/end
+  // 5. Clean dangling punctuation from start/end
   name = name.replace(/^[-:;=,._~#*+|/\s]+|[-:;=,._~#*+|/\s]+$/gu, '');
   name = name.replace(/\s+/g, ' ').trim();
 
-  if (name.length > 0) return name;
+  if (!name || name.length === 0) {
+    if (fallback?.email) {
+      return fallback.email.split('@')[0];
+    }
+    if (fallback?.phone) {
+      const digits = fallback.phone.replace(/\D/g, '');
+      return `Contact (${digits.slice(-4)})`;
+    }
+    return 'Contact';
+  }
 
-  if (fallback?.email) {
-    const prefix = fallback.email.split('@')[0].trim();
-    if (prefix) return prefix.charAt(0).toUpperCase() + prefix.slice(1);
-  }
-  if (fallback?.phone) {
-    const digits = fallback.phone.replace(/\D/g, '');
-    if (digits) return `Contact (${digits.slice(-4)})`;
-  }
-  return 'Contact';
+  return name;
 }
 
 async function linkStaleGroupMembersForFriend(friend: any, userId: string) {
@@ -609,6 +603,7 @@ export const bulkCreateFriends = async (req: AuthRequest, res: Response, next: N
     }
 
     const existing = await prisma.friend.findMany({ where: { userId, deletedAt: null } });
+    const existingNames = new Set(existing.map(f => f.name.toLowerCase().trim()));
     const existingContactKeys = new Set(
       existing.flatMap(f => [
         f.email ? f.email.toLowerCase().trim() : null,
@@ -628,7 +623,7 @@ export const bulkCreateFriends = async (req: AuthRequest, res: Response, next: N
         skipped.push({ name: name || '(unnamed)', reason: 'Name is required' });
         continue;
       }
-      // Note: User name CAN be duplicate. Only email and phone must be unique!
+      // When email or phone is present, uniqueness is checked on email / phone
       if (cleanEmail && existingContactKeys.has(cleanEmail)) {
         skipped.push({ name, reason: `Email ${cleanEmail} already exists` });
         continue;
@@ -637,8 +632,14 @@ export const bulkCreateFriends = async (req: AuthRequest, res: Response, next: N
         skipped.push({ name, reason: `Phone ${cleanPhone} already exists` });
         continue;
       }
+      // When neither email nor phone is provided, check by name to avoid duplicate re-imports
+      if (!cleanEmail && !cleanPhone && existingNames.has(name.toLowerCase())) {
+        skipped.push({ name, reason: 'A friend with this name already exists' });
+        continue;
+      }
 
       toCreate.push({ name, email: cleanEmail, phone: cleanPhone });
+      if (!cleanEmail && !cleanPhone) existingNames.add(name.toLowerCase());
       if (cleanEmail) existingContactKeys.add(cleanEmail);
       if (cleanPhone) existingContactKeys.add(cleanPhone);
     }

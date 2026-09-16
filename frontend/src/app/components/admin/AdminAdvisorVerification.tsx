@@ -172,7 +172,7 @@ export const AdminAdvisorVerification: React.FC = () => {
     const cfg = STATUS_CONFIG[status];
     const Icon = cfg.icon;
     return (
-      <span className={cn('flex items-center gap-1 px-2.5 py-1 border rounded-full text-[11px] font-bold', cfg.color)}>
+      <span className={cn('flex items-center gap-1 px-2.5 py-1 border rounded-full text-xs font-bold', cfg.color)}>
         <Icon size={12} /> {cfg.label}
       </span>
     );
@@ -280,7 +280,7 @@ export const AdminAdvisorVerification: React.FC = () => {
                           <h3 className="font-bold text-gray-900">{app.fullName}</h3>
                           {statusBadge(app.status)}
                           {app.user?.sessionCount !== undefined && app.user.sessionCount > 0 && (
-                            <span className="flex items-center gap-1 text-[11px] text-gray-500">
+                            <span className="flex items-center gap-1 text-xs text-gray-500">
                               <Star size={11} className="text-amber-400" /> {app.user.sessionCount} sessions
                             </span>
                           )}

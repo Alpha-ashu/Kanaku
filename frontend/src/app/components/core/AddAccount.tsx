@@ -11,6 +11,7 @@ import { BANKS_BY_COUNTRY } from '@/constants/banks';
 import { cn } from '@/lib/utils';
 
 import { FloatingSaveBar } from '@/app/components/ui/FloatingSaveBar';
+import { useSubmitLock } from '@/hooks/useSubmitLock';
 
 // --- Constants ---
 const accountTypes = [
@@ -31,23 +32,23 @@ const CARD_NETWORKS = [
 const WalletLogo: React.FC<{ wallet: string }> = ({ wallet }) => {
  switch (wallet.toLowerCase()) {
  case 'paytm':
- return <div className="flex flex-col items-center leading-none"><span className="text-[10px] font-black text-[#002E6E]">Pay</span><span className="text-[10px] font-black text-[#00BAF2]">tm</span></div>;
+ return <div className="flex flex-col items-center leading-none"><span className="text-2xs font-black text-[#002E6E]">Pay</span><span className="text-2xs font-black text-[#00BAF2]">tm</span></div>;
  case 'phonepe':
  return <div className="w-full h-full flex items-center justify-center bg-[#5f259f] rounded-lg text-white font-black text-[8px]">PhonePe</div>;
  case 'google pay':
- return <div className="flex items-center gap-0.5 font-bold text-[10px]"><span className="text-blue-500">G</span><span className="text-red-500">P</span><span className="text-yellow-500">a</span><span className="text-green-500">y</span></div>;
+ return <div className="flex items-center gap-0.5 font-bold text-2xs"><span className="text-blue-500">G</span><span className="text-red-500">P</span><span className="text-yellow-500">a</span><span className="text-green-500">y</span></div>;
  case 'amazon pay':
  return <div className="flex flex-col items-center bg-[#232F3E] px-2 py-1 rounded text-white italic font-black text-[7px]">amazon<span className="text-orange-400 not-italic">pay</span></div>;
  case 'apple pay':
- return <div className="flex items-center gap-1 font-bold text-black"><div className="w-3 h-3 bg-black rounded-full" /><span className="text-[10px]">Pay</span></div>;
+ return <div className="flex items-center gap-1 font-bold text-black"><div className="w-3 h-3 bg-black rounded-full" /><span className="text-2xs">Pay</span></div>;
  case 'samsung pay':
- return <div className="text-[#034ea2] font-black text-[10px] italic">SAMSUNG <span className="not-italic font-bold">pay</span></div>;
+ return <div className="text-[#034ea2] font-black text-2xs italic">SAMSUNG <span className="not-italic font-bold">pay</span></div>;
  case 'mobikwik':
- return <div className="text-[#00529b] font-black text-[10px] italic">MobiKwik</div>;
+ return <div className="text-[#00529b] font-black text-2xs italic">MobiKwik</div>;
  case 'freecharge':
- return <div className="text-[#ff5a5f] font-black text-[10px]">freecharge</div>;
+ return <div className="text-[#ff5a5f] font-black text-2xs">freecharge</div>;
  case 'airtel money':
- return <div className="text-red-600 font-black text-[9px]">airtel <span className="font-light">money</span></div>;
+ return <div className="text-red-600 font-black text-2xs">airtel <span className="font-light">money</span></div>;
  default:
  return <Wallet size={16} className="text-slate-400" />;
  }
@@ -72,7 +73,7 @@ const QUICK_BALANCE_PRESETS = [0, 1000, 5000, 10000];
 const CardNetworkLogo: React.FC<{ network: string }> = ({ network }) => {
  switch (network) {
  case 'visa':
- return <span className="text-[10px] font-black italic text-blue-700 tracking-tighter">VISA</span>;
+ return <span className="text-2xs font-black italic text-blue-700 tracking-tighter">VISA</span>;
  case 'mastercard':
  return (
  <div className="flex -space-x-1.5">
@@ -83,8 +84,8 @@ const CardNetworkLogo: React.FC<{ network: string }> = ({ network }) => {
  case 'rupay':
  return (
  <div className="flex items-center">
- <span className="text-[9px] font-black text-blue-800">Ru</span>
- <span className="text-[9px] font-black text-orange-500">Pay</span>
+ <span className="text-2xs font-black text-blue-800">Ru</span>
+ <span className="text-2xs font-black text-orange-500">Pay</span>
  </div>
  );
  case 'amex':
@@ -97,6 +98,7 @@ const CardNetworkLogo: React.FC<{ network: string }> = ({ network }) => {
 };
 
 export const AddAccount: React.FC = () => {
+ const guardSubmit = useSubmitLock();
  const { setCurrentPage, currency, refreshData, accounts } = useApp();
  const [isSubmitting, setIsSubmitting] = useState(false);
  const [formData, setFormData] = useState({
@@ -148,7 +150,7 @@ export const AddAccount: React.FC = () => {
  return [...base, { value: 'Others', label: 'Others', description: 'Manually specify provider', icon: <Globe2 size={14} className="text-slate-400" /> }];
  }, []);
 
- const handleSubmit = async () => {
+ const handleSubmit = guardSubmit(async () => {
  const resolvedName = formData.name.trim() || (formData.type === 'cash' ? 'Cash Wallet' : provider);
  if (!resolvedName) { toast.error('Enter an account name'); return; }
 
@@ -192,7 +194,7 @@ export const AddAccount: React.FC = () => {
  } finally {
  setIsSubmitting(false);
  }
- };
+ });
 
  return (
  <div className="flex flex-col min-h-screen bg-white">
@@ -223,19 +225,19 @@ export const AddAccount: React.FC = () => {
  <div className="xl:col-span-7 flex flex-col gap-6 order-2 xl:order-1 w-full">
  <div className="premium-glass-card p-4 space-y-4">
  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full">
- <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider shrink-0">1. Asset Type</label>
+ <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider shrink-0">1. Asset Type</label>
  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full md:w-auto">
  {accountTypes.map(t => (
  <button key={t.id} onClick={() => setFormData(prev => ({ ...prev, type: t.id as any }))} data-testid={`account-create-type-${t.id}-button`} className={cn("flex flex-col items-center gap-2 p-3 rounded-xl transition-all", formData.type === t.id ?"bg-indigo-600 text-white shadow-lg shadow-indigo-100" :"bg-slate-50 text-slate-400 hover:bg-slate-100")}>
  <t.icon size={20} />
- <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider">{t.label}</span>
+ <span className="text-2xs font-bold uppercase tracking-wider">{t.label}</span>
  </button>
  ))}
  </div>
  </div>
 
  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full">
-    <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider shrink-0">2. Custom Label (Optional)</label>
+    <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider shrink-0">2. Custom Label (Optional)</label>
     <div className="relative w-full md:max-w-md">
       <Wallet className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
       <input id="account-custom-label" name="accountName" aria-label="Custom account label" type="text" value={formData.name} onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))} data-testid="account-create-name-input" className="w-full h-10 sm:h-11 bg-slate-50 border border-slate-200/80 rounded-xl pl-9 pr-3 text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all" placeholder="e.g. My Savings" />
@@ -247,7 +249,7 @@ export const AddAccount: React.FC = () => {
 
  {formData.type !== 'wallet' && (
  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full">
- <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider shrink-0">
+ <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider shrink-0">
   3. Institution / Provider
  </label>
 
@@ -298,7 +300,7 @@ export const AddAccount: React.FC = () => {
  )}
 
  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full pt-2">
- <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider shrink-0">
+ <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider shrink-0">
  4. {formData.type === 'card' ? 'Card Network' : formData.type === 'wallet' ? 'Select Wallet Brand' : 'Account Category'}
  </label>
 
@@ -336,7 +338,7 @@ export const AddAccount: React.FC = () => {
  onClick={() => setFormData(prev => ({ ...prev, subType: net.id }))}
  data-testid={`account-create-network-${net.id}-button`}
  className={cn(
-"flex items-center gap-2.5 px-3.5 py-2 sm:py-2.5 rounded-xl text-[10px] sm:text-[11px] font-bold transition-all border",
+"flex items-center gap-2.5 px-3.5 py-2 sm:py-2.5 rounded-xl text-2xs font-bold transition-all border",
  formData.subType === net.id
  ?"bg-indigo-50 border-indigo-200 text-indigo-600 shadow-xs"
  :"bg-white border-slate-200/80 text-slate-500 hover:border-slate-300"
@@ -359,7 +361,7 @@ export const AddAccount: React.FC = () => {
  onClick={() => setFormData(prev => ({ ...prev, subType: st.id }))}
  data-testid={`account-create-subtype-${st.id}-button`}
  className={cn(
-"px-3.5 py-2 sm:py-2.5 rounded-xl text-[10px] sm:text-[11px] font-bold transition-all border",
+"px-3.5 py-2 sm:py-2.5 rounded-xl text-2xs font-bold transition-all border",
  formData.subType === st.id
  ?"bg-indigo-50 border-indigo-200 text-indigo-600 shadow-xs"
  :"bg-white border-slate-200/80 text-slate-500 hover:border-slate-300"
@@ -418,7 +420,7 @@ export const AddAccount: React.FC = () => {
 
  <div className="space-y-6 relative z-10">
  <div className="flex flex-col gap-1">
- <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30">Account / Institution</p>
+ <p className="text-2xs font-black uppercase tracking-[0.3em] text-white/30">Account / Institution</p>
  <p className="text-xl font-bold tracking-tight truncate max-w-[300px] text-white/90">
  {formData.name || provider || 'New Account'}
  </p>
@@ -426,7 +428,7 @@ export const AddAccount: React.FC = () => {
 
  <div className="flex justify-between items-end">
  <div className="space-y-1">
- <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30">Available Balance</p>
+ <p className="text-2xs font-black uppercase tracking-[0.3em] text-white/30">Available Balance</p>
  <div className="flex items-baseline gap-2.5">
  <span className="text-lg font-black text-indigo-400">{currency}</span>
  <span className="text-4xl font-black tracking-tighter tabular-nums text-white">
@@ -452,7 +454,7 @@ export const AddAccount: React.FC = () => {
  )}
  
   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full mb-6">
- <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider shrink-0">Choose Card Aesthetic</label>
+ <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider shrink-0">Choose Card Aesthetic</label>
  <div className="flex flex-wrap items-center gap-3 md:gap-4">
  {CARD_COLORS.map(color => (
  <button
@@ -476,7 +478,7 @@ export const AddAccount: React.FC = () => {
 
  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full">
  <div className="flex items-center justify-between w-full md:w-auto gap-4">
- <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">Custom Spectrum</span>
+ <span className="text-2xs font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">Custom Spectrum</span>
  <div
  ref={el => { if (el) el.style.backgroundColor = selectedColor.id === 'custom' ? (selectedColor.color ?? '#6366f1') : '#6366f1'; }}
  className="w-4 h-4 rounded-full shadow-sm border border-white shrink-0"
@@ -520,13 +522,13 @@ export const AddAccount: React.FC = () => {
 
   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full mb-6">
  <div className="flex flex-col">
- <span className="text-[10px] sm:text-[11px] font-bold text-indigo-400/80 uppercase tracking-wider">Setup Initial Capital</span>
+ <span className="text-2xs font-bold text-indigo-400/80 uppercase tracking-wider">Setup Initial Capital</span>
  <h3 className="text-sm font-bold text-slate-800">Opening Balance</h3>
  </div>
  <div className="h-px flex-1 bg-slate-100 hidden md:block mx-4" />
  <div className="flex items-center gap-2 text-slate-400">
  <Info size={14} />
- <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider">Starting Amount</span>
+ <span className="text-2xs font-bold uppercase tracking-wider">Starting Amount</span>
  </div>
  </div>
 
@@ -549,9 +551,9 @@ export const AddAccount: React.FC = () => {
 
  <div className="w-full mt-8 flex flex-col gap-3">
  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full">
- <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-400 shrink-0">Quick Balance Presets</p>
+ <p className="text-2xs font-bold uppercase tracking-wider text-slate-400 shrink-0">Quick Balance Presets</p>
  <div className="flex-1 h-[1px] bg-slate-100 hidden md:block" />
- <div className="text-[10px] sm:text-[11px] font-bold text-indigo-500/80 uppercase tracking-wider hidden md:block">Add to balance</div>
+ <div className="text-2xs font-bold text-indigo-500/80 uppercase tracking-wider hidden md:block">Add to balance</div>
  </div>
  <div className="flex justify-center gap-2">
  {QUICK_BALANCE_PRESETS.filter(p => p > 0).map(amt => (

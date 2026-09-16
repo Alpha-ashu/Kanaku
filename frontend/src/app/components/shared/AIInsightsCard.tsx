@@ -113,7 +113,7 @@ export const AIInsightsCard: React.FC<{ compact?: boolean }> = ({ compact = fals
   </div>
   <div>
   <p className="text-sm font-bold text-slate-900">AI Insights</p>
-  <p className="text-[10px] text-slate-400">Powered by KANAKUIntelligence</p>
+  <p className="text-2xs text-slate-400">Powered by KANAKUIntelligence</p>
   </div>
   </div>
   {data.healthScore !== undefined && (
@@ -129,7 +129,7 @@ export const AIInsightsCard: React.FC<{ compact?: boolean }> = ({ compact = fals
   <Shield size={14} className="text-rose-500 mt-0.5 shrink-0" />
   <div>
   <p className="text-xs font-bold text-rose-700 mb-0.5">{data.fraudAlerts.length} Suspicious Transaction(s) Flagged</p>
-  <p className="text-[11px] text-rose-600">Review your recent transactions for unusual activity.</p>
+  <p className="text-xs text-rose-600">Review your recent transactions for unusual activity.</p>
   </div>
   </div>
   )}
@@ -137,7 +137,7 @@ export const AIInsightsCard: React.FC<{ compact?: boolean }> = ({ compact = fals
   {/* Upcoming Bills */}
   {data.upcomingBills.length > 0 && !compact && (
   <div className="px-4 pt-4">
-  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Upcoming Bills</p>
+  <p className="text-2xs font-bold uppercase tracking-widest text-slate-400 mb-2">Upcoming Bills</p>
   <div className="space-y-1.5">
   {data.upcomingBills.slice(0, 3).map((bill, idx) => (
   <div key={idx} className="flex items-center justify-between py-2 px-3.5 bg-purple-50/50 rounded-2xl border border-purple-100/60">
@@ -155,13 +155,13 @@ export const AIInsightsCard: React.FC<{ compact?: boolean }> = ({ compact = fals
   {/* Recommendations */}
   {topRecs.length > 0 && (
   <div className="px-4 pt-4 pb-4 space-y-2">
-  {!compact && <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Recommendations</p>}
+  {!compact && <p className="text-2xs font-bold uppercase tracking-widest text-slate-400 mb-2">Recommendations</p>}
   {topRecs.map((rec, idx) => (
   <div key={idx} className="flex items-start gap-2.5 p-3.5 rounded-2xl bg-slate-50/70 border border-slate-100">
   <div className="mt-0.5 shrink-0">{recommendationIcon(rec.type)}</div>
   <div className="flex-1 min-w-0">
   <p className="text-xs font-bold text-slate-800">{rec.title}</p>
-  <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">{rec.message}</p>
+  <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">{rec.message}</p>
   </div>
   {rec.actionLabel && <ChevronRight size={14} className="text-slate-400 mt-1 shrink-0" />}
   </div>

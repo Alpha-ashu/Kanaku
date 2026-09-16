@@ -277,7 +277,7 @@ const SectionHeading: React.FC<{
   <div className={align === 'center' ? 'max-w-2xl mx-auto text-center' : 'max-w-xl'}>
     <p className={`text-sm font-semibold ${tone === 'dark' ? 'text-violet-300' : 'text-violet-700'}`}>{eyebrow}</p>
     <h2
-      className={`mt-3 text-[30px] sm:text-[42px] leading-[1.1] font-bold tracking-[-0.03em] ${
+      className={`mt-3 text-3xl sm:text-4xl lg:text-5xl leading-[1.1] font-bold tracking-[-0.03em] ${
         tone === 'dark' ? 'text-white' : 'text-slate-950'
       }`}
     >
@@ -373,11 +373,11 @@ const AppTour: React.FC = () => {
                   >
                     <Icon className="w-4 h-4" />
                   </span>
-                  <span className={`text-[15px] font-semibold ${selected ? 'text-slate-950' : 'text-slate-700'}`}>
+                  <span className={`text-base font-semibold ${selected ? 'text-slate-950' : 'text-slate-700'}`}>
                     {selected ? item.title : item.label}
                   </span>
                 </span>
-                {selected && <span className="mt-2 block pl-12 text-[15px] leading-relaxed text-slate-600">{item.description}</span>}
+                {selected && <span className="mt-2 block pl-12 text-base leading-relaxed text-slate-600">{item.description}</span>}
               </button>
             );
           })}
@@ -423,7 +423,7 @@ const AppTour: React.FC = () => {
 
       <div className="lg:hidden">
         <p className="text-lg font-semibold text-slate-950">{active.title}</p>
-        <p className="mt-2 text-[15px] leading-relaxed text-slate-600">{active.description}</p>
+        <p className="mt-2 text-base leading-relaxed text-slate-600">{active.description}</p>
       </div>
     </div>
   );
@@ -495,7 +495,7 @@ const AssistantDemo: React.FC = () => {
                 </span>
                 <span className="min-w-0">
                   <span className="block text-sm font-semibold text-slate-900">{item.label}</span>
-                  <span className="block text-[13px] text-slate-500 truncate">“{item.prompt}”</span>
+                  <span className="block text-sm text-slate-500 truncate">“{item.prompt}”</span>
                 </span>
               </button>
             );
@@ -542,13 +542,13 @@ const FaqList: React.FC = () => {
               onClick={() => setOpenIndex(open ? null : index)}
               className="w-full flex items-center justify-between gap-6 py-5 text-left"
             >
-              <span className="text-base sm:text-[17px] font-semibold text-slate-900">{faq.question}</span>
+              <span className="text-base sm:text-lg font-semibold text-slate-900">{faq.question}</span>
               <ChevronDown
                 className={`w-5 h-5 shrink-0 text-slate-400 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
               />
             </button>
             <div id={`landing-faq-answer-${index}`} hidden={!open} className="pb-5 pr-10">
-              <p className="text-[15px] leading-relaxed text-slate-600">{faq.answer}</p>
+              <p className="text-base leading-relaxed text-slate-600">{faq.answer}</p>
             </div>
           </div>
         );
@@ -610,17 +610,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin,
                 type="button"
                 data-testid="landing-page-kai-link"
                 onClick={() => scrollToSection('assistant')}
-                className="group inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 py-1 pl-1 pr-3 text-[13px] text-slate-600 shadow-sm hover:border-slate-300 transition-colors"
+                className="group inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 py-1 pl-1 pr-3 text-sm text-slate-600 shadow-sm hover:border-slate-300 transition-colors"
               >
-                <span className="rounded-full bg-violet-600 px-2 py-0.5 text-[11px] font-semibold text-white">New</span>
+                <span className="rounded-full bg-violet-600 px-2 py-0.5 text-xs font-semibold text-white">New</span>
                 Meet KAI, your finance assistant
                 <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
               </button>
 
-              <h1 className="mt-6 text-[36px] sm:text-[56px] lg:text-[64px] leading-[1.04] font-extrabold tracking-[-0.035em] text-slate-950">
+              <h1 className="mt-6 text-4xl sm:text-5xl lg:text-6xl leading-[1.04] font-extrabold tracking-[-0.035em] text-slate-950 text-balance">
                 Track every expense.
                 <br />
-                <span className="text-violet-600">Understand every rupee.</span>
+                <span className="block text-violet-600">Understand every rupee.</span>
               </h1>
 
               <p className="mt-6 max-w-2xl mx-auto text-base sm:text-lg leading-relaxed text-slate-600">
@@ -633,7 +633,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin,
                   type="button"
                   data-testid="landing-page-get-started"
                   onClick={onGetStarted}
-                  className="group inline-flex items-center justify-center gap-2 rounded-[14px] bg-violet-600 px-6 py-3.5 text-[15px] font-semibold text-white shadow-[0_10px_24px_-10px_rgba(124,58,237,0.7)] hover:bg-violet-700 transition-colors"
+                  className="group inline-flex items-center justify-center gap-2 rounded-[14px] bg-violet-600 px-6 py-3.5 text-base font-semibold text-white shadow-[0_10px_24px_-10px_rgba(124,58,237,0.7)] hover:bg-violet-700 transition-colors"
                 >
                   Get started free
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
@@ -642,7 +642,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin,
                   type="button"
                   data-testid="landing-page-watch-demo"
                   onClick={() => scrollToSection('features')}
-                  className="inline-flex items-center justify-center gap-2 rounded-[14px] border border-slate-200 bg-white px-6 py-3.5 text-[15px] font-semibold text-slate-800 hover:bg-slate-50 hover:border-slate-300 transition-colors"
+                  className="inline-flex items-center justify-center gap-2 rounded-[14px] border border-slate-200 bg-white px-6 py-3.5 text-base font-semibold text-slate-800 hover:bg-slate-50 hover:border-slate-300 transition-colors"
                 >
                   Explore the app
                 </button>
@@ -703,7 +703,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin,
                       <Icon className="w-5 h-5" />
                     </span>
                     <span className="min-w-0">
-                      <span className="block text-sm sm:text-[15px] font-semibold text-slate-900">{item.title}</span>
+                      <span className="block text-sm sm:text-base font-semibold text-slate-900">{item.title}</span>
                       <span className="block text-xs sm:text-sm text-slate-500">{item.text}</span>
                     </span>
                   </li>
@@ -751,7 +751,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin,
                         <Icon className="w-5 h-5" />
                       </span>
                       <h3 className="mt-5 text-xl font-semibold tracking-tight text-slate-950">{card.title}</h3>
-                      <p className="mt-2 text-[15px] leading-relaxed text-slate-600">{card.description}</p>
+                      <p className="mt-2 text-base leading-relaxed text-slate-600">{card.description}</p>
                     </div>
                     <div className="relative mt-auto h-[450px] overflow-hidden">
                       <div
@@ -804,7 +804,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin,
                   type="button"
                   data-testid="landing-page-privacy-link"
                   onClick={() => onNavigate('privacy')}
-                  className="group mt-10 inline-flex items-center gap-2 text-[15px] font-semibold text-white hover:text-violet-300 transition-colors"
+                  className="group mt-10 inline-flex items-center gap-2 text-base font-semibold text-white hover:text-violet-300 transition-colors"
                 >
                   Read our privacy policy
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
@@ -866,7 +866,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin,
               <div className="relative grid grid-cols-1 lg:grid-cols-2 items-center">
                 <div className="px-6 py-14 sm:px-12 sm:py-20 text-center lg:text-left">
                   <KANAKULogo className="w-12 h-12 mx-auto lg:mx-0" />
-                  <h2 className="mt-6 text-[30px] sm:text-[44px] leading-[1.1] font-bold tracking-[-0.03em] text-white">
+                  <h2 className="mt-6 text-3xl sm:text-4xl lg:text-5xl leading-[1.1] font-bold tracking-[-0.03em] text-white">
                     Take control of your spending today.
                   </h2>
                   <p className="mt-4 text-base sm:text-lg text-violet-200 max-w-xl mx-auto lg:mx-0">
@@ -877,7 +877,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin,
                       type="button"
                       data-testid="landing-page-yes-get-started-free"
                       onClick={onGetStarted}
-                      className="group inline-flex items-center justify-center gap-2 rounded-[14px] bg-white px-6 py-3.5 text-[15px] font-semibold text-slate-950 hover:bg-violet-50 transition-colors"
+                      className="group inline-flex items-center justify-center gap-2 rounded-[14px] bg-white px-6 py-3.5 text-base font-semibold text-slate-950 hover:bg-violet-50 transition-colors"
                     >
                       Create free account
                       <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
@@ -886,7 +886,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin,
                       type="button"
                       data-testid="landing-page-cta-log-in"
                       onClick={onLogin}
-                      className="inline-flex items-center justify-center rounded-[14px] border border-white/30 px-6 py-3.5 text-[15px] font-semibold text-white hover:bg-white/10 transition-colors"
+                      className="inline-flex items-center justify-center rounded-[14px] border border-white/30 px-6 py-3.5 text-base font-semibold text-white hover:bg-white/10 transition-colors"
                     >
                       Log in
                     </button>

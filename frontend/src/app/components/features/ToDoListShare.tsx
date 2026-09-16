@@ -205,7 +205,7 @@ export const ToDoListShare: React.FC = () => {
 
         {/* Shared With List */}
         <div className="space-y-2">
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">
+          <p className="text-2xs font-black text-slate-400 uppercase tracking-widest px-1">
             Shared With ({sharedWith.length})
           </p>
 
@@ -223,7 +223,7 @@ export const ToDoListShare: React.FC = () => {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-black text-slate-900 truncate">{getFriendName(share.sharedWithUserId)}</p>
                   <span className={cn(
-                    'inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full mt-1',
+                    'inline-flex items-center gap-1 text-2xs font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full mt-1',
                     share.permission === 'view' ? 'bg-slate-100 text-slate-500' : 'bg-indigo-50 text-indigo-600'
                   )}>
                     {share.permission === 'view' ? <Lock size={9} /> : <Edit size={9} />}

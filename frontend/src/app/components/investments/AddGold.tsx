@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { takeVoiceDraft, VOICE_INVESTMENT_DRAFT_KEY, type VoiceInvestmentDraft } from '@/lib/voiceDrafts';
 import { FloatingSaveBar } from '@/app/components/ui/FloatingSaveBar';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
+import { useSubmitLock } from '@/hooks/useSubmitLock';
 
 // --- Constants ---
 const GOLD_TYPES = [
@@ -29,6 +30,7 @@ const UNIT_OPTIONS = [
 ];
 
 export const AddGold: React.FC = () => {
+  const guardSubmit = useSubmitLock();
   const { setCurrentPage, currency, refreshData } = useApp();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
@@ -57,7 +59,7 @@ export const AddGold: React.FC = () => {
   const gainPct = totalInvestment > 0 ? (gainLoss / totalInvestment) * 100 : 0;
   const hasGain = gainLoss >= 0;
 
-  const handleSubmit = async () => {
+  const handleSubmit = guardSubmit(async () => {
     if (formData.quantity <= 0) { toast.error('Enter quantity'); return; }
     if (formData.purchasePrice <= 0) { toast.error('Enter purchase price'); return; }
     
@@ -77,7 +79,7 @@ export const AddGold: React.FC = () => {
     } finally {
       setIsSubmitting(false);
     }
-  };
+  });
 
   return (
     <CenteredLayout enablePullToRefresh={false} className="pb-32">
@@ -110,7 +112,7 @@ export const AddGold: React.FC = () => {
               
               {/* Category */}
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">1. Gold Category</label>
+                <label className="text-2xs font-bold text-slate-500 uppercase tracking-wider">1. Gold Category</label>
                 <div className="grid grid-cols-3 gap-2.5">
                   {GOLD_TYPES.map(t => (
                     <button
@@ -126,7 +128,7 @@ export const AddGold: React.FC = () => {
                       )}
                     >
                       <span className="text-2xl sm:text-3xl">{t.icon}</span>
-                      <span className="text-[11px] font-black uppercase tracking-wider truncate w-full text-center">{t.label}</span>
+                      <span className="text-xs font-black uppercase tracking-wider truncate w-full text-center">{t.label}</span>
                     </button>
                   ))}
                 </div>
@@ -134,7 +136,7 @@ export const AddGold: React.FC = () => {
 
               {/* Purity Profile */}
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">2. Purity Profile</label>
+                <label className="text-2xs font-bold text-slate-500 uppercase tracking-wider">2. Purity Profile</label>
                 <div className="flex gap-2.5 items-center">
                   <div className="flex-1 grid grid-cols-4 gap-1 bg-slate-100/90 p-1 rounded-full border border-slate-200/60 shadow-2xs">
                     {PURITY_PRESETS.map(p => (
@@ -144,7 +146,7 @@ export const AddGold: React.FC = () => {
                         data-testid={`add-gold-button-2-${p.label}`}
                         onClick={() => setFormData(prev => ({ ...prev, purityPercentage: p.value }))}
                         className={cn(
-                          "py-2 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all cursor-pointer",
+                          "py-2 rounded-full text-2xs sm:text-xs font-bold uppercase tracking-wider transition-all cursor-pointer",
                           formData.purityPercentage === p.value
                             ? "bg-[#18181B] text-white shadow-xs"
                             : "text-slate-600 hover:text-slate-900"
@@ -163,7 +165,7 @@ export const AddGold: React.FC = () => {
                       aria-label="Purity percentage"
                       className="w-full h-10 bg-slate-50 border border-slate-200/80 rounded-2xl text-center font-bold text-xs text-slate-900 focus:bg-white focus:ring-2 focus:ring-amber-500/20 focus:border-amber-400 outline-none transition-all"
                     />
-                    <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400 pointer-events-none">%</span>
+                    <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-2xs font-bold text-slate-400 pointer-events-none">%</span>
                   </div>
                 </div>
               </div>
@@ -171,7 +173,7 @@ export const AddGold: React.FC = () => {
               {/* Storage & Date */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Storage Location</label>
+                  <label className="text-2xs font-bold text-slate-500 uppercase tracking-wider">Storage Location</label>
                   <div className="relative">
                     <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
                     <input
@@ -188,7 +190,7 @@ export const AddGold: React.FC = () => {
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Purchase Date</label>
+                  <label className="text-2xs font-bold text-slate-500 uppercase tracking-wider">Purchase Date</label>
                   <div className="relative">
                     <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
                     <input
@@ -205,7 +207,7 @@ export const AddGold: React.FC = () => {
 
               {/* Certificate / Notes */}
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Certificate / Notes</label>
+                <label className="text-2xs font-bold text-slate-500 uppercase tracking-wider">Certificate / Notes</label>
                 <textarea
                   id="add-gold-notes"
                   name="notes"
@@ -225,7 +227,7 @@ export const AddGold: React.FC = () => {
                 <Shield size={18} className="text-white" />
               </div>
               <div>
-                <p className="text-[10px] font-bold text-amber-900 uppercase tracking-wider">Purity Verification</p>
+                <p className="text-2xs font-bold text-amber-900 uppercase tracking-wider">Purity Verification</p>
                 <p className="text-xs font-semibold text-amber-950/80">Accurate purity ensures precise portfolio valuation.</p>
               </div>
             </div>
@@ -247,7 +249,7 @@ export const AddGold: React.FC = () => {
                     data-testid={`add-gold-button-3-${u.value}`}
                     onClick={() => setFormData(prev => ({ ...prev, unit: u.value as any }))}
                     className={cn(
-                      "px-4 py-1.5 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all cursor-pointer",
+                      "px-4 py-1.5 rounded-full text-2xs sm:text-xs font-bold uppercase tracking-wider transition-all cursor-pointer",
                       formData.unit === u.value
                         ? "bg-[#18181B] text-white shadow-xs"
                         : "text-slate-600 hover:text-slate-900"
@@ -259,7 +261,7 @@ export const AddGold: React.FC = () => {
               </div>
 
               <div className="flex flex-col items-center w-full">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-1">
+                <span className="text-2xs font-bold text-slate-400 uppercase tracking-[0.2em] mb-1">
                   Weight ({formData.unit})
                 </span>
                 <input
@@ -281,7 +283,7 @@ export const AddGold: React.FC = () => {
             <div className="bg-white rounded-[28px] sm:rounded-[32px] p-5 sm:p-6 border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Buy Price / {formData.unit}</label>
+                  <label className="text-2xs font-bold text-slate-500 uppercase tracking-wider">Buy Price / {formData.unit}</label>
                   <div className="relative">
                     <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 pointer-events-none">{currency}</span>
                     <input
@@ -296,7 +298,7 @@ export const AddGold: React.FC = () => {
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Live Price / {formData.unit}</label>
+                  <label className="text-2xs font-bold text-slate-500 uppercase tracking-wider">Live Price / {formData.unit}</label>
                   <div className="relative">
                     <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 pointer-events-none">{currency}</span>
                     <input
@@ -325,12 +327,12 @@ export const AddGold: React.FC = () => {
                       {hasGain ? <TrendingUp size={18} /> : <TrendingDown size={18} />}
                     </div>
                     <div>
-                      <p className="text-[9px] font-bold uppercase opacity-75">Estimated P/L</p>
+                      <p className="text-2xs font-bold uppercase opacity-75">Estimated P/L</p>
                       <p className="text-xl font-black tracking-tight">{currency} {Math.abs(gainLoss).toLocaleString()}</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-[9px] font-bold uppercase opacity-75">Performance</p>
+                    <p className="text-2xs font-bold uppercase opacity-75">Performance</p>
                     <p className="text-sm font-black">{hasGain ? '+' : '-'}{Math.abs(gainPct).toFixed(1)}%</p>
                   </div>
                 </div>
@@ -344,12 +346,12 @@ export const AddGold: React.FC = () => {
                   <Coins size={20} className="text-amber-400" />
                 </div>
                 <div>
-                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Total Gold Asset</p>
+                  <p className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Total Gold Asset</p>
                   <p className="text-sm font-bold truncate max-w-[140px] text-white">{formData.quantity} {formData.unit}s</p>
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Market Value</p>
+                <p className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Market Value</p>
                 <p className="text-xl sm:text-2xl font-black tracking-tight text-white">
                   {currency} {(formData.quantity * (formData.currentPrice || formData.purchasePrice)).toLocaleString()}
                 </p>

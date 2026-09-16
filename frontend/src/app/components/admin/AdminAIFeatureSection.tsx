@@ -153,7 +153,7 @@ export const AdminAIFeatureSection: React.FC<Props> = ({ aiFeatures, onSave, loa
 
                 {/* Master Switch */}
                 <div className="flex items-center gap-4 bg-slate-50 rounded-2xl px-5 py-3 border border-slate-100 self-start md:self-auto">
-                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Master Switch</span>
+                  <span className="text-2xs font-black text-slate-400 uppercase tracking-widest">Master Switch</span>
                   <button
                     data-testid={`admin-aifeature-section-button-${key}`}
                     type="button"
@@ -177,7 +177,7 @@ export const AdminAIFeatureSection: React.FC<Props> = ({ aiFeatures, onSave, loa
               <div className="py-6 border-b border-slate-100">
                 <div className="flex items-center gap-2 mb-4">
                   <Shield size={14} className="text-slate-400" />
-                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                  <span className="text-2xs font-black text-slate-400 uppercase tracking-widest">
                     Role Visibility Matrix
                   </span>
                 </div>
@@ -225,7 +225,7 @@ export const AdminAIFeatureSection: React.FC<Props> = ({ aiFeatures, onSave, loa
                     onClick={() => setExpandedModule(isExpanded ? null : key)}
                     className="w-full flex items-center justify-between text-slate-500 hover:text-slate-900 transition-colors py-2"
                   >
-                    <span className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest">
+                    <span className="flex items-center gap-2 text-2xs font-black uppercase tracking-widest">
                       <Layers size={12} />
                       Granular Capabilities ({capabilities.length})
                     </span>
@@ -242,7 +242,7 @@ export const AdminAIFeatureSection: React.FC<Props> = ({ aiFeatures, onSave, loa
                           <div className="flex items-center justify-between gap-4 mb-4">
                             <div>
                               <h4 className="text-sm font-bold text-slate-900">{cap.name}</h4>
-                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
+                              <p className="text-2xs font-bold text-slate-400 uppercase tracking-widest mt-0.5">
                                 {cap.key}
                               </p>
                             </div>
@@ -273,7 +273,7 @@ export const AdminAIFeatureSection: React.FC<Props> = ({ aiFeatures, onSave, loa
                                 key={r}
                                 className="flex items-center justify-between px-3 py-2 rounded-xl bg-white border border-slate-100"
                               >
-                                <span className="text-[10px] font-bold text-slate-500 capitalize">{r}</span>
+                                <span className="text-2xs font-bold text-slate-500 capitalize">{r}</span>
                                 <button
                                   data-testid={`admin-aifeature-section-button-5-${r}`}
                                   type="button"

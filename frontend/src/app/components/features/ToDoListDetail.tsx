@@ -16,6 +16,7 @@ import {
 } from '@/lib/auth-sync-integration';
 import { cn } from '@/lib/utils';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
+import { isSubmitEnter, useSubmitLock } from '@/hooks/useSubmitLock';
 
 const PRIORITY_CONFIG = {
   low:    { label: 'Low',    bg: 'bg-emerald-50',  text: 'text-emerald-700',  dot: 'bg-emerald-400' },
@@ -29,6 +30,7 @@ interface CollaboratorOption {
 }
 
 export const ToDoListDetail: React.FC = () => {
+  const guardSubmit = useSubmitLock();
   const { setCurrentPage } = useApp();
   const { user } = useAuth();
   const [listId, setListId] = useState<number | null>(null);
@@ -116,7 +118,7 @@ export const ToDoListDetail: React.FC = () => {
     setNewAssignedToName('');
   };
 
-  const handleAddItem = async () => {
+  const handleAddItem = guardSubmit(async () => {
     if (!newTitle.trim()) { toast.error('Task title is required'); return; }
     if (!listId) return;
     setIsAdding(true);
@@ -141,7 +143,7 @@ export const ToDoListDetail: React.FC = () => {
     } finally {
       setIsAdding(false);
     }
-  };
+  });
 
   const handleToggleItem = async (item: ToDoItem) => {
     try {
@@ -234,7 +236,7 @@ export const ToDoListDetail: React.FC = () => {
       <div className="flex items-center justify-center min-h-screen bg-white">
         <div className="flex flex-col items-center gap-3">
           <div className="w-10 h-10 rounded-full border-2 border-indigo-200 border-t-indigo-600 animate-spin" />
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Loading…</p>
+          <p className="text-2xs font-black text-slate-400 uppercase tracking-widest">Loading…</p>
         </div>
       </div>
     );
@@ -260,7 +262,7 @@ export const ToDoListDetail: React.FC = () => {
             <div className="flex items-center gap-2 min-w-0">
               <h1 className="font-page-title text-slate-900 tracking-tight leading-none truncate">{toDoList.name}</h1>
               {isTogether && (
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200/50 flex items-center gap-1 shrink-0">
+                <span className="text-2xs font-bold px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200/50 flex items-center gap-1 shrink-0">
                   <Users size={10} />Together
                 </span>
               )}
@@ -319,7 +321,7 @@ export const ToDoListDetail: React.FC = () => {
               type="text"
               value={newTitle}
               onChange={e => setNewTitle(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleAddItem()}
+              onKeyDown={e => { if (isSubmitEnter(e)) { e.preventDefault(); void handleAddItem(); } }}
               placeholder="What needs to be done?"
               aria-label="Task title"
               autoFocus
@@ -330,7 +332,7 @@ export const ToDoListDetail: React.FC = () => {
             <div className="grid grid-cols-2 gap-3">
               {/* Priority */}
               <div className="space-y-1">
-                <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1"><Flag size={11} />Priority</label>
+                <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1"><Flag size={11} />Priority</label>
                 <div className="flex gap-1.5">
                   {(['low', 'medium', 'high'] as const).map(p => {
                     const cfg = PRIORITY_CONFIG[p];
@@ -341,7 +343,7 @@ export const ToDoListDetail: React.FC = () => {
                         onClick={() => setNewPriority(p)}
                         data-testid={`tododetail-new-priority-${p}-button`}
                         className={cn(
-                          'flex-1 py-2 rounded-lg text-[10px] sm:text-[11px] font-bold uppercase tracking-wider transition-all',
+                          'flex-1 py-2 rounded-lg text-2xs font-bold uppercase tracking-wider transition-all',
                           newPriority === p ? `${cfg.bg} ${cfg.text}` : 'bg-white border border-slate-200 text-slate-400 hover:border-slate-300'
                         )}
                       >
@@ -354,7 +356,7 @@ export const ToDoListDetail: React.FC = () => {
 
               {/* Due Date */}
               <div className="space-y-1">
-                <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1"><Calendar size={11} />Due Date</label>
+                <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1"><Calendar size={11} />Due Date</label>
                 <input
                   type="date"
                   value={newDueDate}
@@ -369,7 +371,7 @@ export const ToDoListDetail: React.FC = () => {
             {/* Assign To — Together lists only */}
             {isTogether && (
               <div className="space-y-1">
-                <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
                   <UserCheck size={11} />Assign To
                 </label>
                 <AssigneeSelect
@@ -383,7 +385,7 @@ export const ToDoListDetail: React.FC = () => {
 
             {/* Description */}
             <div className="space-y-1">
-              <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1"><AlignLeft size={11} />Notes</label>
+              <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1"><AlignLeft size={11} />Notes</label>
               <textarea
                 value={newDescription}
                 onChange={e => setNewDescription(e.target.value)}
@@ -490,7 +492,7 @@ export const ToDoListDetail: React.FC = () => {
                         return (
                           <button key={p} type="button" onClick={() => setEditPriority(p)}
                             data-testid={`tododetail-edit-priority-${p}-button`}
-                            className={cn('flex-1 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-bold uppercase tracking-wider transition-all', editPriority === p ? `${cfg.bg} ${cfg.text}` : 'bg-slate-100 text-slate-400 hover:bg-slate-200')}
+                            className={cn('flex-1 py-1.5 rounded-lg text-2xs font-bold uppercase tracking-wider transition-all', editPriority === p ? `${cfg.bg} ${cfg.text}` : 'bg-slate-100 text-slate-400 hover:bg-slate-200')}
                           >{cfg.label}</button>
                         );
                       })}
@@ -502,7 +504,7 @@ export const ToDoListDetail: React.FC = () => {
                   </div>
                   {isTogether && (
                     <div className="space-y-1">
-                      <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                      <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
                         <UserCheck size={11} />Assign To
                       </label>
                       <AssigneeSelect
@@ -520,12 +522,12 @@ export const ToDoListDetail: React.FC = () => {
                   <div className="flex gap-2">
                     <button type="button" onClick={() => setEditingItemId(null)}
                       data-testid="tododetail-edit-cancel-button"
-                      className="flex-1 py-2 border border-slate-200 rounded-full text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-600 hover:bg-slate-50 transition-all cursor-pointer">
+                      className="flex-1 py-2 border border-slate-200 rounded-full text-2xs font-bold uppercase tracking-wider text-slate-600 hover:bg-slate-50 transition-all cursor-pointer">
                       Cancel
                     </button>
                     <button type="button" onClick={() => handleSaveEdit(item.id!)}
                       data-testid="tododetail-edit-save-button"
-                      className={cn('flex-1 py-2 text-white rounded-full text-[10px] sm:text-[11px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1 shadow-xs cursor-pointer', isTogether ? 'bg-violet-600 hover:bg-violet-700' : 'bg-[#18181B] hover:bg-black')}>
+                      className={cn('flex-1 py-2 text-white rounded-full text-2xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1 shadow-xs cursor-pointer', isTogether ? 'bg-violet-600 hover:bg-violet-700' : 'bg-[#18181B] hover:bg-black')}>
                       <Check size={11} />Save
                     </button>
                   </div>
@@ -562,31 +564,31 @@ export const ToDoListDetail: React.FC = () => {
                     <p className="text-xs text-slate-400 font-medium mt-0.5 truncate">{item.description}</p>
                   )}
                   <div className="flex items-center gap-2 mt-2 flex-wrap">
-                    <span className={cn('text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest', pCfg.bg, pCfg.text)}>
+                    <span className={cn('text-2xs px-2 py-0.5 rounded-full font-black uppercase tracking-widest', pCfg.bg, pCfg.text)}>
                       {pCfg.label}
                     </span>
                     {item.dueDate && (
-                      <span className="text-[10px] font-bold text-slate-400 flex items-center gap-1">
+                      <span className="text-2xs font-bold text-slate-400 flex items-center gap-1">
                         <Calendar size={11} />
                         {new Date(item.dueDate).toLocaleDateString('en', { day: 'numeric', month: 'short' })}
                       </span>
                     )}
                     {/* Together-specific metadata */}
                     {isTogether && item.assignedToName && (
-                      <span className="text-[10px] font-bold text-violet-600 flex items-center gap-1 bg-violet-50 px-2 py-0.5 rounded-full border border-violet-100">
+                      <span className="text-2xs font-bold text-violet-600 flex items-center gap-1 bg-violet-50 px-2 py-0.5 rounded-full border border-violet-100">
                         <UserCheck size={11} />
                         {item.assignedToName}
                       </span>
                     )}
                     {isTogether && !item.assignedToName && (
-                      <span className="text-[10px] font-bold text-slate-400 flex items-center gap-1">
+                      <span className="text-2xs font-bold text-slate-400 flex items-center gap-1">
                         <Users size={11} />Everyone
                       </span>
                     )}
                   </div>
                   {/* Completed-by info */}
                   {isTogether && item.completed && item.completedByName && (
-                    <p className="text-[10px] text-emerald-600 font-semibold mt-1.5">
+                    <p className="text-2xs text-emerald-600 font-semibold mt-1.5">
                       ✓ Completed by {item.completedByName}
                       {item.completedAt && ` · ${new Date(item.completedAt).toLocaleString('en', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' })}`}
                     </p>

@@ -214,7 +214,7 @@ export const AppDateStrip: React.FC<AppDateStripProps> = ({
             <button
               type="button"
               onClick={handleToday}
-              className="text-[10px] sm:text-[11px] font-bold text-purple-600 hover:text-purple-700 bg-purple-50 hover:bg-purple-100 px-2 sm:px-2.5 py-0.5 rounded-full transition-colors cursor-pointer"
+              className="text-2xs font-bold text-purple-600 hover:text-purple-700 bg-purple-50 hover:bg-purple-100 px-2 sm:px-2.5 py-0.5 rounded-full transition-colors cursor-pointer"
             >
               Today
             </button>
@@ -255,7 +255,7 @@ export const AppDateStrip: React.FC<AppDateStripProps> = ({
                   onClick={() => onSelectDate(item.date)}
                   className="relative flex flex-col items-center justify-center bg-[#0F172A] rounded-[20px] sm:rounded-[24px] py-2 sm:py-2.5 px-1 sm:px-2 w-full max-w-[46px] sm:max-w-[54px] shadow-lg shadow-slate-950/20 cursor-pointer transition-all duration-200 focus:outline-none z-10"
                 >
-                  <span className="text-[#FF2D78] font-black text-[10px] sm:text-xs tracking-wider uppercase leading-none">
+                  <span className="text-[#FF2D78] font-black text-2xs sm:text-xs tracking-wider uppercase leading-none">
                     {item.topLabel}
                   </span>
                   <span className="text-white font-black text-sm sm:text-base md:text-lg leading-tight mt-1 whitespace-nowrap">
@@ -276,7 +276,7 @@ export const AppDateStrip: React.FC<AppDateStripProps> = ({
               >
                 <span
                   className={cn(
-                    'font-black text-[10px] sm:text-xs tracking-wider uppercase leading-none transition-colors',
+                    'font-black text-2xs sm:text-xs tracking-wider uppercase leading-none transition-colors',
                     item.isWeekend ? 'text-[#FF2D55]' : 'text-[#94A3B8]'
                   )}
                 >
@@ -310,7 +310,7 @@ export const AppDateStrip: React.FC<AppDateStripProps> = ({
                   onClick={() => onSelectDate(item.date)}
                   className="relative flex flex-col items-center justify-center bg-[#0F172A] rounded-[20px] sm:rounded-[24px] py-2 sm:py-2.5 px-3 sm:px-4 min-w-[48px] sm:min-w-[56px] shadow-lg shadow-slate-950/20 snap-center shrink-0 cursor-pointer transition-all duration-200 focus:outline-none z-10"
                 >
-                  <span className="text-[#FF2D78] font-black text-[10px] sm:text-xs tracking-wider uppercase leading-none">
+                  <span className="text-[#FF2D78] font-black text-2xs sm:text-xs tracking-wider uppercase leading-none">
                     {item.topLabel}
                   </span>
                   <span className="text-white font-black text-sm sm:text-base md:text-lg leading-tight mt-1 whitespace-nowrap">
@@ -331,7 +331,7 @@ export const AppDateStrip: React.FC<AppDateStripProps> = ({
               >
                 <span
                   className={cn(
-                    'font-black text-[10px] sm:text-xs tracking-wider uppercase leading-none transition-colors',
+                    'font-black text-2xs sm:text-xs tracking-wider uppercase leading-none transition-colors',
                     item.isWeekend ? 'text-[#FF2D55]' : 'text-[#94A3B8]'
                   )}
                 >

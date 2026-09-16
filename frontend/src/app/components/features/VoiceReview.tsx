@@ -25,6 +25,7 @@ import {
  VOICE_BATCH_DRAFT_KEY,
  persistVoiceRouteDraft,
 } from '@/lib/voiceDrafts';
+import { useSubmitLock } from '@/hooks/useSubmitLock';
 
 const STORAGE_KEY = VOICE_BATCH_DRAFT_KEY;
 
@@ -118,6 +119,7 @@ const normalizeDraftItem = (item: Partial<DraftItem>, defaultDate: string, fallb
 };
 
 export const VoiceReview: React.FC = () => {
+ const guardSubmit = useSubmitLock();
  const { accounts, currency, goals, setCurrentPage } = useApp();
  const [items, setItems] = useState<DraftItem[]>([]);
  const [accountId, setAccountId] = useState<number>(accounts[0]?.id || 0);
@@ -252,7 +254,7 @@ export const VoiceReview: React.FC = () => {
  }
  };
 
- const handleSave = async () => {
+ const handleSave = guardSubmit(async () => {
  if (!accountId) {
  toast.error('Please select an account');
  return;
@@ -379,7 +381,7 @@ export const VoiceReview: React.FC = () => {
  } finally {
  setIsSaving(false);
  }
- };
+ });
 
  return (
  <CenteredLayout>

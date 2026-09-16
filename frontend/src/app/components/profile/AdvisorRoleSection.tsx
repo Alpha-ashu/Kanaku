@@ -505,7 +505,7 @@ export const AdvisorRoleSection: React.FC<Props> = ({ userRole, userName, userEm
                           onChange={(e) => setFormData((p) => ({ ...p, hourlyRate: e.target.value }))}
                           className="w-full px-3.5 py-2.5 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900/10"
                         />
-                        <p className="text-[11px] text-slate-400 mt-1">Shown on your public profile. Leave blank to display "Fee on request".</p>
+                        <p className="text-xs text-slate-400 mt-1">Shown on your public profile. Leave blank to display "Fee on request".</p>
                       </div>
                     </div>
                     <div>

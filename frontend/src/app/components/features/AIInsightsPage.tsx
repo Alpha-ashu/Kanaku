@@ -369,7 +369,7 @@ export const AIInsightsPage: React.FC = () => {
 
           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="max-w-xl">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-white/20 text-white mb-4">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-2xs font-black uppercase tracking-widest bg-white/20 text-white mb-4">
                 <Sparkles size={10} /> Live Transaction Analysis
               </span>
               <h3 className="text-2xl font-black text-white tracking-tight mb-2">
@@ -384,7 +384,7 @@ export const AIInsightsPage: React.FC = () => {
               </p>
               {typeof serverData?.healthScore === 'number' && (
                 <div className="mt-4 inline-flex items-center gap-2 bg-white/15 rounded-2xl px-4 py-2">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-purple-100">Financial Health</span>
+                  <span className="text-2xs font-black uppercase tracking-widest text-purple-100">Financial Health</span>
                   <span className="text-lg font-black text-white">{Math.round(serverData.healthScore)}</span>
                   <span className="text-xs font-bold text-purple-200">/ 100</span>
                 </div>
@@ -422,7 +422,7 @@ export const AIInsightsPage: React.FC = () => {
                       <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${insight.color}`}>
                         <Icon size={22} />
                       </div>
-                      <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${insight.impactColor}`}>
+                      <span className={`px-3 py-1 rounded-full text-2xs font-black uppercase tracking-widest border ${insight.impactColor}`}>
                         {insight.impact}
                       </span>
                     </div>
@@ -430,7 +430,7 @@ export const AIInsightsPage: React.FC = () => {
                     <p className="text-slate-500 text-xs sm:text-sm font-medium leading-relaxed flex-1">
                       {insight.description}
                     </p>
-                    <span className="mt-4 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                    <span className="mt-4 text-2xs font-black uppercase tracking-widest text-slate-400">
                       {insight.source === 'server' ? 'AI engine' : 'On-device analysis'}
                     </span>
                   </div>
@@ -451,7 +451,7 @@ export const AIInsightsPage: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Savings Rate */}
             <div className="bg-white p-6 rounded-2xl border border-slate-100/55 shadow-sm">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Savings Rate (This Month)</p>
+              <p className="text-2xs font-black text-slate-400 uppercase tracking-widest mb-1">Savings Rate (This Month)</p>
               <h4 className="text-xl font-black text-slate-900">{savingsRate > 0 ? `${savingsRate.toFixed(1)}%` : '—'}</h4>
               <div className="w-full bg-slate-100 h-2 rounded-full mt-3 overflow-hidden">
                 <div
@@ -466,7 +466,7 @@ export const AIInsightsPage: React.FC = () => {
 
             {/* Goals Progress */}
             <div className="bg-white p-6 rounded-2xl border border-slate-100/55 shadow-sm">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
+              <p className="text-2xs font-black text-slate-400 uppercase tracking-widest mb-1">
                 Goals Progress {goalsCount > 0 ? `(${goalsCount} active)` : ''}
               </p>
               <h4 className="text-xl font-black text-slate-900">{goalPct > 0 ? `${goalPct.toFixed(0)}%` : '—'}</h4>
@@ -482,7 +482,7 @@ export const AIInsightsPage: React.FC = () => {
 
             {/* Loan Exposure */}
             <div className="bg-white p-6 rounded-2xl border border-slate-100/55 shadow-sm">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
+              <p className="text-2xs font-black text-slate-400 uppercase tracking-widest mb-1">
                 Active Loan Exposure {loansCount > 0 ? `(${loansCount} loans)` : ''}
               </p>
               <h4 className="text-xl font-black text-slate-900">{totalLoanBalance > 0 ? fc(totalLoanBalance) : '—'}</h4>

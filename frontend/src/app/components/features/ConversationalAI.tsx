@@ -98,7 +98,7 @@ function RichText({ text }: { text: string }) {
         }
         const italic = line.match(/^_(.+)_$/);
         if (italic) {
-          return <p key={i} className="text-[11px] italic text-slate-400">{italic[1]}</p>;
+          return <p key={i} className="text-xs italic text-slate-400">{italic[1]}</p>;
         }
         return <p key={i} className="break-words">{renderInline(line)}</p>;
       })}
@@ -134,7 +134,7 @@ function TransactionCard({ tx }: { tx: NonNullable<QueryResult["transactions"]>[
         <span className="truncate text-slate-800 font-semibold">{tx.description || tx.category}</span>
       </div>
       <div className="flex items-center gap-2 shrink-0 ml-2">
-        <span className="text-slate-400 font-medium text-[11px]">{tx.date}</span>
+        <span className="text-slate-400 font-medium text-xs">{tx.date}</span>
         <span className={`font-bold ${isExpense ? "text-rose-600" : "text-emerald-600"}`}>
           {isExpense ? "−" : "+"}₹{INR_FORMAT.format(tx.amount)}
         </span>
@@ -151,7 +151,7 @@ function SourceBadge({ source, parser }: { source?: "backend" | "local"; parser?
   const live = source === "backend" && parser !== "offline";
   const label = live ? "AI Live" : source === "backend" ? "Basic mode" : "Offline";
   return (
-    <span className={`inline-flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-full border ${
+    <span className={`inline-flex items-center gap-1 text-2xs font-bold px-2 py-0.5 rounded-full border ${
       live
         ? "bg-violet-50 text-violet-700 border-violet-200"
         : "bg-amber-50 text-amber-700 border-amber-200"
@@ -355,7 +355,7 @@ const ConversationalAI: React.FC<ConversationalAIProps> = ({
                       <TransactionCard key={tx.id} tx={tx} />
                     ))}
                     {msg.transactions.length > 5 && (
-                      <p className="text-[11px] text-slate-400 text-center font-medium">
+                      <p className="text-xs text-slate-400 text-center font-medium">
                         +{msg.transactions.length - 5} more transactions
                       </p>
                     )}
@@ -365,7 +365,7 @@ const ConversationalAI: React.FC<ConversationalAIProps> = ({
                 {/* Meta row */}
                 {!msg.isTyping && (
                   <div className="flex items-center gap-2 px-1">
-                    <span className="text-[10px] text-slate-400 font-medium">
+                    <span className="text-2xs text-slate-400 font-medium">
                       {msg.timestamp.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
                     </span>
                     {msg.role === "assistant" && <SourceBadge source={msg.source} parser={msg.parser} />}
@@ -385,7 +385,7 @@ const ConversationalAI: React.FC<ConversationalAIProps> = ({
             <button
               key={p}
               onClick={() => sendMessage(p)}
-              className="text-[11px] px-3 py-1.5 rounded-full bg-white text-slate-700 border border-slate-200/90 shadow-xs hover:border-violet-300 hover:bg-violet-50/60 hover:text-violet-700 transition-all flex items-center gap-1.5 font-medium active:scale-95"
+              className="text-xs px-3 py-1.5 rounded-full bg-white text-slate-700 border border-slate-200/90 shadow-xs hover:border-violet-300 hover:bg-violet-50/60 hover:text-violet-700 transition-all flex items-center gap-1.5 font-medium active:scale-95"
             >
               <Sparkles size={11} className="text-violet-500" />
               {p}

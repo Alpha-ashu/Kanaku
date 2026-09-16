@@ -811,7 +811,7 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
   <motion.div key={idx} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.1 }} className="flex flex-col gap-1">
   <div className="flex items-center gap-2 bg-white/50 backdrop-blur-sm border border-indigo-100 px-3 md:px-4 py-1.5 md:py-2 rounded-xl md:rounded-2xl shadow-sm">
   {insight.icon}
-  <span className="text-[10px] md:text-xs font-semibold text-slate-600">{insight.text}</span>
+  <span className="text-2xs md:text-xs font-semibold text-slate-600">{insight.text}</span>
   </div>
   </motion.div>
   ))}
@@ -832,7 +832,7 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
   <p className="text-xs md:text-sm text-slate-500 font-medium">
   {activeTab === 'chat' ? 'Conversational Financial Assistant' : 'Multi-Intent Financial Extraction'}
   {activeTab === 'actions' && parser && PARSER_BADGES[parser] && (
-  <span data-testid="voice-parser-badge" className={`ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold align-middle ${
+  <span data-testid="voice-parser-badge" className={`ml-2 px-2 py-0.5 rounded-full text-2xs font-bold align-middle ${
   PARSER_BADGES[parser].degraded ? 'bg-amber-100 text-amber-700' : 'bg-indigo-50 text-indigo-600'
   }`}>
   {PARSER_BADGES[parser].label}
@@ -848,15 +848,15 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
   {activeTab === 'actions' && (
   <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mt-2">
   <div className="bg-indigo-50/80 p-3 md:p-5 rounded-2xl md:rounded-[28px] border border-indigo-100 flex md:flex-col justify-between items-center md:items-start">
-  <span className="text-[9px] md:text-[10px] font-black text-indigo-400 uppercase tracking-[0.2em]">Intents</span>
+  <span className="text-2xs font-black text-indigo-400 uppercase tracking-[0.2em]">Intents</span>
   <div className="text-lg md:text-2xl font-black text-indigo-700">{recordableActionsCount} Actions</div>
   </div>
   <div className="bg-emerald-50/80 p-3 md:p-5 rounded-2xl md:rounded-[28px] border border-emerald-100 flex md:flex-col justify-between items-center md:items-start">
-  <span className="text-[9px] md:text-[10px] font-black text-emerald-400 uppercase tracking-[0.2em]">Total Value</span>
+  <span className="text-2xs font-black text-emerald-400 uppercase tracking-[0.2em]">Total Value</span>
   <div className="text-lg md:text-2xl font-black text-emerald-700">{currency} {totalAmount.toLocaleString()}</div>
   </div>
   <div className="bg-slate-50/80 p-3 md:p-5 rounded-2xl md:rounded-[28px] border border-slate-100 relative flex md:flex-col justify-between items-center md:items-start">
-  <span className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Account</span>
+  <span className="text-2xs font-black text-slate-400 uppercase tracking-[0.2em]">Account</span>
   <div className="relative mt-0 md:mt-1">
   <select aria-label="Select account" value={selectedAccountId} onChange={(e) => setSelectedAccountId(Number(e.target.value))} className="bg-transparent text-slate-900 font-bold focus:outline-none appearance-none cursor-pointer pr-6 text-sm md:text-xl" data-testid="voice-ai-account-select">
   {accounts.map(acc => ( <option data-testid={`voice-aicommand-center-option-${acc.id}`} key={acc.id} value={acc.id}>{acc.name}</option> ))}
@@ -968,8 +968,8 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
  {action.type === 'query' ? (
  <div className="flex-1 space-y-3">
  <div className="flex items-center gap-2">
- <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{getActionTypeLabel(action.type)}</span>
- <span className="text-[10px] bg-cyan-100 text-cyan-600 px-2 py-0.5 rounded-full font-bold">Smart Answer</span>
+ <span className="text-2xs font-black uppercase tracking-widest text-slate-400">{getActionTypeLabel(action.type)}</span>
+ <span className="text-2xs bg-cyan-100 text-cyan-600 px-2 py-0.5 rounded-full font-bold">Smart Answer</span>
  </div>
  <div className="p-5 bg-cyan-50/50 rounded-[28px] border border-cyan-100/50">
  <p className="text-slate-900 font-bold leading-relaxed whitespace-pre-line">{queryAnswers[index] ||"Analyzing..."}</p>
@@ -978,20 +978,20 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
  ) : action.type === 'task' ? (
  <div className="flex-1 space-y-2 min-w-0">
  <div className="flex items-center gap-2">
- <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{getActionTypeLabel(action.type)}</span>
- <span className="text-[10px] bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full font-bold">{describeTaskKind(action.entities.task)}</span>
+ <span className="text-2xs font-black uppercase tracking-widest text-slate-400">{getActionTypeLabel(action.type)}</span>
+ <span className="text-2xs bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full font-bold">{describeTaskKind(action.entities.task)}</span>
  </div>
  <h4 className="text-sm md:text-xl font-bold text-slate-900 break-words" data-testid={`voice-ai-task-title-${index}`}>{action.entities.task?.title || action.rawSegment}</h4>
  <p className="text-xs md:text-sm text-slate-500 font-medium">{describeTaskDetails(action.entities.task, currency)}</p>
- <button onClick={(e) => { e.stopPropagation(); removeAction(index); }} className="text-rose-400 hover:text-rose-600 flex items-center gap-1 text-[10px] md:text-xs font-bold transition-colors" data-testid={`voice-ai-task-remove-button-${index}`}>
+ <button onClick={(e) => { e.stopPropagation(); removeAction(index); }} className="text-rose-400 hover:text-rose-600 flex items-center gap-1 text-2xs md:text-xs font-bold transition-colors" data-testid={`voice-ai-task-remove-button-${index}`}>
  <Trash2 size={10}/> Remove
  </button>
  </div>
  ) : action.type === 'bill_scan' ? (
  <div className="flex-1 space-y-3">
  <div className="flex items-center gap-2">
- <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{getActionTypeLabel(action.type)}</span>
- <span className="text-[10px] bg-yellow-100 text-yellow-600 px-2 py-0.5 rounded-full font-bold uppercase tracking-widest">OCR Verified</span>
+ <span className="text-2xs font-black uppercase tracking-widest text-slate-400">{getActionTypeLabel(action.type)}</span>
+ <span className="text-2xs bg-yellow-100 text-yellow-600 px-2 py-0.5 rounded-full font-bold uppercase tracking-widest">OCR Verified</span>
  </div>
  <div className="flex gap-4 items-center">
  <div className="w-20 h-20 bg-slate-100 rounded-2xl flex items-center justify-center border-2 border-dashed border-slate-200">
@@ -1007,7 +1007,7 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
  <>
  <div className="flex-1 space-y-1">
  <div className="flex items-center gap-2">
- <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{getActionTypeLabel(action.type)}</span>
+ <span className="text-2xs font-black uppercase tracking-widest text-slate-400">{getActionTypeLabel(action.type)}</span>
  </div>
  <div className="flex items-center gap-2 group/edit relative">
  {editingIndex === index ? (
@@ -1031,7 +1031,7 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
  <div className="flex flex-wrap gap-2 pt-1">
  {editingIndex === index ? (
  <select 
- className="text-[11px] bg-slate-100 text-slate-600 px-2.5 py-1 rounded-lg font-bold uppercase tracking-wider outline-none" 
+ className="text-xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded-lg font-bold uppercase tracking-wider outline-none" 
  value={action.entities.category || "General"} 
  onChange={e => handleEntityUpdate(index, { category: e.target.value })}
  onBlur={() => setEditingIndex(null)}
@@ -1043,10 +1043,10 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
  ))}
  </select>
  ) : (
- <span className="text-[11px] bg-slate-100 text-slate-600 px-2.5 py-1 rounded-lg font-bold uppercase tracking-wider cursor-pointer hover:bg-slate-200" onClick={() => setEditingIndex(index)} data-testid={`voice-ai-action-category-${index}`}>{action.entities.category || "General"}</span>
+ <span className="text-xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded-lg font-bold uppercase tracking-wider cursor-pointer hover:bg-slate-200" onClick={() => setEditingIndex(index)} data-testid={`voice-ai-action-category-${index}`}>{action.entities.category || "General"}</span>
  )}
  {action.type === 'subscription' && (
- <span className="text-[11px] bg-pink-50 text-pink-600 px-2.5 py-1 rounded-lg font-bold uppercase tracking-wider flex items-center gap-1">
+ <span className="text-xs bg-pink-50 text-pink-600 px-2.5 py-1 rounded-lg font-bold uppercase tracking-wider flex items-center gap-1">
  <RefreshCcw size={10} /> {action.entities.recurrence || 'Monthly'}
  </span>
  )}
@@ -1070,7 +1070,7 @@ export const VoiceAICommandCenter: React.FC<VoiceAICommandCenterProps> = ({
  {action.entities.amount?.toLocaleString()}
  </div>
  )}
- <button onClick={(e) => { e.stopPropagation(); removeAction(index); }} className="mt-2 text-rose-400 hover:text-rose-600 flex items-center gap-1 text-[10px] md:text-xs font-bold transition-colors" data-testid={`voice-ai-action-remove-button-${index}`}>
+ <button onClick={(e) => { e.stopPropagation(); removeAction(index); }} className="mt-2 text-rose-400 hover:text-rose-600 flex items-center gap-1 text-2xs md:text-xs font-bold transition-colors" data-testid={`voice-ai-action-remove-button-${index}`}>
  <Trash2 size={10}/> Remove
  </button>
  </div>

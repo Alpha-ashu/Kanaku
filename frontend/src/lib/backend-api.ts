@@ -469,7 +469,9 @@ class BackendService {
         updatedAt: (investment.updatedAt ?? now).toISOString(),
         deletedAt: investment.deletedAt ? investment.deletedAt.toISOString() : undefined,
         closedAt: investment.closedAt ? investment.closedAt.toISOString() : undefined,
-        clientRequestId: generateUUID(),
+        // A caller that already identifies this create keeps its key, so its own retry
+      // replays instead of creating again.
+      clientRequestId: (investment as { clientRequestId?: string }).clientRequestId ?? generateUUID(),
       });
 
       const responsePayload = normalizeInvestmentDates(response.data?.data ?? response.data);
@@ -633,7 +635,9 @@ class BackendService {
   }) {
     const response = await this.api.post('/accounts', {
       ...account,
-      clientRequestId: generateUUID(),
+      // A caller that already identifies this create keeps its key, so its own retry
+      // replays instead of creating again.
+      clientRequestId: (account as { clientRequestId?: string }).clientRequestId ?? generateUUID(),
     });
     return response.data;
   }
@@ -672,7 +676,9 @@ class BackendService {
     const response = await this.api.post('/goals', {
       ...goal,
       targetDate: goal.targetDate.toISOString(),
-      clientRequestId: generateUUID(),
+      // A caller that already identifies this create keeps its key, so its own retry
+      // replays instead of creating again.
+      clientRequestId: (goal as { clientRequestId?: string }).clientRequestId ?? generateUUID(),
     });
     return response.data;
   }
@@ -720,7 +726,9 @@ class BackendService {
     const response = await this.api.post('/loans', {
       ...loan,
       dueDate: loan.dueDate?.toISOString(),
-      clientRequestId: generateUUID(),
+      // A caller that already identifies this create keeps its key, so its own retry
+      // replays instead of creating again.
+      clientRequestId: (loan as { clientRequestId?: string }).clientRequestId ?? generateUUID(),
     });
     return response.data;
   }
@@ -761,7 +769,7 @@ class BackendService {
     }
   }
 
-  async createBudget(data: { category: string; amount: number; period?: string; threshold?: number }) {
+  async createBudget(data: { category: string; amount: number; period?: string; threshold?: number; clientRequestId?: string }) {
     const response = await this.api.post('/budgets', data);
     return response.data?.data;
   }

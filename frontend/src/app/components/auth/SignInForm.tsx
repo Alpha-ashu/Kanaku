@@ -76,9 +76,9 @@ export const SignInForm: React.FC<SignInFormProps> = ({ onSwitchToSignUp, onSubm
         : 'border-slate-200 hover:border-slate-300 focus:ring-violet-500/20 focus:border-violet-500 focus:bg-white'
     }`;
 
-  const labelBase = `absolute left-10 top-1.5 text-[10px] font-bold text-slate-400 transition-all duration-200 pointer-events-none
+  const labelBase = `absolute left-10 top-1.5 text-2xs font-bold text-slate-400 transition-all duration-200 pointer-events-none
     peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-sm peer-placeholder-shown:text-slate-400 peer-placeholder-shown:font-normal
-    peer-focus:top-1.5 peer-focus:text-[10px] peer-focus:text-violet-600 peer-focus:font-bold`;
+    peer-focus:top-1.5 peer-focus:text-2xs peer-focus:text-violet-600 peer-focus:font-bold`;
 
   return (
     <form data-testid="sign-in-form-form" onSubmit={handleSubmit} className="space-y-5">

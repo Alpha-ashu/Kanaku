@@ -263,7 +263,7 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
           {mode === 'voice' ? (
             <div className="flex items-center gap-2">
               <h1 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">Kai</h1>
-              <span className="text-[11px] font-bold text-purple-700 bg-purple-100/80 px-2.5 py-0.5 rounded-full border border-purple-200/60 hidden sm:inline-block">
+              <span className="text-xs font-bold text-purple-700 bg-purple-100/80 px-2.5 py-0.5 rounded-full border border-purple-200/60 hidden sm:inline-block">
                 Voice Assistant
               </span>
             </div>
@@ -275,7 +275,7 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
               </div>
               <div className="flex flex-col">
                 <h1 className="text-sm sm:text-base font-black text-slate-900 leading-tight">Kai</h1>
-                <span className="text-[10px] sm:text-xs font-semibold text-emerald-600 flex items-center gap-1">
+                <span className="text-2xs sm:text-xs font-semibold text-emerald-600 flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                   Your Financial Assistant
                 </span>
@@ -384,7 +384,7 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
           className="relative z-10 flex-1 flex flex-col min-h-0 max-w-3xl lg:max-w-4xl xl:max-w-5xl mx-auto w-full"
         >
           <div className="flex justify-center my-1 shrink-0">
-            <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500 bg-white/70 backdrop-blur-md px-3 py-0.5 rounded-full border border-white/60 shadow-2xs">
+            <span className="text-2xs font-semibold text-slate-500 bg-white/70 backdrop-blur-md px-3 py-0.5 rounded-full border border-white/60 shadow-2xs">
               Today
             </span>
           </div>
@@ -487,7 +487,7 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
 
                   {msg.timeLabel && (
                     <span
-                      className={`text-[10px] font-semibold text-slate-400 mt-0.5 px-1 ${
+                      className={`text-2xs font-semibold text-slate-400 mt-0.5 px-1 ${
                         isUser ? 'mr-1' : 'ml-11'
                       }`}
                     >

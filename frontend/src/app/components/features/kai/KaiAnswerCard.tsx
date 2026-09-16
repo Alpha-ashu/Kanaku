@@ -27,7 +27,7 @@ export const KaiAnswerCard: React.FC<Props> = ({ action, currency, showPrompt = 
       {report ? (
         <>
           {answer?.summary && (
-            <p className="max-w-[92%] px-1 text-sm sm:text-[15px] font-medium leading-relaxed text-slate-700 whitespace-pre-wrap">
+            <p className="max-w-[92%] px-1 text-sm sm:text-base font-medium leading-relaxed text-slate-700 whitespace-pre-wrap">
               {answer.summary}
             </p>
           )}
@@ -35,10 +35,10 @@ export const KaiAnswerCard: React.FC<Props> = ({ action, currency, showPrompt = 
         </>
       ) : (
         <div className="rounded-[24px] border border-slate-100 bg-white/95 backdrop-blur-md shadow-[0_10px_30px_-8px_rgba(112,144,176,0.22)] p-4 sm:p-5">
-          <p className="flex items-center gap-1.5 text-[11px] sm:text-xs font-black uppercase tracking-wider text-purple-700">
+          <p className="flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-purple-700">
             <Sparkles size={13} /> Answer
           </p>
-          <p className="mt-2 text-sm sm:text-[15px] font-medium text-slate-800 whitespace-pre-wrap leading-relaxed">
+          <p className="mt-2 text-sm sm:text-base font-medium text-slate-800 whitespace-pre-wrap leading-relaxed">
             {answer?.summary || 'I could not find an answer for that.'}
           </p>
           {answer?.transactions && answer.transactions.length > 0 && (

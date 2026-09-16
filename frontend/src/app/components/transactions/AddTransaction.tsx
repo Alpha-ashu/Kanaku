@@ -28,7 +28,7 @@ import { ReceiptScanner, type ReceiptScanPayload } from '@/app/components/transa
 import { getCategoryCartoonIcon } from '@/app/components/ui/CartoonCategoryIcons';
 import { SearchableDropdown } from '@/app/components/ui/SearchableDropdown';
 import { motion } from 'framer-motion';
-import { cn } from '@/lib/utils';
+import { cn, softHyphenate } from '@/lib/utils';
 import { parseDateInputValue, toLocalDateKey, withEntryTime } from '@/lib/dateUtils';
 import {
   resolvePendingSmsTransactionDraft,
@@ -39,6 +39,7 @@ import {
 import { FloatingSaveBar } from '@/app/components/ui/FloatingSaveBar';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { decodeQuotedPrintable } from '@/services/contactsService';
+import { useSubmitLock } from '@/hooks/useSubmitLock';
 
 // --- Types ---
 type TransactionType = 'expense' | 'income' | 'transfer' | 'withdrawal';
@@ -110,7 +111,7 @@ const PremiumModeSelector = ({
  key={opt.id}
  onClick={() => onChange(opt.id)}
  className={cn(
-"flex-1 relative flex items-center justify-center gap-2 py-2.5 sm:py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-colors z-10",
+"flex-1 relative flex items-center justify-center gap-2 py-2.5 sm:py-3 rounded-xl font-black text-2xs uppercase tracking-widest transition-colors z-10",
  isActive ?"text-white" :"text-slate-500 hover:text-slate-700"
  )}
  >
@@ -199,13 +200,13 @@ const CategoryGrid = ({
                     data-testid="add-transaction-custom-category-tile"
                     key="__ADD_CUSTOM__"
                     onClick={onAddCustom}
-                    className="flex flex-col items-center justify-center gap-1 p-1 sm:p-1.5 rounded-xl transition-all cursor-pointer group bg-indigo-50/70 hover:bg-indigo-100/90 border-2 border-dashed border-indigo-300 active:scale-95 shadow-xs"
+                    className="flex flex-col items-center justify-center gap-1 px-0.5 py-1 sm:p-1.5 rounded-xl transition-all cursor-pointer group bg-indigo-50/70 hover:bg-indigo-100/90 border-2 border-dashed border-indigo-300 active:scale-95 shadow-xs"
                   >
                     <div className="w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center rounded-lg bg-indigo-600 text-white shadow-sm group-hover:scale-105 transition-transform">
                       <Plus size={14} />
                     </div>
-                    <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-tight text-center leading-none text-indigo-700 w-full px-0.5 truncate">
-                      + Custom
+                    <span className="text-2xs font-bold text-center leading-tight text-indigo-700 w-full truncate">
+                      Custom
                     </span>
                   </div>
                 );
@@ -216,7 +217,7 @@ const CategoryGrid = ({
                   key={cat}
                   onClick={() => onSelect(cat)}
                   className={cn(
-                    "flex flex-col items-center justify-center gap-1 p-1 sm:p-1.5 rounded-xl transition-all cursor-pointer group",
+                    "flex flex-col items-center justify-center gap-1 px-0.5 py-1 sm:p-1.5 rounded-xl transition-all cursor-pointer group",
                     selectedCategory === cat ? "bg-indigo-600 shadow-md shadow-indigo-200" : "bg-slate-50 hover:bg-slate-100",
                     aiSuggested === cat && !selectedCategory && "ring-2 ring-indigo-400 ring-offset-1 animate-pulse"
                   )}
@@ -224,8 +225,8 @@ const CategoryGrid = ({
                   <div className={cn("w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center rounded-lg transition-colors", selectedCategory === cat ? "bg-white/20" : "bg-white group-hover:bg-slate-50")}>
                     {getCategoryCartoonIcon(cat, 16)}
                   </div>
-                  <span className={cn("text-[9px] sm:text-[10px] font-bold uppercase tracking-tight text-center leading-none truncate w-full px-0.5", selectedCategory === cat ? "text-white" : "text-slate-500")}>
-                    {cat.split(' ')[0]}
+                  <span className={cn("text-2xs font-bold text-center leading-tight line-clamp-2 break-words hyphens-auto w-full", selectedCategory === cat ? "text-white" : "text-slate-500")}>
+                    {softHyphenate(cat.split(' ')[0])}
                   </span>
                 </div>
               );
@@ -269,6 +270,7 @@ const CategoryGrid = ({
 // --- Main Component ---
 
 export function AddTransaction() {
+ const guardSubmit = useSubmitLock();
  const { accounts, friends, setCurrentPage, currency, refreshData } = useApp();
  const { user } = useAuth();
  const defaultDateKey = toLocalDateKey(new Date()) ?? new Date().toISOString().split('T')[0];
@@ -468,7 +470,7 @@ export function AddTransaction() {
     };
   }, [accounts]);
 
-  const handleCreateCustomCategory = async () => {
+  const handleCreateCustomCategory = guardSubmit(async () => {
     const name = newCatName.trim();
     if (!name) {
       toast.error('Please enter a category name');
@@ -493,7 +495,7 @@ export function AddTransaction() {
     } finally {
       setIsCreatingCategory(false);
     }
-  };
+  });
 
  const DEFAULT_BANKS = [
  { value: 'HDFC Bank', label: 'HDFC Bank' },
@@ -550,14 +552,14 @@ export function AddTransaction() {
  const targetAccount = accounts.find(a => a.id === formData.toAccountId);
 
  // Helper: save a new person as a Friend in the DB (temporary record)
- const saveNewFriend = async (name: string): Promise<void> => {
+ const saveNewFriend = guardSubmit(async (name: string): Promise<void> => {
  const trimmed = name.trim();
  if (!trimmed) return;
  const existing = friends.find(f => f.name.toLowerCase() === trimmed.toLowerCase());
  if (existing) return; // already exists
  await db.friends.add({ name: trimmed, createdAt: new Date(), updatedAt: new Date(), syncStatus: 'pending' });
  refreshData();
- };
+ });
 
   // Add participant from friends list
   const addParticipantFromFriend = async (friend: typeof friends[0]) => {
@@ -656,7 +658,7 @@ export function AddTransaction() {
       ? runWithCloudSyncSuppressed(() => applyTransactionAccountImpact(saved, at))
       : applyTransactionAccountImpact(saved, at);
 
-  const handleSubmit = async () => {
+  const handleSubmit = guardSubmit(async () => {
     if (!selectedAccount) { toast.error('Select an account'); return; }
     if (!formData.amount || formData.amount <= 0) { toast.error('Enter amount'); return; }
 
@@ -1016,7 +1018,7 @@ if (linkedDocId) {
  } finally {
  setIsSubmitting(false);
  }
- };
+ });
 
  const handleScanApply = (scan: ReceiptScanPayload) => {
  setFormData(prev => ({
@@ -1173,12 +1175,12 @@ if (linkedDocId) {
  <div className="flex items-center gap-3">
  <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center"><Info size={16} className="text-indigo-400" /></div>
  <div>
-  <p className="text-[10px] sm:text-[11px] font-bold text-white/50 uppercase tracking-wider">Summary</p>
+  <p className="text-2xs font-bold text-white/50 uppercase tracking-wider">Summary</p>
   <p className="text-xs sm:text-sm font-bold truncate max-w-[120px]">{formData.description || formData.category}</p>
  </div>
  </div>
  <div className="text-right">
-  <p className="text-[10px] sm:text-[11px] font-bold text-white/50 uppercase tracking-wider">Final Amount</p>
+  <p className="text-2xs font-bold text-white/50 uppercase tracking-wider">Final Amount</p>
  <p className="text-lg font-black tracking-tighter">{currency} {formData.amount.toLocaleString()}</p>
  </div>
  </div>
@@ -1190,7 +1192,7 @@ if (linkedDocId) {
  <div className="col-span-1 sm:col-span-2">
  <div className="flex gap-2 p-1 bg-white rounded-xl border border-slate-100">
  {['borrowed', 'lent'].map(t => (
- <button key={t} type="button" onClick={() => setLoanType(t as any)} data-testid={`transaction-loan-type-${t}-button`} className={cn("flex-1 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all", loanType === t ?"bg-slate-900 text-white shadow-md" :"text-slate-400 hover:text-slate-600")}>
+ <button key={t} type="button" onClick={() => setLoanType(t as any)} data-testid={`transaction-loan-type-${t}-button`} className={cn("flex-1 py-2 rounded-lg text-2xs font-black uppercase tracking-widest transition-all", loanType === t ?"bg-slate-900 text-white shadow-md" :"text-slate-400 hover:text-slate-600")}>
  {t === 'borrowed' ? 'Borrowed' : 'Lent'}
  </button>
  ))}
@@ -1199,7 +1201,7 @@ if (linkedDocId) {
  )}
  {expenseMode === 'loan' && (
   <div className="col-span-1 sm:col-span-2 space-y-2">
-  <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Loan Category</label>
+  <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Loan Category</label>
   <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2">
   {(loanType === 'borrowed'
   ? ['Consumer Loan', 'Personal Loan', 'Home Loan', 'Vehicle Loan', 'Education Loan', 'Credit Card', 'Overdraft', 'Others']
@@ -1212,7 +1214,7 @@ if (linkedDocId) {
   setLoanDraft(prev => ({ ...prev, category: cat }));
   setFormData(prev => ({ ...prev, category: cat }));
   }}
-  className={cn("px-3 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-bold transition-all border", (loanDraft.category === cat || formData.category === cat) ? (loanType === 'borrowed' ?"bg-indigo-50 border-indigo-200 text-indigo-700" :"bg-emerald-50 border-emerald-200 text-emerald-700") :"bg-white border-slate-100 text-slate-600 hover:bg-slate-50")}
+  className={cn("px-3 py-1.5 rounded-lg text-2xs font-bold transition-all border", (loanDraft.category === cat || formData.category === cat) ? (loanType === 'borrowed' ?"bg-indigo-50 border-indigo-200 text-indigo-700" :"bg-emerald-50 border-emerald-200 text-emerald-700") :"bg-white border-slate-100 text-slate-600 hover:bg-slate-50")}
   >
   {cat}
   </button>
@@ -1221,7 +1223,7 @@ if (linkedDocId) {
   </div>
   )}
   <div className="col-span-1 sm:col-span-2 space-y-1">
-  <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Description / Reason</label>
+  <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Description / Reason</label>
   <div className="relative">
   <AlignLeft className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
   <input
@@ -1244,7 +1246,7 @@ if (linkedDocId) {
   <Sparkles size={14} />
   </div>
   <div className="flex-1">
-  <p className="text-[10px] sm:text-[11px] font-bold text-indigo-600 uppercase tracking-wider">AI Detected Category</p>
+  <p className="text-2xs font-bold text-indigo-600 uppercase tracking-wider">AI Detected Category</p>
   <p className="text-xs sm:text-sm font-bold text-slate-700">{remoteCategorySuggestion.category} ({(remoteCategorySuggestion.confidence * 100).toFixed(0)}% confident)</p>
   </div>
   </div>
@@ -1253,20 +1255,20 @@ if (linkedDocId) {
   {/* Unified Category Selector */}
   {!isTransfer && expenseMode !== 'loan' && (
   <div className="space-y-2 sm:space-y-3">
-  <div className="flex items-center justify-between gap-2">
+  <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
   <div className="flex items-center gap-1.5 sm:gap-2">
-    <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Select Category</label>
+    <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">Select Category</label>
     <button
       type="button"
       onClick={() => setShowAddCategoryModal(true)}
       data-testid="add-custom-category-header-btn"
-      className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold uppercase text-indigo-600 bg-indigo-50 hover:bg-indigo-100 transition-all border border-indigo-200/60 shadow-xs cursor-pointer active:scale-95"
+      className="flex items-center gap-1 px-2 py-0.5 whitespace-nowrap rounded-full text-2xs font-bold uppercase text-indigo-600 bg-indigo-50 hover:bg-indigo-100 transition-all border border-indigo-200/60 shadow-xs cursor-pointer active:scale-95"
     >
       <Plus size={10} />
-      <span>+ Custom</span>
+      <span>Custom</span>
     </button>
   </div>
-  <span className="text-[10px] sm:text-[11px] font-bold text-indigo-500 shrink-0">Auto-Categorization Active</span>
+  <span className="text-2xs font-bold text-indigo-500 shrink-0">Auto-Categorization Active</span>
   </div>
   <CategoryGrid
   type={formData.type === 'income' ? 'income' : 'expense'}
@@ -1283,7 +1285,7 @@ if (linkedDocId) {
  {showPersonCard && (
  <div className="premium-glass-card p-4 space-y-4 animate-in slide-in-from-bottom-2 duration-300">
  <div className="flex items-center justify-between">
- <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+ <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">
  {expenseMode === 'group' ? `PARTICIPANTS (${groupParticipants.length + 1})` : 
  expenseMode === 'loan' ? 'COUNTERPARTY' : 'WHO? / PERSON'}
  </label>
@@ -1294,7 +1296,7 @@ if (linkedDocId) {
  type="button"
  onClick={() => { setShowFriendPicker(p => !p); setShowNewPersonInput(false); }}
  data-testid="transaction-friends-picker-button"
- className="flex items-center gap-1 text-[10px] sm:text-[11px] font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200/80 px-3 py-1 rounded-full uppercase tracking-wider transition-all cursor-pointer shadow-2xs"
+ className="flex items-center gap-1 text-2xs font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200/80 px-3 py-1 rounded-full uppercase tracking-wider transition-all cursor-pointer shadow-2xs"
  >
  <Users size={11} /> Friends
  </button>
@@ -1303,7 +1305,7 @@ if (linkedDocId) {
  type="button"
  onClick={() => { setShowNewPersonInput(p => !p); setShowFriendPicker(false); }}
  data-testid="transaction-add-person-toggle-button"
- className="flex items-center gap-1 text-[10px] sm:text-[11px] font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200/80 px-3 py-1 rounded-full uppercase tracking-wider transition-all cursor-pointer shadow-2xs"
+ className="flex items-center gap-1 text-2xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200/80 px-3 py-1 rounded-full uppercase tracking-wider transition-all cursor-pointer shadow-2xs"
  >
  <UserPlus size={11} /> New
  </button>
@@ -1322,13 +1324,13 @@ if (linkedDocId) {
  >
  <div className="flex items-center gap-2">
  {formData.payee || loanDraft.contactName ? (
- <div className="w-6 h-6 rounded-full bg-[#18181B] flex items-center justify-center text-[10px] font-black text-white uppercase">
+ <div className="w-6 h-6 rounded-full bg-[#18181B] flex items-center justify-center text-2xs font-black text-white uppercase">
  {(formData.payee || loanDraft.contactName)[0]}
  </div>
  ) : (
  <User size={14} className="text-slate-400" />
  )}
- <span className={cn('text-[11px] sm:text-xs font-semibold', formData.payee || loanDraft.contactName ? 'text-slate-900' : 'text-slate-400')}>
+ <span className={cn('text-xs font-semibold', formData.payee || loanDraft.contactName ? 'text-slate-900' : 'text-slate-400')}>
  {formData.payee || loanDraft.contactName || 'Select Person'}
  </span>
  </div>
@@ -1342,14 +1344,14 @@ if (linkedDocId) {
       {showFriendPicker && friends.length > 0 && (
         <div className="p-3.5 bg-purple-50/70 rounded-2xl border border-purple-100/90 animate-in zoom-in-95 duration-200 space-y-2.5">
           <div className="flex items-center justify-between">
-            <p className="text-[10px] font-black text-purple-600 uppercase tracking-widest">Tap to select friend</p>
+            <p className="text-2xs font-black text-purple-600 uppercase tracking-widest">Tap to select friend</p>
             <button
               type="button"
               onClick={() => {
                 setShowFriendPicker(false);
                 setFriendSearch('');
               }}
-              className="text-purple-400 hover:text-purple-600 text-[10px] font-bold uppercase cursor-pointer"
+              className="text-purple-400 hover:text-purple-600 text-2xs font-bold uppercase cursor-pointer"
             >
               Close
             </button>
@@ -1426,7 +1428,7 @@ if (linkedDocId) {
                       }
                     }}
                     className={cn(
-                      "px-3 py-1.5 rounded-full text-[10px] font-bold transition-all border cursor-pointer shadow-2xs flex items-center gap-1.5",
+                      "px-3 py-1.5 rounded-full text-2xs font-bold transition-all border cursor-pointer shadow-2xs flex items-center gap-1.5",
                       isSelected
                         ? "bg-[#18181B] border-[#18181B] text-white shadow-xs"
                         : "bg-white border-purple-200 text-purple-700 hover:bg-purple-600 hover:text-white hover:border-purple-600"
@@ -1434,9 +1436,9 @@ if (linkedDocId) {
                   >
                     <span>{cleanName}</span>
                     {f.email ? (
-                      <span className="text-[9px] opacity-70">({f.email})</span>
+                      <span className="text-2xs opacity-70">({f.email})</span>
                     ) : f.phone ? (
-                      <span className="text-[9px] opacity-70">({f.phone})</span>
+                      <span className="text-2xs opacity-70">({f.phone})</span>
                     ) : null}
                   </button>
                 );
@@ -1466,7 +1468,7 @@ if (linkedDocId) {
  }}
  aria-label="New person name"
  data-testid="transaction-new-person-input"
- className="flex-1 bg-transparent border-none p-0 text-[11px] sm:text-xs font-semibold text-slate-900 focus:ring-0 placeholder:text-slate-400 placeholder:font-normal placeholder:text-[10px] sm:placeholder:text-[11px]"
+ className="flex-1 bg-transparent border-none p-0 text-xs font-semibold text-slate-900 focus:ring-0 placeholder:text-slate-400 placeholder:font-normal placeholder:text-2xs"
  placeholder="Enter name & press Enter"
  autoFocus
  />
@@ -1495,16 +1497,16 @@ if (linkedDocId) {
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[160px] overflow-y-auto pr-1 scrollbar-none">
  {/* Fixed "You" */}
  <div className="flex items-center gap-2.5 p-2.5 bg-slate-100/70 rounded-2xl border border-slate-100">
- <div className="w-7 h-7 rounded-full bg-[#18181B] flex items-center justify-center text-[9px] font-black text-white shrink-0">ME</div>
+ <div className="w-7 h-7 rounded-full bg-[#18181B] flex items-center justify-center text-2xs font-black text-white shrink-0">ME</div>
  <div className="flex-1 min-w-0">
   <p className="text-xs font-black text-slate-900 truncate">You (Included)</p>
-  <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Payer / Equal share</p>
+  <p className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Payer / Equal share</p>
  </div>
  </div>
 
  {groupParticipants.map(p => (
  <div key={p.id} className="flex items-center gap-2 p-2.5 bg-white rounded-2xl border border-slate-100 group shadow-2xs hover:border-slate-200 transition-all">
- <div className="w-7 h-7 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-[10px] font-black text-indigo-600 uppercase shrink-0">
+ <div className="w-7 h-7 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-2xs font-black text-indigo-600 uppercase shrink-0">
  {p.name?.[0] || '?'}
  </div>
  <input
@@ -1531,7 +1533,7 @@ if (linkedDocId) {
  {/* Live Split Calculation Summary Card */}
  <div className="p-4 bg-[#18181B] rounded-2xl text-white flex items-center justify-between shadow-md">
  <div>
-  <p className="text-[10px] sm:text-[11px] font-bold text-white/50 uppercase tracking-wider">
+  <p className="text-2xs font-bold text-white/50 uppercase tracking-wider">
   Equal Split ({groupParticipants.length + 1} people)
   </p>
  <p className="text-xs font-bold text-white mt-0.5">
@@ -1545,7 +1547,7 @@ if (linkedDocId) {
  </p>
  </div>
  <div className="text-right">
-  <p className="text-[10px] sm:text-[11px] font-bold text-white/50 uppercase tracking-wider">Your Share</p>
+  <p className="text-2xs font-bold text-white/50 uppercase tracking-wider">Your Share</p>
  <p className="text-sm sm:text-base font-black text-purple-300">
  {currency} {formData.amount > 0 ? (formData.amount / (groupParticipants.length + 1)).toFixed(2) : '0'}
  </p>
@@ -1563,7 +1565,7 @@ if (linkedDocId) {
  <div className="space-y-4">
  {['Consumer Loan', 'Personal Loan', 'Home Loan', 'Vehicle Loan', 'Education Loan', 'Credit Card', 'Overdraft'].includes(loanDraft.category) && (
  <div className="space-y-2">
- <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Loan Provider</label>
+ <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Loan Provider</label>
  <SearchableDropdown testId="add-transaction-select-bank-nbfc"
  options={loanProviderOptions}
  value={loanDraft.bankName}
@@ -1580,29 +1582,29 @@ if (linkedDocId) {
  <div className="space-y-4">
  <div className="grid grid-cols-2 gap-4">
  <div className="space-y-1">
- <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Interest (%)</label>
+ <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Interest (%)</label>
  <input data-testid="add-transaction-interest-rate" type="number" value={loanDraft.interestRate} onChange={e => setLoanDraft(prev => ({ ...prev, interestRate: parseFloat(e.target.value) || 0 }))} aria-label="Interest rate" className="w-full h-10 sm:h-11 bg-slate-50 border border-slate-200/80 rounded-xl px-3 font-semibold text-xs sm:text-sm text-center" />
  </div>
  <div className="space-y-1">
- <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Tenure (Months)</label>
+ <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Tenure (Months)</label>
  <input data-testid="add-transaction-tenure-in-months" type="number" value={loanDraft.tenureMonths} onChange={e => setLoanDraft(prev => ({ ...prev, tenureMonths: parseInt(e.target.value) || 0 }))} aria-label="Tenure in months" className="w-full h-10 sm:h-11 bg-slate-50 border border-slate-200/80 rounded-xl px-3 font-semibold text-xs sm:text-sm text-center" />
  </div>
  </div>
 
  <div className="grid grid-cols-2 gap-4">
  <div className="space-y-1">
- <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">EMI Amount</label>
+ <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">EMI Amount</label>
  <input data-testid="add-transaction-emi-amount" type="number" value={loanDraft.emiAmount} onChange={e => setLoanDraft(prev => ({ ...prev, emiAmount: parseFloat(e.target.value) || 0 }))} aria-label="EMI amount" className="w-full h-10 sm:h-11 bg-slate-50 border border-slate-200/80 rounded-xl px-3 font-semibold text-xs sm:text-sm text-center" />
  </div>
  <div className="space-y-1">
- <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Down Payment</label>
+ <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Down Payment</label>
  <input data-testid="add-transaction-down-payment" type="number" value={loanDraft.downPayment} onChange={e => setLoanDraft(prev => ({ ...prev, downPayment: parseFloat(e.target.value) || 0 }))} aria-label="Down payment" className="w-full h-10 sm:h-11 bg-slate-50 border border-slate-200/80 rounded-xl px-3 font-semibold text-xs sm:text-sm text-center" />
  </div>
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
  <div className="space-y-1">
- <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Received In</label>
+ <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Received In</label>
  <SearchableDropdown testId="add-transaction-select-account"
  options={accounts.map(a => ({ value: String(a.id), label: a.name, description: formatAccountBalance(a.balance, currency) }))}
  value={String(loanDraft.receivedAccount)}
@@ -1616,7 +1618,7 @@ if (linkedDocId) {
  />
  </div>
  <div className="space-y-1">
- <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">EMI Deduction</label>
+ <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">EMI Deduction</label>
  <SearchableDropdown testId="add-transaction-select-account-2"
  options={accounts.map(a => ({ value: String(a.id), label: a.name, description: formatAccountBalance(a.balance, currency) }))}
  value={String(loanDraft.emiDeductionAccount)}
@@ -1631,7 +1633,7 @@ if (linkedDocId) {
  /* Simplified Borrowed View (e.g. from Friends/Cash) */
  <div className="space-y-4">
  <div className="space-y-2">
- <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Received Method</label>
+ <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Received Method</label>
  <div className="flex gap-2">
  {['bank', 'cash'].map((m) => (
  <button data-testid={`add-transaction-button-6-${m}`}
@@ -1644,7 +1646,7 @@ if (linkedDocId) {
  setFormData(prev => ({ ...prev, accountId: accId }));
  }}
  className={cn(
-"flex-1 py-2 rounded-xl text-[10px] sm:text-[11px] font-bold uppercase tracking-wider transition-all border",
+"flex-1 py-2 rounded-xl text-2xs font-bold uppercase tracking-wider transition-all border",
  loanDraft.transferMethod === m 
  ?"bg-indigo-600 border-indigo-600 text-white shadow-md" 
  :"bg-white border-slate-200/80 text-slate-500 hover:bg-slate-50"
@@ -1658,7 +1660,7 @@ if (linkedDocId) {
 
  {loanDraft.transferMethod === 'bank' && (
  <div className="space-y-2 animate-in fade-in slide-in-from-top-1">
- <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Select Bank Account</label>
+ <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Select Bank Account</label>
  <SearchableDropdown testId="add-transaction-select-account-3"
  options={accounts.filter(a => !a.name.toLowerCase().includes('cash')).map(a => ({ value: String(a.id), label: a.name, description: formatAccountBalance(a.balance, currency) }))}
  value={String(loanDraft.receivedAccount)}
@@ -1681,7 +1683,7 @@ if (linkedDocId) {
  )}
 
  <div className="space-y-2">
- <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Return Date / Reminder</label>
+ <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Return Date / Reminder</label>
  <div data-testid="add-transaction-div-2" className="relative group" onClick={(e) => {
  const input = e.currentTarget.querySelector('input');
  if (input) (input as any).showPicker();
@@ -1712,7 +1714,7 @@ if (linkedDocId) {
  <div className="space-y-4">
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
  <div className="space-y-2">
- <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Lent From</label>
+ <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Lent From</label>
  <SearchableDropdown testId="add-transaction-select-account-4"
  options={accounts.map(a => ({ value: String(a.id), label: a.name, description: formatAccountBalance(a.balance, currency) }))}
  value={String(loanDraft.receivedAccount)}
@@ -1726,7 +1728,7 @@ if (linkedDocId) {
  />
  </div>
  <div className="space-y-2">
- <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Due Date</label>
+ <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Due Date</label>
  <div data-testid="add-transaction-div-3" className="relative group" onClick={(e) => {
  const input = e.currentTarget.querySelector('input');
  if (input) (input as any).showPicker();
@@ -1766,7 +1768,7 @@ if (linkedDocId) {
  <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-violet-500/5 blur-[80px] rounded-full animate-pulse pointer-events-none z-0 [animation-delay:1s]" />
 
  <div className="relative z-10 flex flex-col items-center w-full">
- <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3 sm:mb-4">Transaction Amount</span>
+ <span className="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-3 sm:mb-4">Transaction Amount</span>
 
  <div className="flex items-center justify-center w-full my-2 sm:my-4 gap-1 sm:gap-4 overflow-hidden px-2">
  {/* Left Side: Currency */}
@@ -1816,7 +1818,7 @@ if (linkedDocId) {
  setFormData(prev => ({ ...prev, amount: next }));
  }}
  data-testid={`transaction-preset-${amt}-button`}
- className="px-6 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-[11px] font-black text-slate-500 hover:bg-slate-900 hover:text-white hover:border-slate-900 hover:shadow-2xl hover:shadow-slate-200 transition-all active:scale-90 select-none"
+ className="px-6 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-xs font-black text-slate-500 hover:bg-slate-900 hover:text-white hover:border-slate-900 hover:shadow-2xl hover:shadow-slate-200 transition-all active:scale-90 select-none"
  >
  +{currency}{amt}
  </button>
@@ -1827,7 +1829,7 @@ if (linkedDocId) {
 
  <div className="premium-glass-card p-4 sm:p-6 space-y-5">
  <div className="space-y-2">
- <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+ <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">
  {isWithdrawal ? 'Withdraw From Account' : isTransfer ? 'From Account' : 'Account'}
  </label>
  <SearchableDropdown testId="add-transaction-account"
@@ -1835,7 +1837,7 @@ if (linkedDocId) {
  value: String(a.id),
  label: a.name,
  description: formatAccountBalance(a.balance, currency),
- icon: <div className="w-7 h-7 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 font-bold text-[9px] sm:text-[10px]">{(a.type || 'BK').substring(0, 2).toUpperCase()}</div>
+ icon: <div className="w-7 h-7 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 font-bold text-2xs">{(a.type || 'BK').substring(0, 2).toUpperCase()}</div>
  }))}
  value={String(formData.accountId)}
  onChange={val => setFormData(prev => ({ ...prev, accountId: parseInt(val) }))}
@@ -1848,13 +1850,13 @@ if (linkedDocId) {
  {isTransfer && transferSubType === 'self' && transferMethod === 'bank' && (
  <div className="space-y-3 animate-in fade-in zoom-in-95 duration-200">
  <div className="flex justify-center"><ArrowDown size={14} className="text-slate-300" /></div>
- <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">To Account</label>
+ <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">To Account</label>
  <SearchableDropdown testId="add-transaction-destination-account"
  options={accounts.filter(a => a.id !== formData.accountId).map(a => ({
  value: String(a.id),
  label: a.name,
  description: formatAccountBalance(a.balance, currency),
- icon: <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-400 font-black text-[9px]">{(a.type || 'BK').substring(0, 2).toUpperCase()}</div>
+ icon: <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-400 font-black text-2xs">{(a.type || 'BK').substring(0, 2).toUpperCase()}</div>
  }))}
  value={String(formData.toAccountId)}
  onChange={val => setFormData(prev => ({ ...prev, toAccountId: parseInt(val) }))}
@@ -1878,13 +1880,13 @@ if (linkedDocId) {
  {isWithdrawal && (
  <div className="space-y-3 animate-in fade-in zoom-in-95 duration-200">
  <div className="flex justify-center"><ArrowDown size={14} className="text-slate-300" /></div>
- <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Deposit To</label>
+ <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Deposit To</label>
  <SearchableDropdown testId="add-transaction-destination-account-2"
  options={accounts.filter(a => a.id !== formData.accountId).map(a => ({
  value: String(a.id),
  label: a.name,
  description: formatAccountBalance(a.balance, currency),
- icon: <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-400 font-black text-[9px]">{(a.type || 'BK').substring(0, 2).toUpperCase()}</div>
+ icon: <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-400 font-black text-2xs">{(a.type || 'BK').substring(0, 2).toUpperCase()}</div>
  }))}
  value={String(formData.toAccountId)}
  onChange={val => setFormData(prev => ({ ...prev, toAccountId: parseInt(val) }))}
@@ -1901,12 +1903,12 @@ if (linkedDocId) {
  <div className="flex justify-center"><ArrowDown size={14} className="text-slate-300" /></div>
  <div className="premium-glass-card p-4 space-y-4">
   <div className="flex items-center justify-between">
- <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">RECIPIENT</label>
+ <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">RECIPIENT</label>
  {friends.length > 0 && (
  <button data-testid="add-transaction-friends"
  type="button"
  onClick={() => setShowTransferFriendPicker(p => !p)}
- className="flex items-center gap-1 text-[10px] sm:text-[11px] font-bold text-violet-600 bg-violet-50 px-2.5 py-1 rounded-lg uppercase tracking-wide"
+ className="flex items-center gap-1 text-2xs font-bold text-violet-600 bg-violet-50 px-2.5 py-1 rounded-lg uppercase tracking-wide"
  >
  <Users size={11} /> FRIENDS
  </button>
@@ -1916,7 +1918,7 @@ if (linkedDocId) {
  {/* Friends quick-pick chips */}
  {showTransferFriendPicker && friends.length > 0 && (
  <div className="p-3 bg-violet-50/60 rounded-xl border border-violet-100 animate-in zoom-in-95 duration-200">
- <p className="text-[10px] sm:text-[11px] font-bold text-violet-500 uppercase tracking-wider mb-2">Tap to select</p>
+ <p className="text-2xs font-bold text-violet-500 uppercase tracking-wider mb-2">Tap to select</p>
  <div className="flex flex-wrap gap-2">
  {friends.map(f => (
  <button data-testid={`add-transaction-button-9-${f.id}`}
@@ -1969,7 +1971,7 @@ if (linkedDocId) {
  )}
 
  <div className="space-y-2">
- <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+ <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">
  {isWithdrawal || isTransfer ? 'Transfer Date' : 'Date'}
  </label>
  <div data-testid="add-transaction-div-4" className="relative group" onClick={(e) => {
@@ -1998,7 +2000,7 @@ if (linkedDocId) {
  </div>
 
  <div className="space-y-1.5 sm:space-y-2">
- <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Reason / Notes</label>
+ <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Reason / Notes</label>
  <input
  type="text"
  value={formData.notes}
@@ -2013,9 +2015,9 @@ if (linkedDocId) {
  {/* Receipt Section */}
  <div className="premium-glass-card p-4 space-y-3">
  <div className="flex items-center justify-between">
- <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Receipt</label>
+ <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Receipt</label>
  {(scanDocumentId || attachmentDocumentId) && (
- <span className="flex items-center gap-1 text-[9px] font-black text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg uppercase tracking-wide">
+ <span className="flex items-center gap-1 text-2xs font-black text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg uppercase tracking-wide">
  <Check size={10} strokeWidth={3} /> Attached
  </span>
  )}
@@ -2043,8 +2045,8 @@ if (linkedDocId) {
         <ScanLine size={18} />
       </div>
       <div className="text-center">
-        <p className="text-[10px] font-black uppercase tracking-wide leading-none">Scan Receipt</p>
-        <p className={cn("text-[9px] font-semibold mt-0.5 leading-none", isOcrEnabled ? "text-white/40" : "text-slate-400/60")}>OCR auto-fill</p>
+        <p className="text-2xs font-black uppercase tracking-wide leading-none">Scan Receipt</p>
+        <p className={cn("text-2xs font-semibold mt-0.5 leading-none", isOcrEnabled ? "text-white/40" : "text-slate-400/60")}>OCR auto-fill</p>
       </div>
     </button>
 
@@ -2058,7 +2060,7 @@ if (linkedDocId) {
         <Paperclip size={18} className="text-slate-600" />
       </div>
       <div className="text-center">
-        <p className="text-[10px] font-black uppercase tracking-wide leading-none">Add Attachment</p>
+        <p className="text-2xs font-black uppercase tracking-wide leading-none">Add Attachment</p>
       </div>
     </button>
   </div>
@@ -2073,10 +2075,10 @@ if (linkedDocId) {
         <Paperclip size={16} className="text-emerald-600 shrink-0" />
       )}
       <div className="flex-1">
-        <p className="text-[10px] font-black text-emerald-700 uppercase">
+        <p className="text-2xs font-black text-emerald-700 uppercase">
           {scanDocumentId ? 'Scanned Receipt' : 'Attachment'}
         </p>
-        <p className="text-[9px] font-semibold text-emerald-500">
+        <p className="text-2xs font-semibold text-emerald-500">
           {scanDocumentId ? 'Data was auto-extracted by OCR' : 'Saved as proof no OCR'}
         </p>
       </div>
@@ -2115,11 +2117,11 @@ if (linkedDocId) {
         </p>
         <div className="space-y-2.5 mb-4 bg-slate-50 rounded-2xl p-4">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Available Balance</span>
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Available Balance</span>
             <span className="text-sm font-black text-slate-900">{formatCurrencyAmount(balanceError.available, balanceError.currency)}</span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Entered Amount</span>
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Entered Amount</span>
             <span className="text-sm font-black text-rose-600">{formatCurrencyAmount(balanceError.entered, balanceError.currency)}</span>
           </div>
         </div>
@@ -2130,7 +2132,7 @@ if (linkedDocId) {
           <button
             type="button"
             onClick={() => setBalanceError(null)}
-            className="flex-1 py-3 rounded-2xl bg-slate-100 text-slate-700 font-black text-[11px] uppercase tracking-widest hover:bg-slate-200 transition-all cursor-pointer"
+            className="flex-1 py-3 rounded-2xl bg-slate-100 text-slate-700 font-black text-xs uppercase tracking-widest hover:bg-slate-200 transition-all cursor-pointer"
           >
             Cancel
           </button>
@@ -2138,7 +2140,7 @@ if (linkedDocId) {
             type="button"
             data-testid="insufficient-balance-edit-button"
             onClick={() => setBalanceError(null)}
-            className="flex-1 py-3 rounded-2xl bg-slate-900 text-white font-black text-[11px] uppercase tracking-widest hover:bg-slate-800 transition-all cursor-pointer"
+            className="flex-1 py-3 rounded-2xl bg-slate-900 text-white font-black text-xs uppercase tracking-widest hover:bg-slate-800 transition-all cursor-pointer"
           >
             Edit Amount
           </button>
@@ -2164,13 +2166,13 @@ if (linkedDocId) {
           </div>
           <div>
             <h3 className="text-base font-black text-slate-900 tracking-tight">Possible Duplicate</h3>
-            <p className="text-[11px] text-slate-400 font-semibold mt-0.5">A similar transaction already exists</p>
+            <p className="text-xs text-slate-400 font-semibold mt-0.5">A similar transaction already exists</p>
           </div>
         </div>
 
         {/* Existing transaction preview */}
         <div className="bg-slate-50 rounded-2xl p-4 mb-4 space-y-2">
-          <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Existing Transaction</p>
+          <p className="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-2">Existing Transaction</p>
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-600">Category</span>
             <span className="text-xs font-black text-slate-900">{pendingDuplicate.existingTx.category}</span>
@@ -2200,7 +2202,7 @@ if (linkedDocId) {
             data-testid="duplicate-modal-cancel"
             type="button"
             onClick={() => pendingDuplicate.resolve(false)}
-            className="flex-1 py-3 rounded-2xl bg-slate-100 text-slate-700 font-black text-[11px] uppercase tracking-widest hover:bg-slate-200 transition-all cursor-pointer"
+            className="flex-1 py-3 rounded-2xl bg-slate-100 text-slate-700 font-black text-xs uppercase tracking-widest hover:bg-slate-200 transition-all cursor-pointer"
           >
             Cancel
           </button>
@@ -2208,7 +2210,7 @@ if (linkedDocId) {
             data-testid="duplicate-modal-confirm"
             type="button"
             onClick={() => pendingDuplicate.resolve(true)}
-            className="flex-1 py-3 rounded-2xl bg-amber-500 text-white font-black text-[11px] uppercase tracking-widest hover:bg-amber-600 transition-all cursor-pointer"
+            className="flex-1 py-3 rounded-2xl bg-amber-500 text-white font-black text-xs uppercase tracking-widest hover:bg-amber-600 transition-all cursor-pointer"
           >
             Create Anyway
           </button>
@@ -2254,7 +2256,7 @@ if (linkedDocId) {
             </div>
             <div>
               <h3 className="text-sm font-black text-slate-900">New Category</h3>
-              <p className="text-[10px] text-slate-400 font-medium">Add a custom {formData.type} category</p>
+              <p className="text-2xs text-slate-400 font-medium">Add a custom {formData.type} category</p>
             </div>
           </div>
           <button
@@ -2268,7 +2270,7 @@ if (linkedDocId) {
 
         <div className="space-y-3">
           <div>
-            <label className="block text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Category Name</label>
+            <label className="block text-2xs font-bold uppercase tracking-wider text-slate-400 mb-1">Category Name</label>
             <input
               type="text"
               autoFocus
@@ -2286,7 +2288,7 @@ if (linkedDocId) {
           </div>
 
           <div>
-            <label className="block text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Color Tag</label>
+            <label className="block text-2xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Color Tag</label>
             <div className="flex items-center gap-2">
               {['#6366F1', '#EC4899', '#F59E0B', '#10B981', '#3B82F6', '#EF4444', '#8B5CF6', '#14B8A6'].map((color) => (
                 <button

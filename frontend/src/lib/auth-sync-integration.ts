@@ -2,6 +2,7 @@ import type { RealtimeChannel } from '@supabase/supabase-js';
 import supabase from '@/utils/supabase/client';
 import { db } from '@/lib/database';
 import { apiClient, TokenManager, refreshAccessToken } from '@/lib/api';
+import { coalesceCreate } from '@/lib/submitGuard';
 import { fetchAllPages } from '@/lib/pagedFetch';
 import { markOptionalBackendUnavailable, shouldSkipOptionalBackendRequests } from '@/lib/apiBase';
 import {
@@ -1830,6 +1831,60 @@ function resolveLocalId(remote: any, existingRows: any[], matcher?: (rows: any[]
   return undefined;
 }
 
+/** True when the Dexie table indexes `cloudId` (every synced table except shares). */
+function hasCloudIdIndex(localTable: any): boolean {
+  const indexes = localTable?.schema?.indexes;
+  return Array.isArray(indexes) && indexes.some((index: { name?: string }) => index?.name === 'cloudId');
+}
+
+/**
+ * Local rows currently linked to any of `cloudIds`, read from the LIVE table.
+ * Uses the index where there is one; a table without it is scanned rather than
+ * queried, because an unindexed `where()` inside a transaction aborts it.
+ */
+async function findLocalRowsByCloudIds(localTable: any, cloudIds: string[]): Promise<any[]> {
+  if (cloudIds.length === 0) return [];
+  if (hasCloudIdIndex(localTable)) {
+    return localTable.where('cloudId').anyOf(cloudIds).toArray();
+  }
+  const wanted = new Set(cloudIds);
+  const all: any[] = await localTable.toArray();
+  return all.filter((row) => row?.cloudId != null && wanted.has(String(row.cloudId)));
+}
+
+/**
+ * Store a row the server has just confirmed — exactly once.
+ *
+ * The server tells every device of a change the moment it commits it, INCLUDING
+ * the device that made it: `todo_updated`, `group_expense_updated` and friends
+ * reach the sender's own socket, and AppContext answers each with a pull. That
+ * pull regularly lands between the POST response and the local insert that
+ * follows it; it finds a server row with no local match, inserts it, and then
+ * the save inserts its own copy — two identical rows sharing one cloudId, in
+ * whichever feature the race happened.
+ *
+ * Doing the lookup and the write in one read-write transaction serialises this
+ * against `mergeBackendTable`, which does the same, so whichever arrives second
+ * updates the row the first created instead of adding another. Always suppressed:
+ * the server already has this row, so there is nothing to queue.
+ */
+async function storeServerConfirmedRow(localTable: any, row: any): Promise<number> {
+  const cloudId = row?.cloudId != null && String(row.cloudId).trim() !== '' ? String(row.cloudId) : '';
+  return runWithCloudSyncSuppressed(() =>
+    db.transaction('rw', localTable, async () => {
+      if (cloudId) {
+        const [existing] = await findLocalRowsByCloudIds(localTable, [cloudId]);
+        if (existing?.id != null) {
+          const { id: _ignored, ...changes } = row;
+          await localTable.update(existing.id, changes);
+          return Number(existing.id);
+        }
+      }
+      return Number(await localTable.add(row));
+    }),
+  );
+}
+
 /**
  * IDEMPOTENT merge: prevents duplicate records by checking remoteId before insert/update.
  * Fixes race conditions and refresh duplicates by ensuring:
@@ -2010,7 +2065,7 @@ const mergeBackendTable = async (table: SyncedTableName, backendRows: any[], nex
 
       if (Number.isFinite(candidateId) && !claimedLocalIds.has(candidateId)) {
         claimedLocalIds.add(candidateId);
-        toUpdate.push({ ...nextRow, id: candidateId });
+        toUpdate.push({ ...nextRow, id: candidateId, __softMatch: !byCloudId });
         continue;
       }
 
@@ -2022,18 +2077,65 @@ const mergeBackendTable = async (table: SyncedTableName, backendRows: any[], nex
       toInsert.push(insertRow);
     }
 
-    // Execute updates first
-    if (toUpdate.length > 0) {
-      await localTable.bulkUpdate(toUpdate.map(row => ({
-        key: row.id,
-        changes: row,
-      })));
-    }
+    // ── Commit against the LIVE table, not the snapshot ────────────────────
+    //
+    // `existingRows` was read before the network fetch, so it is a few hundred
+    // milliseconds stale by now. A save that finished inside that window has
+    // already stored its row with this cloudId — this is the normal case when a
+    // pull is triggered by the server's own realtime event for that save — and
+    // inserting from the snapshot's point of view creates a second copy.
+    // `storeServerConfirmedRow` takes the same read-write lock, so exactly one of
+    // the two writes inserts and the other updates.
+    await db.transaction('rw', localTable, async () => {
+      // A soft match (name/amount/date guess) is only safe if that local row is
+      // still unlinked. If it has since been linked to a different server record,
+      // updating it would overwrite that record with this one.
+      const softMatched = toUpdate.filter((row) => row.__softMatch);
+      if (softMatched.length > 0) {
+        const freshRows = await Promise.all(softMatched.map((row) => localTable.get(row.id)));
+        softMatched.forEach((row, index) => {
+          const fresh = freshRows[index];
+          const linkedElsewhere = fresh?.cloudId != null
+            && String(fresh.cloudId) !== String(row.cloudId ?? '');
+          if (!fresh || linkedElsewhere) {
+            toUpdate.splice(toUpdate.indexOf(row), 1);
+            claimedLocalIds.delete(Number(row.id));
+            const { id: _stale, ...insertRow } = row;
+            toInsert.push(insertRow);
+          }
+        });
+      }
 
-    // Then insert new records
-    if (toInsert.length > 0) {
-      await localTable.bulkAdd(toInsert, { allKeys: true });
-    }
+      const insertCloudIds = toInsert
+        .map((row) => (row.cloudId != null ? String(row.cloudId) : ''))
+        .filter(Boolean);
+      if (insertCloudIds.length > 0) {
+        const alreadyStored = await findLocalRowsByCloudIds(localTable, insertCloudIds);
+        const storedByCloudId = new Map(alreadyStored.map((row) => [String(row.cloudId), row]));
+        for (let index = toInsert.length - 1; index >= 0; index -= 1) {
+          const cloudKey = toInsert[index].cloudId != null ? String(toInsert[index].cloudId) : '';
+          const stored = cloudKey ? storedByCloudId.get(cloudKey) : undefined;
+          if (!stored) continue;
+          const [row] = toInsert.splice(index, 1);
+          const storedId = Number(stored.id);
+          if (Number.isFinite(storedId) && !claimedLocalIds.has(storedId)) {
+            claimedLocalIds.add(storedId);
+            toUpdate.push({ ...row, id: storedId });
+          }
+        }
+      }
+
+      if (toUpdate.length > 0) {
+        await localTable.bulkUpdate(toUpdate.map(({ __softMatch: _flag, ...row }) => ({
+          key: row.id,
+          changes: row,
+        })));
+      }
+
+      if (toInsert.length > 0) {
+        await localTable.bulkAdd(toInsert.map(({ __softMatch: _flag, ...row }) => row), { allKeys: true });
+      }
+    });
   }
 
   // Delete stale records
@@ -3339,7 +3441,7 @@ export async function handleLogout() {
   writeSyncQueue([]);
 }
 
-export async function saveTransactionWithBackendSync(transaction: any) {
+async function saveTransactionOnce(transaction: any) {
   initializeBackendSync();
 
   const activeDedupHash = transaction.dedupHash || crypto.randomUUID();
@@ -3399,7 +3501,7 @@ export async function saveTransactionWithBackendSync(transaction: any) {
 
           // The server just created this row — suppress the Dexie hook so it is not
           // queued and echoed straight back as a redundant PUT /transactions/:id.
-          const savedId = await runWithCloudSyncSuppressed(() => db.transactions.add(dbTransaction));
+          const savedId = await storeServerConfirmedRow(db.transactions, dbTransaction);
           return { ...dbTransaction, id: savedId };
         } catch (backendError: any) {
           // Fall back to local save for: unavailability (503/network) AND business-logic
@@ -3606,7 +3708,7 @@ export async function saveTransactionAndUpdateAccountWithBackendSync(
   return saved;
 }
 
-export async function saveAccountWithBackendSync(account: any) {
+async function saveAccountOnce(account: any) {
   initializeBackendSync();
 
   const activeClientRequestId = account.clientRequestId || crypto.randomUUID();
@@ -3641,7 +3743,7 @@ export async function saveAccountWithBackendSync(account: any) {
         syncStatus: 'synced' as const,
       };
 
-      const savedId = await db.accounts.add(dbAccount);
+      const savedId = await storeServerConfirmedRow(db.accounts, dbAccount);
       return { ...dbAccount, id: savedId };
     } catch (backendError: any) {
       // Fall back to local save for unavailability (503/network) AND business-logic
@@ -3797,7 +3899,7 @@ export async function updateAccountWithBackendSync(accountId: number, updates: a
   queueRecordUpsertSync('accounts', accountId, serverIdOf(existing) ?? serverIdOf(updates));
 }
 
-export async function saveGoalWithBackendSync(goal: any) {
+async function saveGoalOnce(goal: any) {
   initializeBackendSync();
 
   const activeClientRequestId = goal.clientRequestId || crypto.randomUUID();
@@ -3828,7 +3930,7 @@ export async function saveGoalWithBackendSync(goal: any) {
         syncStatus: 'synced' as const,
       };
 
-      const savedId = await db.goals.add(dbGoal);
+      const savedId = await storeServerConfirmedRow(db.goals, dbGoal);
       return { ...dbGoal, id: savedId };
     } catch (backendError: any) {
       console.warn(
@@ -3881,7 +3983,7 @@ export interface LoanSaveInput {
   updatedAt?: Date;
 }
 
-export async function saveLoanWithBackendSync(loan: LoanSaveInput) {
+async function saveLoanOnce(loan: LoanSaveInput) {
   initializeBackendSync();
 
   const activeClientRequestId = loan.clientRequestId || crypto.randomUUID();
@@ -3917,7 +4019,7 @@ export async function saveLoanWithBackendSync(loan: LoanSaveInput) {
         syncStatus: 'synced' as const,
       };
 
-      const savedId = await runWithCloudSyncSuppressed(() => db.loans.add(dbLoan));
+      const savedId = await storeServerConfirmedRow(db.loans, dbLoan);
       return { ...dbLoan, id: savedId };
     } catch (error: unknown) {
       const backendError = error as { code?: string; status?: number; message?: string };
@@ -3951,7 +4053,7 @@ export async function checkBackendConnectivity(): Promise<boolean> {
   return !!TokenManager.getAccessToken();
 }
 
-export async function saveToDoListWithBackendSync(list: any) {
+async function saveToDoListOnce(list: any) {
   initializeBackendSync();
 
   // One key for the POST and for the local row, so the queue retries this exact
@@ -3979,7 +4081,7 @@ export async function saveToDoListWithBackendSync(list: any) {
         syncStatus: 'synced' as const,
       };
 
-      const savedId = await db.toDoLists.add(dbList);
+      const savedId = await storeServerConfirmedRow(db.toDoLists, dbList);
       return { ...dbList, id: savedId };
     } catch (backendError: any) {
       const isUnavailable =
@@ -4116,7 +4218,7 @@ export async function deleteToDoListWithBackendSync(listId: number) {
   }
 }
 
-export async function saveToDoItemWithBackendSync(item: any, opts: { idempotencyKey?: string } = {}) {
+async function saveToDoItemOnce(item: any, opts: { idempotencyKey?: string } = {}) {
   initializeBackendSync();
 
   const activeClientRequestId = opts.idempotencyKey || item.clientRequestId || newClientRequestId();
@@ -4151,7 +4253,7 @@ export async function saveToDoItemWithBackendSync(item: any, opts: { idempotency
         syncStatus: 'synced' as const,
       };
 
-      const savedId = await db.toDoItems.add(dbItem);
+      const savedId = await storeServerConfirmedRow(db.toDoItems, dbItem);
       return { ...dbItem, id: savedId };
     } catch (backendError: any) {
       const isUnavailable =
@@ -4293,7 +4395,7 @@ export async function deleteToDoItemWithBackendSync(itemId: number) {
   }
 }
 
-export async function saveToDoListShareWithBackendSync(listId: number, sharedWithEmail: string, permission: 'view' | 'edit') {
+async function saveToDoListShareOnce(listId: number, sharedWithEmail: string, permission: 'view' | 'edit') {
   initializeBackendSync();
 
   const list = await db.toDoLists.get(listId);
@@ -4321,7 +4423,7 @@ export async function saveToDoListShareWithBackendSync(listId: number, sharedWit
         syncStatus: 'synced' as const,
       };
 
-      const savedId = await db.toDoListShares.add(dbShare);
+      const savedId = await storeServerConfirmedRow(db.toDoListShares, dbShare);
       return { ...dbShare, id: savedId };
     } catch (backendError: any) {
       const isUnavailable =
@@ -4445,3 +4547,60 @@ export async function deleteToDoListShareWithBackendSync(shareId: number) {
   }
 }
 
+// ─── Create entry points: one submission, one record ─────────────────────────
+//
+// Each exported save below is the implementation above wrapped in
+// `coalesceCreate`. A second call carrying the same content while the first is
+// still in flight (or within a few seconds of it succeeding) returns the first
+// call's result instead of creating again. That is what a double tap, a repeated
+// Enter key or a form that submits from two handlers produces, and without this
+// each one became its own row.
+//
+// `callerKey` keeps callers that already identify their action — KAI passes a
+// deterministic dedupHash / clientRequestId per spoken action — from having two
+// genuinely separate but identical-looking actions folded into one. A retry of
+// the SAME action carries the same key and is still folded.
+const callerKey = (input: { dedupHash?: unknown; clientRequestId?: unknown } | null | undefined) =>
+  input?.dedupHash ?? input?.clientRequestId ?? undefined;
+
+export function saveTransactionWithBackendSync(transaction: any) {
+  // A repeat the user explicitly confirmed must go through as its own entry.
+  if (transaction?.intentionalDuplicate) return saveTransactionOnce(transaction);
+  return coalesceCreate(
+    'transaction',
+    { ...transaction, callerKey: callerKey(transaction) },
+    () => saveTransactionOnce(transaction),
+  );
+}
+
+export function saveAccountWithBackendSync(account: any) {
+  return coalesceCreate('account', { ...account, callerKey: callerKey(account) }, () => saveAccountOnce(account));
+}
+
+export function saveGoalWithBackendSync(goal: any) {
+  return coalesceCreate('goal', { ...goal, callerKey: callerKey(goal) }, () => saveGoalOnce(goal));
+}
+
+export function saveLoanWithBackendSync(loan: LoanSaveInput) {
+  return coalesceCreate('loan', { ...loan, callerKey: callerKey(loan) }, () => saveLoanOnce(loan));
+}
+
+export function saveToDoListWithBackendSync(list: any) {
+  return coalesceCreate('todo-list', { ...list, callerKey: callerKey(list) }, () => saveToDoListOnce(list));
+}
+
+export function saveToDoItemWithBackendSync(item: any, opts: { idempotencyKey?: string } = {}) {
+  return coalesceCreate(
+    'todo-item',
+    { ...item, callerKey: opts.idempotencyKey ?? callerKey(item) },
+    () => saveToDoItemOnce(item, opts),
+  );
+}
+
+export function saveToDoListShareWithBackendSync(listId: number, sharedWithEmail: string, permission: 'view' | 'edit') {
+  return coalesceCreate(
+    'todo-share',
+    { listId, sharedWithEmail, permission },
+    () => saveToDoListShareOnce(listId, sharedWithEmail, permission),
+  );
+}

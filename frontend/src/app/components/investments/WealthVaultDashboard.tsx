@@ -303,7 +303,7 @@ export const WealthVaultDashboard: React.FC<{ onAddAsset?: () => void }> = ({ on
       {/* Header bar */}
       <div className="flex items-center justify-between px-1">
         <div>
-          <p className="text-[10px] font-black tracking-widest text-amber-600 uppercase">
+          <p className="text-2xs font-black tracking-widest text-amber-600 uppercase">
             Family Wealth
           </p>
           <h2 className="text-gray-900 text-xl font-bold tracking-tight mt-0.5">Vault Dashboard</h2>
@@ -335,7 +335,7 @@ export const WealthVaultDashboard: React.FC<{ onAddAsset?: () => void }> = ({ on
           read "Live metal spot rates" unconditionally, including when the price was
           fabricated locally — the single most misleading thing on this screen. */}
       {lastRefreshed && metalPrices && (
-        <p className="text-[9px] text-gray-400 font-medium tracking-wide px-1 -mt-4">
+        <p className="text-2xs text-gray-400 font-medium tracking-wide px-1 -mt-4">
           {metalPrices.source === 'live'
             ? `Live metal spot rates updated at ${lastRefreshed.toLocaleTimeString()}`
             : metalPrices.source === 'cached'
@@ -392,7 +392,7 @@ export const WealthVaultDashboard: React.FC<{ onAddAsset?: () => void }> = ({ on
         {/* Aesthetic background mesh */}
         <div className="absolute top-0 right-0 w-48 h-48 bg-radial-gradient from-amber-200/20 to-transparent pointer-events-none rounded-full blur-2xl" />
 
-        <p className="text-[9px] font-bold tracking-widest text-amber-700 uppercase">
+        <p className="text-2xs font-bold tracking-widest text-amber-700 uppercase">
           Total Vault Value
         </p>
         
@@ -409,7 +409,7 @@ export const WealthVaultDashboard: React.FC<{ onAddAsset?: () => void }> = ({ on
 
         <div className="grid grid-cols-3 gap-4 mt-6 pt-5 border-t border-amber-200/50">
           <div>
-            <p className="text-[9px] font-bold tracking-wider text-gray-500 uppercase">
+            <p className="text-2xs font-bold tracking-wider text-gray-500 uppercase">
               Invested Capital
             </p>
             <p className="text-sm font-black text-gray-800 mt-1">
@@ -417,7 +417,7 @@ export const WealthVaultDashboard: React.FC<{ onAddAsset?: () => void }> = ({ on
             </p>
           </div>
           <div>
-            <p className="text-[9px] font-bold tracking-wider text-gray-500 uppercase">
+            <p className="text-2xs font-bold tracking-wider text-gray-500 uppercase">
               Live Gain/Loss
             </p>
             <p className={`text-sm font-black mt-1 ${portfolioStats.gainLoss >= 0 ? 'text-green-600' : 'text-red-600'}`}>
@@ -425,7 +425,7 @@ export const WealthVaultDashboard: React.FC<{ onAddAsset?: () => void }> = ({ on
             </p>
           </div>
           <div>
-            <p className="text-[9px] font-bold tracking-wider text-gray-500 uppercase">
+            <p className="text-2xs font-bold tracking-wider text-gray-500 uppercase">
               Return %
             </p>
             <div className="flex items-center gap-1 mt-1">
@@ -463,7 +463,7 @@ export const WealthVaultDashboard: React.FC<{ onAddAsset?: () => void }> = ({ on
       {/* Precious Metals Section */}
       {physicalMetals.length > 0 && (
         <div className="space-y-3">
-          <p className="text-[10px] font-bold tracking-widest text-gray-400 uppercase px-1">
+          <p className="text-2xs font-bold tracking-widest text-gray-400 uppercase px-1">
             Precious Metals
           </p>
           <div className="grid grid-cols-2 gap-3">
@@ -478,7 +478,7 @@ export const WealthVaultDashboard: React.FC<{ onAddAsset?: () => void }> = ({ on
                   <div className="flex items-start justify-between">
                     <div>
                       <span className="text-xl">{accent.emoji}</span>
-                      <p className="text-[10px] font-extrabold uppercase tracking-wide mt-1.5" style={{ color: accent.primary }}>
+                      <p className="text-2xs font-extrabold uppercase tracking-wide mt-1.5" style={{ color: accent.primary }}>
                         {accent.label}
                       </p>
                     </div>
@@ -490,7 +490,7 @@ export const WealthVaultDashboard: React.FC<{ onAddAsset?: () => void }> = ({ on
                     <p className="text-lg font-black text-gray-900">
                       {fmt(liveValue)}
                     </p>
-                    <p className="text-[10px] text-gray-500 font-medium mt-0.5">
+                    <p className="text-2xs text-gray-500 font-medium mt-0.5">
                       {totalWeight.toFixed(2)} g · {currencySymbol}{pricePerGram.toFixed(2)}/g
                     </p>
                   </div>
@@ -504,7 +504,7 @@ export const WealthVaultDashboard: React.FC<{ onAddAsset?: () => void }> = ({ on
       {/* Real Estate Section */}
       {realEstateAssets.length > 0 && (
         <div className="space-y-3">
-          <p className="text-[10px] font-bold tracking-widest text-gray-400 uppercase px-1">
+          <p className="text-2xs font-bold tracking-widest text-gray-400 uppercase px-1">
             Real Estate Properties
           </p>
           <div className="grid grid-cols-1 gap-3">
@@ -524,7 +524,7 @@ export const WealthVaultDashboard: React.FC<{ onAddAsset?: () => void }> = ({ on
                 <div className="text-right">
                   <p className="text-sm font-black text-gray-900">{fmt(asset.currentValue)}</p>
                   {asset.metadata?.rentalYield && (
-                    <p className="text-[10px] text-green-600 font-bold mt-0.5">
+                    <p className="text-2xs text-green-600 font-bold mt-0.5">
                       {asset.metadata.rentalYield}% yield
                     </p>
                   )}
@@ -538,7 +538,7 @@ export const WealthVaultDashboard: React.FC<{ onAddAsset?: () => void }> = ({ on
       {/* Business holdings */}
       {businessAssets.length > 0 && (
         <div className="space-y-3">
-          <p className="text-[10px] font-bold tracking-widest text-gray-400 uppercase px-1">
+          <p className="text-2xs font-bold tracking-widest text-gray-400 uppercase px-1">
             Business Partnerships
           </p>
           <div className="grid grid-cols-1 gap-3">
@@ -567,7 +567,7 @@ export const WealthVaultDashboard: React.FC<{ onAddAsset?: () => void }> = ({ on
       {/* Asset Inventory List */}
       {physicalMetals.length > 0 && (
         <div className="space-y-3">
-          <p className="text-[10px] font-bold tracking-widest text-gray-400 uppercase px-1">
+          <p className="text-2xs font-bold tracking-widest text-gray-400 uppercase px-1">
             Metal Catalog
           </p>
           <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden divide-y divide-gray-100">
@@ -591,15 +591,15 @@ export const WealthVaultDashboard: React.FC<{ onAddAsset?: () => void }> = ({ on
                     <div className="min-w-0">
                       <p className="text-sm font-bold text-gray-950 truncate">{asset.assetName}</p>
                       <div className="flex items-center gap-2 mt-1 flex-wrap">
-                        <span className={`text-[9px] font-bold px-2 py-0.5 rounded ${badge.bg} ${badge.text} flex items-center gap-1`}>
+                        <span className={`text-2xs font-bold px-2 py-0.5 rounded ${badge.bg} ${badge.text} flex items-center gap-1`}>
                           {badge.icon} {badge.label}
                         </span>
                         {asset.metadata?.purity && (
-                          <span className="text-[9px] font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
+                          <span className="text-2xs font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
                             {asset.metadata.purity}
                           </span>
                         )}
-                        <span className="text-[9px] font-medium text-gray-400 flex items-center gap-0.5">
+                        <span className="text-2xs font-medium text-gray-400 flex items-center gap-0.5">
                           <MapPin size={8} /> {locker}
                         </span>
                       </div>
@@ -607,11 +607,11 @@ export const WealthVaultDashboard: React.FC<{ onAddAsset?: () => void }> = ({ on
                   </div>
                   <div className="text-right shrink-0">
                     <p className="text-sm font-black text-gray-900">{fmt(liveVal)}</p>
-                    <p className={`text-[10px] font-bold mt-0.5 ${gain >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    <p className={`text-2xs font-bold mt-0.5 ${gain >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                       {gain >= 0 ? '+' : ''}{fmt(gain)}
                     </p>
                     {weightGrams > 0 && (
-                      <p className="text-[9px] text-gray-400 mt-0.5">{weightGrams.toFixed(2)} g</p>
+                      <p className="text-2xs text-gray-400 mt-0.5">{weightGrams.toFixed(2)} g</p>
                     )}
                   </div>
                 </div>
@@ -624,7 +624,7 @@ export const WealthVaultDashboard: React.FC<{ onAddAsset?: () => void }> = ({ on
       {/* Storage Locker Groups */}
       {lockerGroups.length > 0 && (
         <div className="space-y-3">
-          <p className="text-[10px] font-bold tracking-widest text-gray-400 uppercase px-1">
+          <p className="text-2xs font-bold tracking-widest text-gray-400 uppercase px-1">
             Secure Storage Location Map
           </p>
           <div className="grid grid-cols-2 gap-3">
@@ -641,18 +641,18 @@ export const WealthVaultDashboard: React.FC<{ onAddAsset?: () => void }> = ({ on
                     {assets.length} {assets.length === 1 ? 'item' : 'items'}
                   </p>
                   {totalWeight > 0 && (
-                    <p className="text-[10px] text-gray-400 font-medium mt-1">
+                    <p className="text-2xs text-gray-400 font-medium mt-1">
                       {totalWeight.toFixed(2)} g total
                     </p>
                   )}
                   <div className="flex flex-wrap gap-1 mt-3">
                     {assets.slice(0, 2).map(a => (
-                      <span key={a.id} className="text-[9px] font-bold px-2 py-0.5 bg-gray-50 border border-gray-100 rounded text-gray-600">
+                      <span key={a.id} className="text-2xs font-bold px-2 py-0.5 bg-gray-50 border border-gray-100 rounded text-gray-600">
                         {METAL_ACCENTS[a.assetType as PhysicalAssetType]?.emoji ?? '📦'} {(a.assetName || 'Asset').split(' ').slice(0, 2).join(' ')}
                       </span>
                     ))}
                     {assets.length > 2 && (
-                      <span className="text-[9px] font-bold px-2 py-0.5 bg-gray-50 border border-gray-100 rounded text-gray-400">
+                      <span className="text-2xs font-bold px-2 py-0.5 bg-gray-50 border border-gray-100 rounded text-gray-400">
                         +{assets.length - 2} more
                       </span>
                     )}

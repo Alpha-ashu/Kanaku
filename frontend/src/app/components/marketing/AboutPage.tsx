@@ -142,7 +142,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({
               </div>
               <h3 className="text-lg font-bold text-white">Shaik Ashraf K</h3>
               <p className="text-xs font-semibold text-violet-300 mt-0.5">Founder & Chief Executive Officer</p>
-              <span className="mt-3 inline-block px-3 py-1 rounded-full text-[10px] font-extrabold bg-violet-500/20 text-violet-200 border border-violet-400/30">
+              <span className="mt-3 inline-block px-3 py-1 rounded-full text-2xs font-extrabold bg-violet-500/20 text-violet-200 border border-violet-400/30">
                 Bengaluru, India
               </span>
             </div>

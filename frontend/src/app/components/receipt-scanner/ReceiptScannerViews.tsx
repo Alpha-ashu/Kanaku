@@ -41,7 +41,7 @@ export const ModeSelectionView: React.FC<{
   isOcrEnabled?: boolean;
 }> = ({ onSelectMode, isOcrEnabled = true }) => (
   <div className="space-y-4 pt-1">
-    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Choose an action</p>
+    <p className="text-2xs font-black text-slate-400 uppercase tracking-widest text-center">Choose an action</p>
     <div className="grid grid-cols-2 gap-4">
       <button
         data-testid="receipt-scanner-views-button"
@@ -62,7 +62,7 @@ export const ModeSelectionView: React.FC<{
         </div>
         <div className="text-center space-y-1">
           <p className="text-xs font-black uppercase tracking-wider leading-tight">Scan Receipt</p>
-          <p className={cn("text-[10px] font-semibold leading-none", isOcrEnabled ? "text-slate-400" : "text-slate-400/60")}>
+          <p className={cn("text-2xs font-semibold leading-none", isOcrEnabled ? "text-slate-400" : "text-slate-400/60")}>
             OCR auto-fill
           </p>
         </div>
@@ -78,7 +78,7 @@ export const ModeSelectionView: React.FC<{
         </div>
         <div className="text-center space-y-1">
           <p className="text-xs font-black uppercase tracking-wider leading-tight">Add Attachment</p>
-          <p className="text-[10px] font-semibold text-slate-400 leading-none">
+          <p className="text-2xs font-semibold text-slate-400 leading-none">
             Save file as-is
           </p>
         </div>
@@ -187,7 +187,7 @@ const SelectionCard: React.FC<{
     </div>
     <div className="text-center space-y-0.5">
       <p className="text-xs sm:text-sm font-bold text-slate-900 tracking-tight">{label}</p>
-      <p className="text-[10px] sm:text-[11px] font-medium text-slate-400 group-hover:text-slate-500 transition-colors">{sublabel}</p>
+      <p className="text-2xs font-medium text-slate-400 group-hover:text-slate-500 transition-colors">{sublabel}</p>
     </div>
   </button>
 );
@@ -349,9 +349,9 @@ export const ResultsView: React.FC<{
               : "bg-blue-50/60 border-blue-200"
           )}>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Bill Arithmetic Check</span>
+              <span className="text-2xs font-black uppercase tracking-widest text-slate-500">Bill Arithmetic Check</span>
               <span className={cn(
-                "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider",
+                "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-2xs font-black uppercase tracking-wider",
                 isMatched ? "bg-emerald-100 text-emerald-800" : "bg-blue-100 text-blue-800"
               )}>
                 {isMatched ? <CheckCircle2 size={12} /> : <AlertCircle size={12} />}
@@ -360,25 +360,25 @@ export const ResultsView: React.FC<{
             </div>
             <div className="grid grid-cols-3 gap-2 text-center text-xs font-semibold py-1">
               <div className="bg-white/80 rounded-xl p-2 border border-slate-100">
-                <p className="text-[9px] text-slate-400 uppercase font-black">Items ({scanResult.items.length})</p>
+                <p className="text-2xs text-slate-400 uppercase font-black">Items ({scanResult.items.length})</p>
                 <p className="text-slate-900 font-bold mt-0.5">{effectiveCurrency} {itemSum.toFixed(2)}</p>
               </div>
               <div className="bg-white/80 rounded-xl p-2 border border-slate-100">
-                <p className="text-[9px] text-slate-400 uppercase font-black">Tax / GST</p>
+                <p className="text-2xs text-slate-400 uppercase font-black">Tax / GST</p>
                 <p className="text-slate-900 font-bold mt-0.5">{effectiveCurrency} {taxSum.toFixed(2)}</p>
               </div>
               <div className="bg-white/80 rounded-xl p-2 border border-slate-100">
-                <p className="text-[9px] text-slate-400 uppercase font-black">Calculated</p>
+                <p className="text-2xs text-slate-400 uppercase font-black">Calculated</p>
                 <p className="text-indigo-600 font-bold mt-0.5">{effectiveCurrency} {calculatedTotal.toFixed(2)}</p>
               </div>
             </div>
             {!isMatched && calculatedTotal > 0 && (
               <div className="mt-2.5 flex items-center justify-between pt-2 border-t border-blue-200/60">
-                <p className="text-[11px] text-blue-900 font-medium">Calculated total is <strong>{effectiveCurrency} {calculatedTotal.toFixed(2)}</strong></p>
+                <p className="text-xs text-blue-900 font-medium">Calculated total is <strong>{effectiveCurrency} {calculatedTotal.toFixed(2)}</strong></p>
                 <button
                   type="button"
                   onClick={() => onFieldChange('amount', Number(calculatedTotal.toFixed(2)))}
-                  className="px-2.5 py-1 bg-blue-600 text-white rounded-lg text-[10px] font-black uppercase tracking-wider hover:bg-blue-700 transition-colors cursor-pointer"
+                  className="px-2.5 py-1 bg-blue-600 text-white rounded-lg text-2xs font-black uppercase tracking-wider hover:bg-blue-700 transition-colors cursor-pointer"
                 >
                   Use Calculated
                 </button>
@@ -577,7 +577,7 @@ const ValidationWarning: React.FC<{
  </div>
  {amountCandidates && amountCandidates.length > 0 && onSelectCandidate && (
  <div className="mt-2 pl-7">
- <p className="text-[10px] font-bold text-red-800/60 mb-2 uppercase tracking-widest">Detected Candidates:</p>
+ <p className="text-2xs font-bold text-red-800/60 mb-2 uppercase tracking-widest">Detected Candidates:</p>
  <div className="flex flex-wrap gap-2">
  {amountCandidates.map((candidate, i) => (
  <button data-testid={`receipt-scanner-views-button-5-${i}`}
@@ -625,7 +625,7 @@ const SmartDescriptionBadge: React.FC<{ description: string }> = ({ description 
  <div className="flex items-start gap-2.5 rounded-2xl border border-indigo-100 bg-indigo-50 px-3.5 py-3">
  <Sparkles size={15} className="mt-0.5 shrink-0 text-indigo-500" />
  <div>
- <p className="text-[10px] font-bold uppercase tracking-widest text-indigo-400">AI Summary</p>
+ <p className="text-2xs font-bold uppercase tracking-widest text-indigo-400">AI Summary</p>
  <p className="text-sm font-medium text-indigo-800">{description}</p>
  </div>
  </div>
@@ -643,7 +643,7 @@ const TaxBreakdownPanel: React.FC<{
  <div className="KANAKU-receipt-card overflow-hidden border-orange-100 bg-orange-50">
  <div className="flex items-center gap-2 border-b border-orange-100 px-4 py-3">
  <Layers size={14} className="text-orange-500" />
- <p className="text-[10px] font-bold uppercase tracking-widest text-orange-600">
+ <p className="text-2xs font-bold uppercase tracking-widest text-orange-600">
  Tax Breakdown
  </p>
  </div>
@@ -684,7 +684,7 @@ const ItemsPanel: React.FC<{
  <div className="KANAKU-receipt-card overflow-hidden border-gray-200 bg-white">
  <div className="flex items-center gap-2 border-b border-gray-100 px-4 py-3">
  <Receipt size={14} className="text-gray-500" />
- <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
+ <p className="text-2xs font-bold uppercase tracking-widest text-gray-400">
  Detected Items ({items.length})
  </p>
  </div>
@@ -694,7 +694,7 @@ const ItemsPanel: React.FC<{
  <div className="min-w-0 flex-1 mr-3">
  <p className="break-words text-sm font-medium text-gray-800">{item.name}</p>
  {item.quantity !== undefined && item.rate !== undefined && (
- <p className="text-[11px] text-gray-400">
+ <p className="text-xs text-gray-400">
  {item.quantity} {currency} {item.rate.toFixed(2)}
  </p>
  )}
@@ -720,7 +720,7 @@ const AmountField: React.FC<{
  onChange: (value: number) => void;
 }> = ({ amount, currency, hasError, onChange }) => (
  <div className={cn("KANAKU-receipt-field KANAKU-receipt-amount transition-colors", hasError &&"rounded-lg bg-red-50/80 p-2")}>
- <label className={cn("mb-1 block text-[10px] font-bold uppercase tracking-widest", hasError ?"text-red-500" :"text-gray-400")}>
+ <label className={cn("mb-1 block text-2xs font-bold uppercase tracking-widest", hasError ?"text-red-500" :"text-gray-400")}>
  Total Amount *
  </label>
  <div className="flex items-center gap-2">
@@ -745,7 +745,7 @@ const TextField: React.FC<{
  className?: string;
 }> = ({ label, value, onChange, placeholder, className }) => (
  <div className={cn('KANAKU-receipt-field', className)}>
- <label className="mb-1 block text-[10px] font-bold uppercase tracking-widest text-gray-400">
+ <label className="mb-1 block text-2xs font-bold uppercase tracking-widest text-gray-400">
  {label}
  </label>
  <input data-testid="receipt-scanner-views-placeholder"
@@ -765,7 +765,7 @@ const NumberField: React.FC<{
  className?: string;
 }> = ({ label, value, onChange, className }) => (
  <div className={cn('KANAKU-receipt-field', className)}>
- <label className="mb-1 block text-[10px] font-bold uppercase tracking-widest text-gray-400">
+ <label className="mb-1 block text-2xs font-bold uppercase tracking-widest text-gray-400">
  {label}
  </label>
  <input data-testid="receipt-scanner-views-label"
@@ -787,7 +787,7 @@ const DateField: React.FC<{
  className?: string;
 }> = ({ label, value, onChange, className }) => (
  <div className={cn('KANAKU-receipt-field', className)}>
- <label className="mb-1 block text-[10px] font-bold uppercase tracking-widest text-gray-400">
+ <label className="mb-1 block text-2xs font-bold uppercase tracking-widest text-gray-400">
  {label}
  </label>
  <input data-testid="receipt-scanner-views-label-2"
@@ -812,7 +812,7 @@ const SelectField: React.FC<{
  className?: string;
 }> = ({ label, value, options, onChange, className }) => (
  <div className={cn('KANAKU-receipt-field', className)}>
- <label className="mb-1 block text-[10px] font-bold uppercase tracking-widest text-gray-400">
+ <label className="mb-1 block text-2xs font-bold uppercase tracking-widest text-gray-400">
  {label}
  </label>
  <select data-testid="receipt-scanner-views-label-3"
@@ -852,7 +852,7 @@ const SubcategoryField: React.FC<{
 
  return (
  <div className="KANAKU-receipt-field KANAKU-receipt-field--wide">
- <label className="mb-1 block text-[10px] font-bold uppercase tracking-widest text-gray-400">
+ <label className="mb-1 block text-2xs font-bold uppercase tracking-widest text-gray-400">
  Subcategory
  </label>
  {subcategories.length > 0 ? (
@@ -907,7 +907,7 @@ const AccountSelector: React.FC<{
  onChange: (id: number | null) => void;
 }> = ({ accounts, selectedId, currency, onChange }) => (
  <div className="KANAKU-receipt-card p-4">
- <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-gray-400">
+ <label className="mb-2 block text-2xs font-bold uppercase tracking-widest text-gray-400">
  Charge to Account *
  </label>
  <select data-testid="receipt-scanner-views-charge-to-account"

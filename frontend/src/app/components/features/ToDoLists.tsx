@@ -19,6 +19,7 @@ import {
   saveToDoListShareWithBackendSync,
 } from '@/lib/auth-sync-integration';
 import { cn } from '@/lib/utils';
+import { isSubmitEnter, useSubmitLock } from '@/hooks/useSubmitLock';
 
 type ListType = 'individual' | 'together';
 
@@ -32,6 +33,7 @@ interface CollaboratorDraft {
 const createDraftId = () => `draft_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
 
 export const ToDoLists: React.FC = () => {
+  const guardSubmit = useSubmitLock();
   const { setCurrentPage } = useApp();
   const { user } = useAuth();
 
@@ -152,7 +154,7 @@ export const ToDoLists: React.FC = () => {
     setNewCollaboratorEmail('');
   };
 
-  const handleCreateList = async () => {
+  const handleCreateList = guardSubmit(async () => {
     if (!newListName.trim()) { toast.error('List name is required'); return; }
     if (listType === 'together' && collaborators.length === 0) {
       toast.error('Add at least one collaborator for a Together list');
@@ -205,7 +207,7 @@ export const ToDoLists: React.FC = () => {
     } finally {
       setIsCreating(false);
     }
-  };
+  });
 
   const handleDeleteList = (listId: number, listName: string) => {
     setListToDelete({ id: listId, name: listName });
@@ -294,12 +296,12 @@ export const ToDoLists: React.FC = () => {
             <div className="flex items-center gap-2 flex-wrap">
               <h3 className="text-base font-bold text-slate-900 group-hover:text-indigo-600 transition-colors line-clamp-1">{list.name}</h3>
               {isTogether && (
-                <span className="shrink-0 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-violet-50 text-violet-600 border border-violet-100">
+                <span className="shrink-0 text-2xs font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-violet-50 text-violet-600 border border-violet-100">
                   Together
                 </span>
               )}
               {isShared && (
-                <span className="shrink-0 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100">
+                <span className="shrink-0 text-2xs font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100">
                   Shared
                 </span>
               )}
@@ -311,7 +313,7 @@ export const ToDoLists: React.FC = () => {
         </div>
 
         <div className="flex items-center justify-between pt-3 mt-3 border-t border-slate-50">
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+          <span className="text-2xs font-bold text-slate-400 uppercase tracking-wider">
             {new Date(list.createdAt).toLocaleDateString('en', { day: 'numeric', month: 'short', year: 'numeric' })}
           </span>
           <div className="flex items-center text-xs font-bold text-slate-400 group-hover:text-indigo-600 transition-colors">
@@ -392,7 +394,7 @@ export const ToDoLists: React.FC = () => {
             <div className="overflow-y-auto flex-1 p-5 space-y-4">
               {/* List Type Selection */}
               <div className="space-y-2">
-                <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">List Type *</label>
+                <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">List Type *</label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
@@ -412,8 +414,8 @@ export const ToDoLists: React.FC = () => {
                       {listType === 'individual' && <div className="w-2 h-2 rounded-full bg-indigo-600" />}
                     </div>
                     <div>
-                      <p className={cn('text-[10px] sm:text-[11px] font-bold uppercase tracking-wider', listType === 'individual' ? 'text-indigo-700' : 'text-slate-600')}>Individual</p>
-                      <p className="text-[10px] sm:text-[11px] text-slate-400 font-medium mt-0.5">Only you</p>
+                      <p className={cn('text-2xs font-bold uppercase tracking-wider', listType === 'individual' ? 'text-indigo-700' : 'text-slate-600')}>Individual</p>
+                      <p className="text-2xs text-slate-400 font-medium mt-0.5">Only you</p>
                     </div>
                   </button>
 
@@ -435,8 +437,8 @@ export const ToDoLists: React.FC = () => {
                       {listType === 'together' && <div className="w-2 h-2 rounded-full bg-violet-600" />}
                     </div>
                     <div>
-                      <p className={cn('text-[10px] sm:text-[11px] font-bold uppercase tracking-wider', listType === 'together' ? 'text-violet-700' : 'text-slate-600')}>Together</p>
-                      <p className="text-[10px] sm:text-[11px] text-slate-400 font-medium mt-0.5">Collaborative</p>
+                      <p className={cn('text-2xs font-bold uppercase tracking-wider', listType === 'together' ? 'text-violet-700' : 'text-slate-600')}>Together</p>
+                      <p className="text-2xs text-slate-400 font-medium mt-0.5">Collaborative</p>
                     </div>
                   </button>
                 </div>
@@ -444,12 +446,12 @@ export const ToDoLists: React.FC = () => {
 
               {/* List Name */}
               <div className="space-y-1">
-                <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">List Name *</label>
+                <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">List Name *</label>
                 <input
                   type="text"
                   value={newListName}
                   onChange={e => setNewListName(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && !e.shiftKey && listType === 'individual' && handleCreateList()}
+                  onKeyDown={e => { if (isSubmitEnter(e) && listType === 'individual') { e.preventDefault(); void handleCreateList(); } }}
                   placeholder="e.g., Weekly Tasks"
                   autoFocus
                   data-testid="todo-create-name-input"
@@ -459,7 +461,7 @@ export const ToDoLists: React.FC = () => {
 
               {/* Description */}
               <div className="space-y-1">
-                <label className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Description</label>
+                <label className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Description</label>
                 <textarea
                   value={newListDescription}
                   onChange={e => setNewListDescription(e.target.value)}
@@ -475,7 +477,7 @@ export const ToDoLists: React.FC = () => {
                 <div className="space-y-3 pt-1">
                   <div className="flex items-center gap-2">
                     <div className="h-px flex-1 bg-violet-100" />
-                    <span className="text-[10px] sm:text-[11px] font-bold text-violet-400 uppercase tracking-wider flex items-center gap-1">
+                    <span className="text-2xs font-bold text-violet-400 uppercase tracking-wider flex items-center gap-1">
                       <Users size={9} />Collaborators
                     </span>
                     <div className="h-px flex-1 bg-violet-100" />
@@ -489,10 +491,10 @@ export const ToDoLists: React.FC = () => {
                           key={c.id}
                           className="flex items-center gap-1.5 px-2.5 py-1.5 bg-violet-50 border border-violet-100 rounded-lg"
                         >
-                          <div className="w-5 h-5 rounded-full bg-violet-200 flex items-center justify-center text-[9px] font-black text-violet-700 uppercase">
+                          <div className="w-5 h-5 rounded-full bg-violet-200 flex items-center justify-center text-2xs font-black text-violet-700 uppercase">
                             {c.name[0]}
                           </div>
-                          <span className="text-[10px] font-bold text-violet-800">{c.name}</span>
+                          <span className="text-2xs font-bold text-violet-800">{c.name}</span>
                           <button
                             type="button"
                             onClick={() => removeCollaborator(c.id)}
@@ -538,12 +540,12 @@ export const ToDoLists: React.FC = () => {
                                   : 'hover:bg-violet-50 bg-white border border-slate-100'
                               )}
                             >
-                              <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-[10px] font-black text-slate-600 uppercase shrink-0">
+                              <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-2xs font-black text-slate-600 uppercase shrink-0">
                                 {f.name[0]}
                               </div>
                               <div className="flex-1 min-w-0">
                                 <p className="text-xs font-bold text-slate-800 truncate">{f.name}</p>
-                                {f.email && <p className="text-[9px] text-slate-400 truncate">{f.email}</p>}
+                                {f.email && <p className="text-2xs text-slate-400 truncate">{f.email}</p>}
                               </div>
                               {added
                                 ? <Check size={12} className="text-violet-500 shrink-0" />
@@ -553,7 +555,7 @@ export const ToDoLists: React.FC = () => {
                           );
                         })}
                         {filteredFriends.length === 0 && friendSearch && (
-                          <p className="text-[10px] text-slate-400 font-semibold text-center py-2">No friends found</p>
+                          <p className="text-2xs text-slate-400 font-semibold text-center py-2">No friends found</p>
                         )}
                       </div>
                     </div>
@@ -584,7 +586,7 @@ export const ToDoLists: React.FC = () => {
                           type="button"
                           onClick={() => { setShowNewCollaboratorInput(false); setNewCollaboratorName(''); setNewCollaboratorEmail(''); }}
                           data-testid="todo-new-collaborator-cancel-button"
-                          className="flex-1 py-1.5 border border-slate-200 rounded-lg text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-600"
+                          className="flex-1 py-1.5 border border-slate-200 rounded-lg text-2xs font-bold uppercase tracking-wider text-slate-600"
                         >
                           Cancel
                         </button>
@@ -593,7 +595,7 @@ export const ToDoLists: React.FC = () => {
                           onClick={addNewCollaborator}
                           disabled={!newCollaboratorName.trim()}
                           data-testid="todo-new-collaborator-add-button"
-                          className="flex-1 py-1.5 bg-violet-600 text-white rounded-lg text-[10px] sm:text-[11px] font-bold uppercase tracking-wider hover:bg-violet-700 transition-all disabled:opacity-50"
+                          className="flex-1 py-1.5 bg-violet-600 text-white rounded-lg text-2xs font-bold uppercase tracking-wider hover:bg-violet-700 transition-all disabled:opacity-50"
                         >
                           Add
                         </button>
@@ -604,7 +606,7 @@ export const ToDoLists: React.FC = () => {
                       type="button"
                       onClick={() => setShowNewCollaboratorInput(true)}
                       data-testid="todo-add-new-collaborator-toggle-button"
-                      className="w-full flex items-center justify-center gap-2 py-2.5 border-2 border-dashed border-violet-200 rounded-xl text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-violet-500 hover:bg-violet-50 hover:border-violet-300 transition-all"
+                      className="w-full flex items-center justify-center gap-2 py-2.5 border-2 border-dashed border-violet-200 rounded-xl text-2xs font-bold uppercase tracking-wider text-violet-500 hover:bg-violet-50 hover:border-violet-300 transition-all"
                     >
                       <UserPlus size={13} />
                       Add New Friend
@@ -648,7 +650,7 @@ export const ToDoLists: React.FC = () => {
         <div className="flex items-center gap-2">
           <User size={14} className="text-indigo-500" />
           <h2 className="text-xs font-black text-slate-500 uppercase tracking-widest">My Lists</h2>
-          <span className="text-[10px] font-bold text-slate-400">({displayedMy.length})</span>
+          <span className="text-2xs font-bold text-slate-400">({displayedMy.length})</span>
         </div>
 
         {displayedMy.length === 0 ? (
@@ -684,7 +686,7 @@ export const ToDoLists: React.FC = () => {
           <div className="flex items-center gap-2">
             <Users size={14} className="text-violet-500" />
             <h2 className="text-xs font-black text-slate-500 uppercase tracking-widest">Shared With Me</h2>
-            <span className="text-[10px] font-bold text-slate-400">({displayedShared.length})</span>
+            <span className="text-2xs font-bold text-slate-400">({displayedShared.length})</span>
           </div>
 
           {displayedShared.length === 0 ? (

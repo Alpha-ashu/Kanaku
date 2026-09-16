@@ -407,15 +407,15 @@ export const Groups: React.FC = () => {
                             {expense.name}
                           </h3>
                           <div className="mt-1 flex flex-wrap items-center gap-1.5 sm:gap-2">
-                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-400">
+                            <span className="inline-flex items-center gap-1 text-xs font-semibold text-slate-400">
                               <CalendarDays size={12} className="shrink-0" />
                               <span>{formatDateLabel(expense.date)}</span>
                             </span>
                             <span className="text-slate-200">•</span>
-                            <span className="rounded-full bg-slate-100/90 px-2 py-0.5 text-[10px] font-bold text-slate-600">
+                            <span className="rounded-full bg-slate-100/90 px-2 py-0.5 text-2xs font-bold text-slate-600">
                               {expense.category || 'Miscellaneous'}
                             </span>
-                            <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                            <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-2xs font-bold ${
                               groupStatus === 'settled'
                                 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/60'
                                 : 'bg-amber-50 text-amber-700 border border-amber-200/60'
@@ -468,19 +468,19 @@ export const Groups: React.FC = () => {
                     {/* 3-METRIC CONSOLIDATED STATS STRIP (Always 3 columns, never stacked vertically) */}
                     <div className="grid grid-cols-3 divide-x divide-slate-200/60 rounded-2xl bg-slate-50/90 border border-slate-100/90 p-2.5 sm:p-3 text-center">
                       <div className="px-1 sm:px-2">
-                        <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 truncate">Total Bill</p>
+                        <p className="text-2xs font-black uppercase tracking-wider text-slate-400 truncate">Total Bill</p>
                         <p className="mt-0.5 text-xs sm:text-sm font-black text-slate-900 truncate">
                           {formatCurrency(expense.totalAmount)}
                         </p>
                       </div>
                       <div className="px-1 sm:px-2">
-                        <p className="text-[10px] font-black uppercase tracking-wider text-purple-600/90 truncate">Your Share</p>
+                        <p className="text-2xs font-black uppercase tracking-wider text-purple-600/90 truncate">Your Share</p>
                         <p className="mt-0.5 text-xs sm:text-sm font-black text-purple-700 truncate">
                           {formatCurrency(yourShare)}
                         </p>
                       </div>
                       <div className="px-1 sm:px-2">
-                        <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 truncate">
+                        <p className="text-2xs font-black uppercase tracking-wider text-slate-400 truncate">
                           {groupStatus === 'settled' ? 'Status' : 'To Collect'}
                         </p>
                         <p className={cn(
@@ -501,7 +501,7 @@ export const Groups: React.FC = () => {
                     {/* SETTLEMENT PROGRESS BAR */}
                     {friendMembers.length > 0 && (
                       <div className="space-y-1.5 px-0.5">
-                        <div className="flex items-center justify-between text-[11px] font-bold">
+                        <div className="flex items-center justify-between text-xs font-bold">
                           <div className="flex items-center gap-1.5 text-slate-500">
                             <div className={cn(
                               "h-2 w-2 rounded-full shrink-0",
@@ -543,11 +543,11 @@ export const Groups: React.FC = () => {
                     {friendMembers.length > 0 && (
                       <div className="space-y-2 pt-1">
                         <div className="flex items-center justify-between px-0.5">
-                          <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                          <span className="text-2xs font-black uppercase tracking-wider text-slate-400">
                             Friends Breakdown
                           </span>
                           {canSettle && (
-                            <span className="text-[10px] font-semibold text-purple-600">
+                            <span className="text-2xs font-semibold text-purple-600">
                               Tap friend to toggle status
                             </span>
                           )}
@@ -581,7 +581,7 @@ export const Groups: React.FC = () => {
                                 <div className="relative shrink-0">
                                   <Avatar className="h-7 w-7 rounded-full shadow-2xs">
                                     <AvatarImage src={avatarSrc} alt={member.name} className="object-cover" />
-                                    <AvatarFallback className={`${getToneClass(member.name)} text-[10px] font-bold`}>
+                                    <AvatarFallback className={`${getToneClass(member.name)} text-2xs font-bold`}>
                                       {member.name.charAt(0).toUpperCase()}
                                     </AvatarFallback>
                                   </Avatar>
@@ -597,7 +597,7 @@ export const Groups: React.FC = () => {
                                     {member.name}
                                   </p>
                                   <p className={cn(
-                                    "text-[10px] font-black tracking-tight mt-0.5",
+                                    "text-2xs font-black tracking-tight mt-0.5",
                                     isPaid ? "text-emerald-700" : "text-amber-700"
                                   )}>
                                     {isPaid ? 'Paid' : 'Pending'} {formatCurrency(member.share)}

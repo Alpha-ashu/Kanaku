@@ -39,7 +39,7 @@ export const PendingBreakdownCard: React.FC<PendingBreakdownCardProps> = ({
         <h4 className="text-xs sm:text-sm font-bold text-slate-800 tracking-tight">
           {title}
         </h4>
-        <span className="text-[10px] font-semibold text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full border border-slate-100">
+        <span className="text-2xs font-semibold text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full border border-slate-100">
           This Month
         </span>
       </div>
@@ -69,14 +69,14 @@ export const PendingBreakdownCard: React.FC<PendingBreakdownCardProps> = ({
                   className={`w-full rounded-xl sm:rounded-2xl bg-gradient-to-t ${item.color} flex flex-col items-center justify-start pt-1.5 shadow-xs`}
                 >
                   {/* Percentage Value */}
-                  <span className="text-[10px] sm:text-[11px] font-extrabold text-white tracking-tight drop-shadow-xs">
+                  <span className="text-2xs font-extrabold text-white tracking-tight drop-shadow-xs">
                     {item.percentage}%
                   </span>
                 </motion.div>
               </div>
 
               {/* Label */}
-              <span className="text-[10px] sm:text-[11px] font-medium text-slate-500 mt-2 truncate max-w-full text-center">
+              <span className="text-2xs font-medium text-slate-500 mt-2 truncate max-w-full text-center">
                 {item.label}
               </span>
             </div>

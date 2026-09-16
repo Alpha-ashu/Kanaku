@@ -14,7 +14,7 @@ interface Props {
 }
 
 const field = 'w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-900 outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-100';
-const label = 'block text-[11px] font-bold uppercase tracking-wide text-slate-500 mb-1';
+const label = 'block text-xs font-bold uppercase tracking-wide text-slate-500 mb-1';
 
 const todayIso = () => new Date().toISOString().slice(0, 10);
 
@@ -100,7 +100,7 @@ export const KaiEditSheet: React.FC<Props> = ({ action, currency, onSave, onClos
       >
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-wide text-purple-600">{KIND_LABEL[kind]}</p>
+            <p className="text-xs font-bold uppercase tracking-wide text-purple-600">{KIND_LABEL[kind]}</p>
             <h3 className="text-base font-black text-slate-900">Edit {action.summary}</h3>
           </div>
           <button type="button" onClick={onClose} className="w-9 h-9 rounded-full hover:bg-slate-100 text-slate-500 flex items-center justify-center cursor-pointer" aria-label="Close">
@@ -187,7 +187,7 @@ export const KaiEditSheet: React.FC<Props> = ({ action, currency, onSave, onClos
               <div>
                 <label className={label}>Participants (comma separated)</label>
                 <input className={field} value={members} onChange={(ev) => setMembers(ev.target.value)} placeholder="Arun, Jijo, Preeti" />
-                <p className="text-[11px] text-slate-500 mt-1">Split equally with you</p>
+                <p className="text-xs text-slate-500 mt-1">Split equally with you</p>
               </div>
             )}
             <div className="grid grid-cols-2 gap-2">
