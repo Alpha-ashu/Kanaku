@@ -9,8 +9,12 @@ import { env } from '../../config/env';
 import { isSmtpConfigured, sendSmtpEmail, SMTP_FROM_EMAIL, SMTP_FROM_NAME } from './smtp.provider';
 
 // Sender identity comes from configuration (SendGrid or SMTP).
-export const FROM_EMAIL = env.SENDGRID_FROM_EMAIL || SMTP_FROM_EMAIL;
-export const FROM_NAME = env.SENDGRID_FROM_NAME || SMTP_FROM_NAME || 'Kanaku';
+export const FROM_EMAIL = (process.env.EMAIL_PROVIDER === 'smtp' && SMTP_FROM_EMAIL)
+  ? SMTP_FROM_EMAIL
+  : (env.SENDGRID_FROM_EMAIL || SMTP_FROM_EMAIL);
+export const FROM_NAME = (process.env.EMAIL_PROVIDER === 'smtp' && SMTP_FROM_NAME)
+  ? SMTP_FROM_NAME
+  : (env.SENDGRID_FROM_NAME || SMTP_FROM_NAME || 'Kanaku');
 
 let initialized = false;
 function ensureInitialized(): boolean {
@@ -35,11 +39,19 @@ export interface SendEmailOptions {
 }
 
 export async function sendEmail(opts: SendEmailOptions): Promise<boolean> {
+  const preferredProvider = process.env.EMAIL_PROVIDER || (isSmtpConfigured() ? 'smtp' : 'sendgrid');
   const sendgridConfigured = ensureInitialized() && Boolean(env.SENDGRID_FROM_EMAIL);
   const smtpConfigured = isSmtpConfigured();
 
-  // 1. Try SendGrid if configured
-  if (sendgridConfigured) {
+  // 1. Try SMTP if preferred and configured (e.g. Brevo SMTP)
+  if (preferredProvider === 'smtp' && smtpConfigured) {
+    const smtpSuccess = await sendSmtpEmail(opts);
+    if (smtpSuccess) return true;
+    logger.warn('[Email] Preferred SMTP send failed, attempting SendGrid fallback...');
+  }
+
+  // 2. Try SendGrid if configured
+  if (sendgridConfigured && preferredProvider !== 'smtp') {
     try {
       await sgMail.send({
         to: opts.to,
@@ -62,14 +74,14 @@ export async function sendEmail(opts: SendEmailOptions): Promise<boolean> {
     }
   }
 
-  // 2. Try SMTP if configured (Gmail, SES, Brevo, custom SMTP)
-  if (smtpConfigured) {
+  // 3. Try SMTP fallback if SendGrid wasn't preferred or failed
+  if (preferredProvider !== 'smtp' && smtpConfigured) {
     const smtpSuccess = await sendSmtpEmail(opts);
     if (smtpSuccess) return true;
   }
 
-  // 3. Dev/test fallback: In non-production environments, simulate if no provider
-  // is configured OR if the configured provider failed (e.g. SendGrid quota exhausted,
+  // 4. Dev/test fallback: In non-production environments, simulate if no provider
+  // is configured OR if the configured provider failed (e.g. provider quota exhausted,
   // network unreachable, invalid key). This prevents local development and testing
   // from being hard-blocked by third-party provider limits.
   if (process.env.NODE_ENV !== 'production') {

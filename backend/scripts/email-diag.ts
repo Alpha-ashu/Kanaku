@@ -27,9 +27,12 @@ async function main(): Promise<void> {
   const from = process.env.SENDGRID_FROM_EMAIL || '';
 
   console.log('NODE_ENV            :', process.env.NODE_ENV || '(unset → development)');
+  console.log('EMAIL_PROVIDER      :', process.env.EMAIL_PROVIDER || '(default)');
   console.log('SENDGRID_API_KEY    :', key ? `set (${key.slice(0, 3)}…, ${key.length} chars)` : 'MISSING');
   console.log('SENDGRID_FROM_EMAIL :', from || 'MISSING');
   console.log('SMTP configured     :', isSmtpConfigured() ? 'yes' : 'no');
+  console.log('SMTP_HOST           :', process.env.SMTP_HOST || '(unset)');
+  console.log('SMTP_USER           :', process.env.SMTP_USER || '(unset)');
   console.log('Effective FROM      :', FROM_EMAIL);
 
   const fromDomain = from.split('@')[1]?.toLowerCase();

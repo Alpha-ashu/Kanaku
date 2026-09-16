@@ -3,7 +3,7 @@ import { useApp, useSubFeature } from '@/contexts/AppContext';
 import { db } from '@/lib/database';
 import { backendService } from '@/lib/backend-api';
 import { queueTransactionDeleteSync } from '@/lib/auth-sync-integration';
-import { Plus, TrendingUp, Edit2, Trash2, BarChart3, Activity, RefreshCw, Gem, Coins, Bitcoin, Globe, House, Briefcase, ChartPie } from 'lucide-react';
+import { ArrowLeft, Plus, TrendingUp, Edit2, Trash2, BarChart3, Activity, RefreshCw, Gem, Coins, Bitcoin, Globe, House, Briefcase, ChartPie } from 'lucide-react';
 import { toast } from 'sonner';
 import { DeleteConfirmModal } from '@/app/components/shared/DeleteConfirmModal';
 import { Button } from '@/app/components/ui/button';
@@ -303,9 +303,21 @@ export const Investments: React.FC = () => {
       <div className="space-y-5 sm:space-y-6 investments-container portfolio-container" aria-label="Investments Portfolio">
         {/* Header */}
         <div className="flex items-center justify-between gap-3 w-full">
-          <div className="min-w-0">
-            <p className="text-xs sm:text-sm font-semibold text-slate-400 truncate">Portfolio</p>
-            <h1 className="font-page-title text-slate-900 tracking-tight leading-tight truncate">Investments</h1>
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <button
+              type="button"
+              onClick={() => setCurrentPage('dashboard')}
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200/80 hover:bg-slate-50 active:scale-95 shadow-xs flex items-center justify-center text-slate-700 transition-all shrink-0 cursor-pointer"
+              aria-label="Back to Dashboard"
+              title="Back to Dashboard"
+              data-testid="investments-back-button"
+            >
+              <ArrowLeft size={18} className="text-slate-700" />
+            </button>
+            <div className="min-w-0">
+              <p className="text-xs sm:text-sm font-semibold text-slate-400 truncate">Portfolio</p>
+              <h1 className="font-page-title text-slate-900 tracking-tight leading-tight truncate">Investments</h1>
+            </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             {activeTab === 'portfolio' && openInvestments.length > 0 && (
@@ -313,53 +325,55 @@ export const Investments: React.FC = () => {
                 type="button"
                 onClick={() => fetchLivePrices(true)}
                 disabled={updatingPrices}
-                className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white border border-slate-100 text-slate-700 flex items-center justify-center shadow-[0_6px_18px_-6px_rgba(15,23,42,0.18)] active:scale-95 transition-all cursor-pointer disabled:opacity-60"
+                className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white border border-slate-100 text-slate-700 flex items-center justify-center shadow-[0_6px_18px_-6px_rgba(15,23,42,0.18)] active:scale-95 transition-all cursor-pointer disabled:opacity-60"
                 data-testid="investments-refresh-prices-button"
                 aria-label="Update prices"
                 title="Update prices"
               >
-                <RefreshCw size={18} className={cn(updatingPrices && 'animate-spin')} />
+                <RefreshCw size={17} className={cn(updatingPrices && 'animate-spin')} />
               </button>
             )}
             {canAdd && (
               <button
                 type="button"
                 onClick={() => setCurrentPage('add-investment')}
-                className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-[#18181B] hover:bg-black text-white flex items-center justify-center shadow-[0_8px_20px_-6px_rgba(15,23,42,0.45)] active:scale-95 transition-all cursor-pointer"
+                className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#18181B] hover:bg-black text-white flex items-center justify-center shadow-[0_8px_20px_-6px_rgba(15,23,42,0.45)] active:scale-95 transition-all cursor-pointer"
                 data-testid="investments-add-button"
                 aria-label="Add investment"
                 title="Add investment"
               >
-                <Plus size={20} />
+                <Plus size={19} />
               </button>
             )}
           </div>
         </div>
 
         {/* Tabs */}
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar w-full py-0.5">
-          {([
-            { id: 'portfolio', label: 'My Portfolio', icon: BarChart3 },
-            { id: 'market', label: 'Live Market', icon: Activity },
-            { id: 'vault', label: 'Wealth Vault', icon: Gem },
-          ] as const).map(({ id, label, icon: Icon }) => (
-            <button
-              key={id}
-              type="button"
-              onClick={() => setActiveTab(id)}
-              aria-pressed={activeTab === id}
-              className={cn(
-                'inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs sm:text-sm font-bold whitespace-nowrap shrink-0 transition-all cursor-pointer active:scale-95',
-                activeTab === id
-                  ? 'bg-[#18181B] text-white shadow-[0_6px_16px_-6px_rgba(15,23,42,0.5)]'
-                  : 'bg-white text-slate-500 border border-slate-100 shadow-xs hover:text-slate-900'
-              )}
-              data-testid={`investments-tab-${id}-button`}
-            >
-              <Icon size={14} />
-              {label}
-            </button>
-          ))}
+        <div className="w-full flex items-center justify-start">
+          <div className="flex w-full sm:w-auto max-w-md p-1 bg-white/95 backdrop-blur-xl rounded-full border border-slate-200/80 shadow-xs gap-1 overflow-x-auto no-scrollbar">
+            {([
+              { id: 'portfolio', label: 'My Portfolio', icon: BarChart3 },
+              { id: 'market', label: 'Live Market', icon: Activity },
+              { id: 'vault', label: 'Wealth Vault', icon: Gem },
+            ] as const).map(({ id, label, icon: Icon }) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => setActiveTab(id)}
+                aria-pressed={activeTab === id}
+                className={cn(
+                  'flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-bold transition-all cursor-pointer active:scale-95 whitespace-nowrap min-w-0 select-none',
+                  activeTab === id
+                    ? 'bg-[#18181B] text-white shadow-xs'
+                    : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100/60'
+                )}
+                data-testid={`investments-tab-${id}-button`}
+              >
+                <Icon size={14} className={cn('shrink-0', activeTab === id ? 'text-white' : 'text-slate-400')} />
+                <span className="truncate">{label}</span>
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* LIVE MARKET TAB */}
