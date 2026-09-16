@@ -79,13 +79,92 @@ export const Groups: React.FC = () => {
     () => [...groupExpenses].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
     [groupExpenses],
   );
-  const savedFriends = useMemo(
-    () => [...friends].sort((a, b) => a.name.localeCompare(b.name)),
-    [friends],
-  );
+
+  // Filter to only members added in Kanaku transactions (group split expenses)
+  const transactionMembers = useMemo(() => {
+    const memberMap = new Map<string, {
+      id: number | string;
+      cloudId?: string;
+      name: string;
+      email?: string;
+      phone?: string;
+      avatar?: string;
+    }>();
+
+    const friendsById = new Map<number, typeof friends[0]>();
+    const friendsByCloudId = new Map<string, typeof friends[0]>();
+    const friendsByEmail = new Map<string, typeof friends[0]>();
+    const friendsByPhone = new Map<string, typeof friends[0]>();
+    const friendsByName = new Map<string, typeof friends[0]>();
+
+    for (const f of friends) {
+      if (f.id != null) friendsById.set(f.id, f);
+      if (f.cloudId) friendsByCloudId.set(f.cloudId, f);
+      if (f.email) friendsByEmail.set(f.email.trim().toLowerCase(), f);
+      if (f.phone) {
+        const clean = f.phone.replace(/\D/g, '');
+        if (clean) friendsByPhone.set(clean, f);
+      }
+      if (f.name) friendsByName.set(f.name.trim().toLowerCase(), f);
+    }
+
+    for (const expense of groupExpenses) {
+      if (!Array.isArray(expense.members)) continue;
+      for (const m of expense.members) {
+        if (m.isCurrentUser) continue; // Exclude current user
+        if (!m.name && !m.friendId) continue;
+
+        let matchedFriend: typeof friends[0] | undefined;
+        if (m.friendId != null) {
+          matchedFriend = friendsById.get(Number(m.friendId));
+        }
+        if (!matchedFriend && (m as any).cloudId) {
+          matchedFriend = friendsByCloudId.get((m as any).cloudId);
+        }
+        if (!matchedFriend && m.email) {
+          matchedFriend = friendsByEmail.get(m.email.trim().toLowerCase());
+        }
+        if (!matchedFriend && m.phone) {
+          const clean = m.phone.replace(/\D/g, '');
+          if (clean) matchedFriend = friendsByPhone.get(clean);
+        }
+        if (!matchedFriend && m.name) {
+          matchedFriend = friendsByName.get(m.name.trim().toLowerCase());
+        }
+
+        const dedupKey = matchedFriend
+          ? (matchedFriend.cloudId || `friend-${matchedFriend.id}`)
+          : `name-${(m.name || '').trim().toLowerCase()}`;
+
+        if (!memberMap.has(dedupKey)) {
+          if (matchedFriend) {
+            memberMap.set(dedupKey, {
+              id: matchedFriend.id!,
+              cloudId: matchedFriend.cloudId,
+              name: matchedFriend.name,
+              email: matchedFriend.email,
+              phone: matchedFriend.phone,
+              avatar: matchedFriend.avatar,
+            });
+          } else {
+            memberMap.set(dedupKey, {
+              id: m.friendId ?? `member-${m.name}`,
+              name: m.name,
+              email: m.email,
+              phone: m.phone,
+              avatar: undefined,
+            });
+          }
+        }
+      }
+    }
+
+    return Array.from(memberMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+  }, [groupExpenses, friends]);
+
   const friendAvatarById = useMemo(
-    () => new Map(savedFriends.map((friend) => [friend.id, friend.avatar])),
-    [savedFriends],
+    () => new Map(friends.map((friend) => [friend.id, friend.avatar])),
+    [friends],
   );
 
   const formatCurrency = (amount: number) =>
@@ -101,7 +180,7 @@ export const Groups: React.FC = () => {
     setCurrentPage('add-transaction');
   };
 
-  const openFriendProfile = async (friend: { id?: number; cloudId?: string; name?: string }) => {
+  const openFriendProfile = async (friend: { id?: number | string; cloudId?: string; name?: string }) => {
     if (!friend.cloudId) {
       if (!friend.id) {
         toast.error('This friend could not be found locally.');
@@ -261,15 +340,15 @@ export const Groups: React.FC = () => {
             <div className="min-w-0">
               <p className="text-base font-bold text-slate-900">Friends</p>
               <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-slate-500">
-                {savedFriends.length > 0 ? (
+                {transactionMembers.length > 0 ? (
                   <>
                     <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-purple-100 px-2 text-xs font-bold text-purple-700">
-                      {savedFriends.length}
+                      {transactionMembers.length}
                     </span>
                     <span>Ready for your next split</span>
                   </>
                 ) : (
-                  <span>Add friends first to start splitting bills</span>
+                  <span>No members added in transactions yet</span>
                 )}
               </div>
             </div>
@@ -282,10 +361,10 @@ export const Groups: React.FC = () => {
             </Button>
           </div>
 
-          {savedFriends.length > 0 ? (
+          {transactionMembers.length > 0 ? (
             <div className="mt-4 overflow-hidden rounded-[24px] border border-slate-100 bg-slate-50/60 p-4">
               <div className="-mx-1 -my-1 flex gap-3.5 overflow-x-auto overflow-y-visible px-1 py-1 scrollbar-none">
-                {savedFriends.map((friend) => (
+                {transactionMembers.map((friend) => (
                   <button
                     data-testid={`groups-view-${friend.id}`}
                     key={friend.id}
@@ -312,7 +391,7 @@ export const Groups: React.FC = () => {
             </div>
           ) : (
             <div className="mt-4 rounded-3xl border border-dashed border-slate-200 bg-white px-4 py-8 text-center">
-              <p className="text-sm font-medium text-slate-500">No saved friends yet.</p>
+              <p className="text-sm font-medium text-slate-500">No members added to transactions yet. Add friends to a split bill or group expense to see them here.</p>
             </div>
           )}
         </section>

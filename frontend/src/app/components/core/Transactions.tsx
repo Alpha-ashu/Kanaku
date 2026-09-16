@@ -1370,7 +1370,7 @@ export const Transactions: React.FC = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="absolute inset-0 bg-slate-950/60 backdrop-blur-md transition-opacity cursor-pointer"
+              className="absolute inset-0 bg-slate-950/50 backdrop-blur-md transition-opacity cursor-pointer"
               onClick={() => setShowTransactionTypeModal(false)}
             />
             
@@ -1389,51 +1389,51 @@ export const Transactions: React.FC = () => {
                   transition: { staggerChildren: 0.03, staggerDirection: -1 }
                 }
               }}
-              className="relative z-10 flex flex-col items-center gap-1.5 w-full max-w-[170px] sm:max-w-[185px]"
+              className="relative z-10 flex flex-col items-center gap-2 w-full max-w-[185px] sm:max-w-[200px]"
             >
               {[
                 {
                   type: 'expense',
                   label: 'Expense',
                   icon: ArrowDownLeft,
-                  border: 'hover:border-rose-300 active:border-rose-400',
-                  iconStyle: 'bg-rose-50 text-rose-600 border-rose-200/80 group-hover:bg-rose-600 group-hover:text-white',
-                  textStyle: 'group-hover:text-rose-600',
-                  glow: 'hover:shadow-[0_6px_16px_-3px_rgba(244,63,94,0.25)]',
+                  border: 'hover:border-rose-400/80 active:border-rose-500',
+                  iconStyle: 'bg-gradient-to-tr from-rose-500 to-rose-600 text-white shadow-md shadow-rose-500/30 ring-2 ring-rose-100/90',
+                  textHover: 'group-hover:text-rose-600',
+                  glow: 'hover:shadow-[0_12px_28px_-4px_rgba(244,63,94,0.32),0_2px_8px_rgba(0,0,0,0.06)]',
                 },
                 {
                   type: 'income',
                   label: 'Income',
                   icon: ArrowUpRight,
-                  border: 'hover:border-emerald-300 active:border-emerald-400',
-                  iconStyle: 'bg-emerald-50 text-emerald-600 border-emerald-200/80 group-hover:bg-emerald-600 group-hover:text-white',
-                  textStyle: 'group-hover:text-emerald-600',
-                  glow: 'hover:shadow-[0_6px_16px_-3px_rgba(16,185,129,0.25)]',
+                  border: 'hover:border-emerald-400/80 active:border-emerald-500',
+                  iconStyle: 'bg-gradient-to-tr from-emerald-500 to-teal-500 text-white shadow-md shadow-emerald-500/30 ring-2 ring-emerald-100/90',
+                  textHover: 'group-hover:text-emerald-600',
+                  glow: 'hover:shadow-[0_12px_28px_-4px_rgba(16,185,129,0.32),0_2px_8px_rgba(0,0,0,0.06)]',
                 },
                 {
                   type: 'transfer',
                   label: 'Transfer',
                   icon: Repeat2,
-                  border: 'hover:border-indigo-300 active:border-indigo-400',
-                  iconStyle: 'bg-indigo-50 text-indigo-600 border-indigo-200/80 group-hover:bg-indigo-600 group-hover:text-white',
-                  textStyle: 'group-hover:text-indigo-600',
-                  glow: 'hover:shadow-[0_6px_16px_-3px_rgba(99,102,241,0.25)]',
+                  border: 'hover:border-indigo-400/80 active:border-indigo-500',
+                  iconStyle: 'bg-gradient-to-tr from-indigo-500 to-violet-500 text-white shadow-md shadow-indigo-500/30 ring-2 ring-indigo-100/90',
+                  textHover: 'group-hover:text-indigo-600',
+                  glow: 'hover:shadow-[0_12px_28px_-4px_rgba(99,102,241,0.32),0_2px_8px_rgba(0,0,0,0.06)]',
                 },
               ].map((opt) => (
                 <motion.button
                   key={opt.type}
                   data-testid={`transaction-modal-type-${opt.type}-button`}
                   variants={{
-                    hidden: { opacity: 0, scale: 0.82, y: 14 },
+                    hidden: { opacity: 0, scale: 0.78, y: 16 },
                     visible: {
                       opacity: 1,
                       scale: 1,
                       y: 0,
-                      transition: { type: "spring", stiffness: 460, damping: 24 }
+                      transition: { type: "spring", stiffness: 480, damping: 26 }
                     },
-                    exit: { opacity: 0, scale: 0.85, y: 8, transition: { duration: 0.12 } }
+                    exit: { opacity: 0, scale: 0.85, y: 10, transition: { duration: 0.12 } }
                   }}
-                  whileHover={{ scale: 1.035, y: -1 }}
+                  whileHover={{ scale: 1.04, y: -2 }}
                   whileTap={{ scale: 0.96 }}
                   onClick={() => {
                     setShowTransactionTypeModal(false);
@@ -1441,24 +1441,24 @@ export const Transactions: React.FC = () => {
                     setCurrentPage('add-transaction');
                   }}
                   className={cn(
-                    "group w-full py-1.5 px-2.5 sm:px-3 flex items-center justify-between rounded-full bg-white/95 backdrop-blur-xl border border-white/70 shadow-[0_4px_16px_-2px_rgba(0,0,0,0.12)] transition-all duration-150 cursor-pointer text-left select-none",
+                    "group w-full py-2 px-3 flex items-center justify-between rounded-full bg-gradient-to-b from-white via-white/95 to-white/90 backdrop-blur-2xl border border-white/80 shadow-[0_10px_28px_-4px_rgba(0,0,0,0.16),0_2px_6px_rgba(0,0,0,0.05),inset_0_1px_1.5px_rgba(255,255,255,1)] transition-all duration-200 cursor-pointer text-left select-none",
                     opt.border,
                     opt.glow
                   )}
                 >
-                  <div className="flex items-center gap-2 min-w-0">
+                  <div className="flex items-center gap-2.5 min-w-0">
                     <div className={cn(
-                      "w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center border transition-all duration-150 shrink-0 shadow-2xs",
+                      "w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-110",
                       opt.iconStyle
                     )}>
-                      <opt.icon size={13} className="stroke-[2.5]" />
+                      <opt.icon size={14} className="stroke-[2.5]" />
                     </div>
-                    <span className={cn("font-bold text-[11px] sm:text-xs text-slate-900 tracking-tight transition-colors", opt.textStyle)}>
+                    <span className={cn("font-bold text-xs sm:text-[13px] text-slate-800 tracking-tight transition-colors", opt.textHover)}>
                       {opt.label}
                     </span>
                   </div>
-                  <div className="w-4 h-4 rounded-full bg-slate-50 group-hover:bg-slate-100 flex items-center justify-center text-slate-400 group-hover:text-slate-700 transition-all duration-150 shrink-0">
-                    <ChevronRight size={10} className="stroke-[2.5] group-hover:translate-x-0.5 transition-transform" />
+                  <div className="w-5 h-5 rounded-full bg-slate-100/90 group-hover:bg-slate-900 group-hover:text-white flex items-center justify-center text-slate-400 transition-all duration-200 shrink-0 shadow-2xs">
+                    <ChevronRight size={11} className="stroke-[2.5] group-hover:translate-x-0.5 transition-transform" />
                   </div>
                 </motion.button>
               ))}
@@ -1467,23 +1467,23 @@ export const Transactions: React.FC = () => {
               <motion.button
                 data-testid="transactions-cancel"
                 variants={{
-                  hidden: { opacity: 0, scale: 0.6, y: 8 },
+                  hidden: { opacity: 0, scale: 0.6, y: 10 },
                   visible: {
                     opacity: 1,
                     scale: 1,
                     y: 0,
-                    transition: { type: "spring", stiffness: 460, damping: 24 }
+                    transition: { type: "spring", stiffness: 480, damping: 26 }
                   },
-                  exit: { opacity: 0, scale: 0.6, y: 5, transition: { duration: 0.12 } }
+                  exit: { opacity: 0, scale: 0.6, y: 6, transition: { duration: 0.12 } }
                 }}
-                whileHover={{ scale: 1.08 }}
+                whileHover={{ scale: 1.1, y: -1 }}
                 whileTap={{ scale: 0.92 }}
                 onClick={() => setShowTransactionTypeModal(false)}
-                className="mt-1 w-7 h-7 rounded-full bg-white/90 hover:bg-white text-slate-500 hover:text-slate-900 backdrop-blur-xl border border-white/60 shadow-[0_4px_14px_-2px_rgba(0,0,0,0.15)] flex items-center justify-center transition-all cursor-pointer"
+                className="mt-1.5 w-8 h-8 rounded-full bg-gradient-to-b from-white to-white/90 hover:bg-white text-slate-500 hover:text-slate-900 backdrop-blur-2xl border border-white/90 shadow-[0_8px_24px_-4px_rgba(0,0,0,0.18),inset_0_1px_1.5px_rgba(255,255,255,1)] flex items-center justify-center transition-all cursor-pointer"
                 aria-label="Close"
                 title="Close"
               >
-                <X size={13} className="stroke-[2.5]" />
+                <X size={14} className="stroke-[2.5]" />
               </motion.button>
             </motion.div>
           </div>,

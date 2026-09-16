@@ -1,5 +1,6 @@
 import { prisma } from '../../db/prisma';
 import { Prisma } from '../../db/prisma-client';
+import { enableRowLevelSecurity } from '../../db/rls';
 
 /** Optional id-keyset window for the list queries: rows after `afterId`, at most `take`. */
 export interface TodoPageWindow {
@@ -57,6 +58,7 @@ export async function ensureTodoTablesExist() {
       CREATE INDEX IF NOT EXISTS idx_todo_lists_user_id ON public.todo_lists(user_id);
       CREATE INDEX IF NOT EXISTS idx_todo_items_list_id ON public.todo_items(list_id);
     `);
+    await enableRowLevelSecurity(['todo_lists', 'todo_items', 'todo_list_shares']);
     todoTablesEnsured = true;
   } catch (err) {
     // Silently continue if DDL fails (e.g. read-only replica)

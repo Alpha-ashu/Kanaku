@@ -1,4 +1,5 @@
 import { prisma } from '../../db/prisma';
+import { enableRowLevelSecurity } from '../../db/rls';
 
 export interface CategorizationResult {
   category: string;
@@ -262,6 +263,8 @@ export const ensureCategorizationTables = async () => {
       UNIQUE(user_id, input_text)
     );
   `);
+
+  await enableRowLevelSecurity(['keyword_mappings', 'user_learning']);
 
   for (const entry of KEYWORDS) {
     await prisma.$executeRaw`

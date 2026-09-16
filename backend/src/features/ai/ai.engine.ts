@@ -1,5 +1,6 @@
 import { randomUUID } from 'crypto';
 import { prisma } from '../../db/prisma';
+import { enableRowLevelSecurity } from '../../db/rls';
 import { logger } from '../../config/logger';
 import { AIInsightRecord, AIOverview, AIUserIntelligenceRow, UserFeatureSnapshot } from './ai.types';
 
@@ -82,7 +83,9 @@ const ensureAITables = async () => {
         notes TEXT
       );
     `);
-    
+
+    await enableRowLevelSecurity(['user_features', 'ai_insights', 'ai_events', 'ai_model_runs']);
+
     aiTablesReady = true;
     logger.info('AI tables verified via DDL execution');
   } catch (error) {
