@@ -104,6 +104,13 @@ services:
         value: "https://kanaku-fawn.vercel.app,*.vercel.app"
       - key: SENTRY_DSN
         sync: false
+      # AI & Scanner Fallback Providers
+      - key: XKIRO_API_KEY
+        sync: false     # xkiro proxy API key (for KAI assistant and OCR scanner backup in production)
+      - key: OCR_FALLBACK_BASE_URL
+        sync: false     # Optional: Custom OpenAI-compatible vision runner (e.g. http://localhost:12434/engines/v1)
+      - key: OCR_FALLBACK_MODELS
+        sync: false     # Optional: Vision models list (default: deepseek/deepseek-v4.1-flash,qwen/qwen3-vl-plus:free,qwen/qwen3.8-max:free)
       # Copy any remaining prod values from backend/.env (SECURITY_ALERT_EMAIL,
       # AA_ENCRYPTION_ROOT_KEY, FIREBASE_*, OPENAI/GOOGLE/XKIRO/OPENLUX_* keys, …) in the
       # dashboard — the env.ts validator will fail fast on anything missing.

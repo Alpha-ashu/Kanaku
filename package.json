@@ -54,6 +54,7 @@
     "mobile:build:ios": "npm run build:frontend:ios && npm run cap:sync:ios",
     "mobile:run:android": "npm run mobile:build:android && npx cap run android",
     "mobile:run:ios": "npm run mobile:build:ios && npx cap run ios",
+    "mobile:ipa": "npm run mobile:build:ios && python scripts/package-ios-ipa.py",
     "mobile:aab:play": "npm run mobile:build:android && cd android && ./gradlew bundleNosmsRelease",
     "mobile:aab:full": "npm run mobile:build:android && cd android && ./gradlew bundleFullRelease",
     "qa:backend:seed": "npm --prefix backend run qa:seed-admin",

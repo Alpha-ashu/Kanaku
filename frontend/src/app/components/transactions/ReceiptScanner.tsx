@@ -349,6 +349,8 @@ export const ReceiptScanner: React.FC<ReceiptScannerProps> = ({
                 scanStatus={scanStatus}
                 onScan={handleScanReceipt}
                 onChange={() => { clearFile(); setStep('source-scan'); }}
+                onDeviceOnly={onDeviceOnly}
+                onDeviceOnlyChange={setOnDeviceOnly}
               />
             </div>
           )}

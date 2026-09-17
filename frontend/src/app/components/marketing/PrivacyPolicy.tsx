@@ -40,7 +40,7 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({
       title: '3. AI Features and Service Providers',
       icon: <FileText className="w-5 h-5 text-indigo-600" />,
       content:
-        'When you use KAI or bill scanning, the text, voice recording or image you submit, along with the financial context needed to answer, is sent to AI providers (such as Google Gemini, Groq, OpenRouter and OpenAI) to process that request. We also rely on infrastructure providers for hosting, database and file storage, and email delivery. They process data only to provide these services to us.',
+        'When you use KAI or bill scanning, the text, voice recording or image you submit, along with the necessary financial context, is sent to AI providers (such as Google Gemini, Groq, OpenRouter, OpenAI, and AI proxy inference partners like xkiro) to process that request. When primary AI models are unavailable or rate-limited, fallback vision models (including community and free tier models via services like xkiro) may analyze receipt images to extract totals and merchants; such third-party providers may log inference requests per their respective privacy terms. You can also toggle On-device OCR in the scanner for 100% private, local processing.',
     },
     {
       title: '4. No Ads, No Data Selling',

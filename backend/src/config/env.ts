@@ -56,6 +56,11 @@ const envSchema = z.object({
   // API Keys and Credentials (only those actually consumed by the codebase).
   OPENAI_API_KEY: z.string().optional(),   // voice transcription (whisper)
   GOOGLE_API_KEY: z.string().optional(),   // Gemini / OCR engine
+  // Fallback AI & Vision OCR providers
+  XKIRO_API_KEY: z.string().optional(),
+  OCR_FALLBACK_BASE_URL: z.string().url().optional(),
+  OCR_FALLBACK_API_KEY: z.string().optional(),
+  OCR_FALLBACK_MODELS: z.string().optional(),
   RECEIPT_OCR_ENDPOINT: z.string().url().optional(),
   RECEIPT_OCR_API_KEY: z.string().optional(),
   RECEIPT_OCR_TIMEOUT_MS: z.coerce.number().int().positive().optional(),

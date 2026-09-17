@@ -14,6 +14,7 @@ import {
   Sparkles,
   Paperclip,
   ArrowLeft,
+  Shield,
 } from 'lucide-react';
 
 import { parseDateInputValue, toLocalDateKey } from '@/lib/dateUtils';
@@ -199,53 +200,93 @@ const SelectionCard: React.FC<{
 // 
 
 export const PreviewView: React.FC<{
- file: File;
- previewUrl: string;
- isScanning: boolean;
- scanProgress: number;
- scanStatus: string;
- onScan: () => void;
- onChange: () => void;
-}> = ({ file, previewUrl, isScanning, scanProgress, scanStatus, onScan, onChange }) => (
- <div className="space-y-4">
- <div className="relative overflow-hidden rounded-2xl border border-gray-200 shadow-sm">
- {previewUrl ? (
- <img src={previewUrl} alt="Receipt preview" className="max-h-72 w-full bg-white object-contain" />
- ) : (
- <div className="flex min-h-56 flex-col items-center justify-center bg-white px-6 text-center">
- <ScanLine size={28} className="mb-3 text-gray-400" />
- <p className="text-sm font-semibold text-gray-700">{file.name}</p>
- <p className="mt-1 text-xs text-gray-500">PDF statement rendering will be optimized before OCR.</p>
- </div>
- )}
- {isScanning && <ScanningOverlay progress={scanProgress} status={scanStatus} />}
- </div>
+  file: File;
+  previewUrl: string;
+  isScanning: boolean;
+  scanProgress: number;
+  scanStatus: string;
+  onScan: () => void;
+  onChange: () => void;
+  onDeviceOnly?: boolean;
+  onDeviceOnlyChange?: (value: boolean) => void;
+}> = ({
+  file,
+  previewUrl,
+  isScanning,
+  scanProgress,
+  scanStatus,
+  onScan,
+  onChange,
+  onDeviceOnly = false,
+  onDeviceOnlyChange,
+}) => (
+  <div className="space-y-4">
+    <div className="relative overflow-hidden rounded-2xl border border-gray-200 shadow-sm">
+      {previewUrl ? (
+        <img src={previewUrl} alt="Receipt preview" className="max-h-72 w-full bg-white object-contain" />
+      ) : (
+        <div className="flex min-h-56 flex-col items-center justify-center bg-white px-6 text-center">
+          <ScanLine size={28} className="mb-3 text-gray-400" />
+          <p className="text-sm font-semibold text-gray-700">{file.name}</p>
+          <p className="mt-1 text-xs text-gray-500">PDF statement rendering will be optimized before OCR.</p>
+        </div>
+      )}
+      {isScanning && <ScanningOverlay progress={scanProgress} status={scanStatus} />}
+    </div>
 
- <div className="flex gap-3">
- <button data-testid="receipt-scanner-views-change"
- onClick={onChange}
- disabled={isScanning}
- className="flex-[0.4] flex items-center justify-center gap-2 rounded-xl border border-gray-200 py-3 text-sm font-semibold text-gray-600 transition-colors hover:bg-gray-50 disabled:opacity-40"
- >
- <RefreshCw size={14} /> Change
- </button>
- <button data-testid="receipt-scanner-views-button-4"
- onClick={onScan}
- disabled={isScanning}
- className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-black py-3 text-sm font-bold text-white shadow-lg transition-colors hover:bg-gray-900 disabled:opacity-40"
- >
- {isScanning ? (
- <>
- <Loader size={16} className="animate-spin" /> Scanning...
- </>
- ) : (
- <>
- <ScanLine size={16} /> Scan Receipt
- </>
- )}
- </button>
- </div>
- </div>
+    {onDeviceOnlyChange && (
+      <div className="rounded-2xl border border-slate-200/90 bg-slate-50/80 p-3.5 text-xs text-slate-600 space-y-1.5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1.5 font-semibold text-slate-800">
+            <Shield size={14} className="text-violet-600 shrink-0" />
+            <span>Privacy & Processing Mode</span>
+          </div>
+          <label className="inline-flex items-center gap-1.5 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={onDeviceOnly}
+              onChange={(e) => onDeviceOnlyChange(e.target.checked)}
+              disabled={isScanning}
+              className="rounded border-slate-300 text-black focus:ring-black h-3.5 w-3.5 cursor-pointer"
+            />
+            <span className="text-2xs font-bold text-slate-700">On-device only</span>
+          </label>
+        </div>
+        <p className="text-2xs text-slate-500 leading-relaxed">
+          {onDeviceOnly
+            ? '🔒 100% Private: Receipts are analyzed locally in your browser. No image data is sent to the cloud.'
+            : '⚡ Smart AI: Processed with Google Gemini. If primary AI is busy, fallback vision models (e.g. xkiro / community models) assist with extraction. Third-party fallback providers may log requests in accordance with their privacy policies.'}
+        </p>
+      </div>
+    )}
+
+    <div className="flex gap-3">
+      <button
+        data-testid="receipt-scanner-views-change"
+        onClick={onChange}
+        disabled={isScanning}
+        className="flex-[0.4] flex items-center justify-center gap-2 rounded-xl border border-gray-200 py-3 text-sm font-semibold text-gray-600 transition-colors hover:bg-gray-50 disabled:opacity-40 cursor-pointer"
+      >
+        <RefreshCw size={14} /> Change
+      </button>
+      <button
+        data-testid="receipt-scanner-views-button-4"
+        onClick={onScan}
+        disabled={isScanning}
+        className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-black py-3 text-sm font-bold text-white shadow-lg transition-colors hover:bg-gray-900 disabled:opacity-40 cursor-pointer"
+      >
+        {isScanning ? (
+          <>
+            <Loader size={16} className="animate-spin" /> Scanning...
+          </>
+        ) : (
+          <>
+            <ScanLine size={16} /> Scan Receipt
+          </>
+        )}
+      </button>
+    </div>
+  </div>
 );
 
 const ScanningOverlay: React.FC<{ progress: number; status: string }> = ({ progress, status }) => (
