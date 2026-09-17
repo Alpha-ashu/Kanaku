@@ -268,6 +268,51 @@ export const Reports: React.FC = () => {
     }, 1200);
   };
 
+  const customDaysCount = useMemo(() => {
+    if (!customRange.start || !customRange.end) return null;
+    const s = new Date(customRange.start);
+    const e = new Date(customRange.end);
+    if (isNaN(s.getTime()) || isNaN(e.getTime())) return null;
+    const diff = Math.round((e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+    return diff > 0 ? diff : null;
+  }, [customRange.start, customRange.end]);
+
+  const applyCustomPreset = useCallback((type: 'this_month' | 'last_month' | 'last_30' | 'last_90' | 'ytd') => {
+    const now = new Date();
+    let start = new Date();
+    let end = new Date();
+
+    if (type === 'this_month') {
+      start = new Date(now.getFullYear(), now.getMonth(), 1);
+      end = now;
+    } else if (type === 'last_month') {
+      start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      end = new Date(now.getFullYear(), now.getMonth(), 0);
+    } else if (type === 'last_30') {
+      start = new Date(now.getTime() - 29 * 86400000);
+      end = now;
+    } else if (type === 'last_90') {
+      start = new Date(now.getTime() - 89 * 86400000);
+      end = now;
+    } else if (type === 'ytd') {
+      start = new Date(now.getFullYear(), 0, 1);
+      end = now;
+    }
+
+    const formatDate = (d: Date) => {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+
+    setTimeRange('custom');
+    setCustomRange({
+      start: formatDate(start),
+      end: formatDate(end),
+    });
+  }, []);
+
   const formatCurrency = useCallback((amount: number) => {
     return formatCurrencyAmount(amount, currency);
   }, [currency]);
@@ -398,6 +443,7 @@ export const Reports: React.FC = () => {
       key: string;
       fullMonth: string;
       shortMonth: string;
+      monthYearShort: string;
       income: number;
       expense: number;
       net: number;
@@ -408,11 +454,13 @@ export const Reports: React.FC = () => {
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
       const fullMonth = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
       const shortMonth = d.toLocaleDateString('en-US', { month: 'short' });
+      const monthYearShort = `${d.toLocaleDateString('en-US', { month: 'short' }).toUpperCase()} ${d.getFullYear()}`;
       const data = monthsMap.get(key) || { income: 0, expense: 0 };
       temp.push({
         key,
         fullMonth,
         shortMonth,
+        monthYearShort,
         income: data.income,
         expense: data.expense,
         net: data.income - data.expense,
@@ -424,6 +472,7 @@ export const Reports: React.FC = () => {
       key: string;
       fullMonth: string;
       shortMonth: string;
+      monthYearShort: string;
       income: number;
       expense: number;
       net: number;
@@ -762,14 +811,15 @@ export const Reports: React.FC = () => {
     id: AnalyticsTab;
     label: string;
     mobileLabel: string;
+    tinyLabel: string;
     ariaLabel: string;
     icon: React.ReactNode;
   }> = [
-    { id: 'all', label: 'Overview', mobileLabel: 'Overview', ariaLabel: 'Overview view', icon: <Layers size={13} /> },
-    { id: 'spending', label: 'Spending', mobileLabel: 'Spend', ariaLabel: 'Spending breakdown view', icon: <PieIcon size={13} /> },
-    { id: 'cashflow', label: 'Cash Flow', mobileLabel: 'Flow', ariaLabel: 'Cash flow comparison view', icon: <BarChart3 size={13} /> },
-    { id: 'wealth', label: 'Balance Sheet', mobileLabel: 'Balance', ariaLabel: 'Balance sheet and net worth view', icon: <Sparkles size={13} /> },
-    { id: 'transactions', label: 'Statement', mobileLabel: 'Ledger', ariaLabel: 'Transaction statement ledger view', icon: <FileText size={13} /> },
+    { id: 'all', label: 'Overview', mobileLabel: 'All', tinyLabel: 'All', ariaLabel: 'Overview view', icon: <Layers size={13} /> },
+    { id: 'spending', label: 'Spending', mobileLabel: 'Spend', tinyLabel: 'Spend', ariaLabel: 'Spending breakdown view', icon: <PieIcon size={13} /> },
+    { id: 'cashflow', label: 'Cash Flow', mobileLabel: 'Flow', tinyLabel: 'Flow', ariaLabel: 'Cash flow comparison view', icon: <BarChart3 size={13} /> },
+    { id: 'wealth', label: 'Balance Sheet', mobileLabel: 'Balance', tinyLabel: 'Assets', ariaLabel: 'Balance sheet and net worth view', icon: <Sparkles size={13} /> },
+    { id: 'transactions', label: 'Statement', mobileLabel: 'Ledger', tinyLabel: 'Ledger', ariaLabel: 'Transaction statement ledger view', icon: <FileText size={13} /> },
   ];
 
   const handleTabKeyDown = (e: React.KeyboardEvent, index: number) => {
@@ -860,7 +910,7 @@ export const Reports: React.FC = () => {
         {/* 2. ADAPTIVE TIME HORIZON SELECTOR (Fits 100% On All Device Sizes)    */}
         {/* ═══════════════════════════════════════════════════════════════════ */}
         <div className="bg-white/90 backdrop-blur-xl border border-slate-200/70 rounded-2xl p-1.5 shadow-xs">
-          <div className="grid grid-cols-5 gap-1 w-full text-center">
+          <div className="flex items-center justify-between gap-1 w-full text-center">
             {[
               { id: 'monthly', label: '30 Days' },
               { id: 'weekly', label: 'Week' },
@@ -879,7 +929,7 @@ export const Reports: React.FC = () => {
                     setShowFilterDrawer(p.id === 'custom');
                   }}
                   className={cn(
-                    'py-1.5 px-1 rounded-xl text-xs font-bold transition-all cursor-pointer truncate active:scale-95',
+                    'flex-1 py-1.5 px-0.5 sm:px-1.5 rounded-xl text-[11px] sm:text-xs font-bold transition-all cursor-pointer whitespace-nowrap text-center active:scale-95',
                     isActive
                       ? 'bg-[#18181B] text-white shadow-xs'
                       : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80'
@@ -898,48 +948,101 @@ export const Reports: React.FC = () => {
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
-                className="overflow-hidden pt-2.5 mt-2 border-t border-slate-100"
+                transition={{ duration: 0.22, ease: 'easeOut' }}
+                className="overflow-hidden pt-3 mt-2.5 border-t border-slate-100/90"
               >
-                <div className="flex flex-wrap items-center justify-between gap-2.5 px-1 py-1">
-                  <div className="flex flex-wrap items-center gap-2.5">
-                    <div className="flex items-center gap-1.5">
-                      <span className="font-stat-label text-slate-400">From</span>
-                      <input
-                        type="date"
-                        value={customRange.start}
-                        onChange={(e) => {
-                          setTimeRange('custom');
-                          setCustomRange((prev) => ({ ...prev, start: e.target.value }));
-                        }}
-                        data-testid="reports-custom-start-input"
-                        aria-label="Custom report start date"
-                        title="Custom report start date"
-                        className="px-2.5 py-1 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-                      />
+                <div className="p-3 sm:p-3.5 rounded-2xl bg-slate-50/90 border border-slate-200/70 space-y-3">
+                  {/* Sub-Header: Label & Duration Badge */}
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <Calendar size={13} className="text-indigo-600 shrink-0" />
+                      <span className="text-[11px] sm:text-xs font-bold text-slate-800 tracking-tight shrink-0">
+                        Custom Range
+                      </span>
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="font-stat-label text-slate-400">To</span>
-                      <input
-                        type="date"
-                        value={customRange.end}
-                        onChange={(e) => {
-                          setTimeRange('custom');
-                          setCustomRange((prev) => ({ ...prev, end: e.target.value }));
-                        }}
-                        data-testid="reports-custom-end-input"
-                        aria-label="Custom report end date"
-                        title="Custom report end date"
-                        className="px-2.5 py-1 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-                      />
+                    {customDaysCount !== null && (
+                      <span className="shrink-0 whitespace-nowrap text-2xs font-extrabold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200/60">
+                        {customDaysCount} {customDaysCount === 1 ? 'Day' : 'Days'}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* 2-Column Balanced Inputs (Start Date & End Date) */}
+                  <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                    {/* Start Date */}
+                    <div className="space-y-1 min-w-0">
+                      <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block truncate">
+                        From
+                      </label>
+                      <div className="relative flex items-center bg-white rounded-xl border border-slate-200/80 px-2 py-1.5 shadow-2xs hover:border-slate-300 focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all">
+                        <input
+                          type="date"
+                          value={customRange.start}
+                          onChange={(e) => {
+                            setTimeRange('custom');
+                            setCustomRange((prev) => ({ ...prev, start: e.target.value }));
+                          }}
+                          data-testid="reports-custom-start-input"
+                          aria-label="Custom report start date"
+                          title="Custom report start date"
+                          className="w-full bg-transparent text-[11px] sm:text-xs font-bold text-slate-800 focus:outline-none cursor-pointer p-0 min-w-0 tracking-tight [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-60 hover:[&::-webkit-calendar-picker-indicator]:opacity-100 [&::-webkit-calendar-picker-indicator]:p-0"
+                        />
+                      </div>
+                    </div>
+
+                    {/* End Date */}
+                    <div className="space-y-1 min-w-0">
+                      <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block truncate">
+                        To
+                      </label>
+                      <div className="relative flex items-center bg-white rounded-xl border border-slate-200/80 px-2 py-1.5 shadow-2xs hover:border-slate-300 focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all">
+                        <input
+                          type="date"
+                          value={customRange.end}
+                          onChange={(e) => {
+                            setTimeRange('custom');
+                            setCustomRange((prev) => ({ ...prev, end: e.target.value }));
+                          }}
+                          data-testid="reports-custom-end-input"
+                          aria-label="Custom report end date"
+                          title="Custom report end date"
+                          className="w-full bg-transparent text-[11px] sm:text-xs font-bold text-slate-800 focus:outline-none cursor-pointer p-0 min-w-0 tracking-tight [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-60 hover:[&::-webkit-calendar-picker-indicator]:opacity-100 [&::-webkit-calendar-picker-indicator]:p-0"
+                        />
+                      </div>
                     </div>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setShowFilterDrawer(false)}
-                    className="text-xs font-bold text-slate-500 hover:text-slate-800 cursor-pointer px-2"
-                  >
-                    Done
-                  </button>
+
+                  {/* Preset Shortcuts & Apply Action */}
+                  <div className="flex items-center justify-between gap-2 pt-1 border-t border-slate-200/60">
+                    <div className="flex items-center gap-1 overflow-x-auto scrollbar-none py-0.5 min-w-0 flex-1">
+                      {[
+                        { label: 'This Month', type: 'this_month' as const },
+                        { label: 'Last Month', type: 'last_month' as const },
+                        { label: '30D', type: 'last_30' as const },
+                        { label: '90D', type: 'last_90' as const },
+                        { label: 'YTD', type: 'ytd' as const },
+                      ].map((preset) => (
+                        <button
+                          key={preset.type}
+                          type="button"
+                          onClick={() => applyCustomPreset(preset.type)}
+                          className="shrink-0 text-[10px] font-bold px-2 py-1 rounded-lg bg-white border border-slate-200/80 text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 active:scale-95 transition-all cursor-pointer shadow-2xs whitespace-nowrap"
+                        >
+                          {preset.label}
+                        </button>
+                      ))}
+                    </div>
+
+                    <button
+                      type="button"
+                      data-testid="reports-custom-apply-button"
+                      onClick={() => setShowFilterDrawer(false)}
+                      className="px-3 py-1.5 rounded-xl text-xs font-bold bg-[#18181B] text-white hover:bg-black active:scale-95 transition-all flex items-center gap-1 shadow-xs cursor-pointer shrink-0 ml-auto"
+                    >
+                      <Check size={12} className="stroke-[3]" />
+                      <span>Apply</span>
+                    </button>
+                  </div>
                 </div>
               </motion.div>
             )}
@@ -990,72 +1093,110 @@ export const Reports: React.FC = () => {
         </div>
 
         {/* ═══════════════════════════════════════════════════════════════════ */}
-        {/* 4. EXECUTIVE SUMMARY HERO & KPI CARDS (Pro Sized, Accessible)       */}
+        {/* 4. EXECUTIVE SUMMARY HERO & KPI CARDS (Proper Shape & Proportion)   */}
         {/* ═══════════════════════════════════════════════════════════════════ */}
-        <div
+        <Card
           data-testid="reports-card-14"
+          variant="default"
           className={cn(GLASS_CARD_ROUNDED, 'p-3.5 sm:p-5 relative overflow-hidden')}
         >
+          {/* Subtle Ambient Background Gradient Accents */}
+          <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-gradient-to-br from-indigo-50/60 to-purple-50/30 blur-2xl" />
+          <div className="pointer-events-none absolute -left-16 -bottom-16 h-48 w-48 rounded-full bg-gradient-to-tr from-emerald-50/50 to-teal-50/30 blur-2xl" />
+
           <div className="relative z-10 space-y-3.5 sm:space-y-4">
-            {/* Top row: Net Cash Flow + Net Worth capsule */}
-            <div className="flex items-center justify-between gap-3">
-              <div className="min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <span className={cn(
-                    'w-2 h-2 rounded-full animate-pulse shrink-0',
-                    summaryStats.netSavings >= 0 ? 'bg-emerald-500' : 'bg-rose-500'
-                  )} />
-                  <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider truncate">
+            {/* Top row: Section Header with Surplus/Deficit badge & Period Pill */}
+            <div className="flex items-center justify-between gap-2.5 border-b border-slate-100/90 pb-3">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className={cn(
+                  'w-2 h-2 rounded-full shrink-0',
+                  summaryStats.netSavings >= 0 ? 'bg-emerald-500' : 'bg-rose-500'
+                )} />
+                <h3 className="text-xs sm:text-sm md:text-base font-bold text-slate-900 tracking-tight truncate">
+                  Executive Summary
+                </h3>
+                <span className={cn(
+                  'inline-flex items-center px-1.5 py-0.5 rounded-md text-[9px] sm:text-[10px] font-bold uppercase tracking-wider shrink-0',
+                  summaryStats.netSavings >= 0 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/60' : 'bg-rose-50 text-rose-700 border border-rose-200/60'
+                )}>
+                  {summaryStats.netSavings >= 0 ? 'Surplus' : 'Deficit'}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-1 shrink-0 px-2 sm:px-2.5 py-0.5 rounded-full bg-slate-100/90 border border-slate-200/60 text-[10px] sm:text-[11px] font-bold text-slate-600">
+                <Calendar size={11} className="text-slate-400 shrink-0" />
+                <span className="truncate max-w-[130px] sm:max-w-none">{reportPeriodLabel}</span>
+              </div>
+            </div>
+
+            {/* Two Balanced Primary Metric Boxes */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
+              {/* Box 1: Net Cash Flow */}
+              <div className="p-3 sm:p-3.5 rounded-xl bg-slate-50/90 border border-slate-200/70 space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                     Net Cash Flow
                   </span>
                   <span className={cn(
-                    'inline-flex items-center px-1.5 py-0.5 rounded-md text-[9px] sm:text-[10px] font-bold uppercase tracking-wider shrink-0',
-                    summaryStats.netSavings >= 0 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/60' : 'bg-rose-50 text-rose-700 border border-rose-200/60'
+                    'text-2xs font-extrabold px-1.5 py-0.5 rounded-md uppercase tracking-wider',
+                    summaryStats.netSavings >= 0 ? 'bg-emerald-100/80 text-emerald-700' : 'bg-rose-100/80 text-rose-700'
                   )}>
-                    {summaryStats.netSavings >= 0 ? 'Surplus' : 'Deficit'}
+                    {summaryStats.netSavings >= 0 ? 'Positive' : 'Negative'}
                   </span>
                 </div>
-                <div className="flex items-baseline gap-2 mt-0.5">
+                <div className="flex items-baseline gap-2">
                   <h2 className={cn(
-                    'text-lg sm:text-xl font-extrabold tracking-tight tabular-nums truncate',
+                    'text-lg sm:text-xl md:text-2xl font-black tracking-tight tabular-nums',
                     summaryStats.netSavings >= 0 ? 'text-slate-900' : 'text-rose-600'
                   )}>
                     {summaryStats.netSavings >= 0 ? '+' : ''}{formatCurrency(summaryStats.netSavings)}
                   </h2>
                 </div>
-                <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5 font-medium truncate">
-                  Savings rate: <strong className="text-slate-800 font-bold">{summaryStats.savingsRate.toFixed(1)}%</strong>
+                <p className="text-[10px] sm:text-[11px] text-slate-500 font-medium">
+                  Savings rate: <strong className="text-slate-800 font-bold">{summaryStats.savingsRate.toFixed(1)}%</strong> this period
                 </p>
               </div>
 
-              {/* Right Capsule: Total Net Worth */}
-              <div className="bg-slate-50/90 border border-slate-200/70 rounded-xl p-2 sm:p-2.5 min-w-[140px] sm:min-w-[170px] shrink-0 text-right">
-                <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Net Worth</span>
-                <span className="text-sm sm:text-base font-extrabold text-slate-900 tracking-tight block mt-0.5 tabular-nums">
-                  {formatCurrency(authoritativeNetWorth)}
-                </span>
-                <div className="flex items-center justify-end gap-1 mt-0.5 text-[10px] text-slate-500 font-medium">
-                  <span className="text-emerald-600 font-bold">Liquid: {formatCurrencyAmount(totalAccountBalance, currency, { notation: 'compact', maximumFractionDigits: 1 })}</span>
-                  <span>•</span>
-                  <span className="text-indigo-600 font-bold">Inv: {formatCurrencyAmount(totalInvestmentValue, currency, { notation: 'compact', maximumFractionDigits: 1 })}</span>
+              {/* Box 2: Total Net Worth */}
+              <div className="p-3 sm:p-3.5 rounded-xl bg-slate-50/90 border border-slate-200/70 space-y-1">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <Sparkles size={12} className="text-indigo-600 shrink-0" />
+                    <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                      Total Net Worth
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1 text-[10px] text-slate-500 font-medium">
+                    <span className="text-emerald-600 font-bold">Liquid: {formatCurrencyAmount(totalAccountBalance, currency, { notation: 'compact', maximumFractionDigits: 1 })}</span>
+                    <span className="text-slate-300">•</span>
+                    <span className="text-indigo-600 font-bold">Inv: {formatCurrencyAmount(totalInvestmentValue, currency, { notation: 'compact', maximumFractionDigits: 1 })}</span>
+                  </div>
                 </div>
+                <div className="flex items-baseline gap-2">
+                  <h2 className="text-lg sm:text-xl md:text-2xl font-black text-slate-900 tracking-tight tabular-nums">
+                    {formatCurrency(authoritativeNetWorth)}
+                  </h2>
+                </div>
+                <p className="text-[10px] sm:text-[11px] text-slate-500 font-medium truncate">
+                  Liquid funds + investment portfolio valuation
+                </p>
               </div>
             </div>
 
-            {/* 4-Metric Integrated KPI Ribbon */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 pt-2.5 border-t border-slate-100">
+            {/* 4-Metric Integrated KPI Ribbon (Clean Rectangular Card Shapes) */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 pt-0.5">
               {/* Total Income */}
               <div
                 data-testid="reports-card"
-                className="p-2 sm:p-2.5 rounded-xl bg-white/80 border border-slate-200/70 hover:border-slate-300 transition-all space-y-0.5"
+                className="p-2.5 sm:p-3 rounded-xl bg-white/90 border border-slate-200/70 shadow-2xs hover:border-slate-300 transition-all flex flex-col justify-between min-h-[68px]"
               >
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Income</span>
-                  <div className="w-4 h-4 rounded bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                  <div className="w-4 h-4 rounded bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
                     <ArrowDownLeft size={10} />
                   </div>
                 </div>
-                <p className="text-xs sm:text-sm font-extrabold text-slate-900 tabular-nums tracking-tight">{formatCurrency(summaryStats.totalIncome)}</p>
+                <p className="text-xs sm:text-sm font-black text-slate-900 tabular-nums tracking-tight my-0.5">{formatCurrency(summaryStats.totalIncome)}</p>
                 <div className="flex items-center gap-1 text-[10px] font-bold text-emerald-600">
                   <TrendingUp size={9} />
                   <span>Inflow</span>
@@ -1065,15 +1206,15 @@ export const Reports: React.FC = () => {
               {/* Total Expenses */}
               <div
                 data-testid="reports-card-2"
-                className="p-2 sm:p-2.5 rounded-xl bg-white/80 border border-slate-200/70 hover:border-slate-300 transition-all space-y-0.5"
+                className="p-2.5 sm:p-3 rounded-xl bg-white/90 border border-slate-200/70 shadow-2xs hover:border-slate-300 transition-all flex flex-col justify-between min-h-[68px]"
               >
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Expenses</span>
-                  <div className="w-4 h-4 rounded bg-rose-50 text-rose-600 flex items-center justify-center">
+                  <div className="w-4 h-4 rounded bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
                     <ArrowUpRight size={10} />
                   </div>
                 </div>
-                <p className="text-xs sm:text-sm font-extrabold text-slate-900 tabular-nums tracking-tight">{formatCurrency(summaryStats.totalExpenses)}</p>
+                <p className="text-xs sm:text-sm font-black text-slate-900 tabular-nums tracking-tight my-0.5">{formatCurrency(summaryStats.totalExpenses)}</p>
                 <div className="flex items-center gap-1 text-[10px] font-bold text-rose-600">
                   <TrendingDown size={9} />
                   <span>Outflow</span>
@@ -1083,16 +1224,16 @@ export const Reports: React.FC = () => {
               {/* Net Savings */}
               <div
                 data-testid="reports-card-3"
-                className="p-2 sm:p-2.5 rounded-xl bg-white/80 border border-slate-200/70 hover:border-slate-300 transition-all space-y-0.5"
+                className="p-2.5 sm:p-3 rounded-xl bg-white/90 border border-slate-200/70 shadow-2xs hover:border-slate-300 transition-all flex flex-col justify-between min-h-[68px]"
               >
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Savings</span>
-                  <div className="w-4 h-4 rounded bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                  <div className="w-4 h-4 rounded bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
                     <PiggyBank size={10} />
                   </div>
                 </div>
                 <p className={cn(
-                  'text-xs sm:text-sm font-extrabold tabular-nums tracking-tight',
+                  'text-xs sm:text-sm font-black tabular-nums tracking-tight my-0.5',
                   summaryStats.netSavings >= 0 ? 'text-emerald-600' : 'text-rose-600'
                 )}>
                   {summaryStats.netSavings >= 0 ? '+' : ''}{formatCurrency(summaryStats.netSavings)}
@@ -1105,15 +1246,15 @@ export const Reports: React.FC = () => {
               {/* Savings Rate */}
               <div
                 data-testid="reports-card-4"
-                className="p-2 sm:p-2.5 rounded-xl bg-white/80 border border-slate-200/70 hover:border-slate-300 transition-all space-y-0.5"
+                className="p-2.5 sm:p-3 rounded-xl bg-white/90 border border-slate-200/70 shadow-2xs hover:border-slate-300 transition-all flex flex-col justify-between min-h-[68px]"
               >
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Rate</span>
-                  <div className="w-4 h-4 rounded bg-purple-50 text-purple-600 flex items-center justify-center">
+                  <div className="w-4 h-4 rounded bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
                     <BadgePercent size={10} />
                   </div>
                 </div>
-                <p className="text-xs sm:text-sm font-extrabold text-slate-900 tabular-nums tracking-tight">{summaryStats.savingsRate.toFixed(1)}%</p>
+                <p className="text-xs sm:text-sm font-black text-slate-900 tabular-nums tracking-tight my-0.5">{summaryStats.savingsRate.toFixed(1)}%</p>
                 <div className="flex items-center gap-1 text-[10px] font-bold text-purple-600">
                   <Activity size={9} />
                   <span>Efficiency</span>
@@ -1121,7 +1262,7 @@ export const Reports: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>
+        </Card>
 
         {/* ═══════════════════════════════════════════════════════════════════ */}
         {/* 5. VIEW: OVERVIEW / CORE GRAPHS & TABLES                            */}
@@ -1141,12 +1282,12 @@ export const Reports: React.FC = () => {
                 variant="default"
                 className={cn(GLASS_CARD_ROUNDED, 'p-4 sm:p-6 space-y-4')}
               >
-                <div className="flex items-start justify-between">
-                  <div>
-                    <span className="font-stat-label text-slate-400">Category Distribution</span>
-                    <h3 className="font-section-title text-slate-900 mt-0.5">Spending Breakdown</h3>
+                <div className="flex items-start sm:items-center justify-between gap-2.5 border-b border-slate-100/90 pb-3">
+                  <div className="min-w-0 flex-1">
+                    <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Category Distribution</span>
+                    <h3 className="text-xs sm:text-sm md:text-base font-bold text-slate-900 tracking-tight mt-0.5 truncate">Spending Breakdown</h3>
                   </div>
-                  <span className="text-2xs font-bold px-2.5 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200/60">
+                  <span className="shrink-0 whitespace-nowrap text-2xs font-bold px-2 sm:px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200/60">
                     {expenseBreakdown.length} Categories
                   </span>
                 </div>
@@ -1221,12 +1362,12 @@ export const Reports: React.FC = () => {
                 variant="default"
                 className={cn(GLASS_CARD_ROUNDED, 'p-4 sm:p-6 space-y-4')}
               >
-                <div className="flex items-start justify-between">
-                  <div>
-                    <span className="font-stat-label text-slate-400">Cash Flow Comparison</span>
-                    <h3 className="font-section-title text-slate-900 mt-0.5">Monthly Inflow vs Outflow</h3>
+                <div className="flex items-start sm:items-center justify-between gap-2.5 border-b border-slate-100/90 pb-3">
+                  <div className="min-w-0 flex-1">
+                    <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Cash Flow Comparison</span>
+                    <h3 className="text-xs sm:text-sm md:text-base font-bold text-slate-900 tracking-tight mt-0.5 truncate">Monthly Inflow vs Outflow</h3>
                   </div>
-                  <div className="flex items-center gap-2 font-caption text-slate-500">
+                  <div className="flex items-center gap-2 shrink-0 text-2xs sm:text-xs font-semibold text-slate-500">
                     <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-500" /> In</span>
                     <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-rose-500" /> Out</span>
                   </div>
@@ -1268,15 +1409,15 @@ export const Reports: React.FC = () => {
               variant="default"
               className={cn(GLASS_CARD_ROUNDED, 'p-4 sm:p-6 space-y-4')}
             >
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <div>
-                  <h3 className="font-section-title text-slate-900 flex items-center gap-2">
-                    <TableIcon size={16} className="text-indigo-600" />
-                    Category Spending Table & Leaderboard
+              <div className="flex items-start sm:items-center justify-between gap-2.5 border-b border-slate-100/90 pb-3">
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-xs sm:text-sm md:text-base font-bold text-slate-900 tracking-tight flex items-center gap-1.5 leading-snug">
+                    <TableIcon size={14} className="text-indigo-600 shrink-0" />
+                    <span className="truncate">Category Leaderboard</span>
                   </h3>
-                  <p className="font-caption text-slate-400 mt-0.5">Ranked spending categories with percentage allocation</p>
+                  <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5 truncate">Ranked spending categories with allocation</p>
                 </div>
-                <span className="text-2xs font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600">
+                <span className="shrink-0 whitespace-nowrap text-2xs font-bold px-2 sm:px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200/60">
                   Pacing
                 </span>
               </div>
@@ -1337,15 +1478,15 @@ export const Reports: React.FC = () => {
                 variant="default"
                 className={cn(GLASS_CARD_ROUNDED, 'p-4 sm:p-6 space-y-3')}
               >
-                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                  <div>
-                    <h3 className="font-section-title text-slate-900 flex items-center gap-2">
-                      <TrendingUp size={16} className="text-purple-600" />
-                      Cumulative Savings Growth Curve
+                <div className="flex items-start sm:items-center justify-between gap-2.5 border-b border-slate-100/90 pb-3">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-xs sm:text-sm md:text-base font-bold text-slate-900 tracking-tight flex items-center gap-1.5 leading-snug">
+                      <TrendingUp size={14} className="text-purple-600 shrink-0" />
+                      <span className="truncate">Cumulative Savings Curve</span>
                     </h3>
-                    <p className="font-caption text-slate-400">Daily net capital retained in period</p>
+                    <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5 truncate">Daily net capital retained in period</p>
                   </div>
-                  <span className="text-2xs font-bold px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200/50">
+                  <span className="shrink-0 whitespace-nowrap text-2xs font-bold px-2 sm:px-2.5 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200/50">
                     Net Trend
                   </span>
                 </div>
@@ -1386,15 +1527,17 @@ export const Reports: React.FC = () => {
                 variant="default"
                 className={cn(GLASS_CARD_ROUNDED, 'p-4 sm:p-6 space-y-3')}
               >
-                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                  <div>
-                    <h3 className="font-section-title text-slate-900 flex items-center gap-2">
-                      <Activity size={16} className="text-indigo-600" />
-                      Income vs. Expense Volume Ratio
+                <div className="flex items-start sm:items-center justify-between gap-2.5 border-b border-slate-100/90 pb-3">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-xs sm:text-sm md:text-base font-bold text-slate-900 tracking-tight flex items-center gap-1.5 leading-snug">
+                      <Activity size={14} className="text-indigo-600 shrink-0" />
+                      <span className="truncate">Income vs Expense Ratio</span>
                     </h3>
-                    <p className="font-caption text-slate-400">Total volume ratio in selected period</p>
+                    <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5 truncate">Total volume ratio in selected period</p>
                   </div>
-                  <span className="text-2xs font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">Ratio</span>
+                  <span className="shrink-0 whitespace-nowrap text-2xs font-bold px-2 sm:px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200/60">
+                    Ratio
+                  </span>
                 </div>
 
                 <div className="h-[220px] w-full">
@@ -1427,9 +1570,14 @@ export const Reports: React.FC = () => {
               variant="default"
               className={cn(GLASS_CARD_ROUNDED, 'p-4 sm:p-6 space-y-3')}
             >
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 className="font-section-title text-slate-900">Monthly Cash Flow Statement</h3>
-                <span className="font-stat-label text-slate-400">Past 6 Months</span>
+              <div className="flex items-start sm:items-center justify-between gap-2.5 border-b border-slate-100/90 pb-3">
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-xs sm:text-sm md:text-base font-bold text-slate-900 tracking-tight truncate">Monthly Cash Flow Statement</h3>
+                  <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5 truncate">Past 6 months cash flow breakdown</p>
+                </div>
+                <span className="shrink-0 whitespace-nowrap text-2xs font-bold px-2 sm:px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200/60">
+                  Past 6 Months
+                </span>
               </div>
               <div className="divide-y divide-slate-100">
                 {monthlyTimeline.map((item) => (
@@ -1438,7 +1586,7 @@ export const Reports: React.FC = () => {
                     className="flex items-center justify-between py-2.5 px-1 rounded-xl hover:bg-slate-50/60 transition-colors"
                   >
                     <span className="text-xs sm:text-sm font-semibold text-slate-700">
-                      {item.fullMonth}
+                      {item.monthYearShort}
                     </span>
                     <div className="flex items-center gap-3">
                       <span className="text-xs sm:text-sm text-emerald-600 font-semibold">+{formatCurrency(item.income)}</span>
@@ -1472,13 +1620,13 @@ export const Reports: React.FC = () => {
               variant="default"
               className={cn(GLASS_CARD_ROUNDED, 'p-4 sm:p-6 space-y-4')}
             >
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <span className="font-stat-label text-slate-400">Total Net Worth Trajectory</span>
-                  <h3 className="font-section-title text-slate-900 mt-0.5">Historical Valuation</h3>
+              <div className="flex items-start sm:items-center justify-between gap-2.5 border-b border-slate-100/90 pb-3">
+                <div className="min-w-0 flex-1">
+                  <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Trajectory</span>
+                  <h3 className="text-xs sm:text-sm md:text-base font-bold text-slate-900 tracking-tight mt-0.5 truncate">Historical Net Worth</h3>
                 </div>
-                <span className="text-2xs font-bold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200/50">
-                  Portfolio Valuation
+                <span className="shrink-0 whitespace-nowrap text-2xs font-bold px-2 sm:px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200/50">
+                  Portfolio
                 </span>
               </div>
 
@@ -1514,52 +1662,56 @@ export const Reports: React.FC = () => {
               variant="default"
               className={cn(GLASS_CARD_ROUNDED, 'p-4 sm:p-6 space-y-4')}
             >
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <div>
-                  <h3 className="font-section-title text-slate-900 flex items-center gap-2">
-                    <Target size={16} className="text-indigo-600" />
-                    Balance Sheet & Capital Allocation
+              <div className="flex items-start sm:items-center justify-between gap-2.5 border-b border-slate-100/90 pb-3">
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-xs sm:text-sm md:text-base font-bold text-slate-900 tracking-tight flex items-center gap-1.5 leading-snug">
+                    <Target size={14} className="text-indigo-600 shrink-0" />
+                    <span className="truncate">Balance Sheet & Capital Allocation</span>
                   </h3>
-                  <p className="font-caption text-slate-400">Positioning across liquid cash, debt, goals, and capital</p>
+                  <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5 leading-tight truncate">
+                    Positioning across liquid cash, debt, goals, and capital
+                  </p>
                 </div>
-                <span className="text-2xs font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">Assets</span>
+                <span className="shrink-0 whitespace-nowrap text-2xs font-bold px-2 sm:px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200/60">
+                  Assets
+                </span>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                <div className="p-2.5 sm:p-3 bg-slate-50/70 rounded-xl border border-slate-100 space-y-1">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5">
+                <div className="p-2.5 sm:p-3 bg-slate-50/80 rounded-xl border border-slate-200/60 hover:border-slate-300 transition-all flex flex-col justify-between min-h-[72px]">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] sm:text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Liquid Cash</span>
-                    <Wallet size={14} className="text-emerald-500" />
+                    <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Liquid Cash</span>
+                    <Wallet size={13} className="text-emerald-500 shrink-0" />
                   </div>
-                  <p className="text-sm sm:text-base font-bold text-slate-900 tabular-nums">{formatCurrency(totalAccountBalance)}</p>
-                  <span className="text-[11px] text-slate-400 block">Bank & Cash</span>
+                  <p className="text-xs sm:text-sm font-black text-slate-900 tabular-nums tracking-tight my-0.5">{formatCurrency(totalAccountBalance)}</p>
+                  <span className="text-[10px] sm:text-[11px] text-slate-400 font-medium">Bank & Cash</span>
                 </div>
 
-                <div className="p-2.5 sm:p-3 bg-slate-50/70 rounded-xl border border-slate-100 space-y-1">
+                <div className="p-2.5 sm:p-3 bg-slate-50/80 rounded-xl border border-slate-200/60 hover:border-slate-300 transition-all flex flex-col justify-between min-h-[72px]">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] sm:text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Active Debt</span>
-                    <Landmark size={14} className="text-rose-500" />
+                    <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Active Debt</span>
+                    <Landmark size={13} className="text-rose-500 shrink-0" />
                   </div>
-                  <p className="text-sm sm:text-base font-bold text-slate-900 tabular-nums">{formatCurrency(summaryStats.totalDebt)}</p>
-                  <span className="text-[11px] text-slate-400 block">Loans & EMIs</span>
+                  <p className="text-xs sm:text-sm font-black text-slate-900 tabular-nums tracking-tight my-0.5">{formatCurrency(summaryStats.totalDebt)}</p>
+                  <span className="text-[10px] sm:text-[11px] text-slate-400 font-medium">Loans & EMIs</span>
                 </div>
 
-                <div className="p-2.5 sm:p-3 bg-slate-50/70 rounded-xl border border-slate-100 space-y-1">
+                <div className="p-2.5 sm:p-3 bg-slate-50/80 rounded-xl border border-slate-200/60 hover:border-slate-300 transition-all flex flex-col justify-between min-h-[72px]">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] sm:text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Goals Funded</span>
-                    <Target size={14} className="text-purple-500" />
+                    <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Goals Funded</span>
+                    <Target size={13} className="text-purple-500 shrink-0" />
                   </div>
-                  <p className="text-sm sm:text-base font-bold text-slate-900 tabular-nums">{formatCurrency(summaryStats.totalGoalsProgress)}</p>
-                  <span className="text-[11px] text-slate-400 block">Allocated savings</span>
+                  <p className="text-xs sm:text-sm font-black text-slate-900 tabular-nums tracking-tight my-0.5">{formatCurrency(summaryStats.totalGoalsProgress)}</p>
+                  <span className="text-[10px] sm:text-[11px] text-slate-400 font-medium">Allocated savings</span>
                 </div>
 
-                <div className="p-2.5 sm:p-3 bg-slate-50/70 rounded-xl border border-slate-100 space-y-1">
+                <div className="p-2.5 sm:p-3 bg-slate-50/80 rounded-xl border border-slate-200/60 hover:border-slate-300 transition-all flex flex-col justify-between min-h-[72px]">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] sm:text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Investments</span>
-                    <TrendingUp size={14} className="text-indigo-500" />
+                    <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Investments</span>
+                    <TrendingUp size={13} className="text-indigo-500 shrink-0" />
                   </div>
-                  <p className="text-sm sm:text-base font-bold text-slate-900 tabular-nums">{formatCurrency(summaryStats.totalInvested)}</p>
-                  <span className="text-[11px] text-slate-400 block">Invested capital</span>
+                  <p className="text-xs sm:text-sm font-black text-slate-900 tabular-nums tracking-tight my-0.5">{formatCurrency(summaryStats.totalInvested)}</p>
+                  <span className="text-[10px] sm:text-[11px] text-slate-400 font-medium">Invested capital</span>
                 </div>
               </div>
             </Card>
@@ -1573,12 +1725,14 @@ export const Reports: React.FC = () => {
                     variant="default"
                     className={cn(GLASS_CARD_ROUNDED, 'p-4 sm:p-6 overflow-hidden flex flex-col space-y-3')}
                   >
-                    <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                      <h3 className="font-section-title text-slate-900 flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-purple-600 animate-pulse" />
-                        AI Financial Intelligence
+                    <div className="flex items-center justify-between gap-2.5 border-b border-slate-100/90 pb-3">
+                      <h3 className="text-xs sm:text-sm md:text-base font-bold text-slate-900 tracking-tight flex items-center gap-1.5 min-w-0 truncate">
+                        <span className="w-2 h-2 rounded-full bg-purple-600 animate-pulse shrink-0" />
+                        <span className="truncate">AI Financial Intelligence</span>
                       </h3>
-                      <span className="text-2xs font-bold px-2.5 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200/50">Smart Insights</span>
+                      <span className="shrink-0 whitespace-nowrap text-2xs font-bold px-2 sm:px-2.5 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200/50">
+                        Smart Insights
+                      </span>
                     </div>
                     <div className="flex-1">
                       <AIInsightsCard compact />
@@ -1592,12 +1746,14 @@ export const Reports: React.FC = () => {
                     variant="default"
                     className={cn(GLASS_CARD_ROUNDED, 'p-4 sm:p-6 space-y-3')}
                   >
-                    <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                      <h3 className="font-section-title text-slate-900 flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                        6-Month Wealth Trajectory
+                    <div className="flex items-center justify-between gap-2.5 border-b border-slate-100/90 pb-3">
+                      <h3 className="text-xs sm:text-sm md:text-base font-bold text-slate-900 tracking-tight flex items-center gap-1.5 min-w-0 truncate">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                        <span className="truncate">6-Month Wealth Trajectory</span>
                       </h3>
-                      <span className="text-2xs font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/50">Projection</span>
+                      <span className="shrink-0 whitespace-nowrap text-2xs font-bold px-2 sm:px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/50">
+                        Projection
+                      </span>
                     </div>
                     <ForecastSection transactions={transactions} accounts={accounts} currency={currency} formatCurrency={formatCurrency} />
                   </Card>
@@ -1621,13 +1777,13 @@ export const Reports: React.FC = () => {
               className={cn(GLASS_CARD_ROUNDED, 'p-4 sm:p-6 space-y-4')}
             >
               {/* Header & Quick Export */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3.5">
-                <div>
-                  <h3 className="font-section-title text-slate-900 flex items-center gap-2">
-                    <FileText size={16} className="text-indigo-600" />
-                    Official Statement Ledger
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 border-b border-slate-100/90 pb-3">
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-xs sm:text-sm md:text-base font-bold text-slate-900 tracking-tight flex items-center gap-1.5 truncate">
+                    <FileText size={14} className="text-indigo-600 shrink-0" />
+                    <span className="truncate">Official Statement Ledger</span>
                   </h3>
-                  <p className="font-caption text-slate-400 mt-0.5">
+                  <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5 truncate">
                     Showing {tableTransactions.length} of {filteredTransactions.length} transactions for {reportPeriodLabel}.
                   </p>
                 </div>
@@ -1731,7 +1887,7 @@ export const Reports: React.FC = () => {
                             {t.description || t.category}
                           </p>
                           <div className="flex items-center gap-1.5 mt-0.5 font-caption text-slate-400">
-                            <span>{formatLocalDate(t.date, 'en-US')}</span>
+                            <span className="whitespace-nowrap shrink-0">{formatLocalDate(t.date, 'en-US')}</span>
                             <span>•</span>
                             <span className="truncate">{account?.name || t.category}</span>
                           </div>
@@ -1745,7 +1901,7 @@ export const Reports: React.FC = () => {
                           {isIncome ? '+' : '-'}{formatCurrency(t.amount)}
                         </p>
                         <span className={cn(
-                          'inline-block px-1.5 py-0.5 rounded-full text-2xs font-bold uppercase tracking-wider',
+                          'inline-block px-1.5 py-0.5 rounded-full text-2xs font-bold uppercase tracking-wider whitespace-nowrap',
                           isIncome ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600'
                         )}>
                           {t.category}
@@ -1848,10 +2004,10 @@ export const Reports: React.FC = () => {
                 transition={{ duration: 0.2 }}
                 className={cn(GLASS_CARD_ROUNDED, 'relative z-10 w-full max-w-lg p-5 sm:p-6 bg-white/95 shadow-2xl border border-white/80')}
               >
-                <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-100/90">
                   <div>
-                    <h3 className="font-section-title text-slate-900 tracking-tight">Export Financial Report</h3>
-                    <p className="font-page-sub text-slate-400 mt-0.5">Select your preferred export document format</p>
+                    <h3 className="text-xs sm:text-sm md:text-base font-bold text-slate-900 tracking-tight truncate">Export Financial Report</h3>
+                    <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5">Select your preferred export document format</p>
                   </div>
                   <button
                     type="button"

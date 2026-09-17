@@ -237,12 +237,12 @@ export const KaiScreen: React.FC = () => {
         </div>
       </div>
 
-      {/* ── Middle Section: Scrollable Conversation Viewport ("mt-5 space-y-5") ── */}
-      <div
-        ref={listRef}
-        className="flex-1 min-h-0 overflow-y-auto overscroll-contain scrollbar-none py-1.5 pr-0.5 sm:pr-1"
-      >
-        {visibleActions.length > 0 ? (
+      {/* ── Middle Section: Scrollable Conversation Viewport or Prompts ── */}
+      {visibleActions.length > 0 ? (
+        <div
+          ref={listRef}
+          className="flex-1 min-h-0 overflow-y-auto overscroll-contain scrollbar-none py-1.5 pr-0.5 sm:pr-1"
+        >
           <div className="mt-1 space-y-2.5 sm:space-y-3">
             <div className="flex items-center justify-between px-1">
               <h3 className="text-2xs font-black uppercase tracking-wider text-slate-400">Today's actions</h3>
@@ -302,13 +302,20 @@ export const KaiScreen: React.FC = () => {
               </p>
             )}
           </div>
-        ) : (
-          /* Quick Prompts to try when no actions recorded */
-          <div className="mt-2">
-            <div className="flex items-center justify-between px-1 mb-3">
-              <h3 className="text-xs font-black uppercase tracking-wider text-slate-400">Quick prompts to try</h3>
-              <span className="text-xs font-semibold text-purple-600">Tap any to ask</span>
-            </div>
+        </div>
+      ) : (
+        <div className="flex-1 min-h-0 flex flex-col pt-1.5">
+          {/* Fixed Header (Does not scroll) */}
+          <div className="shrink-0 flex items-center justify-between px-1 mb-3">
+            <h3 className="text-xs font-black uppercase tracking-wider text-slate-400">Quick prompts to try</h3>
+            <span className="text-xs font-semibold text-purple-600">Tap any to ask</span>
+          </div>
+
+          {/* Scrollable Prompts Cards Grid */}
+          <div
+            ref={listRef}
+            className="flex-1 min-h-0 overflow-y-auto overscroll-contain scrollbar-none pr-0.5 sm:pr-1 pb-2"
+          >
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
               {QUICK_PROMPTS.map((item) => (
                 <button
@@ -337,8 +344,8 @@ export const KaiScreen: React.FC = () => {
               ))}
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* ── Fixed Position Input Bar at bottom ── */}
       <div className="shrink-0 pt-1 pb-[calc(50px+max(12px,calc(env(safe-area-inset-bottom,0px)+10px))+6px)] sm:pb-[calc(56px+max(12px,calc(env(safe-area-inset-bottom,0px)+10px))+6px)] lg:pb-3 w-full bg-gradient-to-t from-white/95 via-white/85 to-transparent sticky bottom-0 z-20">
