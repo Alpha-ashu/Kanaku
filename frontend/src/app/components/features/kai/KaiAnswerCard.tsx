@@ -34,17 +34,17 @@ export const KaiAnswerCard: React.FC<Props> = ({ action, currency, showPrompt = 
           <KaiReportCard meta={report} currency={currency} />
         </>
       ) : (
-        <div className="rounded-[24px] border border-slate-100 bg-white/95 backdrop-blur-md shadow-[0_10px_30px_-8px_rgba(112,144,176,0.22)] p-4 sm:p-5">
-          <p className="flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-purple-700">
-            <Sparkles size={13} /> Answer
+        <div className="rounded-[20px] border border-purple-100/60 bg-white/95 backdrop-blur-md shadow-[0_6px_20px_-8px_rgba(112,144,176,0.18)] p-3 sm:p-3.5">
+          <p className="flex items-center gap-1.5 text-2xs font-black uppercase tracking-wider text-purple-700">
+            <Sparkles size={12} /> Answer
           </p>
-          <p className="mt-2 text-sm sm:text-base font-medium text-slate-800 whitespace-pre-wrap leading-relaxed">
+          <p className="mt-1.5 text-xs sm:text-sm font-medium text-slate-800 whitespace-pre-wrap leading-relaxed">
             {answer?.summary || 'I could not find an answer for that.'}
           </p>
           {answer?.transactions && answer.transactions.length > 0 && (
             <div className="mt-2 divide-y divide-slate-100">
               {answer.transactions.slice(0, 3).map((tx) => (
-                <div key={tx.id} className="flex items-center justify-between gap-3 py-2.5 text-sm">
+                <div key={tx.id} className="flex items-center justify-between gap-3 py-1.5 text-xs sm:text-sm">
                   <span className="text-slate-500 truncate">{tx.description || tx.category}</span>
                   <span className={`font-bold shrink-0 ${tx.type === 'expense' ? 'text-slate-900' : 'text-emerald-600'}`}>
                     {tx.type === 'expense' ? '−' : '+'}{formatCurrencyAmount(Math.round(tx.amount), currency, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}

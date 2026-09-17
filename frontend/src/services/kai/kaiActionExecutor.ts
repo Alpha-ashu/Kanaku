@@ -223,6 +223,7 @@ async function createExpenseOrIncome(action: KaiAction, ctx: ExecutionContext): 
     category: entities.category!,
     description: entities.description!,
     merchant: e.merchant || '',
+    attachment: e.attachment,
     date: parseIso(e.date) ?? now,
     tags: ['kai', action.kind],
     expenseMode: entities.expenseMode,
@@ -768,6 +769,10 @@ export async function updateKaiAction(
             e.accountId = patch.accountId;
             e.accountName = updatedAcc.name;
           }
+        }
+        if (patch.attachment !== undefined) {
+          updates.attachment = patch.attachment;
+          e.attachment = patch.attachment;
         }
         balanceDelta = await updateTransactionRef(ref.localId, updates);
         break;

@@ -283,7 +283,12 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
   };
 
   return (
-    <CenteredLayout enablePullToRefresh={false} className="relative z-10 flex flex-col flex-1 pb-2 sm:pb-3 lg:pb-4 select-none">
+    <CenteredLayout
+      enablePullToRefresh={false}
+      noBottomPadding
+      containerClassName="h-full !min-h-0 overflow-hidden"
+      className="relative z-10 flex flex-col flex-1 pb-0 select-none h-full min-h-0 overflow-hidden"
+    >
       {/* ── Soft Ambient Glow Background ── */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden" aria-hidden="true">
         <div className="absolute top-[8%] left-1/2 -translate-x-1/2 w-[340px] sm:w-[460px] h-[340px] sm:h-[460px] rounded-full bg-gradient-to-b from-purple-300/35 via-pink-200/25 to-transparent blur-3xl" />
@@ -291,7 +296,7 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
       </div>
 
       {/* ── Top Header Navigation ── */}
-      <header className="relative z-20 w-full flex items-center justify-between pb-3 sm:pb-4 shrink-0">
+      <header className="relative z-20 w-full flex items-center justify-between pb-2 sm:pb-3 shrink-0">
         <div className="flex items-center gap-2 sm:gap-3">
           <button
             type="button"

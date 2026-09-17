@@ -11,6 +11,7 @@ export interface CenteredLayoutProps {
   containerClassName?: string;
   onRefresh?: () => Promise<any> | void;
   enablePullToRefresh?: boolean;
+  noBottomPadding?: boolean;
 }
 
 export const CenteredLayout: React.FC<CenteredLayoutProps> = ({ 
@@ -20,6 +21,7 @@ export const CenteredLayout: React.FC<CenteredLayoutProps> = ({
   containerClassName,
   onRefresh,
   enablePullToRefresh = true,
+  noBottomPadding = false,
 }) => {
   const app = useOptionalApp();
 
@@ -40,7 +42,10 @@ export const CenteredLayout: React.FC<CenteredLayoutProps> = ({
   }, [onRefresh, app]);
 
   const content = (
-    <div className={cn(maxWidth, 'w-full mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 pt-4 sm:pt-5 lg:pt-6 lg:pb-10 flex flex-col flex-1', className)} style={{ paddingBottom: 'calc(var(--bottom-reserved-space) + 8px)' }}>
+    <div
+      className={cn(maxWidth, 'w-full mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 pt-4 sm:pt-5 lg:pt-6 lg:pb-10 flex flex-col flex-1', className)}
+      style={noBottomPadding ? undefined : { paddingBottom: 'calc(var(--bottom-reserved-space) + 8px)' }}
+    >
       {children}
     </div>
   );

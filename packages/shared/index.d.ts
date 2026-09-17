@@ -43,6 +43,7 @@ export interface VoiceActionEntities {
   paymentMethod?: string;
   accountId?: number;
   accountName?: string;
+  attachment?: string;
   goalTarget?: number;
   goalDuration?: string;
   goalMonthly?: number;
@@ -106,6 +107,7 @@ export interface KaiEntityPatch extends Partial<VoiceActionEntities> {
   period?: 'weekly' | 'monthly' | 'yearly';
   accountId?: number;
   accountName?: string;
+  attachment?: string;
   /** 1-based index of the clarification option the user picked; the client expands it to that option's patch */
   chosenOption?: number;
   title?: string;
