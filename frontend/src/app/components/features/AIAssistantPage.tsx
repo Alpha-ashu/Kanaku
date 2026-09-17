@@ -156,6 +156,16 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
     }
   }, [messages, mode, isLoading]);
 
+  // Lock outer window scrolling while AI assistant page is active so inner sections handle scrolling
+  useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    window.scrollTo(0, 0);
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, []);
+
   // ─── Chat (text) mode ────────────────────────────────────────────────────────
 
   const executeQuery = async (queryText: string) => {
@@ -286,6 +296,7 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
     <CenteredLayout
       enablePullToRefresh={false}
       noBottomPadding
+      fullHeight
       containerClassName="h-full !min-h-0 overflow-hidden"
       className="relative z-10 flex flex-col flex-1 !pt-1 sm:!pt-2 pb-0 select-none h-full min-h-0 overflow-hidden"
     >

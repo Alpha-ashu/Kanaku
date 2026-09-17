@@ -12,6 +12,7 @@ export interface CenteredLayoutProps {
   onRefresh?: () => Promise<any> | void;
   enablePullToRefresh?: boolean;
   noBottomPadding?: boolean;
+  fullHeight?: boolean;
 }
 
 export const CenteredLayout: React.FC<CenteredLayoutProps> = ({ 
@@ -22,6 +23,7 @@ export const CenteredLayout: React.FC<CenteredLayoutProps> = ({
   onRefresh,
   enablePullToRefresh = true,
   noBottomPadding = false,
+  fullHeight = false,
 }) => {
   const app = useOptionalApp();
 
@@ -43,15 +45,26 @@ export const CenteredLayout: React.FC<CenteredLayoutProps> = ({
 
   const content = (
     <div
-      className={cn(maxWidth, 'w-full mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 pt-4 sm:pt-5 lg:pt-6 lg:pb-10 flex flex-col flex-1', className)}
-      style={noBottomPadding ? undefined : { paddingBottom: 'calc(var(--bottom-reserved-space) + 8px)' }}
+      className={cn(
+        maxWidth,
+        'w-full mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 flex flex-col flex-1',
+        fullHeight ? 'min-h-0 h-full overflow-hidden' : 'pt-4 sm:pt-5 lg:pt-6 lg:pb-10',
+        className
+      )}
+      style={noBottomPadding || fullHeight ? undefined : { paddingBottom: 'calc(var(--bottom-reserved-space) + 8px)' }}
     >
       {children}
     </div>
   );
 
   return (
-    <div className={cn('w-full min-h-screen bg-transparent overflow-x-hidden flex flex-col justify-start items-center', containerClassName)}>
+    <div
+      className={cn(
+        'w-full bg-transparent flex flex-col justify-start items-center',
+        fullHeight ? 'h-full min-h-0 max-h-full overflow-hidden' : 'min-h-screen overflow-x-hidden',
+        containerClassName
+      )}
+    >
       {enablePullToRefresh ? (
         <PullToRefresh onRefresh={handleDefaultRefresh} className="flex-1 flex flex-col w-full">
           {content}
