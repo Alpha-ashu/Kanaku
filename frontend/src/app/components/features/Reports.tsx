@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 import { useApp, useSubFeature } from '@/contexts/AppContext';
 import {
   BarChart,
@@ -22,7 +22,7 @@ import {
   Download,
   FileSpreadsheet,
   FileText,
-  MoreHorizontal,
+  FileJson2,
   Share2,
   TrendingUp,
   TrendingDown,
@@ -37,14 +37,18 @@ import {
   X,
   Layers,
   Activity,
-  CheckCircle2,
   ChevronRight,
   ChevronDown,
-  SlidersHorizontal,
   Target,
   BadgePercent,
   Landmark,
   PiggyBank,
+  FileDown,
+  Check,
+  Clock,
+  ArrowRight,
+  SlidersHorizontal,
+  Table as TableIcon,
 } from 'lucide-react';
 import { Card } from '@/app/components/ui/card';
 import { Button } from '@/app/components/ui/button';
@@ -59,8 +63,34 @@ import { isClosedInvestment } from '@/lib/investmentUtils';
 import { AIInsightsCard } from '@/app/components/shared/AIInsightsCard';
 import { cn } from '@/lib/utils';
 
-const chartColors = ['#6366F1', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4', '#EC4899', '#F97316'];
+/* ─── Pro Design Tokens ─────────────────────────────────────────────────────── */
+const CHART_COLORS = [
+  '#6366F1', // Indigo
+  '#10B981', // Emerald
+  '#F59E0B', // Amber
+  '#EC4899', // Pink
+  '#8B5CF6', // Purple
+  '#06B6D4', // Cyan
+  '#EF4444', // Red
+  '#F97316', // Orange
+];
 
+const GLASS_CARD = 'bg-white/95 backdrop-blur-xl border border-slate-100/90 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)]';
+const GLASS_CARD_ROUNDED = `${GLASS_CARD} rounded-[24px] sm:rounded-[32px]`;
+
+const TOOLTIP_STYLE = {
+  backgroundColor: 'rgba(15, 23, 42, 0.95)',
+  borderColor: 'rgba(99, 102, 241, 0.25)',
+  borderRadius: '14px',
+  color: '#ffffff',
+  fontSize: '12px',
+  fontWeight: 600,
+  backdropFilter: 'blur(12px)',
+  boxShadow: '0 12px 36px rgba(0, 0, 0, 0.25)',
+  padding: '10px 14px',
+};
+
+/* ─── Forecast Section ─────────────────────────────────────────────────────── */
 interface ForecastSectionProps {
   transactions: any[];
   accounts: any[];
@@ -74,8 +104,6 @@ const ForecastSection: React.FC<ForecastSectionProps> = ({ transactions, account
     const monthlyMap = new Map<string, number>();
 
     transactions.forEach(t => {
-      // A transfer moves money between the user's own accounts — counting it as
-      // spending projected wealth falling every time they topped up a wallet.
       if (t.type !== 'income' && t.type !== 'expense') return;
       const date = new Date(t.date);
       const key = `${date.getFullYear()}-${date.getMonth()}`;
@@ -106,9 +134,6 @@ const ForecastSection: React.FC<ForecastSectionProps> = ({ transactions, account
     for (let i = 1; i <= 6; i++) {
       const futureDate = new Date(now.getFullYear(), now.getMonth() + i, 1);
       const monthLabel = futureDate.toLocaleDateString('en-US', { month: 'short' });
-
-      // Scale toward the better outcome for optimistic and the worse for
-      // conservative; plain ×1.3 / ×0.7 swapped them whenever the net was negative.
       const swing = Math.abs(avgMonthlyNet) * 0.3;
       const expected = startValue + avgMonthlyNet * i;
       const optimistic = startValue + (avgMonthlyNet + swing) * i;
@@ -127,19 +152,16 @@ const ForecastSection: React.FC<ForecastSectionProps> = ({ transactions, account
 
   return (
     <div className="space-y-4">
-      <p className="text-xs text-slate-500 font-medium leading-relaxed">
-        Based on your historical spending habits, here is a 6-month prediction of your wealth trajectory:
+      <p className="font-page-sub text-slate-500 leading-relaxed">
+        Based on your historical cash flow, here is a 6-month predictive projection of your net wealth:
       </p>
-      <div className="h-[240px] w-full">
+      <div className="h-[220px] w-full">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={forecastData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
             <XAxis dataKey="month" stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={{ stroke: '#e2e8f0' }} />
             <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(val) => formatCurrency(Number(val))} />
-            <Tooltip
-              contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.9)', borderColor: '#334155', borderRadius: '16px', color: '#fff', fontSize: '12px' }}
-              formatter={(value) => [formatCurrency(Number(value)), '']}
-            />
+            <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(value) => [formatCurrency(Number(value)), '']} />
             <Legend wrapperStyle={{ fontSize: 11, paddingTop: 10 }} />
             <Line type="monotone" dataKey="Optimistic" stroke="#10B981" strokeWidth={2} strokeDasharray="4 4" dot={false} />
             <Line type="monotone" dataKey="Expected" stroke="#6366F1" strokeWidth={2.5} dot={{ r: 3, fill: '#6366F1' }} />
@@ -147,18 +169,70 @@ const ForecastSection: React.FC<ForecastSectionProps> = ({ transactions, account
           </LineChart>
         </ResponsiveContainer>
       </div>
-      <div className="bg-indigo-50/70 border border-indigo-100 rounded-2xl p-3 text-xs font-medium text-indigo-900 flex items-center gap-2">
+      <div className="bg-indigo-50/70 border border-indigo-100 rounded-2xl p-3 font-caption text-indigo-900 flex items-center gap-2">
         <Sparkles size={15} className="text-indigo-600 shrink-0" />
-        <span>Keep monthly expenses below average to track closer to the <strong>Optimistic</strong> trajectory.</span>
+        <span>Maintain current savings pacing to achieve the <strong>Optimistic</strong> wealth trajectory.</span>
       </div>
     </div>
   );
 };
 
-type TimeRange = 'daily' | 'weekly' | 'monthly' | 'yearly' | 'custom';
-type ExportAction = 'download' | 'share' | 'csv' | 'excel' | 'more';
-type AnalyticsTab = 'all' | 'cashflow' | 'spending' | 'wealth' | 'transactions';
+/* ─── Export Format Card ───────────────────────────────────────────────────── */
+interface ExportFormatCardProps {
+  icon: React.ReactNode;
+  label: string;
+  description: string;
+  colorClass: string;
+  bgClass: string;
+  onClick: () => void;
+  isActive?: boolean;
+  testId: string;
+}
 
+const ExportFormatCard: React.FC<ExportFormatCardProps> = ({
+  icon, label, description, colorClass, bgClass, onClick, isActive, testId,
+}) => (
+  <button
+    type="button"
+    data-testid={testId}
+    onClick={onClick}
+    className={cn(
+      'group flex items-center gap-3.5 w-full p-3.5 sm:p-4 rounded-2xl border transition-all duration-200 cursor-pointer active:scale-[0.98]',
+      isActive
+        ? 'bg-slate-900 border-slate-800 text-white shadow-lg scale-[0.98]'
+        : 'bg-white/80 border-slate-200/70 hover:bg-white hover:border-slate-300 hover:shadow-sm'
+    )}
+  >
+    <div className={cn(
+      'w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors',
+      isActive ? 'bg-white/15' : bgClass
+    )}>
+      <span className={isActive ? 'text-white' : colorClass}>{icon}</span>
+    </div>
+    <div className="text-left min-w-0">
+      <span className={cn(
+        'font-card-title block',
+        isActive ? 'text-white' : 'text-slate-800'
+      )}>{label}</span>
+      <span className={cn(
+        'font-caption block mt-0.5',
+        isActive ? 'text-slate-300' : 'text-slate-400'
+      )}>{description}</span>
+    </div>
+    {isActive && (
+      <div className="ml-auto shrink-0">
+        <Check size={16} className="text-emerald-400" />
+      </div>
+    )}
+  </button>
+);
+
+/* ─── Types ────────────────────────────────────────────────────────────────── */
+type TimeRange = 'monthly' | 'weekly' | 'daily' | 'yearly' | 'custom';
+type ExportAction = 'download' | 'share' | 'csv' | 'excel' | 'json' | 'more';
+type AnalyticsTab = 'all' | 'spending' | 'cashflow' | 'wealth' | 'transactions';
+
+/* ─── Main Reports Component ──────────────────────────────────────────────── */
 export const Reports: React.FC = () => {
   const { transactions, accounts, loans, goals, investments, currency, setCurrentPage } = useApp();
   const canPdf = useSubFeature('reports', 'pdfExport');
@@ -167,25 +241,38 @@ export const Reports: React.FC = () => {
   const canAiInsights = useSubFeature('reports', 'aiInsightsReport');
   const canForecasting = useSubFeature('reports', 'forecasting');
 
+  // Default custom range to current month
+  const defaultCustomDates = useMemo(() => {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), now.getMonth(), 1);
+    const formatDate = (d: Date) => d.toISOString().split('T')[0];
+    return {
+      start: formatDate(start),
+      end: formatDate(now),
+    };
+  }, []);
+
   const [timeRange, setTimeRange] = useState<TimeRange>('monthly');
-  const [customRange, setCustomRange] = useState({ start: '', end: '' });
-  const [activeTab, setActiveTab] = useState<AnalyticsTab>('spending');
+  const [customRange, setCustomRange] = useState(defaultCustomDates);
+  const [activeTab, setActiveTab] = useState<AnalyticsTab>('all');
   const [showFilterDrawer, setShowFilterDrawer] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [activeExportAction, setActiveExportAction] = useState<ExportAction | null>(null);
+  const [showExportPanel, setShowExportPanel] = useState(false);
 
   const pulseExportAction = (action: ExportAction) => {
     setActiveExportAction(action);
     window.setTimeout(() => {
       setActiveExportAction((current) => (current === action ? null : current));
-    }, 900);
+    }, 1200);
   };
 
-  const formatCurrency = (amount: number) => {
+  const formatCurrency = useCallback((amount: number) => {
     return formatCurrencyAmount(amount, currency);
-  };
+  }, [currency]);
 
+  /* ─── Date Filtering ──────────────────────────────────────────────────── */
   const dateRange = useMemo(() => {
     const now = new Date();
     const end = new Date(now);
@@ -202,8 +289,8 @@ export const Reports: React.FC = () => {
     } else if (timeRange === 'yearly') {
       start = new Date(now.getFullYear(), 0, 1);
     } else if (timeRange === 'custom') {
-      const parsedStart = parseDateInputValue(customRange.start);
-      const parsedEnd = parseDateInputValue(customRange.end);
+      const parsedStart = parseDateInputValue(customRange.start || defaultCustomDates.start);
+      const parsedEnd = parseDateInputValue(customRange.end || defaultCustomDates.end);
       if (parsedStart && parsedEnd) {
         start = parsedStart;
         end.setTime(parsedEnd.getTime());
@@ -211,7 +298,7 @@ export const Reports: React.FC = () => {
     }
 
     return { start, end };
-  }, [timeRange, customRange]);
+  }, [timeRange, customRange, defaultCustomDates]);
 
   const filteredTransactions = useMemo(() => {
     if (!dateRange.start) return transactions;
@@ -226,6 +313,7 @@ export const Reports: React.FC = () => {
     });
   }, [transactions, dateRange]);
 
+  /* ─── Computed Stats ──────────────────────────────────────────────────── */
   const summaryStats = useMemo(() => {
     const totalIncome = filteredTransactions.filter((t) => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
     const totalExpenses = filteredTransactions.filter((t) => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
@@ -275,43 +363,20 @@ export const Reports: React.FC = () => {
   }, [totalAccountBalance, totalInvestmentValue, totalLent, totalBorrowed]);
 
   const expenseBreakdown = useMemo(() => {
-    const categories: Record<string, number> = {};
+    const categories: Record<string, { total: number; count: number }> = {};
     filteredTransactions
       .filter((t) => t.type === 'expense')
       .forEach((t) => {
-        categories[t.category] = (categories[t.category] || 0) + t.amount;
+        if (!categories[t.category]) {
+          categories[t.category] = { total: 0, count: 0 };
+        }
+        categories[t.category].total += t.amount;
+        categories[t.category].count += 1;
       });
 
     return Object.entries(categories)
-      .map(([name, value]) => ({ name, value }))
+      .map(([name, data]) => ({ name, value: data.total, count: data.count }))
       .sort((a, b) => b.value - a.value);
-  }, [filteredTransactions]);
-
-  const cashFlowMonthly = useMemo(() => {
-    const monthlyMap = new Map<string, { income: number; expense: number }>();
-    filteredTransactions.forEach((t) => {
-      const date = new Date(t.date);
-      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-      if (!monthlyMap.has(key)) {
-        monthlyMap.set(key, { income: 0, expense: 0 });
-      }
-      const bucket = monthlyMap.get(key)!;
-      if (t.type === 'income') bucket.income += t.amount;
-      if (t.type === 'expense') bucket.expense += t.amount;
-    });
-
-    return Array.from(monthlyMap.entries())
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([key, value]) => {
-        const [year, month] = key.split('-').map(Number);
-        const label = new Date(year, month - 1, 1).toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
-        return {
-          month: label,
-          income: value.income,
-          expense: value.expense,
-          net: value.income - value.expense,
-        };
-      });
   }, [filteredTransactions]);
 
   const monthlyTimeline = useMemo(() => {
@@ -445,7 +510,7 @@ export const Reports: React.FC = () => {
       const end = dateRange.end;
       const start = new Date(end);
       start.setDate(end.getDate() - 6);
-      return `${start.toLocaleDateString('en-US', { day: '2-digit', month: 'short' })} - ${end.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })}`;
+      return `${start.toLocaleDateString('en-US', { day: '2-digit', month: 'short' })} – ${end.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })}`;
     }
     if (timeRange === 'monthly') {
       return new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
@@ -453,65 +518,201 @@ export const Reports: React.FC = () => {
     if (timeRange === 'yearly') {
       return new Date().getFullYear().toString();
     }
-    const start = parseDateInputValue(customRange.start);
-    const end = parseDateInputValue(customRange.end);
+    const start = parseDateInputValue(customRange.start || defaultCustomDates.start);
+    const end = parseDateInputValue(customRange.end || defaultCustomDates.end);
     if (start && end) {
-      return `${start.toLocaleDateString('en-US', { day: '2-digit', month: 'short' })} - ${end.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })}`;
+      return `${start.toLocaleDateString('en-US', { day: '2-digit', month: 'short' })} – ${end.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })}`;
     }
     return 'Custom Range';
-  }, [timeRange, dateRange.end, customRange]);
+  }, [timeRange, dateRange.end, customRange, defaultCustomDates]);
 
+  /* ─── Export Functions ────────────────────────────────────────────────── */
   const exportCSV = async () => {
-    const header = ['Date', 'Category', 'Type', 'Amount', 'Payment Method', 'Description'];
+    const now = new Date();
+    const headerRows = [
+      `# KANAKU Financial Report`,
+      `# Period: ${reportPeriodLabel}`,
+      `# Generated: ${now.toLocaleDateString('en-US', { day: '2-digit', month: 'long', year: 'numeric' })} at ${now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`,
+      `# Currency: ${currency}`,
+      `#`,
+    ];
+
+    const columnHeaders = ['Date', 'Description', 'Category', 'Type', 'Amount', 'Payment Method'];
     const rows = tableTransactions.map((t) => {
       const account = accounts.find((a) => a.id === t.accountId);
+      const sign = t.type === 'expense' ? '-' : '+';
       return [
         formatLocalDate(t.date, 'en-US'),
-        t.category,
+        t.description || t.category || '',
+        t.category || '',
         t.type,
-        t.amount.toString(),
+        `${sign}${t.amount.toFixed(2)}`,
         account?.name || '',
-        t.description || '',
       ];
     });
 
-    const csv = [header, ...rows]
-      .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
-      .join('\n');
+    const summaryRows = [
+      '',
+      '# ─── Summary ───',
+      `# Total Income,${summaryStats.totalIncome.toFixed(2)}`,
+      `# Total Expenses,${summaryStats.totalExpenses.toFixed(2)}`,
+      `# Net Savings,${summaryStats.netSavings.toFixed(2)}`,
+      `# Savings Rate,${summaryStats.savingsRate.toFixed(1)}%`,
+    ];
+
+    const csvLines = [
+      ...headerRows,
+      columnHeaders.map((cell) => `"${cell}"`).join(','),
+      ...rows.map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(',')),
+      ...summaryRows,
+    ];
+
+    const csv = csvLines.join('\n');
 
     await downloadFile({
-      filename: `report-${Date.now()}.csv`,
+      filename: `kanaku-report-${reportPeriodLabel.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase()}.csv`,
       mimeType: 'text/csv;charset=utf-8',
       data: csv,
-      shareTitle: 'Reports CSV',
+      shareTitle: 'KANAKU Financial Report (CSV)',
     });
   };
 
   const exportExcel = async () => {
-    const header = ['Date', 'Category', 'Type', 'Amount', 'Payment Method', 'Description'];
+    const now = new Date();
     const rows = tableTransactions.map((t) => {
       const account = accounts.find((a) => a.id === t.accountId);
+      const sign = t.type === 'expense' ? '-' : '+';
       return [
         formatLocalDate(t.date, 'en-US'),
-        t.category,
+        t.description || t.category || '',
+        t.category || '',
         t.type,
-        t.amount.toString(),
+        `${sign}${t.amount.toFixed(2)}`,
         account?.name || '',
-        t.description || '',
       ];
     });
 
-    const table = [header, ...rows]
-      .map((row) => `<tr>${row.map((cell) => `<td>${String(cell)}</td>`).join('')}</tr>`)
-      .join('');
+    const catRows = expenseBreakdown.map((cat) => {
+      const pct = summaryStats.totalExpenses > 0 ? ((cat.value / summaryStats.totalExpenses) * 100).toFixed(1) : '0.0';
+      return [cat.name, formatCurrency(cat.value), `${pct}%`];
+    });
 
-    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"/></head><body><table>${table}</table></body></html>`;
+    const monthRows = monthlyTimeline.map((m) => [
+      m.fullMonth,
+      formatCurrency(m.income),
+      formatCurrency(m.expense),
+      formatCurrency(m.net),
+    ]);
+
+    const thStyle = 'style="background-color:#0f172a;color:#ffffff;font-weight:bold;padding:10px 14px;font-size:13px;border:1px solid #334155;text-align:left"';
+    const tdStyle = 'style="padding:8px 14px;font-size:12px;border:1px solid #e2e8f0;color:#1e293b"';
+    const tdAltStyle = 'style="padding:8px 14px;font-size:12px;border:1px solid #e2e8f0;color:#1e293b;background-color:#f8fafc"';
+    const sectionStyle = 'style="font-size:16px;font-weight:bold;color:#0f172a;padding:24px 0 8px 0;border-bottom:2px solid #6366f1"';
+    const metaStyle = 'style="font-size:11px;color:#64748b;padding:2px 0"';
+
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"/></head><body style="font-family:Arial,sans-serif;margin:20px">
+      <h1 style="font-size:22px;color:#0f172a;margin-bottom:4px">KANAKU Financial Report</h1>
+      <p ${metaStyle}>Period: ${reportPeriodLabel}</p>
+      <p ${metaStyle}>Generated: ${now.toLocaleDateString('en-US', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
+      <p ${metaStyle}>Currency: ${currency}</p>
+
+      <h2 ${sectionStyle}>Financial Summary</h2>
+      <table style="border-collapse:collapse;width:100%;margin:12px 0">
+        <tr>
+          <td ${tdStyle}><strong>Total Income</strong></td><td ${tdStyle}>${formatCurrency(summaryStats.totalIncome)}</td>
+          <td ${tdStyle}><strong>Total Expenses</strong></td><td ${tdStyle}>${formatCurrency(summaryStats.totalExpenses)}</td>
+        </tr>
+        <tr>
+          <td ${tdAltStyle}><strong>Net Savings</strong></td><td ${tdAltStyle}>${formatCurrency(summaryStats.netSavings)}</td>
+          <td ${tdAltStyle}><strong>Savings Rate</strong></td><td ${tdAltStyle}>${summaryStats.savingsRate.toFixed(1)}%</td>
+        </tr>
+      </table>
+
+      <h2 ${sectionStyle}>Category Breakdown</h2>
+      <table style="border-collapse:collapse;width:100%;margin:12px 0">
+        <tr><th ${thStyle}>Category</th><th ${thStyle}>Amount</th><th ${thStyle}>Percentage</th></tr>
+        ${catRows.map((r, i) => `<tr>${r.map((c) => `<td ${i % 2 === 0 ? tdStyle : tdAltStyle}>${c}</td>`).join('')}</tr>`).join('')}
+      </table>
+
+      <h2 ${sectionStyle}>Monthly Trend</h2>
+      <table style="border-collapse:collapse;width:100%;margin:12px 0">
+        <tr><th ${thStyle}>Month</th><th ${thStyle}>Income</th><th ${thStyle}>Expense</th><th ${thStyle}>Net</th></tr>
+        ${monthRows.map((r, i) => `<tr>${r.map((c) => `<td ${i % 2 === 0 ? tdStyle : tdAltStyle}>${c}</td>`).join('')}</tr>`).join('')}
+      </table>
+
+      <h2 ${sectionStyle}>Transaction Statement</h2>
+      <table style="border-collapse:collapse;width:100%;margin:12px 0">
+        <tr><th ${thStyle}>Date</th><th ${thStyle}>Description</th><th ${thStyle}>Category</th><th ${thStyle}>Type</th><th ${thStyle}>Amount</th><th ${thStyle}>Account</th></tr>
+        ${rows.map((r, i) => `<tr>${r.map((c) => `<td ${i % 2 === 0 ? tdStyle : tdAltStyle}>${c}</td>`).join('')}</tr>`).join('')}
+      </table>
+
+      <p style="font-size:10px;color:#94a3b8;margin-top:30px;border-top:1px solid #e2e8f0;padding-top:10px">
+        Generated by KANAKU • Financial Operating System &bull; Confidential Financial Report
+      </p>
+    </body></html>`;
 
     await downloadFile({
-      filename: `report-${Date.now()}.xls`,
+      filename: `kanaku-report-${reportPeriodLabel.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase()}.xls`,
       mimeType: 'application/vnd.ms-excel',
       data: html,
-      shareTitle: 'Reports Excel',
+      shareTitle: 'KANAKU Financial Report (Excel)',
+    });
+  };
+
+  const exportJSON = async () => {
+    const now = new Date();
+    const jsonData = {
+      report: {
+        title: 'KANAKU Financial Report',
+        period: reportPeriodLabel,
+        generatedAt: now.toISOString(),
+        currency: currency,
+      },
+      summary: {
+        totalIncome: summaryStats.totalIncome,
+        totalExpenses: summaryStats.totalExpenses,
+        netSavings: summaryStats.netSavings,
+        savingsRate: Number(summaryStats.savingsRate.toFixed(2)),
+        netWorth: authoritativeNetWorth,
+        liquidBalance: totalAccountBalance,
+        investmentValue: totalInvestmentValue,
+        totalBorrowed,
+        totalLent,
+      },
+      categoryBreakdown: expenseBreakdown.map((cat) => ({
+        category: cat.name,
+        amount: cat.value,
+        percentage: summaryStats.totalExpenses > 0
+          ? Number(((cat.value / summaryStats.totalExpenses) * 100).toFixed(2))
+          : 0,
+      })),
+      monthlyTrend: monthlyTimeline.map((m) => ({
+        month: m.fullMonth,
+        income: m.income,
+        expense: m.expense,
+        net: m.net,
+        netWorth: m.netWorth,
+      })),
+      transactions: tableTransactions.map((t) => {
+        const account = accounts.find((a) => a.id === t.accountId);
+        return {
+          date: formatLocalDate(t.date, 'en-US'),
+          description: t.description || '',
+          category: t.category || '',
+          type: t.type,
+          amount: t.amount,
+          account: account?.name || '',
+        };
+      }),
+    };
+
+    const jsonStr = JSON.stringify(jsonData, null, 2);
+
+    await downloadFile({
+      filename: `kanaku-report-${reportPeriodLabel.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase()}.json`,
+      mimeType: 'application/json',
+      data: jsonStr,
+      shareTitle: 'KANAKU Financial Report (JSON)',
     });
   };
 
@@ -529,502 +730,585 @@ export const Reports: React.FC = () => {
   const downloadPDF = async () => {
     const pdfBlob = await generateReportPdfBlob();
     await downloadFile({
-      filename: `finance-report-${Date.now()}.pdf`,
+      filename: `kanaku-report-${reportPeriodLabel.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase()}.pdf`,
       mimeType: 'application/pdf',
       data: pdfBlob,
       preferShare: false,
-      shareTitle: 'Finance Report',
+      shareTitle: 'KANAKU Financial Report',
     });
   };
 
   const sharePDF = async () => {
     const pdfBlob = await generateReportPdfBlob();
     const shared = await shareFile({
-      filename: `finance-report-${Date.now()}.pdf`,
+      filename: `kanaku-report-${Date.now()}.pdf`,
       mimeType: 'application/pdf',
       data: pdfBlob,
-      shareTitle: 'Finance Report',
+      shareTitle: 'KANAKU Financial Report',
     });
     if (shared === 'cancelled') {
       await downloadFile({
-        filename: `finance-report-${Date.now()}.pdf`,
+        filename: `kanaku-report-${Date.now()}.pdf`,
         mimeType: 'application/pdf',
         data: pdfBlob,
         preferShare: false,
-        shareTitle: 'Finance Report',
+        shareTitle: 'KANAKU Financial Report',
       });
     }
   };
 
-  const tabs: Array<{ id: AnalyticsTab; label: string; icon: React.ReactNode }> = [
-    { id: 'wealth', label: 'Net Worth', icon: <Sparkles size={14} /> },
-    { id: 'spending', label: 'Total Spending', icon: <PieIcon size={14} /> },
-    { id: 'cashflow', label: 'Spending by Month', icon: <BarChart3 size={14} /> },
-    { id: 'all', label: 'All Insights', icon: <Layers size={14} /> },
-    { id: 'transactions', label: 'Statement Ledger', icon: <FileText size={14} /> },
+  /* ─── Navigation Tabs Config ─────────────────────────────────────────── */
+  const tabs: Array<{
+    id: AnalyticsTab;
+    label: string;
+    mobileLabel: string;
+    ariaLabel: string;
+    icon: React.ReactNode;
+  }> = [
+    { id: 'all', label: 'Overview', mobileLabel: 'Overview', ariaLabel: 'Overview view', icon: <Layers size={13} /> },
+    { id: 'spending', label: 'Spending', mobileLabel: 'Spend', ariaLabel: 'Spending breakdown view', icon: <PieIcon size={13} /> },
+    { id: 'cashflow', label: 'Cash Flow', mobileLabel: 'Flow', ariaLabel: 'Cash flow comparison view', icon: <BarChart3 size={13} /> },
+    { id: 'wealth', label: 'Balance Sheet', mobileLabel: 'Balance', ariaLabel: 'Balance sheet and net worth view', icon: <Sparkles size={13} /> },
+    { id: 'transactions', label: 'Statement', mobileLabel: 'Ledger', ariaLabel: 'Transaction statement ledger view', icon: <FileText size={13} /> },
   ];
 
+  const handleTabKeyDown = (e: React.KeyboardEvent, index: number) => {
+    if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      const nextIndex = (index + 1) % tabs.length;
+      setActiveTab(tabs[nextIndex].id);
+      document.getElementById(`report-tab-${tabs[nextIndex].id}`)?.focus();
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      const prevIndex = (index - 1 + tabs.length) % tabs.length;
+      setActiveTab(tabs[prevIndex].id);
+      document.getElementById(`report-tab-${tabs[prevIndex].id}`)?.focus();
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      setActiveTab(tabs[0].id);
+      document.getElementById(`report-tab-${tabs[0].id}`)?.focus();
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      setActiveTab(tabs[tabs.length - 1].id);
+      document.getElementById(`report-tab-${tabs[tabs.length - 1].id}`)?.focus();
+    }
+  };
+
+  /* ─── Render ──────────────────────────────────────────────────────────── */
   return (
     <CenteredLayout>
-      <div className="space-y-6 sm:space-y-8 pb-32">
-        {/* Top Header & Unified Export Command Center */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full">
-          <div className="flex items-center gap-3 min-w-0">
+      <div className="space-y-4 sm:space-y-6 pb-44 sm:pb-48">
+
+        {/* ═══════════════════════════════════════════════════════════════════ */}
+        {/* 1. TOP HEADER: Navigation, Title, Quick Actions                     */}
+        {/* ═══════════════════════════════════════════════════════════════════ */}
+        <div className="flex items-center justify-between gap-2.5 pt-1">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
             <button
               type="button"
               onClick={() => setCurrentPage('dashboard')}
-              className="w-10 h-10 rounded-full bg-white border border-slate-200/80 hover:bg-slate-50 active:scale-95 shadow-xs flex items-center justify-center text-slate-700 transition-all shrink-0 cursor-pointer"
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-white border border-slate-200/80 hover:bg-slate-50 active:scale-95 shadow-xs flex items-center justify-center text-slate-700 transition-all shrink-0 cursor-pointer"
               aria-label="Go to dashboard"
               title="Go to dashboard"
               data-testid="reports-go-back-button"
             >
-              <ArrowLeft size={18} className="text-slate-700" />
+              <ArrowLeft size={17} className="text-slate-700" />
             </button>
-            <div>
+            <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <h1 className="font-page-title text-slate-900 tracking-tight leading-none truncate">
-                  Reports & Analytics
+                <h1 className="font-page-title text-slate-900 tracking-tight leading-tight truncate">
+                  Financial Reports
                 </h1>
-                <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-2xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200/60 uppercase tracking-wider">
+                <span className="hidden xs:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-2xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60 uppercase tracking-wider">
                   <Activity size={10} /> Live
                 </span>
               </div>
-              <p className="text-xs text-slate-400 font-medium mt-1 flex items-center gap-1.5">
-                <Calendar size={12} />
-                <span>Period: <strong>{reportPeriodLabel}</strong></span>
+              <p className="font-page-sub flex items-center gap-1.5 truncate mt-0.5">
+                <Calendar size={12} className="text-slate-400 shrink-0" />
+                <span className="truncate">Period: <strong className="text-slate-700 font-semibold">{reportPeriodLabel}</strong></span>
               </p>
             </div>
           </div>
 
-          {/* Grouped Export Toolbar */}
-          <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-0.5 shrink-0">
-            {canPdf && (
-              <Button
-                onClick={() => {
-                  pulseExportAction('download');
-                  void downloadPDF();
-                }}
-                data-testid="reports-download-pdf-button"
-                aria-label="Download PDF Statement"
-                title="Download PDF Statement"
-                className={cn(
-                  'h-9 sm:h-10 px-3.5 sm:px-4 rounded-full font-bold text-xs transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer shadow-xs whitespace-nowrap',
-                  activeExportAction === 'download'
-                    ? 'bg-slate-900 text-white ring-2 ring-indigo-500/20'
-                    : 'bg-[#18181B] hover:bg-black text-white shadow-sm'
-                )}
-              >
-                <Download size={14} className="stroke-[2.5]" />
-                <span>Download PDF</span>
-              </Button>
-            )}
-
-            {canExcel && (
-              <Button
-                onClick={() => {
-                  pulseExportAction('excel');
-                  void exportExcel();
-                }}
-                data-testid="reports-export-excel-button"
-                aria-label="Export Excel"
-                title="Export Excel"
-                className={cn(
-                  'h-9 sm:h-10 px-3 sm:px-3.5 rounded-full font-bold text-xs transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer border shadow-2xs whitespace-nowrap',
-                  activeExportAction === 'excel'
-                    ? 'bg-emerald-600 text-white border-emerald-600'
-                    : 'bg-white text-slate-700 hover:text-slate-900 border-slate-200/80 hover:bg-slate-50'
-                )}
-              >
-                <FileSpreadsheet size={14} className="text-emerald-600" />
-                <span className="hidden sm:inline">Excel</span>
-              </Button>
-            )}
-
-            {canCsv && (
-              <Button
-                onClick={() => {
-                  pulseExportAction('csv');
-                  void exportCSV();
-                }}
-                data-testid="reports-export-csv-button"
-                aria-label="Export CSV"
-                title="Export CSV"
-                className={cn(
-                  'h-9 sm:h-10 px-3 sm:px-3.5 rounded-full font-bold text-xs transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer border shadow-2xs whitespace-nowrap',
-                  activeExportAction === 'csv'
-                    ? 'bg-indigo-600 text-white border-indigo-600'
-                    : 'bg-white text-slate-700 hover:text-slate-900 border-slate-200/80 hover:bg-slate-50'
-                )}
-              >
-                <FileText size={14} className="text-indigo-600" />
-                <span className="hidden sm:inline">CSV</span>
-              </Button>
-            )}
+          {/* Action Buttons */}
+          <div className="flex items-center gap-2 shrink-0">
+            <Button
+              onClick={() => setShowExportPanel(true)}
+              data-testid="reports-export-toggle"
+              aria-label="Export Options"
+              className="h-9 sm:h-10 px-3.5 sm:px-4 rounded-full font-bold text-xs bg-[#18181B] text-white hover:bg-black active:scale-95 transition-all flex items-center gap-1.5 shadow-xs cursor-pointer"
+            >
+              <FileDown size={14} className="stroke-[2.5]" />
+              <span>Export</span>
+            </Button>
 
             {canPdf && (
               <Button
-                onClick={() => {
-                  pulseExportAction('share');
-                  void sharePDF();
-                }}
+                onClick={() => { pulseExportAction('share'); void sharePDF(); }}
                 data-testid="reports-share-button"
                 aria-label="Share Report"
                 title="Share Report"
-                className={cn(
-                  'h-9 sm:h-10 px-3 sm:px-3.5 rounded-full font-bold text-xs transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer border shadow-2xs whitespace-nowrap',
-                  activeExportAction === 'share'
-                    ? 'bg-slate-900 text-white'
-                    : 'bg-white text-slate-700 hover:text-slate-900 border-slate-200/80 hover:bg-slate-50'
-                )}
+                className="h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-white text-slate-700 hover:text-slate-900 border border-slate-200/80 hover:bg-slate-50 active:scale-95 shadow-xs flex items-center justify-center transition-all cursor-pointer shrink-0"
               >
-                <Share2 size={14} />
-                <span className="hidden sm:inline">Share</span>
+                <Share2 size={15} />
               </Button>
             )}
-
-            <Button
-              onClick={() => {
-                pulseExportAction('more');
-                setCurrentPage('export-reports');
-              }}
-              data-testid="reports-more-export-button"
-              aria-label="More Options"
-              title="More Export Options"
-              className="h-9 sm:h-10 px-3 rounded-full font-bold text-xs bg-white text-slate-600 hover:text-slate-900 border border-slate-200/80 hover:bg-slate-50 transition-all active:scale-95 flex items-center justify-center cursor-pointer shadow-2xs"
-            >
-              <MoreHorizontal size={15} />
-            </Button>
           </div>
         </div>
 
-        {/* Reference-Styled Top Breakdown & Controls Card (Matching Reference Screen 2 & 3) */}
-        <div className="bg-white rounded-[28px] sm:rounded-[32px] p-5 sm:p-6 border border-slate-100/90 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="w-full sm:w-auto text-left">
-            <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight font-display">
-              {activeTab === 'wealth'
-                ? 'Net Worth'
-                : activeTab === 'cashflow'
-                ? 'Spending by Month'
-                : activeTab === 'spending'
-                ? 'Total Spending'
-                : activeTab === 'transactions'
-                ? 'Statement Ledger'
-                : 'Spending'}
-            </h2>
-            <p className="text-xs text-slate-400 font-medium mt-0.5">
-              Financial intelligence & categorical breakdown
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2.5 w-full sm:w-auto shrink-0 justify-between sm:justify-end">
-            {/* Breakdown Pill Selector */}
-            <div className="flex-1 sm:flex-initial bg-slate-100/80 rounded-2xl p-2 sm:px-3.5 sm:py-2 border border-slate-200/60 flex flex-col justify-center min-w-[130px]">
-              <span className="text-3xs font-bold uppercase tracking-wider text-slate-400 leading-none mb-1">
-                Breakdown
-              </span>
-              <div className="relative">
-                <select
-                  value={activeTab === 'cashflow' ? 'monthly' : activeTab === 'wealth' ? 'networth' : activeTab === 'transactions' ? 'transactions' : activeTab === 'all' ? 'all' : 'categories'}
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    if (v === 'monthly') setActiveTab('cashflow');
-                    else if (v === 'networth') setActiveTab('wealth');
-                    else if (v === 'transactions') setActiveTab('transactions');
-                    else if (v === 'all') setActiveTab('all');
-                    else setActiveTab('spending');
-                  }}
-                  className="w-full appearance-none bg-transparent text-xs font-black text-slate-800 pr-5 focus:outline-none cursor-pointer"
-                >
-                  <option value="categories">Categories</option>
-                  <option value="monthly">Monthly</option>
-                  <option value="networth">Net Worth</option>
-                  <option value="all">All Insights</option>
-                  <option value="transactions">Ledger</option>
-                </select>
-                <ChevronDown size={13} className="absolute right-0 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-              </div>
-            </div>
-
-            {/* Date Range Pill Selector */}
-            <div className="flex-1 sm:flex-initial bg-slate-100/80 rounded-2xl p-2 sm:px-3.5 sm:py-2 border border-slate-200/60 flex flex-col justify-center min-w-[130px]">
-              <span className="text-3xs font-bold uppercase tracking-wider text-slate-400 leading-none mb-1">
-                Date Range
-              </span>
-              <div className="relative">
-                <select
-                  value={timeRange}
-                  onChange={(e) => setTimeRange(e.target.value as TimeRange)}
-                  className="w-full appearance-none bg-transparent text-xs font-black text-slate-800 pr-5 focus:outline-none cursor-pointer"
-                >
-                  <option value="monthly">Last 30 days</option>
-                  <option value="weekly">This Week</option>
-                  <option value="daily">Today</option>
-                  <option value="yearly">This Year</option>
-                  <option value="custom">Custom Range</option>
-                </select>
-                <ChevronDown size={13} className="absolute right-0 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Custom Range & Filter Drawer */}
-        {(showFilterDrawer || timeRange === 'custom') && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="p-4 sm:p-5 bg-white rounded-[24px] border border-slate-100 shadow-xs space-y-3"
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-700">Filter Range & Options</span>
-              <button
-                type="button"
-                onClick={() => setShowFilterDrawer(false)}
-                className="text-slate-400 hover:text-slate-600 text-xs font-bold cursor-pointer"
-              >
-                Close
-              </button>
-            </div>
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
-                <span className="text-2xs font-bold uppercase text-slate-400">From</span>
-                <input
-                  type="date"
-                  value={customRange.start}
-                  onChange={(e) => {
-                    setTimeRange('custom');
-                    setCustomRange((prev) => ({ ...prev, start: e.target.value }));
-                  }}
-                  data-testid="reports-custom-start-input"
-                  aria-label="Custom report start date"
-                  title="Custom report start date"
-                  className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-2xs font-bold uppercase text-slate-400">To</span>
-                <input
-                  type="date"
-                  value={customRange.end}
-                  onChange={(e) => {
-                    setTimeRange('custom');
-                    setCustomRange((prev) => ({ ...prev, end: e.target.value }));
-                  }}
-                  data-testid="reports-custom-end-input"
-                  aria-label="Custom report end date"
-                  title="Custom report end date"
-                  className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-                />
-              </div>
-              {/* Presets */}
-              <div className="flex items-center gap-1">
-                {(['daily', 'weekly', 'monthly', 'yearly', 'custom'] as TimeRange[]).map((range) => (
-                  <button
-                    key={range}
-                    type="button"
-                    data-testid={`reports-range-${range}`}
-                    onClick={() => setTimeRange(range)}
-                    className={cn(
-                      'px-2.5 py-1 rounded-full text-2xs font-bold capitalize transition-all cursor-pointer',
-                      timeRange === range
-                        ? 'bg-slate-900 text-white'
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                    )}
-                  >
-                    {range}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </motion.div>
-        )}
-
-        {/* Section Navigation Tabs */}
-        <div className="flex items-center justify-start sm:justify-center gap-1.5 overflow-x-auto no-scrollbar py-1">
-          {tabs.map((tab) => {
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setActiveTab(tab.id)}
-                className={cn(
-                  'flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-4 py-2 rounded-full text-xs font-bold tracking-wide transition-all cursor-pointer whitespace-nowrap active:scale-95 select-none border',
-                  isActive
-                    ? 'bg-[#18181B] text-white border-slate-900 shadow-xs'
-                    : 'bg-white text-slate-600 hover:text-slate-900 border-slate-200/80 hover:bg-slate-50'
-                )}
-              >
-                <span className={cn('transition-colors', isActive ? 'text-indigo-400' : 'text-slate-400')}>{tab.icon}</span>
-                <span>{tab.label}</span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* ============================================================ */}
-        {/* VIEW 1: TOTAL SPENDING (Matching Reference Screen 2) */}
-        {/* ============================================================ */}
-        {activeTab === 'spending' && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-6"
-          >
-            {/* Screen 2 Main Card: Total Spending & Semi-Circular Radial Arc Gauge */}
-            <Card
-              data-testid="reports-card-7"
-              variant="default"
-              className="p-5 sm:p-7 bg-white rounded-[28px] sm:rounded-[36px] border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] space-y-4"
-            >
-              {/* Header Row: Amount + Date on left, Filter on right */}
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-display">
-                    {formatCurrency(summaryStats.totalExpenses)}
-                  </p>
-                  <p className="text-xs font-semibold text-slate-400 mt-0.5">
-                    {reportPeriodLabel}
-                  </p>
-                </div>
+        {/* ═══════════════════════════════════════════════════════════════════ */}
+        {/* 2. ADAPTIVE TIME HORIZON SELECTOR (Fits 100% On All Device Sizes)    */}
+        {/* ═══════════════════════════════════════════════════════════════════ */}
+        <div className="bg-white/90 backdrop-blur-xl border border-slate-200/70 rounded-2xl p-1.5 shadow-xs">
+          <div className="grid grid-cols-5 gap-1 w-full text-center">
+            {[
+              { id: 'monthly', label: '30 Days' },
+              { id: 'weekly', label: 'Week' },
+              { id: 'daily', label: 'Today' },
+              { id: 'yearly', label: 'Year' },
+              { id: 'custom', label: 'Custom' },
+            ].map((p) => {
+              const isActive = timeRange === p.id;
+              return (
                 <button
+                  key={p.id}
                   type="button"
-                  onClick={() => setShowFilterDrawer((prev) => !prev)}
-                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-slate-200 text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 transition-all active:scale-95 shadow-2xs cursor-pointer shrink-0"
+                  data-testid={`reports-range-${p.id}`}
+                  onClick={() => {
+                    setTimeRange(p.id as TimeRange);
+                    setShowFilterDrawer(p.id === 'custom');
+                  }}
+                  className={cn(
+                    'py-1.5 px-1 rounded-xl text-xs font-bold transition-all cursor-pointer truncate active:scale-95',
+                    isActive
+                      ? 'bg-[#18181B] text-white shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80'
+                  )}
                 >
-                  <span>Filter</span>
-                  <SlidersHorizontal size={13} className="text-slate-500" />
+                  {p.label}
                 </button>
-              </div>
+              );
+            })}
+          </div>
 
-              {/* Semi-Circular Radial Arc Gauge Donut Chart */}
-              {expenseBreakdown.length === 0 ? (
-                <div className="py-16 text-center text-slate-400 text-xs font-medium">No expenses recorded for this range.</div>
-              ) : (
-                <div className="h-[210px] sm:h-[230px] w-full flex items-center justify-center relative -my-2">
-                  <ResponsiveContainer key={timeRange} width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={expenseBreakdown}
-                        dataKey="value"
-                        nameKey="name"
-                        startAngle={180}
-                        endAngle={0}
-                        innerRadius={75}
-                        outerRadius={112}
-                        paddingAngle={4}
-                        cornerRadius={8}
-                        cx="50%"
-                        cy="82%"
-                        isAnimationActive
-                        animationDuration={800}
-                      >
-                        {expenseBreakdown.map((entry, index) => (
-                          <Cell key={`cell-${entry.name}`} fill={chartColors[index % chartColors.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip
-                        contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.9)', borderColor: '#334155', borderRadius: '16px', color: '#fff', fontSize: '12px' }}
-                        formatter={(value) => [formatCurrency(Number(value)), 'Spent']}
+          {/* Custom Date Pickers Drawer (Smooth collapsible) */}
+          <AnimatePresence>
+            {(showFilterDrawer || timeRange === 'custom') && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden pt-2.5 mt-2 border-t border-slate-100"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-2.5 px-1 py-1">
+                  <div className="flex flex-wrap items-center gap-2.5">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-stat-label text-slate-400">From</span>
+                      <input
+                        type="date"
+                        value={customRange.start}
+                        onChange={(e) => {
+                          setTimeRange('custom');
+                          setCustomRange((prev) => ({ ...prev, start: e.target.value }));
+                        }}
+                        data-testid="reports-custom-start-input"
+                        aria-label="Custom report start date"
+                        title="Custom report start date"
+                        className="px-2.5 py-1 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                       />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-              )}
-
-              {/* Categories Breakdown List matching Screen 2 */}
-              <div className="pt-2 border-t border-slate-100 space-y-3">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-xs sm:text-sm font-bold text-slate-900">Categories</h4>
-                  <span className="text-2xs font-semibold text-slate-400">{expenseBreakdown.length} categories</span>
-                </div>
-                <div className="space-y-2.5">
-                  {expenseBreakdown.slice(0, 6).map((cat, idx) => (
-                    <div key={cat.name} className="flex items-center justify-between py-1.5 px-1 text-xs sm:text-sm">
-                      <div className="flex items-center gap-3 min-w-0">
-                        <span
-                          className="w-3 h-3 rounded-full shrink-0 shadow-2xs"
-                          style={{ backgroundColor: chartColors[idx % chartColors.length] }}
-                        />
-                        <span className="font-semibold text-slate-700 truncate">{cat.name}</span>
-                      </div>
-                      <span className="font-bold text-slate-900 shrink-0">{formatCurrency(cat.value)}</span>
                     </div>
-                  ))}
-                </div>
-              </div>
-            </Card>
-
-            {/* Bottom Card: Month Breakdown matching Screen 2 */}
-            <Card
-              variant="default"
-              className="p-5 sm:p-6 bg-white rounded-[28px] sm:rounded-[32px] border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] space-y-4"
-            >
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 className="text-base sm:text-lg font-bold text-slate-900">Month</h3>
-                <span className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Outflows</span>
-              </div>
-              <div className="divide-y divide-slate-100/80">
-                {monthlyTimeline.map((item) => (
-                  <div
-                    key={item.key}
-                    className="flex items-center justify-between py-3.5 px-1 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer group"
-                  >
-                    <span className="text-xs sm:text-sm font-semibold text-slate-700 group-hover:text-slate-900">
-                      {item.fullMonth}
-                    </span>
-                    <div className="flex items-center gap-2.5">
-                      <span className="text-xs sm:text-sm font-bold text-slate-900">
-                        {formatCurrency(item.expense)}
-                      </span>
-                      <ChevronRight size={15} className="text-slate-400 group-hover:text-slate-600 group-hover:translate-x-0.5 transition-all" />
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-stat-label text-slate-400">To</span>
+                      <input
+                        type="date"
+                        value={customRange.end}
+                        onChange={(e) => {
+                          setTimeRange('custom');
+                          setCustomRange((prev) => ({ ...prev, end: e.target.value }));
+                        }}
+                        data-testid="reports-custom-end-input"
+                        aria-label="Custom report end date"
+                        title="Custom report end date"
+                        className="px-2.5 py-1 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                      />
                     </div>
                   </div>
-                ))}
-              </div>
-            </Card>
+                  <button
+                    type="button"
+                    onClick={() => setShowFilterDrawer(false)}
+                    className="text-xs font-bold text-slate-500 hover:text-slate-800 cursor-pointer px-2"
+                  >
+                    Done
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
 
-            {/* Category Ranked Bars (Outflow Leaderboard) */}
+        {/* ═══════════════════════════════════════════════════════════════════ */}
+        {/* 3. SEGMENTED NAVIGATION TABS (Accessible 5-Column Grid, Zero Overflow) */}
+        {/* ═══════════════════════════════════════════════════════════════════ */}
+        <div
+          role="tablist"
+          aria-label="Financial Report Sections"
+          aria-orientation="horizontal"
+          className="bg-white/90 backdrop-blur-xl border border-slate-200/70 rounded-2xl p-1 shadow-xs"
+        >
+          <div className="grid grid-cols-5 gap-1 w-full text-center">
+            {tabs.map((tab, idx) => {
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  id={`report-tab-${tab.id}`}
+                  role="tab"
+                  type="button"
+                  aria-selected={isActive}
+                  aria-controls={`report-tabpanel-${tab.id}`}
+                  aria-label={tab.ariaLabel}
+                  tabIndex={isActive ? 0 : -1}
+                  onKeyDown={(e) => handleTabKeyDown(e, idx)}
+                  onClick={() => setActiveTab(tab.id)}
+                  data-testid={`reports-tab-${tab.id}`}
+                  className={cn(
+                    'flex items-center justify-center gap-1 sm:gap-1.5 py-2 px-0.5 sm:px-2 rounded-xl text-[11px] sm:text-xs font-bold transition-all cursor-pointer truncate active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500',
+                    isActive
+                      ? 'bg-[#18181B] text-white shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80'
+                  )}
+                >
+                  <span className={cn('shrink-0 transition-colors', isActive ? 'text-indigo-400' : 'text-slate-400')}>
+                    {tab.icon}
+                  </span>
+                  <span className="hidden sm:inline truncate">{tab.label}</span>
+                  <span className="sm:hidden truncate">{tab.mobileLabel}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* ═══════════════════════════════════════════════════════════════════ */}
+        {/* 4. EXECUTIVE SUMMARY HERO & KPI CARDS (Pro Sized, Accessible)       */}
+        {/* ═══════════════════════════════════════════════════════════════════ */}
+        <div
+          data-testid="reports-card-14"
+          className={cn(GLASS_CARD_ROUNDED, 'p-3.5 sm:p-5 relative overflow-hidden')}
+        >
+          <div className="relative z-10 space-y-3.5 sm:space-y-4">
+            {/* Top row: Net Cash Flow + Net Worth capsule */}
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <span className={cn(
+                    'w-2 h-2 rounded-full animate-pulse shrink-0',
+                    summaryStats.netSavings >= 0 ? 'bg-emerald-500' : 'bg-rose-500'
+                  )} />
+                  <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider truncate">
+                    Net Cash Flow
+                  </span>
+                  <span className={cn(
+                    'inline-flex items-center px-1.5 py-0.5 rounded-md text-[9px] sm:text-[10px] font-bold uppercase tracking-wider shrink-0',
+                    summaryStats.netSavings >= 0 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/60' : 'bg-rose-50 text-rose-700 border border-rose-200/60'
+                  )}>
+                    {summaryStats.netSavings >= 0 ? 'Surplus' : 'Deficit'}
+                  </span>
+                </div>
+                <div className="flex items-baseline gap-2 mt-0.5">
+                  <h2 className={cn(
+                    'text-lg sm:text-xl font-extrabold tracking-tight tabular-nums truncate',
+                    summaryStats.netSavings >= 0 ? 'text-slate-900' : 'text-rose-600'
+                  )}>
+                    {summaryStats.netSavings >= 0 ? '+' : ''}{formatCurrency(summaryStats.netSavings)}
+                  </h2>
+                </div>
+                <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5 font-medium truncate">
+                  Savings rate: <strong className="text-slate-800 font-bold">{summaryStats.savingsRate.toFixed(1)}%</strong>
+                </p>
+              </div>
+
+              {/* Right Capsule: Total Net Worth */}
+              <div className="bg-slate-50/90 border border-slate-200/70 rounded-xl p-2 sm:p-2.5 min-w-[140px] sm:min-w-[170px] shrink-0 text-right">
+                <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Net Worth</span>
+                <span className="text-sm sm:text-base font-extrabold text-slate-900 tracking-tight block mt-0.5 tabular-nums">
+                  {formatCurrency(authoritativeNetWorth)}
+                </span>
+                <div className="flex items-center justify-end gap-1 mt-0.5 text-[10px] text-slate-500 font-medium">
+                  <span className="text-emerald-600 font-bold">Liquid: {formatCurrencyAmount(totalAccountBalance, currency, { notation: 'compact', maximumFractionDigits: 1 })}</span>
+                  <span>•</span>
+                  <span className="text-indigo-600 font-bold">Inv: {formatCurrencyAmount(totalInvestmentValue, currency, { notation: 'compact', maximumFractionDigits: 1 })}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* 4-Metric Integrated KPI Ribbon */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 pt-2.5 border-t border-slate-100">
+              {/* Total Income */}
+              <div
+                data-testid="reports-card"
+                className="p-2 sm:p-2.5 rounded-xl bg-white/80 border border-slate-200/70 hover:border-slate-300 transition-all space-y-0.5"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Income</span>
+                  <div className="w-4 h-4 rounded bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                    <ArrowDownLeft size={10} />
+                  </div>
+                </div>
+                <p className="text-xs sm:text-sm font-extrabold text-slate-900 tabular-nums tracking-tight">{formatCurrency(summaryStats.totalIncome)}</p>
+                <div className="flex items-center gap-1 text-[10px] font-bold text-emerald-600">
+                  <TrendingUp size={9} />
+                  <span>Inflow</span>
+                </div>
+              </div>
+
+              {/* Total Expenses */}
+              <div
+                data-testid="reports-card-2"
+                className="p-2 sm:p-2.5 rounded-xl bg-white/80 border border-slate-200/70 hover:border-slate-300 transition-all space-y-0.5"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Expenses</span>
+                  <div className="w-4 h-4 rounded bg-rose-50 text-rose-600 flex items-center justify-center">
+                    <ArrowUpRight size={10} />
+                  </div>
+                </div>
+                <p className="text-xs sm:text-sm font-extrabold text-slate-900 tabular-nums tracking-tight">{formatCurrency(summaryStats.totalExpenses)}</p>
+                <div className="flex items-center gap-1 text-[10px] font-bold text-rose-600">
+                  <TrendingDown size={9} />
+                  <span>Outflow</span>
+                </div>
+              </div>
+
+              {/* Net Savings */}
+              <div
+                data-testid="reports-card-3"
+                className="p-2 sm:p-2.5 rounded-xl bg-white/80 border border-slate-200/70 hover:border-slate-300 transition-all space-y-0.5"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Savings</span>
+                  <div className="w-4 h-4 rounded bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                    <PiggyBank size={10} />
+                  </div>
+                </div>
+                <p className={cn(
+                  'text-xs sm:text-sm font-extrabold tabular-nums tracking-tight',
+                  summaryStats.netSavings >= 0 ? 'text-emerald-600' : 'text-rose-600'
+                )}>
+                  {summaryStats.netSavings >= 0 ? '+' : ''}{formatCurrency(summaryStats.netSavings)}
+                </p>
+                <div className="flex items-center gap-1 text-[10px] font-bold text-slate-500">
+                  <span>Retained</span>
+                </div>
+              </div>
+
+              {/* Savings Rate */}
+              <div
+                data-testid="reports-card-4"
+                className="p-2 sm:p-2.5 rounded-xl bg-white/80 border border-slate-200/70 hover:border-slate-300 transition-all space-y-0.5"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Rate</span>
+                  <div className="w-4 h-4 rounded bg-purple-50 text-purple-600 flex items-center justify-center">
+                    <BadgePercent size={10} />
+                  </div>
+                </div>
+                <p className="text-xs sm:text-sm font-extrabold text-slate-900 tabular-nums tracking-tight">{summaryStats.savingsRate.toFixed(1)}%</p>
+                <div className="flex items-center gap-1 text-[10px] font-bold text-purple-600">
+                  <Activity size={9} />
+                  <span>Efficiency</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ═══════════════════════════════════════════════════════════════════ */}
+        {/* 5. VIEW: OVERVIEW / CORE GRAPHS & TABLES                            */}
+        {/* ═══════════════════════════════════════════════════════════════════ */}
+        {(activeTab === 'all' || activeTab === 'spending') && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-4 sm:space-y-6"
+          >
+            {/* 2-Column Analytics Grid: Donut Pie Chart + Dual-Bar Cash Flow */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+
+              {/* 🍩 GRAPH 1: Category Spending Donut Chart */}
+              <Card
+                data-testid="reports-card-7"
+                variant="default"
+                className={cn(GLASS_CARD_ROUNDED, 'p-4 sm:p-6 space-y-4')}
+              >
+                <div className="flex items-start justify-between">
+                  <div>
+                    <span className="font-stat-label text-slate-400">Category Distribution</span>
+                    <h3 className="font-section-title text-slate-900 mt-0.5">Spending Breakdown</h3>
+                  </div>
+                  <span className="text-2xs font-bold px-2.5 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200/60">
+                    {expenseBreakdown.length} Categories
+                  </span>
+                </div>
+
+                {/* Donut Visualization */}
+                <div className="relative h-[220px] sm:h-[240px] w-full flex items-center justify-center">
+                  {expenseBreakdown.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center text-slate-400 font-page-sub">
+                      <PieIcon size={32} className="opacity-30 mb-2" />
+                      <span>No expenses recorded for this period</span>
+                    </div>
+                  ) : (
+                    <>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={expenseBreakdown}
+                            dataKey="value"
+                            nameKey="name"
+                            startAngle={90}
+                            endAngle={-270}
+                            innerRadius={68}
+                            outerRadius={96}
+                            paddingAngle={3}
+                            cornerRadius={6}
+                            cx="50%"
+                            cy="50%"
+                            isAnimationActive
+                            animationDuration={800}
+                          >
+                            {expenseBreakdown.map((entry, index) => (
+                              <Cell key={`cell-overview-${entry.name}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                            ))}
+                          </Pie>
+                          <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(v) => [formatCurrency(Number(v)), 'Spent']} />
+                        </PieChart>
+                      </ResponsiveContainer>
+                      {/* Centered Donut Label */}
+                      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                        <span className="text-[10px] sm:text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Total Spent</span>
+                        <span className="text-base sm:text-lg font-bold text-slate-900 mt-0.5 tabular-nums">{formatCurrency(summaryStats.totalExpenses)}</span>
+                        <span className="text-[11px] text-slate-400 mt-0.5">{expenseBreakdown.length} active categories</span>
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                {/* Interactive Category Breakdown Badges */}
+                <div className="space-y-2 pt-2 border-t border-slate-100">
+                  {expenseBreakdown.slice(0, 4).map((cat, idx) => {
+                    const pct = summaryStats.totalExpenses > 0 ? Math.round((cat.value / summaryStats.totalExpenses) * 100) : 0;
+                    return (
+                      <div key={cat.name} className="flex items-center justify-between text-xs sm:text-sm">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: CHART_COLORS[idx % CHART_COLORS.length] }} />
+                          <span className="font-bold text-slate-800 truncate">{cat.name}</span>
+                          <span className="font-caption text-slate-400">({cat.count} txns)</span>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className="text-2xs font-bold px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-600">{pct}%</span>
+                          <span className="font-bold text-slate-900">{formatCurrency(cat.value)}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </Card>
+
+              {/* 📊 GRAPH 2: Monthly Inflow vs Outflow Dual-Bar Chart */}
+              <Card
+                data-testid="reports-card-9"
+                variant="default"
+                className={cn(GLASS_CARD_ROUNDED, 'p-4 sm:p-6 space-y-4')}
+              >
+                <div className="flex items-start justify-between">
+                  <div>
+                    <span className="font-stat-label text-slate-400">Cash Flow Comparison</span>
+                    <h3 className="font-section-title text-slate-900 mt-0.5">Monthly Inflow vs Outflow</h3>
+                  </div>
+                  <div className="flex items-center gap-2 font-caption text-slate-500">
+                    <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-500" /> In</span>
+                    <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-rose-500" /> Out</span>
+                  </div>
+                </div>
+
+                <div className="h-[220px] sm:h-[240px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={reversedMonthlyTimeline} margin={{ top: 10, right: 15, left: -15, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                      <XAxis dataKey="shortMonth" stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} />
+                      <YAxis
+                        orientation="right"
+                        stroke="#94a3b8"
+                        fontSize={10}
+                        tickLine={false}
+                        axisLine={false}
+                        tickFormatter={(val) => formatCurrencyAmount(Number(val), currency, { notation: 'compact', maximumFractionDigits: 0 })}
+                      />
+                      <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(val, name) => [formatCurrency(Number(val)), name === 'income' ? 'Inflow' : 'Outflow']} />
+                      <Bar dataKey="income" name="income" fill="#10B981" radius={[6, 6, 0, 0]} />
+                      <Bar dataKey="expense" name="expense" fill="#EF4444" radius={[6, 6, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+
+                <div className="flex items-center justify-between pt-2 border-t border-slate-100 font-caption text-slate-500">
+                  <span className="flex items-center gap-1.5">
+                    <TrendingUp size={12} className="text-emerald-500" />
+                    <span>Inflow vs Outflow 6-month history</span>
+                  </span>
+                  <span className="text-slate-400 font-medium">Peak: {reversedMonthlyTimeline.find((m) => m.expense === maxMonthlyExpense)?.shortMonth || '-'}</span>
+                </div>
+              </Card>
+            </div>
+
+            {/* 📋 TABLE 1: Outflow Leaderboard & Category Progress Table */}
             <Card
               data-testid="reports-card-8"
               variant="default"
-              className="p-5 sm:p-6 bg-white rounded-[28px] sm:rounded-[32px] border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)] space-y-4"
+              className={cn(GLASS_CARD_ROUNDED, 'p-4 sm:p-6 space-y-4')}
             >
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 className="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
-                  <BarChart3 size={16} className="text-purple-600" />
-                  Top Spending Categories
-                </h3>
-                <span className="text-2xs font-bold px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200/50">
-                  Outflow Leaderboard
+                <div>
+                  <h3 className="font-section-title text-slate-900 flex items-center gap-2">
+                    <TableIcon size={16} className="text-indigo-600" />
+                    Category Spending Table & Leaderboard
+                  </h3>
+                  <p className="font-caption text-slate-400 mt-0.5">Ranked spending categories with percentage allocation</p>
+                </div>
+                <span className="text-2xs font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600">
+                  Pacing
                 </span>
               </div>
 
               {expenseBreakdown.length === 0 ? (
-                <div className="py-16 text-center text-slate-400 text-xs font-medium">No expenses found for this range.</div>
+                <div className="py-12 text-center text-slate-400 font-page-sub">No expenses recorded for this range.</div>
               ) : (
-                <div className="space-y-3.5 pt-1">
-                  {expenseBreakdown.slice(0, 6).map((cat, idx) => {
+                <div className="space-y-3 pt-1">
+                  {expenseBreakdown.map((cat, idx) => {
                     const totalExp = summaryStats.totalExpenses || 1;
                     const percent = Math.min(100, Math.round((cat.value / totalExp) * 100));
-                    const color = chartColors[idx % chartColors.length];
+                    const color = CHART_COLORS[idx % CHART_COLORS.length];
                     return (
-                      <div key={cat.name} className="space-y-1">
-                        <div className="flex items-center justify-between text-xs">
-                          <div className="flex items-center gap-2">
+                      <div key={cat.name} className="space-y-1.5 p-2.5 rounded-xl hover:bg-slate-50/60 transition-colors">
+                        <div className="flex items-center justify-between text-xs sm:text-sm">
+                          <div className="flex items-center gap-2.5 min-w-0">
                             <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
-                            <span className="font-bold text-slate-800 truncate">{cat.name}</span>
+                            <span className="font-bold text-slate-900 truncate">{cat.name}</span>
+                            <span className="font-caption text-slate-400">({cat.count} txns)</span>
                           </div>
-                          <div className="flex items-center gap-2 text-right">
-                            <span className="text-slate-400 font-semibold">{percent}%</span>
+                          <div className="flex items-center gap-2.5 text-right shrink-0">
+                            <span className="text-2xs font-bold px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-600">{percent}%</span>
                             <span className="font-bold text-slate-900">{formatCurrency(cat.value)}</span>
                           </div>
                         </div>
                         <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-                          <div
-                            className="h-full rounded-full transition-all duration-500"
-                            style={{ width: `${percent}%`, backgroundColor: color }}
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${percent}%` }}
+                            transition={{ duration: 0.6, ease: 'easeOut' }}
+                            className="h-full rounded-full"
+                            style={{ backgroundColor: color }}
                           />
                         </div>
                       </div>
@@ -1036,131 +1320,30 @@ export const Reports: React.FC = () => {
           </motion.div>
         )}
 
-        {/* ============================================================ */}
-        {/* VIEW 2: SPENDING BY MONTH (Matching Reference Screen 3) */}
-        {/* ============================================================ */}
-        {activeTab === 'cashflow' && (
+        {/* ═══════════════════════════════════════════════════════════════════ */}
+        {/* 6. VIEW: CASH FLOW & TRENDS                                         */}
+        {/* ═══════════════════════════════════════════════════════════════════ */}
+        {(activeTab === 'all' || activeTab === 'cashflow') && (
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            className="space-y-6"
+            className="space-y-4 sm:space-y-6"
           >
-            {/* Screen 3 Main Card: Vertical Bar Chart */}
-            <Card
-              data-testid="reports-card-9"
-              variant="default"
-              className="p-5 sm:p-7 bg-white rounded-[28px] sm:rounded-[36px] border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] space-y-4"
-            >
-              {/* Header Row: Amount + Date on left, Filter on right */}
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-display">
-                    {formatCurrency(summaryStats.totalExpenses)}
-                  </p>
-                  <p className="text-xs font-semibold text-slate-400 mt-0.5">
-                    {reportPeriodLabel}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setShowFilterDrawer((prev) => !prev)}
-                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-slate-200 text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 transition-all active:scale-95 shadow-2xs cursor-pointer shrink-0"
-                >
-                  <span>Filter</span>
-                  <SlidersHorizontal size={13} className="text-slate-500" />
-                </button>
-              </div>
-
-              {/* Vertical Bar Chart with Rounded Bars */}
-              <div className="h-[240px] sm:h-[260px] w-full">
-                <ResponsiveContainer key={timeRange} width="100%" height="100%">
-                  <BarChart data={reversedMonthlyTimeline} margin={{ top: 15, right: 10, left: 0, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                    <XAxis dataKey="shortMonth" stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} />
-                    <YAxis
-                      orientation="right"
-                      stroke="#94a3b8"
-                      fontSize={11}
-                      tickLine={false}
-                      axisLine={false}
-                      tickFormatter={(val) => formatCurrencyAmount(Number(val), currency, { notation: 'compact', maximumFractionDigits: 0 })}
-                    />
-                    <Tooltip
-                      contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.9)', borderColor: '#334155', borderRadius: '16px', color: '#fff', fontSize: '12px' }}
-                      formatter={(value) => [formatCurrency(Number(value)), 'Expense']}
-                    />
-                    <Bar dataKey="expense" radius={[12, 12, 12, 12]} isAnimationActive animationDuration={800}>
-                      {reversedMonthlyTimeline.map((entry) => {
-                        const isPeak = entry.expense === maxMonthlyExpense;
-                        return (
-                          <Cell
-                            key={`cell-${entry.key}`}
-                            fill={isPeak ? '#6366F1' : '#E2E8F0'}
-                            className="hover:opacity-85 transition-opacity"
-                          />
-                        );
-                      })}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-
-              {/* Legend below bar chart matching Screen 3 */}
-              <div className="flex flex-wrap items-center justify-center gap-5 pt-2 text-2xs font-semibold text-slate-600 border-t border-slate-100">
-                <div className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#6366F1]" />
-                  <span>Peak Spending Month</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-slate-200" />
-                  <span>Other Months</span>
-                </div>
-              </div>
-            </Card>
-
-            {/* Bottom Card: Month Breakdown matching Screen 3 */}
-            <Card
-              variant="default"
-              className="p-5 sm:p-6 bg-white rounded-[28px] sm:rounded-[32px] border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] space-y-4"
-            >
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 className="text-base sm:text-lg font-bold text-slate-900">Month</h3>
-                <span className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Outflows</span>
-              </div>
-              <div className="divide-y divide-slate-100/80">
-                {monthlyTimeline.map((item) => (
-                  <div
-                    key={item.key}
-                    className="flex items-center justify-between py-3 px-1 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer group"
-                  >
-                    <span className="text-xs sm:text-sm font-semibold text-slate-700 group-hover:text-slate-900">
-                      {item.fullMonth}
-                    </span>
-                    <div className="flex items-center gap-2.5">
-                      <span className="text-xs sm:text-sm font-bold text-slate-900">
-                        {formatCurrency(item.expense)}
-                      </span>
-                      <ChevronRight size={15} className="text-slate-400 group-hover:text-slate-600 group-hover:translate-x-0.5 transition-all" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </Card>
-
-            {/* Two Side-by-Side Trend Cards: Savings Growth & Income vs Expense */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* 📈 GRAPH 3 & 4: Cumulative Savings Growth Area + Income/Expense Ratio */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+              {/* Savings Growth Area Chart */}
               <Card
                 data-testid="reports-card-10"
                 variant="default"
-                className="p-5 sm:p-6 bg-white rounded-[28px] sm:rounded-[32px] border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)] space-y-3"
+                className={cn(GLASS_CARD_ROUNDED, 'p-4 sm:p-6 space-y-3')}
               >
                 <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                   <div>
-                    <h3 className="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
+                    <h3 className="font-section-title text-slate-900 flex items-center gap-2">
                       <TrendingUp size={16} className="text-purple-600" />
-                      Cumulative Savings Growth
+                      Cumulative Savings Growth Curve
                     </h3>
-                    <p className="text-2xs text-slate-400">Day-by-day accumulation during period.</p>
+                    <p className="font-caption text-slate-400">Daily net capital retained in period</p>
                   </div>
                   <span className="text-2xs font-bold px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200/50">
                     Net Trend
@@ -1168,14 +1351,14 @@ export const Reports: React.FC = () => {
                 </div>
 
                 {savingsGrowth.length === 0 ? (
-                  <div className="py-12 text-center text-slate-400 text-xs font-medium">No savings trend available.</div>
+                  <div className="py-12 text-center text-slate-400 font-page-sub">No savings trend available.</div>
                 ) : (
-                  <div className="h-[240px] w-full">
+                  <div className="h-[220px] w-full">
                     <ResponsiveContainer key={timeRange} width="100%" height="100%">
-                      <AreaChart data={savingsGrowth} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                      <AreaChart data={savingsGrowth} margin={{ top: 10, right: 15, left: -15, bottom: 0 }}>
                         <defs>
                           <linearGradient id="savingsGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.3} />
+                            <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.35} />
                             <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0.0} />
                           </linearGradient>
                         </defs>
@@ -1184,15 +1367,12 @@ export const Reports: React.FC = () => {
                         <YAxis
                           orientation="right"
                           stroke="#94a3b8"
-                          fontSize={11}
+                          fontSize={10}
                           tickLine={false}
                           axisLine={false}
                           tickFormatter={(val) => formatCurrencyAmount(Number(val), currency, { notation: 'compact', minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                         />
-                        <Tooltip
-                          contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.9)', borderColor: '#334155', borderRadius: '16px', color: '#fff', fontSize: '12px' }}
-                          formatter={(value) => [formatCurrency(Number(value)), 'Savings']}
-                        />
+                        <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(value) => [formatCurrency(Number(value)), 'Savings']} />
                         <Area type="monotone" dataKey="savings" stroke="#8B5CF6" strokeWidth={2.5} fillOpacity={1} fill="url(#savingsGrad)" />
                       </AreaChart>
                     </ResponsiveContainer>
@@ -1200,41 +1380,37 @@ export const Reports: React.FC = () => {
                 )}
               </Card>
 
+              {/* Income vs Expense Ratio Chart */}
               <Card
                 data-testid="reports-card-11"
                 variant="default"
-                className="p-5 sm:p-6 bg-white rounded-[28px] sm:rounded-[32px] border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)] space-y-3"
+                className={cn(GLASS_CARD_ROUNDED, 'p-4 sm:p-6 space-y-3')}
               >
                 <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                   <div>
-                    <h3 className="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
+                    <h3 className="font-section-title text-slate-900 flex items-center gap-2">
                       <Activity size={16} className="text-indigo-600" />
-                      Income vs. Expense
+                      Income vs. Expense Volume Ratio
                     </h3>
-                    <p className="text-2xs text-slate-400">Total volume ratio in selected period.</p>
+                    <p className="font-caption text-slate-400">Total volume ratio in selected period</p>
                   </div>
-                  <span className="text-2xs font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">
-                    Ratio
-                  </span>
+                  <span className="text-2xs font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">Ratio</span>
                 </div>
 
-                <div className="h-[240px] w-full">
+                <div className="h-[220px] w-full">
                   <ResponsiveContainer key={timeRange} width="100%" height="100%">
-                    <BarChart data={incomeExpenseData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                    <BarChart data={incomeExpenseData} margin={{ top: 10, right: 15, left: -15, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                       <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={{ stroke: '#e2e8f0' }} />
                       <YAxis
                         orientation="right"
                         stroke="#94a3b8"
-                        fontSize={11}
+                        fontSize={10}
                         tickLine={false}
                         axisLine={false}
                         tickFormatter={(val) => formatCurrencyAmount(Number(val), currency, { notation: 'compact', minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                       />
-                      <Tooltip
-                        contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.9)', borderColor: '#334155', borderRadius: '16px', color: '#fff', fontSize: '12px' }}
-                        formatter={(value) => [formatCurrency(Number(value)), 'Total']}
-                      />
+                      <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(value) => [formatCurrency(Number(value)), 'Total']} />
                       <Bar dataKey="value" fill="#18181B" radius={[8, 8, 0, 0]} isAnimationActive animationBegin={0} animationDuration={800}>
                         {incomeExpenseData.map((entry) => (
                           <Cell key={entry.name} fill={entry.name === 'Income' ? '#10B981' : '#EF4444'} />
@@ -1245,48 +1421,70 @@ export const Reports: React.FC = () => {
                 </div>
               </Card>
             </div>
+
+            {/* 📋 TABLE 2: Monthly Cash Flow Financial Table */}
+            <Card
+              variant="default"
+              className={cn(GLASS_CARD_ROUNDED, 'p-4 sm:p-6 space-y-3')}
+            >
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 className="font-section-title text-slate-900">Monthly Cash Flow Statement</h3>
+                <span className="font-stat-label text-slate-400">Past 6 Months</span>
+              </div>
+              <div className="divide-y divide-slate-100">
+                {monthlyTimeline.map((item) => (
+                  <div
+                    key={item.key}
+                    className="flex items-center justify-between py-2.5 px-1 rounded-xl hover:bg-slate-50/60 transition-colors"
+                  >
+                    <span className="text-xs sm:text-sm font-semibold text-slate-700">
+                      {item.fullMonth}
+                    </span>
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs sm:text-sm text-emerald-600 font-semibold">+{formatCurrency(item.income)}</span>
+                      <span className="text-xs sm:text-sm text-rose-600 font-semibold">-{formatCurrency(item.expense)}</span>
+                      <span className={cn(
+                        'text-xs sm:text-sm font-bold min-w-[75px] text-right',
+                        item.net >= 0 ? 'text-emerald-700' : 'text-rose-700'
+                      )}>
+                        {item.net >= 0 ? '+' : ''}{formatCurrency(item.net)}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
           </motion.div>
         )}
 
-        {/* ============================================================ */}
-        {/* VIEW 3: NET WORTH (Matching Reference Screen 1) */}
-        {/* ============================================================ */}
-        {activeTab === 'wealth' && (
+        {/* ═══════════════════════════════════════════════════════════════════ */}
+        {/* 7. VIEW: BALANCE SHEET & NET WORTH                                  */}
+        {/* ═══════════════════════════════════════════════════════════════════ */}
+        {(activeTab === 'all' || activeTab === 'wealth') && (
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            className="space-y-6"
+            className="space-y-4 sm:space-y-6"
           >
-            {/* Screen 1 Main Card: Net Worth & Smooth Area Curve */}
+            {/* Net Worth Area Chart */}
             <Card
               data-testid="reports-card-10"
               variant="default"
-              className="p-5 sm:p-7 bg-white rounded-[28px] sm:rounded-[36px] border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] space-y-4"
+              className={cn(GLASS_CARD_ROUNDED, 'p-4 sm:p-6 space-y-4')}
             >
-              {/* Header Row: Net Worth + Date on left, Filter on right */}
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-display">
-                    {formatCurrency(authoritativeNetWorth)}
-                  </p>
-                  <p className="text-xs font-semibold text-slate-400 mt-0.5">
-                    {reportPeriodLabel}
-                  </p>
+                  <span className="font-stat-label text-slate-400">Total Net Worth Trajectory</span>
+                  <h3 className="font-section-title text-slate-900 mt-0.5">Historical Valuation</h3>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setShowFilterDrawer((prev) => !prev)}
-                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-slate-200 text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 transition-all active:scale-95 shadow-2xs cursor-pointer shrink-0"
-                >
-                  <span>Filter</span>
-                  <SlidersHorizontal size={13} className="text-slate-500" />
-                </button>
+                <span className="text-2xs font-bold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200/50">
+                  Portfolio Valuation
+                </span>
               </div>
 
-              {/* Smooth Area Trend Chart */}
-              <div className="h-[240px] sm:h-[260px] w-full">
+              <div className="h-[220px] sm:h-[250px] w-full">
                 <ResponsiveContainer key={timeRange} width="100%" height="100%">
-                  <AreaChart data={reversedMonthlyTimeline} margin={{ top: 15, right: 10, left: 0, bottom: 0 }}>
+                  <AreaChart data={reversedMonthlyTimeline} margin={{ top: 15, right: 15, left: -15, bottom: 0 }}>
                     <defs>
                       <linearGradient id="netWorthGrad" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="#6366F1" stopOpacity={0.28} />
@@ -1298,123 +1496,89 @@ export const Reports: React.FC = () => {
                     <YAxis
                       orientation="right"
                       stroke="#94a3b8"
-                      fontSize={11}
+                      fontSize={10}
                       tickLine={false}
                       axisLine={false}
                       tickFormatter={(val) => formatCurrencyAmount(Number(val), currency, { notation: 'compact', maximumFractionDigits: 0 })}
                     />
-                    <Tooltip
-                      contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.9)', borderColor: '#334155', borderRadius: '16px', color: '#fff', fontSize: '12px' }}
-                      formatter={(value) => [formatCurrency(Number(value)), 'Net Worth']}
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="netWorth"
-                      stroke="#6366F1"
-                      strokeWidth={3}
-                      fillOpacity={1}
-                      fill="url(#netWorthGrad)"
-                    />
+                    <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(value) => [formatCurrency(Number(value)), 'Net Worth']} />
+                    <Area type="monotone" dataKey="netWorth" stroke="#6366F1" strokeWidth={3} fillOpacity={1} fill="url(#netWorthGrad)" />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
             </Card>
 
-            {/* Bottom Card: Month Breakdown matching Screen 1 */}
-            <Card
-              variant="default"
-              className="p-5 sm:p-6 bg-white rounded-[28px] sm:rounded-[32px] border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] space-y-4"
-            >
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 className="text-base sm:text-lg font-bold text-slate-900">Month</h3>
-                <span className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Cumulative Valuation</span>
-              </div>
-              <div className="divide-y divide-slate-100/80">
-                {monthlyTimeline.map((item) => (
-                  <div
-                    key={item.key}
-                    className="flex items-center justify-between py-3.5 px-1 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer group"
-                  >
-                    <span className="text-xs sm:text-sm font-semibold text-slate-700 group-hover:text-slate-900">
-                      {item.fullMonth}
-                    </span>
-                    <div className="flex items-center gap-2.5">
-                      <span className="text-xs sm:text-sm font-bold text-slate-900">
-                        {formatCurrency(item.netWorth)}
-                      </span>
-                      <ChevronRight size={15} className="text-slate-400 group-hover:text-slate-600 group-hover:translate-x-0.5 transition-all" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </Card>
-
-            {/* Financial Health Summary Cards */}
+            {/* Portfolio Breakdown */}
             <Card
               data-testid="reports-card-13"
               variant="default"
-              className="p-5 sm:p-7 bg-white rounded-[28px] sm:rounded-[32px] border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)] space-y-4"
+              className={cn(GLASS_CARD_ROUNDED, 'p-4 sm:p-6 space-y-4')}
             >
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div>
-                  <h3 className="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
+                  <h3 className="font-section-title text-slate-900 flex items-center gap-2">
                     <Target size={16} className="text-indigo-600" />
-                    Portfolio & Asset Breakdown
+                    Balance Sheet & Capital Allocation
                   </h3>
-                  <p className="text-2xs text-slate-400">Positioning across debt, goals, and capital.</p>
+                  <p className="font-caption text-slate-400">Positioning across liquid cash, debt, goals, and capital</p>
                 </div>
-                <span className="text-2xs font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">
-                  Asset Summary
-                </span>
+                <span className="text-2xs font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">Assets</span>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
-                <div className="p-4 bg-slate-50/80 rounded-2xl border border-slate-100 space-y-1">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                <div className="p-2.5 sm:p-3 bg-slate-50/70 rounded-xl border border-slate-100 space-y-1">
                   <div className="flex items-center justify-between">
-                    <span className="text-3xs font-bold text-slate-400 uppercase tracking-wider">Total Active Debt</span>
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Liquid Cash</span>
+                    <Wallet size={14} className="text-emerald-500" />
+                  </div>
+                  <p className="text-sm sm:text-base font-bold text-slate-900 tabular-nums">{formatCurrency(totalAccountBalance)}</p>
+                  <span className="text-[11px] text-slate-400 block">Bank & Cash</span>
+                </div>
+
+                <div className="p-2.5 sm:p-3 bg-slate-50/70 rounded-xl border border-slate-100 space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Active Debt</span>
                     <Landmark size={14} className="text-rose-500" />
                   </div>
-                  <p className="text-xl font-black text-slate-900">{formatCurrency(summaryStats.totalDebt)}</p>
-                  <span className="text-3xs text-slate-400 block font-medium">Loans & EMIs</span>
+                  <p className="text-sm sm:text-base font-bold text-slate-900 tabular-nums">{formatCurrency(summaryStats.totalDebt)}</p>
+                  <span className="text-[11px] text-slate-400 block">Loans & EMIs</span>
                 </div>
 
-                <div className="p-4 bg-slate-50/80 rounded-2xl border border-slate-100 space-y-1">
+                <div className="p-2.5 sm:p-3 bg-slate-50/70 rounded-xl border border-slate-100 space-y-1">
                   <div className="flex items-center justify-between">
-                    <span className="text-3xs font-bold text-slate-400 uppercase tracking-wider">Goals Progress</span>
-                    <Target size={14} className="text-emerald-500" />
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Goals Funded</span>
+                    <Target size={14} className="text-purple-500" />
                   </div>
-                  <p className="text-xl font-black text-slate-900">{formatCurrency(summaryStats.totalGoalsProgress)}</p>
-                  <span className="text-3xs text-slate-400 block font-medium">Funded targets</span>
+                  <p className="text-sm sm:text-base font-bold text-slate-900 tabular-nums">{formatCurrency(summaryStats.totalGoalsProgress)}</p>
+                  <span className="text-[11px] text-slate-400 block">Allocated savings</span>
                 </div>
 
-                <div className="p-4 bg-slate-50/80 rounded-2xl border border-slate-100 space-y-1">
+                <div className="p-2.5 sm:p-3 bg-slate-50/70 rounded-xl border border-slate-100 space-y-1">
                   <div className="flex items-center justify-between">
-                    <span className="text-3xs font-bold text-slate-400 uppercase tracking-wider">Total Invested</span>
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Investments</span>
                     <TrendingUp size={14} className="text-indigo-500" />
                   </div>
-                  <p className="text-xl font-black text-slate-900">{formatCurrency(summaryStats.totalInvested)}</p>
-                  <span className="text-3xs text-slate-400 block font-medium">Invested principal</span>
+                  <p className="text-sm sm:text-base font-bold text-slate-900 tabular-nums">{formatCurrency(summaryStats.totalInvested)}</p>
+                  <span className="text-[11px] text-slate-400 block">Invested capital</span>
                 </div>
               </div>
             </Card>
 
-            {/* Smart Forecasting & AI Insights Cards */}
+            {/* AI Insights & 6-Month Forecasting */}
             {(canAiInsights || canForecasting) && (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                 {canAiInsights && (
                   <Card
                     data-testid="reports-card-5"
                     variant="default"
-                    className="p-5 sm:p-6 bg-white rounded-[28px] sm:rounded-[32px] border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)] overflow-hidden flex flex-col space-y-4"
+                    className={cn(GLASS_CARD_ROUNDED, 'p-4 sm:p-6 overflow-hidden flex flex-col space-y-3')}
                   >
                     <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                      <h3 className="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
+                      <h3 className="font-section-title text-slate-900 flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-purple-600 animate-pulse" />
-                        AI Intelligence Insights
+                        AI Financial Intelligence
                       </h3>
-                      <span className="text-2xs font-bold px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200/50">
-                        Smart Engine
-                      </span>
+                      <span className="text-2xs font-bold px-2.5 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200/50">Smart Insights</span>
                     </div>
                     <div className="flex-1">
                       <AIInsightsCard compact />
@@ -1426,20 +1590,16 @@ export const Reports: React.FC = () => {
                   <Card
                     data-testid="reports-card-6"
                     variant="default"
-                    className="p-5 sm:p-6 bg-white rounded-[28px] sm:rounded-[32px] border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)] overflow-hidden flex flex-col space-y-4"
+                    className={cn(GLASS_CARD_ROUNDED, 'p-4 sm:p-6 space-y-3')}
                   >
                     <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                      <h3 className="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
+                      <h3 className="font-section-title text-slate-900 flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                        Smart Financial Forecasting
+                        6-Month Wealth Trajectory
                       </h3>
-                      <span className="text-2xs font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/50">
-                        6-Month Outlook
-                      </span>
+                      <span className="text-2xs font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/50">Projection</span>
                     </div>
-                    <div className="flex-1">
-                      <ForecastSection transactions={transactions} accounts={accounts} currency={currency} formatCurrency={formatCurrency} />
-                    </div>
+                    <ForecastSection transactions={transactions} accounts={accounts} currency={currency} formatCurrency={formatCurrency} />
                   </Card>
                 )}
               </div>
@@ -1447,309 +1607,64 @@ export const Reports: React.FC = () => {
           </motion.div>
         )}
 
-        {/* ============================================================ */}
-        {/* VIEW 4: ALL INSIGHTS (Comprehensive Dashboard) */}
-        {/* ============================================================ */}
-        {activeTab === 'all' && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-6"
-          >
-            {/* Executive Hero Card: Net Worth & Financial Overview */}
-            <div
-              data-testid="reports-card-14"
-              className="relative overflow-hidden rounded-[28px] sm:rounded-[36px] bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-white p-6 sm:p-8 shadow-[0_20px_50px_-10px_rgba(15,23,42,0.3)] border border-white/10"
-            >
-              <div className="absolute -top-24 -right-24 w-80 h-80 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
-              <div className="absolute -bottom-24 -left-24 w-80 h-80 bg-purple-500/15 rounded-full blur-3xl pointer-events-none" />
-
-              <div className="relative z-10 space-y-6">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-white/10">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                      <span className="text-2xs sm:text-xs font-bold uppercase tracking-widest text-indigo-200/90">
-                        Authoritative Net Worth
-                      </span>
-                    </div>
-                    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white font-display">
-                      {formatCurrency(authoritativeNetWorth)}
-                    </h2>
-                    <div className="flex flex-wrap items-center gap-2 pt-1 text-2xs text-slate-300 font-medium">
-                      <span className="bg-white/10 backdrop-blur-xs px-2.5 py-1 rounded-full border border-white/10 flex items-center gap-1">
-                        <Wallet size={11} className="text-emerald-400" /> Liquid: {formatCurrency(totalAccountBalance)}
-                      </span>
-                      <span className="bg-white/10 backdrop-blur-xs px-2.5 py-1 rounded-full border border-white/10 flex items-center gap-1">
-                        <TrendingUp size={11} className="text-indigo-400" /> Investments: {formatCurrency(totalInvestmentValue)}
-                      </span>
-                      {totalBorrowed > 0 && (
-                        <span className="bg-rose-500/20 text-rose-200 px-2.5 py-1 rounded-full border border-rose-500/30 flex items-center gap-1">
-                          <TrendingDown size={11} /> Debt: -{formatCurrency(totalBorrowed)}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="bg-white/5 backdrop-blur-md rounded-2xl p-3.5 sm:p-4 border border-white/10 min-w-[180px] sm:text-right">
-                    <span className="text-2xs font-bold text-slate-400 uppercase tracking-wider block">
-                      Period Net Savings
-                    </span>
-                    <span className={cn(
-                      'text-xl sm:text-2xl font-black tracking-tight block mt-1',
-                      summaryStats.netSavings >= 0 ? 'text-emerald-400' : 'text-rose-400'
-                    )}>
-                      {summaryStats.netSavings >= 0 ? '+' : ''}{formatCurrency(summaryStats.netSavings)}
-                    </span>
-                    <span className={cn(
-                      'inline-flex items-center gap-1 text-3xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-full mt-1.5',
-                      summaryStats.netSavings >= 0 ? 'bg-emerald-500/20 text-emerald-300' : 'bg-rose-500/20 text-rose-300'
-                    )}>
-                      {summaryStats.netSavings >= 0 ? 'Surplus' : 'Deficit'} ({summaryStats.savingsRate.toFixed(1)}% saved)
-                    </span>
-                  </div>
-                </div>
-
-                {/* KPI Grid */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-                  <div data-testid="reports-card" className="bg-white/5 hover:bg-white/10 transition-colors backdrop-blur-md rounded-2xl p-3.5 sm:p-4 border border-white/10 space-y-1">
-                    <div className="flex items-center justify-between">
-                      <span className="text-3xs sm:text-2xs font-bold uppercase tracking-wider text-slate-400">Total Income</span>
-                      <ArrowDownLeft size={14} className="text-emerald-400" />
-                    </div>
-                    <p className="text-lg sm:text-xl font-black tracking-tight text-white">{formatCurrency(summaryStats.totalIncome)}</p>
-                    <span className="text-3xs text-emerald-400 font-medium block">Cash in</span>
-                  </div>
-
-                  <div data-testid="reports-card-2" className="bg-white/5 hover:bg-white/10 transition-colors backdrop-blur-md rounded-2xl p-3.5 sm:p-4 border border-white/10 space-y-1">
-                    <div className="flex items-center justify-between">
-                      <span className="text-3xs sm:text-2xs font-bold uppercase tracking-wider text-slate-400">Total Expenses</span>
-                      <ArrowUpRight size={14} className="text-rose-400" />
-                    </div>
-                    <p className="text-lg sm:text-xl font-black tracking-tight text-white">{formatCurrency(summaryStats.totalExpenses)}</p>
-                    <span className="text-3xs text-rose-400 font-medium block">Outflow</span>
-                  </div>
-
-                  <div data-testid="reports-card-3" className="bg-white/5 hover:bg-white/10 transition-colors backdrop-blur-md rounded-2xl p-3.5 sm:p-4 border border-white/10 space-y-1">
-                    <div className="flex items-center justify-between">
-                      <span className="text-3xs sm:text-2xs font-bold uppercase tracking-wider text-slate-400">Total Savings</span>
-                      <PiggyBank size={14} className="text-purple-400" />
-                    </div>
-                    <p className="text-lg sm:text-xl font-black tracking-tight text-white">{formatCurrency(summaryStats.netSavings)}</p>
-                    <span className="text-3xs text-purple-400 font-medium block">Retained</span>
-                  </div>
-
-                  <div data-testid="reports-card-4" className="bg-white/5 hover:bg-white/10 transition-colors backdrop-blur-md rounded-2xl p-3.5 sm:p-4 border border-white/10 space-y-1">
-                    <div className="flex items-center justify-between">
-                      <span className="text-3xs sm:text-2xs font-bold uppercase tracking-wider text-slate-400">Savings Rate</span>
-                      <BadgePercent size={14} className="text-indigo-400" />
-                    </div>
-                    <p className="text-lg sm:text-xl font-black tracking-tight text-white">{summaryStats.savingsRate.toFixed(1)}%</p>
-                    <span className="text-3xs text-indigo-400 font-medium block">Efficiency</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Tri-Card Visual Grid (Screen 1, 2, 3 Reference Layouts side-by-side) */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Spending Arc Donut Card */}
-              <Card
-                variant="default"
-                className="p-5 sm:p-6 bg-white rounded-[28px] sm:rounded-[32px] border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] space-y-3"
-              >
-                <div className="flex items-start justify-between">
-                  <div>
-                    <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Total Spending</span>
-                    <p className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">{formatCurrency(summaryStats.totalExpenses)}</p>
-                  </div>
-                  <span className="text-2xs font-bold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700">Gauge</span>
-                </div>
-
-                <div className="h-[180px] w-full flex items-center justify-center -my-2">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={expenseBreakdown}
-                        dataKey="value"
-                        nameKey="name"
-                        startAngle={180}
-                        endAngle={0}
-                        innerRadius={60}
-                        outerRadius={90}
-                        paddingAngle={3}
-                        cornerRadius={6}
-                        cx="50%"
-                        cy="80%"
-                      >
-                        {expenseBreakdown.map((entry, index) => (
-                          <Cell key={`cell-all-${entry.name}`} fill={chartColors[index % chartColors.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip formatter={(v) => [formatCurrency(Number(v)), '']} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-
-                <div className="space-y-1.5 pt-2 border-t border-slate-100 text-xs">
-                  {expenseBreakdown.slice(0, 3).map((cat, idx) => (
-                    <div key={cat.name} className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 truncate">
-                        <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: chartColors[idx % chartColors.length] }} />
-                        <span className="font-semibold text-slate-700 truncate">{cat.name}</span>
-                      </div>
-                      <span className="font-bold text-slate-900">{formatCurrency(cat.value)}</span>
-                    </div>
-                  ))}
-                </div>
-              </Card>
-
-              {/* Monthly Spending Bar Chart Card */}
-              <Card
-                variant="default"
-                className="p-5 sm:p-6 bg-white rounded-[28px] sm:rounded-[32px] border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] space-y-3"
-              >
-                <div className="flex items-start justify-between">
-                  <div>
-                    <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Spending by Month</span>
-                    <p className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">{formatCurrency(summaryStats.totalExpenses)}</p>
-                  </div>
-                  <span className="text-2xs font-bold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700">Timeline</span>
-                </div>
-
-                <div className="h-[200px] w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={reversedMonthlyTimeline} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                      <XAxis dataKey="shortMonth" stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} />
-                      <YAxis
-                        orientation="right"
-                        stroke="#94a3b8"
-                        fontSize={11}
-                        tickLine={false}
-                        axisLine={false}
-                        tickFormatter={(val) => formatCurrencyAmount(Number(val), currency, { notation: 'compact', maximumFractionDigits: 0 })}
-                      />
-                      <Tooltip formatter={(v) => [formatCurrency(Number(v)), 'Outflow']} />
-                      <Bar dataKey="expense" radius={[8, 8, 8, 8]}>
-                        {reversedMonthlyTimeline.map((entry) => (
-                          <Cell
-                            key={`cell-all-bar-${entry.key}`}
-                            fill={entry.expense === maxMonthlyExpense ? '#6366F1' : '#E2E8F0'}
-                          />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </Card>
-            </div>
-
-            {/* Smart Forecasting & AI Insights Cards */}
-            {(canAiInsights || canForecasting) && (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {canAiInsights && (
-                  <Card
-                    data-testid="reports-card-5"
-                    variant="default"
-                    className="p-5 sm:p-6 bg-white rounded-[28px] sm:rounded-[32px] border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)] overflow-hidden flex flex-col space-y-4"
-                  >
-                    <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                      <h3 className="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-purple-600 animate-pulse" />
-                        AI Intelligence Insights
-                      </h3>
-                      <span className="text-2xs font-bold px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200/50">
-                        Smart Engine
-                      </span>
-                    </div>
-                    <div className="flex-1">
-                      <AIInsightsCard compact />
-                    </div>
-                  </Card>
-                )}
-
-                {canForecasting && (
-                  <Card
-                    data-testid="reports-card-6"
-                    variant="default"
-                    className="p-5 sm:p-6 bg-white rounded-[28px] sm:rounded-[32px] border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)] overflow-hidden flex flex-col space-y-4"
-                  >
-                    <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                      <h3 className="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                        Smart Financial Forecasting
-                      </h3>
-                      <span className="text-2xs font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/50">
-                        6-Month Outlook
-                      </span>
-                    </div>
-                    <div className="flex-1">
-                      <ForecastSection transactions={transactions} accounts={accounts} currency={currency} formatCurrency={formatCurrency} />
-                    </div>
-                  </Card>
-                )}
-              </div>
-            )}
-          </motion.div>
-        )}
-
-        {/* 4. Statement Ledger (Transactions Table) */}
+        {/* ═══════════════════════════════════════════════════════════════════ */}
+        {/* 8. VIEW: STATEMENT LEDGER TABLE (Full Transaction Statement)        */}
+        {/* ═══════════════════════════════════════════════════════════════════ */}
         {(activeTab === 'all' || activeTab === 'transactions') && (
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
           >
             <Card
               data-testid="reports-card-12"
               variant="default"
-              className="p-5 sm:p-7 bg-white rounded-[28px] sm:rounded-[32px] border border-slate-100 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)] space-y-5"
+              className={cn(GLASS_CARD_ROUNDED, 'p-4 sm:p-6 space-y-4')}
             >
               {/* Header & Quick Export */}
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3.5">
                 <div>
-                  <h3 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
-                    <FileText size={18} className="text-indigo-600" />
-                    Statement Ledger
+                  <h3 className="font-section-title text-slate-900 flex items-center gap-2">
+                    <FileText size={16} className="text-indigo-600" />
+                    Official Statement Ledger
                   </h3>
-                  <p className="text-xs text-slate-400">
-                    Showing {tableTransactions.length} of {filteredTransactions.length} transactions for this period.
+                  <p className="font-caption text-slate-400 mt-0.5">
+                    Showing {tableTransactions.length} of {filteredTransactions.length} transactions for {reportPeriodLabel}.
                   </p>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex items-center gap-1.5 shrink-0">
                   {canPdf && (
                     <Button
                       data-testid="reports-download-pdf"
                       onClick={() => void downloadPDF()}
-                      className="rounded-full px-3.5 py-1.5 text-xs bg-[#18181B] text-white hover:bg-black shadow-xs font-bold cursor-pointer"
+                      className="rounded-full px-3.5 py-1.5 text-xs font-bold bg-[#18181B] text-white hover:bg-black shadow-xs cursor-pointer active:scale-95 transition-all flex items-center gap-1"
                     >
-                      <Download size={13} className="mr-1.5" /> PDF Statement
+                      <Download size={12} /> PDF
                     </Button>
                   )}
                   {canCsv && (
                     <Button
                       data-testid="reports-export-csv"
                       onClick={exportCSV}
-                      className="rounded-full px-3.5 py-1.5 text-xs bg-white border border-slate-200 text-slate-800 hover:bg-slate-50 shadow-2xs font-bold cursor-pointer"
+                      className="rounded-full px-3.5 py-1.5 text-xs font-bold bg-white/80 border border-slate-200/70 text-slate-800 hover:bg-white shadow-xs cursor-pointer active:scale-95 transition-all flex items-center gap-1"
                     >
-                      <FileText size={13} className="mr-1.5 text-indigo-600" /> CSV
+                      <FileText size={12} className="text-indigo-600" /> CSV
                     </Button>
                   )}
                   {canExcel && (
                     <Button
                       data-testid="reports-export-excel"
                       onClick={exportExcel}
-                      className="rounded-full px-3.5 py-1.5 text-xs bg-white border border-slate-200 text-slate-800 hover:bg-slate-50 shadow-2xs font-bold cursor-pointer"
+                      className="rounded-full px-3.5 py-1.5 text-xs font-bold bg-white/80 border border-slate-200/70 text-slate-800 hover:bg-white shadow-xs cursor-pointer active:scale-95 transition-all flex items-center gap-1"
                     >
-                      <FileSpreadsheet size={13} className="mr-1.5 text-emerald-600" /> Excel
+                      <FileSpreadsheet size={12} className="text-emerald-600" /> Excel
                     </Button>
                   )}
                 </div>
               </div>
 
               {/* Search & Filter Bar */}
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2.5">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
                 <div className="relative flex-1">
                   <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4 pointer-events-none" />
                   <input
@@ -1761,7 +1676,7 @@ export const Reports: React.FC = () => {
                     placeholder="Search description, category, merchant..."
                     aria-label="Search transactions"
                     title="Search transactions"
-                    className="w-full pl-10 pr-9 py-2.5 bg-slate-50 border border-slate-200/80 rounded-full text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all"
+                    className="w-full pl-10 pr-9 py-2 bg-slate-50 border border-slate-200/70 rounded-full text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all"
                   />
                   {searchQuery && (
                     <button
@@ -1782,7 +1697,8 @@ export const Reports: React.FC = () => {
                     onChange={(e) => setCategoryFilter(e.target.value)}
                     aria-label="Filter transactions by category"
                     title="Filter transactions by category"
-                    className="w-full sm:w-auto appearance-none pl-4 pr-9 py-2.5 bg-slate-50 border border-slate-200/80 rounded-full text-xs sm:text-sm font-semibold text-slate-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 cursor-pointer transition-all"
+                    className="w-full sm:w-auto appearance-none pl-3.5 pr-8 py-2 bg-slate-50 border border-slate-200/70 rounded-full text-xs sm:text-sm font-semibold text-slate-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 cursor-pointer transition-all"
+                    style={{ WebkitAppearance: 'none', MozAppearance: 'none' }}
                   >
                     <option data-testid="reports-all-categories" value="all">All Categories</option>
                     {categoryOptions.map((category) => (
@@ -1791,14 +1707,64 @@ export const Reports: React.FC = () => {
                       </option>
                     ))}
                   </select>
-                  <ChevronRight size={13} className="absolute right-3.5 top-1/2 -translate-y-1/2 rotate-90 text-slate-400 pointer-events-none" />
+                  <ChevronDown size={12} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                 </div>
               </div>
 
-              {/* Table Container */}
-              <div className="overflow-x-auto rounded-2xl border border-slate-100 shadow-2xs">
+              {/* Responsive Transactions: Mobile Card List (< md) */}
+              <div className="md:hidden divide-y divide-slate-100">
+                {tableTransactions.map((t, index) => {
+                  const account = accounts.find((a) => a.id === t.accountId);
+                  const rowKey = t.id ?? t.remoteId ?? `${toLocalDateKey(t.date) || 'row'}-${index}`;
+                  const isIncome = t.type === 'income';
+                  return (
+                    <div key={rowKey} className="py-2.5 flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className={cn(
+                          'w-8 h-8 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold',
+                          isIncome ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-rose-50 text-rose-600 border border-rose-100'
+                        )}>
+                          {isIncome ? <ArrowDownLeft size={15} /> : <ArrowUpRight size={15} />}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs sm:text-sm font-bold text-slate-900 truncate">
+                            {t.description || t.category}
+                          </p>
+                          <div className="flex items-center gap-1.5 mt-0.5 font-caption text-slate-400">
+                            <span>{formatLocalDate(t.date, 'en-US')}</span>
+                            <span>•</span>
+                            <span className="truncate">{account?.name || t.category}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <p className={cn(
+                          'text-xs sm:text-sm font-bold',
+                          isIncome ? 'text-emerald-600' : 'text-slate-900'
+                        )}>
+                          {isIncome ? '+' : '-'}{formatCurrency(t.amount)}
+                        </p>
+                        <span className={cn(
+                          'inline-block px-1.5 py-0.5 rounded-full text-2xs font-bold uppercase tracking-wider',
+                          isIncome ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600'
+                        )}>
+                          {t.category}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+                {tableTransactions.length === 0 && (
+                  <div className="py-12 text-center text-slate-400 font-page-sub">
+                    No transactions found matching your filter criteria.
+                  </div>
+                )}
+              </div>
+
+              {/* Desktop View Table (>= md) */}
+              <div className="hidden md:block overflow-x-auto rounded-2xl border border-slate-100 shadow-xs">
                 <table data-testid="reports-table" className="w-full text-sm">
-                  <thead className="bg-slate-50/90 text-slate-500 text-2xs font-bold uppercase tracking-wider border-b border-slate-100">
+                  <thead className="bg-slate-50 text-slate-500 text-2xs font-bold uppercase tracking-wider border-b border-slate-100">
                     <tr>
                       <th className="text-left py-3 px-4">Date</th>
                       <th className="text-left py-3 px-4">Description & Category</th>
@@ -1807,41 +1773,41 @@ export const Reports: React.FC = () => {
                       <th className="text-left py-3 px-4">Account</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody className="divide-y divide-slate-100/60">
                     {tableTransactions.map((t, index) => {
                       const account = accounts.find((a) => a.id === t.accountId);
                       const rowKey = t.id ?? t.remoteId ?? `${toLocalDateKey(t.date) || 'row'}-${index}`;
                       const isIncome = t.type === 'income';
                       return (
-                        <tr key={rowKey} className="hover:bg-slate-50/80 transition-colors">
-                          <td className="py-3 px-4 whitespace-nowrap text-xs font-semibold text-slate-600">
+                        <tr key={rowKey} className="hover:bg-slate-50/50 transition-colors">
+                          <td className="py-3 px-4 whitespace-nowrap text-xs sm:text-sm font-semibold text-slate-600">
                             {formatLocalDate(t.date, 'en-US')}
                           </td>
                           <td className="py-3 px-4">
                             <div className="flex flex-col">
-                              <span className="font-bold text-slate-900 text-xs truncate max-w-[200px] sm:max-w-[300px]">
+                              <span className="font-bold text-slate-900 text-xs sm:text-sm truncate max-w-[200px] sm:max-w-[300px]">
                                 {t.description || t.category}
                               </span>
-                              <span className="text-3xs text-slate-400 font-medium">{t.category}</span>
+                              <span className="font-caption text-slate-400">{t.category}</span>
                             </div>
                           </td>
                           <td className="py-3 px-4">
                             <span className={cn(
-                              'inline-flex items-center px-2 py-0.5 rounded-full text-3xs font-bold uppercase tracking-wider',
+                              'inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-bold uppercase tracking-wider whitespace-nowrap',
                               isIncome ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/60' : 'bg-rose-50 text-rose-700 border border-rose-200/60'
                             )}>
                               {t.type}
                             </span>
                           </td>
                           <td className={cn(
-                            'py-3 px-4 text-right font-black text-xs sm:text-sm whitespace-nowrap',
+                            'py-3 px-4 text-right font-bold text-xs sm:text-sm whitespace-nowrap',
                             isIncome ? 'text-emerald-600' : 'text-rose-600'
                           )}>
                             {isIncome ? '+' : '-'}{formatCurrency(t.amount)}
                           </td>
                           <td className="py-3 px-4 whitespace-nowrap">
-                            <span className="inline-flex items-center gap-1 text-xs text-slate-600 font-medium">
-                              <Wallet size={12} className="text-slate-400" />
+                            <span className="inline-flex items-center gap-1 text-xs sm:text-sm text-slate-600 font-medium">
+                              <Wallet size={13} className="text-slate-400" />
                               {account?.name || '-'}
                             </span>
                           </td>
@@ -1850,7 +1816,7 @@ export const Reports: React.FC = () => {
                     })}
                     {tableTransactions.length === 0 && (
                       <tr>
-                        <td colSpan={5} className="py-12 text-center text-slate-400 text-xs font-medium">
+                        <td colSpan={5} className="py-16 text-center text-slate-400 font-page-sub">
                           No transactions found matching your filter criteria.
                         </td>
                       </tr>
@@ -1861,6 +1827,93 @@ export const Reports: React.FC = () => {
             </Card>
           </motion.div>
         )}
+
+        {/* ═══════════════════════════════════════════════════════════════════ */}
+        {/* 9. EXPORT MODAL OVERLAY                                             */}
+        {/* ═══════════════════════════════════════════════════════════════════ */}
+        <AnimatePresence>
+          {showExportPanel && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setShowExportPanel(false)}
+                className="fixed inset-0 bg-slate-950/40 backdrop-blur-xs"
+              />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                transition={{ duration: 0.2 }}
+                className={cn(GLASS_CARD_ROUNDED, 'relative z-10 w-full max-w-lg p-5 sm:p-6 bg-white/95 shadow-2xl border border-white/80')}
+              >
+                <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
+                  <div>
+                    <h3 className="font-section-title text-slate-900 tracking-tight">Export Financial Report</h3>
+                    <p className="font-page-sub text-slate-400 mt-0.5">Select your preferred export document format</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowExportPanel(false)}
+                    className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition-colors cursor-pointer"
+                  >
+                    <X size={15} />
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-4">
+                  {canPdf && (
+                    <ExportFormatCard
+                      testId="reports-download-pdf-button"
+                      icon={<Download size={18} />}
+                      label="PDF Statement"
+                      description="Formatted executive document with charts & tables"
+                      colorClass="text-rose-600"
+                      bgClass="bg-rose-50"
+                      onClick={() => { pulseExportAction('download'); void downloadPDF(); setShowExportPanel(false); }}
+                      isActive={activeExportAction === 'download'}
+                    />
+                  )}
+                  {canExcel && (
+                    <ExportFormatCard
+                      testId="reports-export-excel-button"
+                      icon={<FileSpreadsheet size={18} />}
+                      label="Excel Workbook"
+                      description="Multi-tab spreadsheet with summary & categories"
+                      colorClass="text-emerald-600"
+                      bgClass="bg-emerald-50"
+                      onClick={() => { pulseExportAction('excel'); void exportExcel(); setShowExportPanel(false); }}
+                      isActive={activeExportAction === 'excel'}
+                    />
+                  )}
+                  {canCsv && (
+                    <ExportFormatCard
+                      testId="reports-export-csv-button"
+                      icon={<FileText size={18} />}
+                      label="CSV File"
+                      description="Comma-separated values for database & sheet import"
+                      colorClass="text-indigo-600"
+                      bgClass="bg-indigo-50"
+                      onClick={() => { pulseExportAction('csv'); void exportCSV(); setShowExportPanel(false); }}
+                      isActive={activeExportAction === 'csv'}
+                    />
+                  )}
+                  <ExportFormatCard
+                    testId="reports-export-json-button"
+                    icon={<FileJson2 size={18} />}
+                    label="JSON Data"
+                    description="Structured data for developers & custom integrations"
+                    colorClass="text-amber-600"
+                    bgClass="bg-amber-50"
+                    onClick={() => { pulseExportAction('json'); void exportJSON(); setShowExportPanel(false); }}
+                    isActive={activeExportAction === 'json'}
+                  />
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
       </div>
     </CenteredLayout>
   );
