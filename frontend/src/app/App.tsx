@@ -1385,7 +1385,7 @@ const AppContent: React.FC = () => {
         <div className="w-full max-w-[1920px] mx-auto flex flex-col flex-1 mobile-content relative">
           <LimitedModeBanner />
           <OfflineBadge />
-          <main className="mobile-safe-bottom mobile-main flex-1 bg-transparent flex flex-col justify-start w-full overflow-x-hidden">
+          <main className={`mobile-main flex-1 bg-transparent flex flex-col justify-start w-full overflow-x-hidden ${currentPage !== 'ai-assistant' ? 'mobile-safe-bottom' : ''}`}>
             {dataSyncError && (
               <div className="px-3 sm:px-6 pt-3 pb-2">
                 <div className="flex items-start gap-3.5 rounded-2xl border border-amber-200/80 bg-amber-50/90 backdrop-blur-md px-4 py-3.5 text-xs sm:text-sm text-amber-900 shadow-sm transition-all">

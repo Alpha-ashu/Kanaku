@@ -103,12 +103,12 @@ export const KaiScreen: React.FC = () => {
   const trailingLine = kaiLine && !turns.some((turn) => turn.say === kaiLine) ? kaiLine : null;
 
   const inputBar = (
-    <div className="relative w-full flex items-center gap-2 bg-white/95 backdrop-blur-lg rounded-full py-1.5 pl-2.5 sm:pl-3 pr-1.5 border border-purple-100 shadow-[0_12px_32px_-6px_rgba(112,144,176,0.25)] shrink-0">
+    <div className="relative w-full flex items-center gap-2 bg-white/95 backdrop-blur-lg rounded-full py-1.5 pl-2 sm:pl-2.5 pr-1.5 border border-purple-100 shadow-[0_12px_32px_-6px_rgba(112,144,176,0.25)] shrink-0">
       {/* Mic Button */}
       <button
         type="button"
         onClick={() => void kai.toggleListening()}
-        className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all cursor-pointer active:scale-95 shrink-0 ${
+        className={`w-8.5 h-8.5 sm:w-9 sm:h-9 rounded-full flex items-center justify-center transition-all cursor-pointer active:scale-95 shrink-0 ${
           kai.state === 'listening'
             ? 'bg-rose-500 text-white animate-pulse shadow-md shadow-rose-500/35 ring-2 ring-rose-300'
             : 'bg-purple-100/80 hover:bg-purple-200/80 text-purple-700 hover:text-purple-900'
@@ -116,7 +116,7 @@ export const KaiScreen: React.FC = () => {
         aria-label={kai.state === 'listening' ? 'Stop listening' : 'Start speaking with Kai'}
         title={kai.state === 'listening' ? 'Stop voice recording' : 'Speak with Kai'}
       >
-        <Mic size={17} strokeWidth={2.2} />
+        <Mic size={16} strokeWidth={2.2} />
       </button>
 
       {/* Text Input */}
@@ -131,7 +131,7 @@ export const KaiScreen: React.FC = () => {
           }
         }}
         placeholder='Try "spent 2000 on petrol" or "what did I spend this month?"'
-        className="min-w-0 flex-1 bg-transparent py-2 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 font-medium outline-none"
+        className="min-w-0 flex-1 bg-transparent py-1.5 text-xs sm:text-[13px] text-slate-900 placeholder:text-slate-400 font-medium outline-none"
         aria-label="Tell Kai something"
       />
 
@@ -140,10 +140,10 @@ export const KaiScreen: React.FC = () => {
         type="button"
         onClick={submitDraft}
         disabled={!draft.trim()}
-        className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-tr from-[#8B5CF6] to-[#7C3AED] disabled:opacity-40 text-white flex items-center justify-center shadow-md shadow-purple-500/25 transition-all cursor-pointer active:scale-95 shrink-0"
+        className="w-8.5 h-8.5 sm:w-9 sm:h-9 rounded-full bg-gradient-to-tr from-[#8B5CF6] to-[#7C3AED] disabled:opacity-40 text-white flex items-center justify-center shadow-md shadow-purple-500/25 transition-all cursor-pointer active:scale-95 shrink-0"
         aria-label="Send"
       >
-        <Send size={15} strokeWidth={2.4} className="translate-x-0.5" />
+        <Send size={14} strokeWidth={2.4} className="translate-x-0.5" />
       </button>
     </div>
   );
@@ -151,13 +151,13 @@ export const KaiScreen: React.FC = () => {
   return (
     <div className="relative z-10 flex-1 min-h-0 flex flex-col w-full max-w-2xl mx-auto h-full overflow-hidden">
       {/* ── Fixed / Stable Top Kai AI Section: Greeting + Orb + Status + Controls ── */}
-      <div className="shrink-0 flex flex-col items-center pt-0.5 pb-2 border-b border-purple-100/40 w-full">
+      <div className="shrink-0 flex flex-col items-center pt-0 pb-1 border-b border-purple-100/35 w-full">
         {/* Greeting */}
-        <div className="w-full text-center sm:text-left pt-0.5">
-          <h2 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-slate-900 tracking-tight leading-tight">
+        <div className="w-full text-center sm:text-left pt-0">
+          <h2 className="text-sm sm:text-base font-extrabold text-slate-900 tracking-tight leading-snug">
             Hi, {name} 👋
           </h2>
-          <p className="text-xs sm:text-sm text-slate-500 font-medium mt-0.5">
+          <p className="text-[11px] sm:text-xs text-slate-500 font-medium">
             {visibleActions.length === 0
               ? "I'm Kai, your voice financial assistant. Speak naturally or type below."
               : 'How can I help you today?'}
@@ -165,15 +165,15 @@ export const KaiScreen: React.FC = () => {
         </div>
 
         {/* AI Orb */}
-        <div className="relative pt-2 sm:pt-2.5">
+        <div className="relative pt-1">
           <AIOrb
-            size={visibleActions.length > 0 ? 84 : 116}
+            size={visibleActions.length > 0 ? 54 : 86}
             state={ORB_STATE[kai.state]}
             onClick={() => void kai.toggleListening()}
             showStatusGlow
           />
           {listening && (
-            <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 px-2.5 py-0.5 rounded-full bg-white/95 text-2xs font-bold text-purple-700 shadow-xs border border-purple-100 whitespace-nowrap">
+            <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full bg-white/95 text-2xs font-bold text-purple-700 shadow-xs border border-purple-100 whitespace-nowrap">
               Tap to stop
             </span>
           )}
@@ -183,10 +183,10 @@ export const KaiScreen: React.FC = () => {
         <AnimatePresence mode="wait">
           <motion.div
             key={`${kai.state}-${statusLine}`}
-            initial={{ opacity: 0, y: 4 }}
+            initial={{ opacity: 0, y: 3 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            className={`mt-2.5 sm:mt-3 max-w-full inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold shadow-[0_6px_18px_-8px_rgba(124,58,237,0.35)] ${
+            exit={{ opacity: 0, y: -3 }}
+            className={`mt-1 sm:mt-1.5 max-w-full inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[11px] sm:text-xs font-bold shadow-[0_4px_14px_-6px_rgba(124,58,237,0.3)] ${
               kai.state === 'listening'
                 ? 'bg-purple-100/80 border border-purple-200 text-purple-800'
                 : kai.state === 'error'
@@ -196,7 +196,7 @@ export const KaiScreen: React.FC = () => {
             aria-live="polite"
           >
             {kai.state === 'listening' && kai.engineListening && (
-              <span className="w-2 h-2 rounded-full bg-purple-600 animate-ping shrink-0" />
+              <span className="w-1.5 h-1.5 rounded-full bg-purple-600 animate-ping shrink-0" />
             )}
             <span className="truncate">{statusLine}</span>
           </motion.div>
@@ -204,34 +204,34 @@ export const KaiScreen: React.FC = () => {
 
         {/* Welcome / Say line when no actions */}
         {visibleActions.length === 0 && kaiLine && (
-          <p className="mt-2 text-center text-xs sm:text-sm font-medium text-slate-700 max-w-xl px-4" data-testid="kai-say">
+          <p className="mt-1 text-center text-[11px] sm:text-xs font-medium text-slate-700 max-w-xl px-4" data-testid="kai-say">
             {kaiLine}
           </p>
         )}
 
         {/* Voice Controls / Badges */}
-        <div className="mt-2 flex items-center gap-2">
+        <div className="mt-1 flex items-center gap-1.5">
           {canSpeak() && (
             <button
               type="button"
               onClick={() => kai.setMuted(!kai.muted)}
-              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white/70 border border-white/80 text-slate-600 hover:text-purple-700 transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-2xs font-semibold bg-white/70 border border-white/80 text-slate-600 hover:text-purple-700 transition-colors cursor-pointer"
               aria-pressed={!kai.muted}
             >
-              {kai.muted ? <VolumeX size={12} /> : <Volume2 size={12} />}
+              {kai.muted ? <VolumeX size={11} /> : <Volume2 size={11} />}
               {kai.muted ? 'Voice replies off' : 'Voice replies on'}
             </button>
           )}
           {(kai.offline || kai.parser === 'regex') && (
             <span
-              className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 border border-amber-200 text-amber-700"
+              className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-2xs font-semibold bg-amber-50 border border-amber-200 text-amber-700"
               title={
                 kai.offline
                   ? "Kai couldn't reach the server, so this device's parser understood you."
                   : 'The AI model is busy or out of its daily quota, so a simpler parser understood you. Check the cards before relying on them.'
               }
             >
-              <WifiOff size={12} /> Basic mode
+              <WifiOff size={11} /> Basic mode
             </span>
           )}
         </div>
@@ -240,26 +240,26 @@ export const KaiScreen: React.FC = () => {
       {/* ── Middle Section: Scrollable Conversation Viewport ("mt-5 space-y-5") ── */}
       <div
         ref={listRef}
-        className="flex-1 min-h-0 overflow-y-auto overscroll-contain scrollbar-none py-3 pr-0.5 sm:pr-1"
+        className="flex-1 min-h-0 overflow-y-auto overscroll-contain scrollbar-none py-1.5 pr-0.5 sm:pr-1"
       >
         {visibleActions.length > 0 ? (
-          <div className="mt-1 space-y-4 sm:space-y-5">
+          <div className="mt-1 space-y-2.5 sm:space-y-3">
             <div className="flex items-center justify-between px-1">
-              <h3 className="text-xs font-black uppercase tracking-wider text-slate-400">Today's actions</h3>
-              <span className="text-xs font-semibold text-slate-400">{savedToday} saved</span>
+              <h3 className="text-2xs font-black uppercase tracking-wider text-slate-400">Today's actions</h3>
+              <span className="text-2xs font-semibold text-slate-400">{savedToday} saved</span>
             </div>
 
             {turns.map((turn) => (
-              <div key={turn.key} className="space-y-2.5">
+              <div key={turn.key} className="space-y-1.5">
                 {turn.prompt && (
                   <div className="flex justify-end">
-                    <p className="max-w-[85%] rounded-[22px] rounded-br-md bg-[#18181B] px-4 py-2.5 sm:py-3 text-xs sm:text-sm md:text-base font-medium leading-snug text-white shadow-[0_8px_20px_-12px_rgba(15,23,42,0.7)]">
+                    <p className="max-w-[85%] rounded-[16px] rounded-br-sm bg-[#18181B] px-3 py-1.5 text-xs sm:text-[13px] font-medium leading-snug text-white shadow-xs">
                       {turn.prompt}
                     </p>
                   </div>
                 )}
                 {turn.say && (
-                  <p className="max-w-[92%] px-1 text-xs sm:text-sm md:text-base font-medium leading-relaxed text-slate-700">
+                  <p className="max-w-[92%] px-1 text-xs sm:text-[13px] font-medium leading-relaxed text-slate-700">
                     {turn.say}
                   </p>
                 )}
@@ -297,7 +297,7 @@ export const KaiScreen: React.FC = () => {
             ))}
 
             {trailingLine && (
-              <p className="max-w-[92%] px-1 text-xs sm:text-sm md:text-base font-medium leading-relaxed text-slate-700" data-testid="kai-say">
+              <p className="max-w-[92%] px-1 text-xs sm:text-[13px] font-medium leading-relaxed text-slate-700" data-testid="kai-say">
                 {trailingLine}
               </p>
             )}
@@ -341,7 +341,7 @@ export const KaiScreen: React.FC = () => {
       </div>
 
       {/* ── Fixed Position Input Bar at bottom ── */}
-      <div className="shrink-0 pt-2 pb-1 w-full bg-gradient-to-t from-white/95 via-white/85 to-transparent sticky bottom-0 z-20">
+      <div className="shrink-0 pt-1 pb-[calc(50px+max(12px,calc(env(safe-area-inset-bottom,0px)+10px))+6px)] sm:pb-[calc(56px+max(12px,calc(env(safe-area-inset-bottom,0px)+10px))+6px)] lg:pb-3 w-full bg-gradient-to-t from-white/95 via-white/85 to-transparent sticky bottom-0 z-20">
         {inputBar}
       </div>
 

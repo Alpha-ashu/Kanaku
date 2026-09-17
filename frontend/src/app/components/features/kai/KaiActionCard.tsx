@@ -144,36 +144,36 @@ export const KaiActionCard: React.FC<Props> = ({ action, currency, accounts, onC
       className="overflow-hidden"
     >
       <div
-        className={`rounded-[24px] border bg-white/95 backdrop-blur-md shadow-[0_10px_30px_-8px_rgba(112,144,176,0.22)] p-4 sm:p-5 transition-all ${
-          failed ? 'border-rose-200' : 'border-slate-100'
+        className={`rounded-[18px] border bg-white/95 backdrop-blur-md shadow-[0_4px_16px_-8px_rgba(112,144,176,0.16)] p-2.5 sm:p-3 transition-all ${
+          failed ? 'border-rose-200' : 'border-purple-100/60'
         }`}
         data-testid="kai-action-card"
       >
         <div className="flex items-center justify-between gap-2">
-          <p className="flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-purple-700 min-w-0">
-            <Sparkles size={13} className="shrink-0" />
+          <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-purple-700 min-w-0">
+            <Sparkles size={11} className="shrink-0" />
             <span className="truncate">{TITLE[action.kind] ?? KIND_LABEL[action.kind]}</span>
           </p>
           {(action.status === 'saved' || isConfirmed) && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-2xs font-bold text-emerald-700 shrink-0 border border-emerald-200/60">
-              <CheckCircle2 size={11} /> {isConfirmed ? 'Confirmed' : 'Saved'}
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-[10px] font-bold text-emerald-700 shrink-0 border border-emerald-200/60">
+              <CheckCircle2 size={10} /> {isConfirmed ? 'Confirmed' : 'Saved'}
             </span>
           )}
           {busy && (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 text-2xs font-bold text-slate-500 shrink-0">
-              <Loader2 size={11} className="animate-spin" /> Saving…
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 text-[10px] font-bold text-slate-500 shrink-0">
+              <Loader2 size={10} className="animate-spin" /> Saving…
             </span>
           )}
           {failed && (
-            <span className="px-2 py-0.5 rounded-full bg-rose-50 text-2xs font-bold text-rose-700 shrink-0">Not saved</span>
+            <span className="px-2 py-0.5 rounded-full bg-rose-50 text-[10px] font-bold text-rose-700 shrink-0">Not saved</span>
           )}
         </div>
 
-        <dl className="mt-2 divide-y divide-slate-100">
+        <dl className="mt-1 divide-y divide-slate-100">
           {rows.map((row) => (
-            <div key={row.label} className="flex items-center justify-between gap-4 py-2.5">
-              <dt className="text-sm text-slate-400 shrink-0">{row.label}</dt>
-              <dd className="text-sm font-bold text-slate-900 text-right truncate">{row.value}</dd>
+            <div key={row.label} className="flex items-center justify-between gap-3 py-1">
+              <dt className="text-2xs sm:text-xs text-slate-400 shrink-0">{row.label}</dt>
+              <dd className="text-xs sm:text-[13px] font-bold text-slate-900 text-right truncate">{row.value}</dd>
             </div>
           ))}
         </dl>
@@ -181,14 +181,14 @@ export const KaiActionCard: React.FC<Props> = ({ action, currency, accounts, onC
         {failed && <p className="mt-1 text-xs font-semibold text-rose-600">{action.error ?? 'Could not save this.'}</p>}
         {!failed && action.error && <p className="mt-1 text-xs font-semibold text-amber-600">{action.error}</p>}
 
-        <div className="mt-3 flex items-center gap-2">
+        <div className="mt-2 flex items-center gap-2">
           {failed && (
             <button
               type="button"
               onClick={() => onRetry(action)}
-              className="flex-1 inline-flex items-center justify-center gap-1.5 h-10 rounded-full text-sm font-bold text-white bg-gradient-to-tr from-[#8B5CF6] to-[#7C3AED] shadow-md shadow-purple-500/25 transition-all cursor-pointer active:scale-95"
+              className="flex-1 inline-flex items-center justify-center gap-1.5 h-8 sm:h-8.5 rounded-full text-xs font-bold text-white bg-gradient-to-tr from-[#8B5CF6] to-[#7C3AED] shadow-md shadow-purple-500/25 transition-all cursor-pointer active:scale-95"
             >
-              <RotateCcw size={14} /> Retry
+              <RotateCcw size={12} /> Retry
             </button>
           )}
           {confirmingDelete ? (
@@ -196,14 +196,14 @@ export const KaiActionCard: React.FC<Props> = ({ action, currency, accounts, onC
               <button
                 type="button"
                 onClick={() => { setConfirmingDelete(false); onDelete(action); }}
-                className="flex-1 h-10 rounded-full text-sm font-bold bg-rose-600 text-white hover:bg-rose-700 transition-colors cursor-pointer active:scale-95"
+                className="flex-1 h-8 sm:h-8.5 rounded-full text-xs font-bold bg-rose-600 text-white hover:bg-rose-700 transition-colors cursor-pointer active:scale-95"
               >
                 Confirm delete
               </button>
               <button
                 type="button"
                 onClick={() => setConfirmingDelete(false)}
-                className="flex-1 h-10 rounded-full text-sm font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors cursor-pointer active:scale-95"
+                className="flex-1 h-8 sm:h-8.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors cursor-pointer active:scale-95"
               >
                 Keep
               </button>
@@ -215,13 +215,13 @@ export const KaiActionCard: React.FC<Props> = ({ action, currency, accounts, onC
                 disabled={busy}
                 onClick={handleConfirm}
                 data-testid="kai-action-confirm-button"
-                className={`flex-1 inline-flex items-center justify-center gap-1.5 h-10 rounded-full text-sm font-black transition-all cursor-pointer active:scale-95 disabled:opacity-40 ${
+                className={`flex-1 inline-flex items-center justify-center gap-1.5 h-8 sm:h-8.5 rounded-full text-xs font-black transition-all cursor-pointer active:scale-95 disabled:opacity-40 ${
                   isConfirmed
                     ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/25'
                     : 'text-white bg-gradient-to-tr from-[#8B5CF6] to-[#7C3AED] hover:from-[#7C3AED] hover:to-[#6D28D9] shadow-md shadow-purple-500/25'
                 }`}
               >
-                <Check size={14} strokeWidth={2.8} /> {isConfirmed ? 'Confirmed' : 'Confirm'}
+                <Check size={12} strokeWidth={2.8} /> {isConfirmed ? 'Confirmed' : 'Confirm'}
               </button>
 
               <button
@@ -229,9 +229,9 @@ export const KaiActionCard: React.FC<Props> = ({ action, currency, accounts, onC
                 disabled={busy}
                 onClick={() => onEdit(action)}
                 data-testid="kai-action-edit-button"
-                className="inline-flex items-center justify-center gap-1.5 h-10 px-3.5 sm:px-4 rounded-full text-sm font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer active:scale-95 disabled:opacity-40 shrink-0"
+                className="inline-flex items-center justify-center gap-1.5 h-8 sm:h-8.5 px-3 rounded-full text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer active:scale-95 disabled:opacity-40 shrink-0"
               >
-                <Pencil size={13} /> Edit
+                <Pencil size={11} /> Edit
               </button>
 
               <button
@@ -239,11 +239,11 @@ export const KaiActionCard: React.FC<Props> = ({ action, currency, accounts, onC
                 disabled={busy}
                 onClick={() => setConfirmingDelete(true)}
                 data-testid="kai-action-delete-button"
-                className="inline-flex items-center justify-center gap-1.5 h-10 px-3 sm:px-3.5 rounded-full text-sm font-bold bg-slate-100 text-slate-600 hover:bg-rose-50 hover:text-rose-700 transition-colors cursor-pointer active:scale-95 disabled:opacity-40 shrink-0"
+                className="inline-flex items-center justify-center gap-1.5 h-8 sm:h-8.5 px-2.5 rounded-full text-xs font-bold bg-slate-100 text-slate-600 hover:bg-rose-50 hover:text-rose-700 transition-colors cursor-pointer active:scale-95 disabled:opacity-40 shrink-0"
                 title="Delete transaction"
                 aria-label="Delete transaction"
               >
-                <Trash2 size={13} /> Delete
+                <Trash2 size={11} /> Delete
               </button>
             </div>
           )}

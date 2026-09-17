@@ -287,7 +287,7 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
       enablePullToRefresh={false}
       noBottomPadding
       containerClassName="h-full !min-h-0 overflow-hidden"
-      className="relative z-10 flex flex-col flex-1 pb-0 select-none h-full min-h-0 overflow-hidden"
+      className="relative z-10 flex flex-col flex-1 !pt-1 sm:!pt-2 pb-0 select-none h-full min-h-0 overflow-hidden"
     >
       {/* ── Soft Ambient Glow Background ── */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden" aria-hidden="true">
@@ -444,7 +444,7 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
 
           <div
             ref={chatScrollContainerRef}
-            className="space-y-3.5 flex-1 min-h-0 pb-3 overflow-y-auto scrollbar-none max-h-[calc(100dvh-320px)] sm:max-h-[calc(100dvh-300px)]"
+            className="space-y-2.5 flex-1 min-h-0 pb-2 overflow-y-auto scrollbar-none max-h-[calc(100dvh-280px)]"
           >
             {messages.map((msg) => {
               const isUser = msg.role === 'user';
@@ -455,19 +455,19 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
                   className={`flex flex-col ${isUser ? 'items-end' : 'items-start'}`}
                 >
                   <div
-                    className={`flex items-start gap-2.5 max-w-[90%] sm:max-w-[85%] ${
+                    className={`flex items-start gap-2 max-w-[90%] sm:max-w-[85%] ${
                       isUser ? 'flex-row-reverse' : 'flex-row'
                     }`}
                   >
                     {!isUser && (
-                      <div className="shrink-0 mt-1">
+                      <div className="shrink-0 mt-0.5">
                         <AIOrb size="sm" showStatusGlow={false} />
                       </div>
                     )}
 
-                    <div className="flex flex-col space-y-2">
+                    <div className="flex flex-col space-y-1.5">
                       <div
-                        className={`px-4 py-2.5 text-xs sm:text-sm font-medium leading-relaxed ${
+                        className={`px-3.5 py-2 text-xs sm:text-[13px] font-medium leading-relaxed ${
                           isUser
                             ? 'bg-[#EFEBFE] text-slate-900 rounded-2xl rounded-tr-xs shadow-2xs'
                             : 'bg-white text-slate-800 rounded-2xl rounded-tl-xs border border-slate-100/90 shadow-2xs'
@@ -563,7 +563,7 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
             })}
           </div>
 
-          <div className="w-full pt-2 pb-1 shrink-0 sticky bottom-0 z-30">
+          <div className="w-full pt-1 pb-[calc(50px+max(12px,calc(env(safe-area-inset-bottom,0px)+10px))+6px)] sm:pb-[calc(56px+max(12px,calc(env(safe-area-inset-bottom,0px)+10px))+6px)] lg:pb-3 shrink-0 sticky bottom-0 z-30">
             <div className="relative w-full flex items-center bg-white/95 backdrop-blur-lg rounded-full px-2.5 py-1.5 border border-purple-100/80 shadow-[0_12px_32px_-4px_rgba(112,144,176,0.14)]">
               <button
                 type="button"
