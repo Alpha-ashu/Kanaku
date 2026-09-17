@@ -39,6 +39,16 @@ export interface QueryResult {
     requiresConfirmation: boolean;
   };
   requiresConfirmation?: boolean;
+  /** Server conversation id — send it back so follow-up questions keep their context. */
+  conversationId?: string;
+}
+
+/** Why the backend could not answer, when that changes what the user should be told. */
+function backendUnavailableNote(err: unknown): string | null {
+  const status = (err as { status?: number })?.status;
+  if (status === 429) return "You've used today's AI requests, so this answer comes from the data on your device.";
+  if (status === 403) return 'The AI assistant is not enabled for your account, so this answer comes from the data on your device.';
+  return null;
 }
 
 export const NLQService = {
@@ -61,13 +71,15 @@ export const NLQService = {
         intent: chatResponse.intent,
         action: chatResponse.action,
         requiresConfirmation: chatResponse.requiresConfirmation,
+        conversationId: chatResponse.conversationId,
       };
-    } catch {
-      // Backend unreachable or timed out — fall through to local
+    } catch (err) {
+      // Backend unreachable, timed out, rate-limited or disabled — answer locally,
+      // and say why when the user would otherwise assume the AI got it wrong.
+      const local = await this._executeLocalQuery(query);
+      const note = backendUnavailableNote(err);
+      return note ? { ...local, answer: `${note}\n\n${local.answer}` } : local;
     }
-
-    // ── Local Dexie fallback ──────────────────────────────────────────────────
-    return this._executeLocalQuery(query);
   },
 
   /**

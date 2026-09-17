@@ -526,31 +526,8 @@ export const updateFriend = async (req: AuthRequest, res: Response, next: NextFu
       throw AppError.notFound('Friend');
     }
 
-    const nextName = name !== undefined ? String(name).trim() : existing.name;
-    const nextEmail = email !== undefined ? (email ? String(email).trim().toLowerCase() : null) : existing.email;
-    const nextPhone = phone !== undefined ? (phone ? String(phone).trim() : null) : existing.phone;
-
-    const contactConditions = [
-      nextEmail ? { email: { equals: nextEmail, mode: 'insensitive' } } : null,
-      nextPhone ? { phone: nextPhone } : null,
-    ].filter(Boolean) as any;
-
-    const conflict = contactConditions.length > 0
-      ? await prisma.friend.findFirst({
-          where: {
-            userId,
-            deletedAt: null,
-            id: { not: id },
-            OR: contactConditions,
-          },
-        })
-      : null;
-
-    if (conflict) {
-      const reason = (nextEmail && conflict.email?.toLowerCase() === nextEmail.toLowerCase())
-        ? 'Another friend with this email already exists.'
-        : 'Another friend with this phone number already exists.';
-      throw AppError.badRequest(reason, 'FRIEND_ALREADY_EXISTS');
+    if (name !== undefined && !String(name).trim()) {
+      throw AppError.badRequest('Friend name is required.', 'NAME_REQUIRED');
     }
 
     const updated = await prisma.friend.update({

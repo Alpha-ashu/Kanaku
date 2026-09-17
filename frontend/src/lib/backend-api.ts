@@ -17,6 +17,12 @@ const SHOULD_SKIP_OPTIONAL_BACKEND_REQUESTS = import.meta.env.DEV && !import.met
 const FRIENDS_BULK_BATCH_SIZE = 200;
 /** A full batch is a few DB round trips, but allow for cold starts and slow links. */
 const FRIENDS_BULK_TIMEOUT_MS = 60_000;
+/**
+ * KAI and chat run an LLM ladder bounded at ~28s server-side, plus the data
+ * queries that ground the answer. At the default 15s the client gave up first,
+ * and KAI told an online user it was offline.
+ */
+const AI_REQUEST_TIMEOUT_MS = 45_000;
 
 function isRequestTimeout(error: unknown): boolean {
   if (error && typeof error === 'object' && 'original' in error) {
@@ -1490,9 +1496,9 @@ class BackendService {
       type: string;
     }>;
     requiresConfirmation: boolean;
-    parser: 'gemini' | 'groq' | 'openrouter' | 'offline';
+    parser: 'gemini' | 'openlux' | 'xkiro' | 'groq' | 'openrouter' | 'offline';
   }> {
-    const response = await this.api.post('/ai/chat', { message, conversationId });
+    const response = await this.api.post('/ai/chat', { message, conversationId }, { timeout: AI_REQUEST_TIMEOUT_MS });
     return response.data;
   }
 
@@ -1501,7 +1507,7 @@ class BackendService {
    * Returns typed actions (with query answers already filled in).
    */
   async understandKai(payload: KaiUnderstandRequest): Promise<KaiUnderstandResponse> {
-    const response = await this.api.post('/kai/understand', payload);
+    const response = await this.api.post('/kai/understand', payload, { timeout: AI_REQUEST_TIMEOUT_MS });
     return response.data;
   }
 

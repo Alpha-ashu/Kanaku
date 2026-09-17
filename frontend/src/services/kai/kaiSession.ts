@@ -18,6 +18,7 @@ import {
   actionOutflow,
   executeKaiAction,
   removeKaiAction,
+  resolveAccountForAction,
   resolveDefaultAccount,
   updateKaiAction,
   type ExecutionContext,
@@ -151,6 +152,8 @@ export class KaiSession {
   private stopping = false;
   private completedTimer: ReturnType<typeof setTimeout> | null = null;
   private userId: string | undefined;
+  /** Account the stored cards belong to — they must never surface for another one. */
+  private ownerId: string | undefined;
   private known: { knownGoals: string[]; knownContacts: string[] } = { knownGoals: [], knownContacts: [] };
 
   constructor(deps: Partial<KaiSessionDeps> = {}) {
@@ -168,7 +171,19 @@ export class KaiSession {
   getSnapshot = (): KaiSessionSnapshot => this.snapshot;
 
   setUserId(userId?: string): void {
+    if (userId && this.ownerId && this.ownerId !== userId) {
+      // Another account signed in on this tab: drop the previous account's
+      // cards so they can't be seen, edited or deleted from here.
+      const listener = this.listener;
+      this.listener = null;
+      void listener?.end();
+      this.clear();
+    }
     this.userId = userId;
+    if (userId && this.ownerId !== userId) {
+      this.ownerId = userId;
+      this.persist();
+    }
   }
 
   /** Called after any record is created, updated or deleted — the app refreshes its views. */
@@ -200,7 +215,8 @@ export class KaiSession {
     try {
       const raw = this.deps.storage?.getItem(STORAGE_KEY);
       if (!raw) return base;
-      const stored = JSON.parse(raw) as Partial<KaiSessionSnapshot>;
+      const stored = JSON.parse(raw) as Partial<KaiSessionSnapshot> & { ownerId?: string };
+      this.ownerId = stored.ownerId;
       const actions = Array.isArray(stored.actions)
         ? stored.actions.map((a) => (a.status === 'saving' ? { ...a, status: 'failed' as const, error: 'Interrupted — tap retry' } : a))
         : [];
@@ -222,6 +238,7 @@ export class KaiSession {
   private persist(): void {
     try {
       this.deps.storage?.setItem(STORAGE_KEY, JSON.stringify({
+        ownerId: this.ownerId,
         sessionId: this.snapshot.sessionId,
         seq: this.snapshot.seq,
         actions: this.snapshot.actions,
@@ -483,8 +500,11 @@ export class KaiSession {
     return null;
   }
 
-  private async executionContext(action: Pick<KaiAction, 'kind' | 'entities'>): Promise<ExecutionContext> {
-    const account = await this.deps.resolveAccount(actionOutflow(action));
+  private async executionContext(action: Pick<KaiAction, 'kind' | 'entities' | 'rawSegment'>): Promise<ExecutionContext> {
+    if (action.entities?.accountId) {
+      return { userId: this.userId, accountId: action.entities.accountId };
+    }
+    const account = await resolveAccountForAction(action, actionOutflow(action));
     if (!account?.id) throw new Error('Add an account first so Kai knows where to record this.');
     return { userId: this.userId, accountId: account.id };
   }

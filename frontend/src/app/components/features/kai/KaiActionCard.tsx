@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { CheckCircle2, Loader2, Pencil, RotateCcw, Sparkles, Trash2 } from 'lucide-react';
+import { Check, CheckCircle2, Loader2, Pencil, RotateCcw, Sparkles, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 import type { KaiActionKind } from '@kanaku/shared';
 import { actionAmount, type KaiExecutedAction } from '@/services/kai/kaiTypes';
 import { formatCurrencyAmount } from '@/lib/currencyUtils';
@@ -8,6 +9,7 @@ import { formatDay, KIND_LABEL } from './kaiFormat';
 interface Props {
   action: KaiExecutedAction;
   currency: string;
+  onConfirm?: (action: KaiExecutedAction) => void;
   onEdit: (action: KaiExecutedAction) => void;
   onDelete: (action: KaiExecutedAction) => void;
   onRetry: (action: KaiExecutedAction) => void;
@@ -97,11 +99,21 @@ function detailRows(action: KaiExecutedAction, currency: string): Row[] {
   }
 }
 
-export const KaiActionCard: React.FC<Props> = ({ action, currency, onEdit, onDelete, onRetry }) => {
+export const KaiActionCard: React.FC<Props> = ({ action, currency, onConfirm, onEdit, onDelete, onRetry }) => {
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [isConfirmed, setIsConfirmed] = useState(false);
   const busy = action.status === 'saving';
   const failed = action.status === 'failed';
   const rows = detailRows(action, currency).filter((row) => row.value);
+
+  const handleConfirm = () => {
+    setIsConfirmed(true);
+    if (onConfirm) {
+      onConfirm(action);
+    } else {
+      toast.success(`${action.summary} confirmed and recorded.`);
+    }
+  };
 
   return (
     <div
@@ -115,9 +127,9 @@ export const KaiActionCard: React.FC<Props> = ({ action, currency, onEdit, onDel
           <Sparkles size={13} className="shrink-0" />
           <span className="truncate">{TITLE[action.kind] ?? KIND_LABEL[action.kind]}</span>
         </p>
-        {action.status === 'saved' && (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-2xs font-bold text-emerald-700 shrink-0">
-            <CheckCircle2 size={11} /> Saved
+        {(action.status === 'saved' || isConfirmed) && (
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-2xs font-bold text-emerald-700 shrink-0 border border-emerald-200/60">
+            <CheckCircle2 size={11} /> {isConfirmed ? 'Confirmed' : 'Saved'}
           </span>
         )}
         {busy && (
@@ -170,28 +182,43 @@ export const KaiActionCard: React.FC<Props> = ({ action, currency, onEdit, onDel
             </button>
           </>
         ) : (
-          <>
+          <div className="flex items-center gap-2 w-full">
+            <button
+              type="button"
+              disabled={busy}
+              onClick={handleConfirm}
+              data-testid="kai-action-confirm-button"
+              className={`flex-1 inline-flex items-center justify-center gap-1.5 h-10 rounded-full text-sm font-black transition-all cursor-pointer active:scale-95 disabled:opacity-40 ${
+                isConfirmed
+                  ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/25'
+                  : 'text-white bg-gradient-to-tr from-[#8B5CF6] to-[#7C3AED] hover:from-[#7C3AED] hover:to-[#6D28D9] shadow-md shadow-purple-500/25'
+              }`}
+            >
+              <Check size={14} strokeWidth={2.8} /> {isConfirmed ? 'Confirmed' : 'Confirm'}
+            </button>
+
             <button
               type="button"
               disabled={busy}
               onClick={() => onEdit(action)}
-              className={`flex-1 inline-flex items-center justify-center gap-1.5 h-10 rounded-full text-sm font-bold transition-all cursor-pointer active:scale-95 disabled:opacity-40 ${
-                failed
-                  ? 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                  : 'text-white bg-gradient-to-tr from-[#8B5CF6] to-[#7C3AED] shadow-md shadow-purple-500/25'
-              }`}
+              data-testid="kai-action-edit-button"
+              className="inline-flex items-center justify-center gap-1.5 h-10 px-3.5 sm:px-4 rounded-full text-sm font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer active:scale-95 disabled:opacity-40 shrink-0"
             >
-              <Pencil size={14} /> Edit
+              <Pencil size={13} /> Edit
             </button>
+
             <button
               type="button"
               disabled={busy}
               onClick={() => setConfirmingDelete(true)}
-              className="flex-1 inline-flex items-center justify-center gap-1.5 h-10 rounded-full text-sm font-bold bg-slate-100 text-slate-700 hover:bg-rose-50 hover:text-rose-700 disabled:opacity-40 transition-colors cursor-pointer active:scale-95"
+              data-testid="kai-action-delete-button"
+              className="inline-flex items-center justify-center gap-1.5 h-10 px-3 sm:px-3.5 rounded-full text-sm font-bold bg-slate-100 text-slate-600 hover:bg-rose-50 hover:text-rose-700 transition-colors cursor-pointer active:scale-95 disabled:opacity-40 shrink-0"
+              title="Delete transaction"
+              aria-label="Delete transaction"
             >
-              <Trash2 size={14} /> Delete
+              <Trash2 size={13} /> Delete
             </button>
-          </>
+          </div>
         )}
       </div>
     </div>

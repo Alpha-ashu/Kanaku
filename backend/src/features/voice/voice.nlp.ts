@@ -436,6 +436,9 @@ function regexExtractDescription(text: string): string {
     const s = onMatch[1].trim().replace(/\b(?:yesterday|today|now|cash|card|upi|bank)\b/gi, '').trim();
     if (s.length > 1) return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
   }
+  // "had dinner with Ravi and Priya" — name the thing, not the people.
+  const thing = text.match(/\b(dinner|lunch|breakfast|brunch|coffee|drinks|snacks|movie|trip|party|groceries|petrol|fuel|cab|taxi|tickets?|rent|shopping)\b/i);
+  if (thing) return thing[1].charAt(0).toUpperCase() + thing[1].slice(1).toLowerCase();
   return text
     .replace(/₹\s*[\d,]+(?:\.\d+)?/g, '')
     .replace(/\b[\d,]+(?:\.\d+)?\s*(?:rupees?|rs\.?|inr)?\b/gi, '')
@@ -450,7 +453,10 @@ function regexExtractDescription(text: string): string {
  * drop pronouns/verbs that follow the names in run-on speech.
  */
 function extractNameList(phrase: string): string[] {
-  return phrase
+  // "Ravi and Priya for 2400" — the names end where the rest of the sentence
+  // (an amount, "for …", "on …", a verb) begins.
+  const namesOnly = phrase.split(/\s+(?:for|on|at|of|worth|costing|spent|paid|had|went|yesterday|today)\b|\s*(?:₹|rs\.?\s*\d|\d)/i)[0];
+  return namesOnly
     .split(/,|\band\b|&/i)
     .map((n) => n.trim().replace(/[.،]+$/g, ''))
     .map((n) => n.replace(/\b(?:mr\.?|mrs\.?|ms\.?|dr\.?)\s+/gi, '').replace(/'s\s+(?:share|part)?$/i, '').trim())
@@ -466,7 +472,13 @@ function regexExtractEntities(segment: string, type: FinancialActionType): Extra
   entities.category = regexDetectCategory(segment);
   entities.description = regexExtractDescription(segment);
 
-  const merchantMatch = segment.match(/(?:at|from|on)\s+([A-Za-z][A-Za-z\s]{2,20})(?:\s|,|$)/i);
+  // "from Arun" names a lender and "on petrol" names a purpose — neither is a
+  // merchant. Only "at <place>" (and "from <shop>" on a purchase) is.
+  const isCounterpartyType = type === 'loan_lend' || type === 'loan_borrow' || type === 'transfer' || type === 'income';
+  const merchantMatch = isCounterpartyType
+    ? null
+    : segment.match(/\bat\s+([A-Za-z][A-Za-z\s]{2,20}?)(?:\s+(?:for|on|with|yesterday|today)\b|\s*[,.]|\s*$)/i)
+      ?? segment.match(/\b(?:bought|ordered|purchased)\b.*?\bfrom\s+([A-Za-z][A-Za-z\s]{2,20}?)(?:\s+(?:for|on|with)\b|\s*[,.]|\s*$)/i);
   if (merchantMatch) entities.merchant = merchantMatch[1].trim();
 
   if (type === 'group_expense') {

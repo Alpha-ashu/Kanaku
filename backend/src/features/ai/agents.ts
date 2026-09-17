@@ -1,13 +1,22 @@
 /**
- * AI Agents System
- * 10 specialized agents that run on-demand or on schedule.
- * Each agent analyzes user financial data and produces structured insights.
+ * AI insight agents — rule-based analyses of one user's finances that feed
+ * GET /ai/insights (dashboard card, AI Insights page, Reports) and the
+ * per-agent endpoints.
+ *
+ * Every agent works from one data load, so a full insights request costs a
+ * handful of queries rather than one set per agent. The load ignores
+ * soft-deleted rows (deleted transactions used to inflate spending and get
+ * flagged as fraud), treats only money the user borrowed as debt (money they
+ * lent is owed TO them), and never writes: a GET that re-categorised
+ * transactions server-side bypassed sync versioning and surprised users.
  */
 
 import { prisma } from '../../db/prisma';
-import { getFinancialBaseline } from './financial-baseline';
+import { logger } from '../../config/logger';
+import { getFinancialBaseline, type FinancialBaseline } from './financial-baseline';
+import { INR } from './financial-snapshot';
 
-//  Type Definitions 
+//  Type Definitions
 
 export interface AgentResult {
   agentName: string;
@@ -29,6 +38,7 @@ export interface Recommendation {
   type: string;
   title: string;
   message: string;
+  /** 1–10, higher is more urgent. */
   priority: number;
   actionLabel?: string;
 }
@@ -42,9 +52,14 @@ export interface Insight {
 
 export interface FraudFlag {
   transactionId: string;
-  reason: string;
+  reason: 'unusual_amount';
   severity: 'low' | 'medium' | 'high';
   amount: number;
+  /** Human-readable explanation, safe to show as-is. */
+  message: string;
+  description?: string;
+  category?: string;
+  date?: string;
 }
 
 export interface BillPrediction {
@@ -52,524 +67,595 @@ export interface BillPrediction {
   predictedAmount: number;
   predictedDate: string;
   confidence: number;
+  source: 'recurring' | 'history';
 }
 
-//  Helper: Get date range for analysis 
+//  Data
 
-function dateRangeStart(daysBack: number): Date {
-  const d = new Date();
-  d.setDate(d.getDate() - daysBack);
-  return d;
+interface AgentTransaction {
+  id: string;
+  type: string;
+  amount: number;
+  category: string;
+  merchant: string | null;
+  description: string | null;
+  date: Date;
 }
 
-async function safeQuery<T>(fn: () => Promise<T> | T, fallback: any): Promise<any> {
+export interface AgentData {
+  now: Date;
+  /** Non-deleted transactions from the last 120 days, oldest first. */
+  transactions: AgentTransaction[];
+  goals: Array<{ name: string; target: number; saved: number; targetDate: Date }>;
+  /** Active loans the user owes (borrowed / EMI). */
+  debts: Array<{ name: string; outstanding: number; emi: number }>;
+  lentOutstanding: number;
+  budgets: Array<{ category: string; amount: number; period: string; threshold: number }>;
+  recurring: Array<{ title: string; amount: number; nextDueDate: Date; type: string | null }>;
+  investedValue: number;
+  baseline: FinancialBaseline;
+}
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+const HISTORY_DAYS = 120;
+
+const num = (value: unknown): number => {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : 0;
+};
+
+const daysAgo = (now: Date, days: number) => new Date(now.getTime() - days * DAY_MS);
+const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+const pct = (value: number) => `${value.toFixed(1)}%`;
+
+async function soft<T>(label: string, fallback: T, fn: () => Promise<T>): Promise<T> {
   try {
     return await fn();
-  } catch {
+  } catch (error) {
+    logger.warn(`[agents] ${label} lookup failed`, { error: error instanceof Error ? error.message : String(error) });
     return fallback;
   }
 }
 
-//  Agent 1: Expense Categorization Agent 
+export async function loadAgentData(userId: string, now = new Date()): Promise<AgentData> {
+  const [transactions, goals, loans, budgets, recurring, investments, baseline] = await Promise.all([
+    soft('transactions', [] as AgentTransaction[], async () => {
+      const rows = await prisma.transaction.findMany({
+        where: { userId, deletedAt: null, date: { gte: daysAgo(now, HISTORY_DAYS) } },
+        select: { id: true, type: true, amount: true, category: true, merchant: true, description: true, date: true },
+        orderBy: { date: 'asc' },
+      });
+      return rows.map((t) => ({ ...t, amount: num(t.amount) }));
+    }),
+    soft('goals', [] as AgentData['goals'], async () => {
+      const rows = await prisma.goal.findMany({
+        where: { userId, deletedAt: null },
+        select: { name: true, targetAmount: true, currentAmount: true, targetDate: true },
+      });
+      return rows
+        .map((g) => ({ name: g.name, target: num(g.targetAmount), saved: num(g.currentAmount), targetDate: g.targetDate }))
+        .filter((g) => g.target > 0 && g.saved < g.target);
+    }),
+    soft('loans', [] as Array<{ type: string; name: string; contactPerson: string | null; outstandingBalance: unknown; emiAmount: unknown }>, () =>
+      prisma.loan.findMany({
+        where: { userId, deletedAt: null, status: 'active' },
+        select: { type: true, name: true, contactPerson: true, outstandingBalance: true, emiAmount: true },
+      })),
+    soft('budgets', [] as AgentData['budgets'], async () => {
+      const rows = await prisma.budget.findMany({
+        where: { userId, deletedAt: null },
+        select: { category: true, amount: true, period: true, threshold: true },
+      });
+      return rows.map((b) => ({ category: b.category, amount: num(b.amount), period: b.period, threshold: b.threshold ?? 80 }));
+    }),
+    soft('recurring', [] as AgentData['recurring'], async () => {
+      const rows = await prisma.recurringTransaction.findMany({
+        where: { userId, deletedAt: null, status: 'active', nextDueDate: { lte: new Date(now.getTime() + 35 * DAY_MS) } },
+        select: { title: true, amount: true, nextDueDate: true, type: true },
+        orderBy: { nextDueDate: 'asc' },
+        take: 20,
+      });
+      return rows.map((r) => ({ ...r, amount: num(r.amount) }));
+    }),
+    soft('investments', 0, async () => {
+      const agg = await prisma.investment.aggregate({
+        where: { userId, deletedAt: null, OR: [{ positionStatus: 'open' }, { positionStatus: null }] },
+        _sum: { currentValue: true },
+      });
+      return num(agg._sum.currentValue);
+    }),
+    getFinancialBaseline(userId),
+  ]);
 
-export async function runExpenseCategorizationAgent(userId: string): Promise<AgentResult> {
-  const start = Date.now();
-  try {
-    // Find uncategorized transactions and auto-categorize them
-    const { categorizeTextForUser } = await import('../categorization/categorization.engine');
-
-    const uncategorized = await safeQuery(() => (prisma as any).transaction.findMany({
-      where: {
-        userId,
-        OR: [{ category: '' }, { category: 'Others' }],
-      },
-      take: 50,
-      orderBy: { createdAt: 'desc' },
-    }), []);
-
-    let updated = 0;
-    for (const tx of uncategorized) {
-      if (!tx.description) continue;
-      try {
-        const result = await categorizeTextForUser(userId, tx.description);
-        if (result.confidence > 0.7) {
-          await (prisma as any).transaction.update({
-            where: { id: tx.id },
-            data: { category: result.category, subcategory: result.subcategory },
-          });
-          updated++;
-        }
-      } catch { /* skip individual failures */ }
-    }
-
-    return {
-      agentName: 'expense-categorization',
-      status: 'success',
-      output: {
-        insights: [{ category: 'categorization', label: 'Auto-categorized', value: updated }],
-      },
-      executionMs: Date.now() - start,
-    };
-  } catch (error: any) {
-    return { agentName: 'expense-categorization', status: 'error', error: error.message, executionMs: Date.now() - start };
-  }
+  const isDebt = (type: string) => type !== 'lent';
+  return {
+    now,
+    transactions,
+    goals,
+    debts: loans.filter((l) => isDebt(l.type)).map((l) => ({
+      name: l.contactPerson || l.name,
+      outstanding: num(l.outstandingBalance),
+      emi: num(l.emiAmount),
+    })),
+    lentOutstanding: loans.filter((l) => !isDebt(l.type)).reduce((s, l) => s + num(l.outstandingBalance), 0),
+    budgets,
+    recurring,
+    investedValue: investments,
+    baseline,
+  };
 }
 
-//  Agent 2: Goal Recommendation Agent 
+//  Shared figures
 
-export async function runGoalRecommendationAgent(userId: string): Promise<AgentResult> {
-  const start = Date.now();
-  try {
-    const [transactions, goals, baseline] = await Promise.all([
-      safeQuery(() => (prisma as any).transaction.findMany({
-        where: { userId, date: { gte: dateRangeStart(30) } },
-        select: { type: true, amount: true },
-      }), []),
-      safeQuery(() => (prisma as any).goal?.findMany?.({ where: { userId } }), []),
-      getFinancialBaseline(userId),
-    ]);
-
-    const txIncome = transactions.filter((t: any) => t.type === 'income').reduce((s: number, t: any) => s + Number(t.amount), 0);
-    const expenses = transactions.filter((t: any) => t.type === 'expense').reduce((s: number, t: any) => s + Number(t.amount), 0);
-    // Prefer observed income; fall back to declared onboarding income so a
-    // new user still gets a meaningful savings rate.
-    const income = txIncome > 0 ? txIncome : baseline.declaredMonthlyIncome;
-    const savingsRate = income > 0 ? ((income - expenses) / income) * 100 : 0;
-
-    const recommendations: Recommendation[] = [];
-
-    if (income > 0 && savingsRate < 10) {
-      recommendations.push({
-        type: 'goal_suggestion',
-        title: 'Low Savings Rate Detected',
-        message: `Your savings rate is ${savingsRate.toFixed(1)}%. Consider setting up a savings goal to reach 20%.`,
-        priority: 8,
-        actionLabel: 'Create Savings Goal',
-      });
-    }
-
-    if (goals.length === 0 && income > 0) {
-      recommendations.push({
-        type: 'goal_suggestion',
-        title: 'No Financial Goals Set',
-        message: `You have monthly income of ${income.toFixed(0)}. Set a goal to keep you motivated.`,
-        priority: 6,
-        actionLabel: 'Add Goal',
-      });
-    }
-
-    return {
-      agentName: 'goal-recommendation',
-      status: 'success',
-      output: {
-        recommendations,
-        insights: [
-          { category: 'savings', label: 'Monthly Savings Rate', value: `${savingsRate.toFixed(1)}%` },
-        ],
-      },
-      executionMs: Date.now() - start,
-    };
-  } catch (error: any) {
-    return { agentName: 'goal-recommendation', status: 'error', error: error.message, executionMs: Date.now() - start };
-  }
+interface Figures {
+  income: number;
+  expense: number;
+  surplus: number;
+  /** Fraction, e.g. 0.2 for 20%. Null without any income. */
+  savingsRate: number | null;
+  /** Months the account balances would cover at the last 30 days' spending. */
+  runwayMonths: number;
+  totalEmi: number;
+  totalDebt: number;
 }
 
-//  Agent 3: Budget Optimization Agent 
+function figures(data: AgentData): Figures {
+  const since = daysAgo(data.now, 30);
+  const recent = data.transactions.filter((t) => t.date >= since);
+  const observedIncome = recent.filter((t) => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+  const expense = recent.filter((t) => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+  // Observed income first; the onboarding declaration keeps new users' numbers meaningful.
+  const income = observedIncome > 0 ? observedIncome : data.baseline.declaredMonthlyIncome;
+  const monthlyNeed = expense > 0 ? expense : income;
+  return {
+    income,
+    expense,
+    surplus: income - expense,
+    savingsRate: income > 0 ? (income - expense) / income : null,
+    runwayMonths: monthlyNeed > 0 ? data.baseline.totalBalance / monthlyNeed : 0,
+    totalEmi: data.debts.reduce((s, d) => s + d.emi, 0),
+    totalDebt: data.debts.reduce((s, d) => s + d.outstanding, 0),
+  };
+}
 
-export async function runBudgetOptimizationAgent(userId: string): Promise<AgentResult> {
+const sameCategory = (budgetCategory: string, txCategory: string): boolean => {
+  const b = budgetCategory.trim().toLowerCase();
+  const t = (txCategory ?? '').trim().toLowerCase();
+  if (!b || !t) return false;
+  if (b === t || t.includes(b) || b.includes(t)) return true;
+  return b.split(/\s*(?:&|\band\b|\/|,)\s*/).filter((p) => p.length >= 3).some((part) => t.includes(part));
+};
+
+const budgetWindowStart = (period: string, now: Date): Date => {
+  if (period === 'weekly') return daysAgo(now, 7);
+  if (period === 'yearly') return new Date(now.getFullYear(), 0, 1);
+  return new Date(now.getFullYear(), now.getMonth(), 1);
+};
+
+const run = (agentName: string, fn: () => AgentOutput): AgentResult => {
   const start = Date.now();
   try {
-    const transactions = await safeQuery(() => (prisma as any).transaction.findMany({
-      where: { userId, type: 'expense', date: { gte: dateRangeStart(30) } },
-      select: { amount: true, category: true },
-    }), []);
+    return { agentName, status: 'success', output: fn(), executionMs: Date.now() - start };
+  } catch (error) {
+    return { agentName, status: 'error', error: error instanceof Error ? error.message : String(error), executionMs: Date.now() - start };
+  }
+};
 
-    const income = await safeQuery(() => (prisma as any).transaction.aggregate({
-      where: { userId, type: 'income', date: { gte: dateRangeStart(30) } },
-      _sum: { amount: true },
-    }), { _sum: { amount: 0 } });
+//  Agent: goals & savings
 
-    const baseline = await getFinancialBaseline(userId);
-    const txMonthlyIncome = Number(income._sum?.amount ?? 0);
-    // Fall back to declared onboarding income when there is no income history.
-    const monthlyIncome = txMonthlyIncome > 0 ? txMonthlyIncome : baseline.declaredMonthlyIncome;
+export function analyseGoals(data: AgentData): AgentOutput {
+  const f = figures(data);
+  const recommendations: Recommendation[] = [];
 
-    // Group by category
-    const byCategory: Record<string, number> = {};
-    transactions.forEach((t: any) => {
-      const cat = t.category || 'Others';
-      byCategory[cat] = (byCategory[cat] || 0) + Number(t.amount);
+  if (f.savingsRate !== null && f.savingsRate < 0) {
+    recommendations.push({
+      type: 'goal_suggestion',
+      title: 'Spending More Than You Earn',
+      message: `Over the last 30 days you spent ${INR(-f.surplus)} more than your income of ${INR(f.income)}. Trim one or two categories before adding new goals.`,
+      priority: 9,
+      actionLabel: 'Review Spending',
     });
+  } else if (f.savingsRate !== null && f.savingsRate < 0.1) {
+    recommendations.push({
+      type: 'goal_suggestion',
+      title: 'Low Savings Rate',
+      message: `You kept ${pct(f.savingsRate * 100)} of your income over the last 30 days (${INR(f.surplus)}). Aim for 20% — a savings goal makes it automatic.`,
+      priority: 7,
+      actionLabel: 'Create Savings Goal',
+    });
+  }
 
-    const recommendations: Recommendation[] = [];
+  if (data.goals.length === 0 && f.income > 0) {
+    recommendations.push({
+      type: 'goal_suggestion',
+      title: 'No Savings Goals Yet',
+      message: `Setting aside 20% of your income is about ${INR(f.income * 0.2)} a month. Give it a name — an emergency fund is a good first goal.`,
+      priority: 5,
+      actionLabel: 'Add Goal',
+    });
+  }
 
-    // 50/30/20 rule check
-    const totalExpense = Object.values(byCategory).reduce((s, v) => s + v, 0);
-    if (monthlyIncome > 0 && totalExpense > monthlyIncome * 0.8) {
+  const behind = data.goals
+    .map((g) => {
+      const monthsLeft = (g.targetDate.getTime() - data.now.getTime()) / (30 * DAY_MS);
+      const remaining = g.target - g.saved;
+      return { ...g, remaining, monthsLeft, needed: monthsLeft > 0 ? remaining / Math.max(monthsLeft, 1) : remaining };
+    })
+    .filter((g) => g.monthsLeft <= 0 || (f.income > 0 && g.needed > Math.max(0, f.surplus)))
+    .sort((a, b) => a.monthsLeft - b.monthsLeft)
+    .slice(0, 2);
+
+  for (const g of behind) {
+    recommendations.push({
+      type: 'goal_suggestion',
+      title: g.monthsLeft <= 0 ? `${g.name}: Target Date Passed` : `${g.name} Is Behind Schedule`,
+      message: g.monthsLeft <= 0
+        ? `${INR(g.remaining)} is still needed. Move the target date or plan a monthly amount you can keep up.`
+        : `You need about ${INR(g.needed)} a month to reach ${INR(g.target)} by ${g.targetDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}, but saved ${INR(Math.max(0, f.surplus))} in the last 30 days.`,
+      priority: 6,
+      actionLabel: 'Open Goal',
+    });
+  }
+
+  return {
+    recommendations,
+    insights: f.savingsRate === null ? [] : [{ category: 'savings', label: 'Savings Rate (30 days)', value: pct(f.savingsRate * 100) }],
+  };
+}
+
+//  Agent: budgets & spending share
+
+export function analyseBudgets(data: AgentData): AgentOutput {
+  const f = figures(data);
+  const since = daysAgo(data.now, 30);
+  const recommendations: Recommendation[] = [];
+
+  // Spending past 100% of income is already the savings agent's top warning.
+  if (f.income > 0 && f.expense > f.income * 0.8 && f.expense <= f.income) {
+    recommendations.push({
+      type: 'budget_alert',
+      title: 'Spending Above 80% of Income',
+      message: `You spent ${INR(f.expense)} against ${INR(f.income)} of income in the last 30 days (${Math.round((f.expense / f.income) * 100)}%). Keeping it under 80% leaves room to save.`,
+      priority: 9,
+    });
+  }
+
+  const byCategory = new Map<string, number>();
+  for (const t of data.transactions) {
+    if (t.type !== 'expense' || t.date < since) continue;
+    const key = t.category || 'Uncategorised';
+    byCategory.set(key, (byCategory.get(key) ?? 0) + t.amount);
+  }
+  const [top] = [...byCategory.entries()].sort((a, b) => b[1] - a[1]);
+  if (top && f.income > 0 && top[1] / f.income > 0.4) {
+    recommendations.push({
+      type: 'budget_alert',
+      title: `High ${top[0]} Spending`,
+      message: `${top[0]} took ${Math.round((top[1] / f.income) * 100)}% of your income in the last 30 days (${INR(top[1])}).`,
+      priority: 7,
+      actionLabel: 'Set a Budget',
+    });
+  }
+
+  for (const b of data.budgets) {
+    if (b.amount <= 0) continue;
+    const start = budgetWindowStart(b.period, data.now);
+    const spent = data.transactions
+      .filter((t) => t.type === 'expense' && t.date >= start && sameCategory(b.category, t.category))
+      .reduce((s, t) => s + t.amount, 0);
+    const used = spent / b.amount;
+    const window = b.period === 'weekly' ? 'this week' : b.period === 'yearly' ? 'this year' : 'this month';
+    if (used >= 1) {
       recommendations.push({
         type: 'budget_alert',
-        title: 'Spending Above 80% of Income',
-        message: `This month you spent ${totalExpense.toFixed(0)} vs ${monthlyIncome.toFixed(0)} income. Try to keep spending below 80%.`,
-        priority: 9,
+        title: `${b.category} Budget Exceeded`,
+        message: `${INR(spent)} spent ${window} against a ${INR(b.amount)} budget — ${INR(spent - b.amount)} over.`,
+        priority: 8,
       });
-    }
-
-    // Flag top over-spending category
-    const sorted = Object.entries(byCategory).sort(([, a], [, b]) => b - a);
-    if (sorted.length > 0 && monthlyIncome > 0) {
-      const [topCat, topAmt] = sorted[0];
-      const pct = (topAmt / monthlyIncome) * 100;
-      if (pct > 40) {
-        recommendations.push({
-          type: 'budget_alert',
-          title: `High ${topCat} Spending`,
-          message: `${topCat} takes up ${pct.toFixed(0)}% of your income this month (${topAmt.toFixed(0)}).`,
-          priority: 7,
-        });
-      }
-    }
-
-    return {
-      agentName: 'budget-optimization',
-      status: 'success',
-      output: { recommendations },
-      executionMs: Date.now() - start,
-    };
-  } catch (error: any) {
-    return { agentName: 'budget-optimization', status: 'error', error: error.message, executionMs: Date.now() - start };
-  }
-}
-
-//  Agent 4: Spending Pattern Agent 
-
-export async function runSpendingPatternAgent(userId: string): Promise<AgentResult> {
-  const start = Date.now();
-  try {
-    const transactions = await safeQuery(() => (prisma as any).transaction.findMany({
-      where: { userId, type: 'expense', date: { gte: dateRangeStart(90) } },
-      select: { amount: true, category: true, date: true, merchant: true },
-    }), []);
-
-    const byCategory: Record<string, { total: number; count: number }> = {};
-    transactions.forEach((t: any) => {
-      const cat = t.category || 'Others';
-      if (!byCategory[cat]) byCategory[cat] = { total: 0, count: 0 };
-      byCategory[cat].total += Number(t.amount);
-      byCategory[cat].count++;
-    });
-
-    const insights: Insight[] = Object.entries(byCategory)
-      .sort(([, a], [, b]) => b.total - a.total)
-      .slice(0, 5)
-      .map(([cat, data]) => ({
-        category: 'spending',
-        label: cat,
-        value: `${data.total.toFixed(0)} (${data.count} txns)`,
-      }));
-
-    return {
-      agentName: 'spending-pattern',
-      status: 'success',
-      output: { insights },
-      executionMs: Date.now() - start,
-    };
-  } catch (error: any) {
-    return { agentName: 'spending-pattern', status: 'error', error: error.message, executionMs: Date.now() - start };
-  }
-}
-
-//  Agent 5: Bill Prediction Agent 
-
-export async function runBillPredictionAgent(userId: string): Promise<AgentResult> {
-  const start = Date.now();
-  try {
-    // Look for recurring transactions (same merchant, similar amount, ~30 day intervals)
-    const transactions = await safeQuery(() => (prisma as any).transaction.findMany({
-      where: { userId, type: 'expense', date: { gte: dateRangeStart(120) } },
-      select: { merchant: true, amount: true, date: true, category: true },
-      orderBy: { date: 'asc' },
-    }), []);
-
-    const byMerchant: Record<string, Array<{ amount: number; date: Date }>> = {};
-    transactions.forEach((t: any) => {
-      if (!t.merchant) return;
-      const key = t.merchant.toLowerCase();
-      if (!byMerchant[key]) byMerchant[key] = [];
-      byMerchant[key].push({ amount: Number(t.amount), date: new Date(t.date) });
-    });
-
-    const predictions: BillPrediction[] = [];
-    const now = new Date();
-
-    for (const [merchant, entries] of Object.entries(byMerchant)) {
-      if (entries.length < 2) continue;
-
-      const sorted = entries.sort((a, b) => a.date.getTime() - b.date.getTime());
-      const intervals: number[] = [];
-      for (let i = 1; i < sorted.length; i++) {
-        intervals.push((sorted[i].date.getTime() - sorted[i - 1].date.getTime()) / (1000 * 60 * 60 * 24));
-      }
-
-      const avgInterval = intervals.reduce((s, v) => s + v, 0) / intervals.length;
-      const isMonthly = avgInterval >= 25 && avgInterval <= 35;
-
-      if (isMonthly) {
-        const lastDate = sorted[sorted.length - 1].date;
-        const nextDate = new Date(lastDate);
-        nextDate.setDate(nextDate.getDate() + Math.round(avgInterval));
-
-        if (nextDate > now) {
-          const avgAmount = sorted.slice(-3).reduce((s, e) => s + e.amount, 0) / Math.min(3, sorted.length);
-          predictions.push({
-            merchant,
-            predictedAmount: avgAmount,
-            predictedDate: nextDate.toISOString().slice(0, 10),
-            confidence: Math.min(0.95, 0.6 + entries.length * 0.05),
-          });
-        }
-      }
-    }
-
-    return {
-      agentName: 'bill-prediction',
-      status: 'success',
-      output: { predictions },
-      executionMs: Date.now() - start,
-    };
-  } catch (error: any) {
-    return { agentName: 'bill-prediction', status: 'error', error: error.message, executionMs: Date.now() - start };
-  }
-}
-
-//  Agent 6: Fraud Detection Agent 
-
-export async function runFraudDetectionAgent(userId: string): Promise<AgentResult> {
-  const start = Date.now();
-  try {
-    const transactions = await safeQuery(() => (prisma as any).transaction.findMany({
-      where: { userId, date: { gte: dateRangeStart(30) } },
-      select: { id: true, amount: true, date: true, merchant: true, type: true },
-      orderBy: { date: 'desc' },
-    }), []);
-
-    if (transactions.length === 0) {
-      return { agentName: 'fraud-detection', status: 'success', output: { flags: [] }, executionMs: Date.now() - start };
-    }
-
-    const amounts = transactions.map((t: any) => Number(t.amount));
-    const mean = amounts.reduce((s: number, v: number) => s + v, 0) / amounts.length;
-    const stddev = Math.sqrt(amounts.reduce((s: number, v: number) => s + Math.pow(v - mean, 2), 0) / amounts.length);
-
-    const flags: FraudFlag[] = [];
-
-    for (const tx of transactions) {
-      const amount = Number(tx.amount);
-      const date = new Date(tx.date);
-      const hour = date.getHours();
-
-      // Unusual amount: > 3 standard deviations
-      if (amount > mean + 3 * stddev && amount > 5000) {
-        flags.push({
-          transactionId: tx.id,
-          reason: 'unusual_amount',
-          severity: amount > mean + 5 * stddev ? 'high' : 'medium',
-          amount,
-        });
-      }
-
-      // Late-night unusual transaction (2am-5am)
-      if (hour >= 2 && hour <= 5 && amount > mean + stddev && amount > 1000) {
-        flags.push({
-          transactionId: tx.id,
-          reason: 'unusual_time',
-          severity: 'low',
-          amount,
-        });
-      }
-    }
-
-    return {
-      agentName: 'fraud-detection',
-      status: 'success',
-      output: { flags },
-      executionMs: Date.now() - start,
-    };
-  } catch (error: any) {
-    return { agentName: 'fraud-detection', status: 'error', error: error.message, executionMs: Date.now() - start };
-  }
-}
-
-//  Agent 7: Financial Health Score Agent 
-
-export async function runFinancialHealthScoreAgent(userId: string): Promise<AgentResult> {
-  const start = Date.now();
-  try {
-    const [incomeAgg, expenseAgg, goals, loans, baseline] = await Promise.all([
-      safeQuery(() => (prisma as any).transaction.aggregate({
-        where: { userId, type: 'income', date: { gte: dateRangeStart(30) } },
-        _sum: { amount: true },
-      }), { _sum: { amount: 0 } }),
-      safeQuery(() => (prisma as any).transaction.aggregate({
-        where: { userId, type: 'expense', date: { gte: dateRangeStart(30) } },
-        _sum: { amount: true },
-      }), { _sum: { amount: 0 } }),
-      safeQuery(() => (prisma as any).goal?.findMany?.({ where: { userId } }) ?? [], []),
-      safeQuery(() => (prisma as any).loan?.findMany?.({ where: { userId, status: 'active' } }) ?? [], []),
-      getFinancialBaseline(userId),
-    ]);
-
-    const txIncome = Number(incomeAgg._sum?.amount ?? 0);
-    const expenses = Number(expenseAgg._sum?.amount ?? 0);
-    // Prefer observed income; fall back to declared onboarding income so the
-    // score is grounded in the user's real financial profile from day one.
-    const income = txIncome > 0 ? txIncome : baseline.declaredMonthlyIncome;
-    const savingsRate = income > 0 ? ((income - expenses) / income) : 0;
-
-    // Emergency-fund coverage: how many months of income the user holds in
-    // their accounts today. Rewards real liquidity even before any
-    // transactions exist.
-    const monthsOfRunway = income > 0 ? baseline.totalBalance / income : 0;
-
-    // Scoring (0-100)
-    const savingsScore = Math.max(0, Math.min(30, Math.round(savingsRate * 150))); // 20% savings = 30pts
-    const debtScore = loans.length === 0 ? 20 : Math.max(0, 20 - loans.length * 3);
-    const goalScore = goals.length > 0 ? Math.min(20, goals.length * 5) : 0;
-    const consistencyScore = income > 0 ? 15 : 0; // Has a known income (observed or declared)
-    // Emergency score: up to 15 pts for >=3 months of runway, scaled otherwise.
-    const emergencyScore = Math.max(0, Math.min(15, Math.round((monthsOfRunway / 3) * 15)));
-
-    const total = savingsScore + debtScore + goalScore + consistencyScore + emergencyScore;
-
-    const recommendations: Recommendation[] = [];
-    if (total < 40) {
+    } else if (used * 100 >= b.threshold) {
       recommendations.push({
-        type: 'health_tip',
-        title: 'Financial Health Needs Attention',
-        message: 'Your financial health score is below 40. Focus on reducing expenses and building savings.',
-        priority: 9,
-      });
-    } else if (total < 70) {
-      recommendations.push({
-        type: 'health_tip',
-        title: 'Good Progress!',
-        message: `Your financial health score is ${total}. Keep building your savings and reducing debt.`,
-        priority: 4,
+        type: 'budget_alert',
+        title: `${b.category} Budget Nearly Used`,
+        message: `${Math.round(used * 100)}% of your ${INR(b.amount)} ${b.category} budget is used ${window} (${INR(b.amount - spent)} left).`,
+        priority: 6,
       });
     }
-
-    return {
-      agentName: 'financial-health-score',
-      status: 'success',
-      output: {
-        score: total,
-        recommendations,
-        insights: [
-          { category: 'health', label: 'Financial Health Score', value: total },
-          { category: 'health', label: 'Savings Rate', value: `${(savingsRate * 100).toFixed(1)}%` },
-          { category: 'health', label: 'Months of Runway', value: monthsOfRunway.toFixed(1) },
-          { category: 'health', label: 'Active Loans', value: loans.length },
-          { category: 'health', label: 'Active Goals', value: goals.length },
-        ],
-      },
-      executionMs: Date.now() - start,
-    };
-  } catch (error: any) {
-    return { agentName: 'financial-health-score', status: 'error', error: error.message, executionMs: Date.now() - start };
   }
+
+  return { recommendations };
 }
 
-//  Agent 8: Investment Suggestion Agent 
+//  Agent: spending pattern
 
-export async function runInvestmentSuggestionAgent(userId: string): Promise<AgentResult> {
-  const start = Date.now();
-  try {
-    const [incomeAgg, expenseAgg, baseline] = await Promise.all([
-      safeQuery(() => (prisma as any).transaction.aggregate({
-        where: { userId, type: 'income', date: { gte: dateRangeStart(30) } },
-        _sum: { amount: true },
-      }), { _sum: { amount: 0 } }),
-      safeQuery(() => (prisma as any).transaction.aggregate({
-        where: { userId, type: 'expense', date: { gte: dateRangeStart(30) } },
-        _sum: { amount: true },
-      }), { _sum: { amount: 0 } }),
-      getFinancialBaseline(userId),
-    ]);
-
-    const txIncome = Number(incomeAgg._sum?.amount ?? 0);
-    const income = txIncome > 0 ? txIncome : baseline.declaredMonthlyIncome;
-    const expenses = Number(expenseAgg._sum?.amount ?? 0);
-    const surplus = income - expenses;
-
-    const recommendations: Recommendation[] = [];
-    if (surplus > 5000) {
-      recommendations.push({ type: 'investment_tip', title: 'Consider SIP Investment', message: `You have ${surplus.toFixed(0)} surplus this month. Consider starting a SIP of ${Math.round(surplus * 0.3)} in a mutual fund.`, priority: 6, actionLabel: 'Explore Investments' });
-    }
-    if (surplus > 25000) {
-      recommendations.push({ type: 'investment_tip', title: 'FD Opportunity', message: 'With your surplus, a short-term Fixed Deposit (6-12 months) could earn 6-7% returns.', priority: 5 });
-    }
-
-    return { agentName: 'investment-suggestion', status: 'success', output: { recommendations }, executionMs: Date.now() - start };
-  } catch (error: any) {
-    return { agentName: 'investment-suggestion', status: 'error', error: error.message, executionMs: Date.now() - start };
+export function analyseSpendingPattern(data: AgentData): AgentOutput {
+  const since = daysAgo(data.now, 90);
+  const byCategory = new Map<string, { total: number; count: number }>();
+  for (const t of data.transactions) {
+    if (t.type !== 'expense' || t.date < since) continue;
+    const key = t.category || 'Uncategorised';
+    const entry = byCategory.get(key) ?? { total: 0, count: 0 };
+    entry.total += t.amount;
+    entry.count += 1;
+    byCategory.set(key, entry);
   }
+
+  const insights: Insight[] = [...byCategory.entries()]
+    .sort((a, b) => b[1].total - a[1].total)
+    .slice(0, 5)
+    .map(([label, entry]) => ({
+      category: 'spending',
+      label,
+      value: `${INR(entry.total)} · ${entry.count} txn${entry.count === 1 ? '' : 's'} (90 days)`,
+    }));
+
+  return { insights };
 }
 
-//  Agent 9: Loan Approval Heuristic 
+//  Agent: upcoming bills
 
-export async function runLoanApprovalAgent(userId: string): Promise<AgentResult> {
-  const start = Date.now();
-  try {
-    const [incomeAgg, loans, baseline] = await Promise.all([
-      safeQuery(() => (prisma as any).transaction.aggregate({
-        where: { userId, type: 'income', date: { gte: dateRangeStart(90) } },
-        _sum: { amount: true },
-      }), { _sum: { amount: 0 } }),
-      safeQuery(() => (prisma as any).loan?.findMany?.({ where: { userId, status: 'active' }, select: { principalAmount: true } }) ?? [], []),
-      getFinancialBaseline(userId),
-    ]);
+const billKey = (t: AgentTransaction) => (t.merchant || t.description || '').trim().toLowerCase().replace(/\s+/g, ' ');
 
-    const txMonthlyIncome = Number(incomeAgg._sum?.amount ?? 0) / 3;
-    // Fall back to declared onboarding income so DTI/EMI are realistic for
-    // users without 90 days of income history.
-    const avgMonthlyIncome = txMonthlyIncome > 0 ? txMonthlyIncome : baseline.declaredMonthlyIncome;
-    const totalDebt = loans.reduce((s: number, l: any) => s + Number(l.principalAmount), 0);
-    // DTI is undefined without income and without debt — report 0 rather than
-    // a misleading 1.00 when the user simply has no loans.
-    const debtToIncomeRatio = avgMonthlyIncome > 0
-      ? totalDebt / avgMonthlyIncome
-      : (totalDebt > 0 ? 1 : 0);
+export function predictBills(data: AgentData): AgentOutput {
+  const predictions: BillPrediction[] = [];
+  const horizon = new Date(data.now.getTime() + 35 * DAY_MS);
+  const staleCutoff = daysAgo(data.now, 3);
 
-    let approvalLikelihood = avgMonthlyIncome > 0 ? 100 : 50;
-    approvalLikelihood -= Math.min(60, debtToIncomeRatio * 30);
-    approvalLikelihood = Math.max(0, Math.round(approvalLikelihood));
-
-    const insights: Insight[] = [
-      { category: 'loan', label: 'Loan Approval Likelihood', value: `${approvalLikelihood}%` },
-      { category: 'loan', label: 'Debt-to-Income Ratio', value: debtToIncomeRatio.toFixed(2) },
-      { category: 'loan', label: 'Suggested Max Monthly EMI', value: `${Math.round(avgMonthlyIncome * 0.3)}` },
-    ];
-
-    return { agentName: 'loan-approval', status: 'success', output: { score: approvalLikelihood, insights }, executionMs: Date.now() - start };
-  } catch (error: any) {
-    return { agentName: 'loan-approval', status: 'error', error: error.message, executionMs: Date.now() - start };
+  // Recurring transactions the user set up are the authoritative schedule.
+  for (const r of data.recurring) {
+    if (r.type === 'income') continue;
+    if (r.nextDueDate < staleCutoff) continue;
+    predictions.push({
+      merchant: r.title,
+      predictedAmount: r.amount,
+      predictedDate: r.nextDueDate.toISOString().slice(0, 10),
+      confidence: 0.95,
+      source: 'recurring',
+    });
   }
+  const known = new Set(predictions.map((p) => p.merchant.trim().toLowerCase()));
+
+  // Then monthly patterns in the history: same payee, similar amount, ~monthly gaps.
+  const groups = new Map<string, AgentTransaction[]>();
+  for (const t of data.transactions) {
+    if (t.type !== 'expense') continue;
+    const key = billKey(t);
+    if (key.length < 3) continue;
+    const list = groups.get(key) ?? [];
+    list.push(t);
+    groups.set(key, list);
+  }
+
+  for (const [key, entries] of groups) {
+    if (entries.length < 2 || known.has(key)) continue;
+    const gaps = entries.slice(1).map((e, i) => (e.date.getTime() - entries[i].date.getTime()) / DAY_MS);
+    const avgGap = gaps.reduce((s, g) => s + g, 0) / gaps.length;
+    if (avgGap < 25 || avgGap > 35 || gaps.some((g) => g < 20 || g > 40)) continue;
+
+    const amounts = entries.slice(-3).map((e) => e.amount);
+    const avgAmount = amounts.reduce((s, a) => s + a, 0) / amounts.length;
+    if (amounts.some((a) => Math.abs(a - avgAmount) > avgAmount * 0.25)) continue;
+
+    const last = entries[entries.length - 1];
+    const next = new Date(last.date.getTime() + Math.round(avgGap) * DAY_MS);
+    if (next < staleCutoff || next > horizon) continue;
+
+    predictions.push({
+      merchant: (last.merchant || last.description || key).trim(),
+      predictedAmount: Math.round(avgAmount),
+      predictedDate: next.toISOString().slice(0, 10),
+      confidence: Math.round(Math.min(0.9, 0.55 + entries.length * 0.08) * 100) / 100,
+      source: 'history',
+    });
+  }
+
+  predictions.sort((a, b) => a.predictedDate.localeCompare(b.predictedDate));
+  return { predictions };
 }
 
-//  Run all agents 
+//  Agent: unusual expenses
+
+export function detectUnusualExpenses(data: AgentData): AgentOutput {
+  const expenses = data.transactions.filter((t) => t.type === 'expense' && t.amount > 0);
+  // Too little history to know what "usual" is.
+  if (expenses.length < 10) return { flags: [] };
+
+  const sorted = expenses.map((t) => t.amount).sort((a, b) => a - b);
+  const median = sorted[Math.floor(sorted.length / 2)];
+  const deviations = sorted.map((a) => Math.abs(a - median)).sort((a, b) => a - b);
+  const mad = deviations[Math.floor(deviations.length / 2)] * 1.4826 || median * 0.5;
+  const threshold = Math.max(5000, median + 6 * mad, median * 8);
+
+  const since = daysAgo(data.now, 30);
+  const flags: FraudFlag[] = [];
+  for (const t of expenses) {
+    if (t.date < since || t.amount < threshold) continue;
+    // Rent, EMIs and fees are large but expected: another payment of about the
+    // same size in the same category means this is a pattern, not an anomaly.
+    const repeats = expenses.some((o) => o.id !== t.id && o.category === t.category && Math.abs(o.amount - t.amount) <= t.amount * 0.15);
+    if (repeats) continue;
+
+    const label = t.merchant || t.description || t.category || 'an expense';
+    flags.push({
+      transactionId: t.id,
+      reason: 'unusual_amount',
+      severity: t.amount >= Math.max(25_000, median * 20) ? 'high' : 'medium',
+      amount: t.amount,
+      message: `${INR(t.amount)} for ${label} on ${t.date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })} is far above your usual expense of about ${INR(median)}.`,
+      description: t.description ?? undefined,
+      category: t.category,
+      date: t.date.toISOString().slice(0, 10),
+    });
+  }
+
+  flags.sort((a, b) => b.amount - a.amount);
+  return { flags: flags.slice(0, 5) };
+}
+
+//  Agent: financial health score
+
+export function scoreFinancialHealth(data: AgentData): AgentOutput {
+  const f = figures(data);
+
+  // Savings: 20% of income kept = full 30 points.
+  const savingsScore = f.savingsRate === null ? 0 : Math.round(clamp(f.savingsRate * 150, 0, 30));
+  // Debt: EMIs at half of income or more take all 20 points.
+  const emiBurden = f.income > 0 ? f.totalEmi / f.income : 0;
+  const debtScore = data.debts.length === 0
+    ? 20
+    : f.income > 0 ? Math.round(20 - clamp(emiBurden / 0.5, 0, 1) * 20) : 5;
+  // Goals: having one is worth 10, progress on them the other 10.
+  const avgProgress = data.goals.length > 0 ? data.goals.reduce((s, g) => s + g.saved / g.target, 0) / data.goals.length : 0;
+  const goalScore = data.goals.length > 0 ? Math.round(10 + clamp(avgProgress, 0, 1) * 10) : 0;
+  const incomeScore = f.income > 0 ? 15 : 0;
+  // Emergency fund: three months of spending in the bank = full 15 points.
+  const emergencyScore = Math.round(clamp(f.runwayMonths / 3, 0, 1) * 15);
+
+  const score = savingsScore + debtScore + goalScore + incomeScore + emergencyScore;
+
+  const weakest = [
+    { score: savingsScore / 30, tip: 'raising your savings rate toward 20%' },
+    { score: debtScore / 20, tip: 'bringing EMIs down to under a third of income' },
+    { score: goalScore / 20, tip: 'setting and funding a savings goal' },
+    { score: emergencyScore / 15, tip: 'building three months of expenses as an emergency fund' },
+  ].sort((a, b) => a.score - b.score)[0];
+
+  const recommendations: Recommendation[] = [];
+  if (score < 40) {
+    recommendations.push({
+      type: 'health_tip',
+      title: 'Financial Health Needs Attention',
+      message: `Your health score is ${score}/100. The biggest lift would come from ${weakest.tip}.`,
+      priority: 8,
+    });
+  } else if (score < 70) {
+    recommendations.push({
+      type: 'health_tip',
+      title: 'Room to Improve',
+      message: `Your health score is ${score}/100. Next step: ${weakest.tip}.`,
+      priority: 4,
+    });
+  }
+
+  return {
+    score,
+    recommendations,
+    insights: [
+      { category: 'health', label: 'Financial Health Score', value: score },
+      ...(f.savingsRate === null ? [] : [{ category: 'health', label: 'Savings Rate (30 days)', value: pct(f.savingsRate * 100) }]),
+      { category: 'health', label: 'Emergency Fund', value: `${f.runwayMonths.toFixed(1)} months` },
+      { category: 'health', label: 'Loans You Owe', value: data.debts.length },
+      { category: 'health', label: 'Active Goals', value: data.goals.length },
+    ],
+  };
+}
+
+//  Agent: investment suggestions
+
+export function suggestInvestments(data: AgentData): AgentOutput {
+  const f = figures(data);
+  const recommendations: Recommendation[] = [];
+  if (f.surplus <= 5000) return { recommendations };
+
+  if (f.runwayMonths < 3) {
+    recommendations.push({
+      type: 'investment_tip',
+      title: 'Build an Emergency Fund First',
+      message: `You had ${INR(f.surplus)} left over in the last 30 days, but your balances cover about ${f.runwayMonths.toFixed(1)} months of spending. Park savings in a liquid fund or sweep FD until that reaches 3 months.`,
+      priority: 6,
+      actionLabel: 'Create Emergency Fund Goal',
+    });
+    return { recommendations };
+  }
+
+  recommendations.push({
+    type: 'investment_tip',
+    title: 'Put Your Surplus to Work',
+    message: `You had ${INR(f.surplus)} left over in the last 30 days. A monthly SIP of about ${INR(f.surplus * 0.3)} in a diversified index fund would invest it without touching your spending.`,
+    priority: 5,
+    actionLabel: 'Explore Investments',
+  });
+  if (f.surplus > 25000 && data.investedValue === 0) {
+    recommendations.push({
+      type: 'investment_tip',
+      title: 'No Investments Recorded',
+      message: 'Your savings are all in accounts. Splitting new savings between a short-term FD and equity SIPs balances safety and growth.',
+      priority: 4,
+    });
+  }
+  return { recommendations };
+}
+
+//  Agent: borrowing capacity
+
+export function assessBorrowing(data: AgentData): AgentOutput {
+  const f = figures(data);
+  const emiRatio = f.income > 0 ? f.totalEmi / f.income : 0;
+  // Lenders commonly cap total EMIs near 40–50% of take-home pay.
+  const headroom = Math.max(0, f.income * 0.4 - f.totalEmi);
+  const likelihood = f.income > 0 ? Math.round(clamp(100 - (emiRatio / 0.5) * 70, 10, 95)) : 30;
+
+  return {
+    score: likelihood,
+    insights: [
+      { category: 'loan', label: 'Loan Approval Likelihood', value: `${likelihood}%` },
+      { category: 'loan', label: 'EMI-to-Income Ratio', value: pct(emiRatio * 100) },
+      { category: 'loan', label: 'Room for New EMI', value: INR(headroom) },
+    ],
+  };
+}
+
+//  Runners
+
+const AGENTS: Array<[string, (data: AgentData) => AgentOutput]> = [
+  ['goal-recommendation', analyseGoals],
+  ['budget-optimization', analyseBudgets],
+  ['spending-pattern', analyseSpendingPattern],
+  ['bill-prediction', predictBills],
+  ['fraud-detection', detectUnusualExpenses],
+  ['financial-health-score', scoreFinancialHealth],
+  ['investment-suggestion', suggestInvestments],
+  ['loan-approval', assessBorrowing],
+];
+
+export function runAgentsOn(data: AgentData): AgentResult[] {
+  return AGENTS.map(([name, fn]) => run(name, () => fn(data)));
+}
 
 export async function runAllAgents(userId: string): Promise<AgentResult[]> {
-  const agentFns = [
-    runExpenseCategorizationAgent,
-    runGoalRecommendationAgent,
-    runBudgetOptimizationAgent,
-    runSpendingPatternAgent,
-    runBillPredictionAgent,
-    runFraudDetectionAgent,
-    runFinancialHealthScoreAgent,
-    runInvestmentSuggestionAgent,
-    runLoanApprovalAgent,
-  ];
-
-  return Promise.all(agentFns.map(fn => fn(userId)));
+  return runAgentsOn(await loadAgentData(userId));
 }
 
+// Single-agent endpoints load the same data; a load failure rejects and the
+// route answers 500.
+export async function runGoalRecommendationAgent(userId: string): Promise<AgentResult> {
+  const data = await loadAgentData(userId);
+  return run('goal-recommendation', () => analyseGoals(data));
+}
+export async function runBudgetOptimizationAgent(userId: string): Promise<AgentResult> {
+  const data = await loadAgentData(userId);
+  return run('budget-optimization', () => analyseBudgets(data));
+}
+export async function runSpendingPatternAgent(userId: string): Promise<AgentResult> {
+  const data = await loadAgentData(userId);
+  return run('spending-pattern', () => analyseSpendingPattern(data));
+}
+export async function runBillPredictionAgent(userId: string): Promise<AgentResult> {
+  const data = await loadAgentData(userId);
+  return run('bill-prediction', () => predictBills(data));
+}
+export async function runFraudDetectionAgent(userId: string): Promise<AgentResult> {
+  const data = await loadAgentData(userId);
+  return run('fraud-detection', () => detectUnusualExpenses(data));
+}
+export async function runFinancialHealthScoreAgent(userId: string): Promise<AgentResult> {
+  const data = await loadAgentData(userId);
+  return run('financial-health-score', () => scoreFinancialHealth(data));
+}
+export async function runInvestmentSuggestionAgent(userId: string): Promise<AgentResult> {
+  const data = await loadAgentData(userId);
+  return run('investment-suggestion', () => suggestInvestments(data));
+}
+export async function runLoanApprovalAgent(userId: string): Promise<AgentResult> {
+  const data = await loadAgentData(userId);
+  return run('loan-approval', () => assessBorrowing(data));
+}

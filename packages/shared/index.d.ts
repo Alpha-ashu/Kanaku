@@ -41,6 +41,8 @@ export interface VoiceActionEntities {
   /** YYYY-MM-DD */
   date?: string;
   paymentMethod?: string;
+  accountId?: number;
+  accountName?: string;
   goalTarget?: number;
   goalDuration?: string;
   goalMonthly?: number;
@@ -102,6 +104,8 @@ export type KaiActionKind =
 export interface KaiEntityPatch extends Partial<VoiceActionEntities> {
   kind?: KaiActionKind;
   period?: 'weekly' | 'monthly' | 'yearly';
+  accountId?: number;
+  accountName?: string;
   /** 1-based index of the clarification option the user picked; the client expands it to that option's patch */
   chosenOption?: number;
   title?: string;
@@ -189,7 +193,7 @@ export interface KaiUnderstandRequest {
   context?: KaiSessionContext;
 }
 
-export type KaiParserSource = 'gemini' | 'groq' | 'openrouter' | 'regex';
+export type KaiParserSource = 'gemini' | 'openlux' | 'xkiro' | 'groq' | 'openrouter' | 'regex';
 
 export interface KaiUnderstandResponse {
   success: boolean;

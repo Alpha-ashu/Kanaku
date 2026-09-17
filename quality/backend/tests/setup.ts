@@ -16,6 +16,16 @@ if (process.env.TEST_SEND_REAL_EMAIL !== 'true') {
   }
 }
 
+// The AI proxy tokens (OpenLux is paid, xkiro's free models are rate limited)
+// are live in backend/.env: any test that reaches KAI or the chat assistant
+// would spend them and send test prompts to the proxy. Blank them unless
+// TEST_USE_PAID_AI=true.
+if (process.env.TEST_USE_PAID_AI !== 'true') {
+  for (const key of ['XKIRO_API_KEY', 'OPENLUX_GEMINI_API_KEY', 'OPENLUX_OPENAI_API_KEY']) {
+    process.env[key] = '';
+  }
+}
+
 // Tests live in quality/backend/tests/; the env file stays in backend/.
 config({ path: path.resolve(__dirname, '../../../backend/.env.test') });
 

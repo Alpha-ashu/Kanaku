@@ -1,8 +1,8 @@
 /**
  * Kai understanding — session-aware voice NLP.
  *
- * Same provider ladder as the chat assistant (completeWithLLM: Gemini → Groq →
- * OpenRouter, bounded by a timeout), the voice extraction rules, plus a
+ * Same provider ladder as the chat assistant (completeWithLLM: Gemini → xkiro →
+ * OpenLux → Groq → OpenRouter, bounded by a timeout), the voice extraction rules, plus a
  * SESSION CONTEXT block so corrections ("make it 4,500"), references ("that
  * 3,000") and follow-ups ("set the target date…") resolve against what the
  * user already said. Queries are answered in the same call.
@@ -28,6 +28,7 @@ import { completeWithLLM, stripJsonFence } from '../ai/chat.llm';
 import { classifyOffline } from '../ai/chat.controller';
 import { executeFinancialQuery, normaliseDateInput, toQueryParams } from '../ai/financial-query-engine';
 import { parseIndianAmount, stripIndianAmounts } from '../ai/indian-number';
+import { parseSpokenDate } from '../ai/spoken-date';
 import { cleanTranscript, detectLanguage, regexPipeline } from '../voice/voice.nlp';
 import { applyLearnedCorrections, buildLearningPromptBlock, getLearnedPreferences } from '../voice/voice.learning';
 import { buildKaiPrompt } from './kai.prompt';
@@ -238,7 +239,35 @@ export function normaliseKaiAction(
 
   if (kind === 'clarify') {
     const question = str(raw.question, 200) ?? 'Could you clarify what you\'d like me to record?';
-    return clarifyAction(transcript, question, normaliseOptions(raw.options) ?? [], base);
+    const options = normaliseOptions(raw.options) ?? [];
+    // An answer finalises the draft as `patch.kind`, defaulting to an expense.
+    // The model asks "How much for your bike goal?" with amount-only options,
+    // which recorded a ₹50,000 expense instead of creating the goal — so the
+    // kind the question is about is pinned on the draft and on every option.
+    const optionsCarryKind = options.length > 0 && options.every((o) => o.patch.kind);
+    const about = /\b(?:goal|budget)\b/i.test(question) ? question : transcript;
+    const intended: KaiActionKind | undefined = optionsCarryKind ? undefined
+      : /\bgoal\b/i.test(about) ? 'goal'
+        : /\bbudget\b/i.test(about) ? 'budget'
+          : undefined;
+    if (!intended) return clarifyAction(transcript, question, options, base);
+
+    const goalName = intended === 'goal' ? str(raw.goalName, 80) ?? base.description : undefined;
+    const pinned = options.map((o) => ({
+      ...o,
+      patch: {
+        kind: intended,
+        ...(goalName ? { goalName } : {}),
+        ...o.patch,
+        ...(intended === 'goal' && o.patch.amount && !o.patch.targetAmount ? { targetAmount: o.patch.amount } : {}),
+      },
+    }));
+    return clarifyAction(transcript, question, pinned, {
+      ...base,
+      ...(goalName ? { goalName } : {}),
+      category: base.category ?? (intended === 'goal' ? 'Savings' : undefined),
+      patch: { kind: intended },
+    });
   }
 
   if (kind === 'query') {
@@ -453,36 +482,7 @@ export function matchClarificationOption(utterance: string, options: string[]): 
 const QUESTION_RE = /^(what|how|show|give|tell|when|which|where|who|do i|did i|am i|can you|is my|are my)\b|\?\s*$/i;
 export const looksLikeQuestion = (text: string): boolean => QUESTION_RE.test(text.trim());
 
-const MONTHS = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
-
-/** "December 31st 2026", "31 December", "tomorrow", "next monday" → YYYY-MM-DD */
-export function parseSpokenDate(text: string, today = new Date()): string | undefined {
-  const lower = text.toLowerCase();
-  if (/\btoday\b/.test(lower)) return today.toISOString().slice(0, 10);
-  if (/\btomorrow\b/.test(lower)) {
-    const d = new Date(today); d.setDate(d.getDate() + 1);
-    return d.toISOString().slice(0, 10);
-  }
-  if (/\byesterday\b/.test(lower)) {
-    const d = new Date(today); d.setDate(d.getDate() - 1);
-    return d.toISOString().slice(0, 10);
-  }
-  const iso = lower.match(/\b(\d{4})-(\d{2})-(\d{2})\b/);
-  if (iso) return iso[0];
-
-  const monthRe = MONTHS.join('|');
-  const m1 = lower.match(new RegExp(`\\b(${monthRe})\\s+(\\d{1,2})(?!\\d)(?:st|nd|rd|th)?(?:,?\\s+(\\d{4}))?`));
-  const m2 = lower.match(new RegExp(`\\b(\\d{1,2})(?!\\d)(?:st|nd|rd|th)?\\s+(?:of\\s+)?(${monthRe})(?:,?\\s+(\\d{4}))?`));
-  const hit = m1 ? { month: m1[1], day: m1[2], year: m1[3] } : m2 ? { month: m2[2], day: m2[1], year: m2[3] } : null;
-  if (!hit) return undefined;
-  const monthIdx = MONTHS.indexOf(hit.month);
-  const day = parseInt(hit.day, 10);
-  if (monthIdx < 0 || day < 1 || day > 31) return undefined;
-  let year = hit.year ? parseInt(hit.year, 10) : today.getFullYear();
-  const candidate = new Date(year, monthIdx, day);
-  if (!hit.year && candidate < today) year += 1;
-  return new Date(Date.UTC(year, monthIdx, day)).toISOString().slice(0, 10);
-}
+export { parseSpokenDate };
 
 const SPLIT_CUE = /\b(split|share|shared|sharing|group|we|us|together|each|between|among)\b/i;
 
@@ -577,7 +577,9 @@ export function offlineActions(
       kind: a.type === 'unknown' ? undefined : a.type,
       amount: segmentAmount,
       category: a.entities.category,
-      description: a.entities.description,
+      description: a.type === 'loan_borrow' && a.entities.person ? `Borrowed from ${a.entities.person}`
+        : a.type === 'loan_lend' && a.entities.person ? `Lent to ${a.entities.person}`
+          : a.entities.description,
       person: a.entities.person,
       members: a.entities.members,
       merchant: a.entities.merchant,

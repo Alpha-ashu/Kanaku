@@ -1,5 +1,6 @@
 import { logger } from '../config/logger';
 import { getPlatformSettings, updatePlatformSettings } from './platformSettings';
+import { resolveGeminiModel } from '../features/ai/gemini.models';
 
 export interface AIConfigurations {
   ocr: {
@@ -124,11 +125,15 @@ export async function getAIConfigurations(): Promise<AIConfigurations> {
       return DEFAULT_AI_CONFIGS;
     }
 
+    // Saved model names may predate a retirement (the admin form once suggested
+    // gemini-1.5-flash); a dead name would 404 every AI call.
+    const ocr = { ...DEFAULT_AI_CONFIGS.ocr, ...loaded.ocr };
+    const voice = { ...DEFAULT_AI_CONFIGS.voice, ...loaded.voice };
     return {
-      ocr: { ...DEFAULT_AI_CONFIGS.ocr, ...loaded.ocr },
+      ocr: { ...ocr, model: resolveGeminiModel(ocr.model) },
       import: { ...DEFAULT_AI_CONFIGS.import, ...loaded.import },
       bank: { ...DEFAULT_AI_CONFIGS.bank, ...loaded.bank },
-      voice: { ...DEFAULT_AI_CONFIGS.voice, ...loaded.voice },
+      voice: { ...voice, model: resolveGeminiModel(voice.model) },
       deployment: { ...DEFAULT_AI_CONFIGS.deployment, ...loaded.deployment },
       smartRules: { ...DEFAULT_AI_CONFIGS.smartRules, ...loaded.smartRules },
     };

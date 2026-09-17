@@ -32,6 +32,7 @@ import { incrementAIUsage } from '../../utils/aiUsageTracker';
 import { audit } from '../../utils/auditLogger';
 import { executeFinancialQuery, normaliseDateInput, toQueryParams } from './financial-query-engine';
 import { parseIndianAmount } from './indian-number';
+import { parseSpokenDate } from './spoken-date';
 import { suggestCategory, getUserTopCategories } from './category-suggester';
 import type { TransactionSummaryRow } from './financial-query-engine';
 import { buildFinancialSnapshot, renderOverview, offlineAdvice, snapshotForPrompt, INR } from './financial-snapshot';
@@ -290,6 +291,37 @@ const cleanAmount = (v: unknown): number | undefined => {
 
 const cleanDate = normaliseDateInput;
 
+const CANONICAL_EXPENSE_CATEGORIES: Array<[RegExp, string]> = [
+  [/\b(?:grocer(?:y|ies)|vegetables?|kirana|sabzi|milk)\b/i, 'Groceries'],
+  [/\b(?:food|dining|eat(?:ing)?\s*out|restaurants?|swiggy|zomato|lunch|dinner|breakfast|coffee|snacks?|meals?)\b/i, 'Food & Dining'],
+  [/\b(?:transport(?:ation)?|fuel|petrol|diesel|cabs?|taxi|uber|ola|metro|bus|commute)\b/i, 'Transport'],
+  [/\b(?:rent|housing|maintenance)\b/i, 'Housing'],
+  [/\b(?:bills?|utilit(?:y|ies)|electricity|water|internet|wifi|broadband|mobile|phone|recharge)\b/i, 'Bills & Utilities'],
+  [/\b(?:shopping|clothes|clothing|amazon|flipkart|myntra)\b/i, 'Shopping'],
+  [/\b(?:health|medical|medicines?|doctor|hospital|pharmacy|gym|fitness)\b/i, 'Health'],
+  [/\b(?:entertainment|movies?|netflix|ott|streaming|games?)\b/i, 'Entertainment'],
+  [/\b(?:education|school|college|course|tuition|fees|books?)\b/i, 'Education'],
+  [/\b(?:travel|trips?|vacation|holidays?|flights?|hotels?)\b/i, 'Travel'],
+];
+
+/**
+ * The app's canonical expense category for a spoken one ("food" → "Food & Dining").
+ * Budgets are matched to spending by category, so a budget saved as "Food"
+ * never saw the "Food & Dining" transactions it was meant to watch.
+ */
+export function canonicalExpenseCategory(raw?: string | null): string | undefined {
+  const text = (raw ?? '').trim();
+  if (!text) return undefined;
+  return detectExpenseCategory(text) ?? text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+/** The canonical category a sentence clearly implies ("lunch at Truffles" → Food & Dining), if any. */
+export const detectExpenseCategory = (text: string): string | undefined =>
+  CANONICAL_EXPENSE_CATEGORIES.find(([re]) => re.test(text))?.[1];
+
+/** Questions that want guidance rather than a number from the user's data. */
+const ADVICE_CUE = /\b(?:should i|shall i|is it (?:better|wise|good|ok|okay|worth|smart)|which is better|better to|vs\.?|versus|how (?:can|do|should) i (?:save|reduce|cut|invest|plan|start|improve|pay off|clear|build|manage|budget)|tips?|advice|advise|suggest(?:ion)?s?|recommend)\b/i;
+
 /**
  * Offline heuristic classifier — used when no LLM provider is reachable.
  * Covers the common phrasings for every intent so the assistant stays useful
@@ -320,19 +352,27 @@ export function classifyOffline(message: string): ClassifiedIntent {
   if (/\b(set|create|make|add|start)\b.*\bbudget\b|\bbudget of\b/.test(lower) && amount) {
     const cat = tidy(nameAfter(/\bfor\s+([a-z&\s]{3,30}?)(?:\s+(?:of|budget|at|to|per)\b|$)/i, textNoAmount))
       || tidy(nameAfter(/\b((?:[a-z&]+\s+){0,3}[a-z&]+)\s+budget\b/i, textNoAmount));
-    return { intent: 'task', taskType: 'create_budget', title: cat || 'General', category: cat || undefined, amount, period: /\bweek/.test(lower) ? 'weekly' : /\byear/.test(lower) ? 'yearly' : 'monthly' };
+    const budgetCategory = canonicalExpenseCategory(cat);
+    return { intent: 'task', taskType: 'create_budget', title: budgetCategory || 'General', category: budgetCategory, amount, period: /\bweek/.test(lower) ? 'weekly' : /\byear/.test(lower) ? 'yearly' : 'monthly' };
   }
   if (/\bremind me\b|\badd (?:a )?(?:task|todo|to-do|reminder)\b|\bto-?do\b/.test(lower)) {
-    const title = tidy(nameAfter(/\bremind me to\s+(.+?)(?:\s+on\b|\s+by\b|\s+before\b|$)/i))
-      || tidy(nameAfter(/\b(?:task|todo|to-do|reminder)\s+(?:to\s+)?(.+)/i))
+    // Reminder titles keep their nouns ("Pay the electricity bill") — the
+    // budget/goal tidy strips words like "bill" that are the point of a reminder.
+    const todoTitle = (s?: string): string | undefined => {
+      const t = (s ?? '').replace(/[.!?,]+$/, '').replace(/^(?:to|please)\s+/i, '').replace(/\s+/g, ' ').trim();
+      return t.length >= 2 ? t.charAt(0).toUpperCase() + t.slice(1) : undefined;
+    };
+    const title = todoTitle(nameAfter(/\bremind me (?:to|about)\s+(.+?)(?:\s+(?:on|by|before|tomorrow|today|tonight|next|this|every)\b|$)/i))
+      || todoTitle(nameAfter(/\b(?:task|todo|to-do|reminder)\s+(?:to\s+|for\s+)?(.+?)(?:\s+(?:on|by|before|tomorrow|today|tonight|next|this|every)\b|$)/i))
       || message.replace(/[.!?]+$/, '').slice(0, 100);
-    return { intent: 'task', taskType: 'add_todo', title: title.slice(0, 100), priority: /\burgent|important|high\b/.test(lower) ? 'high' : 'medium', date: dateHint };
+    return { intent: 'task', taskType: 'add_todo', title: title.slice(0, 100), priority: /\burgent|important|high\b/.test(lower) ? 'high' : 'medium', date: parseSpokenDate(message) ?? dateHint };
   }
   if (/\b(create|set|make|start|new)\b.*\bgoal\b|\bwant to save\b|\bsave (?:up )?for\b/.test(lower)) {
     const title = tidy(nameAfter(/\bgoal\s+(?:for\s+|called\s+|named\s+)?([a-z][a-z\s]{2,40}?)(?:\s+(?:of|for|by|in|within|before)\b|$)/i, textNoAmount))
+      || tidy(nameAfter(/\b(?:a|an|my|the|new)\s+([a-z][a-z\s]{1,30}?)\s+goal\b/i, textNoAmount))
       || tidy(nameAfter(/\b(?:save|saving|saved)\b.*?\bfor\s+(?:a\s+|an\s+|the\s+|my\s+)?([a-z][a-z\s]{2,40}?)(?:\s+(?:by|in|within|before)\b|$)/i, textNoAmount))
       || 'Savings goal';
-    return { intent: 'task', taskType: 'create_goal', title, amount, category: 'Savings' };
+    return { intent: 'task', taskType: 'create_goal', title, amount, category: 'Savings', date: parseSpokenDate(message) };
   }
   if (/\b(every|each)\s+(month|week|year)\b|\brecurring\b|\bmonthly\b.*\b(add|track|set)\b|\b(add|track|set)\b.*\bmonthly\b/.test(lower) && amount
       && !/\b(spent|paid|bought)\b/.test(lower)) {
@@ -348,9 +388,15 @@ export function classifyOffline(message: string): ClassifiedIntent {
     return { intent: 'overview' };
   }
 
+  // Guidance questions share nouns with data queries ("should I prepay my loan or
+  // start a SIP?"), so they are routed before the query keywords see them.
+  if (ADVICE_CUE.test(lower) && !(amount && /\b(?:spent|paid|bought|received|lent|borrowed|invested)\b/.test(lower))) {
+    return { intent: 'advice', question: message.trim() };
+  }
+
   // Queries
   const catMatch = lower.match(/\b(food|groceries|transport|health|entertainment|shopping|education|utilities|housing|travel|rent|fuel|petrol)\b/);
-  const category = catMatch ? catMatch[1].charAt(0).toUpperCase() + catMatch[1].slice(1) : undefined;
+  const category = catMatch ? canonicalExpenseCategory(catMatch[1]) : undefined;
   if (/\bgoal/.test(lower) && /\b(progress|how|status|far|much|show)\b/.test(lower)) return { intent: 'query', queryType: 'GOALS_PROGRESS' };
   if (/\bbudget/.test(lower) && /\b(status|how|left|remaining|over|show|my)\b/.test(lower)) return { intent: 'query', queryType: 'BUDGET_STATUS' };
   if (/\b(invest|portfolio|sip|stocks?|mutual)\b/.test(lower) && /\b(how|worth|value|show|my|doing)\b/.test(lower) && !amount) return { intent: 'query', queryType: 'INVESTMENT_SUMMARY' };
@@ -407,8 +453,9 @@ export function classifyOffline(message: string): ClassifiedIntent {
       return { intent: 'record_income', amount, description: /salary/.test(lower) ? 'Salary' : 'Income', category: /salary/.test(lower) ? 'Salary' : 'Other Income', date: dateHint, confidence: 0.6 };
     }
     if (/\b(spent|paid|bought|purchase|purchased|expense|cost)\b/.test(lower)) {
-      const desc = nameAfter(/\b(?:on|for)\s+(?:a\s+|an\s+|the\s+)?([a-z][a-z\s]{2,30})/i);
-      return { intent: 'record_expense', amount, description: desc ? desc.charAt(0).toUpperCase() + desc.slice(1) : 'Expense', category, date: dateHint, confidence: 0.6 };
+      const desc = nameAfter(/\b(?:on|for)\s+(?:a\s+|an\s+|the\s+)?([a-z][a-z\s]{2,30}?)(?:\s+(?:at|from|with|today|yesterday|via|using|by)\b|[,.]|$)/i);
+      const merchant = nameAfter(/\bat\s+([A-Za-z][\w&'.-]*(?:\s+[A-Z][\w&'.-]*){0,3})/);
+      return { intent: 'record_expense', amount, description: desc ? desc.charAt(0).toUpperCase() + desc.slice(1) : merchant ?? 'Expense', category: category ?? detectExpenseCategory(message), merchant, date: dateHint, confidence: 0.6 };
     }
   }
 
@@ -436,7 +483,34 @@ async function classifyIntent(
       logger.warn('Chat: LLM classification JSON parse failed, using offline', { preview: result.text.slice(0, 120) });
     }
   }
-  return { classified: classifyOffline(message), parser: 'offline' };
+  return { classified: classifyOfflineWithHistory(message, history), parser: 'offline' };
+}
+
+/**
+ * "and what about transport?" only means something next to the previous
+ * question. Offline there is no model to carry that context, so a short
+ * follow-up re-runs the previous question with the new subject swapped in.
+ */
+function classifyOfflineWithHistory(message: string, history: ChatMessage[]): ClassifiedIntent {
+  const direct = classifyOffline(message);
+  if (direct.intent !== 'out_of_scope') return direct;
+  if (!/^(?:and|what about|how about|same for|also)\b/i.test(message.trim())) return direct;
+
+  const previous = [...history].reverse().find((m) => m.role === 'user');
+  if (!previous) return direct;
+  const prior = classifyOffline(previous.content);
+  if (prior.intent !== 'query') return direct;
+
+  const subject = message.replace(/^(?:and|what about|how about|same for|also)\s+/i, '').replace(/[?.!]+$/, '').trim();
+  const person = subject.match(/\b([A-Z][a-z]+)\b/)?.[1];
+  return {
+    ...prior,
+    // A time phrase ("last month") is not a category; keep the prior one rather than invent it.
+    category: prior.queryType === 'PERSON_BALANCE' || /\b(?:month|week|year|today|yesterday)\b/i.test(subject) || subject.split(/\s+/).length > 3
+      ? prior.category
+      : canonicalExpenseCategory(subject) ?? prior.category,
+    person: prior.queryType === 'PERSON_BALANCE' ? person ?? prior.person : prior.person,
+  };
 }
 
 // ─── Intent Handlers ──────────────────────────────────────────────────────────

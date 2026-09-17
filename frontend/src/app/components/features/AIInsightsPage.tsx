@@ -41,7 +41,7 @@ interface ServerRecommendation {
 interface ServerInsightsPayload {
   healthScore?: number;
   recommendations?: ServerRecommendation[];
-  fraudAlerts?: Array<{ reason: string; severity: string; amount: number }>;
+  fraudAlerts?: Array<{ reason: string; severity: string; amount: number; message?: string }>;
   upcomingBills?: Array<{ merchant: string; predictedAmount: number; predictedDate: string }>;
 }
 
@@ -93,9 +93,10 @@ export const AIInsightsPage: React.FC = () => {
 
     const [allTx, budgets, goals, loans] = await Promise.all([
       db.transactions.filter((t) => !t.deletedAt).toArray(),
-      db.budgets.toArray(),
+      db.budgets.filter((b) => !(b as { deletedAt?: Date }).deletedAt).toArray(),
       db.goals.filter((g) => !g.deletedAt).toArray(),
-      db.loans.filter((l) => !l.deletedAt && l.status === 'active').toArray(),
+      // Money lent is owed TO the user — only borrowed loans and EMIs are exposure.
+      db.loans.filter((l) => !l.deletedAt && l.status === 'active' && l.type !== 'lent').toArray(),
     ]);
 
     const thisMonth = allTx.filter((t) => new Date(t.date) >= thisMonthStart);
@@ -139,9 +140,31 @@ export const AIInsightsPage: React.FC = () => {
     // Was `categoryTotals[b.category?.toLowerCase()]` against a map keyed by the
     // ORIGINAL casing — so the lookup missed on every budget whose category was not
     // already lowercase, `spent` was always 0, and the breach insight could never fire.
-    const breachedBudgets = (budgets as any[])
-      .map((b) => ({ ...b, spent: categorySpendByKey[catKey(b.category)] ?? 0 }))
-      .filter((b) => b.amount > 0 && b.spent > b.amount * ((b.threshold ?? 85) / 100));
+    //
+    // Each budget is measured over its own period (a weekly limit against a whole
+    // month of spending breached every week), and categories match loosely so a
+    // "Food & Dining" budget still sees "Food" transactions.
+    const sameCategory = (budgetCategory: string, txCategory?: string) => {
+      const b = catKey(budgetCategory);
+      const t = catKey(txCategory);
+      if (!b || !t) return false;
+      return b === t || t.includes(b) || b.includes(t)
+        || b.split(/\s*(?:&|\band\b|\/|,)\s*/).filter((part) => part.length >= 3).some((part) => t.includes(part));
+    };
+    const periodStart = (period?: string) => {
+      if (period === 'weekly') return new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      if (period === 'yearly') return new Date(now.getFullYear(), 0, 1);
+      return thisMonthStart;
+    };
+    const breachedBudgets = budgets
+      .map((b) => {
+        const start = periodStart(b.period);
+        const spent = allTx
+          .filter((t) => t.type === 'expense' && new Date(t.date) >= start && sameCategory(b.category, t.category))
+          .reduce((s, t) => s + t.amount, 0);
+        return { ...b, spent };
+      })
+      .filter((b) => b.amount > 0 && b.spent >= b.amount * ((b.threshold ?? 80) / 100));
 
     // Savings rate
     const savingsRate = thisMonthIncome > 0
@@ -287,10 +310,10 @@ export const AIInsightsPage: React.FC = () => {
     for (const alert of serverData?.fraudAlerts ?? []) {
       list.push({
         id: `fraud-${list.length}`,
-        title: 'Unusual Transaction Detected',
+        title: 'Unusually Large Expense',
         icon: AlertTriangle,
         color: 'text-rose-500 bg-rose-500/10',
-        description: `${alert.reason} (${fc(alert.amount)}). Confirm this was you — flag it with your bank if not.`,
+        description: `${alert.message ?? `A ${fc(alert.amount)} expense is far above your usual spending.`} If you don't recognise it, check it with your bank.`,
         impact: alert.severity === 'high' ? 'Urgent' : 'Review',
         impactColor: 'text-rose-600 bg-rose-50 border-rose-200',
         source: 'server',
@@ -305,7 +328,8 @@ export const AIInsightsPage: React.FC = () => {
         icon: style.icon,
         color: style.color,
         description: recommendation.message,
-        impact: recommendation.priority >= 4 ? 'High Priority' : 'Suggested',
+        // Priorities run 1–10; the old ">= 4" cut labelled nearly everything high priority.
+        impact: recommendation.priority >= 8 ? 'High Priority' : recommendation.priority >= 6 ? 'Worth a Look' : 'Suggested',
         impactColor: style.impactColor,
         source: 'server',
       });
@@ -332,10 +356,14 @@ export const AIInsightsPage: React.FC = () => {
 
   // Server first — those come from the agents that also drive the dashboard
   // card and the notification engine.
-  const combinedInsights = useMemo(
-    () => [...serverInsights, ...insights].slice(0, 9),
-    [serverInsights, insights],
-  );
+  // The server agents already judge savings rate and budgets; showing the
+  // on-device versions next to them doubled those cards with different numbers.
+  const combinedInsights = useMemo(() => {
+    const local = serverData
+      ? insights.filter((insight) => insight.id !== 'savings' && insight.id !== 'budget-breach')
+      : insights;
+    return [...serverInsights, ...local].slice(0, 9);
+  }, [serverData, serverInsights, insights]);
 
   if (!analysisData) {
     return (
@@ -347,10 +375,7 @@ export const AIInsightsPage: React.FC = () => {
     );
   }
 
-  const { savingsRate, goalPct, totalGoalTarget, totalGoalCurrent, totalLoanBalance, goalsCount, loansCount, thisMonthIncome } = analysisData;
-  const emergencyFundMonths = thisMonthIncome > 0 && analysisData.thisMonthExpense > 0
-    ? totalGoalCurrent / analysisData.thisMonthExpense
-    : 0;
+  const { savingsRate, goalPct, totalGoalTarget, totalGoalCurrent, totalLoanBalance, goalsCount, loansCount } = analysisData;
 
   return (
     <CenteredLayout>
@@ -483,7 +508,7 @@ export const AIInsightsPage: React.FC = () => {
             {/* Loan Exposure */}
             <div className="bg-white p-6 rounded-2xl border border-slate-100/55 shadow-sm">
               <p className="text-2xs font-black text-slate-400 uppercase tracking-widest mb-1">
-                Active Loan Exposure {loansCount > 0 ? `(${loansCount} loans)` : ''}
+                Debt Outstanding {loansCount > 0 ? `(${loansCount} loan${loansCount === 1 ? '' : 's'})` : ''}
               </p>
               <h4 className="text-xl font-black text-slate-900">{totalLoanBalance > 0 ? fc(totalLoanBalance) : '—'}</h4>
               <div className="w-full bg-slate-100 h-2 rounded-full mt-3 overflow-hidden">
@@ -494,8 +519,8 @@ export const AIInsightsPage: React.FC = () => {
               </div>
               <p className="text-xs text-slate-500 mt-2 font-medium">
                 {totalLoanBalance === 0
-                  ? loansCount > 0 ? 'All loans cleared — great work!' : 'No active loans'
-                  : `Outstanding balance across all loans`}
+                  ? loansCount > 0 ? 'All loans cleared — great work!' : 'No money borrowed'
+                  : 'Still to repay on money you borrowed'}
               </p>
             </div>
           </div>

@@ -74,9 +74,12 @@ const ForecastSection: React.FC<ForecastSectionProps> = ({ transactions, account
     const monthlyMap = new Map<string, number>();
 
     transactions.forEach(t => {
+      // A transfer moves money between the user's own accounts — counting it as
+      // spending projected wealth falling every time they topped up a wallet.
+      if (t.type !== 'income' && t.type !== 'expense') return;
       const date = new Date(t.date);
       const key = `${date.getFullYear()}-${date.getMonth()}`;
-      const delta = t.type === 'income' ? t.amount : -t.amount;
+      const delta = t.type === 'income' ? Number(t.amount) || 0 : -(Number(t.amount) || 0);
       monthlyMap.set(key, (monthlyMap.get(key) || 0) + delta);
     });
 
@@ -104,9 +107,12 @@ const ForecastSection: React.FC<ForecastSectionProps> = ({ transactions, account
       const futureDate = new Date(now.getFullYear(), now.getMonth() + i, 1);
       const monthLabel = futureDate.toLocaleDateString('en-US', { month: 'short' });
 
+      // Scale toward the better outcome for optimistic and the worse for
+      // conservative; plain ×1.3 / ×0.7 swapped them whenever the net was negative.
+      const swing = Math.abs(avgMonthlyNet) * 0.3;
       const expected = startValue + avgMonthlyNet * i;
-      const optimistic = startValue + (avgMonthlyNet * 1.3) * i;
-      const conservative = startValue + (avgMonthlyNet * 0.7) * i;
+      const optimistic = startValue + (avgMonthlyNet + swing) * i;
+      const conservative = startValue + (avgMonthlyNet - swing) * i;
 
       data.push({
         month: monthLabel,

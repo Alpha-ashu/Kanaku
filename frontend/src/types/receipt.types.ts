@@ -113,7 +113,7 @@ export interface ReceiptScanResult {
   reviewIssues?: string[];
   /** True when the arithmetic did not add up and a person should check. */
   requiresReview?: boolean;
-  /** Which extractor produced this: gemini-vision | gemini-text | ocr-heuristic. */
+  /** Which extractor produced this: gemini-vision | fallback-vision | gemini-text | fallback-text | ocr-heuristic. */
   engine?: string;
 
   /** Canonical backend bill attachment ID for cross-device cloud sync */

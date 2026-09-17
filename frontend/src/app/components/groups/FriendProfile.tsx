@@ -71,8 +71,27 @@ export const FriendProfile: React.FC = () => {
     setLoading(true);
     try {
       const data = await backendService.getFriendDetail(friendId);
-      setFriend(data);
-      setForm({ name: data.name, email: data.email || '', phone: data.phone || '' });
+      if (data) {
+        setFriend(data);
+        setForm({ name: data.name, email: data.email || '', phone: data.phone || '' });
+
+        // Keep local Dexie cache in sync with backend response
+        try {
+          const local = await db.friends
+            .filter((f) => !f.deletedAt && (f.cloudId === friendId || String(f.id) === friendId))
+            .first();
+          if (local?.id) {
+            await db.friends.update(local.id, {
+              name: data.name,
+              email: data.email || undefined,
+              phone: data.phone || undefined,
+              updatedAt: new Date(),
+            });
+          }
+        } catch {
+          // Silent local cache update fallback
+        }
+      }
     } catch (error) {
       console.warn('Backend friend lookup failed, checking local database:', error);
       const local = await db.friends
@@ -104,23 +123,69 @@ export const FriendProfile: React.FC = () => {
   }, [friendId]);
 
   const handleSave = async () => {
-    if (!friendId || !form.name.trim()) {
+    const cleanName = form.name.trim();
+    const cleanEmail = form.email.trim() || null;
+    const cleanPhone = form.phone.trim() || null;
+
+    if (!friendId || !cleanName) {
       toast.error('Name is required');
       return;
     }
     setSaving(true);
     try {
-      await backendService.updateFriendRemote(friendId, {
-        name: form.name.trim(),
-        email: form.email.trim() || null,
-        phone: form.phone.trim() || null,
+      // 1. Send update to backend
+      const updated = await backendService.updateFriendRemote(friendId, {
+        name: cleanName,
+        email: cleanEmail,
+        phone: cleanPhone,
       });
+
+      const nextName = updated?.name || cleanName;
+      const nextEmail = updated?.email !== undefined ? updated.email : cleanEmail;
+      const nextPhone = updated?.phone !== undefined ? updated.phone : cleanPhone;
+
+      // 2. Immediately reflect in UI state so user sees the change with zero delay
+      setFriend((prev) =>
+        prev
+          ? {
+              ...prev,
+              name: nextName,
+              email: nextEmail,
+              phone: nextPhone,
+            }
+          : null
+      );
+      setForm({
+        name: nextName,
+        email: nextEmail || '',
+        phone: nextPhone || '',
+      });
+
+      // 3. Update local Dexie database so offline & hard refresh stays synced
+      try {
+        const local = await db.friends
+          .filter((f) => !f.deletedAt && (f.cloudId === friendId || String(f.id) === friendId))
+          .first();
+        if (local?.id) {
+          await db.friends.update(local.id, {
+            name: nextName,
+            email: nextEmail || undefined,
+            phone: nextPhone || undefined,
+            updatedAt: new Date(),
+          });
+        }
+      } catch (dexieErr) {
+        console.warn('Failed to update local friend cache', dexieErr);
+      }
+
       toast.success('Friend details updated');
       setEditing(false);
-      await loadFriend();
+
+      // 4. Background refresh enriched calculations and trigger sync
+      void loadFriend();
       triggerSync();
     } catch (error: any) {
-      toast.error(error?.response?.data?.error || 'Failed to update friend');
+      toast.error(error?.response?.data?.error || error?.message || 'Failed to update friend');
     } finally {
       setSaving(false);
     }

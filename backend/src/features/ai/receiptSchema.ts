@@ -103,7 +103,7 @@ export interface ExtractedReceipt {
   /** 0-100. What the pipeline thinks of its own reading. */
   confidence: number;
   validation: ReceiptValidation | null;
-  /** Which engine produced this: gemini-vision | gemini-text | ocr-heuristic */
+  /** Which engine produced this: gemini-vision | fallback-vision | gemini-text | fallback-text | ocr-heuristic */
   engine: string;
 }
 
@@ -324,7 +324,11 @@ export const validateReceiptMath = (receipt: {
 
 const ENGINE_CEILING: Record<string, number> = {
   'gemini-vision': 98,
+  // 11/11 sample bills reconciled, and two independent free models agreed on every total (2026-09-17).
+  'fallback-vision': 95,
   'gemini-text': 92,
+  // Not benchmarked: an OCR transcript is only as good as Tesseract's reading.
+  'fallback-text': 80,
   'ocr-heuristic': 70,
 };
 

@@ -27,7 +27,16 @@ const clarify = (req: KaiUnderstandRequest, index: number, rawSegment: string, q
   say: question,
 });
 
-export function localFallback(req: KaiUnderstandRequest): KaiAction[] {
+/**
+ * Why the local parser is answering. "Offline" is only true when the request
+ * never reached the server — a timeout, rate limit or server error on a
+ * working connection used to be announced as "I'm offline" too.
+ */
+export type FallbackReason = 'offline' | 'unavailable';
+
+const lead = (reason: FallbackReason) => (reason === 'offline' ? "I'm offline" : "I can't reach Kai's server right now");
+
+export function localFallback(req: KaiUnderstandRequest, reason: FallbackReason = 'offline'): KaiAction[] {
   const { actions } = parseTranscriptLocally(req.transcript);
   const out: KaiAction[] = [];
 
@@ -48,7 +57,9 @@ export function localFallback(req: KaiUnderstandRequest): KaiAction[] {
       continue;
     }
     if (kind === 'query') {
-      out.push(clarify(req, index, a.rawSegment, "I can't look that up while offline — I'll answer once you're back online."));
+      out.push(clarify(req, index, a.rawSegment, reason === 'offline'
+        ? "I can't look that up while offline — ask me again once you're back online."
+        : "I can't look that up right now — please ask me again in a moment."));
       continue;
     }
     if (kind === 'goal') {
@@ -68,7 +79,7 @@ export function localFallback(req: KaiUnderstandRequest): KaiAction[] {
       continue;
     }
     if (kind === 'unknown' || kind === 'bill_scan' || kind === 'task' || !isMoneyKind(kind as KaiActionKind)) {
-      out.push(clarify(req, index, a.rawSegment, "I'm offline and didn't quite get that. Try something like \"spent 500 on petrol\"."));
+      out.push(clarify(req, index, a.rawSegment, `${lead(reason)} and didn't quite get that. Try something like "spent 500 on petrol".`));
       continue;
     }
     if (!amount) {
@@ -86,7 +97,7 @@ export function localFallback(req: KaiUnderstandRequest): KaiAction[] {
   }
 
   if (out.length === 0) {
-    out.push(clarify(req, 0, req.transcript, "I'm offline and couldn't understand that. Try \"spent 500 on petrol\" or \"borrowed 3000 from Arun\"."));
+    out.push(clarify(req, 0, req.transcript, `${lead(reason)} and couldn't understand that. Try "spent 500 on petrol" or "borrowed 3000 from Arun".`));
   }
   return out;
 }
@@ -97,6 +108,8 @@ export async function understandUtterance(req: KaiUnderstandRequest): Promise<Un
     return { actions: res.actions ?? [], parser: res.parser, offline: false };
   } catch (err) {
     console.warn('[Kai] understand request failed — using local parser', err);
-    return { actions: localFallback(req), parser: 'local', offline: true };
+    const status = (err as { status?: number })?.status;
+    const reachedServer = typeof status === 'number' || (typeof navigator !== 'undefined' && navigator.onLine);
+    return { actions: localFallback(req, reachedServer ? 'unavailable' : 'offline'), parser: 'local', offline: true };
   }
 }

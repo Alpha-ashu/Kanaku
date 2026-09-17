@@ -156,8 +156,9 @@ const getRecentTransactions = async (userId: string, days: number) => {
 
 const buildFeatureSnapshot = async (userId: string): Promise<UserFeatureSnapshot> => {
   const transactions = await getRecentTransactions(userId, 90);
+  // Only money the user owes is pressure; a loan they gave is owed to them.
   const loans = await prisma.loan.findMany({
-    where: { userId, deletedAt: null },
+    where: { userId, deletedAt: null, status: 'active', type: { not: 'lent' } },
     select: { outstandingBalance: true, principalAmount: true, status: true },
   });
 
@@ -423,6 +424,19 @@ const trimOldInsights = async (userId: string) => {
   `;
 };
 
+/**
+ * A run replaces the same day's insights rather than adding to them — every
+ * scheduled or admin-triggered run used to append a full duplicate set, which
+ * inflated the admin feed, the insight counts and the accuracy figures.
+ */
+const replaceRecentInsights = async (userId: string) => {
+  await prisma.$executeRaw`
+    DELETE FROM ai_insights
+    WHERE user_id = ${userId}
+      AND created_at >= ${new Date(Date.now() - (20 * 60 * 60 * 1000))}
+  `;
+};
+
 const runPredictionsForUser = async (snapshot: UserFeatureSnapshot) => {
   const userId = snapshot.userId;
   if (!userId) return;
@@ -515,6 +529,7 @@ const runPredictionsForUser = async (snapshot: UserFeatureSnapshot) => {
   insights.push(...goalInsights);
 
   await trimOldInsights(userId);
+  await replaceRecentInsights(userId);
   await insertInsights(userId, insights);
 
   await recordAIEvent(userId, 'predictions_generated', {
@@ -581,15 +596,22 @@ export const runFeatureEngineeringForAllUsers = async () => {
   const run = await insertModelRun('feature_engineering');
   const userIds = await getProcessableUserIds();
   let processedUsers = 0;
+  let failedUsers = 0;
 
   try {
+    // One user's bad row must not stop everyone else's refresh.
     for (const userId of userIds) {
-      await buildFeatureSnapshot(userId);
-      processedUsers += 1;
+      try {
+        await buildFeatureSnapshot(userId);
+        processedUsers += 1;
+      } catch (error) {
+        failedUsers += 1;
+        logger.warn('AI feature engineering failed for a user', { userId, error: error instanceof Error ? error.message : String(error) });
+      }
     }
 
-    await updateModelRun(run.id, 'completed', processedUsers);
-    logger.info('AI feature engineering completed', { processedUsers });
+    await updateModelRun(run.id, 'completed', processedUsers, failedUsers > 0 ? `${failedUsers} user(s) failed` : undefined);
+    logger.info('AI feature engineering completed', { processedUsers, failedUsers });
     return { processedUsers };
   } catch (error) {
     await updateModelRun(run.id, 'failed', processedUsers, error instanceof Error ? error.message : 'Unknown failure');
@@ -603,16 +625,22 @@ export const runPredictionEngineForAllUsers = async () => {
   const run = await insertModelRun('prediction_engine');
   const userIds = await getProcessableUserIds();
   let processedUsers = 0;
+  let failedUsers = 0;
 
   try {
     for (const userId of userIds) {
-      const snapshot = await getOrCreateFeatureSnapshot(userId);
-      await runPredictionsForUser(snapshot);
-      processedUsers += 1;
+      try {
+        const snapshot = await getOrCreateFeatureSnapshot(userId);
+        await runPredictionsForUser(snapshot);
+        processedUsers += 1;
+      } catch (error) {
+        failedUsers += 1;
+        logger.warn('AI prediction engine failed for a user', { userId, error: error instanceof Error ? error.message : String(error) });
+      }
     }
 
-    await updateModelRun(run.id, 'completed', processedUsers);
-    logger.info('AI prediction engine completed', { processedUsers });
+    await updateModelRun(run.id, 'completed', processedUsers, failedUsers > 0 ? `${failedUsers} user(s) failed` : undefined);
+    logger.info('AI prediction engine completed', { processedUsers, failedUsers });
     return { processedUsers };
   } catch (error) {
     await updateModelRun(run.id, 'failed', processedUsers, error instanceof Error ? error.message : 'Unknown failure');

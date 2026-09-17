@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Send, Volume2, VolumeX, WifiOff } from 'lucide-react';
+import { toast } from 'sonner';
 import { useApp } from '@/contexts/AppContext';
 import { useKaiSession } from '@/hooks/useKaiSession';
 import { useUserDisplayName } from '@/hooks/useUserDisplayName';
@@ -194,8 +195,13 @@ export const KaiScreen: React.FC = () => {
               {kai.muted ? 'Voice replies off' : 'Voice replies on'}
             </button>
           )}
-          {kai.offline && (
-            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 border border-amber-200 text-amber-700">
+          {(kai.offline || kai.parser === 'regex') && (
+            <span
+              className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 border border-amber-200 text-amber-700"
+              title={kai.offline
+                ? "Kai couldn't reach the server, so this device's parser understood you."
+                : 'The AI model is busy or out of its daily quota, so a simpler parser understood you. Check the cards before relying on them.'}
+            >
               <WifiOff size={12} /> Basic mode
             </span>
           )}
@@ -301,7 +307,11 @@ export const KaiScreen: React.FC = () => {
             onSave={(patch) => {
               const id = editing.actionId;
               setEditing(null);
-              void kai.editAction(id, patch);
+              void kai.editAction(id, patch).then(() => {
+                toast.success('Transaction updated successfully');
+              }).catch((err) => {
+                toast.error(err instanceof Error ? err.message : 'Could not update transaction');
+              });
             }}
           />
         )}

@@ -102,8 +102,9 @@ RULES
    [{"label":"Shared with Jijo","patch":{"kind":"group_expense","members":["Jijo"]}},
     {"label":"My personal expense","patch":{"kind":"expense","expenseMode":"individual"}}], keep amount/description
    on the action itself. "dinner with Arun and Jijo for 4000", "split 3000 with Arun", "we spent" → group_expense directly.
-4. A goal without an amount ("create a bike goal") → clarify asking the target amount. A money kind without an
-   amount → clarify asking the amount. Do not invent amounts, people or dates.
+4. A goal without an amount ("create a bike goal") → clarify asking the target amount, with goalName set and no
+   suggested amounts as options. A money kind without an amount → clarify asking the amount. Do not invent amounts,
+   people or dates. Every option's patch MUST include "kind" — the kind the answer will be saved as.
 5. Dates: "today" → ${today}; "yesterday"/"tomorrow" → the calendar date; "December 31st 2026" → 2026-12-31;
    no date said → null (the app uses today).
 6. Destructive requests ("delete all my expenses", "remove everything from last month") → clarify with a single

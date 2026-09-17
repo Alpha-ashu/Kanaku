@@ -819,7 +819,7 @@ export const AdminAIDashboard: React.FC = () => {
  value={aiConfig.ocr.model}
  onChange={(e) => updateConfigField('ocr', 'model', e.target.value)}
  className="w-full text-xs border border-slate-200 rounded-lg p-2.5 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500 font-mono"
- placeholder="e.g. gemini-1.5-flash"
+ placeholder="gemini-flash-latest"
  />
  </div>
  <div>
@@ -986,13 +986,13 @@ export const AdminAIDashboard: React.FC = () => {
  </select>
  </div>
  <div>
- <label className="block text-xs font-semibold text-slate-600 mb-1">ASR Model Name (Gemini/Whisper)</label>
+ <label className="block text-xs font-semibold text-slate-600 mb-1">Gemini Model (KAI, chat &amp; voice)</label>
  <input data-testid="admin-aidashboard-e-g-gemini-1-2"
  type="text"
  value={aiConfig.voice.model}
  onChange={(e) => updateConfigField('voice', 'model', e.target.value)}
  className="w-full text-xs border border-slate-200 rounded-lg p-2.5 bg-white focus:outline-none focus:ring-1 focus:ring-violet-500 font-mono"
- placeholder="e.g. gemini-1.5-flash or whisper-1"
+ placeholder="gemini-flash-latest"
  />
  </div>
  <div>

@@ -105,5 +105,5 @@ services:
       - key: SENTRY_DSN
         sync: false
       # Copy any remaining prod values from backend/.env (SECURITY_ALERT_EMAIL,
-      # AA_ENCRYPTION_ROOT_KEY, FIREBASE_*, OPENAI/GOOGLE keys, …) in the
+      # AA_ENCRYPTION_ROOT_KEY, FIREBASE_*, OPENAI/GOOGLE/XKIRO/OPENLUX_* keys, …) in the
       # dashboard — the env.ts validator will fail fast on anything missing.

@@ -14,6 +14,8 @@ import {
   Eraser,
 } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { formatCurrencyAmount } from '@/lib/currencyUtils';
 import { AIOrb } from './ai/AIOrb';
 import { PendingBreakdownCard } from './ai/PendingBreakdownCard';
 import {
@@ -39,6 +41,8 @@ interface Message {
   showBreakdownCard?: boolean;
   transactions?: QueryResult['transactions'];
   source?: 'backend' | 'local';
+  /** Backend engine; 'offline' means no AI model was available and heuristics answered. */
+  parser?: string;
   isTyping?: boolean;
   /** Record/task KAI proposed; saved only when the user confirms the card. */
   action?: ChatProposedAction;
@@ -51,7 +55,14 @@ interface AIAssistantPageProps {
   defaultMode?: 'voice' | 'chat';
 }
 
-const STORAGE_KEY = 'KANAKU_kai_chat_history';
+/**
+ * Chat history holds amounts, balances and payees, so it is kept per user: a
+ * single shared key showed the previous account's conversation to whoever
+ * signed in next on the same device.
+ */
+const LEGACY_STORAGE_KEY = 'KANAKU_kai_chat_history';
+const historyKey = (userId?: string) => `KANAKU_kai_chat_history:${userId ?? 'anonymous'}`;
+const conversationKey = (userId?: string) => `KANAKU_kai_chat_conversation:${userId ?? 'anonymous'}`;
 
 function uid(): string {
   return Math.random().toString(36).slice(2, 10);
@@ -70,11 +81,13 @@ const getInitialWelcomeMessage = (): Message => ({
   timeLabel: formatTime(new Date()),
 });
 
-const loadStoredMessages = (): Message[] => {
+const loadStoredMessages = (userId?: string): Message[] => {
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    localStorage.removeItem(LEGACY_STORAGE_KEY);
+    const stored = localStorage.getItem(historyKey(userId));
     if (stored) {
-      const parsed = JSON.parse(stored);
+      // A reply still "typing" when the page closed will never arrive.
+      const parsed = (JSON.parse(stored) as Message[]).filter((m) => m && !m.isTyping);
       if (Array.isArray(parsed) && parsed.length > 0) {
         return parsed;
       }
@@ -83,6 +96,14 @@ const loadStoredMessages = (): Message[] => {
     console.warn('[KAI Chat] Could not load stored chat history:', e);
   }
   return [getInitialWelcomeMessage()];
+};
+
+const loadConversationId = (userId?: string): string | undefined => {
+  try {
+    return sessionStorage.getItem(conversationKey(userId)) ?? undefined;
+  } catch {
+    return undefined;
+  }
 };
 
 /**
@@ -94,23 +115,37 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
   defaultMode = 'voice',
 }) => {
   const { setCurrentPage, currency } = useApp();
+  const { user } = useAuth();
+  const userId = user?.id;
 
   const [mode, setMode] = useState<'voice' | 'chat'>(defaultMode);
-  const [messages, setMessages] = useState<Message[]>(loadStoredMessages);
+  const [messages, setMessages] = useState<Message[]>(() => loadStoredMessages(userId));
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showOptionsSheet, setShowOptionsSheet] = useState(false);
 
   const chatScrollContainerRef = useRef<HTMLDivElement>(null);
   const chatInputRef = useRef<HTMLInputElement>(null);
+  /** Server-side conversation, so "and last month?" is understood as a follow-up. */
+  const conversationIdRef = useRef<string | undefined>(loadConversationId(userId));
+  const loadedForUserRef = useRef(userId);
+
+  // The signed-in account can resolve (or change) after mount — load its own history.
+  useEffect(() => {
+    if (loadedForUserRef.current === userId) return;
+    loadedForUserRef.current = userId;
+    setMessages(loadStoredMessages(userId));
+    conversationIdRef.current = loadConversationId(userId);
+  }, [userId]);
 
   useEffect(() => {
+    if (loadedForUserRef.current !== userId) return;
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+      localStorage.setItem(historyKey(userId), JSON.stringify(messages));
     } catch (e) {
       console.warn('[KAI Chat] Failed to save chat history:', e);
     }
-  }, [messages]);
+  }, [messages, userId]);
 
   useEffect(() => {
     if (mode === 'chat' && chatScrollContainerRef.current) {
@@ -157,8 +192,18 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
       /breakdown|where.*money|spending|category|categories|budget/i.test(text);
 
     try {
-      const result = await NLQService.executeQuery(text);
+      const result = await NLQService.executeQuery(text, conversationIdRef.current);
+      if (result.conversationId && result.conversationId !== conversationIdRef.current) {
+        conversationIdRef.current = result.conversationId;
+        try {
+          sessionStorage.setItem(conversationKey(userId), result.conversationId);
+        } catch {
+          // per-tab convenience only
+        }
+      }
       const proposed = isConfirmableChatAction(result.action) ? result.action : undefined;
+      // The breakdown card answers spending questions; it is noise under advice or a greeting.
+      const showsBreakdown = isBreakdownQuery && !proposed && (result.source === 'local' || result.intent === 'query' || result.intent === 'overview');
 
       setMessages((prev) =>
         prev.map((m) =>
@@ -171,12 +216,13 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
                   (isBreakdownQuery
                     ? "Here's your detailed spending breakdown for this month."
                     : 'I have analyzed your request.'),
-                showBreakdownCard: isBreakdownQuery && !proposed,
+                showBreakdownCard: showsBreakdown,
                 action: proposed,
                 actionStatus: proposed ? 'pending' : undefined,
                 prompt: proposed ? text : undefined,
                 transactions: result.transactions,
                 source: result.source,
+                parser: result.parser,
                 isTyping: false,
                 timestamp: new Date().toISOString(),
                 timeLabel: formatTime(new Date()),
@@ -191,8 +237,8 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
             ? {
                 ...m,
                 content: isBreakdownQuery
-                  ? "Here's your detailed spending breakdown for this month."
-                  : 'I analyzed your recent financial activity.',
+                  ? "I couldn't reach the assistant just now, but here's your spending breakdown from this device."
+                  : "I couldn't reach the assistant just now. Please try again in a moment.",
                 showBreakdownCard: isBreakdownQuery,
                 isTyping: false,
                 source: 'local',
@@ -219,8 +265,10 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
   const handleClearHistory = () => {
     const welcome = [getInitialWelcomeMessage()];
     setMessages(welcome);
+    conversationIdRef.current = undefined;
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(welcome));
+      localStorage.setItem(historyKey(userId), JSON.stringify(welcome));
+      sessionStorage.removeItem(conversationKey(userId));
     } catch (e) {
       console.warn('[KAI Chat] Failed to clear storage:', e);
     }
@@ -440,6 +488,17 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
                         )}
                       </div>
 
+                      {!isUser && !msg.isTyping && (msg.parser === 'offline' || msg.source === 'local') && msg.id !== 'kai-welcome' && (
+                        <span
+                          className="self-start text-2xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5"
+                          title={msg.source === 'local'
+                            ? 'Answered from the data on this device because the assistant could not be reached.'
+                            : 'The AI model is busy or out of its daily quota, so a simpler parser answered.'}
+                        >
+                          Basic mode
+                        </span>
+                      )}
+
                       {msg.action && (
                         <ChatActionCard
                           messageId={msg.id}
@@ -476,7 +535,7 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
                                 }`}
                               >
                                 {tx.type === 'expense' ? '−' : '+'}
-                                {currency} {tx.amount}
+                                {formatCurrencyAmount(Math.abs(Number(tx.amount) || 0), currency)}
                               </span>
                             </div>
                           ))}

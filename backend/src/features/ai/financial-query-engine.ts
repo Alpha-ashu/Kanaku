@@ -160,10 +160,50 @@ function periodLabel(start: Date, end: Date): string {
     start.getFullYear() === end.getFullYear() &&
     end.getDate() === new Date(end.getFullYear(), end.getMonth() + 1, 0).getDate();
   if (wholeMonth) return start.toLocaleString('en-IN', { month: 'long', year: 'numeric' });
-  return `${start.toDateString()} – ${end.toDateString()}`;
+  const now = new Date();
+  const monthToDate = start.getDate() === 1 && start.getMonth() === now.getMonth() && start.getFullYear() === now.getFullYear()
+    && end.getTime() >= now.getTime() - 2 * 24 * 60 * 60 * 1000;
+  if (monthToDate) return `${start.toLocaleString('en-IN', { month: 'long', year: 'numeric' })} so far`;
+  const short = (d: Date, withYear: boolean) =>
+    d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', ...(withYear ? { year: 'numeric' } : {}) });
+  return `${short(start, start.getFullYear() !== end.getFullYear())} – ${short(end, true)}`;
+}
+
+/**
+ * The period as it reads inside a sentence: "this month", "in August 2026",
+ * "between 3 Aug and 16 Sep 2026". The model usually sends explicit dates even
+ * for "this month", which used to surface as "Tue Sep 01 2026 – Wed Sep 16 2026".
+ */
+function spokenPeriod(startDate: Date | undefined, endDate: Date | undefined, defaultEnd: Date): string {
+  if (!startDate) return 'this month';
+  const end = endDate ?? defaultEnd;
+  const now = new Date();
+  const sameMonth = startDate.getMonth() === end.getMonth() && startDate.getFullYear() === end.getFullYear();
+  const startsMonth = startDate.getDate() === 1;
+  const endsMonth = end.getDate() === new Date(end.getFullYear(), end.getMonth() + 1, 0).getDate();
+  const currentMonth = sameMonth && startDate.getMonth() === now.getMonth() && startDate.getFullYear() === now.getFullYear();
+  if (startsMonth && currentMonth && (endsMonth || end.getTime() >= now.getTime() - 2 * 24 * 60 * 60 * 1000)) return 'this month';
+  if (startsMonth && sameMonth && endsMonth) return `in ${startDate.toLocaleString('en-IN', { month: 'long', year: 'numeric' })}`;
+  const short = (d: Date, withYear: boolean) =>
+    d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', ...(withYear ? { year: 'numeric' } : {}) });
+  return `between ${short(startDate, startDate.getFullYear() !== end.getFullYear())} and ${short(end, true)}`;
 }
 
 // ─── Query Handlers ───────────────────────────────────────────────────────────
+
+/**
+ * Transactions in a spoken/canonical category. The assistant names categories
+ * canonically ("Food & Dining") while users' records carry whatever they chose
+ * ("Food", "Dining out"), so an exact match answered ₹0 for real spending.
+ */
+function categoryMatch(category: string): Array<Record<string, unknown>> {
+  const parts = category.split(/\s*(?:&|\band\b|\/|,)\s*/i).map((p) => p.trim()).filter((p) => p.length >= 3);
+  return [
+    { category: { equals: category, mode: 'insensitive' } },
+    { category: { contains: category, mode: 'insensitive' } },
+    ...parts.map((part) => ({ category: { contains: part, mode: 'insensitive' } })),
+  ];
+}
 
 async function sumExpenses(userId: string, params: QueryParams): Promise<QueryResult> {
   const { startDate, endDate, category } = params;
@@ -180,7 +220,7 @@ async function sumExpenses(userId: string, params: QueryParams): Promise<QueryRe
   };
 
   if (category) {
-    whereClause.category = { equals: category, mode: 'insensitive' };
+    whereClause.OR = categoryMatch(category);
   }
 
   const [rows, aggregate] = await Promise.all([
@@ -200,9 +240,7 @@ async function sumExpenses(userId: string, params: QueryParams): Promise<QueryRe
   const total = Number(aggregate._sum.amount ?? 0);
   const count = aggregate._count.id;
   const catLabel = category ? ` on ${category}` : '';
-  const period = startDate
-    ? `${startDate.toDateString()} – ${(endDate ?? defaultEnd).toDateString()}`
-    : 'this month';
+  const period = spokenPeriod(startDate, endDate, defaultEnd);
 
   return {
     summary: `You spent ${INR(total)}${catLabel} ${period} across ${count} transaction${count !== 1 ? 's' : ''}.`,
@@ -245,9 +283,7 @@ async function dateRangeSummary(userId: string, params: QueryParams): Promise<Qu
     r => `${r.category}: ${INR(Number(r._sum.amount ?? 0))} (${r._count.id} txns)`,
   );
   const grandTotal = Number(aggregate._sum.amount ?? 0);
-  const period = startDate
-    ? `${startDate.toDateString()} – ${(endDate ?? defaultEnd).toDateString()}`
-    : 'this month';
+  const period = spokenPeriod(startDate, endDate, defaultEnd);
 
   return {
     summary: `Your top spending categories ${period}:\n${lines.join('\n')}\n\nTotal: ${INR(grandTotal)}`,
@@ -427,7 +463,7 @@ async function incomeSummary(userId: string, params: QueryParams): Promise<Query
   ]);
 
   const total = Number(aggregate._sum.amount ?? 0);
-  const period = startDate ? `${startDate.toDateString()} – ${(endDate ?? defaultEnd).toDateString()}` : 'this month';
+  const period = spokenPeriod(startDate, endDate, defaultEnd);
   if (aggregate._count.id === 0) {
     return { summary: `No income recorded ${period}. Tell me "got salary ₹50,000" and I'll add it.` };
   }

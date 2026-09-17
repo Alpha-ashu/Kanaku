@@ -276,4 +276,31 @@ describe('KaiSession', () => {
     expect(s.state).toBe('idle');
     expect(s.wrapUp).toContain('saved 1 update');
   });
+
+  it("never restores or shows another account's cards", async () => {
+    const store = new Map<string, string>();
+    const storage = {
+      getItem: (k: string) => store.get(k) ?? null,
+      setItem: (k: string, v: string) => { store.set(k, v); },
+      removeItem: (k: string) => { store.delete(k); },
+    };
+    scripted.set('spent 2000 on petrol', [action('', { kind: 'expense', entities: { amount: 2000, description: 'Petrol' } })]);
+
+    const first = new KaiSession({ ...deps(), storage });
+    first.setUserId('user-a');
+    first.submitText('spent 2000 on petrol');
+    await settled(first);
+    expect(first.getSnapshot().actions).toHaveLength(1);
+
+    // Same tab, same account after a reload: the cards come back.
+    const reloaded = new KaiSession({ ...deps(), storage });
+    reloaded.setUserId('user-a');
+    expect(reloaded.getSnapshot().actions).toHaveLength(1);
+
+    // A different account signs in on that tab: nothing of user-a's survives.
+    const other = new KaiSession({ ...deps(), storage });
+    other.setUserId('user-b');
+    expect(other.getSnapshot().actions).toHaveLength(0);
+    expect(JSON.parse(store.get('KANAKU_kai_session')!)).toMatchObject({ ownerId: 'user-b', actions: [] });
+  });
 });

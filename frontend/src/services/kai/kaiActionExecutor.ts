@@ -89,14 +89,36 @@ const canCover = (account: Account, outflow: number): boolean =>
   outflow <= 0 || ALLOWS_NEGATIVE.has(String(account.type ?? '').toLowerCase()) || Number(account.balance ?? 0) >= outflow;
 
 /**
- * The account a spoken action posts to: the first active account (the rule
- * AddTransaction and the Command Center use), preferring one that can cover
- * the outflow so a voice entry doesn't bounce off the server's overdraw check.
+ * The account a spoken action posts to: checks if the utterance mentions an account name,
+ * otherwise selects the first active account that can cover the outflow.
  */
-export async function resolveDefaultAccount(outflow = 0): Promise<Account | null> {
+export async function resolveAccountForAction(
+  action?: Pick<KaiAction, 'kind' | 'entities' | 'rawSegment'>,
+  outflow = 0,
+): Promise<Account | null> {
   const accounts = await db.accounts.filter((a) => !a.deletedAt).toArray();
   if (accounts.length === 0) return null;
+
+  if (action?.entities?.accountId) {
+    const matched = accounts.find((a) => a.id === action.entities.accountId);
+    if (matched) return matched;
+  }
+
+  const raw = `${action?.rawSegment ?? ''} ${action?.entities?.paymentMethod ?? ''} ${action?.entities?.accountName ?? ''}`.toLowerCase();
+  if (raw) {
+    for (const acc of accounts) {
+      const name = (acc.name || '').toLowerCase().trim();
+      if (name && (raw.includes(name) || (name.length >= 3 && new RegExp(`\\b${name}\\b`, 'i').test(raw)))) {
+        return acc;
+      }
+    }
+  }
+
   return accounts.find((a) => canCover(a, outflow)) ?? accounts[0];
+}
+
+export async function resolveDefaultAccount(outflow = 0): Promise<Account | null> {
+  return resolveAccountForAction(undefined, outflow);
 }
 
 /** Outflow an action will post against its account (0 for income / non-money kinds). */
@@ -184,8 +206,11 @@ async function createExpenseOrIncome(action: KaiAction, ctx: ExecutionContext): 
   const amount = requireAmount(e);
   const now = new Date();
   const isIncome = action.kind === 'income';
+  const account = await db.accounts.get(ctx.accountId);
   const entities: KaiActionEntities = {
     ...e,
+    accountId: ctx.accountId,
+    accountName: account?.name ?? e.accountName,
     category: e.category || (isIncome ? 'Other Income' : 'Miscellaneous'),
     description: e.description || action.rawSegment.slice(0, 120),
     expenseMode: isIncome ? undefined : (e.expenseMode ?? 'individual'),
@@ -725,12 +750,25 @@ export async function updateKaiAction(
         const updates: Partial<Transaction> & Record<string, unknown> = { updatedAt: now };
         if (patch.amount) updates.amount = patch.amount;
         if (patch.category) updates.category = patch.category;
-        if (patch.description) updates.description = action.kind === 'group_expense'
-          ? `${patch.description} with ${(e.members ?? []).slice(0, 3).join(', ')}`
-          : patch.description;
-        if (patch.date) updates.date = parseIso(patch.date) ?? now;
+        if (patch.description) {
+          updates.description = action.kind === 'group_expense'
+            ? `${patch.description} with ${(e.members ?? []).slice(0, 3).join(', ')}`
+            : patch.description;
+          if (!patch.merchant) {
+            updates.merchant = patch.description;
+          }
+        }
         if (patch.merchant) updates.merchant = patch.merchant;
+        if (patch.date) updates.date = parseIso(patch.date) ?? now;
         if (patch.person) { updates.merchant = patch.person; updates.contactName = patch.person; }
+        if (patch.accountId) {
+          updates.accountId = patch.accountId;
+          const updatedAcc = await db.accounts.get(patch.accountId);
+          if (updatedAcc) {
+            e.accountId = patch.accountId;
+            e.accountName = updatedAcc.name;
+          }
+        }
         balanceDelta = await updateTransactionRef(ref.localId, updates);
         break;
       }

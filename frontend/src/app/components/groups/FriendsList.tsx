@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { DeleteConfirmModal } from '@/app/components/shared/DeleteConfirmModal';
 import { pickDeviceContacts, isContactPickerSupported, parseVCardContent, parseCsvContacts, sanitizeContactName } from '@/services/contactsService';
 import { useSubmitLock } from '@/hooks/useSubmitLock';
+import { runWithCloudSyncSuppressed } from '@/lib/auth-sync-integration';
 import { cn } from '@/lib/utils';
 
 // A unified view of a friend — could be backend-synced or local-only (pending sync)
@@ -138,6 +139,72 @@ export const FriendsList: React.FC = () => {
         }
       }
 
+      // If backend succeeded, sync them into Dexie cache so offline/refresh is rock solid
+      if (backendFriends.length > 0) {
+        void (async () => {
+          try {
+            const existingLocal = await db.friends.filter((f) => !f.deletedAt).toArray();
+            const localByCloudId = new Map(existingLocal.filter((f) => f.cloudId).map((f) => [f.cloudId!, f]));
+            const now = new Date();
+            const toAdd: any[] = [];
+            const toUpdate: { key: number; changes: any }[] = [];
+
+            for (const bf of backendFriends) {
+              const matched = localByCloudId.get(bf.cloudId!);
+              if (matched?.id) {
+                if (matched.name !== bf.name || matched.email !== (bf.email || undefined) || matched.phone !== (bf.phone || undefined)) {
+                  toUpdate.push({
+                    key: matched.id,
+                    changes: {
+                      name: bf.name,
+                      email: bf.email || undefined,
+                      phone: bf.phone || undefined,
+                      updatedAt: now,
+                    },
+                  });
+                }
+              } else {
+                toAdd.push({
+                  name: bf.name,
+                  email: bf.email || undefined,
+                  phone: bf.phone || undefined,
+                  cloudId: bf.cloudId,
+                  syncStatus: 'synced',
+                  createdAt: now,
+                  updatedAt: now,
+                });
+              }
+            }
+
+            if (toAdd.length > 0) {
+              await runWithCloudSyncSuppressed(() => db.friends.bulkAdd(toAdd));
+            }
+            for (const item of toUpdate) {
+              await db.friends.update(item.key, item.changes);
+            }
+          } catch (cacheErr) {
+            console.warn('Failed to update Dexie friend cache:', cacheErr);
+          }
+        })();
+      } else {
+        // If backend was unreachable or returned 0, fallback to all cached cloud friends in Dexie
+        const cachedCloudFriends = await db.friends
+          .filter((f) => Boolean(f.cloudId) && !f.deletedAt)
+          .toArray();
+        if (cachedCloudFriends.length > 0) {
+          backendFriends = cachedCloudFriends.map((f) => ({
+            cloudId: f.cloudId,
+            name: f.name,
+            email: f.email ?? null,
+            phone: f.phone ?? null,
+            isRegistered: false,
+            totalExpenses: 0,
+            outstandingAmount: 0,
+            isPendingSync: false,
+          }));
+        }
+      }
+
       const syncedEmails = new Set(
         backendFriends.filter((f) => f.email).map((f) => f.email!.trim().toLowerCase())
       );
@@ -178,7 +245,30 @@ export const FriendsList: React.FC = () => {
   };
 
   useEffect(() => {
-    void loadFriends();
+    // 1. Instant hydration from Dexie cache on mount / refresh
+    void (async () => {
+      try {
+        const cached = await db.friends.filter((f) => !f.deletedAt).toArray();
+        if (cached.length > 0) {
+          setFriends(
+            cached.map((f) => ({
+              cloudId: f.cloudId,
+              localId: f.id,
+              name: sanitizeContactName(f.name, { email: f.email, phone: f.phone }),
+              email: f.email ?? null,
+              phone: f.phone ?? null,
+              isRegistered: false,
+              totalExpenses: 0,
+              outstandingAmount: 0,
+              isPendingSync: !f.cloudId,
+            }))
+          );
+        }
+      } catch (err) {
+        console.warn('Initial cache hydration error:', err);
+      }
+      await loadFriends();
+    })();
   }, []);
 
   const openFriendProfile = (friend: DisplayFriend) => {

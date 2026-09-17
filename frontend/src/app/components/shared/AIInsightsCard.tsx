@@ -4,6 +4,7 @@ import { backendService } from '@/lib/backend-api';
 import { cn } from '@/lib/utils';
 import { useApp } from '@/contexts/AppContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { formatCurrencyAmount } from '@/lib/currencyUtils';
 
 interface Recommendation {
  type: string;
@@ -23,7 +24,7 @@ interface AIInsightsData {
  healthScore?: number;
  recommendations: Recommendation[];
  insights: Insight[];
- fraudAlerts: Array<{ reason: string; severity: string; amount: number }>;
+ fraudAlerts: Array<{ reason: string; severity: string; amount: number; message?: string }>;
  upcomingBills: Array<{ merchant: string; predictedAmount: number; predictedDate: string }>;
 }
 
@@ -43,7 +44,7 @@ const recommendationIcon = (type: string) => {
 };
 
 export const AIInsightsCard: React.FC<{ compact?: boolean }> = ({ compact = false }) => {
- const { aiCapabilities } = useApp();
+ const { aiCapabilities, currency } = useApp();
  const { user, loading: authLoading } = useAuth();
  const [data, setData] = useState<AIInsightsData | null>(null);
  const [loading, setLoading] = useState(true);
@@ -73,7 +74,14 @@ export const AIInsightsCard: React.FC<{ compact?: boolean }> = ({ compact = fals
         setLoading(true);
         setError(false);
         const result = await backendService.get<AIInsightsData>('/ai/insights');
-        setData(result);
+        // Older servers could omit a list; the card must not crash on that.
+        setData(result ? {
+          ...result,
+          recommendations: result.recommendations ?? [],
+          insights: result.insights ?? [],
+          fraudAlerts: result.fraudAlerts ?? [],
+          upcomingBills: result.upcomingBills ?? [],
+        } : null);
         setRetryCount(0); // Reset retry count on success
       } catch (err: any) {
         console.warn('[AIInsightsCard] Failed to fetch insights (non-critical):', err?.status, err?.message);
@@ -113,7 +121,7 @@ export const AIInsightsCard: React.FC<{ compact?: boolean }> = ({ compact = fals
   </div>
   <div>
   <p className="text-sm font-bold text-slate-900">AI Insights</p>
-  <p className="text-2xs text-slate-400">Powered by KANAKUIntelligence</p>
+  <p className="text-2xs text-slate-400">Powered by KANAKU Intelligence</p>
   </div>
   </div>
   {data.healthScore !== undefined && (
@@ -128,8 +136,10 @@ export const AIInsightsCard: React.FC<{ compact?: boolean }> = ({ compact = fals
   <div className="mx-4 mt-4 rounded-2xl bg-rose-50 border border-rose-100 px-3.5 py-2.5 flex items-start gap-2">
   <Shield size={14} className="text-rose-500 mt-0.5 shrink-0" />
   <div>
-  <p className="text-xs font-bold text-rose-700 mb-0.5">{data.fraudAlerts.length} Suspicious Transaction(s) Flagged</p>
-  <p className="text-xs text-rose-600">Review your recent transactions for unusual activity.</p>
+  <p className="text-xs font-bold text-rose-700 mb-0.5">
+  {data.fraudAlerts.length === 1 ? '1 unusually large expense' : `${data.fraudAlerts.length} unusually large expenses`}
+  </p>
+  <p className="text-xs text-rose-600">{data.fraudAlerts[0]?.message ?? 'Review your recent transactions for anything you don\'t recognise.'}</p>
   </div>
   </div>
   )}
@@ -145,7 +155,7 @@ export const AIInsightsCard: React.FC<{ compact?: boolean }> = ({ compact = fals
   <Bell size={12} className="text-purple-500" />
   <span className="text-xs font-medium text-purple-900 capitalize">{bill.merchant}</span>
   </div>
-  <span className="text-xs font-bold text-purple-700">{bill.predictedAmount.toFixed(0)} {new Date(bill.predictedDate).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })}</span>
+  <span className="text-xs font-bold text-purple-700">{formatCurrencyAmount(bill.predictedAmount, currency, { maximumFractionDigits: 0 })} · {new Date(bill.predictedDate).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })}</span>
   </div>
   ))}
   </div>
