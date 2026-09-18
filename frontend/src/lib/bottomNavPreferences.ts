@@ -14,6 +14,7 @@ import {
   HandCoins,
   ListTodo,
   Settings as SettingsIcon,
+  FolderLock,
 } from 'lucide-react';
 
 export interface BottomNavItemDefinition {
@@ -62,6 +63,15 @@ export const ALL_BOTTOM_NAV_ITEMS: BottomNavItemDefinition[] = [
     category: 'tools',
     icon: Sparkles,
     colorClass: 'from-fuchsia-500 to-purple-600',
+  },
+  {
+    id: 'vault',
+    label: 'Kanakku Vault',
+    shortLabel: 'Vault',
+    description: 'Private document organizer & encrypted locker',
+    category: 'tools',
+    icon: FolderLock,
+    colorClass: 'from-amber-500 to-orange-600',
   },
   {
     id: 'groups',

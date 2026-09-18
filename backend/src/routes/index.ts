@@ -37,6 +37,7 @@ import { collaborationRoutes } from '../features/collaboration/collaboration.rou
 import { webhookRoutes } from '../features/webhooks/webhook.routes';
 import { reportsRoutes } from '../features/reports/reports.routes';
 import { systemRoutes } from '../features/system/integrity.routes';
+import { vaultRoutes } from '../features/vault/vault.routes';
 
 const router = Router();
 
@@ -124,6 +125,9 @@ router.use('/devices', deviceRoutes);
 
 // Secure bill uploads
 router.use('/bills', billsRoutes);
+
+// Kanakku Vault (Private document organizer)
+router.use('/vault', vaultRoutes);
 
 // Dashboard aggregation
 router.use('/dashboard', dashboardRoutes);

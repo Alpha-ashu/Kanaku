@@ -96,6 +96,7 @@ const RecurringTransactions = lazy(() => import('@/app/components/features/Recur
 const BudgetAlertsPage = lazy(() => import('@/app/components/features/BudgetAlertsPage').then(m => ({ default: m.BudgetAlertsPage })));
 const ClientManagementPage = lazy(() => import('@/app/components/features/ClientManagementPage').then(m => ({ default: m.ClientManagementPage })));
 const ReceiptScannerPage = lazy(() => import('@/app/components/features/ReceiptScannerPage').then(m => ({ default: m.ReceiptScannerPage })));
+const Vault = lazy(() => import('@/app/components/vault/Vault').then(m => ({ default: m.Vault })));
 
 //  Capacitor (native only)
 import { App as CapacitorApp } from '@capacitor/app';
@@ -1311,6 +1312,7 @@ const AppContent: React.FC = () => {
       case 'todo-lists': return <ToDoLists />;
       case 'todo-list-detail': return <ToDoListDetail />;
       case 'todo-list-share': return <ToDoListShare />;
+      case 'vault': return <Vault />;
       case 'settings': return <Settings />;
       case 'notifications': return <Notifications />;
       case 'user-profile': return <UserProfile />;

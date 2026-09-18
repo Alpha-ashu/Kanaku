@@ -24,6 +24,7 @@ import {
   HandCoins,
   Mic,
   ScanLine,
+  FolderLock,
 } from 'lucide-react';
 
 export type UserRole = 'admin' | 'manager' | 'advisor' | 'user';
@@ -46,6 +47,7 @@ export const headerMenuItems: NavigationItem[] = [
   { id: 'investments', label: 'Investments', icon: TrendingUp, feature: 'investments' },
   { id: 'calendar', label: 'Calendar', icon: Calendar, feature: 'calendar' },
   { id: 'reports', label: 'Reports', icon: BarChart3, feature: 'reports' },
+  { id: 'vault', label: 'Vault', icon: FolderLock, feature: 'vault' },
   { id: 'todo-lists', label: 'Todo Lists', icon: ListTodo, feature: 'todoLists' },
   { id: 'book-advisor', label: 'Book Advisor', icon: Handshake, feature: 'bookAdvisor' },
   { id: 'notifications', label: 'Notifications', icon: Bell, feature: 'notifications' },
@@ -73,6 +75,7 @@ export const sidebarMenuItems: NavigationItem[] = [
   { id: 'goals', label: 'Goals', icon: Target, feature: 'goals' },
   { id: 'groups', label: 'Group Expenses', icon: Users, feature: 'groups' },
   { id: 'reports', label: 'Reports', icon: BarChart3, feature: 'reports' },
+  { id: 'vault', label: 'Vault', icon: FolderLock, feature: 'vault' },
   { id: 'todo-lists', label: 'Todo Lists', icon: ListTodo, feature: 'todoLists' },
   { id: 'book-advisor', label: 'Book Advisor', icon: Handshake, feature: 'bookAdvisor', roles: ['admin', 'user'] },
   { id: 'voice-input', label: 'Kai', icon: Sparkles, feature: 'transactions' },

@@ -27,7 +27,8 @@ export type FeatureKey =
   | 'dashboard'
   | 'aiInsights'
   | 'recurringTransactions'
-  | 'budgetAlerts';
+  | 'budgetAlerts'
+  | 'vault';
 
 export interface FeatureVisibility extends Record<FeatureKey, boolean> {
   accounts: boolean;
@@ -55,6 +56,7 @@ export interface FeatureVisibility extends Record<FeatureKey, boolean> {
   aiInsights: boolean;
   recurringTransactions: boolean;
   budgetAlerts: boolean;
+  vault: boolean;
 }
 
 const DEFAULT_FEATURES: FeatureVisibility = {
@@ -83,6 +85,7 @@ const DEFAULT_FEATURES: FeatureVisibility = {
   aiInsights: true,
   recurringTransactions: true,
   budgetAlerts: true,
+  vault: true,
 };
 
 // DENY-BY-DEFAULT: These are the code-level baseline used ONLY when no admin DB
@@ -121,6 +124,7 @@ export const ROLE_FEATURES: Record<UserRole, FeatureVisibility> = {
     aiInsights: true,
     recurringTransactions: true,
     budgetAlerts: true,
+    vault: true,
   },
   manager: {
     accounts: true,
@@ -148,6 +152,7 @@ export const ROLE_FEATURES: Record<UserRole, FeatureVisibility> = {
     aiInsights: true,
     recurringTransactions: true,
     budgetAlerts: true,
+    vault: true,
   },
   advisor: {
     accounts: true,
@@ -175,6 +180,7 @@ export const ROLE_FEATURES: Record<UserRole, FeatureVisibility> = {
     aiInsights: true,
     recurringTransactions: true,
     budgetAlerts: true,
+    vault: true,
   },
   user: {
     accounts: true,
@@ -202,6 +208,7 @@ export const ROLE_FEATURES: Record<UserRole, FeatureVisibility> = {
     aiInsights: true,
     recurringTransactions: true,
     budgetAlerts: true,
+    vault: true,
   },
 };
 
@@ -241,6 +248,7 @@ export function mergeVisibleFeatures(
 
 export const PAGE_TO_FEATURE_MAPPING: Record<string, FeatureKey> = {
   'dashboard': 'dashboard',
+  'vault': 'vault',
   'auto-sizing-test': 'dashboard',
   'accounts': 'accounts',
   'add-account': 'accountSetup',
