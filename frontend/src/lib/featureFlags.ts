@@ -249,7 +249,6 @@ export function mergeVisibleFeatures(
 export const PAGE_TO_FEATURE_MAPPING: Record<string, FeatureKey> = {
   'dashboard': 'dashboard',
   'vault': 'vault',
-  'auto-sizing-test': 'dashboard',
   'accounts': 'accounts',
   'add-account': 'accountSetup',
   'account-setup': 'accountSetup',

@@ -85,7 +85,6 @@ const FriendsList = lazy(() => import('@/app/components/groups/FriendsList').the
 const FriendProfile = lazy(() => import('@/app/components/groups/FriendProfile').then(m => ({ default: m.FriendProfile })));
 const UserProfile = lazy(() => import('@/app/components/profile/UserProfile').then(m => ({ default: m.UserProfile })));
 const Notifications = lazy(() => import('@/app/components/profile/Notifications').then(m => ({ default: m.Notifications })));
-const SimpleAutoTest = lazy(() => import('@/app/components/ui/SimpleAutoTest').then(m => ({ default: m.SimpleAutoTest })));
 const NewUserOnboarding = lazy(() => import('@/app/components/auth/onboarding/NewUserOnboarding').then(m => ({ default: m.NewUserOnboarding })));
 const AppFeatureSlides = lazy(() => import('@/app/components/auth/onboarding/AppFeatureSlides').then(m => ({ default: m.AppFeatureSlides })));
 
@@ -1286,7 +1285,6 @@ const AppContent: React.FC = () => {
 
     switch (currentPage) {
       case 'dashboard': return <Dashboard setCurrentPage={setCurrentPage} />;
-      case 'auto-sizing-test': return <SimpleAutoTest />;
       case 'accounts': return <Accounts />;
       case 'transactions': return <Transactions />;
       case 'add-account': return <AddAccount />;
