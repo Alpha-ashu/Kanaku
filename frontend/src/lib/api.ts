@@ -600,14 +600,30 @@ class HTTPClient {
       resolvedIdempotencyKey = idempotencyKey ?? generateClientId();
     }
 
-    // End-to-end correlation: a per-request ID the backend honors (X-Request-Id)
-    // and propagates through API → DB/AuditLog → Worker. Reused below for any
-    // client-side error log so a failure can be matched to its server trace.
-    const requestId = (fetchConfig.headers as Record<string, string> | undefined)?.['X-Request-Id'] ?? generateClientId();
+    const rawCustomHeaders = fetchConfig.headers;
+    let customHeaders: Record<string, string> = {};
+    if (rawCustomHeaders instanceof Headers) {
+      rawCustomHeaders.forEach((value, key) => {
+        customHeaders[key] = value;
+      });
+    } else if (Array.isArray(rawCustomHeaders)) {
+      rawCustomHeaders.forEach(([key, value]) => {
+        customHeaders[key] = value;
+      });
+    } else if (rawCustomHeaders && typeof rawCustomHeaders === 'object') {
+      customHeaders = { ...(rawCustomHeaders as Record<string, string>) };
+    }
 
-    const headers = {
-      ...this.defaultConfig.headers,
-      ...fetchConfig.headers,
+    const requestId = customHeaders['X-Request-Id'] ?? generateClientId();
+
+    const isFormData = typeof FormData !== 'undefined' && fetchConfig.body instanceof FormData;
+    const defaultHeaders = (this.defaultConfig.headers as Record<string, string>) || {};
+    const baseHeaders = isFormData
+      ? customHeaders
+      : { ...defaultHeaders, ...customHeaders };
+
+    const headers: Record<string, string> = {
+      ...baseHeaders,
       ...(token && { Authorization: `Bearer ${token}` }),
       ...(resolvedIdempotencyKey && { 'Idempotency-Key': resolvedIdempotencyKey }),
       'X-Request-Id': requestId,
@@ -619,6 +635,10 @@ class HTTPClient {
       // the re-lock window slide with activity.
       ...(getPinUnlockToken() && { 'X-Pin-Unlock': getPinUnlockToken() as string }),
     };
+
+    if (isFormData && headers['Content-Type']) {
+      delete headers['Content-Type'];
+    }
     const baseCandidates = getApiBaseCandidates(this.baseURL);
 
     try {
@@ -969,6 +989,19 @@ class HTTPClient {
       ...config,
       method: 'POST',
       body: JSON.stringify(data),
+    });
+  }
+
+  async upload<T>(
+    endpoint: string,
+    formData: FormData,
+    config?: RequestConfig
+  ): Promise<ApiResponse<T>> {
+    clearGetResponseCache();
+    return this.request<T>(endpoint, {
+      ...config,
+      method: 'POST',
+      body: formData,
     });
   }
 

@@ -352,3 +352,15 @@ export const verifyLock = async (req: AuthRequest, res: Response, next: NextFunc
     next(error);
   }
 };
+
+export const resetLockPin = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const userId = getUserId(req);
+    const { newPin } = req.body || {};
+    const result = await VaultService.resetLockPin(userId, newPin);
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+

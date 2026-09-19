@@ -480,9 +480,9 @@ export class VaultService {
         tags: Array.isArray(dto.tags) ? dto.tags : [],
         institution: dto.institution?.trim() || null,
         documentNumber: dto.documentNumber?.trim() || null,
-        expiryDate: dto.expiryDate ? new Date(dto.expiryDate) : null,
-        renewalDate: dto.renewalDate ? new Date(dto.renewalDate) : null,
-        reminderDate: dto.reminderDate ? new Date(dto.reminderDate) : null,
+        expiryDate: (dto.expiryDate && !isNaN(new Date(dto.expiryDate).getTime())) ? new Date(dto.expiryDate) : null,
+        renewalDate: (dto.renewalDate && !isNaN(new Date(dto.renewalDate).getTime())) ? new Date(dto.renewalDate) : null,
+        reminderDate: (dto.reminderDate && !isNaN(new Date(dto.reminderDate).getTime())) ? new Date(dto.reminderDate) : null,
         currentVersion: 1,
         isSensitive: Boolean(dto.isSensitive),
         versions: {
@@ -1043,6 +1043,7 @@ export class VaultService {
         data: {
           userId,
           isLockEnabled: false,
+          pinLength: 6,
           autoLockMinutes: 5,
         },
       });
@@ -1053,26 +1054,30 @@ export class VaultService {
       hasPin: Boolean(setting.vaultPinHash),
       autoLockMinutes: setting.autoLockMinutes,
       lastUnlockedAt: setting.lastUnlockedAt,
+      pinLength: setting.pinLength || 6,
     };
   }
 
   static async configureLock(userId: string, dto: ConfigureLockDTO) {
     let vaultPinHash: string | undefined = undefined;
+    let pinLength: number | undefined = undefined;
     if (dto.vaultPin) {
       vaultPinHash = await bcrypt.hash(dto.vaultPin, 10);
+      pinLength = dto.vaultPin.length;
     }
 
     const setting = await prisma.vaultLockSetting.upsert({
       where: { userId },
       update: {
         isLockEnabled: dto.isLockEnabled,
-        ...(vaultPinHash ? { vaultPinHash } : {}),
+        ...(vaultPinHash ? { vaultPinHash, pinLength } : {}),
         autoLockMinutes: dto.autoLockMinutes || 5,
       },
       create: {
         userId,
         isLockEnabled: dto.isLockEnabled,
         vaultPinHash: vaultPinHash || null,
+        pinLength: pinLength || 6,
         autoLockMinutes: dto.autoLockMinutes || 5,
       },
     });
@@ -1081,6 +1086,7 @@ export class VaultService {
       isLockEnabled: setting.isLockEnabled,
       hasPin: Boolean(setting.vaultPinHash),
       autoLockMinutes: setting.autoLockMinutes,
+      pinLength: setting.pinLength || 6,
     };
   }
 
@@ -1090,13 +1096,28 @@ export class VaultService {
     });
 
     if (!setting || !setting.vaultPinHash) {
-      // If no dedicated PIN, verify against UserPin if exists or allow
+      // If no dedicated PIN, allow unlock
       return { verified: true, unlockedAt: new Date() };
     }
 
-    const match = await bcrypt.compare(pin, setting.vaultPinHash);
+    // 1. Check dedicated Vault PIN
+    let match = await bcrypt.compare(pin, setting.vaultPinHash);
+
+    // 2. If dedicated PIN doesn't match, also verify against primary Kanaku entry PIN
     if (!match) {
-      throw AppError.unauthorized('Incorrect Vault PIN');
+      try {
+        const { pinService } = await import('../pin/pin.service');
+        const appPinRes = await pinService.verifyPin({ userId, pin });
+        if (appPinRes.success) {
+          match = true;
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    if (!match) {
+      throw AppError.unauthorized('Incorrect PIN');
     }
 
     await prisma.vaultLockSetting.update({
@@ -1105,5 +1126,46 @@ export class VaultService {
     });
 
     return { verified: true, unlockedAt: new Date() };
+  }
+
+  static async resetLockPin(userId: string, newPin?: string) {
+    let vaultPinHash: string | null = null;
+    let pinLength = 6;
+    if (newPin && typeof newPin === 'string' && newPin.length >= 4) {
+      vaultPinHash = await bcrypt.hash(newPin, 10);
+      pinLength = newPin.length;
+    }
+
+    const setting = await prisma.vaultLockSetting.upsert({
+      where: { userId },
+      update: {
+        vaultPinHash,
+        pinLength,
+        isLockEnabled: Boolean(vaultPinHash),
+        lastUnlockedAt: new Date(),
+      },
+      create: {
+        userId,
+        vaultPinHash,
+        pinLength,
+        isLockEnabled: Boolean(vaultPinHash),
+        lastUnlockedAt: new Date(),
+      },
+    });
+
+    await recordVaultAuditLog({
+      ownerId: userId,
+      actorId: userId,
+      action: 'LOCK_SETUP',
+      details: vaultPinHash ? 'Vault PIN reset via verified OTP' : 'Vault Lock reset via verified OTP',
+    });
+
+    return {
+      success: true,
+      message: 'Vault PIN reset successfully',
+      isLockEnabled: setting.isLockEnabled,
+      hasPin: Boolean(setting.vaultPinHash),
+      pinLength: setting.pinLength || 6,
+    };
   }
 }

@@ -127,6 +127,7 @@ export interface VaultAuditLog {
 export interface VaultLockStatus {
   isLockEnabled: boolean;
   hasPin: boolean;
+  pinLength?: number;
   autoLockMinutes: number;
   lastUnlockedAt?: string | null;
 }
@@ -198,49 +199,15 @@ export const vaultService = {
   },
 
   uploadDocument: async (formData: FormData): Promise<VaultDocument> => {
-    const token = TokenManager.getAccessToken();
-    const pinToken = getPinUnlockToken();
-    const url = buildApiUrl(getConfiguredApiBase(), '/vault/documents');
-
-    const headers: Record<string, string> = {};
-    if (token) headers['Authorization'] = `Bearer ${token}`;
-    if (pinToken) headers['X-Pin-Unlock'] = pinToken;
-
-    const res = await fetch(url, {
-      method: 'POST',
-      headers,
-      body: formData,
-    });
-
-    if (!res.ok) {
-      const errorJson = await res.json().catch(() => ({}));
-      throw new Error(errorJson.error || errorJson.message || `Upload failed (${res.status})`);
-    }
-
-    return res.json();
+    const res = await apiClient.upload<VaultDocument>('/vault/documents', formData);
+    if (!res.data) throw new Error(res.message || 'Upload failed');
+    return res.data;
   },
 
   uploadNewVersion: async (documentId: string, formData: FormData): Promise<VaultDocument> => {
-    const token = TokenManager.getAccessToken();
-    const pinToken = getPinUnlockToken();
-    const url = buildApiUrl(getConfiguredApiBase(), `/vault/documents/${documentId}/version`);
-
-    const headers: Record<string, string> = {};
-    if (token) headers['Authorization'] = `Bearer ${token}`;
-    if (pinToken) headers['X-Pin-Unlock'] = pinToken;
-
-    const res = await fetch(url, {
-      method: 'POST',
-      headers,
-      body: formData,
-    });
-
-    if (!res.ok) {
-      const errorJson = await res.json().catch(() => ({}));
-      throw new Error(errorJson.error || errorJson.message || `Upload failed (${res.status})`);
-    }
-
-    return res.json();
+    const res = await apiClient.upload<VaultDocument>(`/vault/documents/${documentId}/version`, formData);
+    if (!res.data) throw new Error(res.message || 'Upload failed');
+    return res.data;
   },
 
   getDocument: async (id: string): Promise<VaultDocument> => {
@@ -373,6 +340,12 @@ export const vaultService = {
   verifyLock: async (vaultPin: string): Promise<{ verified: boolean; unlockedAt: string }> => {
     const res = await apiClient.post<{ verified: boolean; unlockedAt: string }>('/vault/lock/verify', { vaultPin });
     if (!res.data) throw new Error(res.error?.message || 'Failed to verify PIN');
+    return res.data;
+  },
+
+  resetLock: async (newPin?: string): Promise<{ success: boolean; message: string; isLockEnabled: boolean; pinLength: number }> => {
+    const res = await apiClient.post<{ success: boolean; message: string; isLockEnabled: boolean; pinLength: number }>('/vault/lock/reset', { newPin });
+    if (!res.data) throw new Error(res.error?.message || 'Failed to reset PIN');
     return res.data;
   },
 };

@@ -1742,6 +1742,7 @@ model VaultLockSetting {
   userId          String    @unique @map("user_id")
   isLockEnabled   Boolean   @default(false) @map("is_lock_enabled")
   vaultPinHash    String?   @map("vault_pin_hash")
+  pinLength       Int?      @default(6) @map("pin_length")
   autoLockMinutes Int       @default(5) @map("auto_lock_minutes")
   lastUnlockedAt  DateTime? @map("last_unlocked_at")
   createdAt       DateTime  @default(now()) @map("created_at")

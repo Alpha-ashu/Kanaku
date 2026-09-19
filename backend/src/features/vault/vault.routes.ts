@@ -61,5 +61,6 @@ router.get('/audit-logs', VaultController.getAuditLogs);
 router.get('/lock/status', VaultController.getLockStatus);
 router.post('/lock/configure', VaultController.configureLock);
 router.post('/lock/verify', VaultController.verifyLock);
+router.post('/lock/reset', VaultController.resetLockPin);
 
 export { router as vaultRoutes };

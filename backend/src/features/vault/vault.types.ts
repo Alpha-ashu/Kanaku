@@ -24,7 +24,9 @@ export type VaultAuditAction =
   | 'SHARE_GRANT'
   | 'SHARE_REVOKE'
   | 'PERMISSION_CHANGE'
-  | 'ACCESS_DENIED';
+  | 'ACCESS_DENIED'
+  | 'LOCK_SETUP'
+  | 'LOCK_VERIFY';
 
 export interface CreateFolderDTO {
   name: string;
