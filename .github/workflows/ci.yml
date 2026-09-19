@@ -99,12 +99,25 @@ jobs:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/kanaku_test
           DIRECT_URL: postgresql://postgres:postgres@localhost:5432/kanaku_test
 
+      # The migrations target Supabase: 20260912010000 creates policies for the
+      # anon/authenticated roles, so the shadow database needs those role names.
+      - name: Prepare shadow database for the drift guard
+        run: |
+          psql -h localhost -U postgres -v ON_ERROR_STOP=1 -c "CREATE DATABASE kanaku_shadow"
+          psql -h localhost -U postgres -v ON_ERROR_STOP=1 -c "DO \$\$ BEGIN CREATE ROLE anon NOLOGIN; EXCEPTION WHEN duplicate_object THEN NULL; END \$\$; DO \$\$ BEGIN CREATE ROLE authenticated NOLOGIN; EXCEPTION WHEN duplicate_object THEN NULL; END \$\$; DO \$\$ BEGIN CREATE ROLE service_role NOLOGIN; EXCEPTION WHEN duplicate_object THEN NULL; END \$\$;"
+        env:
+          PGPASSWORD: postgres
+
+      # Prisma 7 removed --to-schema-datamodel and --shadow-database-url, so the
+      # old form of this step failed on every run regardless of drift. The shadow
+      # URL now comes from backend/prisma.config.js (SHADOW_DATABASE_URL).
       - name: Guard schema drift against migrations
         working-directory: backend
-        run: node ../node_modules/prisma/build/index.js migrate diff --from-migrations ./prisma/migrations --to-schema-datamodel ./prisma/schema.prisma --shadow-database-url "postgresql://postgres:postgres@localhost:5432/kanaku_shadow" --exit-code
+        run: node ../node_modules/prisma/build/index.js migrate diff --from-migrations ./prisma/migrations --to-schema ./prisma/schema.prisma --exit-code
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/kanaku_test
           DIRECT_URL: postgresql://postgres:postgres@localhost:5432/kanaku_test
+          SHADOW_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/kanaku_shadow
 
       - name: Type-check
         working-directory: backend
