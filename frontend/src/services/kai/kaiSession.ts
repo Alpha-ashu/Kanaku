@@ -19,7 +19,6 @@ import {
   executeKaiAction,
   removeKaiAction,
   resolveAccountForAction,
-  resolveDefaultAccount,
   updateKaiAction,
   type ExecutionContext,
 } from './kaiActionExecutor';
@@ -64,7 +63,10 @@ export interface KaiSessionDeps {
   execute: typeof executeKaiAction;
   update: typeof updateKaiAction;
   remove: typeof removeKaiAction;
-  resolveAccount: (outflow?: number) => Promise<{ id?: number } | null>;
+  resolveAccount: (
+    outflow?: number,
+    action?: Pick<KaiAction, 'kind' | 'entities' | 'rawSegment'>,
+  ) => Promise<{ id?: number } | null>;
   speak: (text: string) => Promise<void>;
   isMuted: () => boolean;
   createListener: (callbacks: KaiListenerCallbacks) => Pick<KaiListener, 'begin' | 'end' | 'pause' | 'resume' | 'isActive'>;
@@ -124,7 +126,7 @@ const defaultDeps = (): KaiSessionDeps => ({
   execute: executeKaiAction,
   update: updateKaiAction,
   remove: removeKaiAction,
-  resolveAccount: resolveDefaultAccount,
+  resolveAccount: (outflow, action) => resolveAccountForAction(action, outflow),
   speak,
   isMuted: isKaiMuted,
   createListener: (callbacks) => new KaiListener(callbacks),
@@ -504,7 +506,7 @@ export class KaiSession {
     if (action.entities?.accountId) {
       return { userId: this.userId, accountId: action.entities.accountId };
     }
-    const account = await resolveAccountForAction(action, actionOutflow(action));
+    const account = await this.deps.resolveAccount(actionOutflow(action), action);
     if (!account?.id) throw new Error('Add an account first so Kai knows where to record this.');
     return { userId: this.userId, accountId: account.id };
   }

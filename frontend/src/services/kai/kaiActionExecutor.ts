@@ -108,7 +108,9 @@ export async function resolveAccountForAction(
   if (raw) {
     for (const acc of accounts) {
       const name = (acc.name || '').toLowerCase().trim();
-      if (name && (raw.includes(name) || (name.length >= 3 && new RegExp(`\\b${name}\\b`, 'i').test(raw)))) {
+      // Account names are user text ("HDFC (old", "+91 wallet") — escape them before building a regex.
+      const pattern = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      if (name && (raw.includes(name) || (name.length >= 3 && new RegExp(`\\b${pattern}\\b`, 'i').test(raw)))) {
         return acc;
       }
     }
