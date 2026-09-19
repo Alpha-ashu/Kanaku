@@ -22,6 +22,16 @@ export const getDashboard = async (req: AuthRequest, res: Response, next: NextFu
   }
 };
 
+export const getStorageUsage = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const userId = getUserId(req);
+    const usage = await VaultService.getStorageUsage(userId);
+    res.json(usage);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const getFolders = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userId = getUserId(req);

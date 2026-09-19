@@ -25,6 +25,9 @@ import {
   recordVaultAuditLog,
 } from './vault.authorization';
 
+/** 500 MB per-user vault storage limit */
+const VAULT_STORAGE_LIMIT_BYTES = 500 * 1024 * 1024;
+
 const DEFAULT_FOLDERS = [
   { name: 'Personal Documents', category: 'Personal Documents', color: '#3B82F6', icon: 'UserCheck' },
   { name: 'Property Documents', category: 'Property Documents', color: '#10B981', icon: 'Home' },
@@ -115,6 +118,7 @@ export class VaultService {
       totalDocuments: documents.length,
       totalFolders: folders.length,
       totalStorageBytes,
+      storageLimitBytes: VAULT_STORAGE_LIMIT_BYTES,
       sharedWithOthersCount,
       sharedWithMeCount,
       categoryBreakdown,
@@ -342,6 +346,25 @@ export class VaultService {
   /**
    * Uploads and encrypts a new document.
    */
+  /**
+   * Returns the total storage used by a user in bytes.
+   */
+  static async getStorageUsage(userId: string): Promise<{ usedBytes: number; limitBytes: number; remainingBytes: number }> {
+    const result = await prisma.vaultDocument.aggregate({
+      where: { userId, deletedAt: null },
+      _sum: { fileSize: true },
+    });
+    const usedBytes = result._sum.fileSize || 0;
+    return {
+      usedBytes,
+      limitBytes: VAULT_STORAGE_LIMIT_BYTES,
+      remainingBytes: Math.max(0, VAULT_STORAGE_LIMIT_BYTES - usedBytes),
+    };
+  }
+
+  /**
+   * Uploads and encrypts a new document.
+   */
   static async uploadDocument(
     userId: string,
     file: Express.Multer.File,
@@ -359,6 +382,16 @@ export class VaultService {
 
     if (!ALLOWED_MIME_TYPES.has(file.mimetype)) {
       throw AppError.badRequest(`Unsupported file format: ${file.mimetype}. Supported: PDF, JPG, PNG, WEBP, DOCX.`);
+    }
+
+    // Enforce 500 MB per-user storage quota
+    const { usedBytes } = await this.getStorageUsage(userId);
+    if (usedBytes + file.size > VAULT_STORAGE_LIMIT_BYTES) {
+      const usedMB = (usedBytes / 1024 / 1024).toFixed(1);
+      const limitMB = (VAULT_STORAGE_LIMIT_BYTES / 1024 / 1024).toFixed(0);
+      throw AppError.badRequest(
+        `Storage limit exceeded. You have used ${usedMB} MB of ${limitMB} MB. Please delete unused documents to free up space.`,
+      );
     }
 
     let folderId = dto.folderId || null;

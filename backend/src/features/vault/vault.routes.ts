@@ -14,6 +14,7 @@ router.use(authMiddleware);
 
 // Dashboard & stats
 router.get('/dashboard', VaultController.getDashboard);
+router.get('/storage', VaultController.getStorageUsage);
 
 // Folders
 router.get('/folders', VaultController.getFolders);

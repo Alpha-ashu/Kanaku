@@ -1,26 +1,64 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import {
-  ShieldAlert,
   ShieldCheck,
   Upload,
   Eye,
   Download,
-  Trash2,
   Share2,
-  UserX,
-  Edit,
+  Trash2,
   FolderPlus,
-  Clock,
-  Filter,
+  Lock,
+  AlertTriangle,
+  XCircle,
+  Edit3,
   RefreshCw,
 } from 'lucide-react';
 import { vaultService, VaultAuditLog } from '@/services/vaultService';
-import { toast } from 'sonner';
+
+const ACTION_CONFIG: Record<string, { icon: any; color: string; bg: string; label: string }> = {
+  UPLOAD: { icon: Upload, color: 'text-emerald-600', bg: 'bg-emerald-50', label: 'Upload' },
+  PREVIEW: { icon: Eye, color: 'text-blue-600', bg: 'bg-blue-50', label: 'Preview' },
+  DOWNLOAD: { icon: Download, color: 'text-indigo-600', bg: 'bg-indigo-50', label: 'Download' },
+  SHARE_GRANT: { icon: Share2, color: 'text-purple-600', bg: 'bg-purple-50', label: 'Share Granted' },
+  SHARE_REVOKE: { icon: XCircle, color: 'text-red-600', bg: 'bg-red-50', label: 'Share Revoked' },
+  SHARE_UPDATE: { icon: Edit3, color: 'text-amber-600', bg: 'bg-amber-50', label: 'Share Updated' },
+  DELETE: { icon: Trash2, color: 'text-red-600', bg: 'bg-red-50', label: 'Delete' },
+  FOLDER_CREATE: { icon: FolderPlus, color: 'text-teal-600', bg: 'bg-teal-50', label: 'Folder Created' },
+  FOLDER_RENAME: { icon: Edit3, color: 'text-slate-600', bg: 'bg-slate-100', label: 'Folder Renamed' },
+  FOLDER_DELETE: { icon: Trash2, color: 'text-red-500', bg: 'bg-red-50', label: 'Folder Deleted' },
+  ACCESS_DENIED: { icon: AlertTriangle, color: 'text-red-600', bg: 'bg-red-50', label: 'Access Denied' },
+  LOCK_SETUP: { icon: Lock, color: 'text-amber-600', bg: 'bg-amber-50', label: 'Lock Setup' },
+  LOCK_VERIFY: { icon: Lock, color: 'text-emerald-600', bg: 'bg-emerald-50', label: 'Lock Verified' },
+};
+
+const getActionConfig = (action: string) => {
+  return ACTION_CONFIG[action] || {
+    icon: ShieldCheck,
+    color: 'text-slate-500',
+    bg: 'bg-slate-50',
+    label: action,
+  };
+};
+
+const formatRelativeTime = (dateStr: string): string => {
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMin = Math.floor(diffMs / 60000);
+  const diffHour = Math.floor(diffMs / 3600000);
+  const diffDay = Math.floor(diffMs / 86400000);
+
+  if (diffMin < 1) return 'Just now';
+  if (diffMin < 60) return `${diffMin}m ago`;
+  if (diffHour < 24) return `${diffHour}h ago`;
+  if (diffDay < 7) return `${diffDay}d ago`;
+  return date.toLocaleDateString();
+};
 
 export const VaultAuditTrailView: React.FC = () => {
   const [logs, setLogs] = useState<VaultAuditLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedAction, setSelectedAction] = useState<string>('ALL');
 
   useEffect(() => {
     loadLogs();
@@ -32,169 +70,92 @@ export const VaultAuditTrailView: React.FC = () => {
       const data = await vaultService.getAuditLogs();
       setLogs(data);
     } catch {
-      toast.error('Failed to load audit logs');
+      // silent
     } finally {
       setIsLoading(false);
     }
   };
 
-  const filteredLogs = logs.filter((log) => {
-    if (selectedAction === 'ALL') return true;
-    return log.action === selectedAction;
-  });
-
-  const getActionBadge = (action: string) => {
-    switch (action) {
-      case 'UPLOAD':
-        return {
-          icon: Upload,
-          color: 'bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300',
-          label: 'Uploaded',
-        };
-      case 'VIEW':
-        return {
-          icon: Eye,
-          color: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
-          label: 'Viewed',
-        };
-      case 'DOWNLOAD':
-        return {
-          icon: Download,
-          color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300',
-          label: 'Downloaded',
-        };
-      case 'UPDATE':
-        return {
-          icon: Edit,
-          color: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300',
-          label: 'Updated',
-        };
-      case 'DELETE':
-        return {
-          icon: Trash2,
-          color: 'bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-300',
-          label: 'Deleted',
-        };
-      case 'SHARE_GRANT':
-        return {
-          icon: Share2,
-          color: 'bg-purple-100 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300',
-          label: 'Share Granted',
-        };
-      case 'SHARE_REVOKE':
-        return {
-          icon: UserX,
-          color: 'bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300',
-          label: 'Access Revoked',
-        };
-      case 'ACCESS_DENIED':
-        return {
-          icon: ShieldAlert,
-          color: 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300',
-          label: 'Access Denied',
-        };
-      default:
-        return {
-          icon: Clock,
-          color: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
-          label: action,
-        };
-    }
-  };
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-16">
+        <div className="w-6 h-6 border-2 border-purple-200 border-t-purple-600 rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-4">
-      {/* Top filter & refresh bar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
-        <div>
-          <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-emerald-500" />
-            <span>Immutable Security Audit Log</span>
-          </h3>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Every view, download, update, and access change is cryptographically audited.
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <h3 className="text-section-title flex items-center gap-2">
+          <ShieldCheck className="w-5 h-5 text-emerald-500" />
+          Security Audit Trail
+        </h3>
+        <button
+          type="button"
+          onClick={loadLogs}
+          className="p-2 rounded-xl hover:bg-slate-100 text-slate-500 transition-colors"
+          title="Refresh"
+        >
+          <RefreshCw className="w-4 h-4" />
+        </button>
+      </div>
+
+      <p className="text-body-sm text-slate-500">
+        Immutable record of every action on your vault. Cannot be edited or deleted.
+      </p>
+
+      {logs.length === 0 ? (
+        <div className="KANAKU-card !items-center !text-center !py-12">
+          <ShieldCheck className="w-10 h-10 text-emerald-300 mb-2" />
+          <h4 className="text-card-title text-slate-700">No activity yet</h4>
+          <p className="text-body-sm text-slate-400 mt-1">
+            All vault operations will be recorded here automatically.
           </p>
         </div>
-
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <select
-            value={selectedAction}
-            onChange={(e) => setSelectedAction(e.target.value)}
-            className="px-3 py-1.5 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200"
-          >
-            <option value="ALL">All Actions</option>
-            <option value="VIEW">Views</option>
-            <option value="DOWNLOAD">Downloads</option>
-            <option value="UPLOAD">Uploads</option>
-            <option value="SHARE_GRANT">Share Grants</option>
-            <option value="SHARE_REVOKE">Share Revocations</option>
-            <option value="ACCESS_DENIED">Access Denials</option>
-          </select>
-          <button
-            type="button"
-            onClick={loadLogs}
-            className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors"
-          >
-            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-          </button>
-        </div>
-      </div>
-
-      {/* Logs Table / List */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden">
-        {isLoading ? (
-          <div className="py-12 flex flex-col items-center justify-center text-slate-400 gap-2">
-            <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-            <span className="text-xs">Loading audit trail...</span>
-          </div>
-        ) : filteredLogs.length === 0 ? (
-          <div className="py-12 text-center text-xs text-slate-400">
-            No audit records found matching the filter.
-          </div>
-        ) : (
-          <div className="divide-y divide-slate-100 dark:divide-slate-800">
-            {filteredLogs.map((log) => {
-              const badge = getActionBadge(log.action);
-              const Icon = badge.icon;
-              return (
-                <div
-                  key={log.id}
-                  className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 hover:bg-slate-50/60 dark:hover:bg-slate-800/30 transition-colors"
-                >
-                  <div className="flex items-start gap-3">
-                    <div className={`p-2 rounded-xl ${badge.color} mt-0.5`}>
-                      <Icon className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${badge.color}`}>
-                          {badge.label}
-                        </span>
-                        <span className="text-xs font-semibold text-slate-900 dark:text-white">
-                          {log.actor?.name || log.actor?.email || 'User'}
-                        </span>
-                      </div>
-                      <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">
-                        {log.details || `Performed ${log.action}`}
-                      </p>
-                      {log.document && (
-                        <p className="text-[11px] text-indigo-600 dark:text-indigo-400 font-medium mt-0.5">
-                          📄 {log.document.title}
-                        </p>
-                      )}
-                    </div>
+      ) : (
+        <div className="KANAKU-card !p-0 divide-y divide-slate-100 overflow-hidden">
+          {logs.map((log, i) => {
+            const config = getActionConfig(log.action);
+            const Icon = config.icon;
+            return (
+              <motion.div
+                key={log.id}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: i * 0.02 }}
+                className="p-3.5 flex items-start gap-3"
+              >
+                <div className={`w-8 h-8 rounded-xl ${config.bg} ${config.color} flex items-center justify-center shrink-0 mt-0.5`}>
+                  <Icon className="w-4 h-4" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className={`text-caption uppercase font-bold px-2 py-0.5 rounded-full ${config.bg} ${config.color}`}>
+                      {config.label}
+                    </span>
+                    <span className="text-caption">{formatRelativeTime(log.createdAt)}</span>
                   </div>
-
-                  <div className="text-right text-[11px] text-slate-400 flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto">
-                    <span>{new Date(log.createdAt).toLocaleDateString()}</span>
-                    <span>{new Date(log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                  {log.details && (
+                    <p className="text-body-sm text-slate-600 mt-1 truncate">{log.details}</p>
+                  )}
+                  <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                    {log.actor && (
+                      <span className="text-caption">by {log.actor.name || log.actor.email}</span>
+                    )}
+                    {log.document && (
+                      <span className="text-caption">· {log.document.title}</span>
+                    )}
+                    {log.folder && (
+                      <span className="text-caption">· {log.folder.name}</span>
+                    )}
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+              </motion.div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };

@@ -96,11 +96,18 @@ export interface VaultDashboardData {
   totalDocuments: number;
   totalFolders: number;
   totalStorageBytes: number;
+  storageLimitBytes: number;
   sharedWithOthersCount: number;
   sharedWithMeCount: number;
   categoryBreakdown: Record<string, number>;
   expiringDocuments: VaultDocument[];
   recentlyAdded: VaultDocument[];
+}
+
+export interface VaultStorageUsage {
+  usedBytes: number;
+  limitBytes: number;
+  remainingBytes: number;
 }
 
 export interface VaultAuditLog {
@@ -128,6 +135,12 @@ export const vaultService = {
   getDashboard: async (): Promise<VaultDashboardData> => {
     const res = await apiClient.get<VaultDashboardData>('/vault/dashboard');
     if (!res.data) throw new Error(res.error?.message || 'Failed to load dashboard');
+    return res.data;
+  },
+
+  getStorageUsage: async (): Promise<VaultStorageUsage> => {
+    const res = await apiClient.get<VaultStorageUsage>('/vault/storage');
+    if (!res.data) throw new Error(res.error?.message || 'Failed to load storage usage');
     return res.data;
   },
 
