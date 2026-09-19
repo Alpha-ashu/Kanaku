@@ -42,12 +42,20 @@ describe('AUTH MODULE', () => {
       // 201 = DB working; 500 = DB not connected (both acceptable)
       expect([201, 500, 503]).toContain(res.status);
       if (res.status === 201) {
+        // Sign-up is OTP-gated: registering sends a code and issues no session.
         expect(res.body.success).toBe(true);
-        expect(res.headers).toHaveProperty('authorization');
-        // Refresh token is delivered ONLY via the HttpOnly cookie — never in a
-        // JS-readable header or the JSON body.
-        expect(res.headers).not.toHaveProperty('x-refresh-token');
-        expect(String(res.headers['set-cookie'] || '')).toContain('kanaku_rt');
+        expect(res.body.data?.requireOtp).toBe(true);
+        expect(res.headers).not.toHaveProperty('authorization');
+
+        // The session arrives with the verified code — and the refresh token
+        // ONLY via the HttpOnly cookie, never a JS-readable header or the body.
+        const verify = await request(app)
+          .post(`${API}/auth/verify-registration-otp`)
+          .send({ email: res.body.data?.email, code: res.body.data?.code });
+        expect(verify.status).toBe(200);
+        expect(verify.headers).toHaveProperty('authorization');
+        expect(verify.headers).not.toHaveProperty('x-refresh-token');
+        expect(String(verify.headers['set-cookie'] || '')).toContain('kanaku_rt');
       }
     });
 
@@ -166,7 +174,8 @@ describe('AUTH MODULE', () => {
         .post(`${API}/auth/login`)
         .send({ email: 'test@example.com' });
       expect(res.status).toBe(400);
-      expect(res.body.code).toBe('MISSING_FIELDS');
+      // No challenge code and no password: the direct-login path asks for the password.
+      expect(res.body.code).toBe('MISSING_PASSWORD');
     });
 
     it('should reject login with invalid email format', async () => {

@@ -50,20 +50,34 @@ describe('BILLS SECURITY', () => {
     expect(res.body.error).toContain('File exceeds 5MB limit');
   });
 
-  it('rejects transactionId not owned by authenticated user', async () => {
+  it('never links a bill to a transactionId the user does not own', async () => {
     const token = getSignedToken();
 
+    // Offline-first: a bill may arrive before its transaction syncs, so an
+    // unknown/foreign transactionId no longer fails the upload — the file is kept
+    // UNLINKED instead. The security property is that it is never attached to a
+    // transaction outside the caller's own.
     const res = await request(app)
       .post(`${API}/bills`)
       .set('Authorization', `Bearer ${token}`)
       .field('transactionId', '00000000-0000-0000-0000-000000000000')
-      .attach('file', Buffer.from('dummy payload'), {
-        filename: 'receipt.txt',
-        contentType: 'text/plain',
+      .attach('file', Buffer.from(`%PDF-1.4 bill ${Date.now()}`), {
+        filename: 'receipt.pdf',
+        contentType: 'application/pdf',
       });
 
-    expect([403, 503]).toContain(res.status);
-    if (res.status === 403) expect(res.body.error).toBe('Unauthorized transaction reference');
+    expect([200, 201, 503]).toContain(res.status);
+    if (res.status !== 503) expect(res.body.transactionId ?? null).toBeNull();
+  });
+
+  it('rejects a disguised non-document upload', async () => {
+    const token = getSignedToken();
+    const res = await request(app)
+      .post(`${API}/bills`)
+      .set('Authorization', `Bearer ${token}`)
+      .attach('file', Buffer.from('dummy payload'), { filename: 'receipt.txt', contentType: 'text/plain' });
+
+    expect([400, 503]).toContain(res.status);
   });
 
   it('rate limits repeated bill upload attempts', async () => {

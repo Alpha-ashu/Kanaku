@@ -53,6 +53,12 @@ module.exports = {
   // The real fix is a local or co-located test database; this keeps the suite
   // honest until then.
   testTimeout: 60000,
+  // `file-type` is ESM-only; Jest's CommonJS runtime cannot require() it the way
+  // Node 22 does in production, so every bill-upload test crashed with a 500.
+  // Tests use a magic-byte shim instead (see the shim's header).
+  moduleNameMapper: {
+    '^file-type$': '<rootDir>/../quality/backend/tests/shims/file-type.cjs',
+  },
   // Coverage thresholds
   coverageThreshold: {
     global: {

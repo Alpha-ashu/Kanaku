@@ -26,6 +26,14 @@ if (process.env.TEST_USE_PAID_AI !== 'true') {
   }
 }
 
+// The auth suites register, verify and log in dozens of users from one IP
+// within a minute. The production per-IP limits (auth 20/min, login challenge
+// 5/min, sign-up 10/hour) turned their later cases into 429s. No suite asserts
+// these limits (regression.test.ts checks them only under NODE_ENV=production).
+for (const [key, value] of [['AUTH_RATE_LIMIT', '1000'], ['LOGIN_RATE_LIMIT', '1000'], ['REGISTER_RATE_LIMIT', '1000']]) {
+  if (!process.env[key]) process.env[key] = value;
+}
+
 // Tests live in quality/backend/tests/; the env file stays in backend/.
 config({ path: path.resolve(__dirname, '../../../backend/.env.test') });
 

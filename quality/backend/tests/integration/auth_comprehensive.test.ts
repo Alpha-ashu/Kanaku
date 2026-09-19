@@ -7,6 +7,20 @@ const API = '/api/v1';
 // Helper for unique email generation
 const uniqueEmail = () => `test_comprehensive_${Date.now()}_${Math.random().toString(36).slice(2)}@example.com`;
 
+/**
+ * Sign-up is OTP-gated: POST /auth/register only sends a verification code
+ * (echoed as `data.code` outside production) and POST
+ * /auth/verify-registration-otp activates the account and issues the session.
+ */
+const registerAndVerify = async (email: string, name: string, password: string) => {
+  const registerRes = await request(app).post(`${API}/auth/register`).send({ email, name, password });
+  if (registerRes.status !== 201) return { registerRes, verifyRes: null };
+  const verifyRes = await request(app)
+    .post(`${API}/auth/verify-registration-otp`)
+    .send({ email: registerRes.body.data?.email ?? email, code: registerRes.body.data?.code });
+  return { registerRes, verifyRes };
+};
+
 describe('COMPREHENSIVE AUTHENTICATION MODULE TESTS', () => {
 
   // ==========================================
@@ -17,22 +31,21 @@ describe('COMPREHENSIVE AUTHENTICATION MODULE TESTS', () => {
     // POSITIVE: Register with valid fields & strong password
     it('[Positive] should register a new user with valid email, name, and a strong password (or fail with DB error)', async () => {
       const email = uniqueEmail();
-      const res = await request(app)
-        .post(`${API}/auth/register`)
-        .send({
-          email,
-          name: 'John Doe',
-          password: 'StrongPassword123!',
-        });
-      
+      const { registerRes: res, verifyRes } = await registerAndVerify(email, 'John Doe', 'StrongPassword123!');
+
       expect([201, 500, 503]).toContain(res.status);
       if (res.status === 201) {
+        // Registration alone issues no session — only a verification code.
         expect(res.body.success).toBe(true);
-        expect(res.headers).toHaveProperty('authorization');
+        expect(res.body.data?.requireOtp).toBe(true);
+        expect(res.headers).not.toHaveProperty('authorization');
+
+        expect(verifyRes?.status).toBe(200);
+        expect(verifyRes?.headers).toHaveProperty('authorization');
         // Refresh token is HttpOnly-cookie only — not in a JS-readable header.
-        expect(res.headers).not.toHaveProperty('x-refresh-token');
-        expect(String(res.headers['set-cookie'] || '')).toContain('kanaku_rt');
-        expect(res.body.data?.user?.email).toBe(email);
+        expect(verifyRes?.headers).not.toHaveProperty('x-refresh-token');
+        expect(String(verifyRes?.headers['set-cookie'] || '')).toContain('kanaku_rt');
+        expect(verifyRes?.body.data?.user?.email).toBe(email);
       }
     });
 
@@ -50,23 +63,21 @@ describe('COMPREHENSIVE AUTHENTICATION MODULE TESTS', () => {
       
       expect([201, 500, 503]).toContain(res.status);
       if (res.status === 201) {
-        expect(res.body.data?.user?.email).toBe(baseEmail.toLowerCase());
+        expect(res.body.data?.email).toBe(baseEmail.toLowerCase());
       }
     });
 
     // POSITIVE: Special characters in name
     it('[Positive] should support registering a user with special characters in the name', async () => {
-      const res = await request(app)
-        .post(`${API}/auth/register`)
-        .send({
-          email: uniqueEmail(),
-          name: "Jean-Luc O'Connor Smith",
-          password: 'StrongPassword123!',
-        });
-      
+      const { registerRes: res, verifyRes } = await registerAndVerify(
+        uniqueEmail(),
+        "Jean-Luc O'Connor Smith",
+        'StrongPassword123!',
+      );
+
       expect([201, 500, 503]).toContain(res.status);
       if (res.status === 201) {
-        expect(res.body.data?.user?.name).toBe("Jean-Luc O'Connor Smith");
+        expect(verifyRes?.body.data?.user?.name).toBe("Jean-Luc O'Connor Smith");
       }
     });
 
@@ -209,18 +220,15 @@ describe('COMPREHENSIVE AUTHENTICATION MODULE TESTS', () => {
     it('[Negative] should reject registration if email already exists (or return DB error)', async () => {
       const duplicateEmail = uniqueEmail();
       
-      // Attempt first registration
-      const res1 = await request(app)
-        .post(`${API}/auth/register`)
-        .send({
-          email: duplicateEmail,
-          name: 'First User',
-          password: 'StrongPassword123!',
-        });
-      
+      // First registration, completed with the emailed code. (An unverified
+      // account may register again to get a fresh code — only a verified one
+      // blocks the email.)
+      const { registerRes: res1, verifyRes } = await registerAndVerify(duplicateEmail, 'First User', 'StrongPassword123!');
+
       expect([201, 500, 503]).toContain(res1.status);
-      
+
       if (res1.status === 201) {
+        expect(verifyRes?.status).toBe(200);
         // Attempt second registration with the same email
         const res2 = await request(app)
           .post(`${API}/auth/register`)
@@ -253,17 +261,16 @@ describe('COMPREHENSIVE AUTHENTICATION MODULE TESTS', () => {
 
     // NEGATIVE: XSS prevention in name
     it('[Negative] should sanitize XSS attempts in name', async () => {
-      const res = await request(app)
-        .post(`${API}/auth/register`)
-        .send({
-          email: uniqueEmail(),
-          name: '<script>alert("hack")</script>Sanitized Name',
-          password: 'StrongPassword123!',
-        });
-      
+      const { registerRes: res, verifyRes } = await registerAndVerify(
+        uniqueEmail(),
+        '<script>alert("hack")</script>Sanitized Name',
+        'StrongPassword123!',
+      );
+
       expect([201, 400, 500, 503]).toContain(res.status);
       if (res.status === 201) {
-        expect(res.body.data?.user?.name).not.toContain('<script>');
+        expect(verifyRes?.status).toBe(200);
+        expect(verifyRes?.body.data?.user?.name).not.toContain('<script>');
       }
     });
 
@@ -295,14 +302,8 @@ describe('COMPREHENSIVE AUTHENTICATION MODULE TESTS', () => {
       const email = uniqueEmail();
       const password = 'StrongPassword123!';
       
-      // Register the user first
-      const registerRes = await request(app)
-        .post(`${API}/auth/register`)
-        .send({
-          email,
-          name: 'Login User',
-          password,
-        });
+      // Register and verify the user first (sign-up is OTP-gated)
+      const { registerRes } = await registerAndVerify(email, 'Login User', password);
       
       expect([201, 500, 503]).toContain(registerRes.status);
       
@@ -331,14 +332,8 @@ describe('COMPREHENSIVE AUTHENTICATION MODULE TESTS', () => {
       const email = uniqueEmail();
       const password = 'StrongPassword123!';
       
-      // Register with mixed case email
-      const registerRes = await request(app)
-        .post(`${API}/auth/register`)
-        .send({
-          email,
-          name: 'Case User',
-          password,
-        });
+      // Register and verify the user first (sign-up is OTP-gated)
+      const { registerRes } = await registerAndVerify(email, 'Case User', password);
       
       expect([201, 500, 503]).toContain(registerRes.status);
       
@@ -374,14 +369,8 @@ describe('COMPREHENSIVE AUTHENTICATION MODULE TESTS', () => {
     it('[Negative] should reject login with incorrect password', async () => {
       const email = uniqueEmail();
       
-      // Register the user first
-      const registerRes = await request(app)
-        .post(`${API}/auth/register`)
-        .send({
-          email,
-          name: 'Wrong Password User',
-          password: 'StrongPassword123!',
-        });
+      // Register and verify the user first (sign-up is OTP-gated)
+      const { registerRes } = await registerAndVerify(email, 'Wrong Password User', 'StrongPassword123!');
       
       expect([201, 500, 503]).toContain(registerRes.status);
       
@@ -412,7 +401,8 @@ describe('COMPREHENSIVE AUTHENTICATION MODULE TESTS', () => {
         .post(`${API}/auth/login`)
         .send({ email: 'test@example.com' });
       expect(resMissingPassword.status).toBe(400);
-      expect(resMissingPassword.body.code).toBe('MISSING_FIELDS');
+      // No challenge code and no password: the direct-login path asks for the password.
+      expect(resMissingPassword.body.code).toBe('MISSING_PASSWORD');
     });
 
     // NEGATIVE: Invalid email format on direct login
@@ -438,14 +428,8 @@ describe('COMPREHENSIVE AUTHENTICATION MODULE TESTS', () => {
       const email = uniqueEmail();
       const password = 'StrongPassword123!';
       
-      // Register the user first
-      const registerRes = await request(app)
-        .post(`${API}/auth/register`)
-        .send({
-          email,
-          name: 'Challenge User',
-          password,
-        });
+      // Register and verify the user first (sign-up is OTP-gated)
+      const { registerRes } = await registerAndVerify(email, 'Challenge User', password);
       
       expect([201, 500, 503]).toContain(registerRes.status);
       
@@ -500,14 +484,8 @@ describe('COMPREHENSIVE AUTHENTICATION MODULE TESTS', () => {
       const email = uniqueEmail();
       const password = 'StrongPassword123!';
       
-      // Register the user first
-      const registerRes = await request(app)
-        .post(`${API}/auth/register`)
-        .send({
-          email,
-          name: 'Wrong Chal User',
-          password,
-        });
+      // Register and verify the user first (sign-up is OTP-gated)
+      const { registerRes } = await registerAndVerify(email, 'Wrong Chal User', password);
       
       expect([201, 500, 503]).toContain(registerRes.status);
       
@@ -555,14 +533,8 @@ describe('COMPREHENSIVE AUTHENTICATION MODULE TESTS', () => {
       const email = uniqueEmail();
       const password = 'StrongPassword123!';
       
-      // Register
-      const registerRes = await request(app)
-        .post(`${API}/auth/register`)
-        .send({
-          email,
-          name: 'Bad Code User',
-          password,
-        });
+      // Register and verify (sign-up is OTP-gated)
+      const { registerRes } = await registerAndVerify(email, 'Bad Code User', password);
       
       expect([201, 500, 503]).toContain(registerRes.status);
       
@@ -598,8 +570,8 @@ describe('COMPREHENSIVE AUTHENTICATION MODULE TESTS', () => {
       const password = 'StrongPassword123!';
       
       // Register both users
-      await request(app).post(`${API}/auth/register`).send({ email: email1, name: 'User 1', password });
-      const reg2 = await request(app).post(`${API}/auth/register`).send({ email: email2, name: 'User 2', password });
+      await registerAndVerify(email1, 'User 1', password);
+      const { registerRes: reg2 } = await registerAndVerify(email2, 'User 2', password);
       
       expect([201, 500, 503]).toContain(reg2.status);
       

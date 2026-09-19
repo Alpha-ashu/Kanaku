@@ -1,12 +1,8 @@
-import path from 'path';
 import crypto from 'crypto';
-import { config } from 'dotenv';
-
-// Load test environment before importing app or prisma
-config({ path: path.resolve(__dirname, '../../../../backend/.env.test') });
-config({ path: path.resolve(__dirname, '../../../../backend/.env') });
-
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+// Jest suite (quality/backend runs under jest): describe/it/expect/beforeAll/
+// afterAll are globals. It used to import them from vitest, which cannot load
+// under jest, so the suite never ran. The env comes from tests/setup.ts
+// (.env.test); this file no longer loads backend/.env, which is production.
 import request from 'supertest';
 import jwt from 'jsonwebtoken';
 import { app } from '../../../../backend/src/app';
