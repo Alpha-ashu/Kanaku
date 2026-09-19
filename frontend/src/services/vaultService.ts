@@ -222,6 +222,28 @@ export const vaultService = {
     return res.data;
   },
 
+  batchMoveDocuments: async (
+    documentIds: string[],
+    folderId: string | null,
+  ): Promise<{ success: boolean; count: number; folderId: string | null }> => {
+    if (!documentIds.length) return { success: true, count: 0, folderId };
+    try {
+      const res = await apiClient.post<{ success: boolean; count: number; folderId: string | null }>(
+        '/vault/documents/batch-move',
+        { documentIds, folderId },
+      );
+      if (res.data) return res.data;
+    } catch {
+      // Fallback to updating documents individually if batch endpoint fails
+    }
+    await Promise.all(
+      documentIds.map((id) =>
+        apiClient.patch(`/vault/documents/${id}`, { folderId }),
+      ),
+    );
+    return { success: true, count: documentIds.length, folderId };
+  },
+
   deleteDocument: async (id: string): Promise<{ success: boolean; message: string }> => {
     const res = await apiClient.delete<{ success: boolean; message: string }>(`/vault/documents/${id}`);
     return res.data || { success: true, message: 'Document deleted' };

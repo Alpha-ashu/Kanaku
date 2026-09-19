@@ -26,7 +26,8 @@ export type VaultAuditAction =
   | 'PERMISSION_CHANGE'
   | 'ACCESS_DENIED'
   | 'LOCK_SETUP'
-  | 'LOCK_VERIFY';
+  | 'LOCK_VERIFY'
+  | 'BATCH_MOVE';
 
 export interface CreateFolderDTO {
   name: string;

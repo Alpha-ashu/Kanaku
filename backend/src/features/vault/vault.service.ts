@@ -432,7 +432,7 @@ export class VaultService {
     }
 
     if (!ALLOWED_MIME_TYPES.has(file.mimetype)) {
-      throw AppError.badRequest(`Unsupported file format: ${file.mimetype}. Supported: PDF, JPG, PNG, WEBP, DOCX.`);
+      throw AppError.badRequest(`Unsupported file format: ${file.mimetype}. Supported: PDF, JPG, PNG, WEBP, DOCX, TXT, CSV, XLSX.`);
     }
 
     // Enforce 500 MB per-user storage quota
@@ -699,6 +699,61 @@ export class VaultService {
     });
 
     return updated;
+  }
+
+  /**
+   * Batch moves documents to a specified folder (or root).
+   */
+  static async batchMoveDocuments(
+    actorId: string,
+    documentIds: string[],
+    folderId: string | null,
+    ip?: string,
+    ua?: string,
+  ) {
+    if (!documentIds || !documentIds.length) {
+      return { success: true, count: 0, documentIds: [] };
+    }
+
+    let folderName = 'Root Folder';
+    if (folderId) {
+      const folder = await prisma.vaultFolder.findFirst({
+        where: { id: folderId, userId: actorId, deletedAt: null },
+      });
+      if (!folder) {
+        throw AppError.notFound('Target folder not found');
+      }
+      folderName = folder.name;
+    }
+
+    const result = await prisma.vaultDocument.updateMany({
+      where: {
+        id: { in: documentIds },
+        userId: actorId,
+        deletedAt: null,
+      },
+      data: {
+        folderId: folderId || null,
+      },
+    });
+
+    await recordVaultAuditLog({
+      ownerId: actorId,
+      actorId,
+      action: 'BATCH_MOVE',
+      details: `Moved ${result.count} document(s) to "${folderName}"`,
+      folderId: folderId || undefined,
+      ipAddress: ip,
+      userAgent: ua,
+    });
+
+    return {
+      success: true,
+      count: result.count,
+      folderId: folderId || null,
+      folderName,
+      documentIds,
+    };
   }
 
   /**

@@ -17,6 +17,10 @@ export const ALLOWED_MIME_TYPES = new Set([
   'image/webp',
   'application/msword',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'text/plain',
+  'text/csv',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
 ]);
 
 export const MAX_VAULT_FILE_SIZE = 25 * 1024 * 1024; // 25 MB

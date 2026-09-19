@@ -9,6 +9,7 @@ import {
   updateShareSchema,
   configureLockSchema,
   verifyLockSchema,
+  batchMoveSchema,
 } from './vault.validation';
 import { AppError } from '../../utils/AppError';
 
@@ -197,6 +198,23 @@ export const updateDocument = async (req: AuthRequest, res: Response, next: Next
       req.get('user-agent'),
     );
     res.json(doc);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const batchMoveDocuments = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const userId = getUserId(req);
+    const validated = batchMoveSchema.parse(req.body);
+    const result = await VaultService.batchMoveDocuments(
+      userId,
+      validated.documentIds,
+      validated.folderId || null,
+      req.ip,
+      req.get('user-agent'),
+    );
+    res.json(result);
   } catch (error) {
     next(error);
   }

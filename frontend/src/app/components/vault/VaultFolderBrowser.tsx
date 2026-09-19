@@ -18,6 +18,7 @@ import {
   Upload,
   X,
   ChevronDown,
+  Files,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { vaultService, VaultFolder, VaultDocument } from '@/services/vaultService';
@@ -29,6 +30,7 @@ interface VaultFolderBrowserProps {
   onSelectFolder: (id: string | null) => void;
   onRefresh: () => void;
   onUploadClick: (folderId?: string) => void;
+  onBulkUploadClick?: (folderId?: string) => void;
   onPreviewDocument: (docId: string) => void;
   onShareDocument: (doc: VaultDocument) => void;
   onShareFolder: (folder: VaultFolder) => void;
@@ -55,6 +57,7 @@ export const VaultFolderBrowser: React.FC<VaultFolderBrowserProps> = ({
   onSelectFolder,
   onRefresh,
   onUploadClick,
+  onBulkUploadClick,
   onPreviewDocument,
   onShareDocument,
   onShareFolder,
@@ -210,7 +213,7 @@ export const VaultFolderBrowser: React.FC<VaultFolderBrowserProps> = ({
           ))}
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-1.5 shrink-0">
           <button
             type="button"
             onClick={() => setShowNewFolderForm(!showNewFolderForm)}
@@ -219,6 +222,16 @@ export const VaultFolderBrowser: React.FC<VaultFolderBrowserProps> = ({
           >
             <FolderPlus className="w-4.5 h-4.5" />
           </button>
+          {onBulkUploadClick && (
+            <button
+              type="button"
+              onClick={() => onBulkUploadClick(currentFolderId || undefined)}
+              className="p-2 rounded-xl hover:bg-blue-50 text-blue-600 transition-colors"
+              title="Bulk Upload Documents"
+            >
+              <Files className="w-4.5 h-4.5" />
+            </button>
+          )}
           <button
             type="button"
             onClick={() => onUploadClick(currentFolderId || undefined)}

@@ -63,3 +63,8 @@ export const configureLockSchema = z.object({
 export const verifyLockSchema = z.object({
   vaultPin: z.string().min(4).max(12),
 });
+
+export const batchMoveSchema = z.object({
+  documentIds: z.array(z.string().uuid()).min(1, 'At least one document ID required'),
+  folderId: z.string().uuid().nullable().optional(),
+});

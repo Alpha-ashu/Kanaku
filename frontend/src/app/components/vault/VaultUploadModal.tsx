@@ -14,6 +14,7 @@ import {
   AlignLeft,
   Folder as FolderIcon,
   Plus,
+  Files,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { vaultService, VaultFolder, VaultStorageUsage } from '@/services/vaultService';
@@ -24,6 +25,7 @@ interface VaultUploadModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  onSwitchToBulk?: () => void;
 }
 
 const formatBytes = (bytes: number): string => {
@@ -32,7 +34,7 @@ const formatBytes = (bytes: number): string => {
   return `${bytes} B`;
 };
 
-const ACCEPTED_TYPES = '.pdf,.jpg,.jpeg,.png,.webp,.docx';
+const ACCEPTED_TYPES = '.pdf,.jpg,.jpeg,.png,.webp,.docx,.doc,.txt,.csv,.xlsx,.xls';
 
 export const VaultUploadModal: React.FC<VaultUploadModalProps> = ({
   folders,
@@ -40,6 +42,7 @@ export const VaultUploadModal: React.FC<VaultUploadModalProps> = ({
   isOpen,
   onClose,
   onSuccess,
+  onSwitchToBulk,
 }) => {
   const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState('');
@@ -133,7 +136,7 @@ export const VaultUploadModal: React.FC<VaultUploadModalProps> = ({
     : 0;
 
   const modalContent = (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-2.5 sm:p-4 md:p-6 pointer-events-auto select-none">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-1.5 sm:p-4 md:p-6 pointer-events-auto select-none">
       {/* Backdrop */}
       <motion.div
         initial={{ opacity: 0 }}
@@ -149,7 +152,7 @@ export const VaultUploadModal: React.FC<VaultUploadModalProps> = ({
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 15 }}
         transition={{ duration: 0.2, ease: 'easeOut' }}
-        className="relative w-full max-w-[calc(100vw-12px)] sm:max-w-xl max-h-[93dvh] sm:max-h-[88vh] flex flex-col bg-white rounded-[24px] sm:rounded-[32px] shadow-2xl border border-slate-100/80 overflow-hidden z-10"
+        className="relative w-full max-w-[calc(100vw-12px)] sm:max-w-xl h-[95dvh] sm:h-auto sm:max-h-[88vh] flex flex-col bg-white rounded-[28px] sm:rounded-[32px] shadow-2xl border border-slate-100/80 overflow-hidden z-10"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Streamlined Header */}
@@ -182,7 +185,7 @@ export const VaultUploadModal: React.FC<VaultUploadModalProps> = ({
         <form
           id="vault-upload-form"
           onSubmit={handleSubmit}
-          className="flex-1 overflow-y-auto px-3.5 sm:px-5 py-3.5 space-y-3.5 min-w-0 overscroll-contain"
+          className="flex-1 overflow-y-auto px-4 sm:px-5 py-4 space-y-4 min-w-0 overscroll-contain"
         >
           {/* Storage Warning if > 80% */}
           {storageUsage && storagePercent >= 80 && (
@@ -192,6 +195,23 @@ export const VaultUploadModal: React.FC<VaultUploadModalProps> = ({
                 Storage {storagePercent}% full ({formatBytes(storageUsage.usedBytes)} / {formatBytes(storageUsage.limitBytes)})
               </p>
             </div>
+          )}
+
+          {/* Switch to Bulk Upload Banner */}
+          {onSwitchToBulk && (
+            <button
+              type="button"
+              onClick={onSwitchToBulk}
+              className="w-full p-2.5 rounded-xl bg-blue-50/70 hover:bg-blue-50 border border-blue-200/80 text-xs font-semibold text-blue-700 flex items-center justify-between transition-colors cursor-pointer group"
+            >
+              <span className="flex items-center gap-2">
+                <Files className="w-4 h-4 text-blue-600 shrink-0" />
+                <span>Need to upload multiple documents?</span>
+              </span>
+              <span className="font-bold underline text-blue-800 group-hover:text-blue-900">
+                Switch to Bulk &rarr;
+              </span>
+            </button>
           )}
 
           {/* Drop Zone */}

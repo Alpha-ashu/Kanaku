@@ -14,6 +14,7 @@ import {
   Users,
   CheckCircle2,
   Clock,
+  Files,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { PageHeader, SegmentedTabs, PrimaryActionButton } from '@/app/components/ui/PageHeader';
@@ -29,6 +30,7 @@ import {
 import { VaultDashboard } from './VaultDashboard';
 import { VaultFolderBrowser } from './VaultFolderBrowser';
 import { VaultUploadModal } from './VaultUploadModal';
+import { VaultBulkUploadModal } from './VaultBulkUploadModal';
 import { VaultDocumentPreviewModal } from './VaultDocumentPreviewModal';
 import { VaultSharingModal } from './VaultSharingModal';
 import { VaultAuditTrailView } from './VaultAuditTrailView';
@@ -68,6 +70,7 @@ export const Vault: React.FC = () => {
 
   // Modals state
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isBulkUploadModalOpen, setIsBulkUploadModalOpen] = useState(false);
   const [uploadFolderId, setUploadFolderId] = useState<string | null>(null);
   const [previewDocId, setPreviewDocId] = useState<string | null>(null);
   const [sharingEntity, setSharingEntity] = useState<{
@@ -238,15 +241,30 @@ export const Vault: React.FC = () => {
           subtitle="Encrypted & Private Document Vault"
           icon={<FolderLock className="w-5 h-5 text-blue-600" />}
         >
-          <PrimaryActionButton
-            onClick={() => {
-              setUploadFolderId(currentFolderId);
-              setIsUploadModalOpen(true);
-            }}
-            icon={<Plus className="w-4 h-4" />}
-          >
-            Upload
-          </PrimaryActionButton>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => {
+                setUploadFolderId(currentFolderId);
+                setIsBulkUploadModalOpen(true);
+              }}
+              className="h-9 sm:h-10 px-3 sm:px-3.5 rounded-xl border border-slate-200/90 bg-white hover:bg-slate-50 active:bg-slate-100 text-slate-700 font-bold text-xs sm:text-sm shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
+              title="Bulk Document Upload"
+            >
+              <Files className="w-4 h-4 text-blue-600" />
+              <span className="hidden sm:inline">Bulk Upload</span>
+              <span className="sm:hidden">Bulk</span>
+            </button>
+            <PrimaryActionButton
+              onClick={() => {
+                setUploadFolderId(currentFolderId);
+                setIsUploadModalOpen(true);
+              }}
+              icon={<Plus className="w-4 h-4" />}
+            >
+              Upload
+            </PrimaryActionButton>
+          </div>
         </PageHeader>
 
         {/* Storage Usage Card */}
@@ -340,6 +358,10 @@ export const Vault: React.FC = () => {
             onUploadClick={(fId) => {
               setUploadFolderId(fId || null);
               setIsUploadModalOpen(true);
+            }}
+            onBulkUploadClick={(fId) => {
+              setUploadFolderId(fId || null);
+              setIsBulkUploadModalOpen(true);
             }}
             onPreviewDocument={(id) => setPreviewDocId(id)}
             onShareDocument={(d) =>
@@ -665,6 +687,20 @@ export const Vault: React.FC = () => {
         isOpen={isUploadModalOpen}
         onClose={() => setIsUploadModalOpen(false)}
         onSuccess={loadAllVaultData}
+        onSwitchToBulk={() => {
+          setIsUploadModalOpen(false);
+          setIsBulkUploadModalOpen(true);
+        }}
+      />
+
+      {/* Bulk Upload Document Modal */}
+      <VaultBulkUploadModal
+        folders={folders}
+        defaultFolderId={uploadFolderId}
+        isOpen={isBulkUploadModalOpen}
+        onClose={() => setIsBulkUploadModalOpen(false)}
+        onSuccess={loadAllVaultData}
+        onFolderCreated={loadAllVaultData}
       />
 
       {/* Document Preview Modal */}

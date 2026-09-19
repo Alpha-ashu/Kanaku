@@ -28,13 +28,14 @@ router.post(
   '/documents',
   authenticatedRateLimit({
     windowMs: 60_000,
-    max: 20,
+    max: 60,
     scope: 'vault-upload',
     message: 'Too many document uploads. Please wait a moment.',
   }),
   uploadSingle('file', { maxBytes: MAX_VAULT_FILE_SIZE }),
   VaultController.uploadDocument,
 );
+router.post('/documents/batch-move', VaultController.batchMoveDocuments);
 router.post(
   '/documents/:id/version',
   validateParams(vaultIdParamSchema),

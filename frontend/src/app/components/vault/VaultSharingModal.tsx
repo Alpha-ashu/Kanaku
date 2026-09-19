@@ -123,7 +123,7 @@ export const VaultSharingModal: React.FC<VaultSharingModalProps> = ({
   if (!isOpen || typeof document === 'undefined') return null;
 
   const modalContent = (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 md:p-6 pointer-events-auto select-none">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-1.5 sm:p-4 md:p-6 pointer-events-auto select-none">
       {/* Backdrop */}
       <motion.div
         initial={{ opacity: 0 }}
@@ -139,7 +139,7 @@ export const VaultSharingModal: React.FC<VaultSharingModalProps> = ({
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 15 }}
         transition={{ duration: 0.2, ease: 'easeOut' }}
-        className="relative w-full max-w-[calc(100vw-12px)] sm:max-w-xl h-[93dvh] sm:h-[88vh] max-h-[680px] sm:max-h-[780px] flex flex-col bg-white rounded-[24px] sm:rounded-[32px] shadow-2xl border border-slate-100 overflow-hidden z-10"
+        className="relative w-full max-w-[calc(100vw-12px)] sm:max-w-xl h-[95dvh] sm:h-[88vh] sm:max-h-[780px] flex flex-col bg-white rounded-[28px] sm:rounded-[32px] shadow-2xl border border-slate-100 overflow-hidden z-10"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Sticky Header */}
