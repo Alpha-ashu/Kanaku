@@ -1,7 +1,7 @@
 fastapi==0.141.1
 # Pinned to patch starlette CVEs (multipart/path/DoS); fastapi 0.137 allows starlette 1.x.
 starlette==1.6.0
-uvicorn==0.52.4
+uvicorn==0.53.0
 websockets==17.1
 watchfiles==1.2.0
 httptools==0.8.0
