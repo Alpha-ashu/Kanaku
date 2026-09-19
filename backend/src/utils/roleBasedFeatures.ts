@@ -31,7 +31,10 @@ export type FeatureKey =
   | 'aiInsights'
   | 'recurringTransactions'
   | 'budgetAlerts'
-  | 'accountSetup';
+  | 'accountSetup'
+  // Secure document vault (frontend/src/lib/featureFlags.ts has had it since the
+  // Vault shipped; without it here the admin panel's switch was dropped).
+  | 'vault';
 
 export type FeatureVisibility = Record<FeatureKey, boolean>;
 
@@ -67,6 +70,7 @@ export const ROLE_FEATURES: Record<UserRole, Partial<Record<FeatureKey, boolean>
     aiInsights: true,
     recurringTransactions: true,
     budgetAlerts: true,
+    vault: true,
   },
   manager: {
     accounts: true,
@@ -94,6 +98,7 @@ export const ROLE_FEATURES: Record<UserRole, Partial<Record<FeatureKey, boolean>
     aiInsights: false,
     recurringTransactions: false,
     budgetAlerts: true,
+    vault: true,
   },
   advisor: {
     accounts: true,
@@ -121,6 +126,7 @@ export const ROLE_FEATURES: Record<UserRole, Partial<Record<FeatureKey, boolean>
     aiInsights: true,
     recurringTransactions: true,
     budgetAlerts: true,
+    vault: true,
   },
   user: {
     accounts: true,
@@ -148,6 +154,7 @@ export const ROLE_FEATURES: Record<UserRole, Partial<Record<FeatureKey, boolean>
     aiInsights: true,
     recurringTransactions: true,
     budgetAlerts: true,
+    vault: true,
   },
 };
 
@@ -438,6 +445,7 @@ export function getVisibleFeaturesForRole(
     'recurringTransactions',
     'budgetAlerts',
     'accountSetup',
+    'vault',
   ];
   
   allFeatures.forEach(feature => {

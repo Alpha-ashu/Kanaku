@@ -85,38 +85,72 @@ export const encryptBufferForUser = (userId: string, plaintext: Buffer, aad?: st
 /**
  * Decrypts a binary buffer using AES-256-GCM.
  */
-export const decryptBufferForUser = (userId: string, payload: Buffer, aad?: string): Buffer => {
+/** Splits a stored payload; throws on anything that is not a v1 vault payload. */
+const parsePayload = (payload: Buffer) => {
   if (payload.length < 1 + IV_LENGTH + TAG_LENGTH + 1) {
     throw new Error('decryptBufferForUser: payload too short or corrupted');
   }
-
   const version = payload.readUInt8(0);
   if (version !== VERSION_BYTE) {
     throw new Error(`decryptBufferForUser: unsupported payload version 0x${version.toString(16)}`);
   }
+  return {
+    iv: payload.subarray(1, 1 + IV_LENGTH),
+    tag: payload.subarray(1 + IV_LENGTH, 1 + IV_LENGTH + TAG_LENGTH),
+    ciphertext: payload.subarray(1 + IV_LENGTH + TAG_LENGTH),
+  };
+};
 
-  const iv = payload.subarray(1, 1 + IV_LENGTH);
-  const tag = payload.subarray(1 + IV_LENGTH, 1 + IV_LENGTH + TAG_LENGTH);
-  const ciphertext = payload.subarray(1 + IV_LENGTH + TAG_LENGTH);
+/** Decrypts with one root key; null when that key (or AAD) does not authenticate. */
+const tryDecrypt = (root: Buffer, userId: string, payload: Buffer, aad?: string): Buffer | null => {
+  const { iv, tag, ciphertext } = parsePayload(payload);
+  try {
+    const decipher = crypto.createDecipheriv('aes-256-gcm', deriveKey(root, userId), iv);
+    decipher.setAuthTag(tag);
+    if (aad) {
+      decipher.setAAD(Buffer.from(aad, 'utf8'));
+    }
+    return Buffer.concat([decipher.update(ciphertext), decipher.final()]);
+  } catch {
+    return null;
+  }
+};
 
+export const decryptBufferForUser = (userId: string, payload: Buffer, aad?: string): Buffer => {
   if (!userId) throw new Error('decryptBufferForUser: userId is required');
+  parsePayload(payload);
 
   // GCM authenticates, so a wrong key fails loudly instead of returning garbage:
   // try each candidate root key (current key first, then older/fallback ones).
-  let lastError: unknown;
   for (const root of getVaultRootKeys()) {
-    try {
-      const decipher = crypto.createDecipheriv('aes-256-gcm', deriveKey(root, userId), iv);
-      decipher.setAuthTag(tag);
-      if (aad) {
-        decipher.setAAD(Buffer.from(aad, 'utf8'));
-      }
-      return Buffer.concat([decipher.update(ciphertext), decipher.final()]);
-    } catch (err) {
-      lastError = err;
+    const plaintext = tryDecrypt(root, userId, payload, aad);
+    if (plaintext) return plaintext;
+  }
+  throw new Error('decryptBufferForUser: unable to decrypt payload with any configured key');
+};
+
+/**
+ * Re-encrypts a stored payload under the CURRENT root key, bound to the
+ * document id. Returns null when it already is. Throws when no candidate key
+ * and AAD can open it. Used by scripts/reencrypt-vault-files.ts once
+ * VAULT_ENCRYPTION_ROOT_KEY is set, to move files off the fallback key.
+ */
+export const reencryptForCurrentKey = (
+  userId: string,
+  payload: Buffer,
+  documentId: string,
+  legacyAads: string[] = [],
+): Buffer | null => {
+  const [current] = getVaultRootKeys();
+  if (tryDecrypt(current, userId, payload, documentId)) return null;
+
+  for (const aad of [documentId, ...legacyAads]) {
+    for (const root of getVaultRootKeys()) {
+      const plaintext = tryDecrypt(root, userId, payload, aad);
+      if (plaintext) return encryptBufferForUser(userId, plaintext, documentId);
     }
   }
-  throw lastError instanceof Error ? lastError : new Error('decryptBufferForUser: unable to decrypt payload');
+  throw new Error('reencryptForCurrentKey: payload does not decrypt with any configured key');
 };
 
 /**

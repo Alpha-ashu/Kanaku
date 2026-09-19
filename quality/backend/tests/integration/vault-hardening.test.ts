@@ -19,7 +19,8 @@ const tokenFor = (userId: string, email: string) => {
 const OWNER = { id: 'c0000000-0000-4000-8000-000000000001', email: 'vault-hardening-owner@test.com' };
 const EDITOR = { id: 'c0000000-0000-4000-8000-000000000002', email: 'vault-hardening-editor@test.com' };
 const VIEWER = { id: 'c0000000-0000-4000-8000-000000000003', email: 'vault-hardening-viewer@test.com' };
-const USERS = [OWNER, EDITOR, VIEWER];
+const FRESH = { id: 'c0000000-0000-4000-8000-000000000004', email: 'vault-hardening-fresh@test.com' };
+const USERS = [OWNER, EDITOR, VIEWER, FRESH];
 const ids = USERS.map((u) => u.id);
 
 const ownerToken = tokenFor(OWNER.id, OWNER.email);
@@ -159,6 +160,19 @@ describe('Vault hardening (2026-09-20 review)', () => {
       .get(`${API}/vault/shared-with-me/folders/${folder.body.id}/documents`)
       .set('Authorization', `Bearer ${editorToken}`);
     expect(stranger.status).toBe(403);
+  });
+
+  it('creates the default folders exactly once under concurrent first loads', async () => {
+    const freshToken = tokenFor(FRESH.id, FRESH.email);
+    const responses = await Promise.all([
+      request(app).get(`${API}/vault/dashboard`).set('Authorization', `Bearer ${freshToken}`),
+      request(app).get(`${API}/vault/folders`).set('Authorization', `Bearer ${freshToken}`),
+      request(app).get(`${API}/vault/dashboard`).set('Authorization', `Bearer ${freshToken}`),
+      request(app).get(`${API}/vault/folders`).set('Authorization', `Bearer ${freshToken}`),
+    ]);
+    expect(responses.map((r) => r.status)).toEqual([200, 200, 200, 200]);
+    const roots = await prisma.vaultFolder.count({ where: { userId: FRESH.id, parentId: null, deletedAt: null } });
+    expect(roots).toBe(7);
   });
 
   it('refuses to move a folder inside its own subtree', async () => {

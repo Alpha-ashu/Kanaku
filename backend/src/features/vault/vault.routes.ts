@@ -4,6 +4,7 @@ import { uploadSingle } from '../../middleware/upload';
 import { validateParams } from '../../middleware/validate';
 import { authenticatedRateLimit } from '../../middleware/rateLimit';
 import { pinGate } from '../../middleware/pinGate';
+import { requireFeature } from '../../middleware/featureGate';
 import * as VaultController from './vault.controller';
 import { requireVaultUnlock } from './vault.lock';
 import { vaultIdParamSchema } from './vault.validation';
@@ -15,6 +16,8 @@ const router = Router();
 // holding personal data, a live app-PIN unlock.
 router.use(authMiddleware);
 router.use(pinGate);
+// The admin panel's `vault` switch (on by default for every role).
+router.use(requireFeature('vault'));
 
 // Vault lock — registered BEFORE requireVaultUnlock so a locked vault can be
 // unlocked. PIN verify and reset are brute-force limited per user.
@@ -71,7 +74,19 @@ router.get('/documents/:id/download', validateParams(vaultIdParamSchema), VaultC
 
 // Sharing
 router.get('/shares', VaultController.getOwnerShares);
-router.post('/shares', VaultController.createShare);
+// Sharing looks the recipient up by email and says when none exists (the owner
+// needs that feedback), so creation is rate limited to stop it being used to
+// enumerate accounts in bulk.
+router.post(
+  '/shares',
+  authenticatedRateLimit({
+    windowMs: 10 * 60_000,
+    max: 30,
+    scope: 'vault-share-create',
+    message: 'Too many share attempts. Please wait a few minutes.',
+  }),
+  VaultController.createShare,
+);
 router.patch('/shares/:id', validateParams(vaultIdParamSchema), VaultController.updateShare);
 router.delete('/shares/:id', validateParams(vaultIdParamSchema), VaultController.revokeShare);
 router.get('/shared-with-me', VaultController.getSharedWithMe);

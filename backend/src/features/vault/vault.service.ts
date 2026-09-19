@@ -72,59 +72,67 @@ export class VaultService {
    * and self-heals by deduplicating any duplicate root folders.
    */
   static async ensureDefaultFolders(userId: string): Promise<void> {
-    // 1. Fetch all existing non-deleted root folders for this user
-    const existingFolders = await prisma.vaultFolder.findMany({
-      where: { userId, parentId: null, deletedAt: null },
-      orderBy: { createdAt: 'asc' },
-    });
+    // The dashboard and folder list load together on first open, and both land
+    // here. Unserialised, the two requests each saw "no folders" and each created
+    // all seven, leaving duplicates. A per-user transaction-scoped advisory lock
+    // makes the check-then-create atomic; the merge below only repairs
+    // duplicates created before this lock existed.
+    await prisma.$transaction(async (tx) => {
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`vault-default-folders:${userId}`}))`;
 
-    const seenNames = new Map<string, string>();
-    const duplicateIdsToDelete: string[] = [];
-
-    for (const folder of existingFolders) {
-      if (seenNames.has(folder.name)) {
-        const canonicalId = seenNames.get(folder.name)!;
-        await prisma.vaultDocument.updateMany({
-          where: { folderId: folder.id },
-          data: { folderId: canonicalId },
-        });
-        await prisma.vaultFolder.updateMany({
-          where: { parentId: folder.id },
-          data: { parentId: canonicalId },
-        });
-        duplicateIdsToDelete.push(folder.id);
-      } else {
-        seenNames.set(folder.name, folder.id);
-      }
-    }
-
-    if (duplicateIdsToDelete.length > 0) {
-      logger.info(`Deduplicating ${duplicateIdsToDelete.length} duplicate folders for user ${userId}`);
-      await prisma.vaultFolder.deleteMany({
-        where: { id: { in: duplicateIdsToDelete } },
+      const existingFolders = await tx.vaultFolder.findMany({
+        where: { userId, parentId: null, deletedAt: null },
+        orderBy: { createdAt: 'asc' },
       });
-    }
 
-    // 2. Create missing default folders
-    for (const def of DEFAULT_FOLDERS) {
-      if (!seenNames.has(def.name)) {
-        try {
-          const created = await prisma.vaultFolder.create({
-            data: {
-              userId,
-              name: def.name,
-              category: def.category,
-              isDefault: true,
-              color: def.color,
-              icon: def.icon,
-            },
+      const seenNames = new Map<string, string>();
+      const duplicateIdsToRetire: string[] = [];
+
+      for (const folder of existingFolders) {
+        const canonicalId = seenNames.get(folder.name);
+        if (canonicalId) {
+          await tx.vaultDocument.updateMany({
+            where: { folderId: folder.id },
+            data: { folderId: canonicalId },
           });
-          seenNames.set(def.name, created.id);
-        } catch (err) {
-          logger.warn(`Could not create default folder ${def.name}:`, err);
+          await tx.vaultFolder.updateMany({
+            where: { parentId: folder.id },
+            data: { parentId: canonicalId },
+          });
+          // Shares on the duplicate now follow its contents to the canonical folder.
+          await tx.vaultShare.updateMany({
+            where: { folderId: folder.id },
+            data: { folderId: canonicalId },
+          });
+          duplicateIdsToRetire.push(folder.id);
+        } else {
+          seenNames.set(folder.name, folder.id);
         }
       }
-    }
+
+      if (duplicateIdsToRetire.length > 0) {
+        logger.info(`Merging ${duplicateIdsToRetire.length} duplicate vault folders for user ${userId}`);
+        // Soft delete, like every other folder removal (keeps audit-log references intact).
+        await tx.vaultFolder.updateMany({
+          where: { id: { in: duplicateIdsToRetire } },
+          data: { deletedAt: new Date() },
+        });
+      }
+
+      const missing = DEFAULT_FOLDERS.filter((def) => !seenNames.has(def.name));
+      if (missing.length > 0) {
+        await tx.vaultFolder.createMany({
+          data: missing.map((def) => ({
+            userId,
+            name: def.name,
+            category: def.category,
+            isDefault: true,
+            color: def.color,
+            icon: def.icon,
+          })),
+        });
+      }
+    });
   }
 
   /**

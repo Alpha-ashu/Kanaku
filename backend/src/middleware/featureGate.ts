@@ -121,6 +121,7 @@ const DEFAULT_MODULE_ACCESS: Record<string, Record<string, boolean>> = {
   // Advisor marketplace consumer surface (browse/book) — enabled for admin and user.
   // Advisor/manager OPERATOR endpoints are role-gated separately.
   bookAdvisor: { admin: true, manager: false, advisor: false, user: true },
+  vault: { admin: true, manager: true, advisor: true, user: true },
 };
 
 export const invalidateFeatureCache = () => {

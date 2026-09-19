@@ -45,6 +45,12 @@ export const VaultDocumentPreviewModal: React.FC<VaultDocumentPreviewModalProps>
   const [isLoading, setIsLoading] = useState(false);
 
   const cleanupRef = useRef<(() => void) | null>(null);
+  // Latest onClose without re-running the load effect: the parent passes a new
+  // closure on every render, and reloading would re-decrypt the file each time.
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
   useEffect(() => {
     if (!isOpen || !documentId) {
@@ -54,30 +60,30 @@ export const VaultDocumentPreviewModal: React.FC<VaultDocumentPreviewModalProps>
       return;
     }
 
+    const loadDocumentAndPreview = async (id: string) => {
+      setIsLoading(true);
+      try {
+        const documentData = await vaultService.getDocument(id);
+        setDoc(documentData);
+
+        const { objectUrl, contentType: cType, cleanup } = await vaultService.previewDocument(id);
+        setPreviewUrl(objectUrl);
+        setContentType(cType);
+        cleanupRef.current = cleanup;
+      } catch (err) {
+        toast.error((err as Error)?.message || 'Failed to load document preview');
+        onCloseRef.current();
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     loadDocumentAndPreview(documentId);
 
     return () => {
       if (cleanupRef.current) cleanupRef.current();
     };
   }, [isOpen, documentId]);
-
-  const loadDocumentAndPreview = async (id: string) => {
-    setIsLoading(true);
-    try {
-      const documentData = await vaultService.getDocument(id);
-      setDoc(documentData);
-
-      const { objectUrl, contentType: cType, cleanup } = await vaultService.previewDocument(id);
-      setPreviewUrl(objectUrl);
-      setContentType(cType);
-      cleanupRef.current = cleanup;
-    } catch (err) {
-      toast.error((err as Error)?.message || 'Failed to load document preview');
-      onClose();
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   if (!isOpen || !documentId || typeof document === 'undefined') return null;
 

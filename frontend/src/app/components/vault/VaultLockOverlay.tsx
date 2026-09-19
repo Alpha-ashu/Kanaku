@@ -99,17 +99,17 @@ export const VaultLockOverlay: React.FC<VaultLockOverlayProps> = ({
     }, 500);
   };
 
-  const appendDigit = (d: string) => {
+  const appendDigit = useCallback((d: string) => {
     if (isVerifying) return;
     setErrorMsg('');
     setPin((prev) => (prev.length < 12 ? prev + d : prev));
-  };
+  }, [isVerifying]);
 
-  const deleteDigit = () => {
+  const deleteDigit = useCallback(() => {
     if (isVerifying) return;
     setErrorMsg('');
     setPin((prev) => prev.slice(0, -1));
-  };
+  }, [isVerifying]);
 
   const handleVerify = useCallback(
     async (pinToVerify?: string) => {
@@ -173,7 +173,7 @@ export const VaultLockOverlay: React.FC<VaultLockOverlayProps> = ({
 
     window.addEventListener('keydown', handleGlobalKeyDown);
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
-  }, [isVerifying, showResetModal, pin, handleVerify]);
+  }, [isVerifying, showResetModal, pin, handleVerify, appendDigit, deleteDigit]);
 
   // Biometric Unlock
   const handleBiometricUnlock = async () => {

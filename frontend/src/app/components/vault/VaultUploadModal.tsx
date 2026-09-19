@@ -75,7 +75,7 @@ export const VaultUploadModal: React.FC<VaultUploadModalProps> = ({
     setCategory('Personal Documents');
   };
 
-  const handleFileSelect = (selectedFile: File) => {
+  const handleFileSelect = useCallback((selectedFile: File) => {
     if (selectedFile.size > 25 * 1024 * 1024) {
       toast.error('File is too large. Maximum file size is 25 MB.');
       return;
@@ -84,14 +84,14 @@ export const VaultUploadModal: React.FC<VaultUploadModalProps> = ({
     if (!title) {
       setTitle(selectedFile.name.replace(/\.[^.]+$/, ''));
     }
-  };
+  }, [title]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
     const droppedFile = e.dataTransfer.files[0];
     if (droppedFile) handleFileSelect(droppedFile);
-  }, [title]);
+  }, [handleFileSelect]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

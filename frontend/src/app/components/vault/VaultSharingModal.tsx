@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { motion } from 'framer-motion';
 import {
@@ -51,16 +51,7 @@ export const VaultSharingModal: React.FC<VaultSharingModalProps> = ({
   const targetName = documentTitle || folderName || 'Item';
   const isDocument = Boolean(documentId);
 
-  useEffect(() => {
-    if (isOpen) {
-      loadExistingShares();
-      setRecipientEmail('');
-      setSensitiveAcknowledged(false);
-      setExpiresAt('');
-    }
-  }, [isOpen, documentId, folderId]);
-
-  const loadExistingShares = async () => {
+  const loadExistingShares = useCallback(async () => {
     setIsLoadingShares(true);
     try {
       const allShares = await vaultService.getShares();
@@ -73,7 +64,16 @@ export const VaultSharingModal: React.FC<VaultSharingModalProps> = ({
     } finally {
       setIsLoadingShares(false);
     }
-  };
+  }, [isDocument, documentId, folderId]);
+
+  useEffect(() => {
+    if (isOpen) {
+      loadExistingShares();
+      setRecipientEmail('');
+      setSensitiveAcknowledged(false);
+      setExpiresAt('');
+    }
+  }, [isOpen, loadExistingShares]);
 
   const handleShare = async () => {
     if (!recipientEmail.trim()) {
