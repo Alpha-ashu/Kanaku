@@ -46,6 +46,8 @@ interface RecordedResponse {
   status: number;
   body: unknown;
   expiresAt: number;
+  /** Owner of the recorded create, so their entries can be dropped on delete/reset. */
+  userId?: string;
 }
 
 const DEFAULT_WINDOW_SECONDS = 10;
@@ -168,6 +170,34 @@ export const resetDuplicateSubmitGuard = () => {
   inFlight.clear();
 };
 
+/**
+ * Forget a user's recorded creates. Called after they delete something or wipe
+ * their data: a replay is only correct while the recorded record still exists.
+ * Without this, "delete, then add the same thing again" inside the window was
+ * answered with the OLD response — the id of a row that was just deleted (or,
+ * after a data reset, no longer exists at all) — so the client held a phantom
+ * record and every later update of it 404'd.
+ */
+export const forgetDuplicateSubmissionsForUser = (userId: string) => {
+  for (const [key, entry] of recent) {
+    if (entry.userId === userId) recent.delete(key);
+  }
+};
+
+/**
+ * App-level hook: any successful DELETE by a user, or a data reset, drops that
+ * user's recorded creates (see forgetDuplicateSubmissionsForUser).
+ */
+export const forgetDuplicatesAfterDeletes = (req: AuthRequest, res: Response, next: NextFunction) => {
+  const isReset = req.method === 'POST' && /\/settings\/clear-data\/?$/.test(req.path);
+  if (req.method !== 'DELETE' && !isReset) return next();
+  res.on('finish', () => {
+    const userId = req.userId;
+    if (userId && res.statusCode >= 200 && res.statusCode < 300) forgetDuplicateSubmissionsForUser(userId);
+  });
+  return next();
+};
+
 export const duplicateSubmitGuard = (options: GuardOptions) => {
   const windowMs = (options.windowSeconds ?? DEFAULT_WINDOW_SECONDS) * 1000;
 
@@ -222,7 +252,7 @@ export const duplicateSubmitGuard = (options: GuardOptions) => {
         finished = true;
         inFlight.delete(key);
         if (res.statusCode >= 200 && res.statusCode < 300) {
-          const recorded = { status: res.statusCode, body, expiresAt: Date.now() + windowMs };
+          const recorded = { status: res.statusCode, body, expiresAt: Date.now() + windowMs, userId };
           recent.set(key, recorded);
           settle(recorded);
         } else {

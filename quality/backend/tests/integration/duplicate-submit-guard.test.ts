@@ -14,6 +14,7 @@ import request from 'supertest';
 import {
   canonicalizeForDuplicateCheck,
   duplicateSubmitGuard,
+  forgetDuplicatesAfterDeletes,
   resetDuplicateSubmitGuard,
 } from '../../../../backend/src/middleware/duplicateSubmitGuard';
 
@@ -38,6 +39,8 @@ const buildApp = (handler: Handler, windowSeconds?: number) => {
   app.post('/items', duplicateSubmitGuard({ scope: 'items.create', windowSeconds }), (req, res) => run(req, res));
   app.post('/other', duplicateSubmitGuard({ scope: 'other.create', windowSeconds }), (req, res) => run(req, res));
   app.post('/goals/:id/contribute', duplicateSubmitGuard({ scope: 'goals.contribute', windowSeconds }), (req, res) => run(req, res));
+  app.delete('/items/:id', forgetDuplicatesAfterDeletes, (_req, res) => { res.json({ success: true }); });
+  app.post('/settings/clear-data', forgetDuplicatesAfterDeletes, (_req, res) => { res.json({ success: true }); });
 
   return { app, created, nextId: () => nextId++ };
 };
@@ -185,6 +188,43 @@ describe('DUPLICATE SUBMIT GUARD', () => {
     await request(built.app).post('/items').send({ title: 'Water plants' });
 
     expect(built.created).toHaveLength(2);
+  });
+
+  it('does not replay a create after the user deleted something (no phantom record)', async () => {
+    const ctx: any = {};
+    const built = buildApp((req, res) => okHandler(ctx)(req, res));
+    ctx.nextId = built.nextId;
+
+    const first = await request(built.app).post('/items').send({ title: 'Shaik Jijo' });
+    await request(built.app).delete(`/items/${first.body.data.id}`);
+    const again = await request(built.app).post('/items').send({ title: 'Shaik Jijo' });
+
+    expect(built.created).toHaveLength(2);
+    expect(again.body.data.id).not.toBe(first.body.data.id);
+  });
+
+  it('does not replay a create after a data reset', async () => {
+    const ctx: any = {};
+    const built = buildApp((req, res) => okHandler(ctx)(req, res));
+    ctx.nextId = built.nextId;
+
+    await request(built.app).post('/items').send({ title: 'Main Wallet' });
+    await request(built.app).post('/settings/clear-data').send({});
+    await request(built.app).post('/items').send({ title: 'Main Wallet' });
+
+    expect(built.created).toHaveLength(2);
+  });
+
+  it("keeps absorbing repeats for other users when one user deletes", async () => {
+    const ctx: any = {};
+    const built = buildApp((req, res) => okHandler(ctx)(req, res));
+    ctx.nextId = built.nextId;
+
+    await request(built.app).post('/items').set('x-test-user', 'user-2').send({ title: 'Rent' });
+    await request(built.app).delete('/items/row-9');
+    await request(built.app).post('/items').set('x-test-user', 'user-2').send({ title: 'Rent' });
+
+    expect(built.created).toHaveLength(1);
   });
 });
 

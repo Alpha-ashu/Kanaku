@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import { randomUUID } from 'crypto';
 import { errorHandler } from './middleware/error';
+import { forgetDuplicatesAfterDeletes } from './middleware/duplicateSubmitGuard';
 import { apiRoutes } from './routes/index';
 import { docsRoutes } from './routes/docs';
 import { authenticatedRateLimit } from './middleware/rateLimit';
@@ -409,6 +410,9 @@ app.use('/api-docs', docsRoutes);
 // attachment storage (advisor KYC documents, bills, vault blobs) and used to be
 // mounted here with express.static and no authentication. Nothing links to it —
 // files are always streamed through authenticated endpoints (downloadBuffer).
+
+// A delete or data reset invalidates recorded create replays for that user.
+app.use('/api/v1', forgetDuplicatesAfterDeletes);
 
 // API v1
 app.use('/api/v1', apiRoutes);

@@ -1,5 +1,6 @@
 import path from 'path';
 import crypto from 'crypto';
+import { AppError } from './AppError';
 
  
 let cachedFileTypeFromBuffer: ((buffer: Buffer) => Promise<{ mime: string; ext: string } | undefined>) | null = null;
@@ -94,7 +95,7 @@ export const validateUpload = async (file: Express.Multer.File): Promise<Validat
   const extension = path.extname(originalName).toLowerCase();
 
   if (BLOCKED_EXTENSIONS.has(extension)) {
-    throw new Error('Executable files are not allowed');
+    throw AppError.badRequest('Executable files are not allowed', 'UPLOAD_BLOCKED_TYPE');
   }
 
   const fileTypeFromBuffer = await getFileTypeFromBuffer();
@@ -164,17 +165,18 @@ export const validateUpload = async (file: Express.Multer.File): Promise<Validat
     };
   }
 
-  throw new Error('Unsupported or corrupted file');
+  // A bad file is the caller's input, not a server fault: 400, never 500.
+  throw AppError.badRequest('Unsupported or corrupted file', 'UPLOAD_UNSUPPORTED_TYPE');
 };
 
 export const validateBillUpload = async (file: Express.Multer.File): Promise<ValidatedUpload> => {
   if (file.size > BILL_MAX_UPLOAD_BYTES) {
-    throw new Error(`File exceeds ${Math.round(BILL_MAX_UPLOAD_BYTES / (1024 * 1024))}MB limit`);
+    throw AppError.badRequest(`File exceeds ${Math.round(BILL_MAX_UPLOAD_BYTES / (1024 * 1024))}MB limit`, 'UPLOAD_TOO_LARGE');
   }
 
   const validated = await validateUpload(file);
   if (!BILL_ALLOWED_MIME_TYPES.has(validated.contentType)) {
-    throw new Error('Only PNG, JPG, and PDF files are allowed for bill uploads');
+    throw AppError.badRequest('Only PNG, JPG, and PDF files are allowed for bill uploads', 'UPLOAD_UNSUPPORTED_TYPE');
   }
 
   return validated;
