@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion } from 'framer-motion';
 import {
   X,
@@ -13,6 +14,8 @@ import {
   UserPlus,
   Lock,
   XCircle,
+  ShieldCheck,
+  Loader2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { vaultService, VaultShare } from '@/services/vaultService';
@@ -52,25 +55,23 @@ export const VaultSharingModal: React.FC<VaultSharingModalProps> = ({
 
   useEffect(() => {
     if (isOpen) {
-      setSensitiveAcknowledged(false);
-      setRecipientEmail('');
-      setPermission('viewer');
-      setCanDownload(true);
-      setExpiresAt('');
       loadExistingShares();
+      setRecipientEmail('');
+      setSensitiveAcknowledged(false);
+      setExpiresAt('');
     }
   }, [isOpen, documentId, folderId]);
 
   const loadExistingShares = async () => {
     setIsLoadingShares(true);
     try {
-      const all = await vaultService.getShares();
-      const filtered = all.filter((s) =>
-        documentId ? s.documentId === documentId : s.folderId === folderId,
+      const allShares = await vaultService.getShares();
+      const filtered = allShares.filter((s) =>
+        isDocument ? s.documentId === documentId : s.folderId === folderId,
       );
       setExistingShares(filtered);
     } catch {
-      // silent
+      // ignore
     } finally {
       setIsLoadingShares(false);
     }
@@ -78,12 +79,11 @@ export const VaultSharingModal: React.FC<VaultSharingModalProps> = ({
 
   const handleShare = async () => {
     if (!recipientEmail.trim()) {
-      toast.error('Please enter the recipient\'s email');
+      toast.error('Please enter a recipient email');
       return;
     }
-
     if (isSensitive && !sensitiveAcknowledged) {
-      toast.error('Please acknowledge the sensitive document warning');
+      toast.error('Please acknowledge the sensitive nature of this document');
       return;
     }
 
@@ -91,13 +91,14 @@ export const VaultSharingModal: React.FC<VaultSharingModalProps> = ({
     try {
       await vaultService.createShare({
         sharedWithUserEmailOrId: recipientEmail.trim(),
-        documentId: documentId || undefined,
-        folderId: folderId || undefined,
+        documentId: isDocument ? documentId : undefined,
+        folderId: !isDocument ? folderId : undefined,
         permission,
         canDownload,
-        expiresAt: expiresAt || null,
+        expiresAt: expiresAt ? new Date(expiresAt).toISOString() : null,
       });
-      toast.success(`Shared with ${recipientEmail}`);
+
+      toast.success(`Successfully shared with ${recipientEmail}`);
       setRecipientEmail('');
       loadExistingShares();
       onShareUpdated();
@@ -111,7 +112,7 @@ export const VaultSharingModal: React.FC<VaultSharingModalProps> = ({
   const handleRevoke = async (shareId: string) => {
     try {
       await vaultService.revokeShare(shareId);
-      toast.success('Access revoked immediately');
+      toast.success('Access revoked');
       loadExistingShares();
       onShareUpdated();
     } catch (err: any) {
@@ -119,61 +120,59 @@ export const VaultSharingModal: React.FC<VaultSharingModalProps> = ({
     }
   };
 
-  if (!isOpen) return null;
+  if (!isOpen || typeof document === 'undefined') return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+  const modalContent = (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 md:p-6 pointer-events-auto select-none">
       {/* Backdrop */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+        className="fixed inset-0 bg-slate-950/80 backdrop-blur-md"
         onClick={onClose}
       />
 
-      {/* Modal */}
+      {/* Modal Screen Card */}
       <motion.div
-        initial={{ opacity: 0, y: 40, scale: 0.97 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: 40, scale: 0.97 }}
-        className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl"
-        style={{
-          background: 'var(--glass-modal-bg)',
-          backdropFilter: 'var(--glass-modal-blur)',
-          border: 'var(--glass-modal-border)',
-          boxShadow: 'var(--glass-modal-shadow)',
-        }}
+        initial={{ opacity: 0, scale: 0.95, y: 15 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 15 }}
+        transition={{ duration: 0.2, ease: 'easeOut' }}
+        className="relative w-full max-w-[calc(100vw-12px)] sm:max-w-xl h-[93dvh] sm:h-[88vh] max-h-[680px] sm:max-h-[780px] flex flex-col bg-white rounded-[24px] sm:rounded-[32px] shadow-2xl border border-slate-100 overflow-hidden z-10"
+        onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className="sticky top-0 z-10 flex items-center justify-between p-5 pb-3 bg-white/95 backdrop-blur-md rounded-t-3xl border-b border-slate-100">
+        {/* Sticky Header */}
+        <div className="shrink-0 flex items-center justify-between px-4 sm:px-5 py-3.5 border-b border-slate-100 bg-white/95 backdrop-blur-md">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
               <Share2 className="w-4.5 h-4.5" />
             </div>
             <div>
-              <h2 className="text-section-title">Share {isDocument ? 'Document' : 'Folder'}</h2>
-              <p className="text-caption truncate max-w-[250px]">{targetName}</p>
+              <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">Share {isDocument ? 'Document' : 'Folder'}</h2>
+              <p className="text-xs text-slate-500 font-medium truncate max-w-[240px] sm:max-w-[300px]">{targetName}</p>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-2 rounded-full hover:bg-slate-100 text-slate-400 transition-colors"
+            className="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+            title="Close"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="p-5 space-y-5">
+        {/* Scrollable Form Body */}
+        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4 overscroll-contain">
           {/* Sensitive Warning */}
           {isSensitive && (
             <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200">
               <div className="flex items-start gap-2.5">
                 <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-body-sm text-amber-800 font-semibold">Sensitive Document</p>
-                  <p className="text-caption text-amber-600 mt-0.5">
+                  <p className="text-xs sm:text-sm text-amber-900 font-bold">Sensitive Document</p>
+                  <p className="text-xs text-amber-700 mt-0.5 leading-relaxed">
                     This document is marked as sensitive. Only share it with people you fully trust.
                   </p>
                   <label className="flex items-center gap-2 mt-2.5 cursor-pointer">
@@ -181,9 +180,9 @@ export const VaultSharingModal: React.FC<VaultSharingModalProps> = ({
                       type="checkbox"
                       checked={sensitiveAcknowledged}
                       onChange={(e) => setSensitiveAcknowledged(e.target.checked)}
-                      className="w-4 h-4 rounded accent-amber-600"
+                      className="w-4 h-4 rounded accent-amber-600 cursor-pointer"
                     />
-                    <span className="text-body-sm font-semibold text-amber-800">
+                    <span className="text-xs font-semibold text-amber-900">
                       I understand the risks and wish to proceed
                     </span>
                   </label>
@@ -194,128 +193,116 @@ export const VaultSharingModal: React.FC<VaultSharingModalProps> = ({
 
           {/* Recipient Email */}
           <div>
-            <label className="KANAKU-label flex items-center gap-1">
-              <UserPlus className="w-3 h-3" /> Recipient Email
+            <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 flex items-center gap-1.5">
+              <UserPlus className="w-3.5 h-3.5 text-slate-400" /> Recipient Email <span className="text-purple-600">*</span>
             </label>
             <div className="relative">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
               <input
                 type="email"
                 value={recipientEmail}
                 onChange={(e) => setRecipientEmail(e.target.value)}
                 placeholder="Enter the Kanaku user's email"
-                className="KANAKU-input !pl-10"
+                className="w-full h-11 pl-10 pr-3.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white focus:bg-white focus:border-purple-600 focus:ring-2 focus:ring-purple-100 text-sm text-slate-800 placeholder:text-slate-400 font-medium transition-all outline-none"
               />
             </div>
           </div>
 
           {/* Permission Selection */}
           <div>
-            <label className="KANAKU-label">Permission Level</label>
-            <div className="grid grid-cols-2 gap-2">
+            <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">Permission Level</label>
+            <div className="grid grid-cols-2 gap-2.5">
               <button
                 type="button"
                 onClick={() => setPermission('viewer')}
-                className={`p-3 rounded-xl border-2 text-left transition-all ${
+                className={`p-3 rounded-2xl border-2 text-left transition-all cursor-pointer ${
                   permission === 'viewer'
-                    ? 'border-purple-500 bg-purple-50'
-                    : 'border-slate-200 hover:border-slate-300'
+                    ? 'border-purple-600 bg-purple-50/60 shadow-xs ring-2 ring-purple-100'
+                    : 'border-slate-200 bg-slate-50/40 hover:bg-slate-50 hover:border-slate-300'
                 }`}
               >
                 <div className="flex items-center gap-2 mb-1">
-                  <Eye className="w-4 h-4 text-purple-600" />
-                  <span className="text-card-title">Viewer</span>
+                  <div className={`w-6 h-6 rounded-lg flex items-center justify-center ${permission === 'viewer' ? 'bg-purple-600 text-white' : 'bg-slate-200 text-slate-600'}`}>
+                    <Eye className="w-3.5 h-3.5" />
+                  </div>
+                  <span className="text-xs sm:text-sm font-bold text-slate-900">Viewer</span>
                 </div>
-                <p className="text-caption">Can view and preview only</p>
+                <p className="text-xs text-slate-500 font-medium leading-tight">View & preview only</p>
               </button>
+
               <button
                 type="button"
                 onClick={() => setPermission('editor')}
-                className={`p-3 rounded-xl border-2 text-left transition-all ${
+                className={`p-3 rounded-2xl border-2 text-left transition-all cursor-pointer ${
                   permission === 'editor'
-                    ? 'border-purple-500 bg-purple-50'
-                    : 'border-slate-200 hover:border-slate-300'
+                    ? 'border-purple-600 bg-purple-50/60 shadow-xs ring-2 ring-purple-100'
+                    : 'border-slate-200 bg-slate-50/40 hover:bg-slate-50 hover:border-slate-300'
                 }`}
               >
                 <div className="flex items-center gap-2 mb-1">
-                  <Edit3 className="w-4 h-4 text-purple-600" />
-                  <span className="text-card-title">Editor</span>
+                  <div className={`w-6 h-6 rounded-lg flex items-center justify-center ${permission === 'editor' ? 'bg-purple-600 text-white' : 'bg-slate-200 text-slate-600'}`}>
+                    <Edit3 className="w-3.5 h-3.5" />
+                  </div>
+                  <span className="text-xs sm:text-sm font-bold text-slate-900">Editor</span>
                 </div>
-                <p className="text-caption">Can view, edit metadata, and upload versions</p>
+                <p className="text-xs text-slate-500 font-medium leading-tight">Edit and upload new versions</p>
               </button>
             </div>
           </div>
 
           {/* Download Permission & Expiry */}
-          <div className="grid grid-cols-2 gap-3">
-            <label className="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50 border border-slate-100 cursor-pointer">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <label className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer hover:bg-slate-100/70 transition-colors">
               <Download className="w-4 h-4 text-slate-500 shrink-0" />
-              <span className="text-body-sm font-semibold text-slate-700 flex-1">Allow Download</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs sm:text-sm font-semibold text-slate-800">Allow Download</p>
+                <p className="text-xs text-slate-400 font-medium">Permit saving copies</p>
+              </div>
               <input
                 type="checkbox"
                 checked={canDownload}
                 onChange={(e) => setCanDownload(e.target.checked)}
-                className="w-4 h-4 rounded accent-purple-600"
+                className="w-4 h-4 rounded accent-purple-600 cursor-pointer"
               />
             </label>
             <div>
-              <label className="KANAKU-label flex items-center gap-1">
-                <Calendar className="w-3 h-3" /> Expires On
+              <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 flex items-center gap-1.5">
+                <Calendar className="w-3.5 h-3.5 text-slate-400" /> Expiry Date (Optional)
               </label>
               <input
                 type="date"
                 value={expiresAt}
                 onChange={(e) => setExpiresAt(e.target.value)}
-                className="KANAKU-input"
+                className="w-full h-11 px-3.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white focus:bg-white focus:border-purple-600 focus:ring-2 focus:ring-purple-100 text-sm text-slate-800 font-medium transition-all outline-none"
                 min={new Date().toISOString().split('T')[0]}
               />
             </div>
           </div>
 
-          {/* Share Button */}
-          <button
-            type="button"
-            onClick={handleShare}
-            disabled={isSharing || !recipientEmail.trim() || (isSensitive && !sensitiveAcknowledged)}
-            className="h-11 px-5 rounded-xl text-xs sm:text-sm font-semibold bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white shadow-sm shadow-purple-500/20 transition-all flex items-center justify-center cursor-pointer w-full disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isSharing ? (
-              <span className="flex items-center gap-2">
-                <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                Sharing...
-              </span>
-            ) : (
-              <span className="flex items-center gap-2">
-                <Share2 className="w-4 h-4" />
-                Share Securely
-              </span>
-            )}
-          </button>
-
           {/* Existing Shares */}
           {existingShares.length > 0 && (
             <div>
-              <h4 className="text-label mb-2">CURRENT ACCESS</h4>
-              <div className="KANAKU-card !p-0 divide-y divide-slate-100 overflow-hidden">
+              <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Current Access ({existingShares.length})</h4>
+              <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs divide-y divide-slate-100 overflow-hidden">
                 {existingShares.map((share) => (
                   <div key={share.id} className="p-3 flex items-center justify-between gap-2">
                     <div className="min-w-0">
-                      <p className="text-card-title truncate">
+                      <p className="text-xs sm:text-sm font-bold text-slate-900 truncate">
                         {share.sharedWithUser?.name || share.sharedWithUser?.email}
                       </p>
                       <div className="flex items-center gap-1.5 mt-0.5">
-                        <span className="text-caption uppercase font-bold px-1.5 py-0.5 rounded-full bg-purple-50 text-purple-600">
+                        <span className="text-2xs uppercase font-black px-1.5 py-0.5 rounded-md bg-purple-50 text-purple-700">
                           {share.permission}
                         </span>
-                        <span className="text-caption">
-                          {share.canDownload ? '· Download OK' : '· View only'}
+                        <span className="text-xs text-slate-400 font-medium">
+                          {share.canDownload ? '· Can download' : '· View only'}
                         </span>
                       </div>
                     </div>
                     <button
                       type="button"
                       onClick={() => handleRevoke(share.id)}
-                      className="p-1.5 rounded-lg hover:bg-red-50 text-red-500 transition-colors shrink-0"
+                      className="p-1.5 rounded-lg hover:bg-red-50 text-red-500 transition-colors shrink-0 cursor-pointer"
                       title="Revoke Access"
                     >
                       <XCircle className="w-4.5 h-4.5" />
@@ -328,13 +315,45 @@ export const VaultSharingModal: React.FC<VaultSharingModalProps> = ({
 
           {/* Privacy Notice */}
           <div className="flex items-center gap-2 p-2.5 rounded-xl bg-emerald-50/60 border border-emerald-100/60">
-            <Shield className="w-4 h-4 text-emerald-600 shrink-0" />
-            <p className="text-caption text-emerald-700">
+            <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+            <p className="text-xs text-emerald-700 font-medium">
               You retain full ownership. Access can be revoked instantly at any time.
             </p>
           </div>
         </div>
+
+        {/* Sticky Footer */}
+        <div className="shrink-0 p-4 sm:p-5 border-t border-slate-100 bg-white/95 backdrop-blur-md flex items-center gap-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={isSharing}
+            className="h-11 px-5 rounded-xl border border-slate-200 hover:bg-slate-50 active:bg-slate-100 text-slate-700 font-bold text-xs sm:text-sm transition-all cursor-pointer disabled:opacity-50"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={handleShare}
+            disabled={isSharing || !recipientEmail.trim() || (isSensitive && !sensitiveAcknowledged)}
+            className="flex-1 h-11 px-5 rounded-xl bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white font-bold text-xs sm:text-sm shadow-md shadow-purple-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isSharing ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Sharing...</span>
+              </>
+            ) : (
+              <>
+                <Share2 className="w-4 h-4" />
+                <span>Share Securely</span>
+              </>
+            )}
+          </button>
+        </div>
       </motion.div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 };

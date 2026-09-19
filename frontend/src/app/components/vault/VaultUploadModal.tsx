@@ -1,15 +1,19 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Upload,
   X,
   FileText,
   AlertTriangle,
-  Lock,
   Calendar,
-  Tag,
   Building2,
   Hash,
+  ChevronDown,
+  Loader2,
+  AlignLeft,
+  Folder as FolderIcon,
+  Plus,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { vaultService, VaultFolder, VaultStorageUsage } from '@/services/vaultService';
@@ -45,8 +49,7 @@ export const VaultUploadModal: React.FC<VaultUploadModalProps> = ({
   const [institution, setInstitution] = useState('');
   const [documentNumber, setDocumentNumber] = useState('');
   const [expiryDate, setExpiryDate] = useState('');
-  const [isSensitive, setIsSensitive] = useState(false);
-  const [tags, setTags] = useState('');
+  const [showOptionalFields, setShowOptionalFields] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [storageUsage, setStorageUsage] = useState<VaultStorageUsage | null>(null);
@@ -66,8 +69,7 @@ export const VaultUploadModal: React.FC<VaultUploadModalProps> = ({
     setInstitution('');
     setDocumentNumber('');
     setExpiryDate('');
-    setIsSensitive(false);
-    setTags('');
+    setShowOptionalFields(false);
     setCategory('Personal Documents');
   };
 
@@ -92,13 +94,11 @@ export const VaultUploadModal: React.FC<VaultUploadModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!file) {
-      toast.error('Please select a document to upload');
+      toast.error('Please select a file to upload');
       return;
     }
-
-    // Check quota client-side
-    if (storageUsage && storageUsage.remainingBytes < file.size) {
-      toast.error(`Not enough storage. You have ${formatBytes(storageUsage.remainingBytes)} remaining.`);
+    if (!title.trim()) {
+      toast.error('Please provide a document title');
       return;
     }
 
@@ -106,22 +106,16 @@ export const VaultUploadModal: React.FC<VaultUploadModalProps> = ({
     try {
       const formData = new FormData();
       formData.append('file', file);
-      formData.append('title', title.trim() || file.name);
+      formData.append('title', title.trim());
       formData.append('category', category);
       if (folderId) formData.append('folderId', folderId);
       if (description.trim()) formData.append('description', description.trim());
       if (institution.trim()) formData.append('institution', institution.trim());
       if (documentNumber.trim()) formData.append('documentNumber', documentNumber.trim());
       if (expiryDate) formData.append('expiryDate', expiryDate);
-      if (isSensitive) formData.append('isSensitive', 'true');
-      if (tags.trim()) {
-        tags.split(',').map(t => t.trim()).filter(Boolean).forEach(t => {
-          formData.append('tags', t);
-        });
-      }
 
       await vaultService.uploadDocument(formData);
-      toast.success('Document uploaded & encrypted successfully');
+      toast.success('Document uploaded successfully');
       resetForm();
       onSuccess();
       onClose();
@@ -132,57 +126,69 @@ export const VaultUploadModal: React.FC<VaultUploadModalProps> = ({
     }
   };
 
-  if (!isOpen) return null;
+  if (!isOpen || typeof document === 'undefined') return null;
 
   const storagePercent = storageUsage
     ? Math.min(100, Math.round((storageUsage.usedBytes / storageUsage.limitBytes) * 100))
     : 0;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+  const modalContent = (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-2.5 sm:p-4 md:p-6 pointer-events-auto select-none">
       {/* Backdrop */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+        className="fixed inset-0 bg-slate-950/80 backdrop-blur-md"
         onClick={onClose}
       />
 
-      {/* Modal */}
+      {/* Modal Screen Card */}
       <motion.div
-        initial={{ opacity: 0, y: 40, scale: 0.97 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: 40, scale: 0.97 }}
-        className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl"
-        style={{
-          background: 'var(--glass-modal-bg)',
-          backdropFilter: 'var(--glass-modal-blur)',
-          border: 'var(--glass-modal-border)',
-          boxShadow: 'var(--glass-modal-shadow)',
-        }}
+        initial={{ opacity: 0, scale: 0.95, y: 15 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 15 }}
+        transition={{ duration: 0.2, ease: 'easeOut' }}
+        className="relative w-full max-w-[calc(100vw-24px)] sm:max-w-xl max-h-[92dvh] sm:max-h-[88vh] flex flex-col bg-white rounded-[24px] sm:rounded-[32px] shadow-2xl border border-slate-100/80 overflow-hidden z-10"
+        onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className="sticky top-0 z-10 flex items-center justify-between p-5 pb-3 bg-white/95 backdrop-blur-md rounded-t-3xl border-b border-slate-100">
-          <div>
-            <h2 className="text-section-title">Upload Document</h2>
-            <p className="text-caption mt-0.5">Encrypted with AES-256 at rest</p>
+        {/* Streamlined Header */}
+        <div className="shrink-0 flex items-center justify-between px-3.5 sm:px-5 py-3 border-b border-slate-100 bg-white/95 backdrop-blur-md gap-2 min-w-0">
+          <div className="flex items-center gap-2.5 min-w-0 flex-1">
+            <div className="w-10 h-10 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+              <Upload className="w-5 h-5" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h2 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight truncate">
+                Upload Document
+              </h2>
+              <p className="text-xs text-slate-500 font-medium truncate">
+                {category}
+              </p>
+            </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-2 rounded-full hover:bg-slate-100 text-slate-400 transition-colors"
+            className="w-9 h-9 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center transition-colors cursor-pointer shrink-0"
+            title="Close"
+            aria-label="Close"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4.5 h-4.5" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-5 space-y-4">
-          {/* Storage Warning */}
+        {/* Scrollable Form Body */}
+        <form
+          id="vault-upload-form"
+          onSubmit={handleSubmit}
+          className="flex-1 overflow-y-auto px-3.5 sm:px-5 py-3.5 space-y-3.5 min-w-0 overscroll-contain"
+        >
+          {/* Storage Warning if > 80% */}
           {storageUsage && storagePercent >= 80 && (
             <div className="flex items-center gap-2.5 p-3 rounded-xl bg-amber-50 border border-amber-100">
               <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
-              <p className="text-body-sm text-amber-700">
+              <p className="text-xs font-semibold text-amber-800">
                 Storage {storagePercent}% full ({formatBytes(storageUsage.usedBytes)} / {formatBytes(storageUsage.limitBytes)})
               </p>
             </div>
@@ -194,12 +200,12 @@ export const VaultUploadModal: React.FC<VaultUploadModalProps> = ({
             onDragLeave={() => setIsDragging(false)}
             onDrop={handleDrop}
             onClick={() => fileInputRef.current?.click()}
-            className={`relative border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all ${
+            className={`relative border-2 border-dashed rounded-2xl p-4 text-center cursor-pointer transition-all ${
               isDragging
-                ? 'border-purple-400 bg-purple-50/50'
+                ? 'border-purple-500 bg-purple-50/60'
                 : file
-                ? 'border-emerald-300 bg-emerald-50/30'
-                : 'border-slate-200 hover:border-purple-300 hover:bg-purple-50/20'
+                ? 'border-emerald-400 bg-emerald-50/40'
+                : 'border-slate-200 hover:border-purple-400 hover:bg-purple-50/20 bg-slate-50/50'
             }`}
           >
             <input
@@ -213,162 +219,201 @@ export const VaultUploadModal: React.FC<VaultUploadModalProps> = ({
               className="hidden"
             />
             {file ? (
-              <div className="flex items-center gap-3 justify-center">
-                <FileText className="w-6 h-6 text-emerald-600" />
-                <div className="text-left">
-                  <p className="text-card-title text-emerald-800 truncate max-w-[260px]">{file.name}</p>
-                  <p className="text-caption">{formatBytes(file.size)}</p>
+              <div className="flex items-center gap-2.5 justify-center min-w-0">
+                <div className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+                  <FileText className="w-4.5 h-4.5" />
+                </div>
+                <div className="text-left min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm font-bold text-slate-900 truncate">
+                    {file.name}
+                  </p>
+                  <p className="text-xs font-medium text-slate-500">{formatBytes(file.size)}</p>
                 </div>
                 <button
                   type="button"
                   onClick={(e) => { e.stopPropagation(); setFile(null); }}
-                  className="p-1 rounded-full hover:bg-red-50 text-slate-400 hover:text-red-500"
+                  className="p-1 rounded-full hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors shrink-0"
+                  title="Remove file"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
             ) : (
               <>
-                <Upload className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                <p className="text-body-sm text-slate-500 font-semibold">
-                  Drop file here or <span className="text-purple-600">browse</span>
+                <div className="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center mx-auto mb-1.5">
+                  <Upload className="w-4.5 h-4.5" />
+                </div>
+                <p className="text-xs sm:text-sm font-bold text-slate-800">
+                  Drop file here or <span className="text-purple-600 hover:underline">browse</span>
                 </p>
-                <p className="text-caption mt-1">PDF, JPG, PNG, WEBP, DOCX · Max 25 MB</p>
+                <p className="text-[11px] text-slate-400 font-medium mt-0.5">PDF, JPG, PNG, WEBP, DOCX · Max 25 MB</p>
               </>
             )}
           </div>
 
-          {/* Title */}
+          {/* Document Title */}
           <div>
-            <label className="KANAKU-label">Document Title</label>
+            <label className="block text-xs font-semibold text-slate-700 mb-1 flex items-center gap-1.5">
+              <FileText className="w-3.5 h-3.5 text-slate-400" /> Document Title <span className="text-purple-600">*</span>
+            </label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g., PAN Card, Aadhaar, Property Deed"
-              className="KANAKU-input"
+              required
+              className="w-full h-10 px-3.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white focus:bg-white focus:border-purple-600 focus:ring-2 focus:ring-purple-100 text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 font-medium transition-all outline-none"
             />
           </div>
 
-          {/* Category & Folder row */}
-          <div className="grid grid-cols-2 gap-3">
+          {/* Category & Folder */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             <div>
-              <label className="KANAKU-label">Category</label>
-              <select value={category} onChange={(e) => setCategory(e.target.value)} className="w-full">
-                <option value="Personal Documents">Personal Documents</option>
-                <option value="Property Documents">Property Documents</option>
-                <option value="Insurance">Insurance</option>
-                <option value="Financial Documents">Financial Documents</option>
-                <option value="Legal Documents">Legal Documents</option>
-                <option value="Medical Documents">Medical Documents</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-            <div>
-              <label className="KANAKU-label">Folder</label>
-              <select value={folderId} onChange={(e) => setFolderId(e.target.value)} className="w-full">
-                <option value="">— Root —</option>
-                {folders.map((f) => (
-                  <option key={f.id} value={f.id}>{f.name}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Institution & Document Number */}
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="KANAKU-label flex items-center gap-1"><Building2 className="w-3 h-3" /> Institution</label>
-              <input
-                type="text"
-                value={institution}
-                onChange={(e) => setInstitution(e.target.value)}
-                placeholder="e.g., UIDAI, SBI, LIC"
-                className="KANAKU-input"
-              />
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Category</label>
+              <div className="relative">
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  className="w-full h-10 px-3 pr-8 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white focus:bg-white focus:border-purple-600 focus:ring-2 focus:ring-purple-100 text-xs sm:text-sm text-slate-800 font-medium transition-all outline-none appearance-none cursor-pointer"
+                >
+                  <option value="Personal Documents">Personal Documents</option>
+                  <option value="Property Documents">Property Documents</option>
+                  <option value="Insurance">Insurance</option>
+                  <option value="Financial Documents">Financial Documents</option>
+                  <option value="Legal Documents">Legal Documents</option>
+                  <option value="Medical Documents">Medical Documents</option>
+                  <option value="Other">Other</option>
+                </select>
+                <ChevronDown className="w-4 h-4 text-slate-400 absolute right-2.5 top-3 pointer-events-none" />
+              </div>
             </div>
             <div>
-              <label className="KANAKU-label flex items-center gap-1"><Hash className="w-3 h-3" /> Doc Number</label>
-              <input
-                type="text"
-                value={documentNumber}
-                onChange={(e) => setDocumentNumber(e.target.value)}
-                placeholder="e.g., XXXX-1234"
-                className="KANAKU-input"
-              />
+              <label className="block text-xs font-semibold text-slate-700 mb-1 flex items-center gap-1.5">
+                <FolderIcon className="w-3.5 h-3.5 text-slate-400" /> Folder
+              </label>
+              <div className="relative">
+                <select
+                  value={folderId}
+                  onChange={(e) => setFolderId(e.target.value)}
+                  className="w-full h-10 px-3 pr-8 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white focus:bg-white focus:border-purple-600 focus:ring-2 focus:ring-purple-100 text-xs sm:text-sm text-slate-800 font-medium transition-all outline-none appearance-none cursor-pointer"
+                >
+                  <option value="">— Root Folder —</option>
+                  {folders.map((f) => (
+                    <option key={f.id} value={f.id}>{f.name}</option>
+                  ))}
+                </select>
+                <ChevronDown className="w-4 h-4 text-slate-400 absolute right-2.5 top-3 pointer-events-none" />
+              </div>
             </div>
           </div>
 
-          {/* Expiry Date */}
-          <div>
-            <label className="KANAKU-label flex items-center gap-1"><Calendar className="w-3 h-3" /> Expiry Date (Optional)</label>
-            <input
-              type="date"
-              value={expiryDate}
-              onChange={(e) => setExpiryDate(e.target.value)}
-              className="KANAKU-input"
-            />
-          </div>
+          {/* Optional Details Collapsible Button */}
+          <button
+            type="button"
+            onClick={() => setShowOptionalFields(!showOptionalFields)}
+            className="text-xs font-semibold text-purple-600 hover:text-purple-700 flex items-center gap-1 pt-0.5 cursor-pointer transition-colors"
+          >
+            <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showOptionalFields ? 'rotate-180' : ''}`} />
+            {showOptionalFields ? 'Hide optional details' : '+ Add institution, number, expiry (Optional)'}
+          </button>
 
-          {/* Tags */}
-          <div>
-            <label className="KANAKU-label flex items-center gap-1"><Tag className="w-3 h-3" /> Tags</label>
-            <input
-              type="text"
-              value={tags}
-              onChange={(e) => setTags(e.target.value)}
-              placeholder="Comma separated: identity, government, renewal"
-              className="KANAKU-input"
-            />
-          </div>
+          {/* Optional fields section */}
+          <AnimatePresence>
+            {showOptionalFields && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="space-y-3 pt-1 overflow-hidden"
+              >
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-1 flex items-center gap-1">
+                      <Building2 className="w-3 h-3 text-slate-400" /> Institution
+                    </label>
+                    <input
+                      type="text"
+                      value={institution}
+                      onChange={(e) => setInstitution(e.target.value)}
+                      placeholder="e.g., UIDAI, SBI"
+                      className="w-full h-9 px-3 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white focus:bg-white focus:border-purple-600 focus:ring-2 focus:ring-purple-100 text-xs text-slate-800 placeholder:text-slate-400 font-medium transition-all outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-1 flex items-center gap-1">
+                      <Hash className="w-3 h-3 text-slate-400" /> Document Number
+                    </label>
+                    <input
+                      type="text"
+                      value={documentNumber}
+                      onChange={(e) => setDocumentNumber(e.target.value)}
+                      placeholder="e.g., XXXX-1234"
+                      className="w-full h-9 px-3 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white focus:bg-white focus:border-purple-600 focus:ring-2 focus:ring-purple-100 text-xs text-slate-800 placeholder:text-slate-400 font-medium transition-all outline-none"
+                    />
+                  </div>
+                </div>
 
-          {/* Description */}
-          <div>
-            <label className="KANAKU-label">Description (Optional)</label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Additional notes about this document..."
-              rows={2}
-              className="KANAKU-input !h-auto py-2.5"
-            />
-          </div>
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-700 mb-1 flex items-center gap-1">
+                    <Calendar className="w-3 h-3 text-slate-400" /> Expiry Date
+                  </label>
+                  <input
+                    type="date"
+                    value={expiryDate}
+                    onChange={(e) => setExpiryDate(e.target.value)}
+                    className="w-full h-9 px-3 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white focus:bg-white focus:border-purple-600 focus:ring-2 focus:ring-purple-100 text-xs text-slate-800 font-medium transition-all outline-none"
+                  />
+                </div>
 
-          {/* Sensitive Toggle */}
-          <label className="flex items-center gap-3 p-3 rounded-xl bg-amber-50/50 border border-amber-100/50 cursor-pointer">
-            <Lock className="w-4 h-4 text-amber-600 shrink-0" />
-            <div className="flex-1">
-              <p className="text-body-sm font-semibold text-amber-800">Mark as Sensitive</p>
-              <p className="text-caption text-amber-600">Requires extra confirmation before sharing</p>
-            </div>
-            <input
-              type="checkbox"
-              checked={isSensitive}
-              onChange={(e) => setIsSensitive(e.target.checked)}
-              className="w-5 h-5 rounded accent-amber-600"
-            />
-          </label>
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-700 mb-1 flex items-center gap-1">
+                    <AlignLeft className="w-3 h-3 text-slate-400" /> Notes
+                  </label>
+                  <textarea
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Additional notes..."
+                    rows={2}
+                    className="w-full p-2 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white focus:bg-white focus:border-purple-600 focus:ring-2 focus:ring-purple-100 text-xs text-slate-800 placeholder:text-slate-400 font-medium transition-all outline-none resize-none"
+                  />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </form>
 
-          {/* Submit */}
+        {/* Fixed Sticky Footer */}
+        <div className="shrink-0 p-3 sm:p-3.5 border-t border-slate-100 bg-white/95 backdrop-blur-md flex items-center gap-2.5 min-w-0">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={isUploading}
+            className="h-10 px-3.5 rounded-xl border border-slate-200 hover:bg-slate-50 active:bg-slate-100 text-slate-700 font-bold text-xs sm:text-sm transition-all cursor-pointer disabled:opacity-50 shrink-0"
+          >
+            Cancel
+          </button>
           <button
             type="submit"
+            form="vault-upload-form"
             disabled={isUploading || !file}
-            className="h-11 px-5 rounded-xl text-xs sm:text-sm font-semibold bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white shadow-sm shadow-purple-500/20 transition-all flex items-center justify-center cursor-pointer w-full disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 h-10 px-3.5 rounded-xl bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white font-bold text-xs sm:text-sm shadow-md shadow-purple-500/25 transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed min-w-0 truncate"
           >
             {isUploading ? (
-              <span className="flex items-center gap-2">
-                <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                Encrypting & Uploading...
-              </span>
+              <>
+                <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+                <span className="truncate">Uploading...</span>
+              </>
             ) : (
-              <span className="flex items-center gap-2">
-                <Lock className="w-4 h-4" />
-                Upload & Encrypt
-              </span>
+              <>
+                <Upload className="w-4 h-4 shrink-0" />
+                <span className="truncate">Upload Document</span>
+              </>
             )}
           </button>
-        </form>
+        </div>
       </motion.div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 };

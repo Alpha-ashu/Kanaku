@@ -76,38 +76,38 @@ export const VaultDashboard: React.FC<VaultDashboardProps> = ({
     <div className="space-y-5">
       {/* Quick Stats Row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="KANAKU-card !p-3.5 !gap-1">
-          <span className="text-label">Documents</span>
+        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-3.5 flex flex-col gap-1">
+          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Documents</span>
           <span className="text-fin-md text-slate-900">{data.totalDocuments}</span>
         </div>
-        <div className="KANAKU-card !p-3.5 !gap-1">
-          <span className="text-label">Folders</span>
+        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-3.5 flex flex-col gap-1">
+          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Folders</span>
           <span className="text-fin-md text-slate-900">{data.totalFolders}</span>
         </div>
-        <div className="KANAKU-card !p-3.5 !gap-1">
-          <span className="text-label">Shared</span>
+        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-3.5 flex flex-col gap-1">
+          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Shared</span>
           <span className="text-fin-md text-slate-900">{data.sharedWithOthersCount + data.sharedWithMeCount}</span>
         </div>
-        <div className="KANAKU-card !p-3.5 !gap-1">
-          <span className="text-label">Storage</span>
+        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-3.5 flex flex-col gap-1">
+          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Storage</span>
           <span className="text-fin-md text-slate-900">{formatBytes(data.totalStorageBytes)}</span>
         </div>
       </div>
 
       {/* Privacy Badge */}
-      <div className="KANAKU-card !p-3.5 !flex-row items-center gap-3">
+      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-3.5 flex flex-row items-center gap-3">
         <div className="w-9 h-9 rounded-full bg-emerald-50 flex items-center justify-center shrink-0">
           <ShieldCheck className="w-4.5 h-4.5 text-emerald-600" />
         </div>
         <div className="min-w-0">
-          <p className="text-body-sm text-slate-700 font-semibold">Private by default</p>
-          <p className="text-caption">Encrypted storage · Controlled sharing · You own your data</p>
+          <p className="text-xs sm:text-sm text-slate-700 font-semibold">Private by default</p>
+          <p className="text-xs text-slate-400 font-medium">Encrypted storage · Controlled sharing · You own your data</p>
         </div>
       </div>
 
       {/* Category Grid */}
       <div>
-        <h3 className="text-section-title mb-3">Categories</h3>
+        <h3 className="text-sm sm:text-base font-bold text-slate-900 mb-3">Categories</h3>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           {categories.map(([name, count], i) => {
             const Icon = CATEGORY_ICONS[name] || Folder;
@@ -120,14 +120,14 @@ export const VaultDashboard: React.FC<VaultDashboardProps> = ({
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.04 }}
-                className="KANAKU-card !p-4 !items-start cursor-pointer hover:shadow-md transition-shadow group"
+                className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-4 flex flex-col items-start cursor-pointer hover:shadow-md hover:border-purple-200 transition-all group"
               >
                 <div className={`w-9 h-9 rounded-xl ${accent.bg} ${accent.text} flex items-center justify-center mb-2.5`}>
                   <Icon className="w-4.5 h-4.5" />
                 </div>
                 <h4 className="text-xs sm:text-sm font-semibold text-slate-900 text-left leading-snug line-clamp-2 break-words">{name}</h4>
                 <div className="flex items-center justify-between w-full mt-1.5">
-                  <span className="text-caption">{count} {count === 1 ? 'doc' : 'docs'}</span>
+                  <span className="text-xs text-slate-400 font-medium">{count} {count === 1 ? 'doc' : 'docs'}</span>
                   <ArrowRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-slate-500 transition-colors" />
                 </div>
               </motion.button>
@@ -139,11 +139,11 @@ export const VaultDashboard: React.FC<VaultDashboardProps> = ({
       {/* Expiring Soon */}
       {data.expiringDocuments.length > 0 && (
         <div>
-          <h3 className="text-section-title mb-3 flex items-center gap-2">
+          <h3 className="text-sm sm:text-base font-bold text-slate-900 mb-3 flex items-center gap-2">
             <AlertCircle className="w-4.5 h-4.5 text-amber-500" />
             Expiring Soon
           </h3>
-          <div className="KANAKU-card !p-0 divide-y divide-slate-100 overflow-hidden">
+          <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-0 divide-y divide-slate-100 overflow-hidden">
             {data.expiringDocuments.map((doc) => (
               <button
                 key={doc.id}
@@ -156,8 +156,8 @@ export const VaultDashboard: React.FC<VaultDashboardProps> = ({
                     <Calendar className="w-4 h-4" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-card-title truncate">{doc.title}</p>
-                    <p className="text-caption">
+                    <p className="text-xs sm:text-sm font-bold text-slate-900 truncate">{doc.title}</p>
+                    <p className="text-xs text-slate-400">
                       Expires {doc.expiryDate ? new Date(doc.expiryDate).toLocaleDateString() : '—'}
                     </p>
                   </div>
@@ -172,11 +172,11 @@ export const VaultDashboard: React.FC<VaultDashboardProps> = ({
       {/* Recently Added */}
       {data.recentlyAdded.length > 0 && (
         <div>
-          <h3 className="text-section-title mb-3 flex items-center gap-2">
+          <h3 className="text-sm sm:text-base font-bold text-slate-900 mb-3 flex items-center gap-2">
             <Clock className="w-4.5 h-4.5 text-slate-400" />
             Recently Added
           </h3>
-          <div className="KANAKU-card !p-0 divide-y divide-slate-100 overflow-hidden">
+          <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-0 divide-y divide-slate-100 overflow-hidden">
             {data.recentlyAdded.slice(0, 5).map((doc) => (
               <button
                 key={doc.id}
@@ -189,11 +189,11 @@ export const VaultDashboard: React.FC<VaultDashboardProps> = ({
                     <FileText className="w-4 h-4" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-card-title truncate">{doc.title}</p>
-                    <p className="text-caption">{doc.category} · {formatBytes(doc.fileSize)}</p>
+                    <p className="text-xs sm:text-sm font-bold text-slate-900 truncate">{doc.title}</p>
+                    <p className="text-xs text-slate-400">{doc.category} · {formatBytes(doc.fileSize)}</p>
                   </div>
                 </div>
-                <span className="text-caption shrink-0">
+                <span className="text-xs text-slate-400 shrink-0">
                   {new Date(doc.createdAt).toLocaleDateString()}
                 </span>
               </button>
@@ -204,10 +204,10 @@ export const VaultDashboard: React.FC<VaultDashboardProps> = ({
 
       {/* Empty state */}
       {data.totalDocuments === 0 && (
-        <div className="KANAKU-card !items-center !text-center !py-16">
+        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs flex flex-col items-center text-center py-16 px-4">
           <FolderLock className="w-12 h-12 text-purple-300 mb-3" />
-          <h3 className="text-section-title">Your Vault is empty</h3>
-          <p className="text-body-sm text-slate-400 mt-1 max-w-sm">
+          <h3 className="text-base sm:text-lg font-bold text-slate-900">Your Vault is empty</h3>
+          <p className="text-xs sm:text-sm text-slate-400 mt-1 max-w-sm">
             Upload your first document — IDs, property papers, insurance policies. Everything stays encrypted and private.
           </p>
           <button

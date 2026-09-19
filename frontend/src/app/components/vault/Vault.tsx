@@ -391,10 +391,10 @@ export const Vault: React.FC = () => {
             {sharedSubView === 'received' && (
               <>
                 {sharedWithMe.length === 0 ? (
-                  <div className="KANAKU-card !items-center !text-center !py-16">
+                  <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs flex flex-col items-center text-center py-16 px-4">
                     <Users className="w-10 h-10 text-slate-300 mb-3" />
-                    <h4 className="text-card-title text-slate-800">No shared documents yet</h4>
-                    <p className="text-body-sm text-slate-400 mt-1 max-w-sm">
+                    <h4 className="text-sm sm:text-base font-bold text-slate-800">No shared documents yet</h4>
+                    <p className="text-xs sm:text-sm text-slate-400 mt-1 max-w-sm">
                       When a trusted contact shares a vault document or folder with you, it will appear here.
                     </p>
                   </div>
@@ -405,7 +405,7 @@ export const Vault: React.FC = () => {
                       const folder = share.folder;
                       const owner = share.owner;
                       return (
-                        <div key={share.id} className="KANAKU-card !p-4 justify-between">
+                        <div key={share.id} className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-4 flex flex-col justify-between">
                           <div>
                             <div className="flex items-start justify-between gap-2 mb-2">
                               <div className="flex items-center gap-2.5 min-w-0">
@@ -413,21 +413,21 @@ export const Vault: React.FC = () => {
                                   {doc ? <FolderLock className="w-4 h-4" /> : <Folder className="w-4 h-4" />}
                                 </div>
                                 <div className="min-w-0">
-                                  <h5 className="text-card-title truncate">
+                                  <h5 className="text-xs sm:text-sm font-bold text-slate-900 truncate">
                                     {doc?.title || folder?.name || 'Shared Item'}
                                   </h5>
-                                  <span className="text-caption">
+                                  <span className="text-xs text-slate-400">
                                     From: {owner?.name || owner?.email || 'Owner'}
                                   </span>
                                 </div>
                               </div>
-                              <span className="text-caption px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 font-bold capitalize shrink-0">
+                              <span className="text-xs px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 font-bold capitalize shrink-0">
                                 {share.permission}
                               </span>
                             </div>
                           </div>
                           <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-                            <span className="text-caption">
+                            <span className="text-xs text-slate-400">
                               {share.canDownload ? 'Download permitted' : 'View only'}
                             </span>
                             {doc && (
@@ -435,7 +435,7 @@ export const Vault: React.FC = () => {
                                 <button
                                   type="button"
                                   onClick={() => setPreviewDocId(doc.id)}
-                                  className="px-2.5 py-1 bg-purple-50 text-purple-600 text-body-sm font-semibold rounded-lg hover:bg-purple-100 transition-colors flex items-center gap-1"
+                                  className="px-2.5 py-1 bg-purple-50 text-purple-600 text-xs font-semibold rounded-lg hover:bg-purple-100 transition-colors flex items-center gap-1"
                                 >
                                   <Eye className="w-3.5 h-3.5" /> Preview
                                 </button>
@@ -464,20 +464,20 @@ export const Vault: React.FC = () => {
             {sharedSubView === 'sent' && (
               <>
                 {activeShares.length === 0 ? (
-                  <div className="KANAKU-card !items-center !text-center !py-16">
+                  <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs flex flex-col items-center text-center py-16 px-4">
                     <Lock className="w-10 h-10 text-emerald-500 mb-3" />
-                    <h4 className="text-card-title text-slate-800">100% Private</h4>
-                    <p className="text-body-sm text-slate-400 mt-1 max-w-sm">
+                    <h4 className="text-sm sm:text-base font-bold text-slate-800">100% Private</h4>
+                    <p className="text-xs sm:text-sm text-slate-400 mt-1 max-w-sm">
                       You have not shared any documents. Only you can access your vault contents.
                     </p>
                   </div>
                 ) : (
-                  <div className="KANAKU-card !p-0 divide-y divide-slate-100 overflow-hidden">
+                  <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-0 divide-y divide-slate-100 overflow-hidden">
                     {activeShares.map((share) => (
                       <div key={share.id} className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="text-card-title">
+                            <span className="text-xs sm:text-sm font-bold text-slate-900">
                               {share.sharedWithUser?.name || share.sharedWithUser?.email}
                             </span>
                             <span className="text-caption uppercase font-bold px-2 py-0.5 rounded-full bg-purple-50 text-purple-600">

@@ -54,6 +54,7 @@ import { Card } from '@/app/components/ui/card';
 import { Button } from '@/app/components/ui/button';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
 import { downloadFile, shareFile } from '@/lib/download';
 import { formatLocalDate, parseDateInputValue, toLocalDateKey } from '@/lib/dateUtils';
 import { buildStatementReportInput, buildStatementReportPdf } from '@/lib/statementReportPdf';
@@ -61,6 +62,7 @@ import { formatCurrencyAmount } from '@/lib/currencyUtils';
 import { calculateAccountTotalBalance, calculateNetWorth } from '@/lib/financialMath';
 import { isClosedInvestment } from '@/lib/investmentUtils';
 import { AIInsightsCard } from '@/app/components/shared/AIInsightsCard';
+import { ReportPdfPreviewModal } from '@/app/components/features/ReportPdfPreviewModal';
 import { cn } from '@/lib/utils';
 
 /* ─── Pro Design Tokens ─────────────────────────────────────────────────────── */
@@ -775,6 +777,24 @@ export const Reports: React.FC = () => {
     goals,
     investments,
   }));
+
+  const [showPdfPreview, setShowPdfPreview] = useState(false);
+  const [previewPdfBlob, setPreviewPdfBlob] = useState<Blob | null>(null);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+
+  const openPdfPreview = async () => {
+    setIsGeneratingPdf(true);
+    setShowPdfPreview(true);
+    try {
+      const pdfBlob = await generateReportPdfBlob();
+      setPreviewPdfBlob(pdfBlob);
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to generate PDF report');
+      setShowPdfPreview(false);
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
 
   const downloadPDF = async () => {
     const pdfBlob = await generateReportPdfBlob();
@@ -1792,7 +1812,7 @@ export const Reports: React.FC = () => {
                   {canPdf && (
                     <Button
                       data-testid="reports-download-pdf"
-                      onClick={() => void downloadPDF()}
+                      onClick={() => void openPdfPreview()}
                       className="rounded-full px-3.5 py-1.5 text-xs font-bold bg-[#18181B] text-white hover:bg-black shadow-xs cursor-pointer active:scale-95 transition-all flex items-center gap-1"
                     >
                       <Download size={12} /> PDF
@@ -2027,7 +2047,7 @@ export const Reports: React.FC = () => {
                       description="Formatted executive document with charts & tables"
                       colorClass="text-rose-600"
                       bgClass="bg-rose-50"
-                      onClick={() => { pulseExportAction('download'); void downloadPDF(); setShowExportPanel(false); }}
+                      onClick={() => { pulseExportAction('download'); void openPdfPreview(); setShowExportPanel(false); }}
                       isActive={activeExportAction === 'download'}
                     />
                   )}
@@ -2071,6 +2091,20 @@ export const Reports: React.FC = () => {
           )}
         </AnimatePresence>
       </div>
+
+      {/* Report PDF Preview Modal */}
+      <ReportPdfPreviewModal
+        isOpen={showPdfPreview}
+        onClose={() => {
+          setShowPdfPreview(false);
+          setPreviewPdfBlob(null);
+        }}
+        pdfBlob={previewPdfBlob}
+        isLoading={isGeneratingPdf}
+        filename={`kanaku-report-${reportPeriodLabel.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase()}.pdf`}
+        title="Financial Statement Report"
+        periodLabel={reportPeriodLabel}
+      />
     </CenteredLayout>
   );
 };

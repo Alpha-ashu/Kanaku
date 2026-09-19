@@ -17,6 +17,7 @@ import {
   Lock,
   Upload,
   X,
+  ChevronDown,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { vaultService, VaultFolder, VaultDocument } from '@/services/vaultService';
@@ -182,7 +183,7 @@ export const VaultFolderBrowser: React.FC<VaultFolderBrowserProps> = ({
   return (
     <div className="space-y-4">
       {/* Breadcrumbs & Actions Bar */}
-      <div className="KANAKU-card !p-3 !flex-row items-center justify-between gap-2 flex-wrap">
+      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-3 flex flex-row items-center justify-between gap-2 flex-wrap">
         <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
           <button
             type="button"
@@ -238,30 +239,33 @@ export const VaultFolderBrowser: React.FC<VaultFolderBrowserProps> = ({
             exit={{ opacity: 0, height: 0 }}
             className="overflow-hidden"
           >
-            <div className="KANAKU-card !p-4 !gap-3">
-              <h4 className="text-card-title">Create New Folder</h4>
+            <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-4 flex flex-col gap-3">
+              <h4 className="text-sm font-bold text-slate-900">Create New Folder</h4>
               <input
                 type="text"
                 value={newFolderName}
                 onChange={(e) => setNewFolderName(e.target.value)}
                 placeholder="Folder name"
-                className="KANAKU-input"
+                className="w-full h-11 px-3.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white focus:bg-white focus:border-purple-600 focus:ring-2 focus:ring-purple-100 text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 font-medium transition-all outline-none"
                 autoFocus
                 onKeyDown={(e) => e.key === 'Enter' && handleCreateFolder()}
               />
-              <select
-                value={newFolderCategory}
-                onChange={(e) => setNewFolderCategory(e.target.value)}
-                className="w-full"
-              >
-                <option value="Personal Documents">Personal Documents</option>
-                <option value="Property Documents">Property Documents</option>
-                <option value="Insurance">Insurance</option>
-                <option value="Financial Documents">Financial Documents</option>
-                <option value="Legal Documents">Legal Documents</option>
-                <option value="Medical Documents">Medical Documents</option>
-                <option value="Other">Other</option>
-              </select>
+              <div className="relative">
+                <select
+                  value={newFolderCategory}
+                  onChange={(e) => setNewFolderCategory(e.target.value)}
+                  className="w-full h-11 px-3.5 pr-9 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white focus:bg-white focus:border-purple-600 focus:ring-2 focus:ring-purple-100 text-xs sm:text-sm text-slate-800 font-medium transition-all outline-none appearance-none cursor-pointer"
+                >
+                  <option value="Personal Documents">Personal Documents</option>
+                  <option value="Property Documents">Property Documents</option>
+                  <option value="Insurance">Insurance</option>
+                  <option value="Financial Documents">Financial Documents</option>
+                  <option value="Legal Documents">Legal Documents</option>
+                  <option value="Medical Documents">Medical Documents</option>
+                  <option value="Other">Other</option>
+                </select>
+                <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3 top-3.5 pointer-events-none" />
+              </div>
               <div className="flex items-center gap-2 justify-end">
                 <button
                   type="button"
@@ -292,7 +296,7 @@ export const VaultFolderBrowser: React.FC<VaultFolderBrowserProps> = ({
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search documents..."
-          className="KANAKU-search-bar"
+          className="w-full h-11 pl-10 pr-9 rounded-xl border border-slate-200 bg-white shadow-2xs text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 font-medium focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100 transition-all"
         />
         {searchQuery && (
           <button
@@ -308,7 +312,7 @@ export const VaultFolderBrowser: React.FC<VaultFolderBrowserProps> = ({
       {/* Subfolders Grid */}
       {subfolders.length > 0 && (
         <div>
-          <h3 className="text-label mb-2">FOLDERS</h3>
+          <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2.5">FOLDERS</h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
             {subfolders.map((folder) => (
               <div
@@ -404,8 +408,8 @@ export const VaultFolderBrowser: React.FC<VaultFolderBrowserProps> = ({
       {/* Documents List */}
       {folderDocuments.length > 0 && (
         <div>
-          <h3 className="text-label mb-2">DOCUMENTS</h3>
-          <div className="KANAKU-card !p-0 divide-y divide-slate-100 overflow-hidden">
+          <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2.5">DOCUMENTS</h3>
+          <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-0 divide-y divide-slate-100 overflow-hidden">
             {folderDocuments.map((doc) => (
               <div
                 key={doc.id}
@@ -473,7 +477,7 @@ export const VaultFolderBrowser: React.FC<VaultFolderBrowserProps> = ({
 
       {/* Empty Folder State */}
       {subfolders.length === 0 && folderDocuments.length === 0 && (
-        <div className="KANAKU-card !items-center !text-center !py-12">
+        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs flex flex-col items-center text-center py-12 px-4">
           <Folder className="w-10 h-10 text-slate-300 mb-2" />
           <h4 className="text-card-title text-slate-700">
             {currentFolderId ? 'This folder is empty' : 'No documents yet'}
