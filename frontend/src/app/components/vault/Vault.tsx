@@ -210,10 +210,12 @@ export const Vault: React.FC = () => {
   const storageLimitBytes = dashboardData?.storageLimitBytes || 500 * 1024 * 1024;
   const storagePercent = Math.min(100, Math.round((storageUsedBytes / storageLimitBytes) * 100));
 
-  return (
-    <CenteredLayout>
-      {/* Vault Lock Overlay if locked */}
-      {isLocked && (
+  if (isLocked) {
+    return (
+      <CenteredLayout
+        noBottomPadding
+        className="flex items-center justify-center min-h-[calc(100dvh-var(--bottom-reserved-space,76px)-60px)]"
+      >
         <VaultLockOverlay
           expectedPinLength={lockStatus?.pinLength || 8}
           onUnlocked={() => {
@@ -221,7 +223,12 @@ export const Vault: React.FC = () => {
             setIsLocked(false);
           }}
         />
-      )}
+      </CenteredLayout>
+    );
+  }
+
+  return (
+    <CenteredLayout>
 
       {/* Main Container */}
       <div className="space-y-5 pb-36 sm:pb-28">

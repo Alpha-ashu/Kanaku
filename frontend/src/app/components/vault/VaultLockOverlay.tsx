@@ -301,9 +301,9 @@ export const VaultLockOverlay: React.FC<VaultLockOverlayProps> = ({
   return (
     <div
       data-testid="vault-lock-overlay"
-      className="fixed inset-0 z-[100] overflow-y-auto bg-white flex flex-col items-center justify-start sm:justify-center p-3 sm:p-6 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))] min-h-full select-none"
+      className="w-full max-w-sm mx-auto flex flex-col items-center justify-center py-2 sm:py-4 px-2 sm:px-4 select-none"
     >
-      {/* Hidden input to prevent software keyboard conflict while retaining hardware input */}
+      {/* Hidden input to capture physical keyboard input */}
       <input
         ref={hiddenInputRef}
         type="password"
@@ -314,63 +314,97 @@ export const VaultLockOverlay: React.FC<VaultLockOverlayProps> = ({
         aria-hidden="true"
       />
 
-      <div className="w-full max-w-md p-3 sm:p-6 md:p-8 flex flex-col my-auto">
-        {/* Header */}
-        <div className="pt-2 sm:pt-4 pb-3 sm:pb-6 flex flex-col items-center px-4 sm:px-6">
-          <div className="mb-2 sm:mb-4">
-            <KANAKULogo className="w-10 h-10 sm:w-12 sm:h-12" />
+      <div className="w-full flex flex-col gap-2.5 sm:gap-3.5">
+        {/* Compact Security Header */}
+        <div className="flex flex-col items-center text-center">
+          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-600 text-white shadow-md shadow-purple-500/25 flex items-center justify-center mb-1.5">
+            <Lock className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
-          <h1
-            className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-[0.02em] mb-1"
+          <h2
+            className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight"
             style={{ fontFamily: DISPLAY_FONT }}
           >
-            KANAKU
-          </h1>
-          <p className="text-xs sm:text-sm text-gray-500 font-medium text-center max-w-[260px] leading-tight">
-            Enter your PIN to access Kanaku Vault
+            Kanaku Vault
+          </h2>
+          <p className="text-xs sm:text-sm text-gray-500 font-medium max-w-[260px] leading-tight mt-0.5">
+            Enter your 4–12 digit PIN to unlock
           </p>
         </div>
 
-        {/* Card Content */}
-        <div className="px-2 sm:px-6 md:px-8 flex flex-col gap-3.5 sm:gap-6">
-          {/* Step label */}
-          <div className="flex flex-col items-center text-center">
-            <p className="text-2xs font-black uppercase tracking-[0.2em] text-purple-600 mb-0.5 sm:mb-1">
-              Secure Vault Unlock
-            </p>
-            <h2 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight">
-              Enter Vault PIN
-            </h2>
-          </div>
-
-          {/* PIN Digit Boxes */}
-          <div className="flex justify-center gap-1.5 sm:gap-2.5 flex-wrap">
-            {Array.from({ length: displayLength }, (_, i) => {
-              const isActive = i === pin.length;
-              const isFilled = i < pin.length;
-              const hasError = Boolean(errorMsg) && shake;
-              const revealed = showReveal && i < pin.length ? pin[i] : undefined;
-
-              return (
-                <div
-                  key={i}
-                  className={`w-9 h-9 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-xl sm:rounded-2xl border-2 flex items-center justify-center text-lg sm:text-xl font-black transition-all ${
-                    hasError
-                      ? 'border-red-400 bg-red-50 text-red-600'
-                      : isActive
-                      ? 'border-purple-600 bg-white ring-2 sm:ring-4 ring-purple-100'
-                      : isFilled
-                      ? 'border-purple-600 bg-purple-600 text-white'
-                      : 'border-gray-200 bg-white/50 text-transparent'
-                  } ${shake ? 'animate-[shake_0.4s_ease-in-out]' : ''}`}
-                >
-                  {revealed !== undefined ? revealed : isFilled ? '●' : ''}
-                  {isActive && (
-                    <div className="w-[2px] sm:w-[2.5px] h-4 sm:h-5 bg-purple-600 animate-[blink_1s_infinite]" />
-                  )}
-                </div>
-              );
-            })}
+        {/* PIN Dots Section */}
+        <div className="flex flex-col items-center gap-1.5 w-full">
+          {/* PIN Dots Display Pill */}
+          <div
+            data-testid="vault-pin-dots-container"
+            onClick={() => hiddenInputRef.current?.focus()}
+            className={`w-full max-w-[270px] sm:max-w-[300px] mx-auto min-h-[46px] sm:min-h-[50px] px-3.5 py-2 rounded-2xl bg-white border-2 flex items-center justify-center transition-all cursor-pointer ${
+              shake && errorMsg
+                ? 'border-red-400 bg-red-50/60 shadow-sm shadow-red-500/20 animate-[shake_0.4s_ease-in-out]'
+                : pin.length > 0
+                ? 'border-purple-600 ring-4 ring-purple-100/60 shadow-sm shadow-purple-500/15'
+                : 'border-slate-200/90 hover:border-slate-300 bg-slate-50/50'
+            }`}
+          >
+            {pin.length === 0 ? (
+              /* Empty state: 4 subtle dot slots */
+              <div className="flex items-center gap-2.5 sm:gap-3 py-1">
+                {[0, 1, 2, 3].map((i) => (
+                  <div
+                    key={i}
+                    className={`w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full border-2 transition-all ${
+                      i === 0
+                        ? 'border-purple-600 bg-purple-50 scale-105'
+                        : 'border-slate-300 bg-transparent'
+                    }`}
+                  >
+                    {i === 0 && (
+                      <div className="w-full h-full rounded-full bg-purple-600/30 animate-ping" />
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : !showReveal ? (
+              /* Masked PIN Dots */
+              <div className="flex items-center justify-center gap-2 sm:gap-2.5 flex-wrap py-1">
+                {pin.split('').map((_, i) => (
+                  <div
+                    key={i}
+                    className={`w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full transition-all duration-150 transform scale-100 ${
+                      shake && errorMsg
+                        ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]'
+                        : 'bg-purple-600 shadow-[0_0_8px_rgba(147,51,234,0.4)]'
+                    } animate-in zoom-in-50 duration-150`}
+                  />
+                ))}
+                {/* If less than 4 digits typed, show placeholder slots for remaining */}
+                {pin.length < 4 &&
+                  Array.from({ length: 4 - pin.length }).map((_, i) => (
+                    <div
+                      key={`empty-${i}`}
+                      className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full border-2 border-slate-300 bg-transparent scale-90"
+                    />
+                  ))}
+                {/* Active blinking cursor */}
+                {pin.length < 12 && !(shake && errorMsg) && (
+                  <div className="w-[2px] h-4 bg-purple-600 rounded-full animate-[blink_1s_infinite] ml-0.5" />
+                )}
+              </div>
+            ) : (
+              /* Revealed Digit Chips */
+              <div className="flex items-center justify-center gap-1.5 sm:gap-2 flex-wrap py-0.5">
+                {pin.split('').map((digit, i) => (
+                  <div
+                    key={i}
+                    className="w-6 h-7 sm:w-7 sm:h-8 rounded-lg bg-purple-50 border border-purple-200 text-purple-950 font-black text-sm sm:text-base flex items-center justify-center animate-in zoom-in-75 duration-100"
+                  >
+                    {digit}
+                  </div>
+                ))}
+                {pin.length < 12 && (
+                  <div className="w-[2px] h-5 bg-purple-600 rounded-full animate-[blink_1s_infinite] ml-0.5" />
+                )}
+              </div>
+            )}
           </div>
 
           {/* Show/Hide Toggle & Error Banner */}
@@ -378,122 +412,117 @@ export const VaultLockOverlay: React.FC<VaultLockOverlayProps> = ({
             <button
               type="button"
               onClick={() => setShowReveal((r) => !r)}
-              className="flex items-center gap-1.5 text-gray-400 hover:text-purple-600 text-2xs font-bold transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 text-slate-400 hover:text-purple-600 text-2xs font-bold transition-colors cursor-pointer py-0.5"
             >
-              {showReveal ? <EyeOff size={14} /> : <Eye size={14} />}
+              {showReveal ? <EyeOff size={13} /> : <Eye size={13} />}
               {showReveal ? 'HIDE PIN' : 'SHOW PIN'}
             </button>
 
-            <div className="min-h-5 mt-1">
+            <div className="min-h-[18px] flex items-center justify-center">
               {errorMsg && (
-                <p className="text-red-500 text-2xs font-bold text-center flex items-center justify-center gap-1">
+                <p className="text-red-500 text-2xs font-bold text-center flex items-center justify-center gap-1 animate-in fade-in-50 duration-150">
                   <AlertCircle size={12} /> {errorMsg}
                 </p>
               )}
             </div>
           </div>
+        </div>
 
-          {/* Number Pad */}
-          <div className="grid grid-cols-3 gap-2 sm:gap-3 w-full max-w-[280px] sm:max-w-[320px] mx-auto">
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => (
-              <button
-                key={n}
-                type="button"
-                onClick={() => appendDigit(String(n))}
-                disabled={isVerifying}
-                className="h-11 sm:h-14 rounded-xl sm:rounded-2xl bg-white hover:bg-slate-100 active:bg-slate-200 active:scale-95 transition-all text-lg sm:text-xl font-semibold text-gray-900 flex items-center justify-center disabled:opacity-50 disabled:pointer-events-none cursor-pointer border border-slate-100 shadow-2xs"
-              >
-                {n}
-              </button>
-            ))}
-
-            {/* Bottom Row */}
+        {/* Number Pad */}
+        <div className="grid grid-cols-3 gap-1.5 sm:gap-2.5 w-full max-w-[270px] sm:max-w-[300px] mx-auto">
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => (
             <button
+              key={n}
               type="button"
-              onClick={handleForgotPin}
+              onClick={() => appendDigit(String(n))}
               disabled={isVerifying}
-              title="Forgot PIN? Reset via email"
-              className="h-11 sm:h-14 rounded-xl sm:rounded-2xl bg-transparent hover:bg-slate-50 active:bg-slate-100 transition-all text-gray-500 hover:text-purple-600 flex items-center justify-center disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
+              className="h-11 sm:h-13 rounded-2xl bg-white hover:bg-slate-50 active:bg-slate-100 active:scale-95 transition-all text-lg sm:text-xl font-bold text-slate-800 flex items-center justify-center disabled:opacity-50 disabled:pointer-events-none cursor-pointer border border-slate-200/80 shadow-2xs touch-manipulation select-none"
             >
-              <KeyRound size={18} />
+              {n}
             </button>
+          ))}
 
-            <button
-              type="button"
-              onClick={() => appendDigit('0')}
-              disabled={isVerifying}
-              className="h-11 sm:h-14 rounded-xl sm:rounded-2xl bg-white hover:bg-slate-100 active:bg-slate-200 active:scale-95 transition-all text-lg sm:text-xl font-semibold text-gray-900 flex items-center justify-center disabled:opacity-50 disabled:pointer-events-none cursor-pointer border border-slate-100 shadow-2xs"
-            >
-              0
-            </button>
+          {/* Bottom Row */}
+          <button
+            type="button"
+            onClick={handleForgotPin}
+            disabled={isVerifying}
+            title="Forgot PIN? Reset via email"
+            className="h-11 sm:h-13 rounded-2xl bg-transparent hover:bg-slate-50 active:bg-slate-100 active:scale-95 transition-all text-slate-500 hover:text-purple-600 flex items-center justify-center disabled:opacity-50 disabled:pointer-events-none cursor-pointer touch-manipulation"
+          >
+            <KeyRound size={18} />
+          </button>
 
-            <button
-              type="button"
-              onClick={deleteDigit}
-              disabled={isVerifying}
-              className="h-11 sm:h-14 rounded-xl sm:rounded-2xl bg-transparent hover:bg-slate-50 active:bg-slate-100 transition-all text-gray-500 hover:text-gray-900 flex items-center justify-center disabled:opacity-50 disabled:pointer-events-none cursor-pointer text-lg"
-            >
-              {isVerifying ? (
-                <Loader2 size={18} className="animate-spin text-purple-600" />
-              ) : (
-                '⌫'
-              )}
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => appendDigit('0')}
+            disabled={isVerifying}
+            className="h-11 sm:h-13 rounded-2xl bg-white hover:bg-slate-50 active:bg-slate-100 active:scale-95 transition-all text-lg sm:text-xl font-bold text-slate-800 flex items-center justify-center disabled:opacity-50 disabled:pointer-events-none cursor-pointer border border-slate-200/80 shadow-2xs touch-manipulation select-none"
+          >
+            0
+          </button>
 
-          {/* Manual submit button if pin length is 4 or more */}
-          {pin.length >= 4 && (
-            <button
-              type="button"
-              onClick={() => handleVerify()}
-              disabled={isVerifying}
-              className="w-full max-w-[280px] sm:max-w-[320px] mx-auto h-11 rounded-2xl bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white text-xs sm:text-sm font-bold shadow-sm shadow-purple-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-            >
-              {isVerifying ? (
-                <>
-                  <Loader2 size={16} className="animate-spin" />
-                  <span>Verifying...</span>
-                </>
-              ) : (
-                <>
-                  <Lock size={15} />
-                  <span>Unlock Vault</span>
-                </>
-              )}
-            </button>
+          <button
+            type="button"
+            onClick={deleteDigit}
+            disabled={isVerifying}
+            className="h-11 sm:h-13 rounded-2xl bg-transparent hover:bg-slate-50 active:bg-slate-100 active:scale-95 transition-all text-slate-500 hover:text-slate-900 flex items-center justify-center disabled:opacity-50 disabled:pointer-events-none cursor-pointer text-lg touch-manipulation"
+          >
+            {isVerifying ? (
+              <Loader2 size={18} className="animate-spin text-purple-600" />
+            ) : (
+              '⌫'
+            )}
+          </button>
+        </div>
+
+        {/* Unlock Action Button */}
+        <button
+          type="button"
+          onClick={() => handleVerify()}
+          disabled={pin.length < 4 || isVerifying}
+          className={`w-full max-w-[270px] sm:max-w-[300px] mx-auto h-11 rounded-2xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer ${
+            pin.length >= 4
+              ? 'bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white shadow-md shadow-purple-500/25 active:scale-98'
+              : 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200/60'
+          }`}
+        >
+          {isVerifying ? (
+            <>
+              <Loader2 size={16} className="animate-spin" />
+              <span>Verifying...</span>
+            </>
+          ) : (
+            <>
+              <Lock size={15} />
+              <span>{pin.length >= 4 ? 'Unlock Vault' : 'Enter 4–12 Digits'}</span>
+            </>
           )}
+        </button>
 
-          {/* Biometric Unlock (if enrolled) */}
-          {biometric?.available && biometricEnrolled && (
-            <button
-              type="button"
-              onClick={handleBiometricUnlock}
-              disabled={isVerifying || biometricBusy}
-              className="flex items-center justify-center gap-2 mx-auto rounded-full border border-purple-200 bg-purple-50/50 hover:bg-purple-50 px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-bold text-purple-700 transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
-            >
-              {biometricBusy ? (
-                <Loader2 size={16} className="animate-spin" />
-              ) : biometric.isFace ? (
-                <ScanFace size={16} />
-              ) : (
-                <Fingerprint size={16} />
-              )}
-              {biometricBusy ? 'Verifying…' : `Unlock with ${biometric.label}`}
-            </button>
-          )}
+        {/* Biometric Unlock (if enrolled) */}
+        {biometric?.available && biometricEnrolled && (
+          <button
+            type="button"
+            onClick={handleBiometricUnlock}
+            disabled={isVerifying || biometricBusy}
+            className="flex items-center justify-center gap-2 mx-auto rounded-full border border-purple-200 bg-purple-50/60 hover:bg-purple-50 px-4 py-1.5 text-xs font-bold text-purple-700 transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
+          >
+            {biometricBusy ? (
+              <Loader2 size={14} className="animate-spin" />
+            ) : biometric.isFace ? (
+              <ScanFace size={14} />
+            ) : (
+              <Fingerprint size={14} />
+            )}
+            {biometricBusy ? 'Verifying…' : `Unlock with ${biometric.label}`}
+          </button>
+        )}
 
-          {/* Security Banner */}
-          <div className="bg-slate-50 border border-slate-100 rounded-2xl sm:rounded-[24px] p-3 sm:p-4 flex flex-col items-center text-center gap-1.5 mt-1 sm:mt-2 mb-2">
-            <ShieldCheck className="text-emerald-500" size={18} />
-            <div>
-              <p className="text-gray-900 text-2xs font-black uppercase tracking-wider mb-0.5">
-                Vault Protected
-              </p>
-              <p className="text-gray-500 text-2xs leading-relaxed max-w-[260px]">
-                Protected with zero-knowledge AES-256 encryption. Documents remain secure until unlocked.
-              </p>
-            </div>
-          </div>
+        {/* Compact 1-line Security Footer */}
+        <div className="flex items-center justify-center gap-1.5 text-slate-400 text-2xs font-medium py-0.5">
+          <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+          <span>AES-256 Zero-Knowledge Protection</span>
         </div>
       </div>
 

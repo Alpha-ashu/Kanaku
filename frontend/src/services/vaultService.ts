@@ -337,8 +337,8 @@ export const vaultService = {
     return res.data;
   },
 
-  verifyLock: async (vaultPin: string): Promise<{ verified: boolean; unlockedAt: string }> => {
-    const res = await apiClient.post<{ verified: boolean; unlockedAt: string }>('/vault/lock/verify', { vaultPin });
+  verifyLock: async (vaultPin: string): Promise<{ verified: boolean; unlockedAt?: string; message?: string }> => {
+    const res = await apiClient.post<{ verified: boolean; unlockedAt?: string; message?: string }>('/vault/lock/verify', { vaultPin });
     if (!res.data) throw new Error(res.error?.message || 'Failed to verify PIN');
     return res.data;
   },

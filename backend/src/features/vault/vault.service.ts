@@ -1117,7 +1117,7 @@ export class VaultService {
     }
 
     if (!match) {
-      throw AppError.unauthorized('Incorrect PIN');
+      return { verified: false, message: 'Incorrect PIN. Please try again.' };
     }
 
     await prisma.vaultLockSetting.update({
