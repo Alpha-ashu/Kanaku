@@ -149,13 +149,13 @@ export const VaultUploadModal: React.FC<VaultUploadModalProps> = ({
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 15 }}
         transition={{ duration: 0.2, ease: 'easeOut' }}
-        className="relative w-full max-w-[calc(100vw-24px)] sm:max-w-xl max-h-[92dvh] sm:max-h-[88vh] flex flex-col bg-white rounded-[24px] sm:rounded-[32px] shadow-2xl border border-slate-100/80 overflow-hidden z-10"
+        className="relative w-full max-w-[calc(100vw-12px)] sm:max-w-xl max-h-[93dvh] sm:max-h-[88vh] flex flex-col bg-white rounded-[24px] sm:rounded-[32px] shadow-2xl border border-slate-100/80 overflow-hidden z-10"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Streamlined Header */}
         <div className="shrink-0 flex items-center justify-between px-3.5 sm:px-5 py-3 border-b border-slate-100 bg-white/95 backdrop-blur-md gap-2 min-w-0">
           <div className="flex items-center gap-2.5 min-w-0 flex-1">
-            <div className="w-10 h-10 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
               <Upload className="w-5 h-5" />
             </div>
             <div className="min-w-0 flex-1">
@@ -202,10 +202,10 @@ export const VaultUploadModal: React.FC<VaultUploadModalProps> = ({
             onClick={() => fileInputRef.current?.click()}
             className={`relative border-2 border-dashed rounded-2xl p-4 text-center cursor-pointer transition-all ${
               isDragging
-                ? 'border-purple-500 bg-purple-50/60'
+                ? 'border-blue-500 bg-blue-50/60'
                 : file
                 ? 'border-emerald-400 bg-emerald-50/40'
-                : 'border-slate-200 hover:border-purple-400 hover:bg-purple-50/20 bg-slate-50/50'
+                : 'border-slate-200 hover:border-blue-400 hover:bg-blue-50/20 bg-slate-50/50'
             }`}
           >
             <input
@@ -240,11 +240,11 @@ export const VaultUploadModal: React.FC<VaultUploadModalProps> = ({
               </div>
             ) : (
               <>
-                <div className="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center mx-auto mb-1.5">
+                <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-1.5">
                   <Upload className="w-4.5 h-4.5" />
                 </div>
                 <p className="text-xs sm:text-sm font-bold text-slate-800">
-                  Drop file here or <span className="text-purple-600 hover:underline">browse</span>
+                  Drop file here or <span className="text-blue-600 hover:underline">browse</span>
                 </p>
                 <p className="text-[11px] text-slate-400 font-medium mt-0.5">PDF, JPG, PNG, WEBP, DOCX · Max 25 MB</p>
               </>
@@ -254,7 +254,7 @@ export const VaultUploadModal: React.FC<VaultUploadModalProps> = ({
           {/* Document Title */}
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1 flex items-center gap-1.5">
-              <FileText className="w-3.5 h-3.5 text-slate-400" /> Document Title <span className="text-purple-600">*</span>
+              <FileText className="w-3.5 h-3.5 text-slate-400" /> Document Title <span className="text-blue-600">*</span>
             </label>
             <input
               type="text"
@@ -262,7 +262,7 @@ export const VaultUploadModal: React.FC<VaultUploadModalProps> = ({
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g., PAN Card, Aadhaar, Property Deed"
               required
-              className="w-full h-10 px-3.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white focus:bg-white focus:border-purple-600 focus:ring-2 focus:ring-purple-100 text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 font-medium transition-all outline-none"
+              className="w-full h-10 px-3.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-100 text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 font-medium transition-all outline-none"
             />
           </div>
 
@@ -274,7 +274,7 @@ export const VaultUploadModal: React.FC<VaultUploadModalProps> = ({
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  className="w-full h-10 px-3 pr-8 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white focus:bg-white focus:border-purple-600 focus:ring-2 focus:ring-purple-100 text-xs sm:text-sm text-slate-800 font-medium transition-all outline-none appearance-none cursor-pointer"
+                  className="w-full h-10 px-3 pr-8 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-100 text-xs sm:text-sm text-slate-800 font-medium transition-all outline-none appearance-none cursor-pointer"
                 >
                   <option value="Personal Documents">Personal Documents</option>
                   <option value="Property Documents">Property Documents</option>
@@ -295,7 +295,7 @@ export const VaultUploadModal: React.FC<VaultUploadModalProps> = ({
                 <select
                   value={folderId}
                   onChange={(e) => setFolderId(e.target.value)}
-                  className="w-full h-10 px-3 pr-8 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white focus:bg-white focus:border-purple-600 focus:ring-2 focus:ring-purple-100 text-xs sm:text-sm text-slate-800 font-medium transition-all outline-none appearance-none cursor-pointer"
+                  className="w-full h-10 px-3 pr-8 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-100 text-xs sm:text-sm text-slate-800 font-medium transition-all outline-none appearance-none cursor-pointer"
                 >
                   <option value="">— Root Folder —</option>
                   {folders.map((f) => (
@@ -311,7 +311,7 @@ export const VaultUploadModal: React.FC<VaultUploadModalProps> = ({
           <button
             type="button"
             onClick={() => setShowOptionalFields(!showOptionalFields)}
-            className="text-xs font-semibold text-purple-600 hover:text-purple-700 flex items-center gap-1 pt-0.5 cursor-pointer transition-colors"
+            className="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1 pt-0.5 cursor-pointer transition-colors"
           >
             <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showOptionalFields ? 'rotate-180' : ''}`} />
             {showOptionalFields ? 'Hide optional details' : '+ Add institution, number, expiry (Optional)'}
@@ -336,7 +336,7 @@ export const VaultUploadModal: React.FC<VaultUploadModalProps> = ({
                       value={institution}
                       onChange={(e) => setInstitution(e.target.value)}
                       placeholder="e.g., UIDAI, SBI"
-                      className="w-full h-9 px-3 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white focus:bg-white focus:border-purple-600 focus:ring-2 focus:ring-purple-100 text-xs text-slate-800 placeholder:text-slate-400 font-medium transition-all outline-none"
+                      className="w-full h-9 px-3 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-100 text-xs text-slate-800 placeholder:text-slate-400 font-medium transition-all outline-none"
                     />
                   </div>
                   <div>
@@ -348,7 +348,7 @@ export const VaultUploadModal: React.FC<VaultUploadModalProps> = ({
                       value={documentNumber}
                       onChange={(e) => setDocumentNumber(e.target.value)}
                       placeholder="e.g., XXXX-1234"
-                      className="w-full h-9 px-3 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white focus:bg-white focus:border-purple-600 focus:ring-2 focus:ring-purple-100 text-xs text-slate-800 placeholder:text-slate-400 font-medium transition-all outline-none"
+                      className="w-full h-9 px-3 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-100 text-xs text-slate-800 placeholder:text-slate-400 font-medium transition-all outline-none"
                     />
                   </div>
                 </div>
@@ -361,7 +361,7 @@ export const VaultUploadModal: React.FC<VaultUploadModalProps> = ({
                     type="date"
                     value={expiryDate}
                     onChange={(e) => setExpiryDate(e.target.value)}
-                    className="w-full h-9 px-3 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white focus:bg-white focus:border-purple-600 focus:ring-2 focus:ring-purple-100 text-xs text-slate-800 font-medium transition-all outline-none"
+                    className="w-full h-9 px-3 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-100 text-xs text-slate-800 font-medium transition-all outline-none"
                   />
                 </div>
 
@@ -374,7 +374,7 @@ export const VaultUploadModal: React.FC<VaultUploadModalProps> = ({
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="Additional notes..."
                     rows={2}
-                    className="w-full p-2 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white focus:bg-white focus:border-purple-600 focus:ring-2 focus:ring-purple-100 text-xs text-slate-800 placeholder:text-slate-400 font-medium transition-all outline-none resize-none"
+                    className="w-full p-2 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-100 text-xs text-slate-800 placeholder:text-slate-400 font-medium transition-all outline-none resize-none"
                   />
                 </div>
               </motion.div>
@@ -396,7 +396,7 @@ export const VaultUploadModal: React.FC<VaultUploadModalProps> = ({
             type="submit"
             form="vault-upload-form"
             disabled={isUploading || !file}
-            className="flex-1 h-10 px-3.5 rounded-xl bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white font-bold text-xs sm:text-sm shadow-md shadow-purple-500/25 transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed min-w-0 truncate"
+            className="flex-1 h-10 px-3.5 rounded-xl bg-[#18181B] hover:bg-black active:bg-zinc-900 text-white font-bold text-xs sm:text-sm shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed min-w-0 truncate"
           >
             {isUploading ? (
               <>

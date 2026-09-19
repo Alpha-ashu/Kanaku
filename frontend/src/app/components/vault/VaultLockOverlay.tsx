@@ -317,7 +317,7 @@ export const VaultLockOverlay: React.FC<VaultLockOverlayProps> = ({
       <div className="w-full flex flex-col gap-2.5 sm:gap-3.5">
         {/* Compact Security Header */}
         <div className="flex flex-col items-center text-center">
-          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-600 text-white shadow-md shadow-purple-500/25 flex items-center justify-center mb-1.5">
+          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-blue-700 text-white shadow-md shadow-blue-500/25 flex items-center justify-center mb-1.5">
             <Lock className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
           <h2
@@ -341,7 +341,7 @@ export const VaultLockOverlay: React.FC<VaultLockOverlayProps> = ({
               shake && errorMsg
                 ? 'border-red-400 bg-red-50/60 shadow-sm shadow-red-500/20 animate-[shake_0.4s_ease-in-out]'
                 : pin.length > 0
-                ? 'border-purple-600 ring-4 ring-purple-100/60 shadow-sm shadow-purple-500/15'
+                ? 'border-blue-600 ring-4 ring-blue-100/60 shadow-sm shadow-blue-500/15'
                 : 'border-slate-200/90 hover:border-slate-300 bg-slate-50/50'
             }`}
           >
@@ -353,12 +353,12 @@ export const VaultLockOverlay: React.FC<VaultLockOverlayProps> = ({
                     key={i}
                     className={`w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full border-2 transition-all ${
                       i === 0
-                        ? 'border-purple-600 bg-purple-50 scale-105'
+                        ? 'border-blue-600 bg-blue-50 scale-105'
                         : 'border-slate-300 bg-transparent'
                     }`}
                   >
                     {i === 0 && (
-                      <div className="w-full h-full rounded-full bg-purple-600/30 animate-ping" />
+                      <div className="w-full h-full rounded-full bg-blue-600/30 animate-ping" />
                     )}
                   </div>
                 ))}
@@ -372,7 +372,7 @@ export const VaultLockOverlay: React.FC<VaultLockOverlayProps> = ({
                     className={`w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full transition-all duration-150 transform scale-100 ${
                       shake && errorMsg
                         ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]'
-                        : 'bg-purple-600 shadow-[0_0_8px_rgba(147,51,234,0.4)]'
+                        : 'bg-blue-600 shadow-[0_0_8px_rgba(147,51,234,0.4)]'
                     } animate-in zoom-in-50 duration-150`}
                   />
                 ))}
@@ -386,7 +386,7 @@ export const VaultLockOverlay: React.FC<VaultLockOverlayProps> = ({
                   ))}
                 {/* Active blinking cursor */}
                 {pin.length < 12 && !(shake && errorMsg) && (
-                  <div className="w-[2px] h-4 bg-purple-600 rounded-full animate-[blink_1s_infinite] ml-0.5" />
+                  <div className="w-[2px] h-4 bg-blue-600 rounded-full animate-[blink_1s_infinite] ml-0.5" />
                 )}
               </div>
             ) : (
@@ -395,13 +395,13 @@ export const VaultLockOverlay: React.FC<VaultLockOverlayProps> = ({
                 {pin.split('').map((digit, i) => (
                   <div
                     key={i}
-                    className="w-6 h-7 sm:w-7 sm:h-8 rounded-lg bg-purple-50 border border-purple-200 text-purple-950 font-black text-sm sm:text-base flex items-center justify-center animate-in zoom-in-75 duration-100"
+                    className="w-6 h-7 sm:w-7 sm:h-8 rounded-lg bg-blue-50 border border-blue-200 text-blue-950 font-black text-sm sm:text-base flex items-center justify-center animate-in zoom-in-75 duration-100"
                   >
                     {digit}
                   </div>
                 ))}
                 {pin.length < 12 && (
-                  <div className="w-[2px] h-5 bg-purple-600 rounded-full animate-[blink_1s_infinite] ml-0.5" />
+                  <div className="w-[2px] h-5 bg-blue-600 rounded-full animate-[blink_1s_infinite] ml-0.5" />
                 )}
               </div>
             )}
@@ -412,7 +412,7 @@ export const VaultLockOverlay: React.FC<VaultLockOverlayProps> = ({
             <button
               type="button"
               onClick={() => setShowReveal((r) => !r)}
-              className="flex items-center gap-1.5 text-slate-400 hover:text-purple-600 text-2xs font-bold transition-colors cursor-pointer py-0.5"
+              className="flex items-center gap-1.5 text-slate-400 hover:text-blue-600 text-2xs font-bold transition-colors cursor-pointer py-0.5"
             >
               {showReveal ? <EyeOff size={13} /> : <Eye size={13} />}
               {showReveal ? 'HIDE PIN' : 'SHOW PIN'}
@@ -448,7 +448,7 @@ export const VaultLockOverlay: React.FC<VaultLockOverlayProps> = ({
             onClick={handleForgotPin}
             disabled={isVerifying}
             title="Forgot PIN? Reset via email"
-            className="h-11 sm:h-13 rounded-2xl bg-transparent hover:bg-slate-50 active:bg-slate-100 active:scale-95 transition-all text-slate-500 hover:text-purple-600 flex items-center justify-center disabled:opacity-50 disabled:pointer-events-none cursor-pointer touch-manipulation"
+            className="h-11 sm:h-13 rounded-2xl bg-transparent hover:bg-slate-50 active:bg-slate-100 active:scale-95 transition-all text-slate-500 hover:text-blue-600 flex items-center justify-center disabled:opacity-50 disabled:pointer-events-none cursor-pointer touch-manipulation"
           >
             <KeyRound size={18} />
           </button>
@@ -469,7 +469,7 @@ export const VaultLockOverlay: React.FC<VaultLockOverlayProps> = ({
             className="h-11 sm:h-13 rounded-2xl bg-transparent hover:bg-slate-50 active:bg-slate-100 active:scale-95 transition-all text-slate-500 hover:text-slate-900 flex items-center justify-center disabled:opacity-50 disabled:pointer-events-none cursor-pointer text-lg touch-manipulation"
           >
             {isVerifying ? (
-              <Loader2 size={18} className="animate-spin text-purple-600" />
+              <Loader2 size={18} className="animate-spin text-blue-600" />
             ) : (
               '⌫'
             )}
@@ -483,7 +483,7 @@ export const VaultLockOverlay: React.FC<VaultLockOverlayProps> = ({
           disabled={pin.length < 4 || isVerifying}
           className={`w-full max-w-[270px] sm:max-w-[300px] mx-auto h-11 rounded-2xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer ${
             pin.length >= 4
-              ? 'bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white shadow-md shadow-purple-500/25 active:scale-98'
+              ? 'bg-[#18181B] hover:bg-black active:bg-zinc-900 text-white shadow-sm active:scale-98'
               : 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200/60'
           }`}
         >
@@ -506,7 +506,7 @@ export const VaultLockOverlay: React.FC<VaultLockOverlayProps> = ({
             type="button"
             onClick={handleBiometricUnlock}
             disabled={isVerifying || biometricBusy}
-            className="flex items-center justify-center gap-2 mx-auto rounded-full border border-purple-200 bg-purple-50/60 hover:bg-purple-50 px-4 py-1.5 text-xs font-bold text-purple-700 transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
+            className="flex items-center justify-center gap-2 mx-auto rounded-full border border-blue-200 bg-blue-50/60 hover:bg-blue-50 px-4 py-1.5 text-xs font-bold text-blue-700 transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
           >
             {biometricBusy ? (
               <Loader2 size={14} className="animate-spin" />
@@ -534,7 +534,7 @@ export const VaultLockOverlay: React.FC<VaultLockOverlayProps> = ({
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex flex-col items-center text-center gap-2">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-purple-500/20 mb-1">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-600 to-blue-700 flex items-center justify-center shadow-lg shadow-blue-500/20 mb-1">
                 <KeyRound className="text-white" size={24} />
               </div>
               <h3 className="text-xl font-black text-slate-900 tracking-tight">
@@ -577,7 +577,7 @@ export const VaultLockOverlay: React.FC<VaultLockOverlayProps> = ({
                         onKeyDown={(e) => handleResetOtpKeyDown(i, e)}
                         onPaste={handleResetOtpPaste}
                         data-testid={`vault-reset-otp-${i}`}
-                        className="w-10 h-10 sm:w-11 sm:h-11 text-center text-lg font-black text-slate-900 bg-slate-50 border-2 border-slate-100 rounded-xl focus:outline-none focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 transition-all duration-200"
+                        className="w-10 h-10 sm:w-11 sm:h-11 text-center text-lg font-black text-slate-900 bg-slate-50 border-2 border-slate-100 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-200"
                         autoFocus={i === 0}
                       />
                     ))}
@@ -586,7 +586,7 @@ export const VaultLockOverlay: React.FC<VaultLockOverlayProps> = ({
                   type="button"
                   onClick={handleSendResetOtp}
                   disabled={isResettingPin}
-                  className="self-center text-xs font-bold text-purple-600 hover:text-purple-700 disabled:opacity-50 py-1 cursor-pointer"
+                  className="self-center text-xs font-bold text-blue-600 hover:text-blue-700 disabled:opacity-50 py-1 cursor-pointer"
                 >
                   Didn't get code? Resend
                 </button>
@@ -610,7 +610,7 @@ export const VaultLockOverlay: React.FC<VaultLockOverlayProps> = ({
                   type="button"
                   onClick={handleVerifyOtpAndUnlock}
                   disabled={isResettingPin || resetOtpInputs.join('').length < 6}
-                  className="flex-1 py-3 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold text-xs sm:text-sm shadow-md shadow-purple-500/20 transition-all disabled:opacity-50 flex items-center justify-center gap-1.5 cursor-pointer"
+                  className="flex-1 py-3 rounded-2xl bg-gradient-to-tr from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold text-xs sm:text-sm shadow-md shadow-blue-500/20 transition-all disabled:opacity-50 flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   {isResettingPin ? <Loader2 size={16} className="animate-spin" /> : null}
                   <span>Verify & Unlock</span>
@@ -620,7 +620,7 @@ export const VaultLockOverlay: React.FC<VaultLockOverlayProps> = ({
                   type="button"
                   onClick={handleSendResetOtp}
                   disabled={isResettingPin}
-                  className="flex-1 py-3 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold text-xs sm:text-sm shadow-md shadow-purple-500/20 transition-all disabled:opacity-50 flex items-center justify-center gap-1.5 cursor-pointer"
+                  className="flex-1 py-3 rounded-2xl bg-gradient-to-tr from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold text-xs sm:text-sm shadow-md shadow-blue-500/20 transition-all disabled:opacity-50 flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   {isResettingPin ? <Loader2 size={16} className="animate-spin" /> : null}
                   <span>Send Code</span>

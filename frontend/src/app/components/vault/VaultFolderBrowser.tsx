@@ -189,7 +189,7 @@ export const VaultFolderBrowser: React.FC<VaultFolderBrowserProps> = ({
             type="button"
             onClick={() => onSelectFolder(null)}
             className={`text-body-sm font-semibold transition-colors px-1.5 py-0.5 rounded ${
-              !currentFolderId ? 'text-slate-900' : 'text-purple-600 hover:text-purple-700'
+              !currentFolderId ? 'text-slate-900' : 'text-blue-600 hover:text-blue-700'
             }`}
           >
             Vault
@@ -201,7 +201,7 @@ export const VaultFolderBrowser: React.FC<VaultFolderBrowserProps> = ({
                 type="button"
                 onClick={() => onSelectFolder(bc.id)}
                 className={`text-body-sm font-semibold truncate max-w-[120px] transition-colors px-1.5 py-0.5 rounded ${
-                  bc.id === currentFolderId ? 'text-slate-900' : 'text-purple-600 hover:text-purple-700'
+                  bc.id === currentFolderId ? 'text-slate-900' : 'text-blue-600 hover:text-blue-700'
                 }`}
               >
                 {bc.name}
@@ -222,7 +222,7 @@ export const VaultFolderBrowser: React.FC<VaultFolderBrowserProps> = ({
           <button
             type="button"
             onClick={() => onUploadClick(currentFolderId || undefined)}
-            className="p-2 rounded-xl hover:bg-purple-50 text-purple-600 transition-colors"
+            className="p-2 rounded-xl hover:bg-blue-50 text-blue-600 transition-colors"
             title="Upload Document"
           >
             <Upload className="w-4.5 h-4.5" />
@@ -246,7 +246,7 @@ export const VaultFolderBrowser: React.FC<VaultFolderBrowserProps> = ({
                 value={newFolderName}
                 onChange={(e) => setNewFolderName(e.target.value)}
                 placeholder="Folder name"
-                className="w-full h-11 px-3.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white focus:bg-white focus:border-purple-600 focus:ring-2 focus:ring-purple-100 text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 font-medium transition-all outline-none"
+                className="w-full h-11 px-3.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-100 text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 font-medium transition-all outline-none"
                 autoFocus
                 onKeyDown={(e) => e.key === 'Enter' && handleCreateFolder()}
               />
@@ -254,7 +254,7 @@ export const VaultFolderBrowser: React.FC<VaultFolderBrowserProps> = ({
                 <select
                   value={newFolderCategory}
                   onChange={(e) => setNewFolderCategory(e.target.value)}
-                  className="w-full h-11 px-3.5 pr-9 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white focus:bg-white focus:border-purple-600 focus:ring-2 focus:ring-purple-100 text-xs sm:text-sm text-slate-800 font-medium transition-all outline-none appearance-none cursor-pointer"
+                  className="w-full h-11 px-3.5 pr-9 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-100 text-xs sm:text-sm text-slate-800 font-medium transition-all outline-none appearance-none cursor-pointer"
                 >
                   <option value="Personal Documents">Personal Documents</option>
                   <option value="Property Documents">Property Documents</option>
@@ -278,7 +278,7 @@ export const VaultFolderBrowser: React.FC<VaultFolderBrowserProps> = ({
                   type="button"
                   onClick={handleCreateFolder}
                   disabled={isCreating || !newFolderName.trim()}
-                  className="h-9 px-4 rounded-xl text-xs sm:text-sm font-semibold bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white shadow-sm shadow-purple-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  className="h-9 px-4 rounded-xl text-xs sm:text-sm font-semibold bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white shadow-sm shadow-blue-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
                   {isCreating ? 'Creating...' : 'Create'}
                 </button>
@@ -296,7 +296,7 @@ export const VaultFolderBrowser: React.FC<VaultFolderBrowserProps> = ({
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search documents..."
-          className="w-full h-11 pl-10 pr-9 rounded-xl border border-slate-200 bg-white shadow-2xs text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 font-medium focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100 transition-all"
+          className="w-full h-11 pl-10 pr-9 rounded-xl border border-slate-200 bg-white shadow-2xs text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 font-medium focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all"
         />
         {searchQuery && (
           <button
@@ -317,7 +317,7 @@ export const VaultFolderBrowser: React.FC<VaultFolderBrowserProps> = ({
             {subfolders.map((folder) => (
               <div
                 key={folder.id}
-                className="bg-white rounded-2xl border border-slate-200/80 hover:border-purple-300 hover:shadow-md transition-all duration-200 p-3 sm:p-3.5 group relative flex flex-col justify-between"
+                className="bg-white rounded-2xl border border-slate-200/80 hover:border-blue-300 hover:shadow-md transition-all duration-200 p-3 sm:p-3.5 group relative flex flex-col justify-between"
               >
                 {editingFolderId === folder.id ? (
                   <div className="flex items-center gap-2">
@@ -325,7 +325,7 @@ export const VaultFolderBrowser: React.FC<VaultFolderBrowserProps> = ({
                       type="text"
                       value={editFolderName}
                       onChange={(e) => setEditFolderName(e.target.value)}
-                      className="w-full h-8 px-2.5 rounded-lg border border-purple-400 bg-white text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-400/20"
+                      className="w-full h-8 px-2.5 rounded-lg border border-blue-400 bg-white text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-400/20"
                       autoFocus
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') handleRenameFolder(folder.id);
@@ -369,7 +369,7 @@ export const VaultFolderBrowser: React.FC<VaultFolderBrowserProps> = ({
                         e.stopPropagation();
                         onShareFolder(folder);
                       }}
-                      className="p-1.5 rounded-lg hover:bg-purple-50 text-slate-400 hover:text-purple-600 transition-colors cursor-pointer"
+                      className="p-1.5 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-colors cursor-pointer"
                       title="Share"
                     >
                       <Share2 className="w-3.5 h-3.5" />
@@ -439,7 +439,7 @@ export const VaultFolderBrowser: React.FC<VaultFolderBrowserProps> = ({
                   <button
                     type="button"
                     onClick={() => onPreviewDocument(doc.id)}
-                    className="p-1.5 rounded-lg hover:bg-purple-50 text-slate-500 hover:text-purple-600 transition-colors"
+                    className="p-1.5 rounded-lg hover:bg-blue-50 text-slate-500 hover:text-blue-600 transition-colors"
                     title="Preview"
                   >
                     <Eye className="w-4 h-4" />
@@ -455,7 +455,7 @@ export const VaultFolderBrowser: React.FC<VaultFolderBrowserProps> = ({
                   <button
                     type="button"
                     onClick={() => onShareDocument(doc)}
-                    className="p-1.5 rounded-lg hover:bg-purple-50 text-slate-500 hover:text-purple-600 transition-colors"
+                    className="p-1.5 rounded-lg hover:bg-blue-50 text-slate-500 hover:text-blue-600 transition-colors"
                     title="Share"
                   >
                     <Share2 className="w-4 h-4" />
@@ -490,7 +490,7 @@ export const VaultFolderBrowser: React.FC<VaultFolderBrowserProps> = ({
           <button
             type="button"
             onClick={() => onUploadClick(currentFolderId || undefined)}
-            className="h-10 px-4 rounded-xl text-xs sm:text-sm font-semibold bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white shadow-sm shadow-purple-500/20 transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer mt-3"
+            className="h-10 px-4 rounded-xl text-xs sm:text-sm font-semibold bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white shadow-sm shadow-blue-500/20 transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer mt-3"
           >
             <Plus className="w-4 h-4" />
             Upload Document

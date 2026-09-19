@@ -91,7 +91,7 @@ export const ReportPdfPreviewModal: React.FC<ReportPdfPreviewModalProps> = ({
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 15 }}
         transition={{ duration: 0.2, ease: 'easeOut' }}
-        className="relative w-full max-w-[calc(100vw-24px)] sm:max-w-xl lg:max-w-2xl h-[88dvh] sm:h-[88vh] max-h-[640px] sm:max-h-[760px] flex flex-col bg-white rounded-[24px] sm:rounded-[32px] shadow-2xl border border-slate-100/80 overflow-hidden z-10"
+        className="relative w-full max-w-[calc(100vw-12px)] sm:max-w-xl lg:max-w-2xl h-[93dvh] sm:h-[88vh] max-h-[680px] sm:max-h-[780px] flex flex-col bg-white rounded-[24px] sm:rounded-[32px] shadow-2xl border border-slate-100/80 overflow-hidden z-10"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header: File badge, Title, Period, Download & Close */}

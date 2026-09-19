@@ -112,13 +112,13 @@ export const VaultDocumentPreviewModal: React.FC<VaultDocumentPreviewModalProps>
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 15 }}
         transition={{ duration: 0.2, ease: 'easeOut' }}
-        className="relative w-full max-w-[calc(100vw-24px)] sm:max-w-xl lg:max-w-2xl h-[88dvh] sm:h-[88vh] max-h-[640px] sm:max-h-[760px] flex flex-col bg-white rounded-[24px] sm:rounded-[32px] shadow-2xl border border-slate-100/80 overflow-hidden z-10"
+        className="relative w-full max-w-[calc(100vw-12px)] sm:max-w-xl lg:max-w-2xl h-[93dvh] sm:h-[88vh] max-h-[680px] sm:max-h-[780px] flex flex-col bg-white rounded-[24px] sm:rounded-[32px] shadow-2xl border border-slate-100/80 overflow-hidden z-10"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Streamlined Header: File badge, Title, Category, Download & Close */}
         <div className="shrink-0 flex items-center justify-between px-3.5 sm:px-5 py-3 border-b border-slate-100 bg-white/95 backdrop-blur-md gap-2 min-w-0">
           <div className="flex items-center gap-2.5 min-w-0 flex-1">
-            <div className="w-10 h-10 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 font-bold text-xs tracking-wider">
+            <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 font-bold text-xs tracking-wider">
               {fileExt}
             </div>
             <div className="min-w-0 flex-1">
@@ -161,7 +161,7 @@ export const VaultDocumentPreviewModal: React.FC<VaultDocumentPreviewModalProps>
           <div className="flex-1 min-h-0 p-2.5 sm:p-3 bg-slate-50/70 flex flex-col min-w-0">
             {isLoading ? (
               <div className="flex-1 flex flex-col items-center justify-center gap-3">
-                <Loader2 className="w-8 h-8 text-purple-600 animate-spin" />
+                <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
                 <p className="text-xs sm:text-sm font-medium text-slate-500">Decrypting document...</p>
               </div>
             ) : previewUrl ? (
@@ -182,7 +182,7 @@ export const VaultDocumentPreviewModal: React.FC<VaultDocumentPreviewModalProps>
                 />
               ) : (
                 <div className="flex-1 flex flex-col items-center justify-center text-center p-6">
-                  <div className="w-14 h-14 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center mx-auto mb-3">
+                  <div className="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-3">
                     <FileText className="w-7 h-7" />
                   </div>
                   <h4 className="text-sm font-bold text-slate-900 mb-1">
@@ -194,7 +194,7 @@ export const VaultDocumentPreviewModal: React.FC<VaultDocumentPreviewModalProps>
                   <button
                     type="button"
                     onClick={handleDownload}
-                    className="h-10 px-4 rounded-xl text-xs sm:text-sm font-bold bg-purple-600 hover:bg-purple-700 text-white shadow-sm shadow-purple-500/20 transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="h-10 px-4 rounded-xl text-xs sm:text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-sm shadow-blue-500/20 transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <Download className="w-4 h-4" /> Download File
                   </button>

@@ -65,7 +65,7 @@ export const VaultDashboard: React.FC<VaultDashboardProps> = ({
   if (isLoading || !data) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="w-8 h-8 border-2 border-purple-200 border-t-purple-600 rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-blue-200 border-t-blue-600 rounded-full animate-spin" />
       </div>
     );
   }
@@ -120,7 +120,7 @@ export const VaultDashboard: React.FC<VaultDashboardProps> = ({
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.04 }}
-                className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-4 flex flex-col items-start cursor-pointer hover:shadow-md hover:border-purple-200 transition-all group"
+                className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-4 flex flex-col items-start cursor-pointer hover:shadow-md hover:border-blue-200 transition-all group"
               >
                 <div className={`w-9 h-9 rounded-xl ${accent.bg} ${accent.text} flex items-center justify-center mb-2.5`}>
                   <Icon className="w-4.5 h-4.5" />
@@ -185,7 +185,7 @@ export const VaultDashboard: React.FC<VaultDashboardProps> = ({
                 className="w-full p-3.5 flex items-center justify-between gap-3 hover:bg-slate-50/50 transition-colors text-left cursor-pointer"
               >
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+                  <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
                     <FileText className="w-4 h-4" />
                   </div>
                   <div className="min-w-0">
@@ -205,7 +205,7 @@ export const VaultDashboard: React.FC<VaultDashboardProps> = ({
       {/* Empty state */}
       {data.totalDocuments === 0 && (
         <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs flex flex-col items-center text-center py-16 px-4">
-          <FolderLock className="w-12 h-12 text-purple-300 mb-3" />
+          <FolderLock className="w-12 h-12 text-blue-300 mb-3" />
           <h3 className="text-base sm:text-lg font-bold text-slate-900">Your Vault is empty</h3>
           <p className="text-xs sm:text-sm text-slate-400 mt-1 max-w-sm">
             Upload your first document — IDs, property papers, insurance policies. Everything stays encrypted and private.
@@ -213,7 +213,7 @@ export const VaultDashboard: React.FC<VaultDashboardProps> = ({
           <button
             type="button"
             onClick={onUploadClick}
-            className="h-10 px-5 rounded-xl text-xs sm:text-sm font-semibold bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white shadow-sm shadow-purple-500/20 transition-all cursor-pointer mt-4 inline-flex items-center justify-center gap-2"
+            className="h-10 px-5 rounded-xl text-xs sm:text-sm font-semibold bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white shadow-sm shadow-blue-500/20 transition-all cursor-pointer mt-4 inline-flex items-center justify-center gap-2"
           >
             Upload Your First Document
           </button>
