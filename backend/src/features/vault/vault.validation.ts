@@ -54,14 +54,21 @@ export const updateShareSchema = z.object({
   expiresAt: z.string().datetime({ offset: true }).nullable().optional(),
 });
 
+const vaultPinSchema = z.string().regex(/^\d{4,12}$/, 'PIN must be 4 to 12 digits');
+
 export const configureLockSchema = z.object({
   isLockEnabled: z.boolean(),
-  vaultPin: z.string().min(4).max(12).optional(),
+  vaultPin: vaultPinSchema.optional(),
+  currentPin: z.string().min(4).max(12).optional(),
   autoLockMinutes: z.number().int().min(1).max(120).optional(),
 });
 
 export const verifyLockSchema = z.object({
   vaultPin: z.string().min(4).max(12),
+});
+
+export const resetLockSchema = z.object({
+  newPin: vaultPinSchema.optional(),
 });
 
 export const batchMoveSchema = z.object({

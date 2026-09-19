@@ -104,6 +104,8 @@ services:
         value: "https://kanaku-fawn.vercel.app,*.vercel.app"
       - key: SENTRY_DSN
         sync: false
+      - key: VAULT_ENCRYPTION_ROOT_KEY
+        sync: false     # 64 hex chars (openssl rand -hex 32). Vault file encryption; unset = public dev key
       # AI & Scanner Fallback Providers
       - key: XKIRO_API_KEY
         sync: false     # xkiro proxy API key (for KAI assistant and OCR scanner backup in production)

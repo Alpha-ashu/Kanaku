@@ -27,6 +27,14 @@ const envSchema = z.object({
     .regex(/^[0-9a-fA-F]{64}$/, 'AA_ENCRYPTION_ROOT_KEY must be 64 hex characters (32 bytes)')
     .optional(),
 
+  // 32-byte hex root key for the Vault's per-user AES-256-GCM file encryption
+  // (features/vault/vault.storage.ts). Falls back to AA_ENCRYPTION_ROOT_KEY; with
+  // neither set, vault files use a publicly known key (no protection at rest).
+  VAULT_ENCRYPTION_ROOT_KEY: z
+    .string()
+    .regex(/^[0-9a-fA-F]{64}$/, 'VAULT_ENCRYPTION_ROOT_KEY must be 64 hex characters (32 bytes)')
+    .optional(),
+
   // Account Aggregator (Setu). Optional at the schema level because the /aa module
   // is mounted only when ENABLED_MODULES includes 'aa'; the config manifest below
   // escalates them to "required" in that case. AA_BASE_URL defaults to the sandbox
@@ -297,6 +305,17 @@ const CONFIG_MANIFEST: readonly ConfigItem[] = [
     services: ['api'],
     // Recommended: the AA module is phase-gated; non-AA deploys must still boot.
     tier: () => 'recommended',
+  },
+
+  {
+    key: 'VAULT_ENCRYPTION_ROOT_KEY',
+    group: 'Crypto (Vault)',
+    purpose: 'AES-256-GCM at-rest encryption for Vault documents (without it — or AA_ENCRYPTION_ROOT_KEY — files use a public dev key)',
+    services: ['api'],
+    // Recommended, not required: missing must not stop the API booting, but the
+    // startup report flags it and vault.storage.ts logs an error in production.
+    tier: () => 'recommended',
+    present: () => has('VAULT_ENCRYPTION_ROOT_KEY') || has('AA_ENCRYPTION_ROOT_KEY'),
   },
 
   // ── Account Aggregator (Setu) credentials ────────────────────────────────────

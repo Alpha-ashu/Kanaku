@@ -90,6 +90,8 @@ export interface UpdateShareDTO {
 export interface ConfigureLockDTO {
   isLockEnabled: boolean;
   vaultPin?: string;
+  /** Proof for changing an active lock when the session is not unlocked. */
+  currentPin?: string;
   autoLockMinutes?: number;
 }
 

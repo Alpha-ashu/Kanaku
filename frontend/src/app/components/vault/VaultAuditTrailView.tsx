@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { vaultService, VaultAuditLog } from '@/services/vaultService';
 
-const ACTION_CONFIG: Record<string, { icon: any; color: string; bg: string; label: string }> = {
+const ACTION_CONFIG: Record<string, { icon: React.ComponentType<{ className?: string }>; color: string; bg: string; label: string }> = {
   UPLOAD: { icon: Upload, color: 'text-emerald-600', bg: 'bg-emerald-50', label: 'Upload' },
   PREVIEW: { icon: Eye, color: 'text-blue-600', bg: 'bg-blue-50', label: 'Preview' },
   DOWNLOAD: { icon: Download, color: 'text-indigo-600', bg: 'bg-indigo-50', label: 'Download' },

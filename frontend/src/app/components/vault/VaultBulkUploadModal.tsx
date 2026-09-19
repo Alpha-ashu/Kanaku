@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Upload,
   X,
-  FileText,
   AlertTriangle,
   Folder as FolderIcon,
   ChevronDown,
@@ -17,7 +16,6 @@ import {
   Sparkles,
   Files,
   Trash2,
-  RefreshCw,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { vaultService, VaultFolder, VaultStorageUsage, VaultDocument } from '@/services/vaultService';
@@ -207,11 +205,11 @@ export const VaultBulkUploadModal: React.FC<VaultBulkUploadModalProps> = ({
           selectedForMove: true,
         };
         successCount++;
-      } catch (err: any) {
+      } catch (err) {
         updatedQueue[i] = {
           ...updatedQueue[i],
           status: 'error',
-          errorMessage: err.message || 'Upload failed',
+          errorMessage: (err as Error)?.message || 'Upload failed',
           selectedForMove: false,
         };
       }
@@ -291,8 +289,8 @@ export const VaultBulkUploadModal: React.FC<VaultBulkUploadModalProps> = ({
         `Moved ${selectedItems.length} document${selectedItems.length > 1 ? 's' : ''} to ${targetName}`
       );
       onSuccess(); // Refresh vault folders/docs
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to move documents');
+    } catch (err) {
+      toast.error((err as Error)?.message || 'Failed to move documents');
     } finally {
       setIsMoving(false);
     }
@@ -317,8 +315,8 @@ export const VaultBulkUploadModal: React.FC<VaultBulkUploadModalProps> = ({
       setShowCreateFolderInline(false);
       if (onFolderCreated) onFolderCreated();
       onSuccess();
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to create folder');
+    } catch (err) {
+      toast.error((err as Error)?.message || 'Failed to create folder');
     } finally {
       setIsCreatingFolder(false);
     }
@@ -334,7 +332,6 @@ export const VaultBulkUploadModal: React.FC<VaultBulkUploadModalProps> = ({
 
   const totalBytes = filesQueue.reduce((acc, curr) => acc + curr.file.size, 0);
   const successItems = filesQueue.filter((item) => item.status === 'success');
-  const errorItems = filesQueue.filter((item) => item.status === 'error');
   const selectedToMoveCount = successItems.filter((item) => item.selectedForMove).length;
   const isAllSelected = successItems.length > 0 && successItems.every((item) => item.selectedForMove);
 

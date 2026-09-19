@@ -71,8 +71,8 @@ export const VaultDocumentPreviewModal: React.FC<VaultDocumentPreviewModalProps>
       setPreviewUrl(objectUrl);
       setContentType(cType);
       cleanupRef.current = cleanup;
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to load document preview');
+    } catch (err) {
+      toast.error((err as Error)?.message || 'Failed to load document preview');
       onClose();
     } finally {
       setIsLoading(false);
@@ -86,8 +86,8 @@ export const VaultDocumentPreviewModal: React.FC<VaultDocumentPreviewModalProps>
     try {
       await vaultService.downloadDocument(doc.id, doc.originalFileName);
       toast.success('Download started');
-    } catch (err: any) {
-      toast.error(err.message || 'Download failed');
+    } catch (err) {
+      toast.error((err as Error)?.message || 'Download failed');
     }
   };
 

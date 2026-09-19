@@ -1,6 +1,5 @@
 import express from 'express';
 import cors from 'cors';
-import path from 'path';
 import helmet from 'helmet';
 import { randomUUID } from 'crypto';
 import { errorHandler } from './middleware/error';
@@ -207,6 +206,8 @@ app.use(cors({
     'x-security-token',
     // Live PIN-unlock proof consumed by middleware/pinGate.
     'x-pin-unlock',
+    // Live Vault-unlock proof consumed by features/vault/vault.lock.ts.
+    'x-vault-unlock',
   ],
   // CRITICAL for native clients (Capacitor Android/iOS): CORS only exposes
   // "simple" response headers (Cache-Control, Content-Language, Content-Type,
@@ -223,6 +224,8 @@ app.use(cors({
     // it cross-origin, the window never slides, and the user is re-prompted for
     // their PIN every PIN_GATE_TIMEOUT_MINUTES regardless of activity.
     'X-Pin-Unlock',
+    // The refreshed Vault-unlock token (sliding auto-lock window), same reason.
+    'X-Vault-Unlock',
   ],
 }));
 app.use(express.json({
@@ -402,8 +405,10 @@ app.get('/api/v1/health/metrics', adminPlatformGate, authMiddleware, requireRole
 // Public API documentation
 app.use('/api-docs', docsRoutes);
 
-// Static uploads serving
-app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+// NOTE: backend/uploads/ is NOT served. It is the local-disk fallback for
+// attachment storage (advisor KYC documents, bills, vault blobs) and used to be
+// mounted here with express.static and no authentication. Nothing links to it —
+// files are always streamed through authenticated endpoints (downloadBuffer).
 
 // API v1
 app.use('/api/v1', apiRoutes);

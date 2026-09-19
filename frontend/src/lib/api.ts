@@ -24,6 +24,7 @@ import {
   resetPinUnlockTracking,
   setPinUnlockToken,
 } from './pinUnlockCoordinator';
+import { captureVaultUnlockToken, getVaultUnlockToken, signalVaultLocked } from './vaultUnlock';
 
 /**
  * Captures the refreshed PIN-unlock token the backend echoes on every accepted
@@ -634,6 +635,8 @@ class HTTPClient {
       // the server re-issues it on every accepted response, which is what makes
       // the re-lock window slide with activity.
       ...(getPinUnlockToken() && { 'X-Pin-Unlock': getPinUnlockToken() as string }),
+      // Vault-lock proof (lib/vaultUnlock.ts); only /vault routes read it.
+      ...(getVaultUnlockToken() && { 'X-Vault-Unlock': getVaultUnlockToken() as string }),
     };
 
     if (isFormData && headers['Content-Type']) {
@@ -658,6 +661,7 @@ class HTTPClient {
           });
 
           capturePinUnlockToken(response);
+          captureVaultUnlockToken(response);
 
           const data = (await this.parseResponseBody(response)) as any;
 
@@ -872,6 +876,12 @@ class HTTPClient {
               }
             }
 
+            // The Vault's own lock lapsed (auto-lock) or was never opened this
+            // session: drop the token and let the Vault screen re-show its keypad.
+            if (response.status === 403 && data.code === 'VAULT_LOCKED') {
+              signalVaultLocked();
+            }
+
             const serverCode = data.code || `HTTP_${response.status}`;
             const technicalMessage = data.message || data.error || response.statusText;
             const userMessage = getUserMessage(response.status, serverCode, technicalMessage, showErrorToast);
@@ -885,7 +895,8 @@ class HTTPClient {
             // A throttled READ is background work (sync pulls, polls, flag refreshes)
             // that retries on its own schedule — never interrupt the user over it.
             const isBackgroundThrottle = response.status === 429 && method === 'GET';
-            if (showErrorToast && !isBackgroundThrottle) {
+            // VAULT_LOCKED is answered by the Vault keypad, not an error toast.
+            if (showErrorToast && !isBackgroundThrottle && data.code !== 'VAULT_LOCKED') {
               ErrorHandler.handle(
                 ErrorFactory.fromHTTPStatus(response.status, userMessage),
                 true,

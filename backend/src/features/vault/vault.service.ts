@@ -24,6 +24,8 @@ import {
   authorizeFolderAccess,
   recordVaultAuditLog,
 } from './vault.authorization';
+import { getActiveLock, issueVaultUnlockToken } from './vault.lock';
+import { otpService, REVERIFY_WINDOW_SECONDS } from '../otp/otp.service';
 
 /** 500 MB per-user vault storage limit */
 const VAULT_STORAGE_LIMIT_BYTES = 500 * 1024 * 1024;
@@ -37,6 +39,32 @@ const DEFAULT_FOLDERS = [
   { name: 'Medical Documents', category: 'Medical Documents', color: '#EF4444', icon: 'Activity' },
   { name: 'Other', category: 'Other', color: '#6B7280', icon: 'Folder' },
 ];
+
+/** Rejects a move that would place a folder inside itself or its own subtree. */
+const assertNoFolderCycle = async (userId: string, folderId: string, newParentId: string) => {
+  let cursor: string | null = newParentId;
+  const seen = new Set<string>();
+  while (cursor && !seen.has(cursor)) {
+    if (cursor === folderId) {
+      throw AppError.badRequest('A folder cannot be moved inside itself or one of its subfolders');
+    }
+    seen.add(cursor);
+    const parent: { parentId: string | null } | null = await prisma.vaultFolder.findFirst({
+      where: { id: cursor, userId, deletedAt: null },
+      select: { parentId: true },
+    });
+    cursor = parent?.parentId ?? null;
+  }
+};
+
+/** Best-effort removal of stored blobs; a storage hiccup must not fail the request. */
+const removeBlobs = async (paths: string[]) => {
+  await Promise.all(
+    [...new Set(paths.filter(Boolean))].map((path) =>
+      deleteVaultFile(path).catch((err) => logger.warn('Vault blob removal failed', { path, error: err?.message })),
+    ),
+  );
+};
 
 export class VaultService {
   /**
@@ -256,6 +284,7 @@ export class VaultService {
       if (!parent) {
         throw AppError.badRequest('Target parent folder does not exist');
       }
+      await assertNoFolderCycle(userId, folderId, dto.parentId);
     }
 
     const updated = await prisma.vaultFolder.update({
@@ -302,17 +331,28 @@ export class VaultService {
       throw AppError.badRequest('Default system folders cannot be deleted');
     }
 
-    // Move any contained documents to root folder (folderId: null) rather than orphaning them
-    await prisma.vaultDocument.updateMany({
-      where: { folderId },
-      data: { folderId: null },
-    });
-
-    // Soft delete the folder
-    await prisma.vaultFolder.update({
-      where: { id: folderId },
-      data: { deletedAt: new Date() },
-    });
+    // Hand contents up to the parent (root when there is none) rather than
+    // orphaning them: subfolders left pointing at a deleted parent vanished from
+    // the tree along with everything inside them.
+    const now = new Date();
+    await prisma.$transaction([
+      prisma.vaultDocument.updateMany({
+        where: { folderId },
+        data: { folderId: folder.parentId ?? null },
+      }),
+      prisma.vaultFolder.updateMany({
+        where: { parentId: folderId, deletedAt: null },
+        data: { parentId: folder.parentId ?? null },
+      }),
+      prisma.vaultShare.updateMany({
+        where: { folderId, status: 'active' },
+        data: { status: 'revoked', revokedAt: now },
+      }),
+      prisma.vaultFolder.update({
+        where: { id: folderId },
+        data: { deletedAt: now },
+      }),
+    ]);
 
     await recordVaultAuditLog({
       ownerId: userId,
@@ -547,13 +587,32 @@ export class VaultService {
     });
     if (!doc) throw AppError.notFound('Document not found');
 
+    // Same rules as the first upload. Without them an editor could store any
+    // content type (e.g. text/html), which /preview then served inline.
+    if (!file || !file.buffer) {
+      throw AppError.badRequest('No document file uploaded');
+    }
+    if (file.size > MAX_VAULT_FILE_SIZE) {
+      throw AppError.badRequest(`File exceeds the maximum limit of ${MAX_VAULT_FILE_SIZE / 1024 / 1024}MB`);
+    }
+    if (!ALLOWED_MIME_TYPES.has(file.mimetype)) {
+      throw AppError.badRequest(`Unsupported file format: ${file.mimetype}. Supported: PDF, JPG, PNG, WEBP, DOCX, TXT, CSV, XLSX.`);
+    }
+    // Versions count against the OWNER's quota (old versions stay stored).
+    const { usedBytes } = await this.getStorageUsage(doc.userId);
+    if (usedBytes + file.size > VAULT_STORAGE_LIMIT_BYTES) {
+      throw AppError.badRequest('Storage limit exceeded for this vault. Delete unused documents to free up space.');
+    }
+
     const nextVersion = doc.currentVersion + 1;
     const originalFileName = file.originalname || doc.originalFileName;
 
-    // Encrypt and store under document owner's key
+    // Encrypt under the document owner's key, bound (AAD) to the document id —
+    // the same binding streamDocumentFile decrypts with. Binding it to
+    // `<id>_v<n>` made every document with a second version unreadable.
     const { storagePath } = await storeEncryptedVaultFile(
       doc.userId,
-      `${documentId}_v${nextVersion}`,
+      doc.id,
       file.buffer,
       originalFileName,
     );
@@ -646,6 +705,8 @@ export class VaultService {
 
     return {
       ...doc,
+      // Other recipients' names and emails are the owner's business only.
+      shares: auth.role === 'owner' ? doc.shares : [],
       userRole: auth.role,
       canDownload: auth.canDownload,
     };
@@ -670,6 +731,21 @@ export class VaultService {
       where: { id: documentId, deletedAt: null },
     });
     if (!doc) throw AppError.notFound('Document not found');
+
+    // Moving a document changes who inherits access through folder shares, so
+    // only the owner may do it, and only into one of the owner's own folders.
+    if (dto.folderId !== undefined && dto.folderId !== doc.folderId) {
+      if (auth.role !== 'owner') {
+        throw AppError.forbidden('Only the document owner can move this document');
+      }
+      if (dto.folderId) {
+        const target = await prisma.vaultFolder.findFirst({
+          where: { id: dto.folderId, userId: doc.userId, deletedAt: null },
+          select: { id: true },
+        });
+        if (!target) throw AppError.notFound('Target folder not found');
+      }
+    }
 
     const updated = await prisma.vaultDocument.update({
       where: { id: documentId },
@@ -770,10 +846,24 @@ export class VaultService {
     });
     if (!doc) throw AppError.notFound('Document not found');
 
-    await prisma.vaultDocument.update({
-      where: { id: documentId },
-      data: { deletedAt: new Date() },
+    const now = new Date();
+    const versions = await prisma.vaultDocumentVersion.findMany({
+      where: { documentId },
+      select: { storagePath: true },
     });
+    await prisma.$transaction([
+      prisma.vaultDocument.update({
+        where: { id: documentId },
+        data: { deletedAt: now },
+      }),
+      prisma.vaultShare.updateMany({
+        where: { documentId, status: 'active' },
+        data: { status: 'revoked', revokedAt: now },
+      }),
+    ]);
+    // There is no restore path, so the encrypted files are removed rather than
+    // kept indefinitely; the soft-deleted row remains for the audit trail.
+    await removeBlobs([doc.storagePath, ...versions.map((v) => v.storagePath)]);
 
     await recordVaultAuditLog({
       ownerId: doc.userId,
@@ -827,6 +917,7 @@ export class VaultService {
       doc.id,
       doc.storagePath,
       doc.isEncrypted,
+      doc.currentVersion > 1 ? [`${doc.id}_v${doc.currentVersion}`] : [],
     );
 
     await recordVaultAuditLog({
@@ -1064,6 +1155,45 @@ export class VaultService {
   }
 
   /**
+   * Lists the documents in a folder someone shared with the actor. Access is
+   * the folder share itself (or one on an ancestor folder); documents are the
+   * folder owner's, so the per-document checks on preview/download still apply.
+   */
+  static async getSharedFolderDocuments(actorId: string, folderId: string, ip?: string, ua?: string) {
+    const auth = await authorizeFolderAccess(actorId, folderId, 'viewer');
+    if (!auth.authorized) {
+      await recordVaultAuditLog({
+        ownerId: auth.ownerId,
+        actorId,
+        action: 'ACCESS_DENIED',
+        folderId,
+        details: 'Attempted to list a folder that is not shared with the user',
+        ipAddress: ip,
+        userAgent: ua,
+      });
+      throw AppError.forbidden('Access denied to this folder');
+    }
+
+    const documents = await prisma.vaultDocument.findMany({
+      where: { folderId, userId: auth.ownerId, deletedAt: null },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        title: true,
+        category: true,
+        originalFileName: true,
+        fileType: true,
+        fileSize: true,
+        expiryDate: true,
+        currentVersion: true,
+        updatedAt: true,
+      },
+    });
+
+    return { folderId, role: auth.role, canDownload: auth.canDownload, documents };
+  }
+
+  /**
    * Retrieves the immutable audit logs for the user's vault.
    */
   static async getAuditLogs(userId: string) {
@@ -1113,7 +1243,18 @@ export class VaultService {
     };
   }
 
-  static async configureLock(userId: string, dto: ConfigureLockDTO) {
+  static async configureLock(userId: string, dto: ConfigureLockDTO, isUnlocked = false) {
+    // While a Vault PIN guards the vault, changing or disabling it requires the
+    // vault to be unlocked in this session (or the current PIN). Otherwise any
+    // holder of an access token could switch the lock off.
+    const activeLock = await getActiveLock(userId);
+    if (activeLock && !isUnlocked) {
+      const currentPinOk = dto.currentPin ? (await this.verifyLock(userId, dto.currentPin)).verified : false;
+      if (!currentPinOk) {
+        throw AppError.forbidden('Unlock your vault before changing its lock settings.', 'VAULT_LOCKED');
+      }
+    }
+
     let vaultPinHash: string | undefined = undefined;
     let pinLength: number | undefined = undefined;
     if (dto.vaultPin) {
@@ -1137,11 +1278,14 @@ export class VaultService {
       },
     });
 
+    const lockNowActive = setting.isLockEnabled && Boolean(setting.vaultPinHash);
     return {
       isLockEnabled: setting.isLockEnabled,
       hasPin: Boolean(setting.vaultPinHash),
       autoLockMinutes: setting.autoLockMinutes,
       pinLength: setting.pinLength || 6,
+      // Keep the session that just set the lock unlocked.
+      unlockToken: lockNowActive ? issueVaultUnlockToken(userId, setting.autoLockMinutes) : undefined,
     };
   }
 
@@ -1151,7 +1295,7 @@ export class VaultService {
     });
 
     if (!setting || !setting.vaultPinHash) {
-      // If no dedicated PIN, allow unlock
+      // No Vault PIN set: nothing is locked (requireVaultUnlock lets it through).
       return { verified: true, unlockedAt: new Date() };
     }
 
@@ -1180,13 +1324,32 @@ export class VaultService {
       data: { lastUnlockedAt: new Date() },
     });
 
-    return { verified: true, unlockedAt: new Date() };
+    return {
+      verified: true,
+      unlockedAt: new Date(),
+      unlockToken: issueVaultUnlockToken(userId, setting.autoLockMinutes),
+    };
   }
 
   static async resetLockPin(userId: string, newPin?: string) {
+    // "Forgot Vault PIN" is only allowed after the account email proved control
+    // with a sensitive_action OTP (POST /otp/verify). The client used to verify
+    // the OTP itself and then call this endpoint, which trusted it blindly — so
+    // the reset worked for anyone with an access token.
+    const account = await prisma.user.findUnique({ where: { id: userId }, select: { email: true } });
+    const proven = account?.email
+      ? await otpService.hasRecentVerification(account.email, 'sensitive_action', REVERIFY_WINDOW_SECONDS)
+      : false;
+    if (!proven) {
+      throw AppError.forbidden('Verify the code sent to your email before resetting the Vault PIN.', 'SECURITY_PROOF_REQUIRED');
+    }
+    if (newPin !== undefined && (typeof newPin !== 'string' || !/^\d{4,12}$/.test(newPin))) {
+      throw AppError.badRequest('PIN must be 4 to 12 digits');
+    }
+
     let vaultPinHash: string | null = null;
     let pinLength = 6;
-    if (newPin && typeof newPin === 'string' && newPin.length >= 4) {
+    if (newPin) {
       vaultPinHash = await bcrypt.hash(newPin, 10);
       pinLength = newPin.length;
     }

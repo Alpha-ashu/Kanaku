@@ -9,9 +9,29 @@ import {
   updateShareSchema,
   configureLockSchema,
   verifyLockSchema,
+  resetLockSchema,
   batchMoveSchema,
 } from './vault.validation';
 import { AppError } from '../../utils/AppError';
+import { VAULT_UNLOCK_HEADER, isValidVaultUnlockToken } from './vault.lock';
+
+/** Only these render safely inline; everything else is served as an attachment. */
+const INLINE_SAFE_TYPES = new Set(['application/pdf', 'image/jpeg', 'image/png', 'image/webp', 'text/plain', 'text/csv']);
+
+/**
+ * Headers for decrypted vault files. The content type was declared by the
+ * uploader's client, so the response is sandboxed: nosniff stops type
+ * guessing, and the CSP sandbox keeps any active content from running on the
+ * API origin even if a hostile file slips through.
+ */
+const setVaultFileHeaders = (res: Response, contentType: string, fileName: string, inline: boolean) => {
+  const disposition = inline && INLINE_SAFE_TYPES.has(contentType) ? 'inline' : 'attachment';
+  res.setHeader('Content-Type', contentType);
+  res.setHeader('Content-Disposition', `${disposition}; filename="${encodeURIComponent(fileName)}"`);
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Content-Security-Policy', "sandbox; default-src 'none'; img-src 'self' data: blob:; style-src 'unsafe-inline'");
+  res.setHeader('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+};
 
 export const getDashboard = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
@@ -244,9 +264,7 @@ export const previewDocument = async (req: AuthRequest, res: Response, next: Nex
       req.get('user-agent'),
     );
 
-    res.setHeader('Content-Type', fileStream.contentType);
-    res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(fileStream.fileName)}"`);
-    res.setHeader('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+    setVaultFileHeaders(res, fileStream.contentType, fileStream.fileName, true);
     res.send(fileStream.buffer);
   } catch (error) {
     next(error);
@@ -266,9 +284,7 @@ export const downloadDocument = async (req: AuthRequest, res: Response, next: Ne
       req.get('user-agent'),
     );
 
-    res.setHeader('Content-Type', fileStream.contentType);
-    res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(fileStream.fileName)}"`);
-    res.setHeader('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+    setVaultFileHeaders(res, fileStream.contentType, fileStream.fileName, false);
     res.send(fileStream.buffer);
   } catch (error) {
     next(error);
@@ -329,6 +345,17 @@ export const getSharedWithMe = async (req: AuthRequest, res: Response, next: Nex
   }
 };
 
+export const getSharedFolderDocuments = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const userId = getUserId(req);
+    const { id } = req.params;
+    const result = await VaultService.getSharedFolderDocuments(userId, id, req.ip, req.get('user-agent'));
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const getAuditLogs = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userId = getUserId(req);
@@ -353,7 +380,8 @@ export const configureLock = async (req: AuthRequest, res: Response, next: NextF
   try {
     const userId = getUserId(req);
     const validated = configureLockSchema.parse(req.body);
-    const result = await VaultService.configureLock(userId, validated);
+    const isUnlocked = isValidVaultUnlockToken(req.headers[VAULT_UNLOCK_HEADER] as string | undefined, userId);
+    const result = await VaultService.configureLock(userId, validated, isUnlocked);
     res.json(result);
   } catch (error) {
     next(error);
@@ -374,7 +402,7 @@ export const verifyLock = async (req: AuthRequest, res: Response, next: NextFunc
 export const resetLockPin = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userId = getUserId(req);
-    const { newPin } = req.body || {};
+    const { newPin } = resetLockSchema.parse(req.body || {});
     const result = await VaultService.resetLockPin(userId, newPin);
     res.json(result);
   } catch (error) {

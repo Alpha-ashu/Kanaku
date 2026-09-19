@@ -5,14 +5,12 @@ import {
   X,
   Share2,
   Search,
-  Shield,
   AlertTriangle,
   Eye,
   Edit3,
   Download,
   Calendar,
   UserPlus,
-  Lock,
   XCircle,
   ShieldCheck,
   Loader2,
@@ -48,7 +46,7 @@ export const VaultSharingModal: React.FC<VaultSharingModalProps> = ({
   const [isSharing, setIsSharing] = useState(false);
   const [sensitiveAcknowledged, setSensitiveAcknowledged] = useState(false);
   const [existingShares, setExistingShares] = useState<VaultShare[]>([]);
-  const [isLoadingShares, setIsLoadingShares] = useState(false);
+  const [, setIsLoadingShares] = useState(false);
 
   const targetName = documentTitle || folderName || 'Item';
   const isDocument = Boolean(documentId);
@@ -102,8 +100,8 @@ export const VaultSharingModal: React.FC<VaultSharingModalProps> = ({
       setRecipientEmail('');
       loadExistingShares();
       onShareUpdated();
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to share');
+    } catch (err) {
+      toast.error((err as Error)?.message || 'Failed to share');
     } finally {
       setIsSharing(false);
     }
@@ -115,8 +113,8 @@ export const VaultSharingModal: React.FC<VaultSharingModalProps> = ({
       toast.success('Access revoked');
       loadExistingShares();
       onShareUpdated();
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to revoke');
+    } catch (err) {
+      toast.error((err as Error)?.message || 'Failed to revoke');
     }
   };
 

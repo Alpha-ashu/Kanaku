@@ -52,6 +52,9 @@ export const recordVaultAuditLog = async (params: {
 /**
  * Checks whether an actor user is authorized to access a folder.
  */
+/** Folder trees are shallow; the cap only guards against a corrupted parent cycle. */
+const MAX_FOLDER_DEPTH = 32;
+
 export const authorizeFolderAccess = async (
   actorId: string,
   folderId: string,
@@ -73,8 +76,10 @@ export const authorizeFolderAccess = async (
   // 2. Check active share directly on this folder or parent folders
   let currentFolder: typeof folder | null = folder;
   const now = new Date();
+  const visited = new Set<string>();
 
-  while (currentFolder) {
+  while (currentFolder && !visited.has(currentFolder.id) && visited.size < MAX_FOLDER_DEPTH) {
+    visited.add(currentFolder.id);
     const activeShare = await prisma.vaultShare.findFirst({
       where: {
         folderId: currentFolder.id,
@@ -150,10 +155,13 @@ export const authorizeDocumentAccess = async (
     }
   }
 
-  // 3. Check Folder-level share if document is in a folder
+  // 3. Check Folder-level share if document is in a folder. Only a share the
+  // document's OWNER granted counts: a folder the actor owns must never lift
+  // their role on someone else's document (an editor could otherwise move the
+  // document into their own folder and become its "owner").
   if (doc.folderId) {
     const folderAuth = await authorizeFolderAccess(actorId, doc.folderId, requiredRole);
-    if (folderAuth.authorized) {
+    if (folderAuth.authorized && folderAuth.ownerId === doc.userId && folderAuth.role !== 'owner') {
       return folderAuth;
     }
   }

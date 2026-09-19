@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Folder,
   FolderPlus,
-  FileText,
   ChevronRight,
   Plus,
   Search,
@@ -11,9 +10,7 @@ import {
   Eye,
   Download,
   Trash2,
-  MoreVertical,
   Edit3,
-  ArrowLeft,
   Lock,
   Upload,
   X,
@@ -69,7 +66,7 @@ export const VaultFolderBrowser: React.FC<VaultFolderBrowserProps> = ({
   const [isCreating, setIsCreating] = useState(false);
   const [editingFolderId, setEditingFolderId] = useState<string | null>(null);
   const [editFolderName, setEditFolderName] = useState('');
-  const [contextMenuDocId, setContextMenuDocId] = useState<string | null>(null);
+  const [, setContextMenuDocId] = useState<string | null>(null);
 
   // Current folder object
   const currentFolder = useMemo(
@@ -141,8 +138,8 @@ export const VaultFolderBrowser: React.FC<VaultFolderBrowserProps> = ({
       setNewFolderName('');
       setShowNewFolderForm(false);
       onRefresh();
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to create folder');
+    } catch (err) {
+      toast.error((err as Error)?.message || 'Failed to create folder');
     } finally {
       setIsCreating(false);
     }
@@ -156,8 +153,8 @@ export const VaultFolderBrowser: React.FC<VaultFolderBrowserProps> = ({
       setEditingFolderId(null);
       setEditFolderName('');
       onRefresh();
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to rename folder');
+    } catch (err) {
+      toast.error((err as Error)?.message || 'Failed to rename folder');
     }
   };
 
@@ -167,8 +164,8 @@ export const VaultFolderBrowser: React.FC<VaultFolderBrowserProps> = ({
       toast.success('Folder deleted');
       if (currentFolderId === folderId) onSelectFolder(null);
       onRefresh();
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to delete folder');
+    } catch (err) {
+      toast.error((err as Error)?.message || 'Failed to delete folder');
     }
   };
 
@@ -178,8 +175,8 @@ export const VaultFolderBrowser: React.FC<VaultFolderBrowserProps> = ({
       toast.success('Document deleted');
       setContextMenuDocId(null);
       onRefresh();
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to delete document');
+    } catch (err) {
+      toast.error((err as Error)?.message || 'Failed to delete document');
     }
   };
 

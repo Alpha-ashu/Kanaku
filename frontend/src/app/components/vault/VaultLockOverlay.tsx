@@ -9,9 +9,8 @@ import {
   Loader2,
   Fingerprint,
   ScanFace,
-  ChevronLeft,
 } from 'lucide-react';
-import { KANAKULogo, DISPLAY_FONT } from '@/app/components/ui/KANAKULogo';
+import { DISPLAY_FONT } from '@/app/components/ui/KANAKULogo';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { apiClient } from '@/lib/api';
@@ -90,7 +89,6 @@ export const VaultLockOverlay: React.FC<VaultLockOverlayProps> = ({
   }, []);
 
   // Compute number of display boxes: match target length, or expand if user types more
-  const displayLength = Math.max(targetPinLength, pin.length);
 
   const triggerShake = (msg: string) => {
     setErrorMsg(msg);
@@ -129,8 +127,8 @@ export const VaultLockOverlay: React.FC<VaultLockOverlayProps> = ({
         } else {
           triggerShake('Incorrect PIN. Please try again.');
         }
-      } catch (err: any) {
-        triggerShake(err.message || 'Incorrect PIN. Please try again.');
+      } catch (err) {
+        triggerShake((err as Error)?.message || 'Incorrect PIN. Please try again.');
       } finally {
         setIsVerifying(false);
       }
@@ -220,8 +218,8 @@ export const VaultLockOverlay: React.FC<VaultLockOverlayProps> = ({
       setResetOtpInputs(Array(6).fill(''));
       setResetOtpSent(true);
       toast.success('Verification code sent to your email.');
-    } catch (err: any) {
-      setResetError(err.message || 'Failed to send verification code.');
+    } catch (err) {
+      setResetError((err as Error)?.message || 'Failed to send verification code.');
     } finally {
       setIsResettingPin(false);
     }
@@ -291,8 +289,8 @@ export const VaultLockOverlay: React.FC<VaultLockOverlayProps> = ({
       setShowResetModal(false);
       toast.success('Vault unlocked! Lock PIN has been reset.');
       onUnlocked();
-    } catch (err: any) {
-      setResetError(err.message || 'Invalid or expired verification code.');
+    } catch (err) {
+      setResetError((err as Error)?.message || 'Invalid or expired verification code.');
     } finally {
       setIsResettingPin(false);
     }

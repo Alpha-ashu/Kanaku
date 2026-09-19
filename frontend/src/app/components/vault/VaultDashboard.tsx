@@ -5,9 +5,7 @@ import {
   FolderLock,
   FileText,
   AlertCircle,
-  Share2,
   Calendar,
-  Lock,
   UserCheck,
   Home,
   Shield,
@@ -19,7 +17,7 @@ import {
   Clock,
   Eye,
 } from 'lucide-react';
-import { VaultDashboardData, VaultDocument } from '@/services/vaultService';
+import { VaultDashboardData } from '@/services/vaultService';
 
 interface VaultDashboardProps {
   data: VaultDashboardData | null;
@@ -29,7 +27,7 @@ interface VaultDashboardProps {
   onUploadClick: () => void;
 }
 
-const CATEGORY_ICONS: Record<string, any> = {
+const CATEGORY_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   'Personal Documents': UserCheck,
   'Property Documents': Home,
   Insurance: Shield,

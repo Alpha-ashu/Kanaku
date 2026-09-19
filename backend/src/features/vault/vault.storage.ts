@@ -25,32 +25,42 @@ export const ALLOWED_MIME_TYPES = new Set([
 
 export const MAX_VAULT_FILE_SIZE = 25 * 1024 * 1024; // 25 MB
 
-let cachedVaultRootKey: Buffer | null = null;
+/**
+ * Publicly known key (it is SHA-256 of the empty string, and it is in this
+ * repository). Used only when no root key is configured, so files encrypted
+ * under it are NOT protected at rest. Kept as a decrypt candidate so documents
+ * uploaded before a real key was configured stay readable.
+ */
+const INSECURE_FALLBACK_KEY_HEX = 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855';
+const isHexKey = (v?: string): v is string => Boolean(v && /^[0-9a-fA-F]{64}$/.test(v));
 
-const getVaultRootKey = (): Buffer => {
-  if (cachedVaultRootKey) return cachedVaultRootKey;
+let warnedAboutFallback = false;
 
-  const hex = process.env.VAULT_ENCRYPTION_ROOT_KEY || process.env.AA_ENCRYPTION_ROOT_KEY;
-  if (hex && /^[0-9a-fA-F]{64}$/.test(hex)) {
-    cachedVaultRootKey = Buffer.from(hex, 'hex');
-    return cachedVaultRootKey;
+/** Root keys in preference order: the first encrypts, all are tried to decrypt. */
+const getVaultRootKeys = (): Buffer[] => {
+  const configured = [process.env.VAULT_ENCRYPTION_ROOT_KEY, process.env.AA_ENCRYPTION_ROOT_KEY].filter(isHexKey);
+  if (configured.length === 0 && !warnedAboutFallback) {
+    warnedAboutFallback = true;
+    const log = process.env.NODE_ENV === 'production' ? logger.error.bind(logger) : logger.warn.bind(logger);
+    log('[VaultStorage] VAULT_ENCRYPTION_ROOT_KEY is not set — vault files are encrypted with a publicly known development key and are NOT protected at rest. Set a 64-hex-char key.');
   }
-
-  // Consistent deterministic fallback root key for dev environments if env is unset
-  const fallbackHex = 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855';
-  logger.warn('[VaultStorage] Neither VAULT_ENCRYPTION_ROOT_KEY nor AA_ENCRYPTION_ROOT_KEY configured — using dev fallback key.');
-  cachedVaultRootKey = Buffer.from(fallbackHex, 'hex');
-  return cachedVaultRootKey;
+  return [...new Set([...configured, INSECURE_FALLBACK_KEY_HEX].map((h) => h.toLowerCase()))].map((h) => Buffer.from(h, 'hex'));
 };
 
+/** True when vault files are encrypted under a real, private root key. */
+export const isVaultEncryptionConfigured = (): boolean =>
+  isHexKey(process.env.VAULT_ENCRYPTION_ROOT_KEY) || isHexKey(process.env.AA_ENCRYPTION_ROOT_KEY);
+
+const deriveKey = (root: Buffer, userId: string): Buffer =>
+  Buffer.from(crypto.hkdfSync('sha256', root, Buffer.from(userId, 'utf8'), Buffer.from(HKDF_INFO_VAULT, 'utf8'), KEY_LENGTH));
+
 /**
- * Derives a per-user 32-byte DEK (Data Encryption Key) using HKDF-SHA-256.
+ * Derives a per-user 32-byte DEK (Data Encryption Key) using HKDF-SHA-256 from
+ * the current (preferred) root key.
  */
 export const deriveVaultUserKey = (userId: string): Buffer => {
   if (!userId) throw new Error('deriveVaultUserKey: userId is required');
-  const root = getVaultRootKey();
-  const okm = crypto.hkdfSync('sha256', root, Buffer.from(userId, 'utf8'), Buffer.from(HKDF_INFO_VAULT, 'utf8'), KEY_LENGTH);
-  return Buffer.from(okm);
+  return deriveKey(getVaultRootKeys()[0], userId);
 };
 
 /**
@@ -89,15 +99,24 @@ export const decryptBufferForUser = (userId: string, payload: Buffer, aad?: stri
   const tag = payload.subarray(1 + IV_LENGTH, 1 + IV_LENGTH + TAG_LENGTH);
   const ciphertext = payload.subarray(1 + IV_LENGTH + TAG_LENGTH);
 
-  const key = deriveVaultUserKey(userId);
-  const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv);
-  decipher.setAuthTag(tag);
+  if (!userId) throw new Error('decryptBufferForUser: userId is required');
 
-  if (aad) {
-    decipher.setAAD(Buffer.from(aad, 'utf8'));
+  // GCM authenticates, so a wrong key fails loudly instead of returning garbage:
+  // try each candidate root key (current key first, then older/fallback ones).
+  let lastError: unknown;
+  for (const root of getVaultRootKeys()) {
+    try {
+      const decipher = crypto.createDecipheriv('aes-256-gcm', deriveKey(root, userId), iv);
+      decipher.setAuthTag(tag);
+      if (aad) {
+        decipher.setAAD(Buffer.from(aad, 'utf8'));
+      }
+      return Buffer.concat([decipher.update(ciphertext), decipher.final()]);
+    } catch (err) {
+      lastError = err;
+    }
   }
-
-  return Buffer.concat([decipher.update(ciphertext), decipher.final()]);
+  throw lastError instanceof Error ? lastError : new Error('decryptBufferForUser: unable to decrypt payload');
 };
 
 /**
@@ -136,6 +155,7 @@ export const fetchDecryptedVaultFile = async (
   documentId: string,
   storagePath: string,
   isEncrypted: boolean,
+  legacyAads: string[] = [],
 ): Promise<Buffer> => {
   const downloaded = await downloadBuffer(storagePath);
   if (!downloaded || !downloaded.buffer) {
@@ -146,7 +166,17 @@ export const fetchDecryptedVaultFile = async (
     return downloaded.buffer;
   }
 
-  return decryptBufferForUser(ownerId, downloaded.buffer, documentId);
+  // Versions uploaded before 2026-09-20 were bound to `<documentId>_v<n>` instead
+  // of the document id, so they are tried after the canonical AAD.
+  let lastError: unknown;
+  for (const aad of [documentId, ...legacyAads]) {
+    try {
+      return decryptBufferForUser(ownerId, downloaded.buffer, aad);
+    } catch (err) {
+      lastError = err;
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error('Unable to decrypt vault file');
 };
 
 /**

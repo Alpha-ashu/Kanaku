@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { AnimatePresence } from 'framer-motion';
 import {
   FolderLock,
   LayoutDashboard,
@@ -17,7 +16,7 @@ import {
   Files,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { PageHeader, SegmentedTabs, PrimaryActionButton } from '@/app/components/ui/PageHeader';
+import { PageHeader, PrimaryActionButton } from '@/app/components/ui/PageHeader';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import {
   vaultService,
@@ -26,6 +25,7 @@ import {
   VaultDashboardData,
   VaultShare,
   VaultLockStatus,
+  VaultSharedFolderContents,
 } from '@/services/vaultService';
 import { VaultDashboard } from './VaultDashboard';
 import { VaultFolderBrowser } from './VaultFolderBrowser';
@@ -35,6 +35,7 @@ import { VaultDocumentPreviewModal } from './VaultDocumentPreviewModal';
 import { VaultSharingModal } from './VaultSharingModal';
 import { VaultAuditTrailView } from './VaultAuditTrailView';
 import { VaultLockOverlay } from './VaultLockOverlay';
+import { VAULT_LOCKED_EVENT, getVaultUnlockToken } from '@/lib/vaultUnlock';
 
 export type VaultTab = 'overview' | 'documents' | 'shared' | 'security';
 
@@ -83,26 +84,52 @@ export const Vault: React.FC = () => {
 
   // Shared tab sub-view
   const [sharedSubView, setSharedSubView] = useState<'received' | 'sent'>('received');
+  // A folder someone shared with me, opened to list its documents.
+  const [openSharedFolder, setOpenSharedFolder] = useState<(VaultSharedFolderContents & { name: string }) | null>(null);
+  const [openingFolderId, setOpeningFolderId] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadAllVaultData();
-    checkLockStatus();
-  }, []);
-
-  const checkLockStatus = async () => {
+  const handleOpenSharedFolder = async (folderId: string, name: string) => {
+    setOpeningFolderId(folderId);
     try {
-      const status = await vaultService.getLockStatus();
-      setLockStatus(status);
-      if (status.isLockEnabled) {
-        const sessionUnlocked = sessionStorage.getItem('kanaku_vault_unlocked');
-        if (!sessionUnlocked) {
-          setIsLocked(true);
-        }
-      }
-    } catch {
-      // ignore
+      const contents = await vaultService.getSharedFolderDocuments(folderId);
+      setOpenSharedFolder({ ...contents, name });
+    } catch (err) {
+      toast.error((err as Error)?.message || 'Failed to open shared folder');
+    } finally {
+      setOpeningFolderId(null);
     }
   };
+
+  // The lock is decided BEFORE any contents load: the server refuses vault data
+  // without a live unlock token (403 VAULT_LOCKED), and loading first used to
+  // fetch every document's metadata while the keypad was still showing.
+  useEffect(() => {
+    const checkLockThenLoad = async () => {
+      try {
+        const status = await vaultService.getLockStatus();
+        setLockStatus(status);
+        setAutoLockMinutes(status.autoLockMinutes || 5);
+        if (status.isLockEnabled && status.hasPin && !getVaultUnlockToken()) {
+          setIsLocked(true);
+          setIsLoading(false);
+          return;
+        }
+      } catch {
+        // Lock status unavailable — the data calls below still enforce the lock.
+      }
+      loadAllVaultData();
+    };
+    void checkLockThenLoad();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Auto-lock: the server stops honouring the unlock token after
+  // `autoLockMinutes` idle and answers VAULT_LOCKED; show the keypad again.
+  useEffect(() => {
+    const relock = () => setIsLocked(true);
+    window.addEventListener(VAULT_LOCKED_EVENT, relock);
+    return () => window.removeEventListener(VAULT_LOCKED_EVENT, relock);
+  }, []);
 
   const loadAllVaultData = useCallback(async () => {
     setIsLoading(true);
@@ -136,8 +163,8 @@ export const Vault: React.FC = () => {
       setDocuments(uniqueDocs);
       setSharedWithMe(swm);
       setActiveShares(sCreated);
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to load Vault data');
+    } catch (err) {
+      toast.error((err as Error)?.message || 'Failed to load Vault data');
     } finally {
       setIsLoading(false);
     }
@@ -170,8 +197,8 @@ export const Vault: React.FC = () => {
         updated.isLockEnabled ? 'Vault PIN Lock activated' : 'Vault Lock disabled',
       );
       if (newVaultPin) setNewVaultPin('');
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to update Vault Lock');
+    } catch (err) {
+      toast.error((err as Error)?.message || 'Failed to update Vault Lock');
     }
   };
 
@@ -190,8 +217,8 @@ export const Vault: React.FC = () => {
       setLockStatus(updated);
       toast.success('Vault PIN saved and lock enabled');
       setNewVaultPin('');
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to save PIN');
+    } catch (err) {
+      toast.error((err as Error)?.message || 'Failed to save PIN');
     }
   };
 
@@ -222,8 +249,8 @@ export const Vault: React.FC = () => {
         <VaultLockOverlay
           expectedPinLength={lockStatus?.pinLength || 8}
           onUnlocked={() => {
-            sessionStorage.setItem('kanaku_vault_unlocked', 'true');
             setIsLocked(false);
+            loadAllVaultData();
           }}
         />
       </CenteredLayout>
@@ -452,6 +479,16 @@ export const Vault: React.FC = () => {
                             <span className="text-xs text-slate-400">
                               {share.canDownload ? 'Download permitted' : 'View only'}
                             </span>
+                            {!doc && folder && (
+                              <button
+                                type="button"
+                                onClick={() => handleOpenSharedFolder(folder.id, folder.name)}
+                                disabled={openingFolderId === folder.id}
+                                className="px-2.5 py-1 bg-blue-50 text-blue-600 text-xs font-semibold rounded-lg hover:bg-blue-100 transition-colors flex items-center gap-1 disabled:opacity-60"
+                              >
+                                <Folder className="w-3.5 h-3.5" /> {openingFolderId === folder.id ? 'Opening…' : 'Open'}
+                              </button>
+                            )}
                             {doc && (
                               <div className="flex items-center gap-1.5">
                                 <button
@@ -477,6 +514,60 @@ export const Vault: React.FC = () => {
                         </div>
                       );
                     })}
+                  </div>
+                )}
+
+                {openSharedFolder && (
+                  <div className="mt-4 bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+                    <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <Folder className="w-4 h-4 text-blue-600 shrink-0" />
+                        <h5 className="text-sm font-bold text-slate-900 truncate">{openSharedFolder.name}</h5>
+                        <span className="text-xs text-slate-400 shrink-0">
+                          {openSharedFolder.documents.length} document{openSharedFolder.documents.length === 1 ? '' : 's'}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setOpenSharedFolder(null)}
+                        className="text-xs font-semibold text-slate-500 hover:text-slate-800"
+                      >
+                        Close
+                      </button>
+                    </div>
+                    {openSharedFolder.documents.length === 0 ? (
+                      <p className="px-4 py-6 text-xs text-slate-400 text-center">This folder has no documents yet.</p>
+                    ) : (
+                      <div className="divide-y divide-slate-100">
+                        {openSharedFolder.documents.map((sharedDoc) => (
+                          <div key={sharedDoc.id} className="px-4 py-3 flex items-center justify-between gap-3">
+                            <div className="min-w-0">
+                              <p className="text-xs sm:text-sm font-semibold text-slate-800 truncate">{sharedDoc.title}</p>
+                              <p className="text-xs text-slate-400 truncate">{sharedDoc.originalFileName}</p>
+                            </div>
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <button
+                                type="button"
+                                onClick={() => setPreviewDocId(sharedDoc.id)}
+                                className="px-2.5 py-1 bg-blue-50 text-blue-600 text-xs font-semibold rounded-lg hover:bg-blue-100 transition-colors flex items-center gap-1"
+                              >
+                                <Eye className="w-3.5 h-3.5" /> Preview
+                              </button>
+                              {openSharedFolder.canDownload && (
+                                <button
+                                  type="button"
+                                  onClick={() => vaultService.downloadDocument(sharedDoc.id, sharedDoc.originalFileName)}
+                                  className="p-1 rounded-lg hover:bg-slate-100 text-slate-600"
+                                  title="Download"
+                                >
+                                  <Download className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
               </>

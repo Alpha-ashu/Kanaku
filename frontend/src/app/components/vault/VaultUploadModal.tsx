@@ -13,7 +13,6 @@ import {
   Loader2,
   AlignLeft,
   Folder as FolderIcon,
-  Plus,
   Files,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -122,8 +121,8 @@ export const VaultUploadModal: React.FC<VaultUploadModalProps> = ({
       resetForm();
       onSuccess();
       onClose();
-    } catch (err: any) {
-      toast.error(err.message || 'Upload failed');
+    } catch (err) {
+      toast.error((err as Error)?.message || 'Upload failed');
     } finally {
       setIsUploading(false);
     }

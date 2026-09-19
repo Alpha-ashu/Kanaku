@@ -1,6 +1,36 @@
 import { apiClient, TokenManager } from '@/lib/api';
 import { buildApiUrl, getConfiguredApiBase } from '@/lib/apiBase';
 import { getPinUnlockToken } from '@/lib/pinUnlockCoordinator';
+import {
+  captureVaultUnlockToken,
+  getVaultUnlockToken,
+  setVaultUnlockToken,
+  signalVaultLocked,
+} from '@/lib/vaultUnlock';
+
+/**
+ * Preview/download bypass apiClient (they need the raw bytes), so they carry the
+ * same auth, PIN-gate and Vault-lock headers themselves.
+ */
+const fetchVaultFile = async (path: string, failureMessage: string): Promise<Response> => {
+  const token = TokenManager.getAccessToken();
+  const pinToken = getPinUnlockToken();
+  const vaultToken = getVaultUnlockToken();
+
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  if (pinToken) headers['X-Pin-Unlock'] = pinToken;
+  if (vaultToken) headers['X-Vault-Unlock'] = vaultToken;
+
+  const res = await fetch(buildApiUrl(getConfiguredApiBase(), path), { headers });
+  captureVaultUnlockToken(res);
+  if (!res.ok) {
+    const errorJson = await res.json().catch(() => ({}));
+    if (res.status === 403 && errorJson.code === 'VAULT_LOCKED') signalVaultLocked();
+    throw new Error(errorJson.error || errorJson.message || failureMessage);
+  }
+  return res;
+};
 
 export interface VaultFolder {
   id: string;
@@ -122,6 +152,13 @@ export interface VaultAuditLog {
   actor?: { id: string; name: string; email: string };
   document?: { id: string; title: string };
   folder?: { id: string; name: string };
+}
+
+export interface VaultSharedFolderContents {
+  folderId: string;
+  role: 'owner' | 'editor' | 'viewer';
+  canDownload: boolean;
+  documents: NonNullable<VaultShare['document']>[];
 }
 
 export interface VaultLockStatus {
@@ -250,19 +287,7 @@ export const vaultService = {
   },
 
   downloadDocument: async (id: string, originalFileName?: string): Promise<void> => {
-    const token = TokenManager.getAccessToken();
-    const pinToken = getPinUnlockToken();
-    const url = buildApiUrl(getConfiguredApiBase(), `/vault/documents/${id}/download`);
-
-    const headers: Record<string, string> = {};
-    if (token) headers['Authorization'] = `Bearer ${token}`;
-    if (pinToken) headers['X-Pin-Unlock'] = pinToken;
-
-    const res = await fetch(url, { headers });
-    if (!res.ok) {
-      const errorJson = await res.json().catch(() => ({}));
-      throw new Error(errorJson.error || errorJson.message || 'Failed to download document');
-    }
+    const res = await fetchVaultFile(`/vault/documents/${id}/download`, 'Failed to download document');
 
     const blob = await res.blob();
     const blobUrl = window.URL.createObjectURL(blob);
@@ -276,19 +301,7 @@ export const vaultService = {
   },
 
   previewDocument: async (id: string): Promise<{ objectUrl: string; contentType: string; cleanup: () => void }> => {
-    const token = TokenManager.getAccessToken();
-    const pinToken = getPinUnlockToken();
-    const url = buildApiUrl(getConfiguredApiBase(), `/vault/documents/${id}/preview`);
-
-    const headers: Record<string, string> = {};
-    if (token) headers['Authorization'] = `Bearer ${token}`;
-    if (pinToken) headers['X-Pin-Unlock'] = pinToken;
-
-    const res = await fetch(url, { headers });
-    if (!res.ok) {
-      const errorJson = await res.json().catch(() => ({}));
-      throw new Error(errorJson.error || errorJson.message || 'Failed to preview document');
-    }
+    const res = await fetchVaultFile(`/vault/documents/${id}/preview`, 'Failed to preview document');
 
     const contentType = res.headers.get('Content-Type') || 'application/octet-stream';
     const blob = await res.blob();
@@ -338,6 +351,12 @@ export const vaultService = {
     return res.data || [];
   },
 
+  getSharedFolderDocuments: async (folderId: string): Promise<VaultSharedFolderContents> => {
+    const res = await apiClient.get<VaultSharedFolderContents>(`/vault/shared-with-me/folders/${folderId}/documents`);
+    if (!res.data) throw new Error(res.error?.message || 'Failed to open shared folder');
+    return res.data;
+  },
+
   getAuditLogs: async (): Promise<VaultAuditLog[]> => {
     const res = await apiClient.get<VaultAuditLog[]>('/vault/audit-logs');
     return res.data || [];
@@ -354,14 +373,19 @@ export const vaultService = {
     vaultPin?: string;
     autoLockMinutes?: number;
   }): Promise<VaultLockStatus> => {
-    const res = await apiClient.post<VaultLockStatus>('/vault/lock/configure', data);
+    const res = await apiClient.post<VaultLockStatus & { unlockToken?: string }>('/vault/lock/configure', data);
     if (!res.data) throw new Error(res.error?.message || 'Failed to configure lock');
+    if (res.data.unlockToken) setVaultUnlockToken(res.data.unlockToken);
     return res.data;
   },
 
   verifyLock: async (vaultPin: string): Promise<{ verified: boolean; unlockedAt?: string; message?: string }> => {
-    const res = await apiClient.post<{ verified: boolean; unlockedAt?: string; message?: string }>('/vault/lock/verify', { vaultPin });
+    const res = await apiClient.post<{ verified: boolean; unlockedAt?: string; message?: string; unlockToken?: string }>(
+      '/vault/lock/verify',
+      { vaultPin },
+    );
     if (!res.data) throw new Error(res.error?.message || 'Failed to verify PIN');
+    if (res.data.verified && res.data.unlockToken) setVaultUnlockToken(res.data.unlockToken);
     return res.data;
   },
 
