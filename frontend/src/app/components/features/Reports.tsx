@@ -37,7 +37,6 @@ import {
   X,
   Layers,
   Activity,
-  ChevronRight,
   ChevronDown,
   Target,
   BadgePercent,
@@ -45,9 +44,6 @@ import {
   PiggyBank,
   FileDown,
   Check,
-  Clock,
-  ArrowRight,
-  SlidersHorizontal,
   Table as TableIcon,
 } from 'lucide-react';
 import { Card } from '@/app/components/ui/card';

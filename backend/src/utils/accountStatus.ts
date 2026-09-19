@@ -21,7 +21,8 @@ export const isAccountLocked = (status?: string | null): boolean => {
   return (LOCKED_ACCOUNT_STATUSES as readonly string[]).includes(normalized);
 };
 
-export const isAccountPending = (status?: string | null, emailVerified?: boolean | null): boolean => {
+// `_emailVerified` is accepted for call-site compatibility; status alone decides.
+export const isAccountPending = (status?: string | null, _emailVerified?: boolean | null): boolean => {
   if (!status || typeof status !== 'string') return false;
   const normalized = status.trim().toLowerCase();
   return normalized === 'pending_verification' || normalized === 'pending' || normalized === 'unverified';

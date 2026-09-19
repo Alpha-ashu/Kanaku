@@ -4,7 +4,7 @@ import { useApp } from '@/contexts/AppContext';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { ReceiptScanner } from '@/app/components/transactions/ReceiptScanner';
 import { db, type DocumentRecord, type Transaction } from '@/lib/database';
-import { ScanLine, FileText, Receipt, Eye, Trash2, Plus, ImageOff, CheckCircle2, Clock, AlertCircle, Loader2, X, Layers, ArrowLeft } from 'lucide-react';
+import { ScanLine, FileText, Receipt, Eye, Trash2, Plus, CheckCircle2, Clock, AlertCircle, Loader2, X, Layers, ArrowLeft } from 'lucide-react';
 import { Button } from '@/app/components/ui/button';
 import { toast } from 'sonner';
 import { formatCurrencyAmount } from '@/lib/currencyUtils';

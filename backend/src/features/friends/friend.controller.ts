@@ -50,7 +50,9 @@ export function cleanFriendName(rawName?: string | null, fallback?: { email?: st
         }
       }
       name = Buffer.from(bytes).toString('utf8');
-    } catch {}
+    } catch {
+      // Malformed quoted-printable: keep the name as decoded so far.
+    }
   }
 
   // 2. Unescape vCard escape sequences
@@ -61,8 +63,8 @@ export function cleanFriendName(rawName?: string | null, fallback?: { email?: st
 
   // 4. Remove emoticons and punctuation clusters (like -:;)=d, :-), =D)
   name = name.replace(/[-:;=~_#*+!?,.]{2,}[a-zA-Z0-9]?/g, ' ');
-  name = name.replace(/(?:^|\s)(?:[-:;=8][oO\-]?[)\]\(\[dDpP/\\|*]|[<>]?[:;=8][)\]\(\[dDpP/\\|*])(?:\s|$)/gi, ' ');
-  name = name.replace(/(?:^|\s)[=:;]-?[)\]\(\[dDpP](?:\s|$)/gi, ' ');
+  name = name.replace(/(?:^|\s)(?:[-:;=8][oO-]?[)\]([dDpP/\\|*]|[<>]?[:;=8][)\]([dDpP/\\|*])(?:\s|$)/gi, ' ');
+  name = name.replace(/(?:^|\s)[=:;]-?[)\]([dDpP](?:\s|$)/gi, ' ');
 
   // 5. Clean dangling punctuation from start/end
   name = name.replace(/^[-:;=,._~#*+|/\s]+|[-:;=,._~#*+|/\s]+$/gu, '');
