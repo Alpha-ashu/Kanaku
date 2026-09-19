@@ -40,26 +40,61 @@ const DEFAULT_FOLDERS = [
 
 export class VaultService {
   /**
-   * Automatically initializes the 7 standard category folders for a user on first access.
+   * Automatically initializes the 7 standard category folders for a user on first access,
+   * and self-heals by deduplicating any duplicate root folders.
    */
   static async ensureDefaultFolders(userId: string): Promise<void> {
-    const existingCount = await prisma.vaultFolder.count({
-      where: { userId, deletedAt: null },
+    // 1. Fetch all existing non-deleted root folders for this user
+    const existingFolders = await prisma.vaultFolder.findMany({
+      where: { userId, parentId: null, deletedAt: null },
+      orderBy: { createdAt: 'asc' },
     });
 
-    if (existingCount === 0) {
-      logger.info('Initializing default Vault folders for user', { userId });
-      for (const def of DEFAULT_FOLDERS) {
-        await prisma.vaultFolder.create({
-          data: {
-            userId,
-            name: def.name,
-            category: def.category,
-            isDefault: true,
-            color: def.color,
-            icon: def.icon,
-          },
+    const seenNames = new Map<string, string>();
+    const duplicateIdsToDelete: string[] = [];
+
+    for (const folder of existingFolders) {
+      if (seenNames.has(folder.name)) {
+        const canonicalId = seenNames.get(folder.name)!;
+        await prisma.vaultDocument.updateMany({
+          where: { folderId: folder.id },
+          data: { folderId: canonicalId },
         });
+        await prisma.vaultFolder.updateMany({
+          where: { parentId: folder.id },
+          data: { parentId: canonicalId },
+        });
+        duplicateIdsToDelete.push(folder.id);
+      } else {
+        seenNames.set(folder.name, folder.id);
+      }
+    }
+
+    if (duplicateIdsToDelete.length > 0) {
+      logger.info(`Deduplicating ${duplicateIdsToDelete.length} duplicate folders for user ${userId}`);
+      await prisma.vaultFolder.deleteMany({
+        where: { id: { in: duplicateIdsToDelete } },
+      });
+    }
+
+    // 2. Create missing default folders
+    for (const def of DEFAULT_FOLDERS) {
+      if (!seenNames.has(def.name)) {
+        try {
+          const created = await prisma.vaultFolder.create({
+            data: {
+              userId,
+              name: def.name,
+              category: def.category,
+              isDefault: true,
+              color: def.color,
+              icon: def.icon,
+            },
+          });
+          seenNames.set(def.name, created.id);
+        } catch (err) {
+          logger.warn(`Could not create default folder ${def.name}:`, err);
+        }
       }
     }
   }
@@ -103,6 +138,11 @@ export class VaultService {
       categoryBreakdown[cat] = (categoryBreakdown[cat] || 0) + 1;
     });
 
+    // Deduplicate folder count
+    const uniqueRootNames = new Set(folders.filter(f => !f.parentId).map(f => f.name));
+    const subfolderCount = folders.filter(f => !!f.parentId).length;
+    const totalFolders = uniqueRootNames.size + subfolderCount;
+
     // Identify documents expiring within the next 45 days
     const now = new Date();
     const futureThreshold = new Date();
@@ -116,7 +156,7 @@ export class VaultService {
 
     return {
       totalDocuments: documents.length,
-      totalFolders: folders.length,
+      totalFolders,
       totalStorageBytes,
       storageLimitBytes: VAULT_STORAGE_LIMIT_BYTES,
       sharedWithOthersCount,
@@ -143,7 +183,18 @@ export class VaultService {
       },
     });
 
-    return folders;
+    // Ensure distinct folders by id and by name (for root folders)
+    const uniqueFolders: typeof folders = [];
+    const seen = new Set<string>();
+    for (const f of folders) {
+      const key = f.parentId ? `${f.parentId}:${f.name}` : f.name;
+      if (!seen.has(key)) {
+        seen.add(key);
+        uniqueFolders.push(f);
+      }
+    }
+
+    return uniqueFolders;
   }
 
   /**

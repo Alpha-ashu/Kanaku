@@ -164,7 +164,7 @@ export const VaultDocumentPreviewModal: React.FC<VaultDocumentPreviewModalProps>
               <button
                 type="button"
                 onClick={handleDownload}
-                className="KANAKU-btn KANAKU-btn-secondary !h-9 !px-3"
+                className="h-9 px-3 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 border border-slate-200 transition-colors inline-flex items-center gap-1.5 cursor-pointer"
               >
                 <Download className="w-4 h-4" />
                 <span className="hidden sm:inline">Download</span>
@@ -173,7 +173,7 @@ export const VaultDocumentPreviewModal: React.FC<VaultDocumentPreviewModalProps>
             <button
               type="button"
               onClick={onClose}
-              className="w-9 h-9 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center transition-colors"
+              className="w-9 h-9 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -216,7 +216,7 @@ export const VaultDocumentPreviewModal: React.FC<VaultDocumentPreviewModalProps>
                   <button
                     type="button"
                     onClick={handleDownload}
-                    className="KANAKU-btn KANAKU-btn-primary"
+                    className="h-10 px-4 rounded-xl text-xs sm:text-sm font-semibold bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white shadow-sm shadow-purple-500/20 transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <Download className="w-4 h-4" /> Download File
                   </button>
@@ -348,7 +348,7 @@ export const VaultDocumentPreviewModal: React.FC<VaultDocumentPreviewModalProps>
                       type="button"
                       disabled={isUploadingVersion}
                       onClick={() => newVersionInputRef.current?.click()}
-                      className="KANAKU-btn KANAKU-btn-primary w-full !h-8"
+                      className="h-9 px-3 rounded-xl text-xs font-semibold bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white shadow-sm shadow-purple-500/20 transition-all flex items-center justify-center gap-1.5 cursor-pointer w-full disabled:opacity-50"
                     >
                       {isUploadingVersion ? (
                         <span>Uploading...</span>

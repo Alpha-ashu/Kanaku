@@ -85,36 +85,43 @@ export const VaultAuditTrailView: React.FC = () => {
   }
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <h3 className="text-section-title flex items-center gap-2">
-          <ShieldCheck className="w-5 h-5 text-emerald-500" />
-          Security Audit Trail
-        </h3>
+    <div className="bg-white rounded-[24px] border border-slate-200/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)] overflow-hidden">
+      {/* Card Header */}
+      <div className="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+            <ShieldCheck className="w-5 h-5" />
+          </div>
+          <div className="min-w-0">
+            <h3 className="text-xs sm:text-sm font-bold text-slate-900">Security Audit Trail</h3>
+            <p className="text-xs text-slate-400 mt-0.5 truncate">
+              Immutable cryptographic record of all vault actions
+            </p>
+          </div>
+        </div>
+
         <button
           type="button"
           onClick={loadLogs}
-          className="p-2 rounded-xl hover:bg-slate-100 text-slate-500 transition-colors"
-          title="Refresh"
+          className="w-9 h-9 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center transition-colors cursor-pointer shrink-0"
+          title="Refresh Audit Logs"
         >
           <RefreshCw className="w-4 h-4" />
         </button>
       </div>
 
-      <p className="text-body-sm text-slate-500">
-        Immutable record of every action on your vault. Cannot be edited or deleted.
-      </p>
-
       {logs.length === 0 ? (
-        <div className="KANAKU-card !items-center !text-center !py-12">
-          <ShieldCheck className="w-10 h-10 text-emerald-300 mb-2" />
-          <h4 className="text-card-title text-slate-700">No activity yet</h4>
-          <p className="text-body-sm text-slate-400 mt-1">
-            All vault operations will be recorded here automatically.
+        <div className="p-8 text-center flex flex-col items-center">
+          <div className="w-12 h-12 rounded-2xl bg-slate-50 text-slate-300 flex items-center justify-center mb-3">
+            <ShieldCheck className="w-6 h-6" />
+          </div>
+          <h4 className="text-xs sm:text-sm font-bold text-slate-700">No Security Events Yet</h4>
+          <p className="text-xs text-slate-400 mt-1 max-w-xs">
+            Every document view, upload, download, share, and folder change is cryptographically recorded here.
           </p>
         </div>
       ) : (
-        <div className="KANAKU-card !p-0 divide-y divide-slate-100 overflow-hidden">
+        <div className="divide-y divide-slate-100 max-h-[440px] overflow-y-auto">
           {logs.map((log, i) => {
             const config = getActionConfig(log.action);
             const Icon = config.icon;
@@ -124,30 +131,34 @@ export const VaultAuditTrailView: React.FC = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: i * 0.02 }}
-                className="p-3.5 flex items-start gap-3"
+                className="p-3.5 sm:p-4 flex items-start gap-3 hover:bg-slate-50/50 transition-colors"
               >
                 <div className={`w-8 h-8 rounded-xl ${config.bg} ${config.color} flex items-center justify-center shrink-0 mt-0.5`}>
                   <Icon className="w-4 h-4" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className={`text-caption uppercase font-bold px-2 py-0.5 rounded-full ${config.bg} ${config.color}`}>
+                  <div className="flex items-center gap-2 flex-wrap justify-between">
+                    <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full border ${config.bg} ${config.color} border-current/20`}>
                       {config.label}
                     </span>
-                    <span className="text-caption">{formatRelativeTime(log.createdAt)}</span>
+                    <span className="text-[11px] text-slate-400 font-medium">
+                      {formatRelativeTime(log.createdAt)}
+                    </span>
                   </div>
                   {log.details && (
-                    <p className="text-body-sm text-slate-600 mt-1 truncate">{log.details}</p>
+                    <p className="text-xs sm:text-sm font-medium text-slate-800 mt-1 break-words">
+                      {log.details}
+                    </p>
                   )}
-                  <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                  <div className="flex items-center gap-1.5 mt-1 text-[11px] text-slate-400 flex-wrap">
                     {log.actor && (
-                      <span className="text-caption">by {log.actor.name || log.actor.email}</span>
+                      <span>by {log.actor.name || log.actor.email}</span>
                     )}
                     {log.document && (
-                      <span className="text-caption">· {log.document.title}</span>
+                      <span>· {log.document.title}</span>
                     )}
                     {log.folder && (
-                      <span className="text-caption">· {log.folder.name}</span>
+                      <span>· {log.folder.name}</span>
                     )}
                   </div>
                 </div>

@@ -137,7 +137,7 @@ export const VaultLockOverlay: React.FC<VaultLockOverlayProps> = ({ onUnlocked }
             type="button"
             onClick={handleVerify}
             disabled={isVerifying}
-            className="KANAKU-btn KANAKU-btn-primary w-full max-w-[260px] mt-4 disabled:opacity-50"
+            className="h-11 px-5 rounded-xl text-xs sm:text-sm font-semibold bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white shadow-sm shadow-purple-500/20 transition-all flex items-center justify-center cursor-pointer w-full max-w-[260px] mt-4 disabled:opacity-50"
           >
             {isVerifying ? 'Verifying...' : 'Unlock Vault'}
           </button>

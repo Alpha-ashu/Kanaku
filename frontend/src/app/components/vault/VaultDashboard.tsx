@@ -125,7 +125,7 @@ export const VaultDashboard: React.FC<VaultDashboardProps> = ({
                 <div className={`w-9 h-9 rounded-xl ${accent.bg} ${accent.text} flex items-center justify-center mb-2.5`}>
                   <Icon className="w-4.5 h-4.5" />
                 </div>
-                <h4 className="text-card-title text-left leading-snug">{name}</h4>
+                <h4 className="text-xs sm:text-sm font-semibold text-slate-900 text-left leading-snug line-clamp-2 break-words">{name}</h4>
                 <div className="flex items-center justify-between w-full mt-1.5">
                   <span className="text-caption">{count} {count === 1 ? 'doc' : 'docs'}</span>
                   <ArrowRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-slate-500 transition-colors" />
@@ -149,7 +149,7 @@ export const VaultDashboard: React.FC<VaultDashboardProps> = ({
                 key={doc.id}
                 type="button"
                 onClick={() => onPreviewDocument(doc.id)}
-                className="w-full p-3.5 flex items-center justify-between gap-3 hover:bg-slate-50/50 transition-colors text-left"
+                className="w-full p-3.5 flex items-center justify-between gap-3 hover:bg-slate-50/50 transition-colors text-left cursor-pointer"
               >
                 <div className="flex items-center gap-2.5 min-w-0">
                   <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
@@ -182,7 +182,7 @@ export const VaultDashboard: React.FC<VaultDashboardProps> = ({
                 key={doc.id}
                 type="button"
                 onClick={() => onPreviewDocument(doc.id)}
-                className="w-full p-3.5 flex items-center justify-between gap-3 hover:bg-slate-50/50 transition-colors text-left"
+                className="w-full p-3.5 flex items-center justify-between gap-3 hover:bg-slate-50/50 transition-colors text-left cursor-pointer"
               >
                 <div className="flex items-center gap-2.5 min-w-0">
                   <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
@@ -213,7 +213,7 @@ export const VaultDashboard: React.FC<VaultDashboardProps> = ({
           <button
             type="button"
             onClick={onUploadClick}
-            className="KANAKU-btn KANAKU-btn-primary mt-4"
+            className="h-10 px-5 rounded-xl text-xs sm:text-sm font-semibold bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white shadow-sm shadow-purple-500/20 transition-all cursor-pointer mt-4 inline-flex items-center justify-center gap-2"
           >
             Upload Your First Document
           </button>

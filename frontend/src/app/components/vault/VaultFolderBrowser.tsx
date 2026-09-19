@@ -84,16 +84,25 @@ export const VaultFolderBrowser: React.FC<VaultFolderBrowserProps> = ({
     return path;
   }, [currentFolder, folders]);
 
-  // Subfolders of current folder
-  const subfolders = useMemo(
-    () =>
-      folders.filter((f) =>
-        currentFolderId
-          ? f.parentId === currentFolderId
-          : !f.parentId,
-      ),
-    [folders, currentFolderId],
-  );
+  // Subfolders of current folder (deduplicated by name to guarantee clean UI)
+  const subfolders = useMemo(() => {
+    const raw = folders.filter((f) =>
+      currentFolderId ? f.parentId === currentFolderId : !f.parentId,
+    );
+    const deduped = new Map<string, VaultFolder>();
+    for (const folder of raw) {
+      const key = folder.name.trim().toLowerCase();
+      if (!deduped.has(key)) {
+        deduped.set(key, folder);
+      } else {
+        const existing = deduped.get(key)!;
+        if ((folder._count?.documents || 0) > (existing._count?.documents || 0)) {
+          deduped.set(key, folder);
+        }
+      }
+    }
+    return Array.from(deduped.values());
+  }, [folders, currentFolderId]);
 
   // Documents in current folder
   const folderDocuments = useMemo(() => {
@@ -257,7 +266,7 @@ export const VaultFolderBrowser: React.FC<VaultFolderBrowserProps> = ({
                 <button
                   type="button"
                   onClick={() => setShowNewFolderForm(false)}
-                  className="KANAKU-btn KANAKU-btn-secondary !h-9"
+                  className="h-9 px-3.5 rounded-xl text-xs sm:text-sm font-semibold bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 border border-slate-200 transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -265,7 +274,7 @@ export const VaultFolderBrowser: React.FC<VaultFolderBrowserProps> = ({
                   type="button"
                   onClick={handleCreateFolder}
                   disabled={isCreating || !newFolderName.trim()}
-                  className="KANAKU-btn KANAKU-btn-primary !h-9"
+                  className="h-9 px-4 rounded-xl text-xs sm:text-sm font-semibold bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white shadow-sm shadow-purple-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
                   {isCreating ? 'Creating...' : 'Create'}
                 </button>
@@ -302,14 +311,17 @@ export const VaultFolderBrowser: React.FC<VaultFolderBrowserProps> = ({
           <h3 className="text-label mb-2">FOLDERS</h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
             {subfolders.map((folder) => (
-              <div key={folder.id} className="KANAKU-card !p-3.5 !gap-2 group relative">
+              <div
+                key={folder.id}
+                className="bg-white rounded-2xl border border-slate-200/80 hover:border-purple-300 hover:shadow-md transition-all duration-200 p-3 sm:p-3.5 group relative flex flex-col justify-between"
+              >
                 {editingFolderId === folder.id ? (
                   <div className="flex items-center gap-2">
                     <input
                       type="text"
                       value={editFolderName}
                       onChange={(e) => setEditFolderName(e.target.value)}
-                      className="KANAKU-input !h-8"
+                      className="w-full h-8 px-2.5 rounded-lg border border-purple-400 bg-white text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-400/20"
                       autoFocus
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') handleRenameFolder(folder.id);
@@ -321,15 +333,22 @@ export const VaultFolderBrowser: React.FC<VaultFolderBrowserProps> = ({
                   <button
                     type="button"
                     onClick={() => onSelectFolder(folder.id)}
-                    className="flex items-center gap-2.5 text-left w-full"
+                    className="flex items-start gap-2.5 text-left w-full cursor-pointer"
                   >
-                    <Folder
-                      className="w-5 h-5 shrink-0"
-                      style={{ color: folder.color || '#7C3AED' }}
-                    />
-                    <div className="min-w-0">
-                      <p className="text-card-title truncate">{folder.name}</p>
-                      <p className="text-caption">
+                    <div
+                      className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 mt-0.5"
+                      style={{
+                        backgroundColor: `${folder.color || '#7C3AED'}15`,
+                        color: folder.color || '#7C3AED',
+                      }}
+                    >
+                      <Folder className="w-4.5 h-4.5" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs sm:text-sm font-semibold text-slate-800 leading-snug line-clamp-2 break-words">
+                        {folder.name}
+                      </p>
+                      <p className="text-[11px] text-slate-400 font-medium mt-0.5">
                         {folder._count?.documents || 0} docs
                         {folder._count?.subfolders ? ` · ${folder._count.subfolders} folders` : ''}
                       </p>
@@ -346,7 +365,7 @@ export const VaultFolderBrowser: React.FC<VaultFolderBrowserProps> = ({
                         e.stopPropagation();
                         onShareFolder(folder);
                       }}
-                      className="p-1.5 rounded-lg hover:bg-purple-50 text-slate-400 hover:text-purple-600 transition-colors"
+                      className="p-1.5 rounded-lg hover:bg-purple-50 text-slate-400 hover:text-purple-600 transition-colors cursor-pointer"
                       title="Share"
                     >
                       <Share2 className="w-3.5 h-3.5" />
@@ -358,7 +377,7 @@ export const VaultFolderBrowser: React.FC<VaultFolderBrowserProps> = ({
                         setEditingFolderId(folder.id);
                         setEditFolderName(folder.name);
                       }}
-                      className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
+                      className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
                       title="Rename"
                     >
                       <Edit3 className="w-3.5 h-3.5" />
@@ -369,7 +388,7 @@ export const VaultFolderBrowser: React.FC<VaultFolderBrowserProps> = ({
                         e.stopPropagation();
                         handleDeleteFolder(folder.id);
                       }}
-                      className="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors"
+                      className="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
                       title="Delete"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -467,7 +486,7 @@ export const VaultFolderBrowser: React.FC<VaultFolderBrowserProps> = ({
           <button
             type="button"
             onClick={() => onUploadClick(currentFolderId || undefined)}
-            className="KANAKU-btn KANAKU-btn-primary mt-3 !h-9"
+            className="h-10 px-4 rounded-xl text-xs sm:text-sm font-semibold bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white shadow-sm shadow-purple-500/20 transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer mt-3"
           >
             <Plus className="w-4 h-4" />
             Upload Document
