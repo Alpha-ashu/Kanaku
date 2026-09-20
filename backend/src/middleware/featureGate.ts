@@ -96,6 +96,26 @@ const DEFAULT_SUB_FEATURES: Record<string, Record<string, { enabled: boolean; ro
 };
 
 
+/**
+ * Modules that belong to the account holder rather than to their platform role.
+ *
+ * Every user of Kanaku — whatever their role — has their own bank accounts,
+ * wallets and spending. These modules are therefore not subject to per-role
+ * RBAC or to the deny-by-default rule for modules an admin has not explicitly
+ * enabled; only the global on/off switch still applies to them.
+ *
+ * Must stay in step with CORE_PERSONAL_FINANCE_FEATURES in
+ * frontend/src/contexts/AppContext.tsx: if the two disagree, one side shows a
+ * surface the other refuses.
+ */
+const CORE_PERSONAL_FINANCE_MODULES = new Set([
+  'accounts',      // bank accounts AND wallets
+  'accountSetup',  // without it, accounts are read-only on a new account
+  'transactions',
+  'transfer',
+  'dashboard',
+]);
+
 // Default module baseline role access
 const DEFAULT_MODULE_ACCESS: Record<string, Record<string, boolean>> = {
   accounts: { admin: true, manager: true, advisor: true, user: true },
@@ -176,6 +196,19 @@ export const requireFeature = (moduleKey: string, childKey?: string) => {
       const moduleSettings = features[moduleKey];
       const hasSavedSettings = Object.keys(features).length > 0;
 
+      // Personal-finance surfaces belong to the person, not to their platform
+      // role: an advisor, a manager and an admin all still have their own bank
+      // accounts, wallets and spending to track. A per-role toggle (or a module
+      // simply missing from the admin's saved matrix) must not take those away,
+      // or the account holder is locked out of their own money with no way to
+      // restore it themselves.
+      //
+      // Mirrors CORE_PERSONAL_FINANCE_FEATURES in the web app's AppContext —
+      // if the two disagree the UI shows a surface the API then refuses.
+      // The admin's GLOBAL disable switch is still honoured below; only the
+      // per-role and not-yet-enabled denials are lifted.
+      const isCorePersonalFinance = CORE_PERSONAL_FINANCE_MODULES.has(moduleKey);
+
       // 1. Check Module-Level access
       if (moduleSettings) {
         if (typeof moduleSettings.enabled === 'boolean' && !moduleSettings.enabled) {
@@ -193,7 +226,9 @@ export const requireFeature = (moduleKey: string, childKey?: string) => {
         }
 
         // Check module roleAccess override
-        if (moduleSettings.roleAccess && typeof moduleSettings.roleAccess[userRole] === 'boolean') {
+        if (!isCorePersonalFinance
+            && moduleSettings.roleAccess
+            && typeof moduleSettings.roleAccess[userRole] === 'boolean') {
           if (!moduleSettings.roleAccess[userRole]) {
             return denyFeature(req, res, `You do not have access to feature module '${moduleKey}'.`, { moduleKey, reason: 'role_access' });
           }
@@ -202,13 +237,14 @@ export const requireFeature = (moduleKey: string, childKey?: string) => {
         // DENY-BY-DEFAULT: DB has admin-configured settings but this module is
         // not present — it is a newly-deployed feature that admin has not yet
         // enabled. Block non-admin users; admin can always access new features.
-        if (userRole !== 'admin') {
+        if (userRole !== 'admin' && !isCorePersonalFinance) {
           return denyFeature(req, res, `Feature module '${moduleKey}' has not been enabled by admin.`, { moduleKey, reason: 'not_enabled_by_admin' });
         }
       } else {
         // No DB settings at all (fresh install). Fall back to hardcoded defaults
         // using a conservative deny-by-default: unknown modules → admin only.
-        const defaultRoleAllowed = DEFAULT_MODULE_ACCESS[moduleKey]?.[userRole] ?? (userRole === 'admin');
+        const defaultRoleAllowed = isCorePersonalFinance
+          || (DEFAULT_MODULE_ACCESS[moduleKey]?.[userRole] ?? (userRole === 'admin'));
         if (!defaultRoleAllowed) {
           return denyFeature(req, res, `You do not have access to feature module '${moduleKey}'.`, { moduleKey, reason: 'default_deny' });
         }

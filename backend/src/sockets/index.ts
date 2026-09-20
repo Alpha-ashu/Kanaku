@@ -6,6 +6,7 @@ import { isAllowedOrigin } from '../config/cors';
 import { isAccountLocked } from '../utils/accountStatus';
 import { getPurposeClient } from '../config/redis-connections';
 import { isTokenRevoked } from '../security/tokenRevocation';
+import { encryptMessageBody } from '../features/sessions/message.crypto';
 
 const SOCKET_AUTH_CACHE_TTL = 60; // seconds — cache verified identity to avoid DB on every connect
 
@@ -651,11 +652,14 @@ export class SocketManager {
             return;
           }
 
-          const chatMessage = await prisma.chatMessage.create({
+          const storedMessage = await prisma.chatMessage.create({
             data: {
               sessionId,
               senderId: userId,
-              message: trimmedMessage,
+              // Same encryption as the REST send path. Leaving this one in
+              // plaintext would mean the thread's protection depended on which
+              // transport the client happened to use.
+              message: encryptMessageBody(userId, sessionId, trimmedMessage),
             },
             include: {
               session: {
@@ -667,12 +671,18 @@ export class SocketManager {
             },
           });
 
+          // Recipients get the plaintext the sender typed, never the stored
+          // ciphertext.
+          const chatMessage = { ...storedMessage, message: trimmedMessage };
+
           this.io.to(`user:${session.clientId}`).emit('new_message', {
+            sessionId,
             message: chatMessage,
             timestamp: new Date().toISOString(),
           });
 
           this.io.to(`user:${session.advisorId}`).emit('new_message', {
+            sessionId,
             message: chatMessage,
             timestamp: new Date().toISOString(),
           });

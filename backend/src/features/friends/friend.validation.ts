@@ -7,6 +7,9 @@ export const friendCreateSchema = z.object({
   name: z.string().trim().min(1, 'Friend name is required').max(120),
   email: z.string().trim().max(255).optional().nullable(),
   phone: z.string().trim().max(40).optional().nullable(),
+  // Declared so Zod does not strip it: the controller's replay check and the
+  // DB's per-owner unique index both key off this.
+  clientRequestId: z.string().trim().max(200).optional(),
 });
 
 export const friendUpdateSchema = z

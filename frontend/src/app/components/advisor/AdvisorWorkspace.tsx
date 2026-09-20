@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useApp } from '@/contexts/AppContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { backendService } from '@/lib/backend-api';
+import socketClient from '@/lib/socket-client';
 import {
   Briefcase, Clock, CheckCircle, XCircle,
   RotateCw, Power, Users, IndianRupee, Calendar, Loader2, ChevronLeft,
@@ -117,6 +118,7 @@ export const AdvisorWorkspace: React.FC = () => {
     setIsSendingConsultationMsg(true);
     try {
       const res = await backendService.api.post(`/sessions/${consultationModal.sessionId}/messages`, {
+        clientRequestId: crypto.randomUUID(),
         message: text,
       });
       setConsultationMessages(prev => [...prev, res.data]);
@@ -170,6 +172,44 @@ export const AdvisorWorkspace: React.FC = () => {
 
  useEffect(() => { fetchData(); }, [fetchData]);
 
+  // Live updates. Without these the workspace only ever refetched on mount, so
+  // an advisor sitting on this screen never saw a booking request arrive and
+  // never saw an incoming chat message — the row and the notification existed,
+  // but nothing told the open screen to look again.
+  useEffect(() => {
+    if (!isAdvisor) return;
+
+    const unsubBooking = socketClient.on('booking_notification', () => {
+      fetchData();
+      toast.info('New booking request received');
+    });
+
+    const unsubStatus = socketClient.on('booking_status_changed', () => {
+      fetchData();
+    });
+
+    return () => {
+      unsubBooking();
+      unsubStatus();
+    };
+  }, [isAdvisor, fetchData]);
+
+  // Incoming chat lands in the open consultation thread. Scoped to the session
+  // being viewed so a message from another client doesn't appear in this one.
+  useEffect(() => {
+    const openSessionId = consultationModal?.sessionId;
+    if (!openSessionId) return;
+
+    const unsubMessage = socketClient.on('new_message', (payload: any) => {
+      if (payload?.sessionId !== openSessionId || !payload?.message) return;
+      setConsultationMessages((prev) =>
+        prev.some((m: any) => m.id === payload.message.id) ? prev : [...prev, payload.message],
+      );
+    });
+
+    return () => { unsubMessage(); };
+  }, [consultationModal?.sessionId]);
+
  if (!isAdvisor) {
  return (
  <div className="flex items-center justify-center min-h-screen bg-white">
@@ -194,6 +234,9 @@ export const AdvisorWorkspace: React.FC = () => {
  category: postForm.category,
  title: postForm.title.trim(),
  content: postForm.content.trim(),
+ // One key per publish attempt, so a retried request returns the post the
+ // first attempt made instead of publishing it twice to every follower.
+ clientRequestId: crypto.randomUUID(),
  });
  setPostForm({ category: POST_CATEGORIES[0], title: '', content: '' });
  toast.success('Update published — your followers have been notified');

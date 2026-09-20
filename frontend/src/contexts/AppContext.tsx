@@ -55,6 +55,22 @@ interface AppContextType {
   triggerSync: () => void;
 }
 
+/**
+ * Features that belong to the person, not to their platform role.
+ *
+ * Every account holder — user, advisor, manager, admin — has their own money to
+ * track, so these surfaces (bank accounts and wallets, the spending ledger, the
+ * home summary, and moving money between one's own accounts) are never revoked
+ * by a per-role toggle. The admin's global on/off switch still applies.
+ */
+const CORE_PERSONAL_FINANCE_FEATURES: string[] = [
+  'accounts',      // bank accounts AND wallets
+  'accountSetup',  // without this, "accounts" is read-only and unusable on a new account
+  'transactions',
+  'transfer',
+  'dashboard',
+];
+
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -574,6 +590,19 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             return;
           }
 
+          // Everyone's own money, whatever job they do on the platform.
+          //
+          // An advisor, a manager and an admin each still have their own bank
+          // accounts, wallets and spending — these are personal-finance
+          // surfaces, not platform privileges, so a per-role toggle must not be
+          // able to take them away. This floor already existed but applied ONLY
+          // to admin, so an admin who unticked "accounts" for advisor left every
+          // advisor without their wallet and no way to get it back themselves.
+          //
+          // The global `enabled` switch still turns a feature off for everyone
+          // (that is a product decision, not an RBAC one).
+          const isCorePersonalFinance = CORE_PERSONAL_FINANCE_FEATURES.includes(key);
+
           if (role === 'admin') {
             // Admin role: apply full RBAC logic
             let isVisible = roleFeatures[key as FeatureKey] ?? true;
@@ -582,8 +611,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             } else if (value && typeof value.enabled === 'boolean' && !value.enabled) {
               isVisible = false; // globally disabled
             } else if (value?.roleAccess && typeof value.roleAccess['admin'] === 'boolean') {
-              // Core user features (accounts, transactions, dashboard) should never be accidentally revoked from admin
-              if (['accounts', 'transactions', 'dashboard'].includes(key)) {
+              if (isCorePersonalFinance) {
                 isVisible = value.enabled !== false;
               } else {
                 isVisible = value.roleAccess['admin'];
@@ -601,7 +629,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             }
 
             // 2. If explicitly configured for this role in roleAccess, respect it
-            if (value?.roleAccess && typeof value.roleAccess[role] === 'boolean') {
+            //    — except for the core personal-finance set, which no role
+            //    toggle may revoke.
+            if (isCorePersonalFinance) {
+              isAllowed = value?.enabled !== false;
+            } else if (value?.roleAccess && typeof value.roleAccess[role] === 'boolean') {
               if (!value.roleAccess[role]) {
                 isAllowed = false; // Admin disabled for this role
               } else if (value.enabled !== false && (roleFeatures as unknown as Record<string, boolean>)[key]) {

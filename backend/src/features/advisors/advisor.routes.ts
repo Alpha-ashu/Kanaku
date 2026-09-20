@@ -5,6 +5,8 @@ import { requireRole, requireApproved } from '../../middleware/rbac';
 import { requireFeature } from '../../middleware/featureGate';
 import { uploadFields } from '../../middleware/upload';
 import { validateBody, validateParams } from '../../middleware/validate';
+import { duplicateSubmitGuard } from '../../middleware/duplicateSubmitGuard';
+import { idempotency } from '../../middleware/idempotency';
 import * as AdvisorController from './advisor.controller';
 import * as PostController from './post.controller';
 import {
@@ -55,7 +57,10 @@ router.put('/online-status', requireRole('advisor'), requireApproved, validateBo
 router.put('/role-mode', requireRole(['advisor', 'admin', 'manager']), validateBody(roleModeSchema), AdvisorController.switchRoleMode);
 
 // Availability slots (approved advisors)
-router.post('/availability', requireRole('advisor'), requireApproved, validateBody(setAvailabilitySchema), AdvisorController.setAvailability);
+// AdvisorAvailability and AdvisorPost had no duplicate protection at any layer —
+// no route guard, no idempotency key, no unique constraint — so a double-tapped
+// "Save availability" or "Post" created two rows.
+router.post('/availability', requireRole('advisor'), requireApproved, idempotency({ scope: 'advisor.availability.set' }), validateBody(setAvailabilitySchema), duplicateSubmitGuard({ scope: 'advisor.availability.set' }), AdvisorController.setAvailability);
 router.put('/availability/status', requireRole('advisor'), requireApproved, validateBody(availabilityStatusSchema), AdvisorController.setAvailabilityStatus);
 router.get('/:id/availability', validateParams(advisorIdParamSchema), ownAvailabilityOrBookAdvisor, AdvisorController.getAvailability);
 router.delete('/availability/:id', requireRole('advisor'), requireApproved, validateParams(advisorIdParamSchema), AdvisorController.deleteAvailability);
@@ -68,7 +73,7 @@ router.put('/sessions/:id/rate', validateParams(advisorIdParamSchema), validateB
 // Registered before the /:id catch-all below, or "posts" and "following" would
 // be read as advisor ids.
 router.get('/posts', requireFeature('bookAdvisor'), PostController.listPosts);
-router.post('/posts', requireRole('advisor'), requireApproved, validateBody(createPostSchema), PostController.createPost);
+router.post('/posts', requireRole('advisor'), requireApproved, idempotency({ scope: 'advisor.posts.create' }), validateBody(createPostSchema), duplicateSubmitGuard({ scope: 'advisor.posts.create' }), PostController.createPost);
 router.delete('/posts/:id', requireRole('advisor'), requireApproved, validateParams(advisorIdParamSchema), PostController.deletePost);
 router.post('/posts/:id/like', requireFeature('bookAdvisor'), validateParams(advisorIdParamSchema), PostController.likePost);
 router.delete('/posts/:id/like', requireFeature('bookAdvisor'), validateParams(advisorIdParamSchema), PostController.unlikePost);

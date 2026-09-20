@@ -88,6 +88,11 @@ model AdvisorAvailability {
   updatedAt DateTime @updatedAt
   advisor   User     @relation(fields: [advisorId], references: [id], onDelete: Cascade)
 
+  /// One row per advisor per weekday: setAvailability does a
+  /// find-by-(advisorId, dayOfWeek)-then-update-or-create, and the bulk
+  /// seeder writes exactly one slot per day. The constraint makes that
+  /// compare-and-set race-proof instead of merely usually-correct.
+  @@unique([advisorId, dayOfWeek])
   @@index([advisorId])
   @@schema("public")
 }
@@ -136,7 +141,11 @@ model BookingRequest {
   session         AdvisorSession?
   advisor         User            @relation("BookingRequest_advisorIdToUser", fields: [advisorId], references: [id], onDelete: Cascade)
   client          User            @relation("BookingRequest_clientIdToUser", fields: [clientId], references: [id], onDelete: Cascade)
+  /// Idempotency key for creates. The in-memory duplicateSubmitGuard stops a
+  /// double-tap on one instance until restart; this is the durable backstop.
+  clientRequestId String?
 
+  @@unique([clientId, clientRequestId])
   @@index([advisorId])
   @@index([clientId])
   @@index([proposedDate])
@@ -178,7 +187,11 @@ model ChatMessage {
   attachmentSize Int?
   sender    User           @relation(fields: [senderId], references: [id], onDelete: Cascade)
   session   AdvisorSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  /// Idempotency key for creates. The in-memory duplicateSubmitGuard stops a
+  /// double-tap on one instance until restart; this is the durable backstop.
+  clientRequestId String?
 
+  @@unique([senderId, clientRequestId])
   @@index([senderId])
   @@index([sessionId])
   @@index([timestamp])
@@ -198,7 +211,11 @@ model AdvisorPost {
   deletedAt DateTime?
   advisor   User              @relation("AdvisorPost_advisor", fields: [advisorId], references: [id], onDelete: Cascade)
   likes     AdvisorPostLike[]
+  /// Idempotency key for creates. The in-memory duplicateSubmitGuard stops a
+  /// double-tap on one instance until restart; this is the durable backstop.
+  clientRequestId String?
 
+  @@unique([advisorId, clientRequestId])
   @@index([advisorId])
   @@index([createdAt])
   @@schema("public")
@@ -277,7 +294,11 @@ model ExpenseBill {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
   user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// Idempotency key for creates. The in-memory duplicateSubmitGuard stops a
+  /// double-tap on one instance until restart; this is the durable backstop.
+  clientRequestId  String?
 
+  @@unique([userId, clientRequestId])
   @@index([sha256])
   @@index([transactionId])
   @@index([userId])
@@ -299,7 +320,11 @@ model Friend {
   deletedAt           DateTime?
   user                User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
   groupExpenseMembers GroupExpenseMember[]
+  /// Idempotency key for creates. The in-memory duplicateSubmitGuard stops a
+  /// double-tap on one instance until restart; this is the durable backstop.
+  clientRequestId     String?
 
+  @@unique([userId, clientRequestId])
   @@index([syncStatus])
   @@index([userId])
   @@schema("public")
@@ -659,7 +684,11 @@ model Todo {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// Idempotency key for creates. The in-memory duplicateSubmitGuard stops a
+  /// double-tap on one instance until restart; this is the durable backstop.
+  clientRequestId String?
 
+  @@unique([userId, clientRequestId])
   @@index([userId])
   @@schema("public")
 }
@@ -678,9 +707,12 @@ model TodoList {
   archived    Boolean?        @default(false)
   created_at  DateTime?       @default(now()) @db.Timestamptz(6)
   updated_at  DateTime?       @default(now()) @db.Timestamptz(6)
+  /// Idempotency key for creates (raw-SQL table; see todo.repository.ts).
+  client_request_id String?
   items       TodoListItem[]
   shares      TodoListShare[]
 
+  @@unique([user_id, client_request_id])
   @@index([user_id], map: "idx_todo_lists_user_id")
   @@map("todo_lists")
   @@schema("public")
@@ -699,8 +731,11 @@ model TodoListItem {
   created_at   DateTime? @default(now()) @db.Timestamptz(6)
   updated_at   DateTime? @default(now()) @db.Timestamptz(6)
   completed_at DateTime? @db.Timestamptz(6)
+  /// Idempotency key for creates (raw-SQL table; see todo.repository.ts).
+  client_request_id String?
   list         TodoList  @relation(fields: [list_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
+  @@unique([user_id, client_request_id])
   @@index([created_by], map: "idx_todo_items_created_by")
   @@index([list_id], map: "idx_todo_items_list_id")
   @@index([user_id], map: "idx_todo_items_user_id")
@@ -1110,7 +1145,11 @@ model GroupExpense {
   paidByAccount        Account?             @relation(fields: [paidBy], references: [id])
   user                 User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
   groupMembers         GroupExpenseMember[] // New relational structure
+  /// Idempotency key for creates. The in-memory duplicateSubmitGuard stops a
+  /// double-tap on one instance until restart; this is the durable backstop.
+  clientRequestId      String?
 
+  @@unique([userId, clientRequestId])
   @@index([date])
   @@index([paidBy])
   @@index([syncStatus])
@@ -1140,7 +1179,11 @@ model GroupExpenseMember {
   deletedAt         DateTime?
   groupExpense      GroupExpense @relation(fields: [groupExpenseId], references: [id], onDelete: Cascade)
   friend            Friend?      @relation(fields: [friendId], references: [id], onDelete: SetNull)
+  /// Idempotency key for creates. The in-memory duplicateSubmitGuard stops a
+  /// double-tap on one instance until restart; this is the durable backstop.
+  clientRequestId   String?
 
+  @@unique([groupExpenseId, clientRequestId])
   @@index([groupExpenseId])
   @@index([userId])
   @@index([groupExpenseId, userId])
@@ -1198,7 +1241,11 @@ model GoalMember {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
   goal      Goal      @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  /// Idempotency key for creates. The in-memory duplicateSubmitGuard stops a
+  /// double-tap on one instance until restart; this is the durable backstop.
+  clientRequestId String?
 
+  @@unique([goalId, clientRequestId])
   @@index([goalId])
   @@index([userId])
   @@index([deletedAt])
@@ -1754,6 +1801,10 @@ model VaultFolder {
   isDefault   Boolean         @default(false) @map("is_default")
   color       String?
   icon        String?
+  // Idempotency key. The route guard is in-memory only (single instance, Redis
+  // off), so it stops a double-tap but not a retry that lands after a restart or
+  // on another instance. This is the durable backstop.
+  clientRequestId String?   @map("client_request_id")
   createdAt   DateTime        @default(now()) @map("created_at")
   updatedAt   DateTime        @updatedAt @map("updated_at")
   deletedAt   DateTime?       @map("deleted_at")
@@ -1765,6 +1816,7 @@ model VaultFolder {
   shares      VaultShare[]
   auditLogs   VaultAuditLog[]
 
+  @@unique([userId, clientRequestId])
   @@index([userId])
   @@index([parentId])
   @@index([category])
@@ -1793,6 +1845,8 @@ model VaultDocument {
   reminderDate     DateTime?              @map("reminder_date")
   currentVersion   Int                    @default(1) @map("current_version")
   isSensitive      Boolean                @default(false) @map("is_sensitive")
+  // See VaultFolder.clientRequestId.
+  clientRequestId  String?                @map("client_request_id")
   createdAt        DateTime               @default(now()) @map("created_at")
   updatedAt        DateTime               @updatedAt @map("updated_at")
   deletedAt        DateTime?              @map("deleted_at")
@@ -1803,6 +1857,7 @@ model VaultDocument {
   shares           VaultShare[]
   auditLogs        VaultAuditLog[]
 
+  @@unique([userId, clientRequestId])
   @@index([userId])
   @@index([folderId])
   @@index([category])

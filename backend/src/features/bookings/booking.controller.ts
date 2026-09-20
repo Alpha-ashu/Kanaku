@@ -3,12 +3,46 @@ import { AuthRequest, getUserId } from '../../middleware/auth';
 import { prisma } from '../../db/prisma';
 import { isDatabaseUnavailableError } from '../../utils/databaseAvailability';
 import { dispatchNotification } from '../notifications/notification.dispatcher';
+import { getSocketManager } from '../../sockets';
+import { logger } from '../../config/logger';
+import { asClientRequestId } from '../../utils/idempotentCreate';
+
+/**
+ * Push a live update into a user's socket room.
+ *
+ * The socket layer already emitted booking events, but only from its own
+ * socket handlers — the REST routes the app actually calls emitted nothing. An
+ * advisor with the workspace open therefore never saw a booking arrive: the row
+ * and the notification existed, but the screen only refetched on mount.
+ *
+ * Best-effort by design: a disconnected recipient still has the durable
+ * Notification row and sees the booking on the next fetch, so a socket problem
+ * must never fail the booking itself.
+ */
+const pushLive = (userId: string, event: string, payload: unknown): void => {
+  try {
+    getSocketManager().notifyUser(userId, event, payload);
+  } catch (err) {
+    logger.warn('[bookings] live socket push failed', {
+      event, userId, error: err instanceof Error ? err.message : String(err),
+    });
+  }
+};
 
 // Create a new booking request
 export const createBooking = async (req: AuthRequest, res: Response) => {
   try {
     const clientId = getUserId(req);
     const { advisorId, sessionType, description, proposedDate, proposedTime, duration, amount } = req.body;
+    const requestKey = asClientRequestId(req.body?.clientRequestId);
+
+    // Replay of a booking we already created. The slot-based duplicate check
+    // below only catches a repeat of the same slot; this catches a retry of the
+    // same submission whatever it asked for.
+    if (requestKey) {
+      const replay = await prisma.bookingRequest.findFirst({ where: { clientId, clientRequestId: requestKey } });
+      if (replay) return res.status(200).json(replay);
+    }
 
     // Validate required fields — note: amount can legitimately be 0 (free session)
     if (!advisorId || !sessionType || !proposedDate || !proposedTime || !duration || amount === undefined || amount === null) {
@@ -94,6 +128,7 @@ export const createBooking = async (req: AuthRequest, res: Response) => {
           duration,
           amount,
           status: 'pending',
+          clientRequestId: requestKey,
         },
       });
       return { booking: row, created: true };
@@ -115,6 +150,13 @@ export const createBooking = async (req: AuthRequest, res: Response) => {
       deepLink: '/advisor-panel',
       priority: 'high',
       channels: ['app', 'email', 'push'],
+    });
+
+    // Live update so an advisor already looking at their workspace sees the
+    // request appear, rather than only on the next mount.
+    pushLive(advisorId, 'booking_notification', {
+      type: 'new_booking',
+      booking: { ...booking, clientName },
     });
 
     res.status(201).json(booking);

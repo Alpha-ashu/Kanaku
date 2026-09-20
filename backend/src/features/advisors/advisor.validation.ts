@@ -49,5 +49,8 @@ export const createPostSchema = z
     category: z.string().trim().max(60).optional(),
     title: z.string().trim().min(1, 'Title is required').max(160),
     content: z.string().trim().min(1, 'Content is required').max(5000),
+    // Survives .passthrough() either way; declared so it is typed and so the
+    // dependency is visible to anyone who later tightens this schema.
+    clientRequestId: z.string().trim().max(200).optional(),
   })
   .passthrough();

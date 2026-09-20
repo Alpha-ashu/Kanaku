@@ -3,6 +3,8 @@ import { AuthRequest, getUserId } from '../../middleware/auth';
 import { prisma } from '../../db/prisma';
 import { getSocketManager } from '../../sockets';
 import { logger } from '../../config/logger';
+import { encryptMessageBody, decryptMessageRow } from './message.crypto';
+import { asClientRequestId } from '../../utils/idempotentCreate';
 import { validateBillUpload, makeStoragePath } from '../../utils/uploadPolicy';
 import { uploadBuffer, createSignedUrl } from '../../utils/storage';
 
@@ -49,7 +51,9 @@ export const getSession = async (req: AuthRequest, res: Response) => {
       return res.status(403).json({ error: 'Access denied' });
     }
 
-    res.json(session);
+    // This route embeds the whole thread, so it needs the same decryption the
+    // dedicated messages route does — otherwise the chat renders as base64.
+    res.json({ ...session, chatMessages: session.chatMessages.map(decryptMessageRow) });
   } catch (error: any) {
     res.status(500).json({ error: error.message || 'Failed to fetch session' });
   }
@@ -61,9 +65,20 @@ export const sendMessage = async (req: AuthRequest, res: Response) => {
     const userId = getUserId(req);
     const { id: sessionId } = req.params;
     const { message } = req.body;
+    const messageRequestKey = asClientRequestId(req.body?.clientRequestId);
 
     if (!message || message.trim() === '') {
       return res.status(400).json({ error: 'Message cannot be empty' });
+    }
+
+    // Idempotent replay — a retried send must not post the message twice into
+    // the thread. Returns the stored row with its plaintext restored.
+    if (messageRequestKey) {
+      const replay = await prisma.chatMessage.findFirst({
+        where: { senderId: userId, clientRequestId: messageRequestKey },
+        include: { sender: { select: { id: true, name: true } } },
+      });
+      if (replay) return res.status(200).json(decryptMessageRow(replay));
     }
 
     const session = await prisma.advisorSession.findFirst({
@@ -85,11 +100,16 @@ export const sendMessage = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ error: 'Cannot send messages in a ended session' });
     }
 
-    const chatMessage = await prisma.chatMessage.create({
+    const plaintext = message.trim();
+
+    const storedMessage = await prisma.chatMessage.create({
       data: {
         sessionId,
         senderId: userId,
-        message: message.trim(),
+        // Encrypted at rest (AES-256-GCM, per-sender DEK, AAD = sessionId).
+        // Consultations previously sat in the database as readable text.
+        message: encryptMessageBody(userId, sessionId, plaintext),
+        clientRequestId: messageRequestKey,
       },
       include: {
         sender: {
@@ -97,6 +117,10 @@ export const sendMessage = async (req: AuthRequest, res: Response) => {
         },
       },
     });
+
+    // Everything downstream — the response, the socket push — must carry the
+    // plaintext the sender typed, not the ciphertext that was stored.
+    const chatMessage = { ...storedMessage, message: plaintext };
 
     // Notify the other party
     const otherUserId = session.advisorId === userId ? session.clientId : session.advisorId;
@@ -188,11 +212,14 @@ export const uploadMessageAttachment = async (req: AuthRequest, res: Response) =
 
     const caption = typeof req.body?.message === 'string' ? req.body.message.trim().slice(0, 1000) : '';
 
-    const chatMessage = await prisma.chatMessage.create({
+    const storedShare = await prisma.chatMessage.create({
       data: {
         sessionId,
         senderId: userId,
-        message: caption,
+        // The caption is a chat message like any other, so it gets the same
+        // encryption. An empty caption stays empty rather than becoming a
+        // ciphertext blob that renders as noise.
+        message: caption ? encryptMessageBody(userId, sessionId, caption) : caption,
         attachmentPath: storagePath,
         attachmentName: validated.originalName,
         attachmentType: validated.contentType,
@@ -200,6 +227,7 @@ export const uploadMessageAttachment = async (req: AuthRequest, res: Response) =
       },
       include: { sender: { select: { id: true, name: true } } },
     });
+    const chatMessage = { ...storedShare, message: caption };
 
     const otherUserId = session.advisorId === userId ? session.clientId : session.advisorId;
     const senderName = req.user?.name || 'User';
@@ -313,7 +341,9 @@ export const getMessages = async (req: AuthRequest, res: Response) => {
       },
     });
 
-    res.json(messages);
+    // Rows written before encryption existed carry no marker and pass through
+    // untouched, so old threads keep rendering without a backfill.
+    res.json(messages.map(decryptMessageRow));
   } catch (error: any) {
     res.status(500).json({ error: error.message || 'Failed to fetch messages' });
   }

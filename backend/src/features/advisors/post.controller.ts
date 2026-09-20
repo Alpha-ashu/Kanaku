@@ -12,6 +12,7 @@ import { AuthRequest, getUserId } from '../../middleware/auth';
 import { prisma } from '../../db/prisma';
 import { logger } from '../../config/logger';
 import { isDatabaseUnavailableError } from '../../utils/databaseAvailability';
+import { asClientRequestId } from '../../utils/idempotentCreate';
 
 const MAX_FEED_ITEMS = 50;
 /** Cap on the fan-out of "new post" notifications per publish. */
@@ -102,6 +103,13 @@ export const createPost = async (req: AuthRequest, res: Response) => {
   try {
     const advisorId = getUserId(req);
     const { category, title, content } = req.body ?? {};
+    const requestKey = asClientRequestId(req.body?.clientRequestId);
+
+    // Replay of a post we already published.
+    if (requestKey) {
+      const replay = await prisma.advisorPost.findFirst({ where: { advisorId, clientRequestId: requestKey } });
+      if (replay) return res.status(200).json(replay);
+    }
 
     if (!title?.trim() || !content?.trim()) {
       return res.status(400).json({ error: 'Title and content are required' });
@@ -113,6 +121,7 @@ export const createPost = async (req: AuthRequest, res: Response) => {
         category: (category ?? 'Update').toString().trim().slice(0, 60) || 'Update',
         title: title.trim().slice(0, 160),
         content: content.trim().slice(0, 5000),
+        clientRequestId: requestKey,
       },
       include: {
         advisor: {

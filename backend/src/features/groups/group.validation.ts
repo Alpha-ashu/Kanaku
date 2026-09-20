@@ -38,6 +38,9 @@ export const groupCreateSchema = z.object({
   yourSplitValue: z.number().nonnegative().nullable().optional(),
   yourSettled: z.boolean().optional(),
   status: z.enum(['pending', 'settled']).optional(),
+  // Declared so Zod does not strip it: the controller's replay check and the
+  // DB's per-owner unique index both key off this.
+  clientRequestId: z.string().trim().max(200).optional(),
 });
 
 export const groupUpdateSchema = groupCreateSchema.partial();

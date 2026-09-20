@@ -26,6 +26,9 @@ export const goalIdParamSchema = z.object({
 export const goalMemberAddSchema = z.object({
   email: z.string().trim().email('A valid email is required'),
   name: z.string().trim().max(120).optional(),
+  // Declared so Zod does not strip it: the controller's replay check and the
+  // DB's per-owner unique index both key off this.
+  clientRequestId: z.string().trim().max(200).optional(),
 });
 
 export const goalContributionSchema = z.object({

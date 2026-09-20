@@ -12,6 +12,8 @@ export const createFolderSchema = z.object({
   parentId: z.string().uuid().nullable().optional(),
   color: z.string().max(30).optional(),
   icon: z.string().max(50).optional(),
+  // Must be declared, or Zod strips it and the replay check never sees a key.
+  clientRequestId: z.string().trim().max(200).optional(),
 });
 
 export const updateFolderSchema = z.object({

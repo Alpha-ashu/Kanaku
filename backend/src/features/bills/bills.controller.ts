@@ -9,6 +9,7 @@ import { processImage } from '../../utils/imageProcessing';
 import { scanBufferForViruses } from '../../utils/virusScan';
 import { moderateImage } from '../../utils/moderation';
 import { createSignedUrl, uploadBuffer, removeObject } from '../../utils/storage';
+import { asClientRequestId } from '../../utils/idempotentCreate';
 
 const hashBuffer = (buffer: Buffer) =>
   crypto.createHash('sha256').update(buffer).digest('hex');
@@ -191,6 +192,7 @@ export const uploadBill = async (req: AuthRequest, res: Response, next: NextFunc
         scanStatus: scanResult.status,
         scanResult: scanResult.details,
         moderationStatus,
+        clientRequestId: asClientRequestId(req.body?.clientRequestId),
       },
     });
 

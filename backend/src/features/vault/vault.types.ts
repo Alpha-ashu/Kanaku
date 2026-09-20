@@ -35,6 +35,8 @@ export interface CreateFolderDTO {
   parentId?: string | null;
   color?: string;
   icon?: string;
+  /** Stable per-user-action key; a repeat returns the first folder created. */
+  clientRequestId?: string;
 }
 
 export interface UpdateFolderDTO {

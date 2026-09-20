@@ -12,6 +12,7 @@ import { inviteParticipants } from '../collaboration/invitation.service';
 import { notifyGoalProgress } from '../notifications/triggers';
 import { FinancialLedgerService } from '../transactions/ledger.service';
 import { FinancialEventDispatcher, GoalContributionEvent, GoalWithdrawalEvent } from '../transactions/dispatcher';
+import { asClientRequestId } from '../../utils/idempotentCreate';
 
 export const getGoals = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
@@ -294,6 +295,16 @@ export const addGoalMember = async (req: AuthRequest, res: Response, next: NextF
       },
     });
 
+    const memberRequestKey = asClientRequestId(req.body?.clientRequestId);
+    if (memberRequestKey) {
+      // Replay of an add we already performed — return it rather than reporting
+      // the person as a duplicate member.
+      const replay = await prisma.goalMember.findFirst({
+        where: { goalId: id, clientRequestId: memberRequestKey },
+      });
+      if (replay) return res.status(200).json({ success: true, data: replay });
+    }
+
     if (normalizedEmail) {
       const existingMember = await prisma.goalMember.findFirst({
         where: { goalId: id, email: normalizedEmail, deletedAt: null },
@@ -310,6 +321,7 @@ export const addGoalMember = async (req: AuthRequest, res: Response, next: NextF
         name: name || resolvedUser?.name || normalizedEmail || 'Goal Participant',
         email: normalizedEmail,
         phone: cleanPhone,
+        clientRequestId: memberRequestKey,
       },
     });
 

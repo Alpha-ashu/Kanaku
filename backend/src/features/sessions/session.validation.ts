@@ -6,6 +6,9 @@ export const sessionIdParamSchema = z.object({
 
 export const sendMessageSchema = z.object({
   message: z.string().trim().min(1, 'Message is required').max(4000),
+  // Declared so Zod does not strip it: the controller's replay check and the
+  // DB's per-owner unique index both key off this.
+  clientRequestId: z.string().trim().max(200).optional(),
 });
 
 export const completeSessionSchema = z.object({

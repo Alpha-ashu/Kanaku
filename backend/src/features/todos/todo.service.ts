@@ -46,11 +46,18 @@ export class TodoService {
     return todoRepository.findTodos(userId);
   }
 
-  async createTodo(userId: string, data: { title: string; completed?: boolean }) {
+  async createTodo(userId: string, data: { title: string; completed?: boolean; clientRequestId?: string }) {
     if (!data.title) {
       throw AppError.badRequest('Title is required', 'MISSING_TITLE');
     }
-    return todoRepository.createTodo(userId, data.title, data.completed ?? false);
+    // Idempotent replay: a retried create returns the todo the first attempt
+    // made rather than adding a second identical one.
+    const key = data.clientRequestId?.trim() || null;
+    if (key) {
+      const existing = await todoRepository.findTodoByRequestKey(userId, key);
+      if (existing) return existing;
+    }
+    return todoRepository.createTodo(userId, data.title, data.completed ?? false, key);
   }
 
   async updateTodo(id: string, userId: string, data: { title?: string; completed?: boolean }) {
@@ -85,11 +92,17 @@ export class TodoService {
     return sliceKeysetPage(rows, page, idPosition);
   }
 
-  async createTodoList(userId: string, data: { name: string; description?: string }) {
+  async createTodoList(userId: string, data: { name: string; description?: string; clientRequestId?: string }) {
     if (!data.name) {
       throw AppError.badRequest('Name is required', 'MISSING_NAME');
     }
-    const lists = await todoRepository.createList(userId, data.name, data.description);
+    // Idempotent replay — a retried create returns the list the first attempt made.
+    const key = data.clientRequestId?.trim() || null;
+    if (key) {
+      const existing = await todoRepository.findListByRequestKey(userId, key);
+      if (existing) return existing;
+    }
+    const lists = await todoRepository.createList(userId, data.name, data.description, key);
     this.invalidateTodoCache([userId]);
     return lists[0];
   }
@@ -158,10 +171,17 @@ export class TodoService {
       description?: string;
       priority?: 'low' | 'medium' | 'high';
       dueDate?: string;
+      clientRequestId?: string;
     }
   ) {
     if (!data.title) {
       throw AppError.badRequest('Title is required', 'MISSING_TITLE');
+    }
+    // Idempotent replay — a retried create returns the item the first attempt made.
+    const key = data.clientRequestId?.trim() || null;
+    if (key) {
+      const existing = await todoRepository.findItemByRequestKey(userId, key);
+      if (existing) return existing;
     }
     const items = await todoRepository.createItem(
       data.listId,
@@ -169,7 +189,8 @@ export class TodoService {
       data.title,
       data.description,
       data.priority,
-      data.dueDate
+      data.dueDate,
+      key
     );
 
     // Notify participants

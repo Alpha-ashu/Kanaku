@@ -1,6 +1,6 @@
 import { apiClient, TokenManager } from '@/lib/api';
 import { buildApiUrl, getConfiguredApiBase } from '@/lib/apiBase';
-import { getPinUnlockToken } from '@/lib/pinUnlockCoordinator';
+import { awaitPinUnlock, getPinUnlockToken } from '@/lib/pinUnlockCoordinator';
 import {
   captureVaultUnlockToken,
   getVaultUnlockToken,
@@ -10,9 +10,18 @@ import {
 
 /**
  * Preview/download bypass apiClient (they need the raw bytes), so they carry the
- * same auth, PIN-gate and Vault-lock headers themselves.
+ * same auth, PIN-gate and Vault-lock headers themselves — AND must answer the
+ * same two gate rejections apiClient does.
+ *
+ * This used to handle VAULT_LOCKED only. The PIN unlock token lives in this
+ * browser's storage, so on any device that has not unlocked in the last
+ * PIN_GATE_TIMEOUT_MINUTES — which is every freshly-signed-in device — the gate
+ * answered 403 PIN_VERIFICATION_REQUIRED and this threw a dead-end error. The
+ * document LIST went through apiClient and recovered, so the vault looked fine
+ * until you opened a document: the owner could sign in on a second device, see
+ * their files, and get "something went wrong" on every one of them.
  */
-const fetchVaultFile = async (path: string, failureMessage: string): Promise<Response> => {
+const buildVaultFileHeaders = (): Record<string, string> => {
   const token = TokenManager.getAccessToken();
   const pinToken = getPinUnlockToken();
   const vaultToken = getVaultUnlockToken();
@@ -21,11 +30,33 @@ const fetchVaultFile = async (path: string, failureMessage: string): Promise<Res
   if (token) headers['Authorization'] = `Bearer ${token}`;
   if (pinToken) headers['X-Pin-Unlock'] = pinToken;
   if (vaultToken) headers['X-Vault-Unlock'] = vaultToken;
+  return headers;
+};
 
-  const res = await fetch(buildApiUrl(getConfiguredApiBase(), path), { headers });
+const fetchVaultFile = async (path: string, failureMessage: string): Promise<Response> => {
+  const url = buildApiUrl(getConfiguredApiBase(), path);
+
+  let res = await fetch(url, { headers: buildVaultFileHeaders() });
   captureVaultUnlockToken(res);
+
+  if (res.status === 403) {
+    const firstError = await res.clone().json().catch(() => ({} as Record<string, unknown>));
+
+    if (firstError.code === 'PIN_VERIFICATION_REQUIRED') {
+      // Wait for the PIN keypad (or an in-flight verify) and retry once. The
+      // headers are rebuilt rather than reused: the verify we just awaited is
+      // what minted the token, so replaying the originals would resend the
+      // absent one and 403 again.
+      const unlocked = await awaitPinUnlock();
+      if (unlocked) {
+        res = await fetch(url, { headers: buildVaultFileHeaders() });
+        captureVaultUnlockToken(res);
+      }
+    }
+  }
+
   if (!res.ok) {
-    const errorJson = await res.json().catch(() => ({}));
+    const errorJson = await res.json().catch(() => ({} as Record<string, string>));
     if (res.status === 403 && errorJson.code === 'VAULT_LOCKED') signalVaultLocked();
     throw new Error(errorJson.error || errorJson.message || failureMessage);
   }

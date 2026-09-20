@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { authMiddleware } from '../../middleware/auth';
 import { validateBody, validateParams } from '../../middleware/validate';
+import { duplicateSubmitGuard } from '../../middleware/duplicateSubmitGuard';
+import { idempotency } from '../../middleware/idempotency';
 import { requireFeature } from '../../middleware/featureGate';
 import { authenticatedRateLimit } from '../../middleware/rateLimit';
 import { uploadSingle } from '../../middleware/upload';
@@ -23,7 +25,10 @@ router.use(authMiddleware);
 router.get('/:id', validateParams(sessionIdParamSchema), SessionController.getSession);
 
 // Chat messages (gated by chat sub-feature under bookAdvisor)
-router.post('/:id/messages', requireFeature('bookAdvisor', 'chat'), validateParams(sessionIdParamSchema), validateBody(sendMessageSchema), SessionController.sendMessage);
+// ChatMessage has no unique constraint, so a retried send used to post the same
+// message twice into the conversation. The content guard is right here: two
+// identical messages within its window are a double-tap, not a real repeat.
+router.post('/:id/messages', requireFeature('bookAdvisor', 'chat'), validateParams(sessionIdParamSchema), idempotency({ scope: 'sessions.messages.create' }), validateBody(sendMessageSchema), duplicateSubmitGuard({ scope: 'sessions.messages.create' }), SessionController.sendMessage);
 router.get('/:id/messages', requireFeature('bookAdvisor', 'chat'), validateParams(sessionIdParamSchema), SessionController.getMessages);
 
 // Document sharing inside a consultation. Rate-limited and size-capped like the

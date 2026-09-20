@@ -647,6 +647,11 @@ export const BookAdvisor: React.FC = () => {
         proposedTime: bookingForm.time,
         duration: SESSION_DURATION_MINUTES,
         amount: bookingAdvisor.hourlyRate ?? 0,
+        // Minted here, once per submission, so every replay of THIS request
+        // (notably the 401-refresh interceptor re-sending the original) carries
+        // the same key and the server returns the first booking instead of
+        // creating a second one.
+        clientRequestId: crypto.randomUUID(),
       });
       await loadAdvisorsAndBookings();
       setBookingAdvisor(null);
@@ -682,7 +687,7 @@ export const BookAdvisor: React.FC = () => {
     try {
       const response = await backendService.api.post<SessionMessageApiRow>(
         `/sessions/${activeSessionId}/messages`,
-        { message: text },
+        { message: text, clientRequestId: crypto.randomUUID() },
       );
       const saved = response.data;
       setChatMessages((prev) => ({
@@ -1400,7 +1405,18 @@ export const BookAdvisor: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
               {advisors.filter(a => followedAdvisorIds.includes(a.id)).map(adv => (
                 <div key={adv.id} className="bg-white p-4 rounded-[24px] border border-slate-100/80 flex items-center justify-between gap-3 shadow-2xs">
-                  <div className="flex items-center gap-3 min-w-0">
+                  {/* Opens the same profile modal as the Discover tab. Without a
+                      handler here the Following tab was a dead end: once you
+                      followed an advisor, the only thing you could do to them
+                      from this tab was unfollow. */}
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => setViewingProfileAdvisor(adv)}
+                    onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setViewingProfileAdvisor(adv); } }}
+                    className="flex items-center gap-3 min-w-0 flex-1 cursor-pointer rounded-2xl transition-transform active:scale-95"
+                    title={`View ${adv.name}'s profile`}
+                  >
                     <img src={adv.avatar} alt={adv.name} className="w-10 h-10 rounded-2xl object-cover shrink-0 shadow-2xs" />
                     <div className="min-w-0">
                       <h4 className="font-extrabold text-slate-900 text-xs truncate">{adv.name}</h4>

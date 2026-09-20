@@ -3,6 +3,8 @@ import { authMiddleware } from '../../middleware/auth';
 import { uploadSingle } from '../../middleware/upload';
 import { validateParams } from '../../middleware/validate';
 import { authenticatedRateLimit } from '../../middleware/rateLimit';
+import { duplicateSubmitGuard } from '../../middleware/duplicateSubmitGuard';
+import { idempotency } from '../../middleware/idempotency';
 import { pinGate } from '../../middleware/pinGate';
 import { requireFeature } from '../../middleware/featureGate';
 import * as VaultController from './vault.controller';
@@ -41,8 +43,18 @@ router.get('/dashboard', VaultController.getDashboard);
 router.get('/storage', VaultController.getStorageUsage);
 
 // Folders
+//
+// Vault creates carry the same duplicate protection as every other record type:
+// an Idempotency-Key replay (24h, Postgres-backed) and the in-flight/content
+// guard. Without them a double-tapped "New folder" made two identical folders,
+// and a retried upload made two documents AND two storage objects.
 router.get('/folders', VaultController.getFolders);
-router.post('/folders', VaultController.createFolder);
+router.post(
+  '/folders',
+  idempotency({ scope: 'vault.folders.create' }),
+  duplicateSubmitGuard({ scope: 'vault.folders.create' }),
+  VaultController.createFolder,
+);
 router.patch('/folders/:id', validateParams(vaultIdParamSchema), VaultController.updateFolder);
 router.delete('/folders/:id', validateParams(vaultIdParamSchema), VaultController.deleteFolder);
 
@@ -57,13 +69,23 @@ router.post(
     message: 'Too many document uploads. Please wait a moment.',
   }),
   uploadSingle('file', { maxBytes: MAX_VAULT_FILE_SIZE }),
+  // Key-based replay only — deliberately NOT duplicateSubmitGuard. That guard
+  // fingerprints the request body, and an upload's body is just metadata, so two
+  // genuinely different files sharing a title/folder would be merged into one.
+  // Same reasoning as the bills upload route.
+  idempotency({ scope: 'vault.documents.create' }),
   VaultController.uploadDocument,
 );
-router.post('/documents/batch-move', VaultController.batchMoveDocuments);
+router.post(
+  '/documents/batch-move',
+  idempotency({ scope: 'vault.documents.batchMove' }),
+  VaultController.batchMoveDocuments,
+);
 router.post(
   '/documents/:id/version',
   validateParams(vaultIdParamSchema),
   uploadSingle('file', { maxBytes: MAX_VAULT_FILE_SIZE }),
+  idempotency({ scope: 'vault.documents.version' }),
   VaultController.uploadNewVersion,
 );
 router.get('/documents/:id', validateParams(vaultIdParamSchema), VaultController.getDocument);
@@ -85,6 +107,8 @@ router.post(
     scope: 'vault-share-create',
     message: 'Too many share attempts. Please wait a few minutes.',
   }),
+  idempotency({ scope: 'vault.shares.create' }),
+  duplicateSubmitGuard({ scope: 'vault.shares.create' }),
   VaultController.createShare,
 );
 router.patch('/shares/:id', validateParams(vaultIdParamSchema), VaultController.updateShare);

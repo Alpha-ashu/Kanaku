@@ -27,7 +27,8 @@ export async function ensureTodoTablesExist() {
         description TEXT,
         archived    BOOLEAN DEFAULT false,
         created_at  TIMESTAMPTZ DEFAULT NOW(),
-        updated_at  TIMESTAMPTZ DEFAULT NOW()
+        updated_at  TIMESTAMPTZ DEFAULT NOW(),
+        client_request_id TEXT
       );
 
       CREATE TABLE IF NOT EXISTS public.todo_items (
@@ -42,7 +43,8 @@ export async function ensureTodoTablesExist() {
         created_by   UUID,
         created_at   TIMESTAMPTZ DEFAULT NOW(),
         updated_at   TIMESTAMPTZ DEFAULT NOW(),
-        completed_at TIMESTAMPTZ
+        completed_at TIMESTAMPTZ,
+        client_request_id TEXT
       );
 
       CREATE TABLE IF NOT EXISTS public.todo_list_shares (
@@ -57,6 +59,17 @@ export async function ensureTodoTablesExist() {
 
       CREATE INDEX IF NOT EXISTS idx_todo_lists_user_id ON public.todo_lists(user_id);
       CREATE INDEX IF NOT EXISTS idx_todo_items_list_id ON public.todo_items(list_id);
+
+      -- Idempotency backstop, mirroring migration 20260920050000. Declared here
+      -- too because this DDL is what creates these tables on a database that has
+      -- never had them: without it a fresh install would silently lack the
+      -- column and the duplicate guarantee with it.
+      ALTER TABLE public.todo_lists ADD COLUMN IF NOT EXISTS client_request_id TEXT;
+      ALTER TABLE public.todo_items ADD COLUMN IF NOT EXISTS client_request_id TEXT;
+      CREATE UNIQUE INDEX IF NOT EXISTS todo_lists_user_id_client_request_id_key
+        ON public.todo_lists(user_id, client_request_id);
+      CREATE UNIQUE INDEX IF NOT EXISTS todo_items_user_id_client_request_id_key
+        ON public.todo_items(user_id, client_request_id);
     `);
     await enableRowLevelSecurity(['todo_lists', 'todo_items', 'todo_list_shares']);
     todoTablesEnsured = true;
@@ -81,14 +94,20 @@ export class TodoRepository {
     });
   }
 
-  async createTodo(userId: string, title: string, completed: boolean) {
+  async createTodo(userId: string, title: string, completed: boolean, clientRequestId: string | null = null) {
     return prisma.todo.create({
       data: {
         userId,
         title,
         completed,
+        clientRequestId,
       },
     });
+  }
+
+  /** Looks up a todo by the caller's idempotency key. */
+  async findTodoByRequestKey(userId: string, clientRequestId: string) {
+    return prisma.todo.findFirst({ where: { userId, clientRequestId } });
   }
 
   async updateTodo(id: string, title: string, completed: boolean) {
@@ -122,11 +141,24 @@ export class TodoRepository {
     `;
   }
 
-  async createList(userId: string, name: string, description?: string) {
+  /** Returns a list previously created under the same idempotency key, if any. */
+  async findListByRequestKey(userId: string, clientRequestId: string) {
+    await ensureTodoTablesExist();
+    const rows = await prisma.$queryRaw<any[]>`
+      SELECT id::INT, user_id AS "userId", name, description, archived,
+             created_at AS "createdAt", updated_at AS "updatedAt"
+      FROM public.todo_lists
+      WHERE user_id = ${userId}::uuid AND client_request_id = ${clientRequestId}
+      LIMIT 1
+    `;
+    return rows[0] ?? null;
+  }
+
+  async createList(userId: string, name: string, description?: string, clientRequestId: string | null = null) {
     await ensureTodoTablesExist();
     return prisma.$queryRaw<any[]>`
-      INSERT INTO public.todo_lists (user_id, name, description, archived, created_at, updated_at)
-      VALUES (${userId}::uuid, ${name}, ${description || null}, false, NOW(), NOW())
+      INSERT INTO public.todo_lists (user_id, name, description, archived, created_at, updated_at, client_request_id)
+      VALUES (${userId}::uuid, ${name}, ${description || null}, false, NOW(), NOW(), ${clientRequestId})
       RETURNING id::INT, user_id AS "userId", name, description, archived, created_at AS "createdAt", updated_at AS "updatedAt"
     `;
   }
@@ -207,11 +239,25 @@ export class TodoRepository {
     `;
   }
 
-  async createItem(listId: number, userId: string, title: string, description?: string, priority?: string, dueDate?: string) {
+  /** Returns an item previously created under the same idempotency key, if any. */
+  async findItemByRequestKey(userId: string, clientRequestId: string) {
+    await ensureTodoTablesExist();
+    const rows = await prisma.$queryRaw<any[]>`
+      SELECT id::INT, list_id::INT AS "listId", user_id AS "userId", title, description, completed,
+             priority, due_date AS "dueDate", created_by AS "createdBy",
+             created_at AS "createdAt", updated_at AS "updatedAt"
+      FROM public.todo_items
+      WHERE user_id = ${userId}::uuid AND client_request_id = ${clientRequestId}
+      LIMIT 1
+    `;
+    return rows[0] ?? null;
+  }
+
+  async createItem(listId: number, userId: string, title: string, description?: string, priority?: string, dueDate?: string, clientRequestId: string | null = null) {
     await ensureTodoTablesExist();
     return prisma.$queryRaw<any[]>`
-      INSERT INTO public.todo_items (list_id, user_id, title, description, completed, priority, due_date, created_by, created_at, updated_at)
-      VALUES (${listId}::bigint, ${userId}::uuid, ${title}, ${description || null}, false, ${priority || 'medium'}, ${dueDate ? new Date(dueDate) : null}, ${userId}::uuid, NOW(), NOW())
+      INSERT INTO public.todo_items (list_id, user_id, title, description, completed, priority, due_date, created_by, created_at, updated_at, client_request_id)
+      VALUES (${listId}::bigint, ${userId}::uuid, ${title}, ${description || null}, false, ${priority || 'medium'}, ${dueDate ? new Date(dueDate) : null}, ${userId}::uuid, NOW(), NOW(), ${clientRequestId})
       RETURNING id::INT, list_id::INT AS "listId", user_id AS "userId", title, description, completed, priority, due_date AS "dueDate", created_by AS "createdBy", created_at AS "createdAt", updated_at AS "updatedAt"
     `;
   }

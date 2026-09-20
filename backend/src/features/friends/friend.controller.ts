@@ -10,6 +10,7 @@ import { getSocketManager } from '../../sockets';
 import { inviteParticipants, resolveContactDetailsForFriend } from '../collaboration/invitation.service';
 import { notify } from '../notifications/notify';
 import { owedAmount } from '../groups/group.allocation';
+import { asClientRequestId } from '../../utils/idempotentCreate';
 
 async function findUserByEmailOrPhone(email?: string | null, phone?: string | null): Promise<any> {
   if (email) {
@@ -299,9 +300,20 @@ export const createFriend = async (req: AuthRequest, res: Response, next: NextFu
   try {
     const userId = getUserId(req);
     const { name, email, phone } = req.body;
+    const requestKey = asClientRequestId(req.body?.clientRequestId);
 
     if (!name || typeof name !== 'string' || !name.trim()) {
       throw AppError.badRequest('Friend name is required.', 'NAME_REQUIRED');
+    }
+
+    // Replay of a submission we already stored. Checked before the contact
+    // matching below so a retry returns the same row rather than being reported
+    // as a duplicate contact.
+    if (requestKey) {
+      const replay = await prisma.friend.findFirst({ where: { userId, clientRequestId: requestKey } });
+      if (replay) {
+        return res.status(200).json({ success: true, data: replay });
+      }
     }
 
     // Name-only friends are allowed: voice capture ("borrowed 5000 from Jijo")
@@ -425,6 +437,7 @@ export const createFriend = async (req: AuthRequest, res: Response, next: NextFu
           email: cleanEmail,
           phone: cleanPhone,
           syncStatus: 'synced',
+          clientRequestId: requestKey,
         },
       });
     } catch (err: unknown) {
@@ -435,6 +448,10 @@ export const createFriend = async (req: AuthRequest, res: Response, next: NextFu
           userId,
           deletedAt: null,
           OR: [
+            // The request key is checked first: it identifies THIS submission
+            // exactly, whereas the contact matches below identify "a friend
+            // that looks like this one".
+            requestKey ? { clientRequestId: requestKey } : null,
             cleanEmail ? { email: { equals: cleanEmail, mode: 'insensitive' } } : null,
             cleanPhone ? { phone: cleanPhone } : null,
           ].filter(Boolean) as any,

@@ -13,6 +13,7 @@ import { notifyGroupExpenseChanged } from '../notifications/triggers';
 import { FinancialEventDispatcher, GroupExpenseCreatedEvent, GroupSettlementCompletedEvent } from '../transactions/dispatcher';
 import { FinancialLedgerService } from '../transactions/ledger.service';
 import { findAllocationError, isAllocationAware, owedAmount } from './group.allocation';
+import { asClientRequestId } from '../../utils/idempotentCreate';
 
 
 async function findUserByEmailOrPhone(email?: string | null, phone?: string | null, client: any = prisma): Promise<any> {
@@ -287,6 +288,17 @@ export const createGroup = async (req: AuthRequest, res: Response) => {
   try {
     const userId = getUserId(req);
     const body = req.body;
+    const groupRequestKey = asClientRequestId(body?.clientRequestId);
+
+    // Replay of a group we already created. Checked before the same-day
+    // name+amount heuristic below, because this identifies the exact submission
+    // rather than "a group that looks like this one".
+    if (groupRequestKey) {
+      const replay = await prisma.groupExpense.findFirst({
+        where: { userId, clientRequestId: groupRequestKey },
+      });
+      if (replay) return res.status(200).json({ success: true, data: replay });
+    }
 
     const targetDate = new Date(body.date);
     const startOfDay = new Date(targetDate);
@@ -342,7 +354,8 @@ export const createGroup = async (req: AuthRequest, res: Response) => {
           yourSplitValue: toOptionalDecimal(body.yourSplitValue),
           yourSettledAt: body.yourSettled ? new Date() : null,
           status: body.status || 'pending',
-          syncStatus: 'synced'
+          syncStatus: 'synced',
+          clientRequestId: groupRequestKey,
         }
       });
 

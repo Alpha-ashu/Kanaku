@@ -5,6 +5,7 @@ import { logger } from '../../config/logger';
 import { isDatabaseUnavailableError } from '../../utils/databaseAvailability';
 import { uploadBuffer, createSignedUrl, removeObject } from '../../utils/storage';
 import { approveAdvisorApplication, rejectAdvisorApplication } from './advisorReview.service';
+import { decryptMessageRow } from '../sessions/message.crypto';
 
 const STAFF_ROLES = ['admin', 'manager'];
 
@@ -249,7 +250,22 @@ export const getSessions = async (req: AuthRequest, res: Response) => {
       where: { advisorId },
       include: {
         client: { select: { id: true, name: true, email: true } },
-        chatMessages: true,
+        // Explicit select, mirroring GET /sessions/:id/messages: `true` also
+        // returned attachmentPath, which is a private storage key and must not
+        // reach a client — attachments are opened via the signed-URL route.
+        chatMessages: {
+          select: {
+            id: true,
+            sessionId: true,
+            senderId: true,
+            message: true,
+            timestamp: true,
+            attachmentName: true,
+            attachmentType: true,
+            attachmentSize: true,
+          },
+          orderBy: { timestamp: 'asc' },
+        },
         payment: true,
         booking: { select: { id: true, amount: true, description: true } },
       },
@@ -266,6 +282,9 @@ export const getSessions = async (req: AuthRequest, res: Response) => {
         : (session.booking?.amount != null ? Number(session.booking.amount) : 0);
       return {
         ...session,
+        // Messages are encrypted at rest; this endpoint embeds the thread, so
+        // it must decrypt like the dedicated messages route does.
+        chatMessages: session.chatMessages.map(decryptMessageRow),
         client: clientWithPhone,
         amount,
       };

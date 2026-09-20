@@ -3,6 +3,7 @@ import { AuthRequest, getUserId } from '../../middleware/auth';
 import { todoService } from './todo.service';
 import { cacheGetJson, cacheSetJson } from '../../cache/redis';
 import { readKeysetPage } from '../../utils/pagination';
+import { asClientRequestId } from '../../utils/idempotentCreate';
 
 // Legacy single todo controllers
 export const getTodos = async (req: AuthRequest, res: Response, next: NextFunction) => {

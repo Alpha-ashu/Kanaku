@@ -237,6 +237,17 @@ export class VaultService {
    * Creates a new custom folder or subfolder.
    */
   static async createFolder(userId: string, dto: CreateFolderDTO, ip?: string, ua?: string) {
+    // Idempotent replay. The route's in-memory guard absorbs a double-tap, but
+    // only on the instance that saw the first request and only until restart;
+    // this and the @@unique([userId, clientRequestId]) behind it are what make
+    // the guarantee survive a retry that lands anywhere else.
+    if (dto.clientRequestId) {
+      const existing = await prisma.vaultFolder.findFirst({
+        where: { userId, clientRequestId: dto.clientRequestId, deletedAt: null },
+      });
+      if (existing) return existing;
+    }
+
     if (dto.parentId) {
       const parent = await prisma.vaultFolder.findFirst({
         where: { id: dto.parentId, userId, deletedAt: null },
@@ -255,6 +266,7 @@ export class VaultService {
         color: dto.color || '#6B7280',
         icon: dto.icon || 'Folder',
         isDefault: false,
+        clientRequestId: dto.clientRequestId || null,
       },
     });
 
