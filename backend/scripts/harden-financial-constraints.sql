@@ -1,14 +1,35 @@
 -- ============================================================================
---  Fintech hardening — database-level defense-in-depth.
+--  SUPERSEDED — do not run this script.
 -- ----------------------------------------------------------------------------
---  The API already enforces these via Zod request validation; these CHECK
---  constraints enforce them for ALL write paths (sync, scripts, direct SQL),
---  and make the AuditLog table append-only (immutable) at the DB level.
+--  Everything here now lives in a tracked migration:
+--    prisma/migrations/20260920020000_audit_coverage_and_integrity
 --
---  Idempotent. Run once against the DB:
---    cd backend && npx prisma db execute --file scripts/harden-financial-constraints.sql --schema prisma/schema.prisma
---    (or paste into the Supabase SQL Editor)
+--  It was folded in because keeping it out-of-band meant the schema a migration
+--  produces and the schema production actually runs disagreed about these
+--  constraints — `migrate diff` reported clean while prod carried objects no
+--  migration had created.
+--
+--  Running it now would be actively harmful: its version of
+--  `prevent_auditlog_mutation()` refuses EVERY delete, while the migration's
+--  version allows deletes outside the 730-day retention window. Re-installing
+--  the strict one breaks the nightly AuditLog purge in
+--  src/workers/cleanup.worker.ts, and AuditLog — which now records every
+--  business model, not just the 17 financial ones — would grow without bound.
+--
+--  Kept in the tree only as the historical record of what prod had before
+--  2026-09-20.
 -- ============================================================================
+
+-- Server-side guard rather than psql's \quit: this file is documented to run
+-- through `prisma db execute`, which ships it to the server as plain SQL and
+-- never interprets psql meta-commands. Raising aborts either way.
+DO $guard$
+BEGIN
+  RAISE EXCEPTION
+    'REFUSED: superseded by migration 20260920020000_audit_coverage_and_integrity. %',
+    'Running this would reinstate the strict AuditLog trigger and break retention.';
+END;
+$guard$;
 
 BEGIN;
 

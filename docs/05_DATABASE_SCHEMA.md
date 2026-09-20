@@ -27,6 +27,52 @@ The system of record is PostgreSQL, managed via Prisma (`backend/prisma/schema.p
 
 ---
 
+## 1a. Activity Trail (`AuditLog`)
+
+Every create/update/delete on a business model produces an `AuditLog` row. This is
+not per-controller instrumentation — it is a Prisma client extension in
+`backend/src/db/prisma.ts`, so **every** write path is covered: REST controllers,
+the sync service, background workers and maintenance scripts alike.
+
+**Columns:** `userId`, `actorRole`, `action` (`data.create` / `data.update` /
+`data.delete`, or a named event such as `auth.login`), `resource`
+(`"Model:id"`), `resourceType`, `resourceId`, `status`, `ip`, `userAgent`,
+`requestId`, `details (Json)`, `createdAt`.
+
+`actorRole` is denormalised deliberately: roles change, and an audit row must
+keep describing the moment it recorded. It makes "everything a manager did" an
+indexed scan rather than a join against the actor's *current* role.
+
+**Two coverage tiers** (`AUDIT_MODELS_FULL` / `AUDIT_MODELS_LIGHT`):
+
+| Tier | Models | `details` holds |
+| --- | --- | --- |
+| FULL | money, identity, permissions, ownership, advisory commitments, vault | `before` **and** `after` |
+| LIGHT | notifications, devices, scans, todos, feed, AA, snapshots | `after` only |
+
+FULL performs a read before the write to capture `before`. That is a second
+round trip, and this deployment's database is a region away from its API
+(~280 ms RTT), so it is spent only where the prior value settles a dispute.
+
+**Explicitly excluded:** `AuditLog` (the interceptor would recurse),
+`VaultAuditLog` (already a trail), `ApiIdempotencyKey` (request plumbing that
+churns on every mutating request). A model in none of the three sets fails the
+guard test in `quality/backend/tests/integration/audit-requestid.test.ts`, so a
+new table cannot silently escape auditing.
+
+**Immutability & retention:** the `auditlog_immutable` trigger refuses every
+`UPDATE`, and refuses `DELETE` inside a 730-day window. Outside that window
+deletes are permitted so `cleanup.worker.ts` can age the table out in batches —
+without that exception a trail nobody can prune eventually has to be switched
+off, which is worse than a bounded one. The worker's `AUDIT_RETENTION_DAYS` is
+the ceiling; the trigger's constant is the floor. Keep them in step.
+
+**Secrets:** `AUDIT_SENSITIVE_FIELDS` blanks columns that the generic `redact()`
+key-matcher misses — `OtpCode.code` is a bare "code", `encryptionIv` reads like
+metadata. An audit trail that records the OTP it just issued is worse than none.
+
+---
+
 ## 2. Local Database Schema (IndexedDB via Dexie v15)
 The local client-side database runs on IndexedDB on mobile or web view devices, acting as the offline-first source of truth. Every record includes `syncStatus` (`pending`, `syncing`, `synced`, `conflict`, or `failed`).
 

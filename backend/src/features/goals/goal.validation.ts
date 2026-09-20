@@ -33,6 +33,9 @@ export const goalContributionSchema = z.object({
   accountId: z.string().trim().min(1, 'Account ID is required'),
   memberName: z.string().trim().max(120).optional(),
   notes: z.string().trim().max(500).optional(),
+  // Must be declared here or Zod strips it and the controller's replay check
+  // never sees a key — the contribution would debit the account twice.
+  clientRequestId: z.string().trim().max(200).optional(),
 });
 
 export const goalWithdrawalSchema = z.object({

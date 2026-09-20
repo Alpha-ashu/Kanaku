@@ -35,6 +35,9 @@ export const loanPaymentSchema = z.object({
   amount: z.coerce.number().positive('Payment amount must be positive'),
   accountId: z.string().trim().optional(),
   notes: z.string().trim().max(200).optional(),
+  // Must be declared here or Zod strips it and the controller's replay check
+  // never sees a key — a double-tapped EMI would post twice.
+  clientRequestId: z.string().trim().max(200).optional(),
 });
 
 export const loanIdParamSchema = z.object({

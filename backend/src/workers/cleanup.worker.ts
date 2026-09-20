@@ -14,6 +14,17 @@ import { markCleanupRun } from './health';
 let cleanupJob: ScheduledTask | null = null;
 
 /**
+ * AuditLog retention. Must stay >= the `retention_days` constant inside the
+ * `auditlog_immutable` trigger (migration 20260920020000) — that trigger
+ * refuses to delete anything newer, so a smaller value here just produces
+ * failed deletes rather than a shorter retention.
+ */
+const AUDIT_RETENTION_DAYS = 730; // 24 months
+const AUDIT_PURGE_BATCH_SIZE = 5_000;
+/** Caps one night's work so the nightly job cannot run unboundedly long. */
+const AUDIT_PURGE_MAX_BATCHES = 20;
+
+/**
  * Phase 2 of the GDPR account-deletion flow.
  *
  * `DELETE /api/v1/settings/account` soft-deletes a user by setting
@@ -139,6 +150,35 @@ export const runCleanupTasks = async (): Promise<void> => {
       },
     });
     summary.purgedNotifications = deletedNotifs.count;
+
+    // 5. Age out AuditLog beyond the retention window.
+    //
+    // Every business model is audited (see AUDIT_MODELS in db/prisma.ts), so
+    // this table grows with the app's total write volume and needs a bound.
+    // The `auditlog_immutable` trigger refuses any delete inside the window, so
+    // AUDIT_RETENTION_DAYS here must stay >= the trigger's constant — it is the
+    // ceiling, the trigger is the floor, and a mismatch surfaces as a refused
+    // delete rather than silent data loss.
+    //
+    // Deleted in bounded batches: a single unbounded deleteMany over a table
+    // this size holds a long transaction and row locks on the trail that every
+    // in-flight write is appending to.
+    const auditCutoff = new Date(now.getTime() - AUDIT_RETENTION_DAYS * 24 * 60 * 60 * 1000);
+    let purgedAudit = 0;
+    for (let batch = 0; batch < AUDIT_PURGE_MAX_BATCHES; batch++) {
+      const stale = await prisma.auditLog.findMany({
+        where: { createdAt: { lt: auditCutoff } },
+        select: { id: true },
+        take: AUDIT_PURGE_BATCH_SIZE,
+      });
+      if (stale.length === 0) break;
+      const { count } = await prisma.auditLog.deleteMany({
+        where: { id: { in: stale.map((r) => r.id) } },
+      });
+      purgedAudit += count;
+      if (stale.length < AUDIT_PURGE_BATCH_SIZE) break;
+    }
+    summary.purgedAuditLogs = purgedAudit;
 
     logger.info('Database cleanup completed', { summary });
   } catch (error) {

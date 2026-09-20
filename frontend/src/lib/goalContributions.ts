@@ -27,12 +27,22 @@ export async function addGoalContribution({ goal, account, amount, notes, member
   const trimmedNotes = notes?.trim() || undefined;
 
   if (goal.cloudId && account.cloudId && navigator.onLine) {
+    // Minted once, before the request, so every replay of THIS request carries
+    // the same key — notably the 401-refresh interceptor, which re-sends the
+    // original request after rotating the token. The server matches it against
+    // GoalContribution.clientRequestId and returns the first result instead of
+    // debiting the account and advancing the goal a second time.
+    //
+    // Deliberately not minted inside the API client: a key generated per
+    // attempt is a new key on every retry, which collapses nothing.
+    const clientRequestId = crypto.randomUUID();
     try {
       await backendService.api.post(`/goals/${goal.cloudId}/contribute`, {
         amount,
         accountId: account.cloudId,
         memberName,
         notes: trimmedNotes,
+        clientRequestId,
       });
     } catch (backendError) {
       console.warn('[goalContributions] Direct contribution sync failed; relying on sync queue', backendError);

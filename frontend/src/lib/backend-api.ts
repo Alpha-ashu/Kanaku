@@ -760,7 +760,13 @@ class BackendService {
     amount: number;
     accountId?: string;
     notes?: string;
+    clientRequestId?: string;
   }) {
+    // `clientRequestId` is passed straight through and deliberately NOT minted
+    // here: a key generated per attempt is a fresh key on every retry, which is
+    // exactly the case it is supposed to collapse. The caller mints one per user
+    // action and reuses it across retries; the server matches it against
+    // LoanPayment.clientRequestId.
     const response = await this.api.post(`/loans/${loanId}/payment`, payment);
     return response.data;
   }

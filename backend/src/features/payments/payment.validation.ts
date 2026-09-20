@@ -7,6 +7,9 @@ export const initiatePaymentSchema = z.object({
   sessionId: z.string().trim().min(1, 'sessionId is required'),
   paymentMethod: z.string().trim().min(1, 'paymentMethod is required'),
   description: z.string().trim().max(500).optional(),
+  // Must be declared here or Zod strips it and the controller's replay check
+  // never sees a key.
+  clientRequestId: z.string().trim().max(200).optional(),
 });
 
 export const completePaymentSchema = z.object({
