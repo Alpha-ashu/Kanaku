@@ -100,6 +100,8 @@ export type AuditEventType =
 export interface AuditPayload {
   event: AuditEventType;
   userId?: string;
+  /** Actor's role at the time. Defaults to the active request's role. */
+  actorRole?: string;
   ip?: string;
   userAgent?: string;
   status?: string;
@@ -138,19 +140,26 @@ const persistAuditRow = async (payload: AuditPayload): Promise<void> => {
       ? (redact(payload.meta) as Record<string, unknown>)
       : null;
 
+    const actor = getRequestActor();
+
     await prisma.auditLog.create({
       data: {
         userId: payload.userId ?? SYSTEM_USER_ID,
+        // Same fallbacks as the interceptor in db/prisma.ts: the acting role, or
+        // 'system' for work with no request behind it (workers, cron, scripts).
+        actorRole: payload.actorRole ?? actor.role ?? (payload.userId ?? actor.userId ? null : SYSTEM_USER_ID),
         action: payload.event,
         resource: payload.resource
           ? (payload.resourceId ? `${payload.resource}:${payload.resourceId}` : payload.resource)
           : (payload.action ?? 'unknown'),
+        resourceType: payload.resource ?? null,
+        resourceId: payload.resourceId ?? null,
         status: isFailureEvent(payload.event) ? 'failure' : 'success',
         ip: payload.ip ?? null,
         userAgent: payload.userAgent ?? null,
         // Auto-correlate to the active request when the caller didn't pass one,
         // so every audit() emitted inside a request shares the chain's ID.
-        requestId: payload.requestId ?? getRequestActor().requestId ?? null,
+        requestId: payload.requestId ?? actor.requestId ?? null,
         details: safeDetails as any,
       },
     });

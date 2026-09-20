@@ -34,6 +34,7 @@ export function getRequestObject(): any {
 
 export function getRequestActor(): {
   userId?: string;
+  role?: string;
   ip?: string;
   userAgent?: string;
   requestId?: string;
@@ -47,6 +48,10 @@ export function getRequestActor(): {
   const fwd = req.headers?.['x-forwarded-for'];
   return {
     userId: req.userId,
+    // Populated by the auth middleware alongside req.userId. Recorded on every
+    // audit row so "what did the managers do" stays answerable after the actor's
+    // role later changes — see AuditLog.actorRole.
+    role: req.user?.role,
     ip: req.ip || (Array.isArray(fwd) ? fwd[0] : fwd)?.split(',')[0]?.trim(),
     userAgent: req.headers?.['user-agent'],
     requestId: req.id,

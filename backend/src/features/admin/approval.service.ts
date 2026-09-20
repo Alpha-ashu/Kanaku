@@ -130,7 +130,20 @@ export class ApprovalService {
         } else if (request.actionType === 'ROLE_CHANGE' && payload.role) {
           await tx.user.update({
             where: { id: request.targetUserId },
-            data: { role: payload.role },
+            data: {
+              role: payload.role,
+              // roleMode is the user↔advisor view toggle. Writing `role` alone
+              // left it stale: an advisor demoted here kept roleMode='advisor'
+              // and still saw the advisor workspace toggle. Only an approved
+              // advisor may sit in advisor mode.
+              roleMode: payload.role === 'advisor' ? 'advisor' : 'user',
+              ...(payload.role !== 'advisor' ? { advisorStatus: 'NOT_AVAILABLE' } : {}),
+            },
+          });
+          // A role change alters what this session is allowed to do, so its
+          // refresh tokens go — same treatment STATUS_CHANGE already gives.
+          await tx.refreshToken.deleteMany({
+            where: { userId: request.targetUserId },
           });
         } else if (request.actionType === 'STATUS_CHANGE' && payload.status) {
           await tx.user.update({
@@ -145,7 +158,10 @@ export class ApprovalService {
         } else if (request.actionType === 'APPROVE_ADVISOR') {
           await tx.user.update({
             where: { id: request.targetUserId },
-            data: { role: 'advisor', isApproved: true, status: 'verified' },
+            // Mirrors advisorReview.service.ts's approve path exactly. That one
+            // also set roleMode; this one did not, so an advisor approved via
+            // the approval queue landed in advisor role but user mode.
+            data: { role: 'advisor', isApproved: true, status: 'verified', roleMode: 'advisor' },
           });
           await tx.advisorApplication.updateMany({
             where: { userId: request.targetUserId },

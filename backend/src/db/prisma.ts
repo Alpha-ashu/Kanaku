@@ -10,17 +10,91 @@ import { getRequestActor, getRequestObject } from '../middleware/requestContext'
 import { redact } from '../utils/redact';
 
 // ── Audit interceptor config ────────────────────────────────────────────────
-// Every create/update/delete on these (financial) models is recorded in the
-// AuditLog table — covering ALL write paths (API, sync, scripts), not just
-// controllers. Append-only immutability is enforced at the DB level
-// (see backend/scripts/harden-financial-constraints.sql).
-export const AUDIT_MODELS = new Set([
-  'Account', 'Transaction', 'Loan', 'LoanPayment', 'Goal', 'GoalContribution',
-  'GoalMember', 'Investment', 'GoldAsset', 'Budget', 'GroupExpense',
-  'GroupExpenseMember', 'RecurringTransaction',
-  // Phase 2 — complete coverage for the remaining financial / collaboration entities
-  'CollaborationParticipant', 'ExpenseBill', 'Friend', 'AaTransaction',
+// Every create/update/delete on an audited model is recorded in the AuditLog
+// table — covering ALL write paths (API, sync, workers, scripts), not just
+// controllers. Append-only immutability is enforced at the DB level by the
+// `auditlog_immutable` trigger (migration 20260920020000).
+//
+// Two tiers, because the cost is not uniform. FULL does a before-read so the row
+// carries what changed; that is a second round trip per mutation, and this app's
+// database is a region away from its API (~280ms RTT), so it is spent only where
+// the previous value settles a dispute. LIGHT records that the action happened,
+// by whom, to which record — one extra write, no extra read.
+
+/** Money, identity, permissions, ownership — the prior value matters. */
+export const AUDIT_MODELS_FULL = new Set([
+  // Ledger & balances
+  'Account', 'Transaction', 'JournalEntry', 'Loan', 'LoanPayment',
+  'Goal', 'GoalContribution', 'GoalMember', 'Investment', 'GoldAsset', 'Budget',
+  'GroupExpense', 'GroupExpenseMember', 'RecurringTransaction', 'RecurringExecution',
+  'Payment', 'AaTransaction',
+  // Identity, permissions & configuration
+  'User', 'profiles', 'UserSettings', 'UserPin', 'Category',
+  'ApprovalRequest', 'AdvisorApplication', 'PlatformSettings',
+  // Advisory commitments (status transitions are disputable)
+  'BookingRequest', 'AdvisorSession',
+  // Vault (documents + who may see them)
+  'VaultDocument', 'VaultFolder', 'VaultShare', 'VaultLockSetting',
+  // Collaboration & contacts
+  'CollaborationParticipant', 'ExpenseBill', 'Friend',
 ]);
+
+/** Activity worth recording, but the previous value is not interesting. */
+export const AUDIT_MODELS_LIGHT = new Set([
+  'Notification', 'Device', 'AiScan', 'VoiceTranscript', 'UserVoiceLearning',
+  'SyncQueue', 'ImportLog', 'ChatMessage',
+  'Todo', 'TodoList', 'TodoListItem', 'TodoListShare',
+  'AdvisorAvailability', 'AdvisorPost', 'AdvisorPostLike', 'AdvisorFollow',
+  'OtpCode', 'OtpRequest', 'RefreshToken',
+  'AaConsent', 'AaConsentArtifact', 'AaDataSession', 'AaFinancialData',
+  'VaultDocumentVersion', 'FinancialEvent',
+  'DailyAccountBalance', 'MonthlyCashflow', 'MonthlyCategorySpend',
+  'ai_events', 'ai_insights', 'ai_model_runs', 'user_features',
+]);
+
+// Deliberately NOT audited:
+//   AuditLog          — the interceptor would recurse through itself.
+//   VaultAuditLog     — already an audit trail; mirroring it doubles every row.
+//   ApiIdempotencyKey — request plumbing with no business meaning, and it churns
+//                       on every mutating request, which would double AuditLog's
+//                       write volume to record nothing a human would read.
+export const AUDIT_MODELS_EXCLUDED = new Set(['AuditLog', 'VaultAuditLog', 'ApiIdempotencyKey']);
+
+/**
+ * Union of both tiers. Kept as the original export name because tests and
+ * scripts assert against it.
+ */
+export const AUDIT_MODELS = new Set([...AUDIT_MODELS_FULL, ...AUDIT_MODELS_LIGHT]);
+
+/**
+ * Columns stripped from `details` before the audit row is written.
+ *
+ * `redact()` already catches key names that look secret (password, *token,
+ * *pinHash, ...), but these slip through it: `OtpCode.code` is a bare "code",
+ * and `encryptionIv` reads like metadata. An audit trail that records the OTP
+ * it just issued is worse than no audit trail.
+ */
+const AUDIT_SENSITIVE_FIELDS: Record<string, readonly string[]> = {
+  OtpCode: ['code'],
+  OtpRequest: ['otpHash'],
+  RefreshToken: ['token'],
+  User: ['password', 'syncToken'],
+  UserPin: ['pinHash', 'keyBackup'],
+  VaultLockSetting: ['vaultPinHash'],
+  VaultDocument: ['encryptionIv'],
+  VaultDocumentVersion: ['encryptionIv'],
+  Device: ['fcmToken', 'apnsToken', 'publicKey'],
+};
+
+const stripSensitive = (model: string, value: unknown): unknown => {
+  const fields = AUDIT_SENSITIVE_FIELDS[model];
+  if (!fields || !value || typeof value !== 'object') return value;
+  if (Array.isArray(value)) return value.map((v) => stripSensitive(model, v));
+  const copy: Record<string, unknown> = { ...(value as Record<string, unknown>) };
+  for (const f of fields) if (f in copy) copy[f] = '[REDACTED]';
+  return copy;
+};
+
 const WRITE_OPS = new Set(['create', 'update', 'delete', 'upsert', 'createMany', 'updateMany', 'deleteMany']);
 const BULK_OPS = new Set(['createMany', 'updateMany', 'deleteMany']);
 const lcFirst = (s: string) => s.charAt(0).toLowerCase() + s.slice(1);
@@ -187,10 +261,15 @@ function buildClient(datasourceUrl?: string, opts?: { audit?: boolean }): Prisma
           { model, operation, args, query }:
           { model?: string; operation: string; args: any; query: (args: any) => Promise<any> },
         ) {
-          if (!model || !AUDIT_MODELS.has(model) || !WRITE_OPS.has(operation)) return query(args);
+          if (!model || !WRITE_OPS.has(operation)) return query(args);
+          if (AUDIT_MODELS_EXCLUDED.has(model)) return query(args);
+          const fullAudit = AUDIT_MODELS_FULL.has(model);
+          if (!fullAudit && !AUDIT_MODELS_LIGHT.has(model)) return query(args);
 
+          // The before-read is the expensive half (a second round trip on a
+          // cross-region database), so only the FULL tier pays for it.
           let before: unknown;
-          if ((operation === 'update' || operation === 'delete' || operation === 'upsert') && args?.where) {
+          if (fullAudit && (operation === 'update' || operation === 'delete' || operation === 'upsert') && args?.where) {
             const cleanWhere = { ...args.where };
             for (const key of Object.keys(cleanWhere)) {
               if (key.includes('_') && cleanWhere[key] && typeof cleanWhere[key] === 'object') {
@@ -220,8 +299,11 @@ function buildClient(datasourceUrl?: string, opts?: { audit?: boolean }): Prisma
             await (timed as any).auditLog.create({
               data: {
                 userId: actor.userId ?? 'system',
+                actorRole: actor.role ?? (actor.userId ? null : 'system'),
                 action: auditAction(operation),
                 resource,
+                resourceType: model,
+                resourceId,
                 status: 'success',
                 ip: actor.ip ?? null,
                 userAgent: actor.userAgent ?? null,
@@ -230,8 +312,12 @@ function buildClient(datasourceUrl?: string, opts?: { audit?: boolean }): Prisma
                 // inputs for a Json column and would make auditLog.create throw.
                 details: redact(JSON.parse(JSON.stringify({
                   model, operation,
-                  before: before ?? null,
-                  after: bulk ? { count: (result as any)?.count } : result,
+                  // The LIGHT tier never reads `before`, so it stays null there
+                  // rather than implying the record had no prior state.
+                  before: fullAudit ? (stripSensitive(model, before) ?? null) : undefined,
+                  after: bulk
+                    ? { count: (result as any)?.count }
+                    : stripSensitive(model, result),
                 }))) as any,
               },
             });

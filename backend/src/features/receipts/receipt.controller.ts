@@ -275,11 +275,13 @@ export const startReceiptScan = async (req: AuthRequest, res: Response) => {
         // model call, but a wedged upstream must not leave a job in
         // `processing` forever — the client would poll it until its own budget
         // ran out and report a timeout it could not explain.
+        const ocrStartedAt = Date.now();
         const { normalized, source, confidence } = await Promise.race([
           executeFullOcrPipeline(userId, file, ocrValidated),
           new Promise<never>((_, reject) =>
             setTimeout(() => reject(new Error('Extraction took too long')), JOB_BUDGET_MS)),
         ]);
+        const processingMs = Date.now() - ocrStartedAt;
 
         // Persist the original uploaded file to backend storage and canonical database
         let persistedBillId: string | undefined;
@@ -309,6 +311,28 @@ export const startReceiptScan = async (req: AuthRequest, res: Response) => {
           logger.info('ATTACHMENT_DB_CREATED', { userId, billId: bill.id, storagePath });
         } catch (saveErr: any) {
           logger.warn('Failed to persist receipt image to storage/DB', { error: saveErr?.message || saveErr });
+        }
+
+        // Record the scan itself. This path — the one the app actually uses —
+        // previously wrote an ExpenseBill but no AiScan at all, so the primary
+        // OCR route left no row in the scan table and no per-user scan history.
+        try {
+          await prisma.aiScan.create({
+            data: {
+              id: randomUUID(),
+              userId,
+              billId: persistedBillId ?? null,
+              extractedJson: JSON.stringify(normalized),
+              confidence,
+              provider: source,
+              processingMs,
+              status: 'completed',
+            },
+          });
+        } catch (dbError: any) {
+          logger.warn('Failed to persist AI scan to DB, continuing anyway', {
+            error: dbError?.message || dbError,
+          });
         }
 
         // confidence and source travel with the payload: the polling client
@@ -379,19 +403,28 @@ export const scanReceipt = async (req: AuthRequest, res: Response) => {
       ? await convertPdfToImageForOcr(validated)
       : validated;
 
+    // Timed around the pipeline, not around the insert. This used to be started
+    // immediately before aiScan.create, so `processingMs` recorded the duration
+    // of building one object — every row said 0.
+    const ocrStartedAt = Date.now();
     const { normalized, source, confidence } = await executeFullOcrPipeline(userId, file, ocrValidated);
+    const processingMs = Date.now() - ocrStartedAt;
 
     // Persist scan result (Fail-safe: Don't crash if DB is down)
     try {
-      const startTime = Date.now();
       await prisma.aiScan.create({
         data: {
           id: randomUUID(),
           userId,
+          // Link the scan to the stored bill. Both columns existed but nothing
+          // ever wrote them, so no scan could be traced back to its image (or
+          // forward to the transaction the user created from it).
+          // No bill is stored on this synchronous path (the caller keeps the
+          // image); startReceiptScan is the path that persists one and links it.
           extractedJson: JSON.stringify(normalized),
           confidence,
           provider: source,
-          processingMs: Date.now() - startTime,
+          processingMs,
           status: 'completed',
         },
       });

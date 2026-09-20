@@ -128,6 +128,7 @@ const markPaymentCompleted = async (paymentId: string, transactionId?: string, p
       where: { id: paymentId },
       data: {
         status: 'completed',
+        completedAt: new Date(),
         transactionId: transactionId || payment.transactionId,
         ...(paymentMethod ? { paymentMethod } : {}),
       },
@@ -166,7 +167,9 @@ const markPaymentFailed = async (paymentId: string, reason?: string) => {
 
     const updated = await tx.payment.update({
       where: { id: paymentId },
-      data: { status: 'failed' },
+      // The reason used to live only in the notification text, so the row could
+      // not say why the payment failed.
+      data: { status: 'failed', failureReason: reason ?? null },
     });
 
     await tx.notification.create({
@@ -202,7 +205,10 @@ const markPaymentRefunded = async (paymentId: string, reason?: string) => {
 
     const updated = await tx.payment.update({
       where: { id: paymentId },
-      data: { status: 'refunded' },
+      // refundedAt / refundReason exist so the row itself is the audit record.
+      // Previously the only trace of why money went back was the wording of a
+      // notification, which nothing queries and the user can delete.
+      data: { status: 'refunded', refundedAt: new Date(), refundReason: reason ?? null },
     });
 
     await tx.notification.createMany({
@@ -302,13 +308,25 @@ export const getPayment = async (req: AuthRequest, res: Response) => {
 export const initiatePayment = async (req: AuthRequest, res: Response) => {
   try {
     const clientId = getUserId(req);
-    const { sessionId, description } = req.body;
+    const { sessionId, description, clientRequestId } = req.body;
     const paymentMethod = normalizePaymentMethod(req.body.paymentMethod);
 
     if (!sessionId || !paymentMethod) {
       return res.status(400).json({
         error: 'Missing or invalid fields: sessionId, paymentMethod',
       });
+    }
+
+    // Idempotent replay. Without a key on the row, a retried initiate could only
+    // be caught by the sessionId unique — which answered "already initiated",
+    // an error, for what was the same request arriving twice.
+    if (clientRequestId && typeof clientRequestId === 'string') {
+      const replay = await prisma.payment.findFirst({
+        where: { clientId, clientRequestId },
+      });
+      if (replay) {
+        return res.status(200).json({ payment: replay });
+      }
     }
 
     const session = await prisma.advisorSession.findUnique({
@@ -344,6 +362,7 @@ export const initiatePayment = async (req: AuthRequest, res: Response) => {
         currency: 'INR',
         status: 'pending',
         paymentMethod,
+        clientRequestId: typeof clientRequestId === 'string' ? clientRequestId : null,
         description: typeof description === 'string' && description.trim()
           ? description.trim()
           : `Payment for ${session.sessionType} session`,

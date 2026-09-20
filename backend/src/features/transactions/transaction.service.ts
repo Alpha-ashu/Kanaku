@@ -18,6 +18,32 @@ interface TransactionListFilters {
   endDate?: unknown;
 }
 
+/**
+ * Attach a stored bill to the transaction the user created from it, and carry
+ * that link through to the OCR scan that produced the bill.
+ *
+ * `AiScan.transactionId` has existed since the table was created but nothing
+ * ever set it, so a scan could never be traced to the transaction it became —
+ * which is exactly the question "was this expense entered from a receipt?".
+ * Both sides are best-effort: a failed link must not fail the user's write.
+ */
+async function linkBillToTransaction(billId: string, userId: string, transactionId: string): Promise<void> {
+  try {
+    await prisma.expenseBill.updateMany({
+      where: { id: billId, userId },
+      data: { transactionId },
+    });
+    await prisma.aiScan.updateMany({
+      where: { billId, userId, transactionId: null },
+      data: { transactionId },
+    });
+  } catch (err: any) {
+    logger.warn('Failed to link expense bill to transaction', {
+      billId, txId: transactionId, error: err?.message || err,
+    });
+  }
+}
+
 export class TransactionService {
   /**
    * Accumulate per-account balance deltas as `Prisma.Decimal` to preserve
@@ -289,12 +315,7 @@ export class TransactionService {
     if (attachment) {
       const cleanBillId = String(attachment).replace(/^bill:/, '').trim();
       if (cleanBillId) {
-        await prisma.expenseBill.updateMany({
-          where: { id: cleanBillId, userId },
-          data: { transactionId: newTx.id },
-        }).catch((err) => {
-          logger.warn('Failed to link expense bill to transaction', { billId: cleanBillId, txId: newTx.id, error: err?.message || err });
-        });
+        await linkBillToTransaction(cleanBillId, userId, newTx.id);
       }
     }
 
@@ -396,10 +417,7 @@ export class TransactionService {
     if (body.attachment) {
       const cleanBillId = String(body.attachment).replace(/^bill:/, '').trim();
       if (cleanBillId) {
-        await prisma.expenseBill.updateMany({
-          where: { id: cleanBillId, userId },
-          data: { transactionId: id },
-        }).catch(() => {});
+        await linkBillToTransaction(cleanBillId, userId, id);
       }
     }
 

@@ -406,7 +406,7 @@ export const addGoalContribution = async (req: AuthRequest, res: Response, next:
   try {
     const userId = getUserId(req);
     const { id } = req.params;
-    const { amount, accountId, memberName, notes } = req.body;
+    const { amount, accountId, memberName, notes, clientRequestId } = req.body;
 
     if (!amount) {
       throw AppError.badRequest('Amount is required', 'AMOUNT_REQUIRED');
@@ -419,6 +419,17 @@ export const addGoalContribution = async (req: AuthRequest, res: Response, next:
 
     if (!accountId) {
       throw AppError.badRequest('accountId is required', 'ACCOUNT_REQUIRED');
+    }
+
+    // Idempotent replay — a retried contribution used to debit the account and
+    // advance the goal a second time.
+    if (clientRequestId && typeof clientRequestId === 'string') {
+      const replay = await prisma.goalContribution.findFirst({
+        where: { userId, clientRequestId, goalId: id },
+      });
+      if (replay) {
+        return res.status(200).json({ success: true, data: replay });
+      }
     }
 
     const result = await prisma.$transaction(async (tx) => {
@@ -465,6 +476,7 @@ export const addGoalContribution = async (req: AuthRequest, res: Response, next:
           memberName: memberName ? sanitize(memberName) : null,
           status: 'paid',
           notes: notes ? sanitize(notes) : null,
+          clientRequestId: typeof clientRequestId === 'string' ? clientRequestId : null,
         },
       });
 

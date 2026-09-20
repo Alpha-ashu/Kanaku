@@ -9,12 +9,28 @@
  *   3. Request-ID reaches the audit layer: getRequestActor() (the source the
  *      interceptor + audit() use) exposes the active request's id/actor.
  */
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import request from 'supertest';
 import { app } from '../../../../backend/src/app';
-import { AUDIT_MODELS } from '../../../../backend/src/db/prisma';
+import {
+  AUDIT_MODELS,
+  AUDIT_MODELS_FULL,
+  AUDIT_MODELS_LIGHT,
+  AUDIT_MODELS_EXCLUDED,
+} from '../../../../backend/src/db/prisma';
 import { requestContext, getRequestActor } from '../../../../backend/src/middleware/requestContext';
 
 const REQUEST_ID_RE = /^[A-Za-z0-9_-]{8,128}$/;
+
+/** Every `model X {` declared in the Prisma schema. */
+const schemaModels = (): string[] => {
+  const schema = readFileSync(
+    join(__dirname, '../../../../backend/prisma/schema.prisma'),
+    'utf8',
+  );
+  return [...schema.matchAll(/^model\s+([A-Za-z_][A-Za-z0-9_]*)\s*\{/gm)].map((m) => m[1]);
+};
 
 describe('PHASE 2 — Audit coverage', () => {
   // Every financial / collaboration entity the spec requires to be audited.
@@ -30,6 +46,32 @@ describe('PHASE 2 — Audit coverage', () => {
 
   it.each(REQUIRED_AUDITED_ENTITIES)('audits all mutations of %s', (model) => {
     expect(AUDIT_MODELS.has(model)).toBe(true);
+  });
+
+  // The guard that keeps "every action is recorded" true over time: adding a
+  // model to schema.prisma without classifying it fails here rather than
+  // silently creating a table whose writes leave no trace.
+  it('classifies every model in the schema as audited or explicitly excluded', () => {
+    const unclassified = schemaModels().filter(
+      (m) => !AUDIT_MODELS.has(m) && !AUDIT_MODELS_EXCLUDED.has(m),
+    );
+    expect(unclassified).toEqual([]);
+  });
+
+  it('never lists a model in both audit tiers', () => {
+    const inBoth = [...AUDIT_MODELS_FULL].filter((m) => AUDIT_MODELS_LIGHT.has(m));
+    expect(inBoth).toEqual([]);
+  });
+
+  it('never audits the audit trail itself (the interceptor would recurse)', () => {
+    expect(AUDIT_MODELS.has('AuditLog')).toBe(false);
+    expect(AUDIT_MODELS_EXCLUDED.has('AuditLog')).toBe(true);
+  });
+
+  it('captures before/after for money and permissions, not just the action', () => {
+    for (const model of ['Transaction', 'Account', 'Loan', 'Payment', 'User', 'ApprovalRequest']) {
+      expect(AUDIT_MODELS_FULL.has(model)).toBe(true);
+    }
   });
 });
 

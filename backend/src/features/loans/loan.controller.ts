@@ -230,13 +230,6 @@ export const updateLoan = async (req: AuthRequest, res: Response, next: NextFunc
       }
     }
 
-    if (body.outstandingBalance !== undefined) {
-      const numBalance = Number(body.outstandingBalance);
-      if (!Number.isFinite(numBalance) || numBalance < 0) {
-        throw AppError.badRequest('Outstanding balance must be a non-negative number', 'INVALID_BALANCE');
-      }
-    }
-
     if (body.interestRate !== undefined) {
       const numRate = Number(body.interestRate);
       if (!Number.isFinite(numRate) || numRate < 0) {
@@ -251,8 +244,12 @@ export const updateLoan = async (req: AuthRequest, res: Response, next: NextFunc
       }
     }
 
-    // Whitelist only permitted fields to prevent mass assignment
-    const allowedFields = ['name', 'type', 'principalAmount', 'outstandingBalance', 'interestRate', 'emiAmount', 'dueDate', 'frequency', 'contactPerson', 'status', 'syncStatus'] as const;
+    // Whitelist only permitted fields to prevent mass assignment.
+    // `outstandingBalance` is deliberately absent: it is derived from the
+    // principal and the recorded repayments, and was previously settable
+    // directly, so a client could clear a debt without paying it. It is
+    // recomputed below whenever the principal moves.
+    const allowedFields = ['name', 'type', 'principalAmount', 'interestRate', 'emiAmount', 'dueDate', 'frequency', 'contactPerson', 'status', 'syncStatus'] as const;
     const updates: Record<string, any> = {};
     for (const field of allowedFields) {
       if (body[field] !== undefined) {
@@ -265,6 +262,21 @@ export const updateLoan = async (req: AuthRequest, res: Response, next: NextFunc
       }
     }
     if (updates.dueDate) updates.dueDate = new Date(updates.dueDate);
+
+    // Changing the principal re-bases the outstanding balance: principal minus
+    // everything repaid so far, floored at zero. Without this, editing a loan's
+    // principal left the outstanding balance describing the old one.
+    if (updates.principalAmount !== undefined) {
+      const repaid = await prisma.loanPayment.aggregate({
+        where: { loanId: id, deletedAt: null },
+        _sum: { amount: true },
+      });
+      const nextOutstanding = Number(updates.principalAmount) - Number(repaid._sum.amount ?? 0);
+      updates.outstandingBalance = nextOutstanding > 0 ? nextOutstanding : 0;
+      if (updates.status === undefined) {
+        updates.status = updates.outstandingBalance === 0 ? 'paid_off' : loan.status;
+      }
+    }
 
     const updated = await prisma.loan.update({
       where: { id },
@@ -312,10 +324,22 @@ export const addLoanPayment = async (req: AuthRequest, res: Response, next: Next
   try {
     const userId = getUserId(req);
     const { id } = req.params;
-    const { amount, accountId, notes } = req.body;
+    const { amount, accountId, notes, clientRequestId } = req.body;
 
     if (!amount) {
       throw AppError.badRequest('Amount is required', 'AMOUNT_REQUIRED');
+    }
+
+    // Idempotent replay. A repayment is the one write here that debits an
+    // account AND reduces a debt, and until now nothing stopped a double tap
+    // from doing both twice — no dedup layer reached LoanPayment.
+    if (clientRequestId && typeof clientRequestId === 'string') {
+      const replay = await prisma.loanPayment.findFirst({
+        where: { userId, clientRequestId, loanId: id },
+      });
+      if (replay) {
+        return res.status(200).json({ success: true, data: replay });
+      }
     }
 
     // Validate amount is a positive finite number
@@ -341,10 +365,12 @@ export const addLoanPayment = async (req: AuthRequest, res: Response, next: Next
       const created = await tx.loanPayment.create({
         data: {
           loanId: id,
+          userId,
           amount: numericAmount,
           accountId,
           date: new Date(),
           notes,
+          clientRequestId: typeof clientRequestId === 'string' ? clientRequestId : null,
         },
       });
 
@@ -418,6 +444,7 @@ export const settleLoan = async (req: AuthRequest, res: Response, next: NextFunc
       const created = await tx.loanPayment.create({
         data: {
           loanId: id,
+          userId,
           amount: numericAmount,
           accountId: accountId || null,
           date: new Date(),

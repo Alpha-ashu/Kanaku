@@ -84,9 +84,14 @@ export const createInvestment = async (req: AuthRequest, res: Response, next: Ne
       }
     }
 
-    const totalInvested = body.totalInvested ?? body.quantity * body.buyPrice;
-    const currentValue = body.currentValue ?? body.quantity * body.currentPrice;
-    const profitLoss = body.profitLoss ?? currentValue - totalInvested;
+    // Derived server-side, always. These used to fall back to the request body
+    // (`body.totalInvested ?? ...`), so a client could post quantity 1 at ₹100
+    // and declare ₹999,999 invested — the numbers that feed net worth and P&L
+    // were whatever the caller said they were. The schema comment claiming a
+    // database trigger maintained them was wrong: no migration ever created one.
+    const totalInvested = body.quantity * body.buyPrice;
+    const currentValue = body.quantity * body.currentPrice;
+    const profitLoss = currentValue - totalInvested;
 
     if (body.accountId) {
       const account = await prisma.account.findFirst({
@@ -178,15 +183,16 @@ export const updateInvestment = async (req: AuthRequest, res: Response, next: Ne
       throw AppError.notFound('Investment');
     }
 
+    // totalInvested / currentValue / profitLoss are deliberately NOT accepted
+    // from the client — they are recomputed below from the inputs. Leaving them
+    // writable let a caller set a holding's value independently of its own
+    // quantity and price.
     const allowedKeys = [
       'assetType',
       'assetName',
       'quantity',
       'buyPrice',
       'currentPrice',
-      'totalInvested',
-      'currentValue',
-      'profitLoss',
       'purchaseDate',
       'positionStatus',
       'metadata',
@@ -201,6 +207,15 @@ export const updateInvestment = async (req: AuthRequest, res: Response, next: Ne
     updates.updatedAt = new Date();
 
     if (typeof updates.purchaseDate === 'string') updates.purchaseDate = toDate(updates.purchaseDate);
+
+    // Recompute the derived columns from the post-update inputs, so they stay
+    // consistent whether the caller changed quantity, either price, or nothing.
+    const nextQuantity     = Number(updates.quantity     ?? existing.quantity);
+    const nextBuyPrice     = Number(updates.buyPrice     ?? existing.buyPrice);
+    const nextCurrentPrice = Number(updates.currentPrice ?? existing.currentPrice);
+    updates.totalInvested = nextQuantity * nextBuyPrice;
+    updates.currentValue  = nextQuantity * nextCurrentPrice;
+    updates.profitLoss    = updates.currentValue - updates.totalInvested;
 
     const updated = await prisma.investment.update({
       where: { id },

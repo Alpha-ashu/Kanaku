@@ -347,12 +347,15 @@ model GoalContribution {
   memberName String?
   status     String?
   notes      String?
+  // Idempotency key — a retried contribution used to debit the account twice.
+  clientRequestId String?
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
   account    Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
   goal       Goal     @relation(fields: [goalId], references: [id], onDelete: Cascade)
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@unique([userId, clientRequestId])
   @@index([accountId])
   @@index([date])
   @@index([goalId])
@@ -394,9 +397,13 @@ model Investment {
   quantity            Decimal   @db.Decimal(12, 4)
   buyPrice            Decimal   @db.Decimal(12, 2)
   currentPrice        Decimal   @db.Decimal(12, 2)
-  totalInvested       Decimal   @db.Decimal(12, 2) // Computed by trigger: quantity * buyPrice
-  currentValue        Decimal   @db.Decimal(12, 2) // Computed by trigger: quantity * currentPrice
-  profitLoss          Decimal   @db.Decimal(12, 2) // Computed by trigger: currentValue - totalInvested
+  // Derived columns. NOT database-computed — an earlier comment here claimed a
+  // trigger maintained them, but no migration ever created one and the client
+  // could post any value it liked. They are now computed server-side on every
+  // write (investment.controller.ts) and any client-supplied value is ignored.
+  totalInvested       Decimal   @db.Decimal(12, 2) // = quantity * buyPrice
+  currentValue        Decimal   @db.Decimal(12, 2) // = quantity * currentPrice
+  profitLoss          Decimal   @db.Decimal(12, 2) // = currentValue - totalInvested
   purchaseDate        DateTime
   lastUpdated         DateTime
   metadata            Json?
@@ -444,7 +451,11 @@ model Loan {
   type               String
   name               String
   principalAmount    Decimal       @db.Decimal(12, 2)
-  outstandingBalance Decimal       @db.Decimal(12, 2) // Computed by trigger: principalAmount - sum(payments)
+  // Derived column. NOT database-computed — the trigger this comment used to
+  // claim never existed in any migration, and `outstandingBalance` sat in the
+  // update allow-list, so a client could set it directly. It is now maintained
+  // server-side only (loan.controller.ts) from principalAmount - Σ(payments).
+  outstandingBalance Decimal       @db.Decimal(12, 2)
   interestRate       Decimal?      @db.Decimal(12, 2)
   emiAmount          Decimal?      @db.Decimal(12, 2)
   dueDate            DateTime?
@@ -485,16 +496,29 @@ model Loan {
 model LoanPayment {
   id        String    @id @default(uuid())
   loanId    String
+  // Owner, denormalised from Loan.userId. Every other money table carries the
+  // owner directly (GoalContribution does); without it a per-user query on
+  // repayments had to join through Loan, and no userId filter could catch a
+  // mis-scoped one. Backfilled from the parent loan in
+  // 20260920020000_audit_coverage_and_integrity.
+  userId    String
   amount    Decimal   @db.Decimal(12, 2)
   accountId String?
   date      DateTime
   notes     String?
+  // Idempotency key for repayment posting — a double-tapped EMI used to create
+  // two rows because no dedup layer reached this table.
+  clientRequestId String?
   createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt
   deletedAt DateTime? // Added for soft-delete consistency
   loan      Loan      @relation(fields: [loanId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@unique([userId, clientRequestId])
   @@index([date])
   @@index([loanId])
+  @@index([userId])
   @@index([deletedAt])
   @@schema("public")
 }
@@ -552,6 +576,9 @@ model Notification {
 
 model Payment {
   id            String         @id @default(uuid())
+  // One payment per session. Deliberate: a session is paid for once. A refund
+  // does NOT free the slot — the refunded row stays and is the audit record, so
+  // re-paying a refunded session is a new session, not a second Payment here.
   sessionId     String         @unique
   clientId      String
   advisorId     String
@@ -561,12 +588,23 @@ model Payment {
   paymentMethod String?
   transactionId String?        @unique
   description   String?
+  // Idempotency key for initiation. The refund route already has a route-level
+  // idempotency guard; the row itself carried no key, so a replayed initiate
+  // could only be caught by the sessionId unique (a 500, not a replay).
+  clientRequestId String?
+  // Refund / completion audit. The refund reason previously existed only in the
+  // notification text, so the row could not say when or why it was refunded.
+  completedAt   DateTime?
+  refundedAt    DateTime?
+  refundReason  String?
+  failureReason String?
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   advisor       User           @relation("Payment_advisorIdToUser", fields: [advisorId], references: [id], onDelete: Cascade)
   client        User           @relation("Payment_clientIdToUser", fields: [clientId], references: [id], onDelete: Cascade)
   session       AdvisorSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
+  @@unique([clientId, clientRequestId])
   @@index([advisorId])
   @@index([clientId])
   @@index([createdAt])
@@ -798,6 +836,7 @@ model User {
   importLogs                  ImportLog[]
   investments                 Investment[]
   loans                       Loan[]
+  loanPayments                LoanPayment[]
   notifications               Notification[]
   paymentsAsAdvisor           Payment[]                  @relation("Payment_advisorIdToUser")
   paymentsAsClient            Payment[]                  @relation("Payment_clientIdToUser")
@@ -1000,11 +1039,27 @@ model ai_model_runs {
   @@schema("public")
 }
 
+// Append-only activity trail for EVERY mutating action, written centrally by the
+// audit interceptor in src/db/prisma.ts (so API, sync, workers and scripts are all
+// covered) plus the explicit `audit()` calls in src/utils/auditLogger.ts.
+// Immutability is enforced in the DB by the `auditlog_immutable` trigger — see
+// migration 20260920020000_audit_coverage_and_integrity.
 model AuditLog {
   id        String   @id @default(uuid())
   userId    String
+  // Role the actor held when the action ran. Denormalised on purpose: roles
+  // change over time and an audit row must stay true to the moment it recorded,
+  // and it makes "what did every manager do" a plain indexed scan rather than a
+  // join against the User table's *current* role.
+  actorRole String?
   action    String
-  resource  String
+  // `resource` stays as the human-readable "Model:id" string every existing row
+  // and dashboard already uses. resourceType/resourceId are the queryable split
+  // of the same value — previously answering "every action on transaction X"
+  // needed a LIKE over `resource`.
+  resource     String
+  resourceType String?
+  resourceId   String?
   status    String
   ip        String?
   userAgent String?
@@ -1015,6 +1070,10 @@ model AuditLog {
   @@index([userId])
   @@index([createdAt])
   @@index([requestId])
+  @@index([userId, createdAt]) // per-user activity feed, newest first
+  @@index([resourceType, resourceId]) // full history of one record
+  @@index([action]) // "all deletes", "all role changes"
+  @@index([actorRole, createdAt]) // per-role activity reporting
   @@schema("public")
 }
 
@@ -1361,13 +1420,18 @@ model Budget {
   endDate         DateTime?
   alertEnabled    Boolean   @default(true)
   alertChannels   Json      @default("[\"app\"]") // ["app", "email", "push"]
-  clientRequestId String?   @unique
+  // Global unique kept deliberately (owner decision, 2026-09-20), with the
+  // per-user index below — the one the code relies on — added alongside it so
+  // this table matches Account/Goal/Loan/Investment/RecurringTransaction. The
+  // global index alone made a client-generated id collide across tenants.
+  clientRequestId String?   @unique(map: "budgets_clientRequestId_key")
   syncStatus      String    @default("synced")
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   deletedAt       DateTime?
   user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@unique([userId, clientRequestId])
   @@unique([userId, category, period])
   @@index([userId])
   @@index([category])
@@ -1393,13 +1457,16 @@ model GoldAsset {
   location          String?
   certificateNumber String?
   notes             String?
-  clientRequestId   String?   @unique
+  // Global unique kept deliberately (owner decision, 2026-09-20); the per-user
+  // index below is the one the code relies on. See Budget for the rationale.
+  clientRequestId   String?   @unique(map: "gold_assets_clientRequestId_key")
   syncStatus        String    @default("synced")
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
   deletedAt         DateTime?
   user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@unique([userId, clientRequestId])
   @@index([userId])
   @@index([type])
   @@index([syncStatus])

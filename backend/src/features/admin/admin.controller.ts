@@ -921,7 +921,12 @@ export const updateUserRole = async (req: AuthRequest, res: Response) => {
       where: { id: userId },
       data: {
         role,
-        isApproved: role === 'advisor' ? true : undefined
+        isApproved: role === 'advisor' ? true : undefined,
+        // Keep the derived role columns in step with `role`. Writing `role`
+        // alone left roleMode (the user↔advisor view toggle) and advisorStatus
+        // describing the role the account no longer holds.
+        roleMode: role === 'advisor' ? 'advisor' : 'user',
+        ...(role !== 'advisor' ? { advisorStatus: 'NOT_AVAILABLE' } : {}),
       },
       select: {
         id: true,
@@ -931,6 +936,10 @@ export const updateUserRole = async (req: AuthRequest, res: Response) => {
         isApproved: true
       }
     });
+
+    // A role change alters this account's permissions, so existing sessions must
+    // not keep running on the old one beyond the snapshot cache eviction below.
+    await prisma.refreshToken.deleteMany({ where: { userId } });
     // Evict the 60s auth snapshot cache so the role change (incl. demotions)
     // takes effect immediately.
     invalidateUserSnapshotCache(userId);

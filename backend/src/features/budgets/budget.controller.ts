@@ -89,23 +89,54 @@ export const createBudget = async (req: AuthRequest, res: Response, next: NextFu
       );
     }
 
-    const budget = await prisma.budget.create({
-      data: {
-        userId,
-        category: body.category,
-        amount: Number(body.amount),
-        period: body.period,
-        threshold: body.threshold ?? 80,
-        startDate: body.startDate ? new Date(body.startDate) : null,
-        endDate: body.endDate ? new Date(body.endDate) : null,
-        alertEnabled: body.alertEnabled ?? true,
-        // Store a native array (validated by zod) — not a JSON string.
-        alertChannels: body.alertChannels ?? ['app'],
-        clientRequestId: body.clientRequestId || null,
-      },
-    });
+    const data = {
+      amount: Number(body.amount),
+      threshold: body.threshold ?? 80,
+      startDate: body.startDate ? new Date(body.startDate) : null,
+      endDate: body.endDate ? new Date(body.endDate) : null,
+      alertEnabled: body.alertEnabled ?? true,
+      // Store a native array (validated by zod) — not a JSON string.
+      alertChannels: body.alertChannels ?? ['app'],
+      clientRequestId: body.clientRequestId || null,
+    };
 
-    res.status(201).json({ success: true, data: serializeBudget(budget) });
+    try {
+      const budget = await prisma.budget.create({
+        data: { userId, category: body.category, period: body.period, ...data },
+      });
+      return res.status(201).json({ success: true, data: serializeBudget(budget) });
+    } catch (createErr: any) {
+      if (createErr?.code !== 'P2002') throw createErr;
+
+      // The @@unique([userId, category, period]) constraint counts soft-deleted
+      // rows, but the duplicate check above filters them out — so deleting a
+      // budget and creating it again for the same category hit a raw P2002 and
+      // surfaced as "This record already exists" on a category the user could
+      // see was gone. Revive the soft-deleted row instead.
+      const revivable = await prisma.budget.findFirst({
+        where: { userId, category: body.category, period: body.period, deletedAt: { not: null } },
+      });
+      if (revivable) {
+        const revived = await prisma.budget.update({
+          where: { id: revivable.id },
+          data: { ...data, spent: 0, deletedAt: null },
+        });
+        return res.status(201).json({ success: true, data: serializeBudget(revived) });
+      }
+
+      // Otherwise this is a genuine concurrent create that beat us to it —
+      // answer with the winner rather than an error, matching how recurring
+      // transactions resolve the same race.
+      const winner = await prisma.budget.findFirst({
+        where: body.clientRequestId
+          ? { userId, clientRequestId: body.clientRequestId }
+          : { userId, category: body.category, period: body.period, deletedAt: null },
+      });
+      if (winner) {
+        return res.status(200).json({ success: true, data: serializeBudget(winner) });
+      }
+      throw createErr;
+    }
   } catch (error) {
     next(error);
   }
