@@ -3,114 +3,29 @@
 # navigates by state machine in app/App.tsx, not react-router routes).
 # Regenerate: node scripts/analyze-dead-modules.mjs frontend
 #
-# Generated: 2026-09-20  —  total=412 reachable=267 unreachable=145
+# Generated: 2026-09-20  —  total=329 reachable=267 unreachable=62
 #
-# READ BEFORE DELETING:
+# The 84 modules previously listed here as safe to delete were removed on
+# 2026-09-20 (commit "chore(frontend): delete the dead module tree"). One of
+# them, hooks/usePermissions.ts, came back: app/components/ui/FeatureVisibility.tsx
+# in the kept shadcn kit imports it.
+#
+# READ BEFORE DELETING what is left:
 #  * app/components/ui/** is the shadcn component kit. Unreachable today, kept
 #    deliberately as a library to build against. Do not bulk-delete.
 #  * *.d.ts files are ambient declarations. They are never imported and must stay.
 #  * Nothing here affects bundle size: unreachable modules are never emitted.
-#
-# SAFE TO DELETE (84 files, checked 2026-09-20): not reachable from the
-# entrypoint, not imported by any quality/ test, not referenced by any config.
-# Several call API routes that do not exist (GET /sync, PATCH /sync/:id,
-# POST /sync/broadcast, GET /loans/:id). Only the generated
-# quality/reports/ui/ui-inventory.json mentions them. The two utils/supabase
-# files are also listed in frontend/tsconfig.json "exclude" — drop those entries.
-# Deletion is pending the owner's go-ahead.
-
-app/components/auth/AuthPage.tsx
-app/components/auth/onboarding/OnboardingStep1.tsx
-app/components/auth/onboarding/OnboardingStep2.tsx
-app/components/auth/onboarding/OnboardingStep3.tsx
-app/components/auth/onboarding/OnboardingStep4.tsx
-app/components/auth/onboarding/UserOnboarding.tsx
-app/components/auth/onboarding/index.ts
-app/components/core/Header.tsx
-app/components/features/ConversationalAI.tsx
-app/components/features/VoiceAICommandCenter.tsx
-app/components/figma/ImageWithFallback.tsx
-app/components/loans/AddLoanModalWithFriends.tsx
-app/components/shared/AppLayout.tsx
-app/components/shared/AppPageLayout.tsx
-app/components/shared/FeatureGate.tsx
-app/components/shared/QuickActionModal.tsx
-app/components/transactions/AutoFillExpenseForm.tsx
-app/components/transactions/BillUpload.tsx
-app/components/transactions/TransferModal.tsx
-components/VoiceAssistant.tsx
-components/shared/NotificationCenter.tsx
-components/shared/NotificationToast.tsx
-components/shared/SyncStatusIndicator.tsx
-config/receiptConfigs.ts
-contexts/EnhancedAuthContext.tsx
-hooks/useDeviceRegistration.ts
-hooks/useDeviceSync.ts
-hooks/usePerformanceMonitor.ts
-hooks/usePermissions.ts
-hooks/useRBAC.ts
-hooks/useResponsive.ts
-hooks/useToast.ts
-hooks/useVoiceAssistant.ts
-lib/app-integration-guide.tsx
-lib/assetOcrParser.ts
-lib/auth-helpers.ts
-lib/device-manager.ts
-lib/device-sync-manager.ts
-lib/enhanced-sync.ts
-lib/environment.ts
-lib/notification-context.tsx
-lib/notificationSystem.ts
-lib/paymentSettlement.ts
-lib/performance.ts
-lib/production.ts
-lib/pwa-production.ts
-lib/security.ts
-lib/sessionManagement.ts
-lib/sync-service.ts
-pages/VoiceAssistantPage.tsx
-pages/about/db.ts
-pages/about/queries.ts
-pages/ai-insights/db.ts
-pages/ai-insights/queries.ts
-pages/auth/db.ts
-pages/auth/queries.ts
-pages/budget-alerts/db.ts
-pages/budget-alerts/queries.ts
-pages/client-management/db.ts
-pages/client-management/queries.ts
-pages/contact/db.ts
-pages/contact/queries.ts
-pages/landing/db.ts
-pages/landing/queries.ts
-pages/pricing/db.ts
-pages/pricing/queries.ts
-pages/receipt-scanner/db.ts
-pages/receipt-scanner/queries.ts
-pages/voice-assistant/db.ts
-pages/voice-assistant/queries.ts
-services/accountAggregatorService.ts
-services/budgetCoachService.ts
-services/hybridAIService.ts
-services/receiptTrainingService.ts
-services/tesseractOCRService.ts
-services/voiceCommandParser.ts
-services/voiceRecognitionService.ts
-services/voiceTransactionService.ts
-utils/appValidator.ts
-utils/device.ts
-utils/serviceWorkerUtils.ts
-utils/supabase/middleware.ts
-utils/supabase/server.ts
-utils/supabase/test.ts
 
 # KEEP — still covered by unit tests under quality/frontend/ (delete or relocate
 # the test first), plus what they import:
-#   hooks/index.ts
-#   lib/PortfolioValuationEngine.ts
-#   services/bankStatementScannerService.ts
-#   services/voiceAIProcessor.ts
-#   services/KANKUIntelligenceEngine.ts
+hooks/index.ts
+lib/PortfolioValuationEngine.ts
+services/KANKUIntelligenceEngine.ts
+services/bankStatementScannerService.ts
+services/voiceAIProcessor.ts
+
+# KEEP — imported by the shadcn kit (app/components/ui/FeatureVisibility.tsx):
+hooks/usePermissions.ts
 
 # KEEP — shadcn kit and ambient declarations (56 files):
 app/components/ui/AppTrendChart.tsx
