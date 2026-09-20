@@ -123,6 +123,7 @@ export const ToDoListDetail: React.FC = () => {
     if (!listId) return;
     setIsAdding(true);
     try {
+      const clientRequestId = crypto.randomUUID();
       await saveToDoItemWithBackendSync({
         listId,
         title: newTitle.trim(),
@@ -134,6 +135,7 @@ export const ToDoListDetail: React.FC = () => {
         createdAt: new Date(),
         assignedTo: newAssignedTo || undefined,
         assignedToName: newAssignedToName || undefined,
+        clientRequestId,
       });
       toast.success('Task added');
       resetAddForm();

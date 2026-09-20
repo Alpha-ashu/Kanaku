@@ -607,7 +607,7 @@ export const bulkCreateFriends = async (req: AuthRequest, res: Response, next: N
       ].filter(Boolean) as string[])
     );
 
-    const toCreate: { name: string; email: string | null; phone: string | null }[] = [];
+    const toCreate: { name: string; email: string | null; phone: string | null; clientRequestId?: string | null }[] = [];
     const skipped: { name: string; reason: string }[] = [];
 
     for (const row of rawList) {
@@ -634,7 +634,8 @@ export const bulkCreateFriends = async (req: AuthRequest, res: Response, next: N
         continue;
       }
 
-      toCreate.push({ name, email: cleanEmail, phone: cleanPhone });
+      const reqKey = asClientRequestId(row?.clientRequestId);
+      toCreate.push({ name, email: cleanEmail, phone: cleanPhone, clientRequestId: reqKey });
       if (!cleanEmail && !cleanPhone) existingNames.add(name.toLowerCase());
       if (cleanEmail) existingContactKeys.add(cleanEmail);
       if (cleanPhone) existingContactKeys.add(cleanPhone);
@@ -646,8 +647,14 @@ export const bulkCreateFriends = async (req: AuthRequest, res: Response, next: N
     const created = toCreate.length > 0
       ? await prisma.friend.createManyAndReturn({
           data: toCreate.map((f) => ({
-            userId, name: sanitize(f.name), email: f.email, phone: f.phone, syncStatus: 'synced',
+            userId,
+            name: sanitize(f.name),
+            email: f.email,
+            phone: f.phone,
+            syncStatus: 'synced',
+            clientRequestId: f.clientRequestId,
           })),
+          skipDuplicates: true,
         })
       : [];
 

@@ -56,6 +56,7 @@ export interface Friend {
   deletedAt?: Date;
   syncStatus?: SyncStatus;
   version?: number;
+  clientRequestId?: string;
 }
 
 export interface Transaction {
@@ -550,6 +551,7 @@ export interface ToDoList {
   archived: boolean;
   syncStatus?: SyncStatus;
   version?: number;
+  clientRequestId?: string;
 }
 
 export interface ToDoItem {
@@ -570,6 +572,7 @@ export interface ToDoItem {
   completedByName?: string;
   syncStatus?: SyncStatus;
   version?: number;
+  clientRequestId?: string;
 }
 
 export interface ToDoListShare {

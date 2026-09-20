@@ -27,6 +27,7 @@ export const friendBulkSchema = z.object({
         name: z.string().trim().max(120).optional(),
         email: z.string().trim().max(255).optional().nullable(),
         phone: z.string().trim().max(40).optional().nullable(),
+        clientRequestId: z.string().trim().max(200).optional(),
       }),
     )
     .min(1, 'A non-empty friends array is required')

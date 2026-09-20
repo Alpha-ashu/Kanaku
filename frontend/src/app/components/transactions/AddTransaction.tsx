@@ -800,7 +800,13 @@ export function AddTransaction() {
  if (!trimmed) return;
  const existing = friends.find(f => f.name.toLowerCase() === trimmed.toLowerCase());
  if (existing) return; // already exists
- await db.friends.add({ name: trimmed, createdAt: new Date(), updatedAt: new Date(), syncStatus: 'pending' });
+ await db.friends.add({
+   name: trimmed,
+   createdAt: new Date(),
+   updatedAt: new Date(),
+   syncStatus: 'pending',
+   clientRequestId: crypto.randomUUID(),
+ });
  refreshData();
  });
 

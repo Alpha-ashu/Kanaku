@@ -105,6 +105,7 @@ export const AddGroup: React.FC = () => {
       createdAt: new Date(),
       updatedAt: new Date(),
       syncStatus: 'pending',
+      clientRequestId: crypto.randomUUID(),
     });
     refreshData();
   });

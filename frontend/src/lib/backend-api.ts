@@ -886,13 +886,16 @@ class BackendService {
     phone?: string;
     createdAt: Date;
     updatedAt: Date;
+    clientRequestId?: string;
   }) {
+    const clientRequestId = friend.clientRequestId || generateUUID();
     const localFriend = {
       name: friend.name,
       email: friend.email?.trim() || undefined,
       phone: friend.phone?.trim() || undefined,
       createdAt: friend.createdAt,
       updatedAt: friend.updatedAt,
+      clientRequestId,
     };
 
     const saveLocalFriend = async () => {
@@ -915,6 +918,7 @@ class BackendService {
         ...localFriend,
         createdAt: friend.createdAt.toISOString(),
         updatedAt: friend.updatedAt.toISOString(),
+        clientRequestId,
       });
 
       const responsePayload = response.data?.data ?? response.data;
@@ -950,6 +954,7 @@ class BackendService {
     email?: string;
     phone?: string;
     relationship?: string;
+    clientRequestId?: string;
   }>): Promise<{
     created: any[];
     skipped: { name: string; reason: string }[];
@@ -976,6 +981,7 @@ class BackendService {
     name: string;
     email?: string;
     phone?: string;
+    clientRequestId?: string;
   }>): Promise<{
     created: any[];
     skipped: { name: string; reason: string }[];
@@ -991,6 +997,7 @@ class BackendService {
       name: f.name.trim(),
       email: f.email?.trim() || undefined,
       phone: f.phone?.trim() || undefined,
+      clientRequestId: f.clientRequestId || generateUUID(),
     }));
 
     // Every Dexie write re-runs the app's live queries (a full re-render), so a
@@ -1022,6 +1029,7 @@ class BackendService {
         email: item.email || undefined,
         phone: item.phone || undefined,
         cloudId: item.id,
+        clientRequestId: item.clientRequestId,
         syncStatus: 'synced' as const,
         createdAt: now,
         updatedAt: now,
@@ -1066,12 +1074,14 @@ class BackendService {
       throw new Error('This friend has no email or phone, so it cannot be synced. Edit it to add one.');
     }
 
+    const clientRequestId = (localFriend as any).clientRequestId || generateUUID();
     const response = await this.api.post('/friends', {
       name: localFriend.name,
       email: localFriend.email?.trim() || undefined,
       phone: localFriend.phone?.trim() || undefined,
       createdAt: (localFriend.createdAt || new Date()).toISOString(),
       updatedAt: new Date().toISOString(),
+      clientRequestId,
     });
 
     const responsePayload = response.data?.data ?? response.data;
@@ -1079,6 +1089,7 @@ class BackendService {
     await runWithCloudSyncSuppressed(() => db.friends.update(localId, {
       cloudId: responsePayload.id,
       syncStatus: 'synced',
+      clientRequestId,
       updatedAt: new Date(),
     }));
 

@@ -131,7 +131,14 @@ export const ToDoLists: React.FC = () => {
     // Save as friend if not already exists
     const existing = friends.find(f => f.name.toLowerCase() === name.toLowerCase());
     if (!existing) {
-      await db.friends.add({ name, email, createdAt: new Date(), updatedAt: new Date(), syncStatus: 'pending' });
+      await db.friends.add({
+        name,
+        email,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        syncStatus: 'pending',
+        clientRequestId: crypto.randomUUID(),
+      });
     }
     setCollaborators(prev => [...prev, { id: createDraftId(), name, email }]);
     setNewCollaboratorName('');
@@ -162,6 +169,7 @@ export const ToDoLists: React.FC = () => {
     }
     setIsCreating(true);
     try {
+      const clientRequestId = crypto.randomUUID();
       const savedList = await saveToDoListWithBackendSync({
         name: newListName.trim(),
         description: newListDescription.trim() || undefined,
@@ -169,6 +177,7 @@ export const ToDoLists: React.FC = () => {
         listType,
         createdAt: new Date(),
         archived: false,
+        clientRequestId,
       });
 
       // Share with all collaborators

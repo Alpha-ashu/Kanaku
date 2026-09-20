@@ -26,7 +26,7 @@ export const AddFriends: React.FC = () => {
  const guardSubmit = useSubmitLock();
  const { setCurrentPage, refreshData, friends } = useApp();
  const [isSubmitting, setIsSubmitting] = useState(false);
- const [queue, setQueue] = useState<{ name: string; email: string; phone: string; relationship: string }[]>([]);
+ const [queue, setQueue] = useState<{ name: string; email: string; phone: string; relationship: string; clientRequestId?: string }[]>([]);
  const [formData, setFormData] = useState({ name: '', email: '', phone: '', relationship: 'friend' });
  const vcfInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -73,6 +73,7 @@ export const AddFriends: React.FC = () => {
         email: c.email?.trim() || '',
         phone: c.phone?.trim() || '',
         relationship: 'friend',
+        clientRequestId: crypto.randomUUID(),
       });
       added++;
     }
@@ -157,7 +158,7 @@ export const AddFriends: React.FC = () => {
       }
     }
 
-    setQueue([...queue, { ...formData, name: trimmedName }]);
+    setQueue([...queue, { ...formData, name: trimmedName, clientRequestId: crypto.randomUUID() }]);
     setFormData({ name: '', email: '', phone: '', relationship: 'friend' });
   };
 
