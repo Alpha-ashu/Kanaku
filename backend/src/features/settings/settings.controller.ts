@@ -407,8 +407,13 @@ export const clearAllUserData = async (req: AuthRequest, res: Response) => {
         'DELETE FROM public.todo_items WHERE user_id = $1::uuid OR list_id IN (SELECT id FROM public.todo_lists WHERE user_id = $1::uuid)',
         userId,
       );
-      await tx.$executeRawUnsafe('DELETE FROM public.todo_lists WHERE user_id = $1::uuid', userId);
-      await tx.$executeRawUnsafe('DELETE FROM public.user_learning WHERE user_id = $1', userId);
+      // user_learning is created lazily by categorization.engine.ts; only delete if the table exists
+      const hasUserLearning = await tx.$queryRawUnsafe<Array<{ exists: boolean }>>(
+        "SELECT to_regclass('public.user_learning') IS NOT NULL AS exists"
+      );
+      if (hasUserLearning[0]?.exists) {
+        await tx.$executeRawUnsafe('DELETE FROM public.user_learning WHERE user_id = $1', userId);
+      }
 
       // ── 14b. Snapshot Invalidation (delete derived rows) ─────────────────
       const { count: dailyBalances } = await tx.dailyAccountBalance.deleteMany({ where: { userId } });
