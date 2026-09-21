@@ -14,7 +14,6 @@ import {
   Sparkles,
   Paperclip,
   ArrowLeft,
-  Shield,
 } from 'lucide-react';
 
 import { parseDateInputValue, toLocalDateKey } from '@/lib/dateUtils';
@@ -26,7 +25,7 @@ import {
   resolveConfidenceTier,
 } from '@/lib/receiptConfidence';
 import { cn } from '@/lib/utils';
-import type { ReceiptScanResult, TaxComponent, TotalValidationResult } from '@/types/receipt.types';
+import type { ReceiptCharge, ReceiptScanResult, TaxComponent } from '@/types/receipt.types';
 
 export type ScanFieldUpdater = <K extends keyof ReceiptScanResult>(
  field: K,
@@ -217,55 +216,27 @@ export const PreviewView: React.FC<{
   scanStatus,
   onScan,
   onChange,
-  onDeviceOnly = false,
-  onDeviceOnlyChange,
 }) => (
   <div className="space-y-4">
-    <div className="relative overflow-hidden rounded-2xl border border-gray-200 shadow-sm">
+    <div className="relative overflow-hidden rounded-2xl border border-slate-200/90 shadow-sm bg-slate-50 flex items-center justify-center min-h-[220px]">
       {previewUrl ? (
-        <img src={previewUrl} alt="Receipt preview" className="max-h-72 w-full bg-white object-contain" />
+        <img src={previewUrl} alt="Receipt preview" className="max-h-80 w-full object-contain bg-white" />
       ) : (
         <div className="flex min-h-56 flex-col items-center justify-center bg-white px-6 text-center">
-          <ScanLine size={28} className="mb-3 text-gray-400" />
-          <p className="text-sm font-semibold text-gray-700">{file.name}</p>
-          <p className="mt-1 text-xs text-gray-500">PDF statement rendering will be optimized before OCR.</p>
+          <ScanLine size={28} className="mb-3 text-slate-400" />
+          <p className="text-sm font-semibold text-slate-700">{file.name}</p>
+          <p className="mt-1 text-xs text-slate-500">PDF statement rendering will be optimized before OCR.</p>
         </div>
       )}
       {isScanning && <ScanningOverlay progress={scanProgress} status={scanStatus} />}
     </div>
-
-    {onDeviceOnlyChange && (
-      <div className="rounded-2xl border border-slate-200/90 bg-slate-50/80 p-3.5 text-xs text-slate-600 space-y-1.5">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5 font-semibold text-slate-800">
-            <Shield size={14} className="text-violet-600 shrink-0" />
-            <span>Privacy & Processing Mode</span>
-          </div>
-          <label className="inline-flex items-center gap-1.5 cursor-pointer select-none">
-            <input
-              type="checkbox"
-              checked={onDeviceOnly}
-              onChange={(e) => onDeviceOnlyChange(e.target.checked)}
-              disabled={isScanning}
-              className="rounded border-slate-300 text-black focus:ring-black h-3.5 w-3.5 cursor-pointer"
-            />
-            <span className="text-2xs font-bold text-slate-700">On-device only</span>
-          </label>
-        </div>
-        <p className="text-2xs text-slate-500 leading-relaxed">
-          {onDeviceOnly
-            ? '🔒 100% Private: Receipts are analyzed locally in your browser. No image data is sent to the cloud.'
-            : '⚡ Smart AI: Processed with Google Gemini. If primary AI is busy, fallback vision models (e.g. xkiro / community models) assist with extraction. Third-party fallback providers may log requests in accordance with their privacy policies.'}
-        </p>
-      </div>
-    )}
 
     <div className="flex gap-3">
       <button
         data-testid="receipt-scanner-views-change"
         onClick={onChange}
         disabled={isScanning}
-        className="flex-[0.4] flex items-center justify-center gap-2 rounded-xl border border-gray-200 py-3 text-sm font-semibold text-gray-600 transition-colors hover:bg-gray-50 disabled:opacity-40 cursor-pointer"
+        className="flex-[0.4] flex items-center justify-center gap-2 rounded-xl border border-slate-200 py-3 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-40 cursor-pointer"
       >
         <RefreshCw size={14} /> Change
       </button>
@@ -273,7 +244,7 @@ export const PreviewView: React.FC<{
         data-testid="receipt-scanner-views-button-4"
         onClick={onScan}
         disabled={isScanning}
-        className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-black py-3 text-sm font-bold text-white shadow-lg transition-colors hover:bg-gray-900 disabled:opacity-40 cursor-pointer"
+        className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-slate-900 py-3 text-sm font-bold text-white shadow-lg transition-all hover:bg-black active:scale-[0.98] disabled:opacity-40 cursor-pointer"
       >
         {isScanning ? (
           <>
@@ -290,12 +261,40 @@ export const PreviewView: React.FC<{
 );
 
 const ScanningOverlay: React.FC<{ progress: number; status: string }> = ({ progress, status }) => (
- <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/60">
- <div className="h-12 w-12 animate-spin rounded-full border-4 border-white/30 border-t-white" />
- <p className="text-sm font-semibold text-white">{status}</p>
- <progress className="h-2 w-48 overflow-hidden rounded-full" max={100} value={progress} />
- <p className="text-xs text-white/70">{progress}%</p>
- </div>
+  <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-slate-950/75 backdrop-blur-sm p-6 text-center select-none animate-in fade-in duration-200">
+    <div className="relative flex flex-col items-center justify-center p-6 rounded-3xl border border-white/10 bg-white/5 shadow-2xl backdrop-blur-md max-w-[280px] w-full">
+      {/* Corner HUD reticle brackets */}
+      <div className="absolute top-2.5 left-2.5 w-3.5 h-3.5 border-t-2 border-l-2 border-cyan-400 rounded-tl-md" />
+      <div className="absolute top-2.5 right-2.5 w-3.5 h-3.5 border-t-2 border-r-2 border-cyan-400 rounded-tr-md" />
+      <div className="absolute bottom-2.5 left-2.5 w-3.5 h-3.5 border-b-2 border-l-2 border-cyan-400 rounded-bl-md" />
+      <div className="absolute bottom-2.5 right-2.5 w-3.5 h-3.5 border-b-2 border-r-2 border-cyan-400 rounded-br-md" />
+
+      {/* Laser sweep animation across the box */}
+      <div className="pointer-events-none absolute inset-x-2 h-0.5 bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_12px_#22d3ee] animate-scan-laser" />
+
+      {/* Center radar/spinner */}
+      <div className="relative mb-3 flex items-center justify-center">
+        <div className="h-12 w-12 rounded-full border-2 border-cyan-400/20 border-t-cyan-400 animate-spin" />
+        <div className="absolute inset-0 m-auto h-7 w-7 rounded-full bg-gradient-to-tr from-indigo-500 to-cyan-400 opacity-20 animate-pulse" />
+        <ScanLine size={18} className="absolute text-cyan-300" />
+      </div>
+
+      <p className="text-xs font-bold text-white tracking-tight mb-3 line-clamp-1">{status || 'Reading receipt...'}</p>
+
+      {/* Modern gradient pill progress bar */}
+      <div className="w-full h-2 rounded-full bg-white/15 overflow-hidden p-0.5 border border-white/10 mb-2">
+        <div
+          className="h-full rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-400 transition-all duration-300 ease-out"
+          style={{ width: `${Math.min(100, Math.max(6, progress))}%` }}
+        />
+      </div>
+
+      <div className="flex items-center justify-between w-full text-3xs font-bold text-slate-300">
+        <span className="uppercase tracking-widest text-cyan-400/80">Processing</span>
+        <span className="font-mono text-white">{Math.round(progress)}%</span>
+      </div>
+    </div>
+  </div>
 );
 
 // 
@@ -310,6 +309,7 @@ export const ResultsView: React.FC<{
   expenseCategoryOptions: string[];
   isFormPrefillMode: boolean;
   expenseMode: 'individual' | 'group';
+  previewUrl?: string;
   onAccountChange: (id: number | null) => void;
   onFieldChange: ScanFieldUpdater;
   onSubcategoryChange: (value: string) => void;
@@ -323,6 +323,7 @@ export const ResultsView: React.FC<{
   expenseCategoryOptions,
   isFormPrefillMode,
   expenseMode,
+  previewUrl,
   onAccountChange,
   onFieldChange,
   onSubcategoryChange,
@@ -332,16 +333,37 @@ export const ResultsView: React.FC<{
   const effectiveCurrency = scanResult.currency || currency;
 
   return (
-    <div className="KANAKU-receipt-review">
-      {/* Confidence + optional location */}
-      <div className="KANAKU-receipt-review__top">
-        <div className="min-w-0">
-          <ConfidenceBadge confidence={scanResult.confidence ?? 0} />
+    <div className={cn("KANAKU-receipt-review", previewUrl && "lg:grid lg:grid-cols-12 lg:gap-6 lg:items-start")}>
+      {/* Desktop Left Column: Original Scanned Image Preview */}
+      {previewUrl && (
+        <div className="hidden lg:block lg:col-span-5 sticky top-2 space-y-3">
+          <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-slate-50/80 p-2.5 shadow-2xs">
+            <div className="flex items-center justify-between px-2.5 py-1.5 border-b border-slate-200/60 mb-2">
+              <span className="text-2xs font-extrabold uppercase tracking-wider text-slate-500">Scanned Bill</span>
+              <span className="text-3xs font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 uppercase tracking-wider">Original</span>
+            </div>
+            <div className="max-h-[520px] overflow-auto rounded-xl bg-white flex items-center justify-center p-1 border border-slate-100">
+              <img
+                src={previewUrl}
+                alt="Scanned receipt preview"
+                className="max-h-[500px] w-full object-contain rounded-lg shadow-2xs"
+              />
+            </div>
+          </div>
         </div>
-        {scanResult.location && scanResult.location !== 'UNKNOWN' && (
-          <LocationBadge location={scanResult.location} />
-        )}
-      </div>
+      )}
+
+      {/* Extracted Intelligence & Form Fields */}
+      <div className={cn("space-y-3.5", previewUrl ? "lg:col-span-7" : "w-full")}>
+        {/* Confidence + optional location */}
+        <div className="KANAKU-receipt-review__top">
+          <div className="min-w-0">
+            <ConfidenceBadge confidence={scanResult.confidence ?? 0} />
+          </div>
+          {scanResult.location && scanResult.location !== 'UNKNOWN' && (
+            <LocationBadge location={scanResult.location} />
+          )}
+        </div>
 
       {/* Validation warning */}
       {((scanResult.validationResult && !scanResult.validationResult.isValid) || scanResult.amountMismatchDetected) && (
@@ -377,49 +399,63 @@ export const ResultsView: React.FC<{
       {scanResult.items && scanResult.items.length > 0 && (() => {
         const itemSum = scanResult.items.reduce((acc, it) => acc + (Number(it.amount) || 0), 0);
         const taxSum = Number(scanResult.taxAmount) || scanResult.taxBreakdown?.reduce((acc, t) => acc + (Number(t.amount) || 0), 0) || 0;
-        const calculatedTotal = itemSum + taxSum;
+        const chargesSum = Number(scanResult.totalCharges)
+          || scanResult.additionalCharges?.reduce((acc, c) => acc + (Number(c.amount) || 0), 0)
+          || 0;
+        const discountSum = Number(scanResult.discountAmount) || 0;
+        const roundOff = Number(scanResult.roundOff) || 0;
+        const calculatedTotal = Number((itemSum - discountSum + taxSum + chargesSum + roundOff).toFixed(2));
         const detectedTotal = Number(scanResult.amount) || 0;
         const diff = Math.abs(calculatedTotal - detectedTotal);
         const isMatched = diff < 0.05;
 
         return (
           <div className={cn(
-            "rounded-2xl p-3.5 border mb-3 transition-all",
+            "rounded-xl p-2.5 border mb-2.5 transition-all",
             isMatched
               ? "bg-emerald-50/60 border-emerald-200"
               : "bg-blue-50/60 border-blue-200"
           )}>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-2xs font-black uppercase tracking-widest text-slate-500">Bill Arithmetic Check</span>
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-3xs font-black uppercase tracking-widest text-slate-500">Bill Arithmetic Check</span>
               <span className={cn(
-                "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-2xs font-black uppercase tracking-wider",
+                "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-3xs font-black uppercase tracking-wider",
                 isMatched ? "bg-emerald-100 text-emerald-800" : "bg-blue-100 text-blue-800"
               )}>
-                {isMatched ? <CheckCircle2 size={12} /> : <AlertCircle size={12} />}
+                {isMatched ? <CheckCircle2 size={11} /> : <AlertCircle size={11} />}
                 {isMatched ? 'Balanced' : 'Review Sum'}
               </span>
             </div>
-            <div className="grid grid-cols-3 gap-2 text-center text-xs font-semibold py-1">
-              <div className="bg-white/80 rounded-xl p-2 border border-slate-100">
-                <p className="text-2xs text-slate-400 uppercase font-black">Items ({scanResult.items.length})</p>
-                <p className="text-slate-900 font-bold mt-0.5">{effectiveCurrency} {itemSum.toFixed(2)}</p>
+            <div className={cn(
+              "grid gap-1.5 text-center text-xs font-semibold py-0.5",
+              chargesSum > 0 ? "grid-cols-4" : "grid-cols-3"
+            )}>
+              <div className="bg-white/80 rounded-lg p-1.5 border border-slate-100">
+                <p className="text-3xs text-slate-400 uppercase font-black">Items ({scanResult.items.length})</p>
+                <p className="text-slate-900 font-bold mt-0.5 text-xs">{effectiveCurrency} {itemSum.toFixed(2)}</p>
               </div>
-              <div className="bg-white/80 rounded-xl p-2 border border-slate-100">
-                <p className="text-2xs text-slate-400 uppercase font-black">Tax / GST</p>
-                <p className="text-slate-900 font-bold mt-0.5">{effectiveCurrency} {taxSum.toFixed(2)}</p>
+              {chargesSum > 0 && (
+                <div className="bg-white/80 rounded-lg p-1.5 border border-slate-100">
+                  <p className="text-3xs text-slate-400 uppercase font-black">Charges (SERC)</p>
+                  <p className="text-indigo-600 font-bold mt-0.5 text-xs">{effectiveCurrency} {chargesSum.toFixed(2)}</p>
+                </div>
+              )}
+              <div className="bg-white/80 rounded-lg p-1.5 border border-slate-100">
+                <p className="text-3xs text-slate-400 uppercase font-black">Tax / GST</p>
+                <p className="text-slate-900 font-bold mt-0.5 text-xs">{effectiveCurrency} {taxSum.toFixed(2)}</p>
               </div>
-              <div className="bg-white/80 rounded-xl p-2 border border-slate-100">
-                <p className="text-2xs text-slate-400 uppercase font-black">Calculated</p>
-                <p className="text-indigo-600 font-bold mt-0.5">{effectiveCurrency} {calculatedTotal.toFixed(2)}</p>
+              <div className="bg-white/80 rounded-lg p-1.5 border border-slate-100">
+                <p className="text-3xs text-slate-400 uppercase font-black">Calculated</p>
+                <p className="text-emerald-700 font-bold mt-0.5 text-xs">{effectiveCurrency} {calculatedTotal.toFixed(2)}</p>
               </div>
             </div>
             {!isMatched && calculatedTotal > 0 && (
-              <div className="mt-2.5 flex items-center justify-between pt-2 border-t border-blue-200/60">
+              <div className="mt-2 flex items-center justify-between pt-1.5 border-t border-blue-200/60">
                 <p className="text-xs text-blue-900 font-medium">Calculated total is <strong>{effectiveCurrency} {calculatedTotal.toFixed(2)}</strong></p>
                 <button
                   type="button"
                   onClick={() => onFieldChange('amount', Number(calculatedTotal.toFixed(2)))}
-                  className="px-2.5 py-1 bg-blue-600 text-white rounded-lg text-2xs font-black uppercase tracking-wider hover:bg-blue-700 transition-colors cursor-pointer"
+                  className="px-2 py-0.5 bg-blue-600 text-white rounded text-3xs font-black uppercase tracking-wider hover:bg-blue-700 transition-colors cursor-pointer"
                 >
                   Use Calculated
                 </button>
@@ -507,8 +543,13 @@ export const ResultsView: React.FC<{
       )}
 
       {/* ── Tax breakdown — full width ── */}
-      {scanResult.taxBreakdown && scanResult.taxBreakdown.length > 0 && (
-        <TaxBreakdownPanel taxes={scanResult.taxBreakdown} currency={effectiveCurrency} />
+      {((scanResult.taxBreakdown && scanResult.taxBreakdown.length > 0) || (scanResult.additionalCharges && scanResult.additionalCharges.length > 0)) && (
+        <TaxBreakdownPanel
+          taxes={scanResult.taxBreakdown || []}
+          additionalCharges={scanResult.additionalCharges}
+          roundOff={scanResult.roundOff}
+          currency={effectiveCurrency}
+        />
       )}
 
       {/* ── Action buttons ── */}
@@ -519,6 +560,7 @@ export const ResultsView: React.FC<{
         expenseMode={expenseMode}
         isDisabled={!selectedAccountId || !scanResult.amount}
       />
+      </div>
     </div>
   );
 };
@@ -578,176 +620,246 @@ const ConfidenceBadge: React.FC<{ confidence: number }> = ({ confidence }) => {
  const body = describeConfidence(tier, confidence);
 
  return (
- <div
- className={cn('flex items-center gap-3 rounded-2xl p-3.5', styles.wrap)}
- role={tier === 'low' ? 'alert' : undefined}
- data-testid={`receipt-confidence-${tier}`}
- >
- {tier === 'high' ? (
- <CheckCircle2 size={18} className={cn('shrink-0', styles.icon)} />
- ) : (
- <AlertCircle size={tier === 'low' ? 20 : 18} className={cn('shrink-0', styles.icon)} />
- )}
- <div>
- <p className={cn('text-sm font-bold', styles.title)}>{title}</p>
- <p className={cn('text-xs', styles.body)}>{body}</p>
- </div>
- </div>
- );
+    <div
+      className={cn('flex items-center gap-2.5 rounded-xl p-2.5', styles.wrap)}
+      role={tier === 'low' ? 'alert' : undefined}
+      data-testid={`receipt-confidence-${tier}`}
+    >
+      {tier === 'high' ? (
+        <CheckCircle2 size={16} className={cn('shrink-0', styles.icon)} />
+      ) : (
+        <AlertCircle size={tier === 'low' ? 18 : 16} className={cn('shrink-0', styles.icon)} />
+      )}
+      <div>
+        <p className={cn('text-xs font-bold leading-tight', styles.title)}>{title}</p>
+        <p className={cn('text-2xs', styles.body)}>{body}</p>
+      </div>
+    </div>
+  );
 };
 
 const ValidationWarning: React.FC<{
- calculated: number;
- detected: number;
- currency: string;
- amountMismatchDetected?: boolean;
- amountCandidates?: number[];
- onSelectCandidate?: (amount: number) => void;
+  calculated: number;
+  detected: number;
+  currency: string;
+  amountMismatchDetected?: boolean;
+  amountCandidates?: number[];
+  onSelectCandidate?: (amount: number) => void;
 }> = ({ calculated, detected, currency, amountMismatchDetected, amountCandidates, onSelectCandidate }) => {
- if (amountMismatchDetected) {
- return (
- <div className="flex flex-col gap-3 rounded-2xl border border-red-200 bg-red-50 p-3.5 mb-4">
- <div className="flex items-start gap-3">
- <AlertTriangle size={18} className="shrink-0 text-red-500 mt-0.5" />
- <div>
- <p className="text-sm font-bold text-red-800">Possible amount mismatch detected</p>
- <p className="text-xs text-red-700 mt-1">
- The printed total on the receipt does not match the sum of items and taxes mathematically.
- </p>
- </div>
- </div>
- {amountCandidates && amountCandidates.length > 0 && onSelectCandidate && (
- <div className="mt-2 pl-7">
- <p className="text-2xs font-bold text-red-800/60 mb-2 uppercase tracking-widest">Detected Candidates:</p>
- <div className="flex flex-wrap gap-2">
- {amountCandidates.map((candidate, i) => (
- <button data-testid={`receipt-scanner-views-button-5-${i}`}
- key={i}
- onClick={() => onSelectCandidate(candidate)}
- className="px-3 py-1.5 bg-white border border-red-100 rounded-lg text-sm font-bold text-red-600 hover:bg-red-50 transition-colors shadow-sm"
- >
- {currency} {candidate.toFixed(2)}
- </button>
- ))}
- </div>
- </div>
- )}
- </div>
- );
- }
+  if (amountMismatchDetected) {
+    return (
+      <div className="flex flex-col gap-2 rounded-xl border border-red-200 bg-red-50 p-2.5 mb-2.5">
+        <div className="flex items-start gap-2">
+          <AlertTriangle size={16} className="shrink-0 text-red-500 mt-0.5" />
+          <div>
+            <p className="text-xs font-bold text-red-800">Possible amount mismatch detected</p>
+            <p className="text-2xs text-red-700 mt-0.5">
+              The printed total on the receipt does not match the sum of items and taxes mathematically.
+            </p>
+          </div>
+        </div>
+        {amountCandidates && amountCandidates.length > 0 && onSelectCandidate && (
+          <div className="mt-1 pl-6">
+            <p className="text-3xs font-bold text-red-800/60 mb-1.5 uppercase tracking-widest">Detected Candidates:</p>
+            <div className="flex flex-wrap gap-1.5">
+              {amountCandidates.map((candidate, i) => (
+                <button
+                  data-testid={`receipt-scanner-views-button-5-${i}`}
+                  key={i}
+                  onClick={() => onSelectCandidate(candidate)}
+                  className="px-2.5 py-1 bg-white border border-red-100 rounded-lg text-xs font-bold text-red-600 hover:bg-red-50 transition-colors shadow-2xs cursor-pointer"
+                >
+                  {currency} {candidate.toFixed(2)}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
 
- const calculatedIsHigher = calculated > detected;
- return (
- <div className="flex items-start gap-3 rounded-2xl border border-amber-100 bg-amber-50 p-3.5 mb-4">
- <AlertTriangle size={18} className="shrink-0 text-amber-500 mt-0.5" />
- <div>
- <p className="text-sm font-bold text-amber-800">Amount verify needed</p>
- <p className="text-xs text-amber-700 mt-1">
- {calculatedIsHigher ? (
- <>
- The printed figure <strong>{currency} {detected.toFixed(2)}</strong> may be a partial or pre-tax amount.
- {' '}The amount field is set to the calculated total <strong>{currency} {calculated.toFixed(2)}</strong> please verify before saving.
- </>
- ) : (
- <>
- Calculated from items + taxes: <strong>{currency} {calculated.toFixed(2)}</strong>
- {' vs '}
- printed total: <strong>{currency} {detected.toFixed(2)}</strong>.
- Please verify the amount before saving.
- </>
- )}
- </p>
- </div>
- </div>
- );
+  const calculatedIsHigher = calculated > detected;
+  return (
+    <div className="flex items-start gap-2 rounded-xl border border-amber-100 bg-amber-50 p-2.5 mb-2.5">
+      <AlertTriangle size={16} className="shrink-0 text-amber-500 mt-0.5" />
+      <div>
+        <p className="text-xs font-bold text-amber-800">Amount verify needed</p>
+        <p className="text-2xs text-amber-700 mt-0.5">
+          {calculatedIsHigher ? (
+            <>
+              The printed figure <strong>{currency} {detected.toFixed(2)}</strong> may be a partial or pre-tax amount.
+              {' '}The amount field is set to the calculated total <strong>{currency} {calculated.toFixed(2)}</strong> please verify before saving.
+            </>
+          ) : (
+            <>
+              Calculated from items + taxes: <strong>{currency} {calculated.toFixed(2)}</strong>
+              {' vs '}
+              printed total: <strong>{currency} {detected.toFixed(2)}</strong>.
+              Please verify the amount before saving.
+            </>
+          )}
+        </p>
+      </div>
+    </div>
+  );
 };
 
 const SmartDescriptionBadge: React.FC<{ description: string }> = ({ description }) => (
- <div className="flex items-start gap-2.5 rounded-2xl border border-indigo-100 bg-indigo-50 px-3.5 py-3">
- <Sparkles size={15} className="mt-0.5 shrink-0 text-indigo-500" />
- <div>
- <p className="text-2xs font-bold uppercase tracking-widest text-indigo-400">AI Summary</p>
- <p className="text-sm font-medium text-indigo-800">{description}</p>
- </div>
- </div>
+  <div className="flex items-start gap-2 rounded-xl border border-indigo-100 bg-indigo-50 px-3 py-2">
+    <Sparkles size={14} className="mt-0.5 shrink-0 text-indigo-500" />
+    <div>
+      <p className="text-3xs font-bold uppercase tracking-widest text-indigo-400">AI Summary</p>
+      <p className="text-xs font-medium text-indigo-800 leading-snug">{description}</p>
+    </div>
+  </div>
 );
 
-// Tax Breakdown 
+// Tax & Charges Breakdown 
 
 const TaxBreakdownPanel: React.FC<{
- taxes: TaxComponent[];
- currency: string;
-}> = ({ taxes, currency }) => {
- const totalTax = taxes.reduce((s, t) => s + t.amount, 0);
+  taxes: TaxComponent[];
+  additionalCharges?: ReceiptCharge[];
+  roundOff?: number;
+  currency: string;
+}> = ({ taxes, additionalCharges, roundOff, currency }) => {
+  const cleanCharges = React.useMemo(() => {
+    if (!additionalCharges) return [];
+    const seen = new Set<string>();
+    const result: ReceiptCharge[] = [];
+    for (const c of additionalCharges) {
+      const key = `${(c.label || '').toLowerCase().trim()}_${c.amount}_${c.rate ?? ''}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        result.push(c);
+      }
+    }
+    return result;
+  }, [additionalCharges]);
 
- return (
- <div className="KANAKU-receipt-card overflow-hidden border-orange-100 bg-orange-50">
- <div className="flex items-center gap-2 border-b border-orange-100 px-4 py-3">
- <Layers size={14} className="text-orange-500" />
- <p className="text-2xs font-bold uppercase tracking-widest text-orange-600">
- Tax Breakdown
- </p>
- </div>
- <div className="divide-y divide-orange-100">
- {taxes.map((tax, idx) => (
- <div key={idx} className="flex items-center justify-between px-4 py-2.5">
- <div>
- <span className="text-sm font-semibold text-gray-800">{tax.name}</span>
- {tax.rate !== undefined && (
- <span className="ml-1.5 text-xs text-gray-400">@{tax.rate}%</span>
- )}
- </div>
- <span className="text-sm font-bold text-orange-700">
- {currency} {tax.amount.toFixed(2)}
- </span>
- </div>
- ))}
- <div className="flex items-center justify-between bg-orange-100/60 px-4 py-2.5">
- <span className="text-xs font-bold uppercase tracking-wider text-orange-700">Total Tax</span>
- <span className="text-sm font-bold text-orange-800">
- {currency} {totalTax.toFixed(2)}
- </span>
- </div>
- </div>
- </div>
- );
+  const cleanTaxes = React.useMemo(() => {
+    const isServiceCharge = (name: string) => /service\s*charge|serc|\bsc\b|s\.?\s*charge/i.test(name);
+    const filtered = taxes.filter(t => {
+      if (isServiceCharge(t.name)) return false;
+      const matchesCharge = cleanCharges.some(
+        c => (c.label || '').toLowerCase() === t.name.toLowerCase() && Math.abs(c.amount - t.amount) < 0.01,
+      );
+      return !matchesCharge;
+    });
+
+    let gstCount = 0;
+    const disambiguated = filtered.map(t => {
+      const norm = t.name.trim();
+      if (/^state\s*gst/i.test(norm)) return { ...t, name: 'SGST' };
+      if (/^central\s*gst/i.test(norm)) return { ...t, name: 'CGST' };
+      if (norm.toUpperCase() === 'GST') {
+        gstCount++;
+        if (gstCount === 1) return { ...t, name: 'SGST' };
+        if (gstCount === 2) return { ...t, name: 'CGST' };
+      }
+      return t;
+    });
+
+    const seen = new Set<string>();
+    return disambiguated.filter(t => {
+      const key = `${t.name.toLowerCase()}_${t.amount}_${t.rate ?? ''}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }, [taxes, cleanCharges]);
+
+  const totalTax = cleanTaxes.reduce((s, t) => s + t.amount, 0);
+  const totalCharges = cleanCharges.reduce((s, c) => s + c.amount, 0);
+  const combinedAdditions = totalTax + totalCharges + (roundOff ?? 0);
+
+  return (
+    <div className="KANAKU-receipt-card overflow-hidden border-orange-100 bg-orange-50">
+      <div className="flex items-center gap-1.5 border-b border-orange-100 px-3.5 py-2">
+        <Layers size={13} className="text-orange-500" />
+        <p className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-orange-600">
+          Taxes & Charges Breakdown
+        </p>
+      </div>
+      <div className="divide-y divide-orange-100 text-xs sm:text-sm">
+        {cleanTaxes.map((tax, idx) => (
+          <div key={`tax-${idx}`} className="flex items-center justify-between px-3.5 py-1.5">
+            <div>
+              <span className="font-semibold text-gray-800">{tax.name}</span>
+              {tax.rate !== undefined && (
+                <span className="ml-1.5 text-[10px] sm:text-xs text-gray-400">@{tax.rate}%</span>
+              )}
+            </div>
+            <span className="font-bold text-orange-700">
+              {currency} {tax.amount.toFixed(2)}
+            </span>
+          </div>
+        ))}
+        {cleanCharges.map((charge, idx) => (
+          <div key={`charge-${idx}`} className="flex items-center justify-between px-3.5 py-1.5 bg-indigo-50/40">
+            <div>
+              <span className="font-semibold text-indigo-900">{charge.label}</span>
+              {charge.rate !== undefined && (
+                <span className="ml-1.5 text-[10px] sm:text-xs text-indigo-400">@{charge.rate}%</span>
+              )}
+            </div>
+            <span className="font-bold text-indigo-700">
+              {currency} {charge.amount.toFixed(2)}
+            </span>
+          </div>
+        ))}
+        {roundOff !== undefined && roundOff !== 0 && (
+          <div className="flex items-center justify-between px-3.5 py-1 text-[11px] sm:text-xs text-slate-500">
+            <span>Round Off</span>
+            <span className="font-semibold">{roundOff > 0 ? `+${roundOff.toFixed(2)}` : roundOff.toFixed(2)}</span>
+          </div>
+        )}
+        <div className="flex items-center justify-between bg-orange-100/60 px-3.5 py-2">
+          <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-orange-700">Total Taxes & Charges</span>
+          <span className="text-xs sm:text-sm font-bold text-orange-800">
+            {currency} {combinedAdditions.toFixed(2)}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 // Items Panel 
 
 const ItemsPanel: React.FC<{
- items: ReceiptScanResult['items'];
- currency: string;
+  items: ReceiptScanResult['items'];
+  currency: string;
 }> = ({ items, currency }) => {
- if (!items || items.length === 0) return null;
+  if (!items || items.length === 0) return null;
 
- return (
- <div className="KANAKU-receipt-card overflow-hidden border-gray-200 bg-white">
- <div className="flex items-center gap-2 border-b border-gray-100 px-4 py-3">
- <Receipt size={14} className="text-gray-500" />
- <p className="text-2xs font-bold uppercase tracking-widest text-gray-400">
- Detected Items ({items.length})
- </p>
- </div>
- <div className="max-h-44 divide-y divide-gray-50 overflow-y-auto">
- {items.map((item, idx) => (
- <div key={idx} className="flex items-center justify-between px-4 py-2.5">
- <div className="min-w-0 flex-1 mr-3">
- <p className="break-words text-sm font-medium text-gray-800">{item.name}</p>
- {item.quantity !== undefined && item.rate !== undefined && (
- <p className="text-xs text-gray-400">
- {item.quantity} {currency} {item.rate.toFixed(2)}
- </p>
- )}
- </div>
- <span className="shrink-0 text-sm font-bold text-gray-900">
- {currency} {item.amount.toFixed(2)}
- </span>
- </div>
- ))}
- </div>
- </div>
- );
+  return (
+    <div className="KANAKU-receipt-card overflow-hidden border-gray-200 bg-white">
+      <div className="flex items-center gap-1.5 border-b border-gray-100 px-3.5 py-2">
+        <Receipt size={13} className="text-gray-500" />
+        <p className="text-3xs font-bold uppercase tracking-widest text-gray-400">
+          Detected Items ({items.length})
+        </p>
+      </div>
+      <div className="max-h-36 divide-y divide-gray-50 overflow-y-auto text-xs">
+        {items.map((item, idx) => (
+          <div key={idx} className="flex items-center justify-between px-3.5 py-1.5">
+            <div className="min-w-0 flex-1 mr-2.5">
+              <p className="break-words font-medium text-gray-800 leading-snug">{item.name}</p>
+              {item.quantity !== undefined && item.rate !== undefined && (
+                <p className="text-3xs text-gray-400">
+                  {item.quantity} {currency} {item.rate.toFixed(2)}
+                </p>
+              )}
+            </div>
+            <span className="shrink-0 font-bold text-gray-900">
+              {currency} {item.amount.toFixed(2)}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 };
 
 // 
@@ -755,27 +867,44 @@ const ItemsPanel: React.FC<{
 // 
 
 const AmountField: React.FC<{
- amount?: number;
- currency: string;
- hasError?: boolean;
- onChange: (value: number) => void;
+  amount?: number;
+  currency: string;
+  hasError?: boolean;
+  onChange: (value: number) => void;
 }> = ({ amount, currency, hasError, onChange }) => (
- <div className={cn("KANAKU-receipt-field KANAKU-receipt-amount transition-colors", hasError &&"rounded-lg bg-red-50/80 p-2")}>
- <label className={cn("mb-1 block text-2xs font-bold uppercase tracking-widest", hasError ?"text-red-500" :"text-gray-400")}>
- Total Amount *
- </label>
- <div className="flex items-center gap-2">
- <span className={cn("text-sm font-bold", hasError ?"text-red-500" :"text-gray-500")}>{currency}</span>
- <input data-testid="receipt-scanner-views-0-00"
- type="number"
- step="0.01"
- value={amount || ''}
- onChange={(event) => onChange(parseFloat(event.target.value) || 0)}
- className={cn("font-display flex-1 bg-transparent text-2xl font-bold focus:outline-none transition-colors", hasError ?"text-red-600" :"text-gray-900")}
- placeholder="0.00"
- />
- </div>
- </div>
+  <div className={cn("KANAKU-receipt-field KANAKU-receipt-amount transition-all relative overflow-hidden py-2 px-3", hasError && "!border-rose-400/80")}>
+    <div className="flex items-center justify-between mb-1">
+      <label className={cn("block text-3xs font-bold uppercase tracking-widest", hasError ? "!text-rose-200" : "text-indigo-200")}>
+        Total Amount *
+      </label>
+      {hasError && (
+        <span className="text-3xs font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-rose-500/30 text-rose-200 border border-rose-400/40">
+          Required
+        </span>
+      )}
+    </div>
+    <div className="flex items-center gap-2">
+      <span className={cn(
+        "px-2 py-0.5 rounded-lg bg-white/15 text-white font-bold text-xs sm:text-sm tracking-wide shrink-0 select-none whitespace-nowrap shadow-inner border border-white/10",
+        hasError && "!bg-rose-500/20 !border-rose-400/30"
+      )}>
+        {currency}
+      </span>
+      <input
+        data-testid="receipt-scanner-views-0-00"
+        type="number"
+        step="0.01"
+        value={amount || ''}
+        onChange={(event) => onChange(parseFloat(event.target.value) || 0)}
+        className={cn(
+          "font-display flex-1 min-w-0 bg-transparent text-base sm:text-lg font-bold focus:outline-none transition-colors text-white placeholder-white/40 tracking-tight",
+          hasError && "!text-rose-100"
+        )}
+        placeholder="0.00"
+        aria-label="Total amount"
+      />
+    </div>
+  </div>
 );
 
 const TextField: React.FC<{
@@ -942,57 +1071,60 @@ const SubcategoryField: React.FC<{
 // 
 
 const AccountSelector: React.FC<{
- accounts: Account[];
- selectedId: number | null;
- currency: string;
- onChange: (id: number | null) => void;
+  accounts: Account[];
+  selectedId: number | null;
+  currency: string;
+  onChange: (id: number | null) => void;
 }> = ({ accounts, selectedId, currency, onChange }) => (
- <div className="KANAKU-receipt-card p-4">
- <label className="mb-2 block text-2xs font-bold uppercase tracking-widest text-gray-400">
- Charge to Account *
- </label>
- <select data-testid="receipt-scanner-views-charge-to-account"
- value={selectedId || ''}
- onChange={(event) => {
- const parsed = parseInt(event.target.value, 10);
- onChange(Number.isNaN(parsed) ? null : parsed);
- }}
- className="w-full appearance-none bg-transparent text-sm font-semibold text-gray-900 focus:outline-none"
- aria-label="Charge to account"
- title="Charge to account"
- >
- <option data-testid="receipt-scanner-views-select-an-account" value="">Select an account</option>
- {accounts.map((account) => (
- <option data-testid={`receipt-scanner-views-option-3-${account.id}`} key={account.id} value={account.id}>
- {account.name} ({currency} {account.balance.toFixed(2)})
- </option>
- ))}
- </select>
- </div>
+  <div className="KANAKU-receipt-card p-3">
+    <label className="mb-1.5 block text-3xs font-bold uppercase tracking-widest text-gray-400">
+      Charge to Account *
+    </label>
+    <select
+      data-testid="receipt-scanner-views-charge-to-account"
+      value={selectedId || ''}
+      onChange={(event) => {
+        const parsed = parseInt(event.target.value, 10);
+        onChange(Number.isNaN(parsed) ? null : parsed);
+      }}
+      className="w-full appearance-none bg-transparent text-xs sm:text-sm font-semibold text-gray-900 focus:outline-none cursor-pointer"
+      aria-label="Charge to account"
+      title="Charge to account"
+    >
+      <option data-testid="receipt-scanner-views-select-an-account" value="">Select an account</option>
+      {accounts.map((account) => (
+        <option data-testid={`receipt-scanner-views-option-3-${account.id}`} key={account.id} value={account.id}>
+          {account.name} ({currency} {account.balance.toFixed(2)})
+        </option>
+      ))}
+    </select>
+  </div>
 );
 
 const ActionButtons: React.FC<{
- onRescan: () => void;
- onSubmit: () => void;
- isFormPrefillMode: boolean;
- expenseMode: 'individual' | 'group';
- isDisabled: boolean;
+  onRescan: () => void;
+  onSubmit: () => void;
+  isFormPrefillMode: boolean;
+  expenseMode: 'individual' | 'group';
+  isDisabled: boolean;
 }> = ({ onRescan, onSubmit, isFormPrefillMode, expenseMode, isDisabled }) => (
- <div className="flex gap-2.5">
- <button data-testid="receipt-scanner-views-rescan"
- onClick={onRescan}
- className="flex shrink-0 items-center justify-center gap-2 rounded-xl border border-gray-200 px-5 py-3 text-sm font-semibold text-gray-600 transition-colors hover:bg-gray-50 active:scale-95"
- >
- <RefreshCw size={14} /> Rescan
- </button>
- <button data-testid="receipt-scanner-views-button-6"
- onClick={onSubmit}
- disabled={isDisabled}
- className="flex flex-1 items-center justify-center rounded-xl bg-gray-900 py-3 text-sm font-bold text-white shadow-lg transition-colors hover:bg-black disabled:opacity-40 active:scale-[0.98]"
- >
- {isFormPrefillMode
- ? `Use in ${expenseMode === 'group' ? 'Group' : 'Individual'} Expense`
- : 'Add Transaction'}
- </button>
- </div>
+  <div className="flex gap-2">
+    <button
+      data-testid="receipt-scanner-views-rescan"
+      onClick={onRescan}
+      className="flex shrink-0 items-center justify-center gap-1.5 rounded-lg border border-gray-200 px-4 py-2.5 text-xs sm:text-sm font-semibold text-gray-600 transition-colors hover:bg-gray-50 active:scale-95 cursor-pointer"
+    >
+      <RefreshCw size={13} /> Rescan
+    </button>
+    <button
+      data-testid="receipt-scanner-views-button-6"
+      onClick={onSubmit}
+      disabled={isDisabled}
+      className="flex flex-1 items-center justify-center rounded-lg bg-gray-900 py-2.5 text-xs sm:text-sm font-bold text-white shadow-md transition-colors hover:bg-black disabled:opacity-40 active:scale-[0.98] cursor-pointer"
+    >
+      {isFormPrefillMode
+        ? `Use in ${expenseMode === 'group' ? 'Group' : 'Individual'} Expense`
+        : 'Add Transaction'}
+    </button>
+  </div>
 );

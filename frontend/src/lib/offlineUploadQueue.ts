@@ -122,11 +122,20 @@ export async function processUploadQueue(): Promise<void> {
           }
         }
 
+        let docMetadata: Record<string, unknown> | undefined = undefined;
+        if (item.documentId) {
+          const localDoc = await db.documents.get(item.documentId);
+          if (localDoc?.metadata) {
+            docMetadata = localDoc.metadata;
+          }
+        }
+
         // Upload to backend
         const uploaded = await backendService.uploadExpenseBill({
           transactionId: transactionCloudId,
           file,
           fileName: item.fileName,
+          metadata: docMetadata,
         });
 
         if (!uploaded?.id) {

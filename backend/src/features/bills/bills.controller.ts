@@ -36,6 +36,15 @@ export const getBills = async (req: AuthRequest, res: Response, next: NextFuncti
           logger.warn('Failed to create signed url', { billId: bill.id, error: error?.message || error });
         }
 
+        let parsedScan: Record<string, unknown> | null = null;
+        if (bill.scanResult) {
+          try {
+            parsedScan = JSON.parse(bill.scanResult);
+          } catch {
+            // Not JSON
+          }
+        }
+
         return {
           id: bill.id,
           transactionId: bill.transactionId,
@@ -44,6 +53,8 @@ export const getBills = async (req: AuthRequest, res: Response, next: NextFuncti
           fileSize: bill.size,
           uploadedAt: bill.createdAt,
           downloadUrl: signedUrl,
+          scanResult: parsedScan,
+          metadata: parsedScan,
         };
       }),
     );
@@ -71,6 +82,15 @@ export const getBill = async (req: AuthRequest, res: Response, next: NextFunctio
       logger.warn('Failed to create signed url', { billId: bill.id, error: error?.message || error });
     }
 
+    let parsedScan: Record<string, unknown> | null = null;
+    if (bill.scanResult) {
+      try {
+        parsedScan = JSON.parse(bill.scanResult);
+      } catch {
+        // Not JSON
+      }
+    }
+
     res.json({
       id: bill.id,
       transactionId: bill.transactionId,
@@ -79,6 +99,8 @@ export const getBill = async (req: AuthRequest, res: Response, next: NextFunctio
       fileSize: bill.size,
       uploadedAt: bill.createdAt,
       downloadUrl,
+      scanResult: parsedScan,
+      metadata: parsedScan,
     });
   } catch (error: any) {
     next(error);
@@ -180,6 +202,14 @@ export const uploadBill = async (req: AuthRequest, res: Response, next: NextFunc
     const storagePath = makeStoragePath(userId, extension, resolvedTransactionId);
     await uploadBuffer(storagePath, buffer, contentType);
 
+    const metadataRaw = req.body.metadata;
+    let initialScanResult: string | undefined = undefined;
+    if (metadataRaw) {
+      initialScanResult = typeof metadataRaw === 'string' ? metadataRaw : JSON.stringify(metadataRaw);
+    } else if (scanResult.details) {
+      initialScanResult = scanResult.details;
+    }
+
     const bill = await prisma.expenseBill.create({
       data: {
         userId,
@@ -190,7 +220,7 @@ export const uploadBill = async (req: AuthRequest, res: Response, next: NextFunc
         storagePath,
         sha256: fileSha256,
         scanStatus: scanResult.status,
-        scanResult: scanResult.details,
+        scanResult: initialScanResult,
         moderationStatus,
         clientRequestId: asClientRequestId(req.body?.clientRequestId),
       },

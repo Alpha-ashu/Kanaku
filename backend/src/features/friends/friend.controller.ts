@@ -676,9 +676,24 @@ export const bulkCreateFriends = async (req: AuthRequest, res: Response, next: N
     const registeredMap = await getRegisteredUserMap(created.map(f => f.email), created.map(f => f.phone));
     const data = created.map(f => ({ ...f, ...resolveRegistration(registeredMap, f.email, f.phone) }));
 
+    // `skipDuplicates` drops rows the unique indexes reject — a replayed import
+    // (same clientRequestIds) or two same-named contacts in one batch. Those
+    // rows appear in neither `created` nor `skipped`, because `skipped` only
+    // holds what the app-level pre-checks caught. Left unreported, a retried
+    // import answered "0 created, 0 skipped" for N contacts and the UI showed
+    // no toast at all — indistinguishable from the request doing nothing.
+    const deduplicatedCount = toCreate.length - created.length;
+
     res.status(201).json({
       success: true,
-      data: { created: data, skipped, createdCount: data.length, skippedCount: skipped.length },
+      data: {
+        created: data,
+        skipped,
+        createdCount: data.length,
+        skippedCount: skipped.length,
+        // Already present from an earlier import of the same contacts.
+        deduplicatedCount,
+      },
     });
   } catch (error) {
     next(error);

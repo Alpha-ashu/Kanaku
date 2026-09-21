@@ -175,6 +175,16 @@ export const AddFriends: React.FC = () => {
       if (result.skippedCount > 0) {
         toast.info(`${result.skippedCount} contact${result.skippedCount === 1 ? '' : 's'} skipped (already existed or invalid)`);
       }
+      // Rows the database de-duplicated — a re-submitted import, or the same
+      // contact twice in one batch. Reported separately so a retry never looks
+      // like it silently did nothing.
+      const deduplicated = result.deduplicatedCount ?? 0;
+      if (deduplicated > 0) {
+        toast.info(`${deduplicated} contact${deduplicated === 1 ? ' was' : 's were'} already added`);
+      }
+      if (result.createdCount === 0 && result.skippedCount === 0 && deduplicated === 0) {
+        toast.info('No contacts were added');
+      }
       setQueue([]);
       refreshData();
       setCurrentPage('friends');

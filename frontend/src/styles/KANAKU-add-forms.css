@@ -1045,17 +1045,48 @@
 
 .KANAKU-receipt-amount {
   grid-column: span 2;
-  background: linear-gradient(135deg, #111827 0%, #1d4ed8 52%, #7c3aed 100%);
+  background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 45%, #312e81 100%);
+  border-radius: 1.25rem !important;
+  box-shadow: 0 10px 25px -5px rgba(30, 27, 75, 0.25), 0 8px 10px -6px rgba(30, 27, 75, 0.15) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
 }
 
-.KANAKU-receipt-amount label,
-.KANAKU-receipt-amount span,
+.KANAKU-receipt-amount label {
+  color: #c7d2fe !important;
+}
+
+.KANAKU-receipt-amount span {
+  color: #ffffff !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  word-break: normal !important;
+}
+
 .KANAKU-receipt-amount input {
   color: #ffffff !important;
 }
 
 .KANAKU-receipt-amount input::placeholder {
   color: rgba(255, 255, 255, 0.48);
+}
+
+@keyframes scanLaser {
+  0% {
+    top: 4%;
+    opacity: 0.2;
+  }
+  50% {
+    top: 92%;
+    opacity: 0.95;
+  }
+  100% {
+    top: 4%;
+    opacity: 0.2;
+  }
+}
+
+.animate-scan-laser {
+  animation: scanLaser 2.2s ease-in-out infinite;
 }
 
 .KANAKU-receipt-field input,

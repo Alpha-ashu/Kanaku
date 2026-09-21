@@ -88,6 +88,7 @@
   /* This is the ONLY size scale: never use arbitrary sizes like text-[10px] —  */
   /* they stay fixed on every device and skip the phone values below.           */
   /* text-2xs is the smallest readable step (badges, micro labels, meta).       */
+  --text-3xs:  10px;
   --text-2xs:  11px;
   --text-xs:   12px;
   --text-sm:   14px;
@@ -158,6 +159,7 @@
 /* keeping every step readable and in order (xs 11 < sm 13 < base 15 ...).     */
 @media (width < 40rem) {
   :root {
+    --text-3xs:  9px;
     --text-2xs:  10px;
     --text-xs:   11px;
     --text-sm:   13px;

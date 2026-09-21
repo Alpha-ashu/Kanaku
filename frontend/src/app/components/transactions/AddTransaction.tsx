@@ -574,8 +574,8 @@ export function AddTransaction() {
           if (parsedAmount > 0) {
             setAmountStr(String(parsedAmount));
           }
-          if (scan.documentId) {
-            setScanDocumentId(Number(scan.documentId));
+          if (scan.documentId || scan.scanDocumentId) {
+            setScanDocumentId(Number(scan.documentId || scan.scanDocumentId));
           }
           toast.info('Receipt Details Loaded');
         }
@@ -2075,21 +2075,21 @@ if (linkedDocId) {
  <div className="lg:col-span-5 flex flex-col gap-4">
 
  {/* Amount Display - Premium & High Density */}
- <div className="premium-glass-card p-8 bg-white relative overflow-hidden flex flex-col items-center">
+ <div className="premium-glass-card p-4 sm:p-5 bg-white relative overflow-hidden flex flex-col items-center">
  <div className="absolute -top-24 -left-24 w-64 h-64 bg-indigo-500/5 blur-[80px] rounded-full animate-pulse pointer-events-none z-0" />
  <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-violet-500/5 blur-[80px] rounded-full animate-pulse pointer-events-none z-0 [animation-delay:1s]" />
 
  <div className="relative z-10 flex flex-col items-center w-full">
- <span className="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-3 sm:mb-4">Transaction Amount</span>
+ <span className="text-3xs font-bold text-slate-400 uppercase tracking-wider mb-2">Transaction Amount</span>
 
- <div className="flex items-center justify-center w-full my-2 sm:my-4 gap-1 sm:gap-4 overflow-hidden px-2">
+ <div className="flex items-center justify-center w-full my-1 sm:my-2 gap-1 sm:gap-3 overflow-hidden px-2">
  {/* Left Side: Currency */}
  <div className="flex-1 flex justify-end">
- <span className="text-xl sm:text-4xl font-black text-slate-200 select-none tracking-tighter shrink-0">{currency}</span>
+ <span className="text-base sm:text-2xl font-bold text-slate-300 select-none tracking-tight shrink-0">{currency}</span>
  </div>
 
  {/* Center: Input */}
- <div className="shrink-0 flex justify-center max-w-[60%]">
+ <div className="shrink-0 flex justify-center max-w-[65%]">
  <input
  type="number"
  name="amount"
@@ -2097,7 +2097,7 @@ if (linkedDocId) {
  onChange={e => { setAmountStr(e.target.value); setFormData(prev => ({ ...prev, amount: parseFloat(e.target.value) || 0 })); if (balanceError) setBalanceError(null); }}
  aria-label="Transaction amount"
  data-testid="transaction-amount-input"
- className={cn("bg-transparent text-4xl min-[400px]:text-5xl sm:text-6xl font-black outline-none w-full text-center tracking-tighter placeholder:text-slate-100 p-0 m-0", balanceError ? "text-rose-600" : "text-slate-900")}
+ className={cn("bg-transparent text-2xl min-[400px]:text-3xl sm:text-4xl font-extrabold outline-none w-full text-center tracking-tight placeholder:text-slate-200 p-0 m-0", balanceError ? "text-rose-600" : "text-slate-900")}
  placeholder="0"
  autoFocus
  />
@@ -2110,15 +2110,15 @@ if (linkedDocId) {
  onClick={() => { setAmountStr(''); setFormData(prev => ({ ...prev, amount: 0 })); }}
  title="Clear amount"
  data-testid="transaction-amount-clear-button"
- className="p-1 sm:p-2 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-full transition-all animate-in fade-in zoom-in-50"
+ className="p-1 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-full transition-all animate-in fade-in zoom-in-50 cursor-pointer"
  >
- <X size={20} className="sm:w-7 sm:h-7" strokeWidth={3} />
+ <X size={16} className="sm:w-5 sm:h-5" strokeWidth={2.5} />
  </button>
  )}
  </div>
  </div>
 
- <div className="flex flex-wrap justify-center gap-3 mt-8 max-w-sm">
+ <div className="flex flex-wrap justify-center gap-2 mt-3 max-w-sm">
  {[100, 500, 1000, 2000, 5000].map(amt => (
  <button
  key={amt}
@@ -2130,7 +2130,7 @@ if (linkedDocId) {
  setFormData(prev => ({ ...prev, amount: next }));
  }}
  data-testid={`transaction-preset-${amt}-button`}
- className="px-6 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-xs font-black text-slate-500 hover:bg-slate-900 hover:text-white hover:border-slate-900 hover:shadow-2xl hover:shadow-slate-200 transition-all active:scale-90 select-none"
+ className="px-3.5 py-1.5 bg-slate-50 border border-slate-100 rounded-xl text-2xs font-bold text-slate-500 hover:bg-slate-900 hover:text-white hover:border-slate-900 hover:shadow-md transition-all active:scale-95 select-none cursor-pointer"
  >
  +{currency}{amt}
  </button>

@@ -599,6 +599,8 @@ interface BillApiRow {
   fileSize?: number;
   uploadedAt?: string;
   downloadUrl?: string | null;
+  scanResult?: Record<string, unknown> | null;
+  metadata?: Record<string, unknown> | null;
 }
 
 /**
@@ -630,10 +632,17 @@ export const syncBills = async (): Promise<FeatureSyncResult> => {
 
   for (const row of serverRows) {
     const existing = byCloudId.get(row.id);
-    // The owning transaction is remembered on the row itself: on a fresh login
-    // bills can arrive before transactions finish hydrating, and without this
-    // the link would be lost rather than deferred to the next pass below.
-    const metadata = { ...(existing?.metadata ?? {}), ...(row.transactionId ? { remoteTransactionId: String(row.transactionId) } : {}) };
+    const serverMeta = (typeof row.metadata === 'object' && row.metadata !== null)
+      ? row.metadata
+      : (typeof row.scanResult === 'object' && row.scanResult !== null)
+        ? row.scanResult
+        : {};
+
+    const metadata = {
+      ...serverMeta,
+      ...(existing?.metadata ?? {}),
+      ...(row.transactionId ? { remoteTransactionId: String(row.transactionId) } : {}),
+    };
 
     if (existing?.id) {
       await db.documents.update(existing.id, {

@@ -960,12 +960,15 @@ class BackendService {
     skipped: { name: string; reason: string }[];
     createdCount: number;
     skippedCount: number;
+    /** Rows the database de-duplicated (already imported, or repeated in-batch). */
+    deduplicatedCount: number;
   }> {
     const result = {
       created: [] as any[],
       skipped: [] as { name: string; reason: string }[],
       createdCount: 0,
       skippedCount: 0,
+      deduplicatedCount: 0,
     };
     for (let i = 0; i < friends.length; i += FRIENDS_BULK_BATCH_SIZE) {
       const batch = await this.createFriendsBulkBatch(friends.slice(i, i + FRIENDS_BULK_BATCH_SIZE));
@@ -973,6 +976,7 @@ class BackendService {
       result.skipped.push(...batch.skipped);
       result.createdCount += batch.createdCount;
       result.skippedCount += batch.skippedCount;
+      result.deduplicatedCount += batch.deduplicatedCount ?? 0;
     }
     return result;
   }
@@ -987,9 +991,10 @@ class BackendService {
     skipped: { name: string; reason: string }[];
     createdCount: number;
     skippedCount: number;
+    deduplicatedCount: number;
   }> {
     if (!friends.length) {
-      return { created: [], skipped: [], createdCount: 0, skippedCount: 0 };
+      return { created: [], skipped: [], createdCount: 0, skippedCount: 0, deduplicatedCount: 0 };
     }
 
     const now = new Date();
@@ -1008,7 +1013,7 @@ class BackendService {
       // Unsuppressed on purpose: the sync hooks queue these for upload.
       const localIds = await db.friends.bulkAdd(rows, { allKeys: true });
       const created = rows.map((item, i) => ({ id: `local_${localIds[i]}`, localId: localIds[i], ...item }));
-      return { created, skipped: [], createdCount: created.length, skippedCount: 0 };
+      return { created, skipped: [], createdCount: created.length, skippedCount: 0, deduplicatedCount: 0 };
     };
 
     if (SHOULD_SKIP_OPTIONAL_BACKEND_REQUESTS) {
@@ -1040,6 +1045,9 @@ class BackendService {
         skipped: resData?.skipped || [],
         createdCount: resData?.createdCount ?? createdItems.length,
         skippedCount: resData?.skippedCount ?? (resData?.skipped?.length || 0),
+        // Absent on an older server build; treat as "none de-duplicated" rather
+        // than inventing a count.
+        deduplicatedCount: resData?.deduplicatedCount ?? 0,
       };
     } catch (error) {
       // A timeout does not mean the server failed — it may still commit the
@@ -1246,10 +1254,13 @@ class BackendService {
     return `${base.replace(/\/+$/, '')}/bills/${id}/file`;
   }
 
-  async uploadExpenseBill(payload: { transactionId?: string | number; file: File | Blob; fileName?: string }) {
+  async uploadExpenseBill(payload: { transactionId?: string | number; file: File | Blob; fileName?: string; metadata?: Record<string, unknown> }) {
     const formData = new FormData();
     if (payload.transactionId !== undefined) {
       formData.append('transactionId', String(payload.transactionId));
+    }
+    if (payload.metadata !== undefined) {
+      formData.append('metadata', JSON.stringify(payload.metadata));
     }
     const name = (payload.file instanceof File) ? payload.file.name : (payload.fileName || 'bill.jpg');
     formData.append('file', payload.file, name);

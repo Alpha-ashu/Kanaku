@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X, ScanLine, Paperclip, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -173,6 +174,11 @@ export const ReceiptScanner: React.FC<ReceiptScannerProps> = ({
  subtotal: scanResult.subtotal?.toFixed(2) || '',
  category: scanResult.category || '',
  date: scanResult.date ? (scanResult.date instanceof Date ? scanResult.date.toISOString() : String(scanResult.date)) : '',
+ taxBreakdown: scanResult.taxBreakdown ? JSON.stringify(scanResult.taxBreakdown) : '',
+ additionalCharges: scanResult.additionalCharges ? JSON.stringify(scanResult.additionalCharges) : '',
+ totalCharges: scanResult.totalCharges ? String(scanResult.totalCharges) : '',
+ roundOff: scanResult.roundOff !== undefined ? String(scanResult.roundOff) : '',
+ items: scanResult.items ? JSON.stringify(scanResult.items) : '',
  },
  });
  }
@@ -203,10 +209,15 @@ export const ReceiptScanner: React.FC<ReceiptScannerProps> = ({
  subtotal: scanResult.subtotal?.toFixed(2) || '',
  category: scanResult.category || '',
  date: scanResult.date ? (scanResult.date instanceof Date ? scanResult.date.toISOString() : String(scanResult.date)) : '',
+ taxBreakdown: scanResult.taxBreakdown ? JSON.stringify(scanResult.taxBreakdown) : '',
+ additionalCharges: scanResult.additionalCharges ? JSON.stringify(scanResult.additionalCharges) : '',
+ totalCharges: scanResult.totalCharges ? String(scanResult.totalCharges) : '',
+ roundOff: scanResult.roundOff !== undefined ? String(scanResult.roundOff) : '',
+ items: scanResult.items ? JSON.stringify(scanResult.items) : '',
  },
  });
  }
- onApplyScan?.({ ...scanResult, accountId: selectedAccountId, scanDocumentId });
+ onApplyScan?.({ ...scanResult, accountId: selectedAccountId, scanDocumentId, documentId: scanDocumentId });
  toast.success(`Receipt applied to ${expenseMode === 'group' ? 'group' : 'individual'} expense form`);
  handleClose();
  };
@@ -279,11 +290,11 @@ export const ReceiptScanner: React.FC<ReceiptScannerProps> = ({
  ? <Paperclip size={17} className="text-white" />
  : <ScanLine size={17} className="text-white" />;
 
- return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 p-3 backdrop-blur-sm sm:p-4 animate-in fade-in duration-200">
+  const modalContent = (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/70 p-3 backdrop-blur-md sm:p-5 animate-in fade-in duration-200">
       <div className={cn(
-        "flex max-h-[88vh] w-full flex-col overflow-hidden rounded-[24px] sm:rounded-[32px] bg-white shadow-2xl border border-slate-100 transition-all duration-300",
-        step === 'results' ? "max-w-xl" : "max-w-sm sm:max-w-md"
+        "flex max-h-[92vh] w-full flex-col overflow-hidden rounded-[28px] sm:rounded-[36px] bg-white shadow-2xl border border-slate-100 transition-all duration-300",
+        step === 'results' ? "max-w-2xl lg:max-w-5xl" : step === 'preview-scan' ? "max-w-md sm:max-w-lg lg:max-w-xl" : "max-w-sm sm:max-w-md"
       )}>
 
         {/* Header */}
@@ -292,7 +303,10 @@ export const ReceiptScanner: React.FC<ReceiptScannerProps> = ({
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-900 shrink-0 text-white shadow-2xs">
               {headerIcon}
             </div>
-            <h2 className="font-display text-base sm:text-lg font-bold text-slate-900 truncate">{headerTitle}</h2>
+            <div className="flex flex-col min-w-0">
+              <h2 className="font-display text-base sm:text-lg font-bold text-slate-900 truncate leading-tight">{headerTitle}</h2>
+              <p className="text-2xs sm:text-xs text-slate-500 truncate">{headerSubtitle}</p>
+            </div>
           </div>
           <button
             data-testid="receipt-scanner-close"
@@ -365,6 +379,7 @@ export const ReceiptScanner: React.FC<ReceiptScannerProps> = ({
  expenseCategoryOptions={expenseCategoryOptions}
  isFormPrefillMode={isFormPrefillMode}
  expenseMode={expenseMode}
+ previewUrl={previewUrl}
  onAccountChange={setSelectedAccountId}
  onFieldChange={updateScanResultField}
  onSubcategoryChange={handleSubcategoryChange}
@@ -423,6 +438,8 @@ export const ReceiptScanner: React.FC<ReceiptScannerProps> = ({
  className="hidden"
  aria-label="Take photo for attachment"
  />
- </div>
- );
+  </div>
+  );
+
+  return typeof document !== 'undefined' ? createPortal(modalContent, document.body) : modalContent;
 };

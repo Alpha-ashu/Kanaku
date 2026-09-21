@@ -3,6 +3,7 @@ import * as pdfjsLib from 'pdfjs-dist/build/pdf.mjs';
 // @ts-ignore Vite `?url` suffix import has no ambient type declaration
 import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import type {
+  ReceiptCharge,
   ReceiptLineItem,
   ReceiptScanResult,
   TaxComponent,
@@ -49,7 +50,13 @@ const RECEIPT_TOTAL_PATTERNS = [
 
 const RECEIPT_SUBTOTAL_PATTERNS = [/sub\s*total/i, /subtotal/i, /discounted\s*total/i];
 const RECEIPT_PRE_TAX_PATTERNS = [/sub\s*total/i, /pre\s*tax/i, /^\s*total\b/i, /bill\s*amount/i, /bill\s*total/i];
-const RECEIPT_TAX_PATTERNS = [/tax/i, /vat/i, /gst/i, /service\s*tax/i];
+const RECEIPT_TAX_PATTERNS = [
+  /tax/i,
+  /vat/i,
+  /gst/i,
+  /service\s*tax/i,
+  /\bcess\b/i,
+];
 const PAYMENT_METHOD_PATTERNS = [
   { label: 'Visa', pattern: /\bvisa\b/i },
   { label: 'Mastercard', pattern: /\bmaster\s*card\b/i },
@@ -398,14 +405,14 @@ const toRoundedAmount = (value: number) => Number(value.toFixed(2));
 
 const normalizeTaxLabel = (line: string) => {
   const normalizedLine = normalizeForMatching(line);
-  if (/c\.?g\.?s\.?t/i.test(line)) return 'CGST';
-  if (/s\.?g\.?s\.?t/i.test(line)) return 'SGST';
-  if (/i\.?g\.?s\.?t/i.test(line)) return 'IGST';
-  if (/service\s*charge/i.test(line)) return 'Service Charge';
-  if (/service\s*tax|s\.?\s*tax/i.test(line)) return 'Service Tax';
-  if (/\bstx\b/i.test(line)) return 'STX';
-  if (/\bvat\b/i.test(line)) return 'VAT';
-  if (/\bvan\b/i.test(normalizedLine)) return 'VAT';
+  if (/state\s*g\.?s\.?t/i.test(line) || /\bstate\s*gst\b/i.test(normalizedLine) || /s\.?g\.?s\.?t/i.test(line) || /\bs\s*gst\b/i.test(normalizedLine)) return 'SGST';
+  if (/central\s*g\.?s\.?t/i.test(line) || /\bcentral\s*gst\b/i.test(normalizedLine) || /c\.?g\.?s\.?t/i.test(line) || /\bc\s*gst\b/i.test(normalizedLine)) return 'CGST';
+  if (/integrated\s*g\.?s\.?t/i.test(line) || /\bintegrated\s*gst\b/i.test(normalizedLine) || /i\.?g\.?s\.?t/i.test(line) || /\bi\s*gst\b/i.test(normalizedLine)) return 'IGST';
+  if (/union\s*territory\s*g\.?s\.?t/i.test(line) || /ut\.?g\.?s\.?t/i.test(line) || /\but\s*gst\b/i.test(normalizedLine)) return 'UTGST';
+  if (/\bstx\b/i.test(line) || /\bstx\b/i.test(normalizedLine)) return 'STX';
+  if (/service\s*tax|s\.?\s*tax/i.test(line) || /\b(?:s tax|service tax)\b/i.test(normalizedLine)) return 'Service Tax';
+  if (/\bvat\b/i.test(line) || /\bvan\b/i.test(normalizedLine)) return 'VAT';
+  if (/\bcess\b/i.test(line)) return 'Cess';
   if (/\bgst\b/i.test(line)) return 'GST';
   if (/\btax\b/i.test(line)) return 'Tax';
 
@@ -425,10 +432,19 @@ const extractTaxBreakdown = (lines: string[]): TaxComponent[] => {
 
   for (const line of lines) {
     const normalizedLine = normalizeForMatching(line);
+
+    // Skip service charge / serc lines in tax breakdown — they belong exclusively to additionalCharges!
+    if (
+      /\bserc\b|service\s*charge|s\.?\s*charge|\bsc\s*@|service\s*chg/i.test(line)
+      || /\b(?:s charge|serc|service charge)\b/i.test(normalizedLine)
+    ) {
+      continue;
+    }
+
     if (
       !(
-        /(c\.?g\.?s\.?t|s\.?g\.?s\.?t|i\.?g\.?s\.?t|\bgst\b|\bvat\b|service\s*tax|service\s*charge|\bstx\b|\btax\b)/i.test(line)
-        || /\b(?:c gst|s gst|igst|gst|vat|van|service tax|service charge|stx|tax)\b/i.test(normalizedLine)
+        /(c\.?g\.?s\.?t|s\.?g\.?s\.?t|i\.?g\.?s\.?t|\bgst\b|\bvat\b|service\s*tax|\bcess\b|\bstx\b|\btax\b)/i.test(line)
+        || /\b(?:c gst|s gst|igst|gst|vat|van|service tax|cess|stx|tax|state gst|central gst)\b/i.test(normalizedLine)
       )
       || /gstin|gst\s*(?:no|in|reg)|vat\s*tin|fssai|invoice\s*no|bill\s*no|registration|tax\s*invoice/i.test(normalizedLine)
     ) {
@@ -466,6 +482,74 @@ const extractTaxBreakdown = (lines: string[]): TaxComponent[] => {
   }
 
   return taxBreakdown;
+};
+
+const extractAdditionalCharges = (lines: string[]): ReceiptCharge[] => {
+  const charges: ReceiptCharge[] = [];
+  for (const line of lines) {
+    const normalizedLine = normalizeForMatching(line);
+    if (/gstin|fssai|invoice\s*no|bill\s*no|tax\s*invoice/i.test(normalizedLine)) continue;
+
+    let type = '';
+    let label = '';
+    if (/\bserc\b|service\s*charge|s\.?\s*charge|\bsc\s*@|service\s*chg/i.test(line) || /\b(?:serc|s charge|service charge)\b/i.test(normalizedLine)) {
+      type = 'SERVICE';
+      label = 'Service Charge';
+    } else if (/\bpack(?:ing|aging)?\s*(?:chg|charge)?\b/i.test(line)) {
+      type = 'PACKAGING';
+      label = 'Packaging Charge';
+    } else if (/\bdelivery\s*(?:fee|charge)?\b/i.test(line)) {
+      type = 'DELIVERY';
+      label = 'Delivery Charge';
+    } else if (/\bconvenience\s*(?:fee|charge)?\b/i.test(line)) {
+      type = 'CONVENIENCE';
+      label = 'Convenience Fee';
+    } else if (/\btip\b|\bgratuity\b/i.test(line)) {
+      type = 'TIP';
+      label = 'Tip';
+    }
+
+    if (!type) continue;
+
+    const amounts = extractAmounts(line, { allowLooseIntegers: true });
+    if (amounts.length === 0) continue;
+    const amount = amounts[amounts.length - 1];
+    if (!Number.isFinite(amount) || amount <= 0) continue;
+
+    const rateMatch = line.match(/(\d+(?:\.\d+)?)\s*%/);
+    charges.push({
+      type,
+      label,
+      amount: toRoundedAmount(amount),
+      rate: rateMatch ? Number.parseFloat(rateMatch[1]) : undefined,
+    });
+  }
+
+  // Deduplicate charges with same type, amount, and rate
+  const uniqueCharges: ReceiptCharge[] = [];
+  const seenCharges = new Set<string>();
+  for (const c of charges) {
+    const key = `${c.type}_${c.amount}_${c.rate ?? ''}`;
+    if (!seenCharges.has(key)) {
+      seenCharges.add(key);
+      uniqueCharges.push(c);
+    }
+  }
+  return uniqueCharges;
+};
+
+const extractRoundOff = (lines: string[]): number | undefined => {
+  for (const line of lines) {
+    if (!/round\s*off|roundoff|rounding/i.test(line)) continue;
+    const isNegative = /-\s*[\d.]+|less|\(/.test(line);
+    const amounts = extractAmounts(line, { allowLooseIntegers: true });
+    if (amounts.length === 0) continue;
+    const val = amounts[amounts.length - 1];
+    if (Number.isFinite(val)) {
+      return toRoundedAmount(isNegative ? -Math.abs(val) : val);
+    }
+  }
+  return undefined;
 };
 
 const extractTaxAmount = (lines: string[], taxBreakdown?: TaxComponent[]) => {
@@ -535,10 +619,15 @@ const extractDiscount = (lines: string[]): { discountAmount?: number; discountPe
 
 const scoreTotalCandidate = (line: string, index: number) => {
   let score = index * 0.05;
-  if (/grand\s*total|food\s*total|net\s*total|net\s*amount|amount\s*payable|total\s*amount/i.test(line)) score += 3;
-  else if (/\btotal\b/i.test(line)) score += 1;
+  if (/net\s*amount|net\s*total|net\s*mount|grand\s*total|amount\s*payable|total\s*payable|bill\s*amount|amount\s*paid|paid\s*amount/i.test(line)) {
+    score += 6;
+  } else if (/total\s*amount|bill\s*total/i.test(line)) {
+    score += 2;
+  } else if (/\btotal\b/i.test(line)) {
+    score += 1;
+  }
   if (/\.\d{2}\b/.test(line)) score += 0.2;
-  if (/sub\s*total/i.test(line)) score -= 4;
+  if (/sub\s*total|item\s*total|pre\s*tax/i.test(line)) score -= 5;
   if (/tax/i.test(line)) score -= 4;
   return score;
 };
@@ -884,6 +973,8 @@ const buildValidationResult = (input: {
   subtotal?: number;
   taxAmount?: number;
   taxBreakdown?: TaxComponent[];
+  additionalCharges?: ReceiptCharge[];
+  roundOff?: number;
   items?: ReceiptLineItem[];
   discountAmount?: number;
 }): TotalValidationResult | undefined => {
@@ -899,10 +990,15 @@ const buildValidationResult = (input: {
       ? toRoundedAmount(input.taxBreakdown.reduce((sum, item) => sum + item.amount, 0))
       : 0);
 
+  const chargesAmount = input.additionalCharges && input.additionalCharges.length > 0
+    ? toRoundedAmount(input.additionalCharges.reduce((sum, item) => sum + item.amount, 0))
+    : 0;
+
+  const roundOff = input.roundOff ?? 0;
   const discountAmount = input.discountAmount ?? 0;
 
-  // Formula: subtotal - discount + tax = grand total
-  const calculated = toRoundedAmount(subtotal - discountAmount + taxAmount);
+  // Formula: subtotal - discount + tax + charges + roundOff = grand total
+  const calculated = toRoundedAmount(subtotal - discountAmount + taxAmount + chargesAmount + roundOff);
   if (calculated <= 0) return undefined;
   const detected = toRoundedAmount(input.detectedAmount ?? input.amount);
   const amountMatchesCalculated = Math.abs(calculated - input.amount) <= Math.max(2, input.amount * 0.05);
@@ -1282,6 +1378,9 @@ export async function parseReceiptText(rawText: string, userId?: string): Promis
 
   const taxBreakdown = extractTaxBreakdown(lines);
   let resolvedTaxAmount = extractTaxAmount(lines, taxBreakdown);
+  const additionalCharges = extractAdditionalCharges(lines);
+  const totalCharges = toRoundedAmount(additionalCharges.reduce((sum, item) => sum + item.amount, 0));
+  const roundOff = extractRoundOff(lines);
 
   // Extract discount (amount + optional percentage)
   const { discountAmount: resolvedDiscountAmount, discountPercent: resolvedDiscountPercent } = extractDiscount(lines);
@@ -1316,12 +1415,14 @@ export async function parseReceiptText(rawText: string, userId?: string): Promis
 
       if (matchesTotalPattern && !/sub\s*total|tax/i.test(line)) {
         isKeywordMatch = true;
-        if (/grand\s*total|final\s*total|net\s*total|net\s*amount|amount\s*payable|total\s*payable|total\s*amount|amount\s*paid|paid\s*amount/i.test(line)) {
-          score += 5;
-        } else if (/bill\s*amount|bill\s*amt/i.test(line)) {
+        if (/net\s*amount|net\s*total|net\s*mount|grand\s*total|amount\s*payable|total\s*payable|amount\s*paid|paid\s*amount/i.test(line)) {
+          score += 6;
+        } else if (/total\s*amount|bill\s*total/i.test(line)) {
           score += 2;
-        } else {
+        } else if (/bill\s*amount|bill\s*amt/i.test(line)) {
           score += 3;
+        } else {
+          score += 2;
         }
       }
       
@@ -1335,7 +1436,15 @@ export async function parseReceiptText(rawText: string, userId?: string): Promis
 
   // STEP 4 - MATHEMATICAL VALIDATION
   const baseSubtotal = resolvedSubtotal && resolvedSubtotal > product_total ? resolvedSubtotal : product_total;
-  const expectedCalculatedTotal = toRoundedAmount(baseSubtotal + (resolvedTaxAmount || 0));
+  const expectedCalculatedTotal = toRoundedAmount(
+    baseSubtotal - (resolvedDiscountAmount || 0) + (resolvedTaxAmount || 0) + totalCharges + (roundOff || 0)
+  );
+
+  for (const candidate of candidates) {
+    if (expectedCalculatedTotal > 0 && Math.abs(candidate.amount - expectedCalculatedTotal) <= 0.05) {
+      candidate.score += 4;
+    }
+  }
   candidates.sort((a, b) => b.score - a.score);
 
   let amount: number | undefined;
@@ -1440,6 +1549,8 @@ export async function parseReceiptText(rawText: string, userId?: string): Promis
     subtotal: resolvedSubtotal,
     taxAmount: resolvedTaxAmount,
     taxBreakdown,
+    additionalCharges,
+    roundOff,
     items,
     discountAmount: resolvedDiscountAmount,
   });
@@ -1472,6 +1583,9 @@ export async function parseReceiptText(rawText: string, userId?: string): Promis
     subtotal: resolvedSubtotal,
     taxAmount: resolvedTaxAmount,
     taxBreakdown,
+    additionalCharges: additionalCharges.length > 0 ? additionalCharges : undefined,
+    totalCharges: totalCharges > 0 ? totalCharges : undefined,
+    roundOff,
     discountAmount: resolvedDiscountAmount,
     discountPercent: resolvedDiscountPercent,
     items: cleanedItems,

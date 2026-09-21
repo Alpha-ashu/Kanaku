@@ -125,6 +125,7 @@ export interface ReceiptScanResult {
 export interface ReceiptScanPayload extends ReceiptScanResult {
   accountId: number;
   scanDocumentId?: number | null;
+  documentId?: number | null;
 }
 
 export interface ReceiptScannerProps {

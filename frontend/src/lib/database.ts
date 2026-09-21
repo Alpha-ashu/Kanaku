@@ -480,11 +480,13 @@ export interface DocumentRecord {
   fileData?: Blob;
   fileHash?: string;
   filePath?: string;
+  fileUrl?: string;
   downloadUrl?: string;
   uploadDate: Date;
   processingStatus: 'queued' | 'processing' | 'preview' | 'completed' | 'failed';
   linkedTransactionId?: number;
   accountId?: number;
+  extractedAmount?: number;
   extractedCurrency?: string;
   sourceAccountName?: string;
   notes?: string;

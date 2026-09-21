@@ -25,9 +25,9 @@ export const useReceiptScanner = () => {
   const [onDeviceOnly, setOnDeviceOnly] = useState<boolean>(() => {
     try {
       const stored = localStorage.getItem(RECEIPT_OCR_ON_DEVICE_ONLY_KEY);
-      return stored !== null ? stored === 'true' : false; // Default to allowing cloud fallback for maximum compatibility
+      return stored !== null ? stored === 'true' : true; // Device OCR is default
     } catch {
-      return false;
+      return true;
     }
   });
 
@@ -77,7 +77,7 @@ export const useReceiptScanner = () => {
 
     setIsScanning(true);
     setScanProgress(0);
-    setScanStatus('Preparing receipt...');
+    setScanStatus('Reading receipt...');
 
     let documentId: number | null = null;
 
@@ -95,13 +95,10 @@ export const useReceiptScanner = () => {
       );
 
       let result: ReceiptScanResult | null = null;
-      let resultSource: 'cloud' | 'device' | null = null;
       let cloudFailure: any = null;
 
       const isPdf = selectedFile.type === 'application/pdf';
       const isOnline = typeof navigator === 'undefined' || navigator.onLine !== false;
-      // PDFs have no pixels for the on-device reader; they always need the server.
-      const cloudPermitted = isOnline && (!onDeviceOnly || isPdf);
 
       const runCloud = async (): Promise<ReceiptScanResult | null> => {
         try {
@@ -111,7 +108,7 @@ export const useReceiptScanner = () => {
           });
         } catch (err: any) {
           cloudFailure = err instanceof Error ? err : new Error(String(err));
-          console.info('[ReceiptScanner] AI extraction unavailable:', cloudFailure.message);
+          console.info('[ReceiptScanner] Cloud AI extraction unavailable:', cloudFailure.message);
           return null;
         }
       };
@@ -126,29 +123,22 @@ export const useReceiptScanner = () => {
         }
       };
 
-      if (cloudPermitted) {
-        // AI (vision) first: it is the only engine that reads thermal-print
-        // bills reliably. On-device OCR was previously run first and the AI
-        // pass only escalated on a "weak" read — which let plausible-looking
-        // but wrong local reads through and doubled the wait on every scan.
-        result = await runCloud();
-        if (result) resultSource = 'cloud';
-
-        if (!result || !result.amount) {
-          const local = await runOnDevice();
-          if (local && (local.amount || !result)) {
-            result = local;
-            resultSource = 'device';
+      // Device OCR by default: run local extraction first
+      if (!isPdf) {
+        result = await runOnDevice();
+        // If local read produced no amount and we are online, attempt cloud extraction as seamless backup
+        if ((!result || !result.amount) && isOnline) {
+          const cloudResult = await runCloud();
+          if (cloudResult && (cloudResult.amount || !result)) {
+            result = cloudResult;
           }
         }
-      } else if (isPdf) {
-        toast.error(isOnline
-          ? 'PDF bills need the AI reader — turn off "on-device only" to scan this file.'
-          : 'PDF bills need an internet connection to be read.');
-        return null;
+      } else if (isOnline) {
+        // PDF statement rendering needs cloud reader
+        result = await runCloud();
       } else {
-        result = await runOnDevice();
-        if (result) resultSource = 'device';
+        toast.error('PDF bills require an internet connection to be read.');
+        return null;
       }
 
       if (!result) {
@@ -160,15 +150,6 @@ export const useReceiptScanner = () => {
           });
         }
         return null;
-      }
-
-      if (resultSource === 'device' && cloudFailure) {
-        // The user is looking at the weaker engine's read — say so instead of
-        // presenting it as the AI result.
-        toast.warning('AI reading unavailable — showing the on-device read. Please verify the figures.', {
-          description: isActionableCloudFailure(cloudFailure) ? cloudFailure.message : undefined,
-          duration: 7000,
-        });
       }
 
       // Clean up garbled text
@@ -190,6 +171,11 @@ export const useReceiptScanner = () => {
           taxAmount: result.taxAmount?.toFixed(2) || '',
           subtotal: result.subtotal?.toFixed(2) || '',
           category: result.category || '',
+          taxBreakdown: result.taxBreakdown ? JSON.stringify(result.taxBreakdown) : '',
+          additionalCharges: result.additionalCharges ? JSON.stringify(result.additionalCharges) : '',
+          totalCharges: result.totalCharges ? String(result.totalCharges) : '',
+          roundOff: result.roundOff !== undefined ? String(result.roundOff) : '',
+          items: result.items ? JSON.stringify(result.items) : '',
         },
       });
 
