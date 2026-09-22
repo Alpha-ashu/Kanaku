@@ -27,6 +27,10 @@ import { PWAInstallPrompt } from '@/app/components/shared/PWAInstallPrompt';
 import { LimitedModeBanner } from '@/app/components/shared/LimitedModeBanner';
 import { OfflineBadge } from '@/app/components/shared/OfflineBadge';
 import { OfflineBanner } from '@/app/components/shared/OfflineBanner';
+import { useProfileVerification } from '@/hooks/useProfileVerification';
+import { ProfileVerificationModal } from '@/app/components/auth/ProfileVerificationModal';
+import { VerificationRequiredModal } from '@/app/components/shared/VerificationRequiredModal';
+import { ShieldCheck, ArrowLeft, Lock } from 'lucide-react';
 
 //  Auth / Security (shown before app shell - eager load) 
 import { AuthFlow } from '@/app/components/auth/AuthFlow';
@@ -379,6 +383,16 @@ const AppContent: React.FC = () => {
   const setCurrentPage = appContext?.setCurrentPage;
   const visibleFeatures = appContext?.visibleFeatures;
   const aiCapabilities = appContext?.aiCapabilities;
+  const {
+    isViewOnly,
+    verificationModalOpen,
+    openVerificationModal,
+    closeVerificationModal,
+    requiredModalOpen,
+    blockedActionName,
+    closeRequiredModal,
+    handleVerificationSuccess,
+  } = useProfileVerification();
 
   // Keep the native back handler's refs pointing at the latest values. Assigning
   // refs during render is safe and gives the once-registered listener current
@@ -1283,6 +1297,60 @@ const AppContent: React.FC = () => {
       return <Dashboard setCurrentPage={setCurrentPage} />;
     }
 
+    const RECORD_MUTATION_PAGES = new Set([
+      'add-transaction',
+      'add-account',
+      'edit-account',
+      'add-goal',
+      'add-group',
+      'add-investment',
+      'add-gold',
+      'edit-investment',
+      'receipt-scanner',
+      'voice-input',
+      'voice-review',
+      'pay-emi',
+    ]);
+
+    if (isViewOnly && RECORD_MUTATION_PAGES.has(currentPage)) {
+      return (
+        <div className="flex-1 flex items-center justify-center p-6 min-h-[60vh]">
+          <div className="max-w-md w-full bg-white/95 backdrop-blur-md rounded-3xl border border-slate-200/80 shadow-xl p-8 text-center">
+            <div className="w-16 h-16 rounded-2xl bg-amber-100 border border-amber-200 text-amber-600 flex items-center justify-center mx-auto mb-4 shadow-inner">
+              <Lock className="w-8 h-8 text-amber-600" />
+            </div>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 uppercase tracking-wider mb-3">
+              View-Only Mode Active
+            </span>
+            <h2 className="text-xl font-black text-slate-900 tracking-tight mb-2">
+              Profile Verification Required
+            </h2>
+            <p className="text-sm text-slate-600 leading-relaxed mb-6">
+              You chose to verify later, so your account is in <span className="font-semibold text-slate-800">view-only mode</span>. Adding or editing financial records is locked until your profile is verified.
+            </p>
+            <div className="space-y-3">
+              <button
+                type="button"
+                onClick={openVerificationModal}
+                className="w-full py-3 px-4 bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 hover:from-violet-700 hover:to-blue-700 text-white font-bold rounded-xl shadow-md shadow-violet-500/20 transition-all text-sm flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <ShieldCheck size={16} />
+                <span>Verify Profile Now</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setCurrentPage?.('dashboard')}
+                className="w-full py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition-colors text-xs border border-slate-200 cursor-pointer flex items-center justify-center gap-1.5"
+              >
+                <ArrowLeft size={14} />
+                <span>Return to Dashboard</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     switch (currentPage) {
       case 'dashboard': return <Dashboard setCurrentPage={setCurrentPage} />;
       case 'accounts': return <Accounts />;
@@ -1383,7 +1451,7 @@ const AppContent: React.FC = () => {
       {/* Main Content Area - Center scaled for Desktop */}
       <div className={`flex-1 lg:ml-28 flex flex-col relative z-10 ${currentPage === 'ai-assistant' ? 'h-[100dvh] max-h-[100dvh] overflow-hidden' : 'min-h-screen overflow-x-hidden'}`}>
         <div className={`w-full max-w-[1920px] mx-auto flex flex-col flex-1 mobile-content relative ${currentPage === 'ai-assistant' ? 'h-full max-h-full overflow-hidden' : ''}`}>
-          <LimitedModeBanner />
+          <LimitedModeBanner onVerify={openVerificationModal} />
           <OfflineBadge />
           <main className={`mobile-main flex-1 bg-transparent flex flex-col justify-start w-full ${currentPage === 'ai-assistant' ? '!h-full !max-h-full overflow-hidden !pb-0' : 'overflow-x-hidden mobile-safe-bottom'}`}>
             {dataSyncError && (
@@ -1428,6 +1496,22 @@ const AppContent: React.FC = () => {
       </div>
 
       <PWAInstallPrompt />
+
+      <ProfileVerificationModal
+        isOpen={verificationModalOpen}
+        onClose={closeVerificationModal}
+        email={user?.email || ''}
+        onVerified={handleVerificationSuccess}
+      />
+      <VerificationRequiredModal
+        isOpen={requiredModalOpen}
+        onClose={closeRequiredModal}
+        onVerifyNow={() => {
+          closeRequiredModal();
+          openVerificationModal();
+        }}
+        actionName={blockedActionName}
+      />
     </div>
   );
 };

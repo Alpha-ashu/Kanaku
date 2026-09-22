@@ -386,7 +386,27 @@ describe('AUTH MODULE — Login & Auth remediation', () => {
 
   beforeAll(async () => {
     const res = await request(app).post(`${API}/auth/register`).send({ name: 'Login Remediation', email, password, mobile });
-    if (res.status === 201) userId = res.body?.data?.user?.id ?? null;
+    // A non-201 here means the database is unavailable in this environment;
+    // every test below then skips, which is the intended degradation.
+    if (res.status !== 201) return;
+
+    // Sign-up is OTP-gated: POST /auth/register only sends a code (echoed as
+    // `data.code` outside production) and creates an UNVERIFIED account. This
+    // step was missing, so the fixture never became a real user and every login
+    // below was correctly refused with 403 EMAIL_NOT_VERIFIED. The block only
+    // looked green because its `if (!userId) return` guard let it skip whenever
+    // registration happened not to return 201 — a test passing for the wrong
+    // reason, which is worse than one that fails.
+    const verify = await request(app)
+      .post(`${API}/auth/verify-registration-otp`)
+      .send({ email: res.body?.data?.email ?? email, code: res.body?.data?.code });
+
+    expect(verify.status).toBe(200);
+
+    userId = res.body?.data?.user?.id
+      ?? verify.body?.data?.user?.id
+      ?? (await prisma.user.findUnique({ where: { email }, select: { id: true } }))?.id
+      ?? null;
   });
 
   afterAll(async () => {

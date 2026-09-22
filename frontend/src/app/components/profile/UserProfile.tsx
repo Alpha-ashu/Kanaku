@@ -19,8 +19,8 @@ import { api } from '@/lib/api';
 import { shouldSkipOptionalBackendRequests } from '@/lib/apiBase';
 import { format, parseISO } from 'date-fns';
 import { pinService } from '@/services/pinService';
-import { syncBiometricPin } from '@/services/biometricAuthService';
 import { AdvisorRoleSection } from './AdvisorRoleSection';
+import { useProfileVerification } from '@/hooks/useProfileVerification';
 
 interface ProfileData {
  firstName: string;
@@ -184,6 +184,7 @@ export const UserProfile: React.FC = () => {
  const { user, signOut, role } = useAuth();
  const { setCurrentPage, currency, setCurrency, visibleFeatures } = useApp();
  const { setAuthenticated } = useSecurity();
+ const { isViewOnly, openVerificationModal, promptVerification } = useProfileVerification();
  const [isSigningOut, setIsSigningOut] = useState(false);
 
  const handleSignOut = async () => {
@@ -955,6 +956,36 @@ export const UserProfile: React.FC = () => {
  {/* LEFT COLUMN */}
  <div className="space-y-4">
 
+          {/* View-Only Mode Banner for Unverified Profiles */}
+          {isViewOnly && (
+            <motion.div
+              initial={{ opacity: 0, y: -12 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="rounded-2xl bg-amber-50 border border-amber-200/90 text-amber-950 p-5 shadow-sm"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 rounded-xl bg-amber-100 text-amber-700 shrink-0 mt-0.5">
+                    <Lock size={18} />
+                  </div>
+                  <div>
+                    <p className="font-black text-base text-amber-950">View-Only Mode Active</p>
+                    <p className="text-xs text-amber-800 mt-1 leading-relaxed">
+                      Profile verification was deferred. You can view all sections of your profile and ledger, but editing details or entering records requires profile verification.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => openVerificationModal()}
+                  className="shrink-0 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs px-3.5 py-2 rounded-xl transition-colors shadow-xs cursor-pointer"
+                >
+                  Verify Now
+                </button>
+              </div>
+            </motion.div>
+          )}
+
  {/* New User Prompt - Only shown when profile is incomplete */}
  {!profileData.firstName && !isLoading && (
  <motion.div
@@ -973,7 +1004,13 @@ export const UserProfile: React.FC = () => {
  </ul>
  </div>
  <button data-testid="user-profile-edit-profile"
- onClick={() => setIsEditingBasic(true)}
+ onClick={() => {
+ if (isViewOnly) {
+ promptVerification('edit your profile', () => setIsEditingBasic(true));
+ } else {
+ setIsEditingBasic(true);
+ }
+ }}
  className="shrink-0 mt-1 bg-white text-blue-700 hover:bg-blue-50 font-semibold text-sm px-4 py-2 rounded-xl transition-colors"
  >
  Edit Profile
@@ -1021,8 +1058,15 @@ export const UserProfile: React.FC = () => {
   <div className="flex flex-wrap items-center justify-center gap-2">
   <button
   onClick={() => {
+  if (isViewOnly) {
+  promptVerification('change your avatar', () => {
   setIsEditingBasic(true);
   setShowAvatarGallery((prev) => !prev);
+  });
+  } else {
+  setIsEditingBasic(true);
+  setShowAvatarGallery((prev) => !prev);
+  }
   }}
   data-testid="profile-choose-avatar-button"
   className="inline-flex items-center gap-2 rounded-full border border-slate-200/80 bg-white hover:bg-slate-50 px-4 py-2 text-xs font-bold text-slate-700 shadow-xs active:scale-95 transition-all cursor-pointer"
@@ -1107,8 +1151,15 @@ export const UserProfile: React.FC = () => {
   <h3 className="text-lg font-bold text-slate-900">Basic Information</h3>
   <button
   onClick={() => {
+  if (isViewOnly) {
+  promptVerification('edit your profile', () => {
   setIsEditingBasic(!isEditingBasic);
   if (isEditingBasic) setTempData(profileData);
+  });
+  } else {
+  setIsEditingBasic(!isEditingBasic);
+  if (isEditingBasic) setTempData(profileData);
+  }
   }}
   data-testid="profile-edit-basic-button"
   className={`px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold transition-colors cursor-pointer shadow-xs ${isEditingBasic
@@ -1326,8 +1377,15 @@ export const UserProfile: React.FC = () => {
   </h3>
   <button
   onClick={() => {
+  if (isViewOnly) {
+  promptVerification('edit your location & currency', () => {
   setIsEditingLocation(!isEditingLocation);
   if (isEditingLocation) setTempData(profileData);
+  });
+  } else {
+  setIsEditingLocation(!isEditingLocation);
+  if (isEditingLocation) setTempData(profileData);
+  }
   }}
   data-testid="profile-edit-location-button"
   className={`px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold transition-colors cursor-pointer shadow-xs ${isEditingLocation
@@ -1514,14 +1572,25 @@ export const UserProfile: React.FC = () => {
   <>
   <p className="text-slate-900 font-bold text-sm mb-3 break-all">{profileData.email}</p>
   <button
-  onClick={() =>
+  onClick={() => {
+  if (isViewOnly) {
+  promptVerification('change your email', () =>
   setVerification({
   type: 'email-change',
   otp: '',
   newValue: '',
   step: 'request',
   })
+  );
+  return;
   }
+  setVerification({
+  type: 'email-change',
+  otp: '',
+  newValue: '',
+  step: 'request',
+  });
+  }}
   data-testid="profile-change-email-button"
   className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-full font-bold text-xs sm:text-sm transition-colors cursor-pointer shadow-xs active:scale-95"
   >
@@ -1633,14 +1702,25 @@ export const UserProfile: React.FC = () => {
   <>
   <p className="text-slate-900 font-bold text-lg mb-4">{profileData.mobile}</p>
   <button
-  onClick={() =>
-  setVerification({
-  type: 'mobile-change',
-  otp: '',
-  newValue: '',
-  step: 'request',
-  })
-  }
+  onClick={() => {
+    if (isViewOnly) {
+      promptVerification('change your mobile number', () =>
+        setVerification({
+          type: 'mobile-change',
+          otp: '',
+          newValue: '',
+          step: 'request',
+        })
+      );
+      return;
+    }
+    setVerification({
+      type: 'mobile-change',
+      otp: '',
+      newValue: '',
+      step: 'request',
+    });
+  }}
   data-testid="profile-change-mobile-button"
   className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-full font-bold text-xs sm:text-sm transition-colors cursor-pointer shadow-xs active:scale-95"
   >
@@ -1759,7 +1839,13 @@ export const UserProfile: React.FC = () => {
   <p className="text-xs text-slate-500 mt-0.5">Use your current PIN to update your 6-digit access PIN</p>
   </div>
   <Button
-  onClick={() => setPinChangeStep('set-new-pin')}
+  onClick={() => {
+  if (isViewOnly) {
+  promptVerification('change your PIN', () => setPinChangeStep('set-new-pin'));
+  return;
+  }
+  setPinChangeStep('set-new-pin');
+  }}
   disabled={isPinLoading}
   data-testid="profile-change-pin-button"
   className="bg-slate-900 hover:bg-black text-white rounded-full px-6 py-2.5 shrink-0 whitespace-nowrap font-bold text-xs sm:text-sm shadow-xs cursor-pointer active:scale-95 transition-all"

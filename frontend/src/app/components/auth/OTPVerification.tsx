@@ -3,6 +3,7 @@ import { Mail, ArrowLeft, RefreshCw, Shield, AlertCircle, CheckCircle } from 'lu
 import { toast } from 'sonner';
 import supabase from '@/utils/supabase/client';
 import { api, TokenManager } from '@/lib/api';
+import { setLocalProfileVerification } from '@/hooks/useProfileVerification';
 
 interface OTPVerificationProps {
   email: string;
@@ -113,6 +114,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = ({
           }
           localStorage.setItem('email_verified', 'true');
           localStorage.setItem('user_status', 'verified');
+          setLocalProfileVerification(true);
           sessionStorage.removeItem('kanaku_dev_otp');
           setVerified(true);
           toast.success('Email verified successfully! Welcome to Kanaku.');
@@ -153,6 +155,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = ({
       if (verifySuccess) {
         localStorage.setItem('email_verified', 'true');
         localStorage.setItem('user_status', 'verified');
+        setLocalProfileVerification(true);
         sessionStorage.removeItem('kanaku_dev_otp');
         setVerified(true);
         toast.success('Email verified successfully! Welcome to Kanaku.');
@@ -295,28 +298,43 @@ export const OTPVerification: React.FC<OTPVerificationProps> = ({
  </div>
  )}
 
-  {/* Manual verify button */}
-  {!isLoading && otp.every(d => d !== '') && (
-  <button data-testid="otpverification-verify-email"
-  onClick={() => handleVerifyOTP(otp.join(''))}
-  className="w-full py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors mb-3 shadow-sm"
-  >
-  Verify Email
-  </button>
-  )}
+        {/* Verify Now & Verify Later Action Buttons */}
+        <div className="space-y-2.5 mb-4">
+          <button
+            data-testid="otpverification-verify-email"
+            type="button"
+            onClick={() => handleVerifyOTP(otp.join(''))}
+            disabled={isLoading || otp.some(d => !d)}
+            className="w-full py-3 bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 hover:from-violet-700 hover:to-blue-700 text-white rounded-xl font-bold transition-all shadow-md shadow-violet-500/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2 text-sm"
+          >
+            {isLoading ? (
+              <>
+                <RefreshCw className="w-4 h-4 animate-spin" />
+                <span>Verifying...</span>
+              </>
+            ) : (
+              <span>Verify Now</span>
+            )}
+          </button>
 
-  {/* Verify Later button */}
-  {onVerifyLater && (
-    <button
-      type="button"
-      data-testid="otpverification-verify-later"
-      onClick={onVerifyLater}
-      disabled={isLoading}
-      className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition-all duration-200 text-sm border border-slate-200 mb-4 cursor-pointer disabled:opacity-50"
-    >
-      Verify Later
-    </button>
-  )}
+          <button
+            type="button"
+            data-testid="otpverification-verify-later"
+            onClick={() => {
+              if (onVerifyLater) {
+                onVerifyLater();
+              } else {
+                setLocalProfileVerification(false);
+                toast.info('Entering View-Only Mode. You can verify your profile anytime to add records.');
+                onVerified();
+              }
+            }}
+            disabled={isLoading}
+            className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition-all duration-200 text-xs border border-slate-200 cursor-pointer disabled:opacity-50"
+          >
+            Verify Later (Continue in View-Only Mode)
+          </button>
+        </div>
 
  {/* Resend Section */}
  <div className="text-center mb-4">

@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Shield, TrendingUp, Sparkles, ArrowRight, Calendar, Fingerprint, Lock, Eye, EyeOff, CheckCircle, Mail } from 'lucide-react';
+import { Shield, TrendingUp, Sparkles, ArrowRight, Calendar, Fingerprint, Lock, Eye, EyeOff, CheckCircle, Mail, ShieldCheck, Clock } from 'lucide-react';
 import { KANAKULogo, KanakuWordmark } from '@/app/components/ui/KANAKULogo';
 import { motion } from 'framer-motion';
 import { SignInForm } from './SignInForm';
 import { SignUpForm } from './SignUpForm';
 import { OTPVerification } from './OTPVerification';
 import { PINSetup } from './PINSetup';
+import { ProfileVerificationModal } from './ProfileVerificationModal';
+import { useProfileVerification, setLocalProfileVerification } from '@/hooks/useProfileVerification';
 import supabase from '@/utils/supabase/client';
 import { toast } from 'sonner';
 import { PrivacyPolicy } from '@/app/components/marketing/PrivacyPolicy';
@@ -92,15 +94,18 @@ interface AuthFlowProps {
 }
 
 export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavigate, onLogin, onGetStarted }) => {
- const { setAuthenticated } = useSecurity();
- const [step, setStep] = useState<AuthStep>(initialStep || 'welcome');
- const [email, setEmail] = useState('');
- const [isNewUser, setIsNewUser] = useState(false);
- const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
- const [salaryAccount, setSalaryAccount] = useState<SalaryAccount | null>(null);
- const [isLoading, setIsLoading] = useState(false);
- const [psDob, setPsDob] = useState('');
- const [resendLoading, setResendLoading] = useState(false);
+  const { setAuthenticated } = useSecurity();
+  const { isVerified } = useProfileVerification();
+  const [showVerifyModal, setShowVerifyModal] = useState(false);
+  const [verifyLaterChosen, setVerifyLaterChosen] = useState(false);
+  const [step, setStep] = useState<AuthStep>(initialStep || 'welcome');
+  const [email, setEmail] = useState('');
+  const [isNewUser, setIsNewUser] = useState(false);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [salaryAccount, setSalaryAccount] = useState<SalaryAccount | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [psDob, setPsDob] = useState('');
+  const [resendLoading, setResendLoading] = useState(false);
 
   const [forgotEmailState, setForgotEmailState] = useState('');
   const [forgotErrorState, setForgotErrorState] = useState('');
@@ -521,34 +526,36 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
     }
   };
 
- const handleOTPSkip = async () => {
- // Limited mode - still allow entry
- if (isNewUser) {
- setStep('profile-setup');
- saveFlowState('profile-setup');
- } else {
- // Check if user already has PIN server-side before routing to pin-setup
- try {
- const status = await pinService.getStatus();
- const hasServerPin = status.success && !isPinMissing(status);
- const hasLocalPin = pinService.hasPin();
+  const handleOTPSkip = async () => {
+    // Limited mode - record unverified status so view-only mode is active
+    setLocalProfileVerification(false);
+    setVerifyLaterChosen(true);
+    if (isNewUser) {
+      setStep('profile-setup');
+      saveFlowState('profile-setup');
+    } else {
+      // Check if user already has PIN server-side before routing to pin-setup
+      try {
+        const status = await pinService.getStatus();
+        const hasServerPin = status.success && !isPinMissing(status);
+        const hasLocalPin = pinService.hasPin();
 
- if (hasServerPin || hasLocalPin) {
- // User already has PIN, skip to complete
- localStorage.setItem('onboarding_completed', 'true');
- localStorage.removeItem('auth_flow_step');
- localStorage.removeItem('pending_auth_email');
- window.dispatchEvent(new CustomEvent('KANAKU_AUTH_CHANGE'));
- return;
- }
- } catch {
- // If check fails, proceed to pin-setup to be safe
- }
- setStep('pin-setup');
- saveFlowState('pin-setup');
- }
- toast.info('You can verify your email later in Settings');
- };
+        if (hasServerPin || hasLocalPin) {
+          // User already has PIN, skip to complete
+          localStorage.setItem('onboarding_completed', 'true');
+          localStorage.removeItem('auth_flow_step');
+          localStorage.removeItem('pending_auth_email');
+          window.dispatchEvent(new CustomEvent('KANAKU_AUTH_CHANGE'));
+          return;
+        }
+      } catch {
+        // If check fails, proceed to pin-setup to be safe
+      }
+      setStep('pin-setup');
+      saveFlowState('pin-setup');
+    }
+    toast.info('Entering View-Only Mode. You can verify your profile anytime to add records.');
+  };
 
  const handleProfileComplete = (profile: UserProfile) => {
  setUserProfile(profile);
@@ -1021,14 +1028,103 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  />
  </div>
 
+          {/* Profile Verification Card with Verify Now and Verify Later */}
+          <div className="pt-2">
+            <div className={`p-4 rounded-xl border transition-all ${
+              isVerified
+                ? 'bg-emerald-50/70 border-emerald-200/80'
+                : verifyLaterChosen
+                ? 'bg-amber-50/70 border-amber-200/80'
+                : 'bg-slate-50 border-slate-200/80'
+            }`}>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${
+                    isVerified ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-100 text-blue-600'
+                  }`}>
+                    {isVerified ? <CheckCircle size={16} /> : <ShieldCheck size={16} />}
+                  </div>
+                  <span className="text-xs font-bold text-slate-900">
+                    Profile Verification
+                  </span>
+                </div>
+                <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                  isVerified
+                    ? 'bg-emerald-100 text-emerald-700'
+                    : verifyLaterChosen
+                    ? 'bg-amber-100 text-amber-700'
+                    : 'bg-slate-200 text-slate-600'
+                }`}>
+                  {isVerified ? 'Verified' : verifyLaterChosen ? 'Deferred (View-Only)' : 'Required'}
+                </span>
+              </div>
+
+              <p className="text-xs text-slate-500 mb-3 leading-relaxed">
+                {isVerified
+                  ? 'Your profile is verified. You have full access to enter transactions, link accounts, and manage your ledger.'
+                  : verifyLaterChosen
+                  ? 'View-Only Mode active: You can explore your dashboard, but adding or editing records is locked until verification.'
+                  : 'Verify now with a 6-digit code to enable record entry, or choose verify later to proceed in View-Only mode.'}
+              </p>
+
+              {!isVerified && (
+                <div className="grid grid-cols-2 gap-2 mb-1">
+                  <button
+                    type="button"
+                    onClick={() => setShowVerifyModal(true)}
+                    data-testid="auth-flow-profile-verify-now"
+                    className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-xs transition-colors cursor-pointer"
+                  >
+                    <ShieldCheck size={14} />
+                    <span>Verify Now</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setVerifyLaterChosen(true);
+                      setLocalProfileVerification(false);
+                      toast.info('View-Only mode selected. You can verify anytime to add records.');
+                    }}
+                    data-testid="auth-flow-profile-verify-later"
+                    className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg font-bold text-xs transition-colors cursor-pointer ${
+                      verifyLaterChosen
+                        ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                        : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+                    }`}
+                  >
+                    <Clock size={14} />
+                    <span>Verify Later</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
  <button data-testid="auth-flow-button"
  type="submit"
  disabled={isLoading}
- className="w-full py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50"
+ className="w-full py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
  >
- {isLoading ? 'Saving...' : 'Continue'}
+ {isLoading
+   ? 'Saving...'
+   : isVerified
+   ? 'Continue'
+   : verifyLaterChosen
+   ? 'Continue in View-Only Mode'
+   : 'Continue'}
  </button>
  </form>
+
+ <ProfileVerificationModal
+   isOpen={showVerifyModal}
+   onClose={() => setShowVerifyModal(false)}
+   email={email}
+   onVerified={() => {
+     setShowVerifyModal(false);
+     setVerifyLaterChosen(false);
+   }}
+ />
  </div>
  </div>
  );
@@ -1722,6 +1818,7 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  isNewUser={isNewUser}
  mandatory={true}
  onVerified={handleOTPVerified}
+ onVerifyLater={handleOTPSkip}
  onBack={() => setStep('signup')}
  />
  );

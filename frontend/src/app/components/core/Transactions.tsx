@@ -32,6 +32,7 @@ import { SPLIT_TYPE_LABELS, normalizeSplitType } from '@/lib/groupSplit';
 import { DocumentManagementService } from '@/services/documentManagementService';
 import { calculateTaxSummary } from '@/lib/taxService';
 import { useLiveQuery } from 'dexie-react-hooks';
+import { useProfileVerification } from '@/hooks/useProfileVerification';
 
 const parseMetadataNumber = (value?: string) => {
   if (!value) return 0;
@@ -116,6 +117,7 @@ const formatFullDateTime = (dateVal?: Date | string | null): string => {
 
 export const Transactions: React.FC = () => {
   const { accounts, transactions, currency, setCurrentPage, refreshData } = useApp();
+  const { isViewOnly, promptVerification } = useProfileVerification();
   const canAdd = useSubFeature('transactions', 'addTransaction');
   const canEdit = useSubFeature('transactions', 'editTransaction');
   const canDelete = useSubFeature('transactions', 'deleteTransaction');
@@ -575,8 +577,14 @@ export const Transactions: React.FC = () => {
             {canImport && (
               <button
                 type="button"
-                data-testid="transactions-scan-bill-button"
-                onClick={() => setShowScanModal(true)}
+                data-testid="transactions-camera-button"
+                onClick={() => {
+                  if (isViewOnly) {
+                    promptVerification('scan a bill or receipt', () => setShowScanModal(true));
+                  } else {
+                    setShowScanModal(true);
+                  }
+                }}
                 className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white border border-slate-100 text-slate-700 flex items-center justify-center transition-all active:scale-95 cursor-pointer shadow-[0_6px_18px_-6px_rgba(15,23,42,0.18)]"
                 aria-label="Scan bill"
                 title="Scan bill"
@@ -588,7 +596,13 @@ export const Transactions: React.FC = () => {
               <button
                 type="button"
                 data-testid="transactions-add-button"
-                onClick={() => setShowTransactionTypeModal(true)}
+                onClick={() => {
+                  if (isViewOnly) {
+                    promptVerification('add a transaction', () => setShowTransactionTypeModal(true));
+                  } else {
+                    setShowTransactionTypeModal(true);
+                  }
+                }}
                 className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#18181B] hover:bg-black text-white flex items-center justify-center transition-all active:scale-95 cursor-pointer shadow-[0_8px_20px_-6px_rgba(15,23,42,0.45)]"
                 aria-label="Add transaction"
                 title="Add transaction"
@@ -904,15 +918,23 @@ export const Transactions: React.FC = () => {
                             size="icon"
                             className="h-8 w-8 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                             onClick={() => {
-                              if (transaction.groupExpenseId) {
-                                localStorage.setItem('editGroupExpenseId', transaction.groupExpenseId.toString());
-                                localStorage.setItem('quickFormType', 'expense');
-                                localStorage.setItem('quickExpenseMode', 'group');
-                                localStorage.setItem('quickBackPage', 'transactions');
+                              const proceed = () => {
+                                localStorage.removeItem('quickExpenseMode');
+                                localStorage.removeItem('quickBackPage');
+                                if (transaction.type === 'group') {
+                                  localStorage.setItem('editGroupExpenseId', transaction.id?.toString() || '');
+                                  localStorage.setItem('quickExpenseMode', 'group');
+                                  localStorage.setItem('quickBackPage', 'transactions');
+                                } else {
+                                  localStorage.setItem('editTransactionId', transaction.id?.toString() || '');
+                                }
+                                setCurrentPage('add-transaction');
+                              };
+                              if (isViewOnly) {
+                                promptVerification('edit this transaction', proceed);
                               } else {
-                                localStorage.setItem('editTransactionId', transaction.id?.toString() || '');
+                                proceed();
                               }
-                              setCurrentPage('add-transaction');
                             }}
                             title="Edit transaction"
                           >
@@ -925,7 +947,13 @@ export const Transactions: React.FC = () => {
                             variant="ghost"
                             size="icon"
                             className="h-8 w-8 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={() => handleDeleteTransaction(transaction.id!, transaction.description)}
+                            onClick={() => {
+                              if (isViewOnly) {
+                                promptVerification('delete this transaction', () => handleDeleteTransaction(transaction.id!, transaction.description));
+                              } else {
+                                handleDeleteTransaction(transaction.id!, transaction.description);
+                              }
+                            }}
                             title="Delete transaction"
                           >
                             <Trash2 size={13} />
@@ -963,7 +991,13 @@ export const Transactions: React.FC = () => {
               ) : canAdd ? (
                 <Button
                   size="sm"
-                  onClick={() => setShowTransactionTypeModal(true)}
+                  onClick={() => {
+                    if (isViewOnly) {
+                      promptVerification('add a transaction', () => setShowTransactionTypeModal(true));
+                    } else {
+                      setShowTransactionTypeModal(true);
+                    }
+                  }}
                   className="mt-3 rounded-full text-xs font-bold bg-[#18181B] text-white"
                 >
                   <Plus size={13} className="mr-1" /> Add Transaction
@@ -1324,16 +1358,24 @@ export const Transactions: React.FC = () => {
                         <button
                           data-testid="transactions-edit"
                           onClick={() => {
-                            if (tx.groupExpenseId) {
-                              localStorage.setItem('editGroupExpenseId', tx.groupExpenseId.toString());
-                              localStorage.setItem('quickFormType', 'expense');
-                              localStorage.setItem('quickExpenseMode', 'group');
-                              localStorage.setItem('quickBackPage', 'transactions');
+                            const proceed = () => {
+                              localStorage.removeItem('quickExpenseMode');
+                              localStorage.removeItem('quickBackPage');
+                              if (tx.type === 'group') {
+                                localStorage.setItem('editGroupExpenseId', tx.id?.toString() || '');
+                                localStorage.setItem('quickExpenseMode', 'group');
+                                localStorage.setItem('quickBackPage', 'transactions');
+                              } else {
+                                localStorage.setItem('editTransactionId', tx.id?.toString() || '');
+                              }
+                              setCurrentPage('add-transaction');
+                              setSelectedTransaction(null);
+                            };
+                            if (isViewOnly) {
+                              promptVerification('edit this transaction', proceed);
                             } else {
-                              localStorage.setItem('editTransactionId', tx.id?.toString() || '');
+                              proceed();
                             }
-                            setCurrentPage('add-transaction');
-                            setSelectedTransaction(null);
                           }}
                           className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-full bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs sm:text-sm shadow-xs active:scale-[0.98] transition-all cursor-pointer"
                         >
@@ -1344,8 +1386,15 @@ export const Transactions: React.FC = () => {
                         <button
                           data-testid="transactions-delete"
                           onClick={() => {
-                            handleDeleteTransaction(tx.id!, tx.description);
-                            setSelectedTransaction(null);
+                            if (isViewOnly) {
+                              promptVerification('delete this transaction', () => {
+                                handleDeleteTransaction(tx.id!, tx.description);
+                                setSelectedTransaction(null);
+                              });
+                            } else {
+                              handleDeleteTransaction(tx.id!, tx.description);
+                              setSelectedTransaction(null);
+                            }
                           }}
                           className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-full bg-rose-50 hover:bg-rose-100/90 border border-rose-200/70 text-rose-600 font-bold text-xs sm:text-sm shadow-xs active:scale-[0.98] transition-all cursor-pointer"
                         >
