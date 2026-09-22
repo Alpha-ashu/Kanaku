@@ -921,8 +921,9 @@ export const Transactions: React.FC = () => {
                               const proceed = () => {
                                 localStorage.removeItem('quickExpenseMode');
                                 localStorage.removeItem('quickBackPage');
-                                if (transaction.type === 'group') {
-                                  localStorage.setItem('editGroupExpenseId', transaction.id?.toString() || '');
+                                if (transaction.groupExpenseId) {
+                                  localStorage.setItem('editGroupExpenseId', transaction.groupExpenseId.toString());
+                                  localStorage.setItem('quickFormType', 'expense');
                                   localStorage.setItem('quickExpenseMode', 'group');
                                   localStorage.setItem('quickBackPage', 'transactions');
                                 } else {
@@ -1361,8 +1362,9 @@ export const Transactions: React.FC = () => {
                             const proceed = () => {
                               localStorage.removeItem('quickExpenseMode');
                               localStorage.removeItem('quickBackPage');
-                              if (tx.type === 'group') {
-                                localStorage.setItem('editGroupExpenseId', tx.id?.toString() || '');
+                              if (tx.groupExpenseId) {
+                                localStorage.setItem('editGroupExpenseId', tx.groupExpenseId.toString());
+                                localStorage.setItem('quickFormType', 'expense');
                                 localStorage.setItem('quickExpenseMode', 'group');
                                 localStorage.setItem('quickBackPage', 'transactions');
                               } else {

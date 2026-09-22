@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Shield, TrendingUp, Sparkles, ArrowRight, Calendar, Fingerprint, Lock, Eye, EyeOff, CheckCircle, Mail, ShieldCheck, Clock } from 'lucide-react';
-import { KANAKULogo, KanakuWordmark } from '@/app/components/ui/KANAKULogo';
+import { Shield, TrendingUp, Sparkles, ArrowRight, Calendar, Lock, Eye, EyeOff, CheckCircle, Mail, ShieldCheck, Clock } from 'lucide-react';
+import { KanakuWordmark } from '@/app/components/ui/KANAKULogo';
 import { motion } from 'framer-motion';
 import { SignInForm } from './SignInForm';
 import { SignUpForm } from './SignUpForm';
@@ -14,7 +14,6 @@ import { PrivacyPolicy } from '@/app/components/marketing/PrivacyPolicy';
 import { Terms } from '@/app/components/marketing/Terms';
 import { saveAccountWithBackendSync } from '@/lib/auth-sync-integration';
 import { api, TokenManager } from '@/lib/api';
-import { PublicNavbar } from '@/app/components/ui/PublicNavbar';
 import { isGuestMode, disableGuestMode, migrateGuestDataToUser, migrateGuestLocalStorage } from '@/lib/guestMode';
 import { pinService, isPinMissing } from '@/services/pinService';
 import { signIn as supabaseSignIn, signUp as supabaseSignUp, resendSignupConfirmation, DUPLICATE_ACCOUNT_MESSAGE } from '@/lib/supabase-helpers';

@@ -7,7 +7,6 @@ import {
     Wallet,
     CreditCard,
     Banknote,
-    Smartphone,
     Edit2,
     Trash2,
     X,
@@ -36,8 +35,9 @@ import { formatLocalDate } from "@/lib/dateUtils";
 import { formatCurrencyAmount } from "@/lib/currencyUtils";
 import { CardNetworkLogo, getBankCardLogo } from "@/app/components/ui/AccountLogos";
 import { CenteredLayout } from "@/app/components/shared/CenteredLayout";
-import { queueRecordUpsertSync, updateAccountWithBackendSync } from "@/lib/auth-sync-integration";
+import { updateAccountWithBackendSync } from "@/lib/auth-sync-integration";
 import { setAccountTargetBalance, setAccountOpeningBalance, getAccountBalanceSnapshot, getAccountLedgerDelta, type AccountBalanceSnapshot } from "@/lib/transactionAggregation";
+import { useProfileVerification } from "@/hooks/useProfileVerification";
 
 type AssetType = "all" | "bank" | "card" | "wallet" | "cash";
 
@@ -79,6 +79,7 @@ const getCardStyle = (account: any): any => {
 
 export const Accounts: React.FC = () => {
     const { accounts, transactions, currency, setCurrentPage, refreshData, visibleFeatures } = useApp();
+    const { isViewOnly, promptVerification } = useProfileVerification();
     const canImport = useSubFeature('accounts', 'importStatement');
     const canCreate = useSubFeature('accounts', 'createAccount') && visibleFeatures?.accountSetup !== false;
     const canEdit = useSubFeature('accounts', 'editAccount');
@@ -134,6 +135,10 @@ export const Accounts: React.FC = () => {
 
     const handleEditAccount = async (account: typeof accounts[0], e: React.MouseEvent) => {
         e.stopPropagation();
+        if (isViewOnly) {
+            promptVerification("edit this account", () => handleEditAccount(account, e));
+            return;
+        }
         const delta = await getAccountLedgerDelta(account.id!);
         const openingBalance = account.openingBalance ?? Math.round((account.balance - delta) * 100) / 100;
         setEditingAccountDelta(delta);
@@ -366,6 +371,10 @@ export const Accounts: React.FC = () => {
     );
 
     const handleDeleteAccount = (id: number, name: string) => {
+        if (isViewOnly) {
+            promptVerification("delete this account", () => handleDeleteAccount(id, name));
+            return;
+        }
         setAccountToDelete({ id, name });
         setDeleteModalOpen(true);
     };
@@ -450,8 +459,14 @@ export const Accounts: React.FC = () => {
                     >
                         {canCreate && (
                         <Button data-testid="accounts-button"
-                            onClick={() => setCurrentPage("add-account")}
-                            className="shadow-sm bg-slate-950 hover:bg-slate-800 text-white h-9 sm:h-10 px-3.5 sm:px-5 rounded-full font-bold text-xs sm:text-sm flex items-center gap-1.5 shrink-0"
+                            onClick={() => {
+                                if (isViewOnly) {
+                                    promptVerification("add an account", () => setCurrentPage("add-account"));
+                                } else {
+                                    setCurrentPage("add-account");
+                                }
+                            }}
+                            className="shadow-sm bg-slate-950 hover:bg-slate-800 text-white h-9 sm:h-10 px-3.5 sm:px-5 rounded-full font-bold text-xs sm:text-sm flex items-center gap-1.5 shrink-0 cursor-pointer"
                         >
                             <Plus size={16} />
                             <span className="hidden sm:inline">Add Account</span>
@@ -525,8 +540,14 @@ export const Accounts: React.FC = () => {
                             {canCreate && (
                             <button
                                 data-testid="accounts-add-button"
-                                onClick={() => setCurrentPage("add-account")}
-                                className="shrink-0 mt-1 bg-white text-purple-700 hover:bg-purple-50 font-semibold text-sm px-4 py-2 rounded-xl transition-colors whitespace-nowrap"
+                                onClick={() => {
+                                    if (isViewOnly) {
+                                        promptVerification("add an account", () => setCurrentPage("add-account"));
+                                    } else {
+                                        setCurrentPage("add-account");
+                                    }
+                                }}
+                                className="shrink-0 mt-1 bg-white text-purple-700 hover:bg-purple-50 font-semibold text-sm px-4 py-2 rounded-xl transition-colors whitespace-nowrap cursor-pointer"
                             >
                                 + Add Account
                             </button>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { api } from '@/lib/api';
 
 export interface ProfileVerificationState {
@@ -136,10 +136,13 @@ export const useProfileVerification = () => {
           if (p.status) {
             setUserStatus(p.status);
           }
-          if (serverVerified !== isVerified) {
-            setLocalProfileVerification(serverVerified, p.status || (serverVerified ? 'verified' : 'pending_verification'));
-            setIsVerified(serverVerified);
-          }
+          setIsVerified((prev) => {
+            if (serverVerified !== prev) {
+              setLocalProfileVerification(serverVerified, p.status || (serverVerified ? 'verified' : 'pending_verification'));
+              return serverVerified;
+            }
+            return prev;
+          });
         }
       } catch {
         // Fall back to local synchronous state without disruption
@@ -152,8 +155,48 @@ export const useProfileVerification = () => {
     return () => { isMounted = false; };
   }, []);
 
+  const [verificationModalOpen, setVerificationModalOpen] = useState<boolean>(false);
+  const [requiredModalOpen, setRequiredModalOpen] = useState<boolean>(false);
+  const [blockedActionName, setBlockedActionName] = useState<string | undefined>(undefined);
+  const pendingActionRef = useRef<(() => void) | undefined>(undefined);
+
+  useEffect(() => {
+    const handleOpenVerify = () => setVerificationModalOpen(true);
+    const handleOpenRequired = (e: Event) => {
+      const detail = (e as CustomEvent<{ actionName?: string; onVerified?: () => void }>).detail;
+      setBlockedActionName(detail?.actionName);
+      pendingActionRef.current = detail?.onVerified;
+      setRequiredModalOpen(true);
+    };
+
+    window.addEventListener('OPEN_PROFILE_VERIFICATION_MODAL', handleOpenVerify);
+    window.addEventListener('OPEN_VERIFICATION_REQUIRED_MODAL', handleOpenRequired);
+
+    return () => {
+      window.removeEventListener('OPEN_PROFILE_VERIFICATION_MODAL', handleOpenVerify);
+      window.removeEventListener('OPEN_VERIFICATION_REQUIRED_MODAL', handleOpenRequired);
+    };
+  }, []);
+
   const openVerificationModal = useCallback(() => {
+    setVerificationModalOpen(true);
     window.dispatchEvent(new CustomEvent('OPEN_PROFILE_VERIFICATION_MODAL'));
+  }, []);
+
+  const closeVerificationModal = useCallback(() => {
+    setVerificationModalOpen(false);
+  }, []);
+
+  const closeRequiredModal = useCallback(() => {
+    setRequiredModalOpen(false);
+  }, []);
+
+  const handleVerificationSuccess = useCallback(() => {
+    setVerificationModalOpen(false);
+    setRequiredModalOpen(false);
+    const cb = pendingActionRef.current;
+    pendingActionRef.current = undefined;
+    cb?.();
   }, []);
 
   const promptVerification = useCallback((actionName?: string, onVerified?: () => void): boolean => {
@@ -162,7 +205,11 @@ export const useProfileVerification = () => {
       return true;
     }
 
-    // Unverified: trigger verification intercept modal with action context
+    setBlockedActionName(actionName);
+    pendingActionRef.current = onVerified;
+    setRequiredModalOpen(true);
+
+    // Also dispatch event for any external listeners
     window.dispatchEvent(new CustomEvent('OPEN_VERIFICATION_REQUIRED_MODAL', {
       detail: { actionName, onVerified }
     }));
@@ -175,7 +222,13 @@ export const useProfileVerification = () => {
     userEmail,
     userStatus,
     isLoading,
+    verificationModalOpen,
+    requiredModalOpen,
+    blockedActionName,
     openVerificationModal,
+    closeVerificationModal,
+    closeRequiredModal,
+    handleVerificationSuccess,
     promptVerification,
     setVerified: (verified: boolean) => setLocalProfileVerification(verified),
   };

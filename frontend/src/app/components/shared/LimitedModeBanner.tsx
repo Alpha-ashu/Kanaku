@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { AlertTriangle, X, Mail, Shield } from 'lucide-react';
-import { toast } from 'sonner';
 import { useProfileVerification } from '@/hooks/useProfileVerification';
 
 interface LimitedModeBannerProps {

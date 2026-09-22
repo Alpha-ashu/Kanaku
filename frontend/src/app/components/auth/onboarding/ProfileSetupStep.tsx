@@ -15,7 +15,7 @@ interface ProfileSetupStepProps {
     avatarUrl?: string;
     avatarId?: string;
   };
-  onUpdate: (data: any) => void;
+  onUpdate: (data: Record<string, unknown>) => void;
   onNext: () => void;
 }
 
@@ -211,7 +211,7 @@ export const ProfileSetupStep: React.FC<ProfileSetupStepProps> = ({
               className="relative group w-full"
               onClick={(e) => {
                 const input = e.currentTarget.querySelector('input');
-                if (input) (input as any).showPicker?.();
+                if (input && 'showPicker' in input) (input as HTMLInputElement).showPicker();
               }}
             >
               <div className={`w-full px-3.5 py-2.5 border rounded-xl focus-within:ring-2 focus-within:ring-violet-500/20 focus-within:border-violet-500 text-sm text-left flex items-center justify-between bg-white min-h-[42px] cursor-pointer ${
@@ -226,7 +226,7 @@ export const ProfileSetupStep: React.FC<ProfileSetupStepProps> = ({
                       const day = String(date.getDate()).padStart(2, '0');
                       const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                       return `${day}-${months[date.getMonth()]}-${date.getFullYear()}`;
-                    } catch (err) {
+                    } catch {
                       return data.dateOfBirth;
                     }
                   })()}

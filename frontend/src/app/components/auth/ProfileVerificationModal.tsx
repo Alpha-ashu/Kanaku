@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Mail, CheckCircle, AlertCircle, RefreshCw, X, ShieldCheck } from 'lucide-react';
+import { CheckCircle, AlertCircle, RefreshCw, X, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { api, TokenManager } from '@/lib/api';
 import { setLocalProfileVerification } from '@/hooks/useProfileVerification';
@@ -34,21 +34,24 @@ export const ProfileVerificationModal: React.FC<ProfileVerificationModalProps> =
       const stored = localStorage.getItem('user_email');
       if (stored) setEmail(stored);
     }
-  }, [initialEmail, isOpen]);
+  }, [initialEmail]);
 
+  // Resend cooldown timer
   useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (isOpen && resendCooldown > 0) {
-      timer = setTimeout(() => setResendCooldown((prev) => prev - 1), 1000);
-    }
+    if (!isOpen) return;
+    if (resendCooldown <= 0) return;
+    const timer = setTimeout(() => {
+      setResendCooldown((prev) => prev - 1);
+    }, 1000);
     return () => clearTimeout(timer);
-  }, [isOpen, resendCooldown]);
+  }, [resendCooldown, isOpen]);
 
+  // Focus first input on open
   useEffect(() => {
     if (isOpen) {
-      setOtp(['', '', '', '', '', '']);
       setError(null);
       setVerifiedSuccess(false);
+      setOtp(['', '', '', '', '', '']);
       setTimeout(() => {
         inputRefs.current[0]?.focus();
       }, 100);
@@ -57,56 +60,47 @@ export const ProfileVerificationModal: React.FC<ProfileVerificationModalProps> =
 
   if (!isOpen) return null;
 
-  const handleOtpChange = (index: number, value: string) => {
-    if (!/^\d*$/.test(value)) return;
+  const handleOtpChange = (index: number, val: string) => {
+    if (!/^\d*$/.test(val)) return;
 
     const newOtp = [...otp];
-    newOtp[index] = value.slice(-1);
+    newOtp[index] = val.slice(-1);
     setOtp(newOtp);
     setError(null);
 
-    if (value && index < 5) {
+    // Auto focus next input
+    if (val && index < 5) {
       inputRefs.current[index + 1]?.focus();
-    }
-
-    if (newOtp.every((digit) => digit !== '') && newOtp.join('').length === 6) {
-      handleVerify(newOtp.join(''));
     }
   };
 
-  const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
+  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Backspace' && !otp[index] && index > 0) {
       inputRefs.current[index - 1]?.focus();
     }
   };
 
-  const handlePaste = (e: React.ClipboardEvent) => {
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
     e.preventDefault();
-    const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
-    if (pastedData.length > 0) {
-      const newOtp = [...otp];
-      pastedData.split('').forEach((char, i) => {
-        if (i < 6) newOtp[i] = char;
-      });
-      setOtp(newOtp);
-      const lastIndex = Math.min(pastedData.length, 5);
-      inputRefs.current[lastIndex]?.focus();
-      if (pastedData.length === 6) {
-        handleVerify(pastedData);
-      }
+    const pasted = e.clipboardData.getData('text/plain').trim();
+    if (/^\d{6}$/.test(pasted)) {
+      const digits = pasted.split('').slice(0, 6);
+      setOtp(digits);
+      inputRefs.current[5]?.focus();
+      handleVerify(digits.join(''));
     }
   };
 
   const handleVerify = async (codeToVerify?: string) => {
     const code = codeToVerify || otp.join('');
-    if (code.length !== 6) {
-      setError('Please enter all 6 digits of your verification code.');
+    if (code.length < 6) {
+      setError('Please enter the complete 6-digit code');
       return;
     }
 
     const targetEmail = (email || localStorage.getItem('user_email') || '').trim();
     if (!targetEmail) {
-      setError('Email address is missing. Please sign in again.');
+      setError('Email address is missing. Please close and try again.');
       return;
     }
 
@@ -120,7 +114,7 @@ export const ProfileVerificationModal: React.FC<ProfileVerificationModalProps> =
       });
 
       if (res.success) {
-        const resData = (res.data as any) || {};
+        const resData = (res.data as { accessToken?: string } | undefined) || {};
         if (resData.accessToken) {
           TokenManager.setAccessToken(resData.accessToken);
         }
@@ -138,8 +132,9 @@ export const ProfileVerificationModal: React.FC<ProfileVerificationModalProps> =
         setOtp(['', '', '', '', '', '']);
         inputRefs.current[0]?.focus();
       }
-    } catch (err: any) {
-      setError(err?.message || 'Verification failed. Please check the code and try again.');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Verification failed. Please check the code and try again.';
+      setError(message);
       setOtp(['', '', '', '', '', '']);
       inputRefs.current[0]?.focus();
     } finally {
@@ -167,8 +162,9 @@ export const ProfileVerificationModal: React.FC<ProfileVerificationModalProps> =
       } else {
         setError(res.message || 'Failed to resend code.');
       }
-    } catch (err: any) {
-      setError(err?.message || 'Failed to resend code. Please try again in a moment.');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to resend code. Please try again in a moment.';
+      setError(message);
     } finally {
       setIsResending(false);
     }

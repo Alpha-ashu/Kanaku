@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useApp } from '@/contexts/AppContext';
 import { useSecurity } from '@/contexts/SecurityContext';
@@ -9,7 +9,6 @@ import { Skeleton } from '@/app/components/ui/skeleton';
 import { Lock, Eye, EyeOff, Mail, Phone, User, Calendar, Briefcase, LogOut, ShieldAlert, Trash2, X, KeyRound, Check, MapPin, DollarSign, Save, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
-import supabase from '@/utils/supabase/client';
 import { db } from '@/lib/database';
 import { permissionService } from '@/services/permissionService';
 import { backupPINKeys, restorePINKeys, serializePINKeyBackup, storeMasterKey } from '@/lib/encryption';
@@ -19,6 +18,7 @@ import { api } from '@/lib/api';
 import { shouldSkipOptionalBackendRequests } from '@/lib/apiBase';
 import { format, parseISO } from 'date-fns';
 import { pinService } from '@/services/pinService';
+import { syncBiometricPin } from '@/services/biometricAuthService';
 import { AdvisorRoleSection } from './AdvisorRoleSection';
 import { useProfileVerification } from '@/hooks/useProfileVerification';
 
