@@ -63,8 +63,8 @@ export async function sendEmail(opts: SendEmailOptions): Promise<boolean> {
     logger.warn('[Email] Preferred SMTP send failed, attempting SendGrid fallback...');
   }
 
-  // 2. Try SendGrid if configured
-  if (sendgridConfigured && preferredProvider !== 'smtp') {
+  // 2. Try SendGrid if configured and either it is preferred OR SMTP already failed above
+  if (sendgridConfigured) {
     try {
       await sgMail.send({
         to: opts.to,
@@ -83,11 +83,11 @@ export async function sendEmail(opts: SendEmailOptions): Promise<boolean> {
         status: err?.code ?? err?.response?.statusCode,
         error: err?.response?.body || err.message,
       });
-      // Fall through to SMTP if configured
+      // Fall through to SMTP fallback if not already tried
     }
   }
 
-  // 3. Try SMTP fallback if SendGrid wasn't preferred or failed
+  // 3. Try SMTP fallback if it was not the preferred provider (or preferred but already failed)
   if (preferredProvider !== 'smtp' && smtpConfigured) {
     const smtpSuccess = await sendSmtpEmail(opts);
     if (smtpSuccess) return true;
@@ -102,11 +102,16 @@ export async function sendEmail(opts: SendEmailOptions): Promise<boolean> {
     return true;
   }
 
-  if (!sendgridConfigured && !smtpConfigured) {
-    logger.warn('[Email] No email provider configured (SENDGRID_API_KEY + SENDGRID_FROM_EMAIL, or SMTP_HOST) — skipping send', {
-      to: opts.to,
-      subject: opts.subject,
-    });
-  }
+  // All configured providers have been tried and failed (or none were configured).
+  logger.error('[Email] All providers failed — email not delivered', {
+    to: opts.to,
+    subject: opts.subject,
+    sendgridConfigured,
+    smtpConfigured,
+    preferredProvider,
+    hint: !sendgridConfigured && !smtpConfigured
+      ? 'No email provider configured. Set SMTP_HOST/SMTP_USER/SMTP_PASS or SENDGRID_API_KEY/SENDGRID_FROM_EMAIL in Render env vars.'
+      : 'Provider(s) configured but all sends failed. Check credentials, sender verification, and quotas.',
+  });
   return false;
 }
