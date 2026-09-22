@@ -17,6 +17,7 @@ export const FROM_NAME = (process.env.EMAIL_PROVIDER === 'smtp' && SMTP_FROM_NAM
   : (env.SENDGRID_FROM_NAME || SMTP_FROM_NAME || 'Kanaku');
 
 let initialized = false;
+let sendEmailLoggedOnce = false;
 function ensureInitialized(): boolean {
   if (initialized) return true;
   const key = process.env.SENDGRID_API_KEY;
@@ -42,6 +43,18 @@ export async function sendEmail(opts: SendEmailOptions): Promise<boolean> {
   const preferredProvider = process.env.EMAIL_PROVIDER || (isSmtpConfigured() ? 'smtp' : 'sendgrid');
   const sendgridConfigured = ensureInitialized() && Boolean(env.SENDGRID_FROM_EMAIL);
   const smtpConfigured = isSmtpConfigured();
+
+  // One-time startup diagnostic (logged once per process)
+  if (!sendEmailLoggedOnce) {
+    sendEmailLoggedOnce = true;
+    logger.info('[Email] Provider configuration:', {
+      preferred: preferredProvider,
+      sendgrid: sendgridConfigured ? 'configured' : 'NOT configured',
+      smtp: smtpConfigured ? 'configured' : 'NOT configured',
+      smtpHost: process.env.SMTP_HOST || '(not set)',
+      sendgridFrom: env.SENDGRID_FROM_EMAIL || '(not set)',
+    });
+  }
 
   // 1. Try SMTP if preferred and configured (e.g. Brevo SMTP)
   if (preferredProvider === 'smtp' && smtpConfigured) {

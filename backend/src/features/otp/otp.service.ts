@@ -354,6 +354,16 @@ class OtpService {
         logger.info(`[OTP] DEV MODE - OTP: ${otp} (destination: ${destination})`);
       }
 
+      // Diagnostic: log email provider state so Render logs show exactly why delivery fails
+      const providerState = {
+        preferredProvider: process.env.EMAIL_PROVIDER || '(not set)',
+        smtpConfigured: Boolean(process.env.SMTP_HOST || (process.env.SMTP_USER && process.env.SMTP_PASS)),
+        smtpHost: process.env.SMTP_HOST ? `${process.env.SMTP_HOST}:${process.env.SMTP_PORT || 587}` : '(not set)',
+        sendgridConfigured: Boolean(process.env.SENDGRID_API_KEY && process.env.SENDGRID_FROM_EMAIL),
+        nodeEnv: process.env.NODE_ENV || 'development',
+      };
+      logger.info('[OTP] Email provider state:', providerState);
+
       const sent = await sendEmail({
         to: destination,
         subject: `Your Kanaku verification code: ${otp}`,
@@ -364,7 +374,12 @@ class OtpService {
       if (sent) {
         logger.info(`[OTP] Email delivered to ${destination.substring(0, 3)}*** for ${purposeText}`);
       } else {
-        logger.error(`[OTP] Email delivery failed for ${destination.substring(0, 3)}*** (${purposeText}) — no provider succeeded`);
+        logger.error(`[OTP] Email delivery FAILED for ${destination.substring(0, 3)}*** (${purposeText})`, {
+          providerState,
+          hint: !providerState.smtpConfigured && !providerState.sendgridConfigured
+            ? 'No email provider configured — set SMTP_HOST/SMTP_USER/SMTP_PASS or SENDGRID_API_KEY/SENDGRID_FROM_EMAIL in Render env vars'
+            : 'Provider configured but send failed — check provider credentials and sender verification',
+        });
       }
 
       // In non-production environments, never abort OTP creation if email sending fails.
