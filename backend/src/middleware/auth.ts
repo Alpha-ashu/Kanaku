@@ -7,7 +7,7 @@ import { audit } from '../utils/auditLogger';
 import { prisma } from '../db/prisma';
 import { evaluateIdleSession } from '../security/idleSession';
 import { isTokenRevoked } from '../security/tokenRevocation';
-import { isAccountLocked, isAccountPending, isDemoDisabled } from '../utils/accountStatus';
+import { isAccountLocked, isAccountPending, isDemoDisabled, isVerificationExpired } from '../utils/accountStatus';
 
 // ─── Typed JWT payload interfaces ─────────────────────────────────────────────
 
@@ -120,6 +120,8 @@ export interface AuthRequest extends Request<ParamsFlatDictionary> {
     status?: string;
     isVerified?: boolean;
     isViewOnly?: boolean;
+    verifiedAt?: Date | string | null;
+    verificationExpired?: boolean;
   };
   file?: Express.Multer.File;
 }
@@ -167,6 +169,7 @@ interface UserAuthSnapshot {
   accountType?: string;
   demoStatus?: string;
   emailVerified?: boolean;
+  verifiedAt?: Date | null;
 }
 
 const normalizeAppRole = (value: unknown): string => {
@@ -221,6 +224,7 @@ const getUserAuthSnapshot = async (userId: string): Promise<SnapshotLookup> => {
           accountType: true,
           demoStatus: true,
           emailVerified: true,
+          verifiedAt: true,
         },
       }),
       new Promise<typeof STATUS_LOOKUP_TIMEOUT>((resolve) => {
@@ -342,18 +346,22 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
         if (isAccountLocked(authSnapshot?.status) || isDemoDisabled(authSnapshot?.accountType, authSnapshot?.demoStatus)) {
           return res.status(403).json({ error: 'Account suspended or disabled. Contact support.', code: 'ACCOUNT_SUSPENDED' });
         }
-        if (authSnapshot && (isAccountPending(authSnapshot.status, authSnapshot.emailVerified) || authSnapshot.emailVerified === false)) {
+        const isExpired = isVerificationExpired(authSnapshot?.verifiedAt);
+        if (authSnapshot && (isAccountPending(authSnapshot.status, authSnapshot.emailVerified, authSnapshot.verifiedAt) || authSnapshot.emailVerified === false || isExpired)) {
           // Unverified / View-Only Mode: block mutations to protect records, allow read-only
           if (isMutationMethod(req.method) && !isExemptMutationPath(req.originalUrl || req.url)) {
             return res.status(403).json({
               success: false,
-              error: 'Profile verification required. Your account is in View-Only Mode. Please verify your profile to add or edit records.',
+              error: isExpired
+                ? 'Profile verification has expired (required every 90 days). Your account is in View-Only Mode. Please verify your account again to add or edit records.'
+                : 'Profile verification required. Your account is in View-Only Mode. Please verify your profile to add or edit records.',
               code: 'PROFILE_VERIFICATION_REQUIRED',
+              verificationExpired: isExpired,
             });
           }
         }
 
-        const isUserVerified = !isAccountPending(authSnapshot?.status, authSnapshot?.emailVerified) && (authSnapshot?.emailVerified !== false);
+        const isUserVerified = !isAccountPending(authSnapshot?.status, authSnapshot?.emailVerified, authSnapshot?.verifiedAt) && (authSnapshot?.emailVerified !== false) && !isExpired;
 
         req.userId = userId;
         req.user = {
@@ -370,6 +378,8 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
           status: authSnapshot?.status || (isUserVerified ? 'verified' : 'pending_verification'),
           isVerified: isUserVerified,
           isViewOnly: !isUserVerified,
+          verifiedAt: authSnapshot?.verifiedAt || null,
+          verificationExpired: isExpired,
         };
 
         if (!authSnapshot) {
@@ -402,17 +412,21 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
           if (isAccountLocked(authSnapshot?.status) || isDemoDisabled(authSnapshot?.accountType, authSnapshot?.demoStatus)) {
             return res.status(403).json({ error: 'Account suspended or disabled. Contact support.', code: 'ACCOUNT_SUSPENDED' });
           }
-          if (authSnapshot && (isAccountPending(authSnapshot.status, authSnapshot.emailVerified) || authSnapshot.emailVerified === false)) {
+          const isExpired = isVerificationExpired(authSnapshot?.verifiedAt);
+          if (authSnapshot && (isAccountPending(authSnapshot.status, authSnapshot.emailVerified, authSnapshot.verifiedAt) || authSnapshot.emailVerified === false || isExpired)) {
             if (isMutationMethod(req.method) && !isExemptMutationPath(req.originalUrl || req.url)) {
               return res.status(403).json({
                 success: false,
-                error: 'Profile verification required. Your account is in View-Only Mode. Please verify your profile to add or edit records.',
+                error: isExpired
+                  ? 'Profile verification has expired (required every 90 days). Your account is in View-Only Mode. Please verify your account again to add or edit records.'
+                  : 'Profile verification required. Your account is in View-Only Mode. Please verify your profile to add or edit records.',
                 code: 'PROFILE_VERIFICATION_REQUIRED',
+                verificationExpired: isExpired,
               });
             }
           }
 
-          const isSupabaseUserVerified = !isAccountPending(authSnapshot?.status, authSnapshot?.emailVerified) && (authSnapshot?.emailVerified !== false);
+          const isSupabaseUserVerified = !isAccountPending(authSnapshot?.status, authSnapshot?.emailVerified, authSnapshot?.verifiedAt) && (authSnapshot?.emailVerified !== false) && !isExpired;
 
           req.userId = userId;
           req.user = {
@@ -430,6 +444,8 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
             status: authSnapshot?.status || (isSupabaseUserVerified ? 'verified' : 'pending_verification'),
             isVerified: isSupabaseUserVerified,
             isViewOnly: !isSupabaseUserVerified,
+            verifiedAt: authSnapshot?.verifiedAt || null,
+            verificationExpired: isExpired,
           };
           if (!authSnapshot) {
             await ensureUserInDb(userId, req.user);
@@ -458,17 +474,21 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
           if (isAccountLocked(authSnapshot?.status) || isDemoDisabled(authSnapshot?.accountType, authSnapshot?.demoStatus)) {
             return res.status(403).json({ error: 'Account suspended or disabled. Contact support.', code: 'ACCOUNT_SUSPENDED' });
           }
-          if (authSnapshot && (isAccountPending(authSnapshot.status, authSnapshot.emailVerified) || authSnapshot.emailVerified === false)) {
+          const isExpired = isVerificationExpired(authSnapshot?.verifiedAt);
+          if (authSnapshot && (isAccountPending(authSnapshot.status, authSnapshot.emailVerified, authSnapshot.verifiedAt) || authSnapshot.emailVerified === false || isExpired)) {
             if (isMutationMethod(req.method) && !isExemptMutationPath(req.originalUrl || req.url)) {
               return res.status(403).json({
                 success: false,
-                error: 'Profile verification required. Your account is in View-Only Mode. Please verify your profile to add or edit records.',
+                error: isExpired
+                  ? 'Profile verification has expired (required every 90 days). Your account is in View-Only Mode. Please verify your account again to add or edit records.'
+                  : 'Profile verification required. Your account is in View-Only Mode. Please verify your profile to add or edit records.',
                 code: 'PROFILE_VERIFICATION_REQUIRED',
+                verificationExpired: isExpired,
               });
             }
           }
 
-          const isSbApiUserVerified = !isAccountPending(authSnapshot?.status, authSnapshot?.emailVerified) && (authSnapshot?.emailVerified !== false);
+          const isSbApiUserVerified = !isAccountPending(authSnapshot?.status, authSnapshot?.emailVerified, authSnapshot?.verifiedAt) && (authSnapshot?.emailVerified !== false) && !isExpired;
 
           req.userId = user.id;
           req.user = {
@@ -485,6 +505,8 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
             status: authSnapshot?.status || (isSbApiUserVerified ? 'verified' : 'pending_verification'),
             isVerified: isSbApiUserVerified,
             isViewOnly: !isSbApiUserVerified,
+            verifiedAt: authSnapshot?.verifiedAt || null,
+            verificationExpired: isExpired,
           };
           if (!authSnapshot) {
             await ensureUserInDb(user.id, req.user);
@@ -569,12 +591,16 @@ export const getUserId = (req: AuthRequest): string => {
  * performing sensitive mutations (adding or editing records).
  */
 export const requireVerifiedProfile = (req: AuthRequest, res: Response, next: NextFunction) => {
-  const isPending = isAccountPending(req.user?.status, req.user?.emailVerified);
-  if (isPending || req.user?.emailVerified === false || req.user?.isVerified === false) {
+  const isPending = isAccountPending(req.user?.status, req.user?.emailVerified, req.user?.verifiedAt);
+  const isExpired = isVerificationExpired(req.user?.verifiedAt);
+  if (isPending || isExpired || req.user?.emailVerified === false || req.user?.isVerified === false) {
     return res.status(403).json({
       success: false,
-      error: 'Profile verification required. Your account is in View-Only Mode. Please verify your profile to add or edit records.',
+      error: isExpired
+        ? 'Profile verification has expired (required every 90 days). Your account is in View-Only Mode. Please verify your account again to add or edit records.'
+        : 'Profile verification required. Your account is in View-Only Mode. Please verify your profile to add or edit records.',
       code: 'PROFILE_VERIFICATION_REQUIRED',
+      verificationExpired: isExpired,
     });
   }
   next();

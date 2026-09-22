@@ -322,11 +322,13 @@ export const isPermanentValidationError = (error: any) => {
   // response object depending on which layer threw — check every shape so a
   // deterministic 4xx is never mistaken for a retryable failure.
   const status = Number(error?.status ?? error?.statusCode ?? error?.response?.status ?? 0);
-  if (![400, 404, 409, 422].includes(status)) return false;
+  const errCode = error?.code ?? error?.details?.code ?? error?.response?.data?.code;
+
+  if (errCode === 'PROFILE_VERIFICATION_REQUIRED') return true;
+  if (![400, 403, 404, 409, 422].includes(status)) return false;
 
   // INSUFFICIENT_BALANCE is the deliberate exception: the FIFO queue may sync
   // a deposit first, after which the same expense legitimately succeeds.
-  const errCode = error?.code ?? error?.details?.code ?? error?.response?.data?.code;
   return errCode !== 'INSUFFICIENT_BALANCE';
 };
 

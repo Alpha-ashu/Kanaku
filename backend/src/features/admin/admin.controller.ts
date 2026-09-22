@@ -885,8 +885,11 @@ export const toggleUserStatus = async (req: AuthRequest, res: Response) => {
 
     const user = await prisma.user.update({
       where: { id: userId },
-      data: { status },
-      select: { id: true, email: true, status: true }
+      data: {
+        status,
+        ...(status === 'verified' ? { emailVerified: true, verifiedAt: new Date() } : {}),
+      },
+      select: { id: true, email: true, status: true, verifiedAt: true }
     });
     // Evict the 60s auth snapshot cache so a block takes effect immediately,
     // not after the TTL expires.

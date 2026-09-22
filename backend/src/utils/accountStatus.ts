@@ -21,8 +21,24 @@ export const isAccountLocked = (status?: string | null): boolean => {
   return (LOCKED_ACCOUNT_STATUSES as readonly string[]).includes(normalized);
 };
 
-// `_emailVerified` is accepted for call-site compatibility; status alone decides.
-export const isAccountPending = (status?: string | null, _emailVerified?: boolean | null): boolean => {
+// 90-day re-verification lifecycle constants
+export const VERIFICATION_VALIDITY_DAYS = 90;
+export const VERIFICATION_VALIDITY_MS = VERIFICATION_VALIDITY_DAYS * 24 * 60 * 60 * 1000;
+
+export const isVerificationExpired = (verifiedAt?: Date | string | null): boolean => {
+  if (!verifiedAt) return false;
+  const time = new Date(verifiedAt).getTime();
+  if (isNaN(time)) return false;
+  return Date.now() - time > VERIFICATION_VALIDITY_MS;
+};
+
+// `_emailVerified` is accepted for call-site compatibility; status and verifiedAt decide.
+export const isAccountPending = (
+  status?: string | null,
+  _emailVerified?: boolean | null,
+  verifiedAt?: Date | string | null,
+): boolean => {
+  if (verifiedAt && isVerificationExpired(verifiedAt)) return true;
   if (!status || typeof status !== 'string') return false;
   const normalized = status.trim().toLowerCase();
   return normalized === 'pending_verification' || normalized === 'pending' || normalized === 'unverified';

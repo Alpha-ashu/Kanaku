@@ -21,7 +21,7 @@ import { clearPinUnlock, isPinUnlocked, PIN_UNLOCK_HEADER } from '../../security
 import { sendWelcomeEmail, sendLoginAlertEmail } from '../../emails';
 import { auditFromRequest } from '../../utils/auditLogger';
 import { isProtectedAccount } from '../../utils/protectedAccounts';
-import { isAccountLocked, isAccountPending, isDemoDisabled } from '../../utils/accountStatus';
+import { isAccountLocked, isAccountPending, isDemoDisabled, isVerificationExpired } from '../../utils/accountStatus';
 import { normalizePhone } from './registration.defaults';
 
 const authService = new AuthService();
@@ -134,7 +134,16 @@ const buildProfilePayload = (
   // withhold email, phone, gender, address, dob, and income until a live PIN
   // unlock exists. No-op when the PIN gate is disabled (pinUnlocked defaults true).
   if (!pinUnlocked) {
-    const isVerifiedUser = Boolean((userRecord?.emailVerified ?? authUser?.emailVerified ?? false) && !isAccountPending(userRecord?.status || authUser?.status, userRecord?.emailVerified ?? authUser?.emailVerified));
+    const isExpired = isVerificationExpired(userRecord?.verifiedAt ?? authUser?.verifiedAt);
+    const isVerifiedUser = Boolean(
+      (userRecord?.emailVerified ?? authUser?.emailVerified ?? false) &&
+      !isAccountPending(
+        userRecord?.status || authUser?.status,
+        userRecord?.emailVerified ?? authUser?.emailVerified,
+        userRecord?.verifiedAt ?? authUser?.verifiedAt
+      ) &&
+      !isExpired
+    );
     return {
       id: userId,
       name,
@@ -152,6 +161,8 @@ const buildProfilePayload = (
       status: userRecord?.status || authUser?.status || (isVerifiedUser ? 'verified' : 'pending_verification'),
       isVerified: isVerifiedUser,
       isViewOnly: !isVerifiedUser,
+      verifiedAt: userRecord?.verifiedAt || authUser?.verifiedAt || null,
+      verificationExpired: isExpired,
     };
   }
 
@@ -178,9 +189,16 @@ const buildProfilePayload = (
     status: userRecord?.status || authUser?.status || 'verified',
   };
 
-  const isProfileVerified = Boolean(payload.emailVerified && !isAccountPending(payload.status, payload.emailVerified));
+  const isExpired = isVerificationExpired(userRecord?.verifiedAt ?? authUser?.verifiedAt);
+  const isProfileVerified = Boolean(
+    payload.emailVerified &&
+    !isAccountPending(payload.status, payload.emailVerified, userRecord?.verifiedAt ?? authUser?.verifiedAt) &&
+    !isExpired
+  );
   payload.isVerified = isProfileVerified;
   payload.isViewOnly = !isProfileVerified;
+  payload.verifiedAt = userRecord?.verifiedAt || authUser?.verifiedAt || null;
+  payload.verificationExpired = isExpired;
 
   // BUG-15 FIX: Sensitive financial PII fields only included when explicitly requested
   // via ?includePrivate=true — never in default profile payload
@@ -510,12 +528,13 @@ export const verifyRegistrationOtp = async (req: Request, res: Response, next: N
       throw AppError.notFound('User account');
     }
 
-    // Activate the user
+    // Activate the user & record verification timestamp for 90-day lifecycle
     const updatedUser = await prisma.user.update({
       where: { id: user.id },
       data: {
         status: user.role === 'advisor' && !user.isApproved ? 'active' : 'verified',
         emailVerified: true,
+        verifiedAt: new Date(),
       },
     });
 
@@ -1128,11 +1147,15 @@ export const updateProfile = async (req: AuthRequest, res: Response, next: NextF
       return next(AppError.unauthorized());
     }
 
-    if (req.user?.emailVerified === false || isAccountPending(req.user?.status, req.user?.emailVerified)) {
+    const isExpired = isVerificationExpired(req.user?.verifiedAt);
+    if (req.user?.emailVerified === false || isAccountPending(req.user?.status, req.user?.emailVerified, req.user?.verifiedAt) || isExpired) {
       return res.status(403).json({
         success: false,
-        error: 'Profile verification required. Your profile is currently in View-Only Mode. Please verify your profile to edit details.',
+        error: isExpired
+          ? 'Profile verification has expired (required every 90 days). Your profile is currently in View-Only Mode. Please verify your profile to edit details.'
+          : 'Profile verification required. Your profile is currently in View-Only Mode. Please verify your profile to edit details.',
         code: 'PROFILE_VERIFICATION_REQUIRED',
+        verificationExpired: isExpired,
       });
     }
 

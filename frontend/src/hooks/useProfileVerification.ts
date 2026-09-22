@@ -9,12 +9,27 @@ export interface ProfileVerificationState {
   isLoading: boolean;
 }
 
+export const VERIFICATION_VALIDITY_DAYS = 90;
+export const VERIFICATION_VALIDITY_MS = VERIFICATION_VALIDITY_DAYS * 24 * 60 * 60 * 1000;
+
+export const isLocalVerificationExpired = (verifiedAtStr?: string | null): boolean => {
+  if (!verifiedAtStr) return false;
+  const time = new Date(verifiedAtStr).getTime();
+  if (isNaN(time)) return false;
+  return Date.now() - time > VERIFICATION_VALIDITY_MS;
+};
+
 export const checkIsProfileVerified = (): boolean => {
   try {
     const emailVerified = localStorage.getItem('email_verified');
     const userStatus = (localStorage.getItem('user_status') || '').toLowerCase().trim();
     const viewOnlyMode = localStorage.getItem('view_only_mode') === 'true';
     const profileVerified = localStorage.getItem('profile_verified');
+    const verifiedAt = localStorage.getItem('verified_at');
+
+    if (verifiedAt && isLocalVerificationExpired(verifiedAt)) {
+      return false;
+    }
 
     if (viewOnlyMode || profileVerified === 'false' || emailVerified === 'false') {
       return false;
@@ -29,7 +44,10 @@ export const checkIsProfileVerified = (): boolean => {
     if (profileStr) {
       try {
         const p = JSON.parse(profileStr);
-        if (p.isVerified === false || p.emailVerified === false || p.status === 'pending_verification') {
+        if (p.isVerified === false || p.emailVerified === false || p.status === 'pending_verification' || p.verificationExpired === true) {
+          return false;
+        }
+        if (p.verifiedAt && isLocalVerificationExpired(p.verifiedAt)) {
           return false;
         }
       } catch {
@@ -44,12 +62,18 @@ export const checkIsProfileVerified = (): boolean => {
   }
 };
 
-export const setLocalProfileVerification = (verified: boolean, status: string = verified ? 'verified' : 'pending_verification') => {
+export const setLocalProfileVerification = (
+  verified: boolean,
+  status: string = verified ? 'verified' : 'pending_verification',
+  verifiedAt?: string | null
+) => {
   try {
     if (verified) {
+      const timestamp = verifiedAt || new Date().toISOString();
       localStorage.setItem('email_verified', 'true');
       localStorage.setItem('profile_verified', 'true');
       localStorage.setItem('user_status', 'verified');
+      localStorage.setItem('verified_at', timestamp);
       localStorage.removeItem('view_only_mode');
     } else {
       localStorage.setItem('email_verified', 'false');
@@ -67,6 +91,10 @@ export const setLocalProfileVerification = (verified: boolean, status: string = 
         p.isVerified = verified;
         p.isViewOnly = !verified;
         p.status = verified ? 'verified' : status;
+        if (verified) {
+          p.verifiedAt = verifiedAt || p.verifiedAt || new Date().toISOString();
+          p.verificationExpired = false;
+        }
         localStorage.setItem('user_profile', JSON.stringify(p));
       } catch {
         // ignore
@@ -128,7 +156,11 @@ export const useProfileVerification = () => {
         const res = await api.auth.getProfile();
         if (isMounted && res.success && res.data) {
           const p = res.data;
-          const serverVerified = Boolean(p.isVerified ?? (p.emailVerified && p.status !== 'pending_verification'));
+          const isExpired = Boolean(p.verificationExpired || (p.verifiedAt && isLocalVerificationExpired(String(p.verifiedAt))));
+          const serverVerified = Boolean((p.isVerified ?? (p.emailVerified && p.status !== 'pending_verification')) && !isExpired);
+          if (p.verifiedAt) {
+            localStorage.setItem('verified_at', String(p.verifiedAt));
+          }
           if (typeof p.email === 'string' && p.email) {
             setUserEmail(p.email);
             localStorage.setItem('user_email', p.email);
@@ -138,7 +170,11 @@ export const useProfileVerification = () => {
           }
           setIsVerified((prev) => {
             if (serverVerified !== prev) {
-              setLocalProfileVerification(serverVerified, p.status || (serverVerified ? 'verified' : 'pending_verification'));
+              setLocalProfileVerification(
+                serverVerified,
+                p.status || (serverVerified ? 'verified' : 'pending_verification'),
+                p.verifiedAt ? String(p.verifiedAt) : undefined
+              );
               return serverVerified;
             }
             return prev;
@@ -216,20 +252,33 @@ export const useProfileVerification = () => {
     return false;
   }, []);
 
-  return {
-    isVerified,
-    isViewOnly: !isVerified,
-    userEmail,
-    userStatus,
-    isLoading,
-    verificationModalOpen,
-    requiredModalOpen,
-    blockedActionName,
-    openVerificationModal,
-    closeVerificationModal,
-    closeRequiredModal,
-    handleVerificationSuccess,
-    promptVerification,
-    setVerified: (verified: boolean) => setLocalProfileVerification(verified),
+    const isExpired = Boolean(
+      isLocalVerificationExpired(localStorage.getItem('verified_at')) ||
+      (() => {
+        try {
+          const p = JSON.parse(localStorage.getItem('user_profile') || '{}');
+          return p.verificationExpired || (p.verifiedAt && isLocalVerificationExpired(p.verifiedAt));
+        } catch {
+          return false;
+        }
+      })()
+    );
+
+    return {
+      isVerified,
+      isViewOnly: !isVerified,
+      isExpired,
+      userEmail,
+      userStatus,
+      isLoading,
+      verificationModalOpen,
+      requiredModalOpen,
+      blockedActionName,
+      openVerificationModal,
+      closeVerificationModal,
+      closeRequiredModal,
+      handleVerificationSuccess,
+      promptVerification,
+      setVerified: (verified: boolean, verifiedAt?: string | null) => setLocalProfileVerification(verified, verified ? 'verified' : 'pending_verification', verifiedAt),
+    };
   };
-};

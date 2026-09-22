@@ -840,6 +840,7 @@ model User {
   demoStatus                  String                     @default("ENABLED") // ENABLED | DISABLED
   emailVerified               Boolean                    @default(false)
   isApproved                  Boolean                    @default(false)
+  verifiedAt                  DateTime?
   // NOTE: the former DEPRECATED PII columns (firstName, lastName, salary,
   // dateOfBirth, jobType) were dropped in migration 20260708000000_drop_user_pii.
   // `profiles` is the single source of truth for that PII; `User` now holds only
