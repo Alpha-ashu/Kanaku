@@ -6,6 +6,7 @@ import App from '@/app/App';
 import { BrowserRouter } from 'react-router-dom';
 import { financialDataCaptureService } from '@/services/financialDataCaptureService';
 import { setupGlobalErrorHandlers, registerErrorReporter } from '@/lib/errorHandling';
+import { reportClientError } from '@/lib/clientErrorReporter';
 import { runGlobalMigration } from '@/lib/migration';
 import { initSchemaGuard } from '@/lib/syncSchemaGuard';
 import { initOfflineUploadQueue } from '@/lib/offlineUploadQueue';
@@ -13,6 +14,7 @@ import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
 
 // Initialize Sentry if VITE_SENTRY_DSN is configured
 const sentryDsn = import.meta.env.VITE_SENTRY_DSN;
+let sentryReady = false;
 if (sentryDsn) {
   try {
     Sentry.init({
@@ -20,12 +22,32 @@ if (sentryDsn) {
       environment: import.meta.env.MODE || 'production',
       tracesSampleRate: 0.1,
     });
-    registerErrorReporter((err, context) => {
-      Sentry.captureException(err, { extra: context });
-    });
+    sentryReady = true;
   } catch (sentryErr) {
     console.warn('[Startup] Sentry initialization skipped:', sentryErr);
   }
+}
+
+// Register the error reporter UNCONDITIONALLY.
+//
+// This used to live inside the `if (sentryDsn)` block above, and VITE_SENTRY_DSN
+// is configured in no deployment config in this repo — so in every shipped build
+// `reportError` was a no-op and the ErrorBoundary's "Something went wrong"
+// screen reported the cause nowhere. Our own backend sink is now the baseline;
+// Sentry, when configured, is an additional destination rather than the only one.
+try {
+  registerErrorReporter((err, context) => {
+    reportClientError(err, context as Record<string, unknown>);
+    if (sentryReady) {
+      try {
+        Sentry.captureException(err, { extra: context });
+      } catch {
+        /* Sentry must never break our own reporting */
+      }
+    }
+  });
+} catch (e) {
+  console.warn('[Startup] Error reporter registration skipped:', e);
 }
 
 // Perform safe startup procedures (non-blocking)

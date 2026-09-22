@@ -155,7 +155,49 @@ export interface NotifyInput {
   };
 }
 
+/**
+ * In-flight notify() calls.
+ *
+ * Most callers invoke this as `void notifySomething(...)` — deliberately, so a
+ * user's write is never made to wait on a notification. That is right in
+ * production, but it means the work can outlive whatever started it. Under Jest
+ * that showed up as the run hanging after every test had passed, then exiting
+ * non-zero: a notification begun by the last test was still calling
+ * `prisma.device.count()` while teardown was closing the client, which surfaced
+ * as "Cannot read properties of undefined (reading 'Socket')".
+ *
+ * Tracking the promises costs nothing on the request path (the set is emptied as
+ * each settles) and gives test teardown — and a graceful shutdown — something to
+ * await. See `drainNotifications()`.
+ */
+const inFlight = new Set<Promise<unknown>>();
+
+/**
+ * Waits for notifications already started to finish.
+ *
+ * Bounded, because a wedged notification must not hang a shutdown forever: this
+ * gives up after `timeoutMs` and lets the caller proceed. Safe to call when
+ * nothing is pending.
+ */
+export async function drainNotifications(timeoutMs = 5_000): Promise<void> {
+  if (inFlight.size === 0) return;
+  await Promise.race([
+    Promise.allSettled([...inFlight]),
+    new Promise((resolve) => setTimeout(resolve, timeoutMs)),
+  ]);
+}
+
 export async function notify(input: NotifyInput): Promise<{ id: string } | null> {
+  const task = notifyInner(input);
+  inFlight.add(task);
+  try {
+    return await task;
+  } finally {
+    inFlight.delete(task);
+  }
+}
+
+async function notifyInner(input: NotifyInput): Promise<{ id: string } | null> {
   try {
     const prefs = await getNotificationPreferences(input.userId);
     const preferenceKey = TOPIC_PREFERENCE[input.topic];

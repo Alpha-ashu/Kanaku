@@ -38,6 +38,30 @@ describe('BILLS SYNC & CLOUD STORAGE ARCHITECTURE', () => {
   let test5TxId: string;
 
   beforeAll(async () => {
+    // Seed the two users this suite acts as.
+    //
+    // It used to create Accounts for them without ever creating the User rows,
+    // so it only passed when some OTHER suite happened to have seeded those ids
+    // first. Run on a fresh database — or simply first in the ordering — every
+    // test failed on `Account_userId_fkey`, which read like a product bug and
+    // was really a missing fixture.
+    //
+    // `update: {}` on purpose: if a shared seed user already owns this id, leave
+    // it exactly as it is. Emails are namespaced to this suite so a create can
+    // never collide with another suite's fixture on the unique email index.
+    await Promise.all(
+      [
+        { id: userAId, email: 'bills-sync-owner@test.local', name: 'Bills Sync Owner' },
+        { id: userBId, email: 'bills-sync-other@test.local', name: 'Bills Sync Other' },
+      ].map((u) =>
+        prisma.user.upsert({
+          where: { id: u.id },
+          update: {},
+          create: { id: u.id, email: u.email, name: u.name, password: 'test-only-not-a-real-hash' },
+        }),
+      ),
+    );
+
     let acc = await prisma.account.findFirst({
       where: { userId: userAId },
     });

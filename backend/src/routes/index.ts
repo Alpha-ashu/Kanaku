@@ -29,6 +29,7 @@ import kaiRoutes from '../features/kai/kai.routes';
 import importRoutes from '../features/import/import.routes';
 import { otpRoutes } from '../features/otp/otp.routes';
 import { aaRoutes } from '../features/aa/aa.routes';
+import { clientErrorRoutes } from '../features/telemetry/clientError.routes';
 import { recurringRoutes } from '../features/recurring/recurring.routes';
 import { budgetRoutes } from '../features/budgets/budget.routes';
 import { categoryRoutes } from '../features/categories/category.routes';
@@ -133,6 +134,10 @@ router.use('/vault', vaultRoutes);
 router.use('/dashboard', dashboardRoutes);
 
 router.use('/system', systemRoutes);
+
+// Client crash reporting. Auth-optional by design: the errors worth catching
+// include the ones that happen before the user has a token.
+router.use('/client-errors', clientErrorRoutes);
 
 // Admin routes (requires admin role)
 router.use('/admin', adminRoutes);

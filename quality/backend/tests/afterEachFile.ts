@@ -23,6 +23,18 @@
  */
 afterAll(async () => {
   try {
+    // Notifications are started with `void notify(...)` so a user's write never
+    // waits on one. That means a notification begun by the last test can still
+    // be querying while the lines below close the client — which made the run
+    // hang after every test had passed and then exit non-zero. Let them finish
+    // first; this returns immediately when nothing is pending.
+    const { drainNotifications } = await import('../../../backend/src/features/notifications/notify');
+    await drainNotifications();
+  } catch {
+    // A suite that never sent a notification has nothing to drain.
+  }
+
+  try {
     const { disconnectPrisma } = await import('../../../backend/src/db/prisma');
     // Closes the writer AND the reader. prismaRead is a separate client even
     // without READ_REPLICA_URL, so disconnecting only `prisma` left half the

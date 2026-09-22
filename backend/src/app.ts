@@ -26,9 +26,37 @@ import { isAllowedOrigin } from './config/cors';
 
 const app = express();
 
-// Trust the reverse proxy (Render / Cloudflare) to correctly identify client IPs
-// for rate limiting and logging.
-app.set('trust proxy', 1);
+// Trust the reverse proxy to identify client IPs for rate limiting and logging.
+//
+// The default of 1 hop is correct for clients that reach Render directly — the
+// native Android/iOS apps. It is NOT correct for the browser build, which Vercel
+// proxies to this backend (vercel.json rewrites /api/* to kanaku-api.onrender.com):
+// that adds a second hop, so `req.ip` resolves to the Vercel edge address and
+// every web visitor lands in one bucket. Confirmed against express's resolver —
+// XFF "<client>, <vercel-edge>" at trust=1 yields the vercel edge.
+//
+// Simply raising this to 2 would be a security regression, not a fix: native
+// clients still arrive over one hop, so the second trusted position would be
+// filled by a caller-supplied X-Forwarded-For — anyone could then choose which
+// IP bucket to spend, including someone else's. The only safe way to trust the
+// extra hop is to name the proxy, which is why TRUST_PROXY accepts an address
+// or CIDR list and not just a count:
+//
+//   TRUST_PROXY=1                      (default; native-safe, web collapses)
+//   TRUST_PROXY=76.76.21.0/24,10.0.0.0/8   (trust these proxies by address)
+//   TRUST_PROXY=loopback,linklocal,uniquelocal
+//
+// Until that list is configured, nothing below may assume `req.ip` distinguishes
+// one web user from another — see the credential-keyed limiters in
+// features/auth/auth.routes.ts.
+const trustProxySetting = (() => {
+  const raw = (process.env.TRUST_PROXY ?? '').trim();
+  if (!raw) return 1;
+  if (/^\d+$/.test(raw)) return Number(raw);
+  if (raw === 'true' || raw === 'false') return raw === 'true';
+  return raw.split(',').map((entry) => entry.trim()).filter(Boolean);
+})();
+app.set('trust proxy', trustProxySetting);
 
 
 //  Request ID + Correlation ID stamping (Phase 9.5 Observability)
@@ -199,6 +227,11 @@ app.use(cors({
     'x-pw-encoding',   // password encoding negotiation (sha256 vs plain)
     'x-request-id',
     'x-correlation-id',
+    // Per-browser-session id. requestContext.ts has always READ this header;
+    // the client only started sending it when client-error reporting was wired
+    // up, and on native every call is cross-origin — so omitting it here would
+    // fail the preflight for every request, exactly as x-security-token did.
+    'x-session-id',
     'Idempotency-Key',
     // Step-up proof for sensitive operations (PIN change, key backup, PIN reset).
     // pinService has always SENT this header, but it was missing from this list —
@@ -275,9 +308,23 @@ app.use((req, _res, next) => {
 // profile/flags/PIN/device calls, the dashboard polls live quotes every 6–10s, and
 // a user's web, Android and iOS clients on one Wi-Fi (or thousands of phones behind
 // a carrier NAT) all shared that single IP bucket.
+//
+// The anonymous limit deserves special care in THIS deployment. Signed-in
+// requests bucket as `user:<id>`, so they are genuinely per user. Anonymous
+// ones bucket by `req.ip` — which, for the browser build, is the Vercel edge
+// address rather than the visitor's (vercel.json proxies /api/* to Render; see
+// the TRUST_PROXY note at the top of this file). So the anonymous budget is
+// shared by every logged-out web visitor at once, and 120/min across all of
+// them was low enough to refuse ordinary sign-ins.
+//
+// Raising it is safe because nothing relies on this limiter as its real
+// protection: every sensitive anonymous route has a dedicated limiter keyed on
+// the credential being targeted (features/auth/auth.routes.ts), which is both
+// tighter per account and immune to this address collapse. What is left here is
+// a coarse ceiling on total anonymous volume.
 const isProductionEnv = process.env.NODE_ENV === 'production';
 const globalApiUserLimit = Number(process.env.API_USER_RATE_LIMIT || (isProductionEnv ? 300 : 600));
-const globalApiIpLimit = Number(process.env.API_RATE_LIMIT || (isProductionEnv ? 120 : 600));
+const globalApiIpLimit = Number(process.env.API_RATE_LIMIT || (isProductionEnv ? 1200 : 600));
 
 app.use('/api/v1', authenticatedRateLimit({
   windowMs: 60_000,
@@ -287,10 +334,30 @@ app.use('/api/v1', authenticatedRateLimit({
 }));
 
 // Stricter bill/ocr endpoint throttling to control compute and storage abuse.
+//
+// These are mounted on a path PREFIX, so without `skip` they count every request
+// under it — reads included. That is what produced "You're doing this too fast"
+// during ordinary use:
+//
+//   * Receipts: the limit is sized for STARTING scans (8/min), but it also
+//     counted the status polls of the scan it had just authorised. The client
+//     polls every 700ms initially, so one 30s scan spends ~24 requests against
+//     a budget of 8 — the user was throttled a few seconds into their FIRST
+//     receipt, and the half-finished scan then left the screen stuck.
+//   * Bills: 10/min counted GET /bills too, so simply opening the bills list a
+//     few times tripped a limit meant for uploads.
+//
+// Reads are cheap and already covered by the global per-user limiter (300/min),
+// so they are skipped here. Every expensive operation keeps its own limiter at
+// the route level (api-bills-upload, api-ocr-start, api-ocr-status,
+// api-receipts-scan), which is where the real protection belongs.
+const isCheapRead = (req: { method: string }) => req.method === 'GET' || req.method === 'HEAD';
+
 app.use('/api/v1/bills', authenticatedRateLimit({
   windowMs: 60_000,
   max: Number(process.env.BILL_UPLOAD_RATE_LIMIT || 10),
   scope: 'api-bills',
+  skip: isCheapRead,
   message: 'Too many bill processing requests. Please try again later.',
 }));
 
@@ -298,6 +365,7 @@ app.use('/api/v1/receipts', authenticatedRateLimit({
   windowMs: 60_000,
   max: Number(process.env.RECEIPT_SCAN_RATE_LIMIT || 8),
   scope: 'api-receipts',
+  skip: isCheapRead,
   message: 'Too many receipt scan requests. Please try again later.',
 }));
 

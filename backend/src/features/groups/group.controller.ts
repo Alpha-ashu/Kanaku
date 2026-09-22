@@ -28,6 +28,95 @@ async function findUserByEmailOrPhone(email?: string | null, phone?: string | nu
   return null;
 }
 
+/**
+ * Push a `group_expense_updated` refresh to everyone entitled to see this
+ * expense, except whoever just changed it.
+ *
+ * This is a DATA-SYNC signal, not a notification: the client's only reaction is
+ * to re-pull /groups (AppContext listens for it and calls syncUserDataFromCloud).
+ * Two things follow from that, and both were wrong before:
+ *
+ *  1. It must reach the same people `getGroups` grants access to — which
+ *     includes members matched by EMAIL, not just those with a `userId` on
+ *     their member row. Every previous fan-out site was written as
+ *     `if (m.userId) …`, so a participant who was added by email before they
+ *     registered (or whose userId was never backfilled) could open the group
+ *     from a cold start but never saw a live update. Resolving the email here
+ *     closes that gap in one place instead of five.
+ *
+ *  2. It must not be conditional on a notification being created. The create
+ *     path used to rely entirely on the collaboration engine's socket emit,
+ *     which returns early on a duplicate dedupKey or when the member muted
+ *     group notifications — so muting notifications silently stopped that
+ *     device from receiving group DATA. Preferences govern what a user is
+ *     told, never what their device is allowed to know.
+ *
+ * Best-effort by design: a socket failure must not fail the mutation that
+ * already committed. Clients that miss the event still reconcile on next sync.
+ */
+const broadcastGroupExpenseChange = async (
+  groupExpenseId: string,
+  actorUserId: string,
+  options: { includeDeletedMembers?: Date | null; alsoNotify?: (string | null | undefined)[] } = {},
+): Promise<void> => {
+  try {
+    const group = await prisma.groupExpense.findUnique({
+      where: { id: groupExpenseId },
+      select: { userId: true },
+    });
+    if (!group) return;
+
+    const members = await prisma.groupExpenseMember.findMany({
+      where: {
+        groupExpenseId,
+        // A deletion soft-deletes the member rows in the same instant as the
+        // expense, so "who to tell" has to be looked up at that same stamp.
+        deletedAt: options.includeDeletedMembers ?? null,
+      },
+      select: { userId: true, email: true },
+    });
+
+    const targets = new Set<string>();
+    targets.add(group.userId);
+    for (const m of members) if (m.userId) targets.add(m.userId);
+
+    const unresolvedEmails = [
+      ...new Set(
+        members
+          .filter((m) => !m.userId && m.email)
+          .map((m) => m.email!.trim().toLowerCase())
+          .filter(Boolean),
+      ),
+    ];
+    if (unresolvedEmails.length > 0) {
+      const matched = await prisma.user.findMany({
+        where: { email: { in: unresolvedEmails } },
+        select: { id: true },
+      });
+      for (const u of matched) targets.add(u.id);
+    }
+
+    // People this change removed from the group are no longer members, so the
+    // query above cannot find them — but their device is exactly the one that
+    // still shows a row it should drop.
+    for (const extra of options.alsoNotify ?? []) if (extra) targets.add(extra);
+
+    targets.delete(actorUserId);
+    if (targets.size === 0) return;
+
+    const socketManager = getSocketManager();
+    for (const targetUserId of targets) {
+      try {
+        socketManager.notifyUser(targetUserId, 'group_expense_updated', { groupId: groupExpenseId });
+      } catch (err) {
+        logger.warn('Group expense socket fan-out failed for one recipient', { targetUserId, err });
+      }
+    }
+  } catch (err) {
+    logger.warn('Group expense socket fan-out failed', { groupExpenseId, err });
+  }
+};
+
 // Pure assembler — converts a GroupExpense + its already-fetched context into
 // the response shape. No DB access here so it can be reused by both the single-
 // group path (buildGroupResponse) and the batched list path (getGroups),
@@ -333,7 +422,6 @@ export const createGroup = async (req: AuthRequest, res: Response) => {
     }
 
     const invitationsToSend: { email: string | null; phone: string | null; name: string; friendId: string | null; share: number }[] = [];
-    const socketNotificationsToSend: { targetUserId: string; notification?: any; groupExpenseId: string }[] = [];
 
     const result = await prisma.$transaction(async (tx) => {
       const group = await tx.groupExpense.create({
@@ -496,18 +584,13 @@ export const createGroup = async (req: AuthRequest, res: Response) => {
       }
     }
 
-    // Execute socket updates outside of the transaction block
-    for (const item of socketNotificationsToSend) {
-      try {
-        const socketManager = getSocketManager();
-        if (item.notification) {
-          socketManager.notifyUser(item.targetUserId, 'notification', item.notification);
-        }
-        socketManager.notifyUser(item.targetUserId, 'group_expense_updated', { groupId: item.groupExpenseId });
-      } catch (err) {
-        logger.warn('Socket notification failed for group expense', err);
-      }
-    }
+    // Tell every participant's device to re-pull. Previously this loop drained a
+    // queue that nothing ever pushed to, so a newly created group expense reached
+    // other members only via the collaboration engine's own emit — which is
+    // skipped on a duplicate dedupKey or when the member muted group
+    // notifications. That is why a member could not see a new group expense until
+    // they relaunched the app.
+    await broadcastGroupExpenseChange(result.id, userId);
 
     const data = await buildGroupResponse(result, userId);
     res.status(201).json({ success: true, data });
@@ -562,7 +645,9 @@ export const updateGroup = async (req: AuthRequest, res: Response) => {
     // Only members added by THIS edit are invited; everyone already in the
     // group gets a "changed" notice instead (notifyGroupExpenseChanged below).
     const invitationsToSend: { email: string | null; phone: string | null; name: string; share: number; totalAmount: number; groupName: string }[] = [];
-    const socketNotificationsToSend: { targetUserId: string; notification?: any; groupExpenseId: string }[] = [];
+    // Only needed for people the edit REMOVES: everyone still in the group is
+    // resolved by broadcastGroupExpenseChange at the end.
+    const removedMemberUserIds: string[] = [];
     // Set inside the transaction callbacks; the cast stops TS narrowing it to null.
     let changeToAnnounce = null as 'updated' | 'settled' | 'payment' | null;
 
@@ -692,9 +777,6 @@ export const updateGroup = async (req: AuthRequest, res: Response) => {
                 groupName: updated.name
               });
             }
-            if (targetUser) {
-              socketNotificationsToSend.push({ targetUserId: targetUser.id, groupExpenseId: id });
-            }
           }
 
           // Members this edit removed: their allocation goes with them.
@@ -705,17 +787,7 @@ export const updateGroup = async (req: AuthRequest, res: Response) => {
               data: { deletedAt: new Date() },
             });
             for (const m of removedMembers) {
-              if (m.userId) socketNotificationsToSend.push({ targetUserId: m.userId, groupExpenseId: id });
-            }
-          }
-        } else {
-          // Just trigger socket updates to existing participants
-          for (const m of existingMembers) {
-            if (m.userId) {
-              socketNotificationsToSend.push({
-                targetUserId: m.userId,
-                groupExpenseId: id
-              });
+              if (m.userId) removedMemberUserIds.push(m.userId);
             }
           }
         }
@@ -837,19 +909,6 @@ export const updateGroup = async (req: AuthRequest, res: Response) => {
 
               // The creator and other members are told after the commit (below).
               changeToAnnounce = 'payment';
-              socketNotificationsToSend.push({
-                targetUserId: existing.userId,
-                groupExpenseId: id
-              });
-
-              for (const m of existingMembers) {
-                if (m.userId && m.userId !== userId) {
-                  socketNotificationsToSend.push({
-                    targetUserId: m.userId,
-                    groupExpenseId: id
-                  });
-                }
-              }
             } else {
               // Just update the status
               await tx.groupExpenseMember.updateMany({
@@ -867,18 +926,9 @@ export const updateGroup = async (req: AuthRequest, res: Response) => {
       }
     }
 
-    // Execute socket updates after transaction block
-    for (const item of socketNotificationsToSend) {
-      try {
-        const socketManager = getSocketManager();
-        if (item.notification) {
-          socketManager.notifyUser(item.targetUserId, 'notification', item.notification);
-        }
-        socketManager.notifyUser(item.targetUserId, 'group_expense_updated', { groupId: item.groupExpenseId });
-      } catch (err) {
-        // Ignore
-      }
-    }
+    // Every authorized viewer re-pulls, including members matched only by email
+    // and the members this edit just removed.
+    await broadcastGroupExpenseChange(id, userId, { alsoNotify: removedMemberUserIds });
 
     if (changeToAnnounce) {
       void notifyGroupExpenseChanged({
@@ -1054,10 +1104,6 @@ export const deleteGroup = async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ success: false, error: 'Group not found' });
     }
 
-    const existingMembers = await prisma.groupExpenseMember.findMany({
-      where: { groupExpenseId: id, deletedAt: null }
-    });
-
     // The member allocations are removed with the expense, stamped with the same
     // instant so the deletion notice can still find who to tell.
     const deletedAt = new Date();
@@ -1072,17 +1118,11 @@ export const deleteGroup = async (req: AuthRequest, res: Response) => {
       }),
     ]);
 
-    // Notify participants of deletion
-
-    for (const m of existingMembers) {
-      if (m.userId) {
-        try {
-          getSocketManager().notifyUser(m.userId, 'group_expense_updated', { groupId: id });
-        } catch (err) {
-          // Ignore
-        }
-      }
-    }
+    // Notify participants of deletion. The member rows were soft-deleted in the
+    // same instant as the expense, so the fan-out has to look them up at that
+    // stamp — and it resolves email-matched members too, who previously kept
+    // showing a deleted group until their next cold start.
+    await broadcastGroupExpenseChange(id, userId, { includeDeletedMembers: deletedAt });
 
     void notifyGroupExpenseChanged({ groupExpenseId: id, actorUserId: userId, change: 'deleted' });
 

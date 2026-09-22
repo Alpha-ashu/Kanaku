@@ -10,6 +10,32 @@ import { scanBufferForViruses } from '../../utils/virusScan';
 import { moderateImage } from '../../utils/moderation';
 import { createSignedUrl, uploadBuffer, removeObject } from '../../utils/storage';
 import { asClientRequestId } from '../../utils/idempotentCreate';
+import { getSocketManager } from '../../sockets';
+
+/**
+ * Tell this user's OTHER devices that their bill list changed.
+ *
+ * Bills are not part of the Dexie sync engine's ten synced tables — they
+ * reconcile through featureSyncService.syncBills(), which App.tsx runs once per
+ * session (guarded by hasSyncedFeatureTablesRef) and otherwise only on a manual
+ * pull-to-refresh. With no realtime signal at all, a receipt uploaded on one
+ * device stayed invisible on a second device that was already open until it was
+ * relaunched — the multi-device complaint in §4.
+ *
+ * The event goes to the `user:<id>` room, so it reaches every device signed in
+ * as this user, including the one that made the change. That device re-pulls a
+ * list it already agrees with, which is cheap and self-limiting: a pull writes
+ * nothing new, so it emits nothing further.
+ */
+const notifyBillsChanged = (userId: string, reason: string, billId?: string) => {
+  try {
+    getSocketManager().notifyUser(userId, 'bills_updated', { reason, billId });
+  } catch (error: any) {
+    // Sockets are a latency optimisation over the next sync, never a
+    // correctness requirement — a failure here must not fail the write.
+    logger.warn('Bill socket notification failed', { userId, billId, error: error?.message || error });
+  }
+};
 
 const hashBuffer = (buffer: Buffer) =>
   crypto.createHash('sha256').update(buffer).digest('hex');
@@ -234,6 +260,7 @@ export const uploadBill = async (req: AuthRequest, res: Response, next: NextFunc
       size: buffer.length,
     });
     logger.info('UPLOAD_SUCCESS', { userId, billId: bill.id });
+    notifyBillsChanged(userId, 'uploaded', bill.id);
 
     let downloadUrl: string | null = null;
     try {
@@ -342,6 +369,7 @@ export const deleteBill = async (req: AuthRequest, res: Response, next: NextFunc
     }).catch(() => {});
 
     logger.info('ATTACHMENT_DELETE_SYNCED', { userId, billId: id });
+    notifyBillsChanged(userId, 'deleted', id);
 
     return res.json({ message: 'Bill deleted' });
   } catch (error: any) {

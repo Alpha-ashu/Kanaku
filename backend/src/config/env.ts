@@ -300,10 +300,17 @@ const CONFIG_MANIFEST: readonly ConfigItem[] = [
   // ── Crypto / Account Aggregator ──────────────────────────────────────────────
   {
     key: 'AA_ENCRYPTION_ROOT_KEY',
-    group: 'Crypto (Account Aggregator)',
-    purpose: 'AES-256-GCM at-rest encryption for AA/KYC payloads',
+    group: 'Crypto (at-rest)',
+    purpose:
+      'AES-256-GCM at-rest encryption for AA/KYC payloads AND advisor/client chat ' +
+      'messages — without it, consultations are stored as PLAINTEXT',
     services: ['api'],
-    // Recommended: the AA module is phase-gated; non-AA deploys must still boot.
+    // Still only "recommended", deliberately: promoting it to required would
+    // abort startup on any existing deploy that lacks it, and a chat feature
+    // that refuses to send a message is worse than one that stores it the way
+    // this table stored every message before encryption existed. The fallback
+    // is loud rather than silent — message.crypto.ts logs an error per send and
+    // this line puts it in the boot report.
     tier: () => 'recommended',
   },
 

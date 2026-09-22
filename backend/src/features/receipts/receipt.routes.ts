@@ -31,7 +31,16 @@ router.get(
   '/status/:jobId',
   authenticatedRateLimit({
     windowMs: 10_000,
-    max: 20,
+    // Sized against what the CLIENT actually does, not a round number. It polls
+    // every 700ms for the first 6s (cloudReceiptScanService.pollDelayMs), so a
+    // single scan spends ~12 of these in its first 10 seconds. At the previous
+    // limit of 20 one scan was fine but two at once were not — and scanning two
+    // receipts back to back is ordinary use, not abuse. This leaves room for
+    // roughly four concurrent scans while still bounding a runaway client.
+    //
+    // The read itself is an in-memory job lookup, so the cost of a generous
+    // limit here is far lower than the cost of breaking a scan midway.
+    max: Number(process.env.RECEIPT_STATUS_RATE_LIMIT || 60),
     scope: 'api-ocr-status',
   }),
   getScanStatus,

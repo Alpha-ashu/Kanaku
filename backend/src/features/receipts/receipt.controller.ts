@@ -11,6 +11,7 @@ import { incrementAIUsage } from '../../utils/aiUsageTracker';
 import { withCircuitBreaker } from '../../utils/circuitBreaker';
 import { audit } from '../../utils/auditLogger';
 import { prisma } from '../../db/prisma';
+import { getSocketManager } from '../../sockets';
 
 type JsonMap = Record<string, unknown>;
 
@@ -309,6 +310,27 @@ export const startReceiptScan = async (req: AuthRequest, res: Response) => {
           persistedBillId = bill.id;
           persistedDownloadUrl = await createSignedUrl(storagePath);
           logger.info('ATTACHMENT_DB_CREATED', { userId, billId: bill.id, storagePath });
+
+          // Tell this user's other devices to re-pull their bills. Bills sit
+          // outside the Dexie sync engine — featureSyncService.syncBills() runs
+          // once per session and on pull-to-refresh — so without this a receipt
+          // scanned here stayed invisible on an already-open second device.
+          //
+          // Emitted from inside this try, immediately after the row is known to
+          // exist: the aiScan.create below has its own non-fatal try/catch, and
+          // announcing from after it would skip the event for a bill that did
+          // persist. There is no response to attach this to — this whole block
+          // runs in a background job after the client was already given its
+          // jobId — so the socket is the only way this reaches a device.
+          try {
+            getSocketManager().notifyUser(userId, 'bills_updated', { reason: 'scanned', billId: bill.id });
+          } catch (socketErr: any) {
+            logger.warn('Bill socket notification failed after scan', {
+              userId,
+              billId: bill.id,
+              error: socketErr?.message || socketErr,
+            });
+          }
         } catch (saveErr: any) {
           logger.warn('Failed to persist receipt image to storage/DB', { error: saveErr?.message || saveErr });
         }

@@ -25,6 +25,7 @@ import {
   setPinUnlockToken,
 } from './pinUnlockCoordinator';
 import { captureVaultUnlockToken, getVaultUnlockToken, signalVaultLocked } from './vaultUnlock';
+import { getSessionId } from './clientErrorReporter';
 
 /**
  * Captures the refreshed PIN-unlock token the backend echoes on every accepted
@@ -628,6 +629,10 @@ class HTTPClient {
       ...(token && { Authorization: `Bearer ${token}` }),
       ...(resolvedIdempotencyKey && { 'Idempotency-Key': resolvedIdempotencyKey }),
       'X-Request-Id': requestId,
+      // Groups every request from one browser session in the backend logs and
+      // audit rows. middleware/requestContext.ts has read this header all along;
+      // nothing was sending it, so that grouping never worked.
+      'X-Session-Id': getSessionId(),
       // Marks native (Capacitor) clients so the backend returns the refresh
       // token in the body for device storage (cross-origin cookie is unreliable).
       ...(isNativePlatform() && { 'X-Client-Platform': 'native' }),

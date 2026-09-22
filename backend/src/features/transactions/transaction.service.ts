@@ -199,6 +199,45 @@ export class TransactionService {
       throw AppError.badRequest('Invalid transaction date format', 'INVALID_DATE');
     }
 
+    // ── One expense per receipt ────────────────────────────────────────────────
+    //
+    // A scanned receipt becomes an expense by posting here with
+    // `attachment: "bill:<id>"`. The user can reach this more than once for the
+    // SAME receipt — rescanning it, retrying after a dropped connection,
+    // refreshing mid-save, or tapping save twice — and each of those would
+    // otherwise book the amount again and overstate their spending.
+    //
+    // `ExpenseBill.transactionId` is the natural key: a bill that already
+    // produced an expense has one. Checked server-side rather than in the
+    // scanner UI, because the client is exactly what is unreliable in every one
+    // of those cases.
+    //
+    // dedupHash does not cover this on its own: the user may legitimately edit
+    // the amount or description before confirming, which changes the hash while
+    // still being the same receipt.
+    if (attachment) {
+      const billIdForGuard = String(attachment).replace(/^bill:/, '').trim();
+      if (billIdForGuard) {
+        const bill = await prisma.expenseBill.findFirst({
+          where: { id: billIdForGuard, userId },
+          select: { transactionId: true },
+        });
+        if (bill?.transactionId) {
+          const existing = await transactionRepository.findFirst({
+            id: bill.transactionId,
+            userId,
+            deletedAt: null,
+          });
+          if (existing) {
+            logger.info('[transactions] receipt already booked; returning existing expense', {
+              userId, billId: billIdForGuard, transactionId: bill.transactionId,
+            });
+            return transactionRepository.normalizeTransaction(existing);
+          }
+        }
+      }
+    }
+
     const isTransfer = type === 'transfer';
     const needsTargetLookup = isTransfer && !!transferToAccountId && transferToAccountId !== accountId;
 

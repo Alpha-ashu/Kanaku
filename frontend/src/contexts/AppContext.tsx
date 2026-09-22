@@ -17,7 +17,7 @@ import {
 } from '@/lib/userPreferences';
 import socketClient from '@/lib/socket-client';
 import { compareByRecency } from '@/lib/dateUtils';
-import { relinkBillsToTransactions } from '@/services/featureSyncService';
+import { relinkBillsToTransactions, syncBills } from '@/services/featureSyncService';
 import { Capacitor } from '@capacitor/core';
 import { App as CapacitorApp } from '@capacitor/app';
 
@@ -858,6 +858,17 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       void syncUserDataFromCloud(user.id, ['to_do_lists', 'to_do_items', 'to_do_list_shares']);
     });
 
+    // Bills are not one of the Dexie sync engine's tables — they reconcile via
+    // featureSyncService.syncBills(), which otherwise runs only once per session
+    // and on pull-to-refresh. Without this listener a receipt uploaded on
+    // another device stayed invisible here until the app was relaunched.
+    const unsubBills = socketClient.on('bills_updated', () => {
+      console.log('[AppContext] bills_updated received via WebSocket — syncing bills');
+      void syncBills().catch((err) => {
+        console.warn('[AppContext] Bill sync after socket event failed', err);
+      });
+    });
+
     // Listen for real-time notification events from the backend (friend requests, todo shares, etc.)
     const unsubNotification = socketClient.on('notification', (payload: any) => {
       if (!payload?.id) return;
@@ -872,6 +883,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       unsubFriend();
       unsubGroup();
       unsubTodo();
+      unsubBills();
       unsubNotification();
     };
   }, [user?.id, isAuthenticated]);

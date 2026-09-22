@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Search, Building2, CheckCircle2, SkipForward, ChevronRight, X } from 'lucide-react';
+import { Search, Building2, CheckCircle2, SkipForward, ChevronRight, X, Info } from 'lucide-react';
 import { BankLogo } from '@/app/components/ui/BankLogo';
 
 interface BankAccountStepProps {
@@ -97,8 +97,27 @@ export const BankAccountStep: React.FC<BankAccountStepProps> = ({
         </h3>
         <p className="text-sm text-slate-500 max-w-sm mx-auto">
           {data.country
-            ? `Select your primary bank in ${data.country} to automatically track balances and income.`
-            : 'Link your primary bank to begin tracking your financial health.'}
+            ? `Choose your primary bank in ${data.country} and enter its current balance to start tracking.`
+            : 'Add your primary account and its current balance to start tracking your financial health.'}
+        </p>
+      </div>
+
+      {/*
+        Manual mode is the ONLY mode right now. The Account Aggregator
+        integration exists on the backend but is mount-gated off
+        (ENABLED_MODULES, see backend/src/routes/index.ts) and no client calls
+        it, so promising automatic balance tracking here — which this copy used
+        to do — describes a feature the user will never see fire. Say plainly
+        what the app does instead; this note is the thing to delete when the
+        automatic fetch actually ships.
+      */}
+      <div className="flex items-start gap-2.5 rounded-xl border border-slate-200/80 bg-slate-50/70 px-3.5 py-2.5">
+        <Info size={15} className="text-slate-400 mt-0.5 shrink-0" />
+        <p className="text-xs text-slate-500 leading-relaxed">
+          <span className="font-bold text-slate-600">Manual setup.</span>{' '}
+          Kanaku does not connect to your bank or fetch transactions automatically yet —
+          you stay in control of what gets recorded. You can add more accounts and edit
+          balances any time.
         </p>
       </div>
 

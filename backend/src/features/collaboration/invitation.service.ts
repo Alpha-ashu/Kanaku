@@ -323,12 +323,29 @@ export async function notifyRegisteredParticipant(args: {
   // Idempotency key prevents creating duplicate notification rows
   const dedupKey = `collab_notif:${moduleType}:${moduleId}:${targetUserId}`;
 
+  // The socket event is a DATA-SYNC signal — it only tells the client to re-pull
+  // the module. It must fire on every path below, including the ones that
+  // deliberately create no notification, because whether a user is TOLD about a
+  // change and whether their device is allowed to KNOW about it are different
+  // questions. Previously both early returns (duplicate dedupKey, muted by
+  // preferences) skipped the emit, so a member who had muted the topic — or who
+  // was re-added to a module they had been in before — simply stopped receiving
+  // that module's updates until the app was relaunched.
+  const pushRefresh = () => {
+    try {
+      getSocketManager().notifyUser(targetUserId, `${moduleType}_updated`, { id: moduleId });
+    } catch (err) {
+      logger.warn('[collaboration] Socket refresh failed for collaboration invite', err);
+    }
+  };
+
   // Check if already sent / created
   const existing = await prisma.notification.findUnique({
     where: { dedupKey },
   });
   if (existing) {
     logger.info(`[collaboration] Notification already exists for dedupKey=${dedupKey} — skipping duplicate`);
+    pushRefresh();
     return;
   }
 
@@ -364,16 +381,13 @@ export async function notifyRegisteredParticipant(args: {
 
   if (!notification) {
     logger.info(`[collaboration] Notification not created for dedupKey=${dedupKey} (duplicate or muted by preferences)`);
+    pushRefresh();
     return;
   }
 
   logInvitationEvent('EMAIL_QUEUED', { notificationId: notification.id, userId: targetUserId, moduleType, moduleId });
 
-  try {
-    getSocketManager().notifyUser(targetUserId, `${moduleType}_updated`, { id: moduleId });
-  } catch (err) {
-    logger.warn('[collaboration] Socket refresh failed for collaboration invite', err);
-  }
+  pushRefresh();
 }
 
 /**

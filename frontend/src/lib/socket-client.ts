@@ -116,6 +116,8 @@ interface SocketEvents {
   friend_accepted: (data: any) => void;
   group_expense_updated: (data: any) => void;
   todo_updated: (data: any) => void;
+  /** This user's bill/receipt list changed on one of their devices. */
+  bills_updated: (data: { reason?: string; billId?: string }) => void;
   notification: (data: any) => void;
 }
 
@@ -564,6 +566,10 @@ class SocketClient {
 
     this.socket.on('todo_updated' as any, (data: any) => {
       this.emit('todo_updated', data);
+    });
+
+    this.socket.on('bills_updated' as any, (data: any) => {
+      this.emit('bills_updated', data);
     });
 
     this.socket.on('notification' as any, (data: any) => {

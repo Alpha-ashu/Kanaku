@@ -14,6 +14,17 @@ type RateLimitOptions = {
   scope?: string;
   keyGenerator?: (req: Request) => string;
   message?: string;
+  /**
+   * Requests this limiter should not count at all.
+   *
+   * Exists because a limiter mounted on a path PREFIX counts every request
+   * under it, including cheap ones the limit was never meant for. The receipt
+   * limiter is the case that motivated it: sized at 8/min for starting scans,
+   * it also counted the status polls of the scan it had just authorised — and
+   * a single 30s scan polls ~23 times, so the user was throttled seconds into
+   * their first receipt.
+   */
+  skip?: (req: Request) => boolean;
 };
 
 const buckets = new Map<string, { count: number; resetAt: number }>();
@@ -57,7 +68,7 @@ async function redisIncrement(
   }
 }
 
-export const rateLimit = ({ windowMs, max, scope = 'global', keyGenerator, message }: RateLimitOptions) =>
+export const rateLimit = ({ windowMs, max, scope = 'global', keyGenerator, message, skip }: RateLimitOptions) =>
   async (req: Request, res: Response, next: NextFunction) => {
     // FORCE_RATE_LIMIT=true allows QA/security-audit scripts to test rate limiting
     // on localhost or staging without requiring NODE_ENV=production.
@@ -66,6 +77,8 @@ export const rateLimit = ({ windowMs, max, scope = 'global', keyGenerator, messa
     if (!forceRateLimit && (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development' || !process.env.NODE_ENV)) {
       return next();
     }
+
+    if (skip?.(req)) return next();
 
     const rawKey = keyGenerator?.(req) || req.ip || 'anonymous';
     const key = `rl:${scope}:${rawKey}`;

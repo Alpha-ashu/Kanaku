@@ -1,6 +1,7 @@
 import React from 'react';
 import { logger } from '@/lib/logger';
 import { reportError } from '@/lib/errorHandling';
+import { newErrorReference } from '@/lib/clientErrorReporter';
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
@@ -9,6 +10,8 @@ interface ErrorBoundaryProps {
 
 interface ErrorBoundaryState {
   hasError: boolean;
+  /** Shown to the user and logged with the report, so the two can be joined. */
+  reference: string | null;
 }
 
 /**
@@ -16,22 +19,31 @@ interface ErrorBoundaryState {
  *
  * Catches any uncaught render error from providers, routers, or page
  * components and replaces the broken UI with a generic, user-safe
- * fallback. Technical detail is logged via the shared logger (which is
- * silent in production), never shown to the user.
+ * fallback. Technical detail is never shown to the user — but it IS now
+ * recorded: the report goes to /client-errors (see lib/clientErrorReporter)
+ * carrying the stack, component stack, route, platform and session id.
+ *
+ * The user is shown a short reference instead. Previously this screen gave them
+ * nothing to quote and the shared logger is silent in production builds, so a
+ * report of "it said something went wrong" was genuinely untraceable.
  *
  * For per-route boundaries that auto-recover from lazy-import failures,
  * see `PageErrorBoundary` inside `app/App.tsx`.
  */
 export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  state: ErrorBoundaryState = { hasError: false };
+  state: ErrorBoundaryState = { hasError: false, reference: null };
 
   static getDerivedStateFromError(): ErrorBoundaryState {
-    return { hasError: true };
+    // The reference is minted here so it exists even if componentDidCatch is
+    // never reached, and is passed into the report so the id the user reads on
+    // screen is the same one in the log line.
+    return { hasError: true, reference: newErrorReference() };
   }
 
   componentDidCatch(error: Error, info: React.ErrorInfo): void {
-    logger.error('[ErrorBoundary] Render error captured', { name: error.name }, info);
-    reportError(error, { componentStack: info.componentStack });
+    const reference = this.state.reference ?? newErrorReference();
+    logger.error('[ErrorBoundary] Render error captured', { name: error.name, reference }, info);
+    reportError(error, { componentStack: info.componentStack, reference });
   }
 
   private handleReload = (): void => {
@@ -68,9 +80,20 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
         }}
       >
         <h1 style={{ fontSize: '20px', marginBottom: '8px' }}>Something went wrong</h1>
-        <p style={{ opacity: 0.8, marginBottom: '20px', maxWidth: '420px' }}>
+        <p style={{ opacity: 0.8, marginBottom: '16px', maxWidth: '420px' }}>
           We hit an unexpected problem. Please try again in a moment.
         </p>
+        {this.state.reference && (
+          <p
+            data-testid="error-boundary-reference"
+            style={{ opacity: 0.6, marginBottom: '20px', fontSize: '13px' }}
+          >
+            Reference:{' '}
+            <code style={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' }}>
+              {this.state.reference}
+            </code>
+          </p>
+        )}
         <button data-testid="error-boundary-reload-app"
           type="button"
           onClick={this.handleReload}
