@@ -1451,9 +1451,9 @@ const AppContent: React.FC = () => {
       {/* Main Content Area - Center scaled for Desktop */}
       <div className={`flex-1 lg:ml-28 flex flex-col relative z-10 ${currentPage === 'ai-assistant' ? 'h-[100dvh] max-h-[100dvh] overflow-hidden' : 'min-h-screen overflow-x-hidden'}`}>
         <div className={`w-full max-w-[1920px] mx-auto flex flex-col flex-1 mobile-content relative ${currentPage === 'ai-assistant' ? 'h-full max-h-full overflow-hidden' : ''}`}>
-          <LimitedModeBanner onVerify={openVerificationModal} />
-          <OfflineBadge />
           <main className={`mobile-main flex-1 bg-transparent flex flex-col justify-start w-full ${currentPage === 'ai-assistant' ? '!h-full !max-h-full overflow-hidden !pb-0' : 'overflow-x-hidden mobile-safe-bottom'}`}>
+            <LimitedModeBanner onVerify={openVerificationModal} />
+            <OfflineBadge />
             {dataSyncError && (
               <div className="px-3 sm:px-6 pt-3 pb-2">
                 <div className="flex items-start gap-3.5 rounded-2xl border border-amber-200/80 bg-amber-50/90 backdrop-blur-md px-4 py-3.5 text-xs sm:text-sm text-amber-900 shadow-sm transition-all">

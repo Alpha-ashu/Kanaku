@@ -956,35 +956,7 @@ export const UserProfile: React.FC = () => {
  {/* LEFT COLUMN */}
  <div className="space-y-4">
 
-          {/* View-Only Mode Banner for Unverified Profiles */}
-          {isViewOnly && (
-            <motion.div
-              initial={{ opacity: 0, y: -12 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="rounded-2xl bg-amber-50 border border-amber-200/90 text-amber-950 p-5 shadow-sm"
-            >
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex items-start gap-3">
-                  <div className="p-2 rounded-xl bg-amber-100 text-amber-700 shrink-0 mt-0.5">
-                    <Lock size={18} />
-                  </div>
-                  <div>
-                    <p className="font-black text-base text-amber-950">View-Only Mode Active</p>
-                    <p className="text-xs text-amber-800 mt-1 leading-relaxed">
-                      Profile verification was deferred. You can view all sections of your profile and ledger, but editing details or entering records requires profile verification.
-                    </p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => openVerificationModal()}
-                  className="shrink-0 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs px-3.5 py-2 rounded-xl transition-colors shadow-xs cursor-pointer"
-                >
-                  Verify Now
-                </button>
-              </div>
-            </motion.div>
-          )}
+
 
  {/* New User Prompt - Only shown when profile is incomplete */}
  {!profileData.firstName && !isLoading && (
