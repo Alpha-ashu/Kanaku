@@ -118,6 +118,11 @@ interface SocketEvents {
   todo_updated: (data: any) => void;
   /** This user's bill/receipt list changed on one of their devices. */
   bills_updated: (data: { reason?: string; billId?: string }) => void;
+  // Backend-owned tables that mirror into Dexie via featureSyncService rather
+  // than the sync engine. Emitted by the announceChange middleware.
+  budgets_updated: (data: { reason?: string }) => void;
+  recurring_updated: (data: { reason?: string }) => void;
+  categories_updated: (data: { reason?: string }) => void;
   notification: (data: any) => void;
 }
 
@@ -570,6 +575,18 @@ class SocketClient {
 
     this.socket.on('bills_updated' as any, (data: any) => {
       this.emit('bills_updated', data);
+    });
+
+    this.socket.on('budgets_updated' as any, (data: any) => {
+      this.emit('budgets_updated', data);
+    });
+
+    this.socket.on('recurring_updated' as any, (data: any) => {
+      this.emit('recurring_updated', data);
+    });
+
+    this.socket.on('categories_updated' as any, (data: any) => {
+      this.emit('categories_updated', data);
     });
 
     this.socket.on('notification' as any, (data: any) => {

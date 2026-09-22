@@ -14,6 +14,7 @@ import { FinancialEventDispatcher, GroupExpenseCreatedEvent, GroupSettlementComp
 import { FinancialLedgerService } from '../transactions/ledger.service';
 import { findAllocationError, isAllocationAware, owedAmount } from './group.allocation';
 import { asClientRequestId } from '../../utils/idempotentCreate';
+import { reportDegradedWrite } from '../../utils/degradedWrite';
 
 
 async function findUserByEmailOrPhone(email?: string | null, phone?: string | null, client: any = prisma): Promise<any> {
@@ -580,7 +581,16 @@ export const createGroup = async (req: AuthRequest, res: Response) => {
           })),
         });
       } catch (err) {
-        logger.warn('Failed to track/invite group expense participants', err);
+        // This is the catch that hid a missing CollaborationParticipant column
+        // long enough to break every invitation in an environment: the group was
+        // created, nobody was invited, and the only trace was one warn line.
+        // A transient failure here is still survivable — the group exists and
+        // members can be re-invited — but a structural one must be loud.
+        reportDegradedWrite({
+          operation: 'groups.invite_participants',
+          error: err,
+          context: { userId, groupExpenseId: result.id, participants: invitationsToSend.length },
+        });
       }
     }
 
@@ -846,7 +856,11 @@ export const updateGroup = async (req: AuthRequest, res: Response) => {
             participants: [{ email: inv.email, phone: inv.phone, name: inv.name, detail }],
           });
         } catch (err) {
-          logger.warn('Failed to invite group expense participant on update', err);
+          reportDegradedWrite({
+            operation: 'groups.invite_participant_on_update',
+            error: err,
+            context: { userId, groupExpenseId: id, email: inv.email },
+          });
         }
       }
     } else {
@@ -1004,7 +1018,11 @@ export const repairAllGroupMembers = async (req: AuthRequest, res: Response) => 
             participants: [{ email: friend.email, name: m.name, detail }],
           });
         } catch (err) {
-          logger.warn('Failed to send deferred invite during bulk repair', err);
+          reportDegradedWrite({
+            operation: 'groups.deferred_invite_bulk_repair',
+            error: err,
+            context: { userId, groupExpenseId: group.id },
+          });
         }
       }
       repaired++;
@@ -1076,7 +1094,11 @@ export const repairGroupMembers = async (req: AuthRequest, res: Response) => {
           participants: [{ email: friend.email, name: m.name, detail }],
         });
       } catch (err) {
-        logger.warn('Failed to send deferred invite during repair', err);
+        reportDegradedWrite({
+          operation: 'groups.deferred_invite_repair',
+          error: err,
+          context: { userId, groupExpenseId: id },
+        });
       }
 
       repaired++;

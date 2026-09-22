@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { authMiddleware } from '../../middleware/auth';
+import { authMiddleware, requireVerifiedProfile } from '../../middleware/auth';
 import { pinGate } from '../../middleware/pinGate';
 import { validateBody, validateParams, validateQuery } from '../../middleware/validate';
 import { idempotency } from '../../middleware/idempotency';
@@ -32,6 +32,7 @@ router.get(
 );
 router.post(
 	'/',
+	requireVerifiedProfile,
 	requireFeature('transactions', 'addTransaction'),
 	idempotency({ scope: 'transactions.create' }),
 	validateBody(transactionCreateValidatedSchema),
@@ -46,11 +47,13 @@ router.get(
 );
 router.post(
 	'/import/third-party',
+	requireVerifiedProfile,
 	requireFeature('transactions', 'importThirdPartyData'),
 	TransactionController.importThirdPartyData
 );
 router.post(
 	'/bulk',
+	requireVerifiedProfile,
 	requireFeature('transactions', 'addTransaction'),
 	idempotency({ scope: 'transactions.bulk' }),
 	validateBody(transactionBulkCreateSchema),
@@ -65,6 +68,7 @@ router.get(
 );
 router.put(
 	'/:id',
+	requireVerifiedProfile,
 	requireFeature('transactions', 'editTransaction'),
 	validateParams(transactionIdParamSchema),
 	validateBody(transactionUpdateSchema),
@@ -72,6 +76,7 @@ router.put(
 );
 router.delete(
 	'/:id',
+	requireVerifiedProfile,
 	requireFeature('transactions', 'deleteTransaction'),
 	validateParams(transactionIdParamSchema),
 	TransactionController.deleteTransaction

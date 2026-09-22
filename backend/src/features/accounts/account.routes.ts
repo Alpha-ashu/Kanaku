@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { authMiddleware } from '../../middleware/auth';
+import { authMiddleware, requireVerifiedProfile } from '../../middleware/auth';
 import { pinGate } from '../../middleware/pinGate';
 import { validateBody, validateParams } from '../../middleware/validate';
 import { responseCache } from '../../middleware/cache';
@@ -19,6 +19,7 @@ router.use(requireFeature('accounts'));
 router.get('/', responseCache({ prefix: 'accounts:list', ttlSeconds: CACHE_TTL_SECONDS.accounts.list }), AccountController.getAccounts);
 router.post(
   '/',
+  requireVerifiedProfile,
   idempotency({ scope: 'accounts.create' }),
   requireFeature('accountSetup'),
   requireFeature('accounts', 'createAccount'),
@@ -29,17 +30,19 @@ router.post(
 router.get('/:id', validateParams(accountIdParamSchema), responseCache({ prefix: 'accounts:item', ttlSeconds: CACHE_TTL_SECONDS.accounts.item }), AccountController.getAccount);
 router.put(
   '/:id',
+  requireVerifiedProfile,
   idempotency({ scope: 'accounts.update' }),
   requireFeature('accounts', 'editAccount'),
   validateParams(accountIdParamSchema),
   validateBody(accountUpdateSchema),
   AccountController.updateAccount,
 );
-router.delete('/:id', requireFeature('accounts', 'deleteAccount'), validateParams(accountIdParamSchema), AccountController.deleteAccount);
+router.delete('/:id', requireVerifiedProfile, requireFeature('accounts', 'deleteAccount'), validateParams(accountIdParamSchema), AccountController.deleteAccount);
 
 // Sub-feature operations
 router.post(
   '/:id/transfer',
+  requireVerifiedProfile,
   idempotency({ scope: 'accounts.transfer' }),
   requireFeature('accounts', 'accountTransfer'),
   validateParams(accountIdParamSchema),

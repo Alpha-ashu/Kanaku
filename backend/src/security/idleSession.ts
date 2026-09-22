@@ -40,10 +40,40 @@ const SLIDE_INTERVAL_MS = Math.max(30_000, Math.min(IDLE_TIMEOUT_MS / 2, 5 * 60_
 const memoryStore = new Map<string, number>();
 const MEMORY_PRUNE_THRESHOLD = 5000;
 
+/**
+ * When this process started.
+ *
+ * Needed because a missing marker is ambiguous, and the two readings have
+ * opposite correct responses:
+ *
+ *   "this user has not been seen inside the window"  -> end the session
+ *   "this process has never seen ANY user"           -> say nothing about them
+ *
+ * With a durable store only the first is possible. Without one — and Redis is
+ * now permanently absent, `getPurposeClient` returns null by design (see
+ * config/redis-connections.ts) — every restart empties the map for everyone at
+ * once, and the second reading is the true one.
+ *
+ * That matters on this deployment specifically: the API runs on Render's free
+ * plan, which spins down after a period of inactivity and cold-starts on the
+ * next request. Treating that restart as "everyone has been idle" would sign
+ * out every active user several times a day, at times that track the server's
+ * lifecycle and so look entirely random to them.
+ */
+const PROCESS_STARTED_AT = Date.now();
+
 export const isIdleTimeoutEnabled = (): boolean =>
   IDLE_TIMEOUT_MINUTES > 0 && process.env.NODE_ENV !== 'test';
 
 const redisReady = (): boolean => getRedisStatus() === 'connected' && !!getRedisClient();
+
+/**
+ * True when a missing marker cannot be trusted to mean "idle": there is no
+ * durable store, and this process has not yet been running for long enough to
+ * have watched a full idle window.
+ */
+const inColdStartGrace = (now: number): boolean =>
+  !redisReady() && now - PROCESS_STARTED_AT < IDLE_TIMEOUT_MS;
 
 const pruneMemory = () => {
   if (memoryStore.size < MEMORY_PRUNE_THRESHOLD) return;
@@ -157,7 +187,8 @@ export const evaluateIdleSession = async (
     return true;
   }
 
-  // No marker: either a brand-new session or an expired (idle) one.
+  // No marker: a brand-new session, an expired (idle) one, or a process that
+  // has simply forgotten everyone.
   if (options.allowFreshTokenGrace && typeof options.iatSeconds === 'number') {
     const tokenAgeMs = now - options.iatSeconds * 1000;
     if (tokenAgeMs <= IDLE_TIMEOUT_MS) {
@@ -165,6 +196,27 @@ export const evaluateIdleSession = async (
       await writeMarker(userId, now);
       return true;
     }
+  }
+
+  // Cold-start grace. Until this process has been up for a full idle window it
+  // cannot have observed the window it is being asked to judge, so a missing
+  // marker tells us nothing about this user. Adopt them instead of evicting
+  // them, and let the window run from here.
+  //
+  // The security property survives in steady state: once uptime exceeds the
+  // window, an absent marker really does mean the user was not seen, and the
+  // check bites as designed. What is given up is the first window after a
+  // restart — which is the correct trade, because the alternative is a control
+  // so disruptive that it has to be switched off, and a control that is off
+  // protects nothing at all.
+  if (inColdStartGrace(now)) {
+    logger.info('Idle-session cold-start grace applied', {
+      userId,
+      processUptimeMs: now - PROCESS_STARTED_AT,
+      idleWindowMs: IDLE_TIMEOUT_MS,
+    });
+    await writeMarker(userId, now);
+    return true;
   }
 
   return false;

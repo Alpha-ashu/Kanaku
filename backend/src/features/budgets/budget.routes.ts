@@ -3,6 +3,7 @@ import { authMiddleware } from '../../middleware/auth';
 import { pinGate } from '../../middleware/pinGate';
 import { validateBody, validateParams, validateQuery } from '../../middleware/validate';
 import { requireFeature } from '../../middleware/featureGate';
+import { announceChange } from '../../middleware/announceChange';
 import { idempotency } from '../../middleware/idempotency';
 import { duplicateSubmitGuard } from '../../middleware/duplicateSubmitGuard';
 import * as BudgetController from './budget.controller';
@@ -18,6 +19,9 @@ const router = Router();
 router.use(authMiddleware);
 router.use(pinGate); // financial data requires a live PIN unlock
 router.use(requireFeature('budgetAlerts'));
+// Mirrored into Dexie by featureSyncService rather than the sync engine, so a
+// second device has no other way to learn about this change until it reloads.
+router.use(announceChange('budgets_updated'));
 
 router.get('/', validateQuery(budgetQuerySchema), BudgetController.getBudgets);
 router.post(

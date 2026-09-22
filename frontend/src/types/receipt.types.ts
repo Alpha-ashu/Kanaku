@@ -120,6 +120,26 @@ export interface ReceiptScanResult {
   billId?: string;
   /** Direct or signed download URL */
   downloadUrl?: string | null;
+  /**
+   * Whether the receipt image itself reached the server.
+   *
+   * A scan can return perfectly good extracted figures while the bill failed to
+   * persist — the server treats storing the image as non-fatal so a storage
+   * hiccup does not throw away a reading the user waited for. But that outcome
+   * LOOKS like success: the amounts appear, the user moves on, and the receipt
+   * is simply missing from their bills list later, with nothing having said so.
+   *
+   * `billId` being undefined already implied this; this says it outright so the
+   * UI has something unambiguous to branch on.
+   */
+  billStored?: boolean;
+  /**
+   * Things that went wrong without failing the scan, phrased for the user.
+   *
+   * Populated by the server. Surfaced next to the result rather than swallowed,
+   * so a partial success is visibly partial.
+   */
+  warnings?: string[];
 }
 
 export interface ReceiptScanPayload extends ReceiptScanResult {

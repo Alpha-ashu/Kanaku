@@ -447,6 +447,15 @@ export class CloudReceiptScanService {
           engine: typeof payload.engine === 'string' ? payload.engine : undefined,
           billId: typeof payload.billId === 'string' ? payload.billId : undefined,
           downloadUrl: typeof payload.downloadUrl === 'string' ? payload.downloadUrl : undefined,
+          // Absent on an older server build. Falling back to "did we get an id"
+          // keeps the meaning right rather than defaulting to `true` and
+          // claiming a bill was stored when nothing said so.
+          billStored: typeof payload.billStored === 'boolean'
+            ? payload.billStored
+            : typeof payload.billId === 'string',
+          warnings: Array.isArray(payload.warnings)
+            ? payload.warnings.filter((w: unknown): w is string => typeof w === 'string')
+            : [],
         };
       }
 

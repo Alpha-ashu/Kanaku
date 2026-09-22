@@ -86,6 +86,26 @@ const ensureUserInDb = async (userId: string, userClaims: UserClaims) => {
 // `ParamsFlatDictionary` is Express's own single-valued alternative; fixing
 // the type at its one source (AuthRequest, which nearly every route handler
 // uses) avoids scattering `as string` casts across every controller.
+const isMutationMethod = (method: string): boolean => {
+  return ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method.toUpperCase());
+};
+
+const isExemptMutationPath = (path: string): boolean => {
+  const normalized = (path || '').toLowerCase();
+  return (
+    normalized.includes('/auth/verify-registration-otp') ||
+    normalized.includes('/auth/resend-registration-otp') ||
+    normalized.includes('/auth/verify-later') ||
+    normalized.includes('/auth/logout') ||
+    normalized.includes('/auth/refresh') ||
+    normalized.includes('/pin/verify') ||
+    normalized.includes('/pin/create') ||
+    normalized.includes('/sync/register-device') ||
+    normalized.includes('/devices') ||
+    normalized.includes('/client-errors')
+  );
+};
+
 export interface AuthRequest extends Request<ParamsFlatDictionary> {
   userId?: string;
   user?: {
@@ -97,6 +117,9 @@ export interface AuthRequest extends Request<ParamsFlatDictionary> {
     accountType?: string;
     demoStatus?: string;
     emailVerified?: boolean;
+    status?: string;
+    isVerified?: boolean;
+    isViewOnly?: boolean;
   };
   file?: Express.Multer.File;
 }
@@ -319,9 +342,18 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
         if (isAccountLocked(authSnapshot?.status) || isDemoDisabled(authSnapshot?.accountType, authSnapshot?.demoStatus)) {
           return res.status(403).json({ error: 'Account suspended or disabled. Contact support.', code: 'ACCOUNT_SUSPENDED' });
         }
-        if (authSnapshot && isAccountPending(authSnapshot.status, authSnapshot.emailVerified)) {
-          return res.status(403).json({ error: 'Please verify your email address to access your account.', code: 'EMAIL_NOT_VERIFIED' });
+        if (authSnapshot && (isAccountPending(authSnapshot.status, authSnapshot.emailVerified) || authSnapshot.emailVerified === false)) {
+          // Unverified / View-Only Mode: block mutations to protect records, allow read-only
+          if (isMutationMethod(req.method) && !isExemptMutationPath(req.originalUrl || req.url)) {
+            return res.status(403).json({
+              success: false,
+              error: 'Profile verification required. Your account is in View-Only Mode. Please verify your profile to add or edit records.',
+              code: 'PROFILE_VERIFICATION_REQUIRED',
+            });
+          }
         }
+
+        const isUserVerified = !isAccountPending(authSnapshot?.status, authSnapshot?.emailVerified) && (authSnapshot?.emailVerified !== false);
 
         req.userId = userId;
         req.user = {
@@ -335,6 +367,9 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
           accountType: authSnapshot?.accountType || 'NORMAL',
           demoStatus: authSnapshot?.demoStatus || 'ENABLED',
           emailVerified: authSnapshot?.emailVerified ?? true,
+          status: authSnapshot?.status || (isUserVerified ? 'verified' : 'pending_verification'),
+          isVerified: isUserVerified,
+          isViewOnly: !isUserVerified,
         };
 
         if (!authSnapshot) {
@@ -367,9 +402,17 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
           if (isAccountLocked(authSnapshot?.status) || isDemoDisabled(authSnapshot?.accountType, authSnapshot?.demoStatus)) {
             return res.status(403).json({ error: 'Account suspended or disabled. Contact support.', code: 'ACCOUNT_SUSPENDED' });
           }
-          if (authSnapshot && isAccountPending(authSnapshot.status, authSnapshot.emailVerified)) {
-            return res.status(403).json({ error: 'Please verify your email address to access your account.', code: 'EMAIL_NOT_VERIFIED' });
+          if (authSnapshot && (isAccountPending(authSnapshot.status, authSnapshot.emailVerified) || authSnapshot.emailVerified === false)) {
+            if (isMutationMethod(req.method) && !isExemptMutationPath(req.originalUrl || req.url)) {
+              return res.status(403).json({
+                success: false,
+                error: 'Profile verification required. Your account is in View-Only Mode. Please verify your profile to add or edit records.',
+                code: 'PROFILE_VERIFICATION_REQUIRED',
+              });
+            }
           }
+
+          const isSupabaseUserVerified = !isAccountPending(authSnapshot?.status, authSnapshot?.emailVerified) && (authSnapshot?.emailVerified !== false);
 
           req.userId = userId;
           req.user = {
@@ -384,6 +427,9 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
             accountType: authSnapshot?.accountType || 'NORMAL',
             demoStatus: authSnapshot?.demoStatus || 'ENABLED',
             emailVerified: authSnapshot?.emailVerified ?? true,
+            status: authSnapshot?.status || (isSupabaseUserVerified ? 'verified' : 'pending_verification'),
+            isVerified: isSupabaseUserVerified,
+            isViewOnly: !isSupabaseUserVerified,
           };
           if (!authSnapshot) {
             await ensureUserInDb(userId, req.user);
@@ -412,9 +458,17 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
           if (isAccountLocked(authSnapshot?.status) || isDemoDisabled(authSnapshot?.accountType, authSnapshot?.demoStatus)) {
             return res.status(403).json({ error: 'Account suspended or disabled. Contact support.', code: 'ACCOUNT_SUSPENDED' });
           }
-          if (authSnapshot && isAccountPending(authSnapshot.status, authSnapshot.emailVerified)) {
-            return res.status(403).json({ error: 'Please verify your email address to access your account.', code: 'EMAIL_NOT_VERIFIED' });
+          if (authSnapshot && (isAccountPending(authSnapshot.status, authSnapshot.emailVerified) || authSnapshot.emailVerified === false)) {
+            if (isMutationMethod(req.method) && !isExemptMutationPath(req.originalUrl || req.url)) {
+              return res.status(403).json({
+                success: false,
+                error: 'Profile verification required. Your account is in View-Only Mode. Please verify your profile to add or edit records.',
+                code: 'PROFILE_VERIFICATION_REQUIRED',
+              });
+            }
           }
+
+          const isSbApiUserVerified = !isAccountPending(authSnapshot?.status, authSnapshot?.emailVerified) && (authSnapshot?.emailVerified !== false);
 
           req.userId = user.id;
           req.user = {
@@ -428,6 +482,9 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
             accountType: authSnapshot?.accountType || 'NORMAL',
             demoStatus: authSnapshot?.demoStatus || 'ENABLED',
             emailVerified: authSnapshot?.emailVerified ?? true,
+            status: authSnapshot?.status || (isSbApiUserVerified ? 'verified' : 'pending_verification'),
+            isVerified: isSbApiUserVerified,
+            isViewOnly: !isSbApiUserVerified,
           };
           if (!authSnapshot) {
             await ensureUserInDb(user.id, req.user);
@@ -504,4 +561,21 @@ export const getUserId = (req: AuthRequest): string => {
     throw new Error('User ID not found in request');
   }
   return req.userId;
+};
+
+/**
+ * Middleware: requireVerifiedProfile
+ * Strictly ensures the authenticated user has verified their profile / email before
+ * performing sensitive mutations (adding or editing records).
+ */
+export const requireVerifiedProfile = (req: AuthRequest, res: Response, next: NextFunction) => {
+  const isPending = isAccountPending(req.user?.status, req.user?.emailVerified);
+  if (isPending || req.user?.emailVerified === false || req.user?.isVerified === false) {
+    return res.status(403).json({
+      success: false,
+      error: 'Profile verification required. Your account is in View-Only Mode. Please verify your profile to add or edit records.',
+      code: 'PROFILE_VERIFICATION_REQUIRED',
+    });
+  }
+  next();
 };

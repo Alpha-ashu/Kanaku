@@ -2,6 +2,7 @@ import { prisma } from '../../db/prisma';
 import { logger } from '../../config/logger';
 import { sendEmail } from '../../utils/email';
 import { getSocketManager } from '../../sockets';
+import { reportDegradedWrite } from '../../utils/degradedWrite';
 import { todoRepository } from '../todos/todo.repository';
 import { logInvitationEvent } from '../../utils/invitationLifecycle';
 import { notify, type NotificationTopic } from '../notifications/notify';
@@ -748,7 +749,16 @@ export async function resolveAndDeliverPendingCollaborations(userId: string, ema
         });
       }
     } catch (err) {
-      logger.warn(`Failed to attach deferred collaboration (${p.moduleType}/${p.moduleId}) for user ${userId}`, err);
+      // This runs at SIGNUP, attaching a new user to the modules they were
+      // invited to before they had an account. A silent failure here means they
+      // register, see none of the groups or lists they were invited to, and
+      // nothing anywhere says why — so it is worth knowing when the cause is
+      // structural rather than a one-off.
+      reportDegradedWrite({
+        operation: 'collaboration.attach_deferred',
+        error: err,
+        context: { userId, moduleType: p.moduleType, moduleId: p.moduleId },
+      });
     }
   }
 

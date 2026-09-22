@@ -80,6 +80,48 @@ export function fromPrismaError(error: any): AppError | null {
 }
 
 /**
+ * Is this error the database disagreeing with the schema the client was
+ * generated from — a missing column, a missing table, a query that no longer
+ * type-checks?
+ *
+ * The distinction matters because of how these failures are usually handled.
+ * Non-critical persistence is routinely wrapped in `catch { logger.warn }` so a
+ * transient storage or network blip cannot fail an operation the user already
+ * paid for. That is the right call for a blip, and exactly the wrong call for a
+ * structural error: a missing column fails EVERY time, silently, for every user,
+ * and a warning in a log nobody greps is indistinguishable from silence.
+ *
+ * This is not hypothetical. `CollaborationParticipant.phone` was missing from an
+ * environment for long enough to break every group-expense invitation on it, and
+ * the only trace was a warn line inside createGroup's catch.
+ *
+ * Deliberately narrow. Connectivity (P1001/P1002) is transient and handled by
+ * isDatabaseConnectivityError. Constraint violations (P2002/P2003) are usually
+ * real data conditions — a race, a genuine duplicate — not a schema mismatch, so
+ * they are not treated as structural here.
+ */
+export function isStructuralDatabaseError(error: any): boolean {
+  if (!error) return false;
+
+  const code: string = error?.code ?? '';
+  const name: string = error?.name ?? '';
+  const msg: string = error?.message ?? '';
+
+  // P2021 table missing, P2022 column missing, P2023 inconsistent column data,
+  // P1012 schema validation failure.
+  if (code === 'P2021' || code === 'P2022' || code === 'P2023' || code === 'P1012') {
+    return true;
+  }
+
+  // A query that does not match the schema at all (unknown field or argument).
+  if (name === 'PrismaClientValidationError') return true;
+
+  // Prisma phrases the missing-column case this way, and it survives even when
+  // the error reaches us without its code (wrapped, serialised, re-thrown).
+  return msg.includes('does not exist in the current database');
+}
+
+/**
  * Check whether an error is a database connectivity error.
  */
 export function isDatabaseConnectivityError(error: any): boolean {

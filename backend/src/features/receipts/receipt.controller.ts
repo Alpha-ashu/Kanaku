@@ -12,6 +12,7 @@ import { withCircuitBreaker } from '../../utils/circuitBreaker';
 import { audit } from '../../utils/auditLogger';
 import { prisma } from '../../db/prisma';
 import { getSocketManager } from '../../sockets';
+import { reportDegradedWrite } from '../../utils/degradedWrite';
 
 type JsonMap = Record<string, unknown>;
 
@@ -287,6 +288,11 @@ export const startReceiptScan = async (req: AuthRequest, res: Response) => {
         // Persist the original uploaded file to backend storage and canonical database
         let persistedBillId: string | undefined;
         let persistedDownloadUrl: string | null = null;
+        // Parts of this job that failed without failing the job. The client
+        // needs these: a scan that returns data but stored no bill LOOKS
+        // successful, and the user only discovers the receipt is missing later,
+        // when it is not in their bills list and they cannot tell why.
+        const warnings: string[] = [];
         try {
           const baseName = (file.originalname || 'receipt').replace(/\.[^/.]+$/, '');
           const extension = ocrValidated.extension || 'jpg';
@@ -332,7 +338,16 @@ export const startReceiptScan = async (req: AuthRequest, res: Response) => {
             });
           }
         } catch (saveErr: any) {
-          logger.warn('Failed to persist receipt image to storage/DB', { error: saveErr?.message || saveErr });
+          const kind = reportDegradedWrite({
+            operation: 'receipt.persist_bill',
+            error: saveErr,
+            context: { userId, jobId },
+          });
+          warnings.push(
+            kind === 'structural'
+              ? 'We could not save the receipt image. Your scanned details are below — please re-upload the image later.'
+              : 'We could not save the receipt image this time. Your scanned details are below.',
+          );
         }
 
         // Record the scan itself. This path — the one the app actually uses —
@@ -352,8 +367,13 @@ export const startReceiptScan = async (req: AuthRequest, res: Response) => {
             },
           });
         } catch (dbError: any) {
-          logger.warn('Failed to persist AI scan to DB, continuing anyway', {
-            error: dbError?.message || dbError,
+          // No warning surfaced for this one: AiScan is scan history, not the
+          // user's receipt, so its absence costs them nothing in the moment.
+          // It still must not fail silently when the cause is structural.
+          reportDegradedWrite({
+            operation: 'receipt.persist_ai_scan',
+            error: dbError,
+            context: { userId, jobId, billId: persistedBillId },
           });
         }
 
@@ -370,6 +390,11 @@ export const startReceiptScan = async (req: AuthRequest, res: Response) => {
             source,
             confidence,
             requiresConfirmation: true,
+            // billStored is the honest signal. `billId` being undefined already
+            // implied it, but nothing said so explicitly and the client had no
+            // reason to look.
+            billStored: Boolean(persistedBillId),
+            warnings,
           },
         });
         audit({ event: 'ai.ocr_success', userId, meta: { jobId, billId: persistedBillId, source, confidence } });
@@ -451,7 +476,11 @@ export const scanReceipt = async (req: AuthRequest, res: Response) => {
         },
       });
     } catch (dbError: any) {
-      logger.warn('Failed to persist AI scan to DB, continuing anyway', { error: dbError.message });
+      reportDegradedWrite({
+        operation: 'receipt.persist_ai_scan_sync',
+        error: dbError,
+        context: { userId },
+      });
     }
 
     return res.json({

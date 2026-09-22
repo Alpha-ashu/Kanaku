@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { authMiddleware } from '../../middleware/auth';
 import { pinGate } from '../../middleware/pinGate';
+import { announceChange } from '../../middleware/announceChange';
 import { validateBody, validateParams, validateQuery } from '../../middleware/validate';
 import { idempotency } from '../../middleware/idempotency';
 import { duplicateSubmitGuard } from '../../middleware/duplicateSubmitGuard';
@@ -19,6 +20,10 @@ router.use(authMiddleware);
 // A user's category list is a map of what they spend on — same sensitivity as
 // the financial routers, so it sits behind the same live-PIN unlock.
 router.use(pinGate);
+
+// Mirrored into Dexie by featureSyncService rather than the sync engine, so a
+// second device has no other way to learn about this change until it reloads.
+router.use(announceChange('categories_updated'));
 
 // No requireFeature gate: categories are core taxonomy that transactions,
 // budgets and the importer all depend on, not an optional module.

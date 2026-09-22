@@ -17,7 +17,13 @@ import {
 } from '@/lib/userPreferences';
 import socketClient from '@/lib/socket-client';
 import { compareByRecency } from '@/lib/dateUtils';
-import { relinkBillsToTransactions, syncBills } from '@/services/featureSyncService';
+import {
+  relinkBillsToTransactions,
+  syncBills,
+  syncBudgets,
+  syncCategories,
+  syncRecurringTransactions,
+} from '@/services/featureSyncService';
 import { Capacitor } from '@capacitor/core';
 import { App as CapacitorApp } from '@capacitor/app';
 
@@ -869,6 +875,23 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       });
     });
 
+    // Same story for the other backend-owned mirrors: featureSyncService pulls
+    // them once per session, so without a live signal a budget or category
+    // created on another device stayed invisible here until a reload.
+    const mirrorSyncs = [
+      ['budgets_updated', syncBudgets],
+      ['recurring_updated', syncRecurringTransactions],
+      ['categories_updated', syncCategories],
+    ] as const;
+    const unsubMirrors = mirrorSyncs.map(([event, sync]) =>
+      socketClient.on(event, () => {
+        console.log(`[AppContext] ${event} received via WebSocket — re-syncing`);
+        void Promise.resolve(sync()).catch((err) => {
+          console.warn(`[AppContext] Sync after ${event} failed`, err);
+        });
+      }),
+    );
+
     // Listen for real-time notification events from the backend (friend requests, todo shares, etc.)
     const unsubNotification = socketClient.on('notification', (payload: any) => {
       if (!payload?.id) return;
@@ -884,6 +907,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       unsubGroup();
       unsubTodo();
       unsubBills();
+      unsubMirrors.forEach((off) => off());
       unsubNotification();
     };
   }, [user?.id, isAuthenticated]);

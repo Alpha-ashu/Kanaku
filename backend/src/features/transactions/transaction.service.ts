@@ -6,6 +6,7 @@ import { eventBus } from '../../utils/eventBus';
 import { Prisma } from '../../db/prisma-client';
 import { prisma } from '../../db/prisma';
 import { logger } from '../../config/logger';
+import { reportDegradedWrite } from '../../utils/degradedWrite';
 import { notifyTransactionCreated } from '../notifications/triggers';
 import { add, isPositive, neg, parseMoney, roundMoney, ZERO } from '../../utils/money';
 import { KeysetPage, LIST_PAGE_DEFAULT, LIST_PAGE_MAX, createdAtPosition, sliceKeysetPage } from '../../utils/pagination';
@@ -37,9 +38,18 @@ async function linkBillToTransaction(billId: string, userId: string, transaction
       where: { billId, userId, transactionId: null },
       data: { transactionId },
     });
-  } catch (err: any) {
-    logger.warn('Failed to link expense bill to transaction', {
-      billId, txId: transactionId, error: err?.message || err,
+  } catch (err: unknown) {
+    // Classified rather than warned. A failure here does not break the user's
+    // expense — it is already committed — but it silently severs the
+    // receipt↔expense link, which is the whole point of scanning a receipt. A
+    // schema drift would produce that outcome on EVERY scan while logging one
+    // warn line per occurrence, which is how the CollaborationParticipant.phone
+    // drift went unnoticed. Structural causes are escalated; a transient blip
+    // still just warns.
+    reportDegradedWrite({
+      operation: 'transactions.link_expense_bill',
+      error: err,
+      context: { userId, billId, transactionId },
     });
   }
 }

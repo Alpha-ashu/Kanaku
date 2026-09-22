@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { randomUUID, randomInt } from 'crypto';
 import { AuthService, getCachedUserByEmail, resolveSignupPhoneHold } from './auth.service';
-import { RegisterInput, LoginInput } from './auth.types';
+import { RegisterInput, LoginInput, AuthTokens } from './auth.types';
 import { AuthRequest, invalidateUserSnapshotCache } from '../../middleware/auth';
 import { cacheGetJson, cacheSetJson, cacheDeleteByPrefix, getRedisClient, getRedisStatus } from '../../cache/redis';
 import { sanitize } from '../../utils/sanitize';
@@ -134,6 +134,7 @@ const buildProfilePayload = (
   // withhold email, phone, gender, address, dob, and income until a live PIN
   // unlock exists. No-op when the PIN gate is disabled (pinUnlocked defaults true).
   if (!pinUnlocked) {
+    const isVerifiedUser = Boolean((userRecord?.emailVerified ?? authUser?.emailVerified ?? false) && !isAccountPending(userRecord?.status || authUser?.status, userRecord?.emailVerified ?? authUser?.emailVerified));
     return {
       id: userId,
       name,
@@ -147,6 +148,10 @@ const buildProfilePayload = (
       language: settingsRecord?.language || 'en',
       pinEnabled: pinRecord ? Boolean(pinRecord.isActive) : false,
       pinRequired: true,
+      emailVerified: userRecord?.emailVerified ?? authUser?.emailVerified ?? false,
+      status: userRecord?.status || authUser?.status || (isVerifiedUser ? 'verified' : 'pending_verification'),
+      isVerified: isVerifiedUser,
+      isViewOnly: !isVerifiedUser,
     };
   }
 
@@ -169,7 +174,13 @@ const buildProfilePayload = (
     language: settingsRecord?.language || 'en',
     updatedAt: profileRecord?.updated_at || userRecord?.updatedAt || null,
     pinEnabled: pinRecord ? Boolean(pinRecord.isActive) : false,
+    emailVerified: userRecord?.emailVerified ?? authUser?.emailVerified ?? false,
+    status: userRecord?.status || authUser?.status || 'verified',
   };
+
+  const isProfileVerified = Boolean(payload.emailVerified && !isAccountPending(payload.status, payload.emailVerified));
+  payload.isVerified = isProfileVerified;
+  payload.isViewOnly = !isProfileVerified;
 
   // BUG-15 FIX: Sensitive financial PII fields only included when explicitly requested
   // via ?includePrivate=true — never in default profile payload
@@ -318,6 +329,7 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
     });
 
     let targetUserId: string;
+    let registeredTokens: AuthTokens;
 
     if (existingUser) {
       if (existingUser.emailVerified && existingUser.status !== 'pending_verification') {
@@ -328,7 +340,7 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
       }
       // If user exists but is unverified, update credentials so they can proceed with OTP verification
       const hashedPassword = await bcrypt.hash(input.password, 12);
-      await prisma.user.update({
+      const updatedUser = await prisma.user.update({
         where: { id: existingUser.id },
         data: {
           name: sanitizedName,
@@ -338,6 +350,7 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
         },
       });
       targetUserId = existingUser.id;
+      registeredTokens = generateTokens(updatedUser);
     } else {
       const sanitizedInput = {
         ...input,
@@ -346,8 +359,8 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
         emailVerified: false,
         status: 'pending_verification',
       };
-      const tokens = await authService.register(sanitizedInput);
-      targetUserId = tokens.user.id;
+      registeredTokens = await authService.register(sanitizedInput);
+      targetUserId = registeredTokens.user.id;
     }
 
     // Send RBI-compliant secure 6-digit OTP
@@ -384,6 +397,17 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
         requireOtp: true,
         expiresIn: otpResult.expiresIn || 120,
         retryAfter: 30,
+        accessToken: registeredTokens.accessToken,
+        user: {
+          id: targetUserId,
+          email: sanitizedEmail,
+          name: sanitizedName,
+          role: 'user',
+          emailVerified: false,
+          status: 'pending_verification',
+          isVerified: false,
+          isViewOnly: true,
+        },
         code: process.env.NODE_ENV !== 'production' ? otpResult.code : undefined,
       },
     });
@@ -1102,6 +1126,14 @@ export const updateProfile = async (req: AuthRequest, res: Response, next: NextF
     if (!req.userId) {
       logger.warn('[AuthController] Update profile failed: Unauthorized (no userId in request)');
       return next(AppError.unauthorized());
+    }
+
+    if (req.user?.emailVerified === false || isAccountPending(req.user?.status, req.user?.emailVerified)) {
+      return res.status(403).json({
+        success: false,
+        error: 'Profile verification required. Your profile is currently in View-Only Mode. Please verify your profile to edit details.',
+        code: 'PROFILE_VERIFICATION_REQUIRED',
+      });
     }
 
     const sanitizedData = Object.fromEntries(
