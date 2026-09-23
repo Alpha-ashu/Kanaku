@@ -10,6 +10,9 @@ const envSchema = z.object({
   // REDIS_* / BULLMQ_* env vars anymore.
   JWT_SECRET: z.string().min(32).optional(),
   SUPABASE_JWT_SECRET: z.string().min(1).optional(),
+  SUPABASE_URL: z.string().url().optional(),
+  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional(),
+  SUPABASE_STORAGE_BUCKET: z.string().default('expense-bills'),
   // Auth source of truth. 'custom' = backend-issued JWT (default, current behavior).
   // 'supabase' = Supabase Auth canonical (Option A) — only flip after users are
   // migrated and validated in staging.
@@ -240,6 +243,20 @@ const CONFIG_MANIFEST: readonly ConfigItem[] = [
     purpose: 'PostgreSQL connection (Prisma) — the system of record',
     services: ALL,
     tier: () => 'required', // always, every environment
+  },
+  {
+    key: 'SUPABASE_URL',
+    group: 'Storage',
+    purpose: 'Supabase URL for persistent cloud storage of bills, receipts, and vault documents',
+    services: ALL,
+    tier: (e) => (e === 'production' ? 'required' : 'recommended'),
+  },
+  {
+    key: 'SUPABASE_SERVICE_ROLE_KEY',
+    group: 'Storage',
+    purpose: 'Service role key for server-side Supabase storage operations (vault files, receipts, bills)',
+    services: ALL,
+    tier: (e) => (e === 'production' ? 'required' : 'recommended'),
   },
   {
     key: 'JWT_SECRET',

@@ -41,6 +41,8 @@ export const verifyStorageBucket = async () => {
     const { error } = await client.storage.getBucket(STORAGE_BUCKET);
     if (error) {
       console.error(`[Storage] Bucket "${STORAGE_BUCKET}" is unusable (${error.message}) — every attachment upload will fail. Check SUPABASE_STORAGE_BUCKET.`);
+    } else {
+      console.log(`[Storage] Verified cloud storage bucket "${STORAGE_BUCKET}" successfully.`);
     }
   } catch (err: any) {
     console.error(`[Storage] Could not verify bucket "${STORAGE_BUCKET}": ${err?.message ?? err}`);
@@ -51,7 +53,7 @@ export const uploadBuffer = async (filePath: string, buffer: Buffer, contentType
   try {
     const client = getStorageClient();
     if (!client) {
-      throw new Error('Supabase client not configured');
+      throw new Error('Supabase client not configured (SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY missing)');
     }
     const { error } = await client.storage
       .from(STORAGE_BUCKET)
@@ -64,19 +66,14 @@ export const uploadBuffer = async (filePath: string, buffer: Buffer, contentType
     if (error) {
       throw error;
     }
+    return;
   } catch (err: any) {
     if (process.env.NODE_ENV === 'production') {
       console.error(`[Storage] Production cloud storage upload failed for ${filePath}:`, err?.message ?? err);
       throw new Error(`Persistent cloud storage unavailable: ${err?.message ?? 'Upload failed'}`);
     }
-    console.warn(`Supabase storage upload failed for ${filePath}: ${err?.message ?? err}. Falling back to local disk storage.`);
+    console.warn(`[Storage] Supabase storage upload failed for ${filePath}: ${err?.message ?? err}. Falling back to local disk storage.`);
     // Local directory fallback.
-    //
-    // `filePath` is assembled by callers from user-influenced material (uploaded
-    // filenames, ids), so it is treated as untrusted here rather than trusting
-    // every call site to have sanitised it. path.join() happily resolves `..`
-    // segments, so without this check a crafted value would write outside
-    // uploads/ — arbitrary file write on the server.
     const localDir = pathLib.join(process.cwd(), 'uploads');
     const fullPath = pathLib.resolve(localDir, filePath);
     const containment = localDir.endsWith(pathLib.sep) ? localDir : localDir + pathLib.sep;
@@ -121,7 +118,7 @@ export const createSignedUrl = async (filePath: string, expiresIn = SIGNED_URL_T
   try {
     const client = getStorageClient();
     if (!client) {
-      throw new Error('Supabase client not configured');
+      throw new Error('Supabase client not configured (SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY missing)');
     }
     const { data, error } = await client.storage
       .from(STORAGE_BUCKET)
@@ -135,7 +132,7 @@ export const createSignedUrl = async (filePath: string, expiresIn = SIGNED_URL_T
   } catch (err: any) {
     // Callers treat null as "no URL" and fall back to streaming, so this is the
     // only place the storage error is visible.
-    console.warn(`Supabase signed URL failed for ${filePath}: ${err?.message ?? err}`);
+    console.warn(`[Storage] Supabase signed URL failed for ${filePath}: ${err?.message ?? err}`);
     return null;
   }
 };
@@ -162,13 +159,17 @@ export const downloadBuffer = async (
     const client = getStorageClient();
     if (client) {
       const { data, error } = await client.storage.from(STORAGE_BUCKET).download(filePath);
-      if (!error && data) {
+      if (error) {
+        console.warn(`[Storage] Supabase download error for ${filePath}: ${error.message}`);
+      } else if (data) {
         const arrayBuffer = await data.arrayBuffer();
         return { buffer: Buffer.from(arrayBuffer), contentType: data.type };
       }
+    } else {
+      console.warn(`[Storage] getStorageClient returned null while downloading ${filePath} — check SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY`);
     }
-  } catch {
-    // Fall back to local disk
+  } catch (err: any) {
+    console.warn(`[Storage] Exception downloading ${filePath} from Supabase:`, err?.message ?? err);
   }
 
   // 2. Try local disk fallback
