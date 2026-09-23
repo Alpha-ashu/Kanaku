@@ -68,6 +68,16 @@ const seedUser = (id: string, email: string, name: string) =>
 const eventsFor = (userId: string) =>
   mockEmitted.filter((e) => e.userId === userId && e.event === 'group_expense_updated');
 
+/**
+ * Two code paths emit `group_expense_updated`: this fan-out, with `{ groupId }`,
+ * and the invitation service, generically for any module, with `{ id }`. Both
+ * reach the same payload-agnostic client handler (AppContext just re-syncs), but
+ * the invitation one fires first during creation — so picking events[0] asserted
+ * against the wrong emitter.
+ */
+const fanoutEventsFor = (userId: string) =>
+  eventsFor(userId).filter((e) => typeof e.payload?.groupId === 'string');
+
 describe('Group expense realtime fan-out', () => {
   let creatorToken: string;
   let groupId: string;
@@ -116,7 +126,7 @@ describe('Group expense realtime fan-out', () => {
 
     // Regression #1: this was zero before the fix.
     expect(eventsFor(REGISTERED_ID).length).toBeGreaterThan(0);
-    expect(eventsFor(REGISTERED_ID)[0].payload).toEqual({ groupId });
+    expect(fanoutEventsFor(REGISTERED_ID)[0]?.payload).toEqual({ groupId });
 
     // Regression #3: the writer does not re-sync itself.
     expect(eventsFor(CREATOR_ID)).toHaveLength(0);
