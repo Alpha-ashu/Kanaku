@@ -18,6 +18,7 @@ import {
   deleteVaultFile,
   ALLOWED_MIME_TYPES,
   MAX_VAULT_FILE_SIZE,
+  isVaultEncryptionConfigured,
 } from './vault.storage';
 import {
   authorizeDocumentAccess,
@@ -931,14 +932,60 @@ export class VaultService {
     });
     if (!doc) throw AppError.notFound('Document not found');
 
-    // Decrypt in server memory
-    const decryptedBuffer = await fetchDecryptedVaultFile(
-      doc.userId,
-      doc.id,
-      doc.storagePath,
-      doc.isEncrypted,
-      doc.currentVersion > 1 ? [`${doc.id}_v${doc.currentVersion}`] : [],
-    );
+    // Decrypt in server memory.
+    //
+    // Both failures below used to escape as a bare Error, which the error
+    // handler turns into a 500 INTERNAL_ERROR — the literal "Something went
+    // wrong" users reported when opening a vault document, with nothing to
+    // distinguish "the file is gone" from "we cannot decrypt it" and no code the
+    // client could act on. They are different problems with different fixes, so
+    // they get different answers.
+    let decryptedBuffer: Buffer;
+    try {
+      decryptedBuffer = await fetchDecryptedVaultFile(
+        doc.userId,
+        doc.id,
+        doc.storagePath,
+        doc.isEncrypted,
+        // Versions written before 2026-09-20 were bound to `<id>_v<n>`; the
+        // initial upload always used the plain document id, so a v1 document
+        // needs no legacy candidate.
+        doc.currentVersion > 1 ? [`${doc.id}_v${doc.currentVersion}`] : [],
+      );
+    } catch (err) {
+      const detail = err instanceof Error ? err.message : String(err);
+      const missingFromStorage = /not found in storage/i.test(detail);
+
+      logger.error('VAULT_FILE_UNREADABLE', {
+        documentId: doc.id,
+        ownerId: doc.userId,
+        actorId,
+        storagePath: doc.storagePath,
+        currentVersion: doc.currentVersion,
+        reason: missingFromStorage ? 'missing_from_storage' : 'decrypt_failed',
+        // The single most useful fact when a decrypt fails: whether this server
+        // is even holding a real key. Without one the vault falls back to a
+        // publicly known development key, so files written on a host that HAD a
+        // key cannot be opened here, and vice versa.
+        encryptionKeyConfigured: isVaultEncryptionConfigured(),
+        detail,
+      });
+
+      if (missingFromStorage) {
+        throw new AppError(
+          404,
+          'VAULT_FILE_MISSING',
+          'This document is no longer available in storage. Please re-upload it.',
+        );
+      }
+
+      throw new AppError(
+        500,
+        'VAULT_DECRYPTION_FAILED',
+        'We could not open this document — its stored file could not be decrypted. Please contact support and quote the reference in this message.',
+        false,
+      );
+    }
 
     await recordVaultAuditLog({
       ownerId: doc.userId,

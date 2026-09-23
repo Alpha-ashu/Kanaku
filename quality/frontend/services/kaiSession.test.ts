@@ -61,13 +61,16 @@ const deps = (): Partial<KaiSessionDeps> & { execute: ReturnType<typeof vi.fn>; 
   rememberActions: vi.fn(),
   storage: null,
   completedHoldMs: 0,
+  // Speech is buffered before it is understood (utteranceAggregator); these
+  // windows keep the suite fast while still exercising that path.
+  aggregator: { pauseMs: 5, continuationMs: 10, maxHoldMs: 80 },
 });
 
 const settled = (session: KaiSession) =>
   vi.waitFor(() => {
     const s = session.getSnapshot();
     expect(s.queueLength).toBe(0);
-    expect(['idle', 'listening']).toContain(s.state);
+    expect(['idle', 'listening', 'awaiting_confirmation']).toContain(s.state);
   });
 
 describe('KaiSession', () => {
@@ -266,8 +269,8 @@ describe('KaiSession', () => {
     listenerCallbacks!.onPartial('spent 2000');
     expect(session.getSnapshot().liveTranscript).toBe('spent 2000');
     listenerCallbacks!.onFinal('spent 2000 on petrol');
+    await vi.waitFor(() => expect(session.getSnapshot().actions[0]?.status).toBe('saved'));
     await settled(session);
-    expect(session.getSnapshot().actions[0].status).toBe('saved');
     expect(session.getSnapshot().state).toBe('listening');
 
     await session.toggleListening();

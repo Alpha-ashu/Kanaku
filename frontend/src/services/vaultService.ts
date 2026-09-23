@@ -1,4 +1,6 @@
-import { apiClient, TokenManager } from '@/lib/api';
+import { apiClient, TokenManager, refreshAccessToken } from '@/lib/api';
+import { getSessionId } from '@/lib/clientErrorReporter';
+import { downloadFile } from '@/lib/download';
 import { buildApiUrl, getConfiguredApiBase } from '@/lib/apiBase';
 import { awaitPinUnlock, getPinUnlockToken } from '@/lib/pinUnlockCoordinator';
 import {
@@ -20,13 +22,27 @@ import {
  * document LIST went through apiClient and recovered, so the vault looked fine
  * until you opened a document: the owner could sign in on a second device, see
  * their files, and get "something went wrong" on every one of them.
+ *
+ * The same shape of bug remained for EXPIRED ACCESS TOKENS. Access tokens last
+ * 15 minutes; apiClient answers a 401 by refreshing and replaying the request,
+ * which is why the rest of the app never shows it. This path did not, so the
+ * first document opened more than 15 minutes into a session failed with a
+ * dead-end "something went wrong" — while the document list beside it, served
+ * through apiClient, kept working. That asymmetry is what made it look like the
+ * FILES were broken rather than the session.
  */
 const buildVaultFileHeaders = (): Record<string, string> => {
   const token = TokenManager.getAccessToken();
   const pinToken = getPinUnlockToken();
   const vaultToken = getVaultUnlockToken();
 
-  const headers: Record<string, string> = {};
+  const headers: Record<string, string> = {
+    // Groups these requests with the rest of the session in the backend logs.
+    // apiClient sends it on every call; this path builds its own headers, so it
+    // has to add it too or vault failures are the one thing that cannot be
+    // correlated with the session that produced them.
+    'X-Session-Id': getSessionId(),
+  };
   if (token) headers['Authorization'] = `Bearer ${token}`;
   if (pinToken) headers['X-Pin-Unlock'] = pinToken;
   if (vaultToken) headers['X-Vault-Unlock'] = vaultToken;
@@ -38,6 +54,17 @@ const fetchVaultFile = async (path: string, failureMessage: string): Promise<Res
 
   let res = await fetch(url, { headers: buildVaultFileHeaders() });
   captureVaultUnlockToken(res);
+
+  if (res.status === 401) {
+    // Expired access token. Refresh and replay exactly once — the same thing
+    // apiClient does for every other request. Headers are rebuilt so the replay
+    // carries the NEW token; reusing the originals would resend the expired one.
+    const refreshed = await refreshAccessToken();
+    if (refreshed) {
+      res = await fetch(url, { headers: buildVaultFileHeaders() });
+      captureVaultUnlockToken(res);
+    }
+  }
 
   if (res.status === 403) {
     const firstError = await res.clone().json().catch(() => ({} as Record<string, unknown>));
@@ -321,14 +348,25 @@ export const vaultService = {
     const res = await fetchVaultFile(`/vault/documents/${id}/download`, 'Failed to download document');
 
     const blob = await res.blob();
-    const blobUrl = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = blobUrl;
-    link.download = originalFileName || 'document';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    setTimeout(() => window.URL.revokeObjectURL(blobUrl), 10000);
+    const filename = originalFileName || 'document';
+
+    // Hand off to the shared helper rather than doing the blob-URL + <a download>
+    // dance inline. That dance is a NO-OP inside the Capacitor WebView — the tap
+    // did nothing at all on Android and iOS, with no error to explain it — which
+    // is exactly what lib/download.ts exists to handle: on native it writes the
+    // file to app storage and opens the system share sheet, and on web it still
+    // performs an ordinary download.
+    //
+    // preferShare:false keeps web behaviour a plain download; the helper
+    // deliberately ignores that flag on native, where the share sheet is the
+    // only way the user can reach a file written to app-private storage.
+    await downloadFile({
+      filename,
+      mimeType: res.headers.get('Content-Type') || 'application/octet-stream',
+      data: blob,
+      preferShare: false,
+      shareTitle: filename,
+    });
   },
 
   previewDocument: async (id: string): Promise<{ objectUrl: string; contentType: string; cleanup: () => void }> => {

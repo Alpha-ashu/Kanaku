@@ -9,6 +9,10 @@ export interface KaiSessionApi extends KaiSessionSnapshot {
   toggleListening: () => Promise<void>;
   stop: () => Promise<void>;
   submitText: (text: string) => void;
+  /** Write a held draft (the card's Confirm button). */
+  confirmAction: (actionId: string) => Promise<void>;
+  /** Drop a held draft without writing it. */
+  cancelAction: (actionId: string) => Promise<void>;
   answerClarification: (actionId: string, optionIndex: number) => Promise<void>;
   editAction: (actionId: string, patch: KaiEntityPatch) => Promise<void>;
   retryAction: (actionId: string) => Promise<void>;
@@ -18,15 +22,26 @@ export interface KaiSessionApi extends KaiSessionSnapshot {
   setMuted: (muted: boolean) => void;
 }
 
-export function useKaiSession(): KaiSessionApi {
+export interface UseKaiSessionOptions {
+  /** Where an utterance that is conversation, not capture, should be answered. */
+  onConversation?: (transcript: string) => void;
+}
+
+export function useKaiSession(options: UseKaiSessionOptions = {}): KaiSessionApi {
   const session = useMemo(() => getKaiSession(), []);
   const snapshot = useSyncExternalStore(session.subscribe, session.getSnapshot, session.getSnapshot);
   const { user } = useAuth();
   const { refreshData } = useApp();
+  const { onConversation } = options;
 
   useEffect(() => {
     session.setUserId(user?.id);
   }, [session, user?.id]);
+
+  useEffect(() => {
+    session.setConversationHandler(onConversation);
+    return () => session.setConversationHandler(undefined);
+  }, [session, onConversation]);
 
   useEffect(() => {
     // Let the rest of the app (dashboard, transactions) pick up Kai's records.
@@ -44,6 +59,8 @@ export function useKaiSession(): KaiSessionApi {
     toggleListening: () => session.toggleListening(),
     stop: () => session.stop(),
     submitText: (text) => session.submitText(text),
+    confirmAction: (id) => session.confirmAction(id),
+    cancelAction: (id) => session.cancelAction(id),
     answerClarification: (id, i) => session.answerClarification(id, i),
     editAction: (id, patch) => session.editAction(id, patch),
     retryAction: (id) => session.retryAction(id),

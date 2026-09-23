@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Capacitor } from '@capacitor/core';
 import { createPortal } from 'react-dom';
 import { motion } from 'framer-motion';
 import {
@@ -32,6 +33,21 @@ const formatDate = (dateString?: string): string => {
   const month = String(d.getMonth() + 1).padStart(2, '0');
   const year = d.getFullYear();
   return `${day}/${month}/${year}`;
+};
+
+/**
+ * Can this device render a PDF inside an <iframe>?
+ *
+ * Everywhere except the Android WebView, which has no built-in PDF renderer and
+ * silently shows a blank frame instead. Capacitor's iOS WebView and every
+ * desktop/mobile browser handle it.
+ */
+export const supportsInlinePdfPreview = (): boolean => {
+  try {
+    return !(Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android');
+  } catch {
+    return true; // not running under Capacitor — an ordinary browser
+  }
 };
 
 export const VaultDocumentPreviewModal: React.FC<VaultDocumentPreviewModalProps> = ({
@@ -99,6 +115,13 @@ export const VaultDocumentPreviewModal: React.FC<VaultDocumentPreviewModalProps>
 
   const isImage = contentType.startsWith('image/');
   const isPdf = contentType === 'application/pdf';
+  // Android's WebView ships no PDF viewer, so an <iframe> pointed at a PDF
+  // renders an empty white box there — the document decrypted and arrived
+  // perfectly, and the user simply saw nothing, with no error to explain it.
+  // iOS (WKWebView) and desktop browsers render it fine. Where it cannot be
+  // shown inline, fall through to the same open/save path used for formats the
+  // browser was never going to render.
+  const canShowPdfInline = isPdf && supportsInlinePdfPreview();
   const fileExt = (doc?.originalFileName?.split('.').pop() || 'PDF').toUpperCase();
 
   const modalContent = (
@@ -179,7 +202,7 @@ export const VaultDocumentPreviewModal: React.FC<VaultDocumentPreviewModalProps>
                     className="max-h-full max-w-full object-contain rounded-2xl shadow-sm border border-slate-200/80 bg-white"
                   />
                 </div>
-              ) : isPdf ? (
+              ) : canShowPdfInline ? (
                 <iframe
                   src={previewUrl}
                   title={doc?.title || 'PDF Preview'}
@@ -192,17 +215,19 @@ export const VaultDocumentPreviewModal: React.FC<VaultDocumentPreviewModalProps>
                     <FileText className="w-7 h-7" />
                   </div>
                   <h4 className="text-sm font-bold text-slate-900 mb-1">
-                    Preview Not Supported
+                    {isPdf ? 'Open in your PDF viewer' : 'Preview Not Supported'}
                   </h4>
                   <p className="text-xs text-slate-500 mb-4 font-medium">
-                    This file format can be downloaded to view on your device.
+                    {isPdf
+                      ? 'This device cannot display PDFs inside the app. Your document is ready — open it with your usual PDF app.'
+                      : 'This file format can be downloaded to view on your device.'}
                   </p>
                   <button
                     type="button"
                     onClick={handleDownload}
                     className="h-10 px-4 rounded-xl text-xs sm:text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-sm shadow-blue-500/20 transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer"
                   >
-                    <Download className="w-4 h-4" /> Download File
+                    <Download className="w-4 h-4" /> {isPdf ? 'Open Document' : 'Download File'}
                   </button>
                 </div>
               )

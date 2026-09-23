@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronLeft,
@@ -26,6 +26,7 @@ import {
 } from './ai/ChatActionCard';
 import { NLQService, QueryResult } from '@/services/nlqService';
 import { KaiScreen } from './kai/KaiScreen';
+import { kaiVoiceContext } from '@/services/kai/kaiSession';
 import { getKaiSession } from '@/services/kai/kaiSession';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { toast } from 'sonner';
@@ -168,6 +169,19 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
 
   // ─── Chat (text) mode ────────────────────────────────────────────────────────
 
+  /**
+   * Spoken words that are conversation rather than capture move here: the page
+   * switches to chat and the question is asked with the chat's own history, so
+   * a long answer is read rather than only spoken. Cards from the voice
+   * session stay on the voice screen, which the header switch returns to.
+   */
+  // Held in a ref so the handler Kai keeps is stable across renders.
+  const executeQueryRef = useRef<((text: string) => Promise<void>) | undefined>(undefined);
+  const handleVoiceConversation = useCallback((transcript: string) => {
+    setMode('chat');
+    void executeQueryRef.current?.(transcript);
+  }, []);
+
   const executeQuery = async (queryText: string) => {
     const text = queryText.trim();
     if (!text || isLoading) return;
@@ -202,7 +216,9 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
       /breakdown|where.*money|spending|category|categories|budget/i.test(text);
 
     try {
-      const result = await NLQService.executeQuery(text, conversationIdRef.current);
+      // The voice session's recent cards travel with the question, so "was that
+      // too much?" asked after speaking still knows what "that" was.
+      const result = await NLQService.executeQuery(text, conversationIdRef.current, kaiVoiceContext());
       if (result.conversationId && result.conversationId !== conversationIdRef.current) {
         conversationIdRef.current = result.conversationId;
         try {
@@ -262,6 +278,8 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
       setIsLoading(false);
     }
   };
+
+  executeQueryRef.current = executeQuery;
 
   const handleSend = () => {
     if (!inputText.trim()) return;
@@ -437,7 +455,7 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
       </header>
 
       {mode === 'voice' ? (
-        <KaiScreen />
+        <KaiScreen onConversation={handleVoiceConversation} />
       ) : (
         <motion.div
           key="chat-mode"

@@ -166,7 +166,23 @@ const RECORD_INTENT_TO_TYPE: Record<string, string> = {
 
 const TASK_TYPES: ChatTaskType[] = ['create_goal', 'create_budget', 'add_todo', 'create_recurring'];
 
-function buildClassificationPrompt(message: string, history: ChatMessage[]): string {
+/**
+ * The Kai voice session's recent cards, sent by the client when a spoken
+ * question is handed to chat. It is user-supplied text like the message
+ * itself: capped at five short lines and sanitised before it reaches a prompt.
+ */
+export function voiceContextLines(raw: unknown): string[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter((line): line is string => typeof line === 'string' && line.trim().length > 0)
+    .slice(0, 5)
+    .map((line) => sanitizeAIInput(line.trim().slice(0, 120)).sanitized);
+}
+
+const voiceBlock = (spoken: string[]): string =>
+  spoken.length > 0 ? `\nJUST RECORDED BY VOICE (newest last):\n${spoken.map((l) => `  - ${l}`).join('\n')}\n` : '';
+
+function buildClassificationPrompt(message: string, history: ChatMessage[], spoken: string[] = []): string {
   const historyStr = history
     .slice(-4)
     .map((m) => `${m.role}: ${m.content.slice(0, 300)}`)
@@ -178,7 +194,7 @@ numerically: "5k"/"5 hazaar" → 5000, "2 lakh" → 200000, "dedh sau" → 150.
 
 CONVERSATION HISTORY (last turns):
 ${historyStr || '(none)'}
-
+${voiceBlock(spoken)}
 USER MESSAGE: "${message}"
 TODAY: ${TODAY()}
 
@@ -470,8 +486,9 @@ export function classifyOffline(message: string): ClassifiedIntent {
 async function classifyIntent(
   message: string,
   history: ChatMessage[],
+  spoken: string[] = [],
 ): Promise<{ classified: ClassifiedIntent; parser: ChatParser }> {
-  const result = await completeWithLLM(buildClassificationPrompt(message, history), { json: true, maxTokens: 512 });
+  const result = await completeWithLLM(buildClassificationPrompt(message, history, spoken), { json: true, maxTokens: 512 });
   if (result) {
     try {
       const parsed = JSON.parse(stripJsonFence(result.text));
@@ -616,7 +633,13 @@ specific stock, fund house, insurer or lender. If the question needs a professio
 specifics, legal, insurance claims), say so in one line. End with one line offering a concrete
 follow-up the app can do (a budget, a goal, a reminder). Do not use headings or tables.`;
 
-async function handleAdvice(userId: string, c: ClassifiedIntent, message: string, history: ChatMessage[]): Promise<Handled & { parserOverride?: ChatParser }> {
+async function handleAdvice(
+  userId: string,
+  c: ClassifiedIntent,
+  message: string,
+  history: ChatMessage[],
+  spoken: string[] = [],
+): Promise<Handled & { parserOverride?: ChatParser }> {
   const snapshot = await buildFinancialSnapshot(userId);
   const question = clean(c.question) ?? message;
   const historyStr = history.slice(-4).map((m) => `${m.role}: ${m.content.slice(0, 300)}`).join('\n');
@@ -625,7 +648,7 @@ ${snapshotForPrompt(snapshot)}
 
 RECENT CONVERSATION:
 ${historyStr || '(none)'}
-
+${voiceBlock(spoken)}
 TODAY: ${TODAY()}
 QUESTION: ${question}`;
 
@@ -701,9 +724,10 @@ const HELP_REPLY = `I'm your Kanaku assistant. Try:
 
 export const handleChatMessage = async (req: AuthRequest, res: Response): Promise<void> => {
   const userId = getUserId(req);
-  const { message, conversationId: incomingConvId } = req.body as {
+  const { message, conversationId: incomingConvId, voiceContext } = req.body as {
     message?: string;
     conversationId?: string;
+    voiceContext?: unknown;
   };
 
   if (!message || typeof message !== 'string' || !message.trim()) {
@@ -728,6 +752,10 @@ export const handleChatMessage = async (req: AuthRequest, res: Response): Promis
     ? incomingConvId.trim().slice(0, 80)
     : `${userId}-${Date.now()}`;
   const history = getContext(userId, conversationId);
+  // What the Kai voice session just recorded, so a question asked right after
+  // speaking resolves against it. Client-supplied text: bounded and sanitised
+  // like any other prompt input.
+  const spoken = voiceContextLines(voiceContext);
 
   audit({ event: 'ai.chat_request', userId, meta: { conversationId } });
 
@@ -735,7 +763,7 @@ export const handleChatMessage = async (req: AuthRequest, res: Response): Promis
   let parser: ChatParser = 'offline';
 
   try {
-    const { classified, parser: usedParser } = await classifyIntent(cleanMessage, history);
+    const { classified, parser: usedParser } = await classifyIntent(cleanMessage, history, spoken);
     parser = usedParser;
 
     if (Object.prototype.hasOwnProperty.call(RECORD_INTENT_TO_TYPE, classified.intent)) {
@@ -745,7 +773,7 @@ export const handleChatMessage = async (req: AuthRequest, res: Response): Promis
     } else if (classified.intent === 'overview') {
       payload = await handleOverview(userId);
     } else if (classified.intent === 'advice') {
-      const { parserOverride, ...rest } = await handleAdvice(userId, classified, cleanMessage, history);
+      const { parserOverride, ...rest } = await handleAdvice(userId, classified, cleanMessage, history, spoken);
       payload = rest;
       if (parserOverride) parser = parserOverride;
     } else if (classified.intent === 'task') {

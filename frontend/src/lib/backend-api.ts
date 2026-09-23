@@ -1505,6 +1505,8 @@ class BackendService {
   async sendAIChatMessage(
     message: string,
     conversationId?: string,
+    /** What the voice session just did, so a question asked after speaking has that context. */
+    voiceContext?: string[],
   ): Promise<{
     conversationId: string;
     reply: string;
@@ -1526,7 +1528,11 @@ class BackendService {
     requiresConfirmation: boolean;
     parser: 'gemini' | 'openlux' | 'xkiro' | 'groq' | 'openrouter' | 'offline';
   }> {
-    const response = await this.api.post('/ai/chat', { message, conversationId }, { timeout: AI_REQUEST_TIMEOUT_MS });
+    const response = await this.api.post(
+      '/ai/chat',
+      { message, conversationId, ...(voiceContext?.length ? { voiceContext } : {}) },
+      { timeout: AI_REQUEST_TIMEOUT_MS },
+    );
     return response.data;
   }
 

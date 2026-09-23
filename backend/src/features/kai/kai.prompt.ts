@@ -112,6 +112,10 @@ RULES
 7. Small talk / thanks with no financial content → return {"actions":[]}. But ANY question about the user's
    money, spending, budgets, goals, loans, balances or reports is a query action — never an empty list.
 8. confidence < 0.6 on a money kind → make it a clarify instead.
+9. NAMES ARE PEOPLE, NOT RECORDS. A statement that is only names ("G Joe, Arun, Amala"), only an amount, or
+   only a fragment is never its own record. If SESSION CONTEXT has a recent action, it belongs to that one
+   → update_previous with the names as members (or the amount as amount). With no recent action, ask with a
+   clarify. Never emit one action per name.
 
 CATEGORIES (exact strings): Expenses: "Food & Dining", "Transport", "Housing", "Shopping", "Health",
 "Entertainment", "Bills & Utilities", "Groceries", "Education", "Travel". Income: "Salary", "Freelance",

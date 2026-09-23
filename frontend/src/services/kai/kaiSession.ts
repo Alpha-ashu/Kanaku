@@ -4,15 +4,24 @@
  * renders as cards.
  *
  *   idle ─tap─► listening ⇄ processing → executing → completed ─► listening
+ *                                     ↘ awaiting_confirmation ─confirm─► executing
  *          ◄─tap─ stopping (drains the queue, says the wrap-up)
  *
- * Utterances are processed one at a time, in order, so a correction always
- * sees the record it refers to. Corrections, clarification answers and card
- * edits all flow through `applyUpdate`, so voice and touch share one path.
+ * Speech reaches the session as whole requests, not as engine chunks: the
+ * listener's finals go through an `UtteranceAggregator` that holds them until
+ * the sentence is finished (see utteranceAggregator.ts). Utterances are then
+ * processed one at a time, in order, so a correction always sees the record it
+ * refers to. Corrections, clarification answers and card edits all flow
+ * through `applyUpdate`, so voice and touch share one path.
+ *
+ * A reading that splits money between people, carries several records or that
+ * Kai is unsure of is held as a `draft` and confirmed first; everything else
+ * still saves as it is spoken.
  */
 import type { KaiAction, KaiEntityPatch, KaiSessionContext } from '@kanaku/shared';
 import { VoiceContextStore } from '@/services/voiceContextStore';
 import { KaiListener, type KaiListenerCallbacks } from './kaiListener';
+import { UtteranceAggregator, isFragment, joinChunks, type AggregatorOptions } from './utteranceAggregator';
 import { understandUtterance, type UnderstandResult } from './kaiUnderstandService';
 import {
   actionOutflow,
@@ -24,10 +33,17 @@ import {
 } from './kaiActionExecutor';
 import { isKaiMuted, speak } from './kaiSpeech';
 import {
+  actionAmount,
   applyPatch,
+  classifyConfirmationReply,
+  confirmationPrompt,
   describeAction,
+  formatInr,
   isRecordKind,
+  looksConversational,
+  needsConfirmation,
   toContextAction,
+  type ConfirmationPolicy,
   type KaiActionKind,
   type KaiExecutedAction,
   type KaiState,
@@ -37,6 +53,12 @@ export interface KaiPendingClarification {
   actionId: string;
   question: string;
   options: string[];
+}
+
+/** Drafts from one request, waiting for confirm / edit / cancel. */
+export interface KaiPendingConfirmation {
+  actionIds: string[];
+  question: string;
 }
 
 export interface KaiSessionSnapshot {
@@ -53,6 +75,11 @@ export interface KaiSessionSnapshot {
   offline: boolean;
   error?: string;
   pending?: KaiPendingClarification;
+  confirmation?: KaiPendingConfirmation;
+  /** The request the current drafts came from — an addition re-reads it with the new words. */
+  draftSource?: string;
+  /** Kai asked "anything else?" and is waiting: "no" ends the session. */
+  awaitingFollowUp?: boolean;
   savedCount: number;
   muted: boolean;
   wrapUp?: string;
@@ -73,8 +100,16 @@ export interface KaiSessionDeps {
   refreshContext: () => Promise<{ knownGoals: string[]; knownContacts: string[] }>;
   rememberActions: (actions: KaiExecutedAction[]) => void;
   onRecordsChanged?: () => void;
+  /** An utterance that is conversation rather than capture — the screen moves it into chat. */
+  onConversation?: (transcript: string, say?: string) => void;
   storage?: Pick<Storage, 'getItem' | 'setItem' | 'removeItem'> | null;
   completedHoldMs?: number;
+  aggregator?: AggregatorOptions;
+  confirmationPolicy?: ConfirmationPolicy;
+  /** Quiet time after a save before Kai asks whether there is anything else. 0 disables. */
+  followUpMs?: number;
+  /** How long a "no" still counts as the answer to that question. */
+  followUpAnswerMs?: number;
 }
 
 const STORAGE_KEY = 'KANAKU_kai_session';
@@ -121,7 +156,27 @@ const newId = () =>
     ? crypto.randomUUID()
     : `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 10)}`;
 
+const envNumber = (value: unknown): number | undefined => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
+};
+
+/**
+ * How long Kai waits mid-sentence is a feel decision, not a constant to guess
+ * once: a slower speaker needs a longer window. Defaults live in
+ * utteranceAggregator.ts; these override them per build.
+ */
+const aggregatorFromEnv = (): AggregatorOptions => {
+  const env = (typeof import.meta !== 'undefined' ? import.meta.env : undefined) as Record<string, string> | undefined;
+  return {
+    pauseMs: envNumber(env?.VITE_KAI_PAUSE_MS),
+    continuationMs: envNumber(env?.VITE_KAI_CONTINUATION_MS),
+    maxHoldMs: envNumber(env?.VITE_KAI_MAX_HOLD_MS),
+  };
+};
+
 const defaultDeps = (): KaiSessionDeps => ({
+  aggregator: aggregatorFromEnv(),
   understand: understandUtterance,
   execute: executeKaiAction,
   update: updateKaiAction,
@@ -153,13 +208,16 @@ export class KaiSession {
   private draining = false;
   private stopping = false;
   private completedTimer: ReturnType<typeof setTimeout> | null = null;
+  private followUpTimer: ReturnType<typeof setTimeout> | null = null;
   private userId: string | undefined;
   /** Account the stored cards belong to — they must never surface for another one. */
   private ownerId: string | undefined;
   private known: { knownGoals: string[]; knownContacts: string[] } = { knownGoals: [], knownContacts: [] };
+  private readonly aggregator: UtteranceAggregator;
 
   constructor(deps: Partial<KaiSessionDeps> = {}) {
     this.deps = { ...defaultDeps(), ...deps };
+    this.aggregator = new UtteranceAggregator((text) => this.enqueue(text), this.deps.aggregator);
     this.snapshot = this.restore();
   }
 
@@ -193,6 +251,15 @@ export class KaiSession {
     this.deps.onRecordsChanged = handler;
   }
 
+  /**
+   * Called when an utterance is conversation rather than capture, so the screen
+   * can move it into the chat window where a long answer is readable. Without a
+   * handler Kai just says there was nothing to record.
+   */
+  setConversationHandler(handler?: (transcript: string, say?: string) => void): void {
+    this.deps.onConversation = handler;
+  }
+
   private set(patch: Partial<KaiSessionSnapshot>): void {
     this.snapshot = { ...this.snapshot, ...patch };
     this.persist();
@@ -222,14 +289,20 @@ export class KaiSession {
       const actions = Array.isArray(stored.actions)
         ? stored.actions.map((a) => (a.status === 'saving' ? { ...a, status: 'failed' as const, error: 'Interrupted — tap retry' } : a))
         : [];
+      const drafts = actions.filter((a) => a.status === 'draft');
       return {
         ...base,
         sessionId: stored.sessionId || base.sessionId,
         seq: stored.seq ?? 0,
         actions,
+        draftSource: stored.draftSource,
         savedCount: actions.filter((a) => a.status === 'saved').length,
         pending: actions.find((a) => a.status === 'pending' && a.kind === 'clarify')
           ? this.pendingFrom(actions.filter((a) => a.status === 'pending' && a.kind === 'clarify').slice(-1)[0])
+          : undefined,
+        // Drafts were never written, so a reload must still ask before saving them.
+        confirmation: drafts.length > 0
+          ? { actionIds: drafts.map((a) => a.actionId), question: confirmationPrompt(drafts.map((a) => a.summary)) }
           : undefined,
       };
     } catch {
@@ -244,6 +317,7 @@ export class KaiSession {
         sessionId: this.snapshot.sessionId,
         seq: this.snapshot.seq,
         actions: this.snapshot.actions,
+        draftSource: this.snapshot.draftSource,
       }));
     } catch {
       // ignore — per-viewer convenience only
@@ -279,8 +353,13 @@ export class KaiSession {
       // context is best-effort
     }
     this.listener = this.deps.createListener({
-      onPartial: (text) => this.set({ liveTranscript: text }),
-      onFinal: (text) => this.enqueue(text),
+      // What is on screen is everything held so far plus the words being spoken,
+      // so a buffered sentence never looks lost while Kai waits for the rest.
+      onPartial: (text) => this.set({ liveTranscript: joinChunks(this.aggregator.buffered, text) }),
+      onFinal: (text) => {
+        this.aggregator.push(text);
+        this.set({ liveTranscript: this.aggregator.buffered });
+      },
       onEngineState: (listening) => this.set({ engineListening: listening }),
       onFatal: (_reason, message) => {
         this.listener = null;
@@ -296,16 +375,24 @@ export class KaiSession {
       return;
     }
     this.stopping = true;
+    this.clearFollowUp();
     this.set({ state: 'stopping', liveTranscript: '' });
     const listener = this.listener;
     this.listener = null;
     if (listener) await listener.end();
+    // Anything still buffered was said before the tap — process it, don't drop it.
+    this.aggregator.flush();
     await this.drain();
     const saved = this.snapshot.actions.filter((a) => a.status === 'saved').length;
-    const wrapUp = saved > 0
+    const waiting = this.drafts().length;
+    const savedLine = saved > 0
       ? `Done. I've saved ${saved} update${saved === 1 ? '' : 's'}. Your records are up to date.`
       : "Okay, I've stopped listening.";
-    this.set({ state: 'idle', engineListening: false, wrapUp, lastSay: wrapUp });
+    // Drafts were never written — say so rather than implying everything is filed.
+    const wrapUp = waiting > 0
+      ? `${savedLine} ${waiting} ${waiting === 1 ? 'entry is' : 'entries are'} still waiting for your confirmation.`
+      : savedLine;
+    this.set({ state: waiting > 0 ? 'awaiting_confirmation' : 'idle', engineListening: false, wrapUp, lastSay: wrapUp });
     await this.say(wrapUp);
     this.stopping = false;
   }
@@ -314,20 +401,27 @@ export class KaiSession {
   submitText(text: string): void {
     const trimmed = text.trim();
     if (!trimmed) return;
+    // Typing ends whatever was being said, and keeps the spoken part first.
+    this.aggregator.flush();
     this.enqueue(trimmed);
   }
 
   clear(): void {
     this.queue = [];
+    this.aggregator.reset();
+    this.clearFollowUp();
     this.set({
       sessionId: newId(),
       seq: 0,
       actions: [],
       savedCount: 0,
       pending: undefined,
+      confirmation: undefined,
+      draftSource: undefined,
       wrapUp: undefined,
       lastSay: '',
       lastTranscript: '',
+      liveTranscript: '',
       error: undefined,
       state: this.listener?.isActive ? 'listening' : 'idle',
     });
@@ -380,8 +474,42 @@ export class KaiSession {
 
   private async handleUtterance(text: string): Promise<void> {
     this.clearCompletedTimer();
+    const answeringFollowUp = this.snapshot.awaitingFollowUp === true;
+    this.clearFollowUp();
     const seq = this.snapshot.seq + 1;
-    this.set({ state: 'processing', seq, lastTranscript: text, error: undefined });
+    this.set({ state: 'processing', seq, lastTranscript: text, error: undefined, liveTranscript: '' });
+
+    // A draft on screen owns the next words unless they are a fresh request:
+    // "yes" saves it, "no" drops it, and names or "add Preeti" belong to it.
+    if (this.drafts().length > 0) {
+      switch (classifyConfirmationReply(text, isFragment)) {
+        case 'confirm':
+          await this.confirmDrafts();
+          return;
+        case 'cancel':
+          await this.cancelDrafts();
+          return;
+        case 'amend':
+          await this.amendDrafts(text, seq);
+          return;
+        default:
+          break;
+      }
+    } else if (answeringFollowUp) {
+      // "Anything else?" — "no" finishes the session, "yes" just keeps the mic open.
+      const reply = classifyConfirmationReply(text, isFragment);
+      if (reply === 'cancel') {
+        await this.stop();
+        return;
+      }
+      if (reply === 'confirm') {
+        const say = 'Go ahead.';
+        this.set({ lastSay: say });
+        await this.say(say);
+        await this.finishUtterance();
+        return;
+      }
+    }
 
     let understood: UnderstandResult;
     try {
@@ -398,33 +526,52 @@ export class KaiSession {
     this.set({ parser: understood.parser, offline: understood.offline });
 
     if (understood.actions.length === 0) {
+      // Nothing to record and nothing to look up: a question belongs in the
+      // chat window where a long answer can be read. A greeting stays here.
+      if (this.deps.onConversation && looksConversational(text)) {
+        this.deps.onConversation(text);
+        const say = 'Let me answer that in chat.';
+        this.set({ lastSay: say });
+        await this.say(say);
+        await this.finishUtterance();
+        return;
+      }
       const say = 'Nothing to record there — go ahead whenever you\'re ready.';
       this.set({ lastSay: say });
       await this.finishUtterance();
       return;
     }
 
+    const recordsInUtterance = understood.actions.filter((a) => isRecordKind(a.kind)).length;
     const touched: KaiExecutedAction[] = [];
     for (const action of understood.actions) {
-      const result = await this.handleAction(action, seq);
+      const result = await this.handleAction(action, seq, { recordsInUtterance, source: text });
       if (result) touched.push(result);
     }
+    await this.announceDrafts();
 
     const saved = touched.filter((a) => a.status === 'saved');
     if (saved.length > 0) {
       this.deps.rememberActions(saved);
       this.deps.onRecordsChanged?.();
+      this.scheduleFollowUp();
     }
     await this.finishUtterance();
   }
 
   private listenerState(): KaiState {
     if (this.stopping) return 'stopping';
+    if (this.drafts().length > 0) return 'awaiting_confirmation';
     return this.listener?.isActive ? 'listening' : 'idle';
   }
 
   private async finishUtterance(): Promise<void> {
     if (this.stopping) return;
+    // A draft is still on screen: stay in the question, don't flash "Done".
+    if (this.drafts().length > 0) {
+      this.set({ state: 'awaiting_confirmation' });
+      return;
+    }
     this.set({ state: 'completed', savedCount: this.snapshot.actions.filter((a) => a.status === 'saved').length });
     const hold = this.deps.completedHoldMs ?? 1200;
     await new Promise<void>((resolve) => {
@@ -439,6 +586,48 @@ export class KaiSession {
       clearTimeout(this.completedTimer);
       this.completedTimer = null;
     }
+  }
+
+  // ─── Follow-up ──────────────────────────────────────────────────────────────
+
+  /**
+   * After something is saved the session keeps listening, and silence is
+   * ambiguous: the user may be thinking, or may be done. Rather than guess, Kai
+   * asks once — and a "no" then ends the session instead of being heard as a
+   * correction. Only asked aloud, so a muted session never waits on an answer
+   * the user never heard.
+   */
+  private scheduleFollowUp(): void {
+    this.clearFollowUp();
+    const wait = this.deps.followUpMs ?? 7000;
+    if (wait <= 0 || this.stopping || !this.listener?.isActive || this.deps.isMuted()) return;
+    this.followUpTimer = setTimeout(() => { void this.askFollowUp(); }, wait);
+  }
+
+  private async askFollowUp(): Promise<void> {
+    this.followUpTimer = null;
+    // Mid-sentence is the one moment not to ask: words already buffered, or a
+    // partial on screen, mean the user is still talking.
+    const speaking = this.aggregator.buffered.trim().length > 0 || this.snapshot.liveTranscript.trim().length > 0;
+    const busy = speaking || this.queue.length > 0 || this.draining || this.drafts().length > 0;
+    if (busy || this.stopping || !this.listener?.isActive) return;
+    const say = 'Anything else?';
+    this.set({ awaitingFollowUp: true, lastSay: say });
+    await this.say(say);
+    // A "no" ten minutes later is about something else, not this question.
+    const window = this.deps.followUpAnswerMs ?? 20_000;
+    this.followUpTimer = setTimeout(() => {
+      this.followUpTimer = null;
+      if (this.snapshot.awaitingFollowUp) this.set({ awaitingFollowUp: false });
+    }, window);
+  }
+
+  private clearFollowUp(): void {
+    if (this.followUpTimer) {
+      clearTimeout(this.followUpTimer);
+      this.followUpTimer = null;
+    }
+    if (this.snapshot.awaitingFollowUp) this.set({ awaitingFollowUp: false });
   }
 
   // ─── Actions ────────────────────────────────────────────────────────────────
@@ -463,7 +652,11 @@ export class KaiSession {
     };
   }
 
-  private async handleAction(action: KaiAction, seq: number): Promise<KaiExecutedAction | null> {
+  private async handleAction(
+    action: KaiAction,
+    seq: number,
+    utterance: { recordsInUtterance: number; source: string } = { recordsInUtterance: 1, source: '' },
+  ): Promise<KaiExecutedAction | null> {
     if (action.kind === 'query') {
       const answered = this.shell(action, seq, 'answered');
       this.upsertAction(answered);
@@ -497,9 +690,130 @@ export class KaiSession {
     }
 
     if (isRecordKind(action.kind)) {
+      if (needsConfirmation(action, {
+        recordsInUtterance: utterance.recordsInUtterance,
+        policy: this.deps.confirmationPolicy,
+      })) {
+        return this.holdForConfirmation(action, seq, utterance.source);
+      }
       return this.runRecord(action, seq);
     }
     return null;
+  }
+
+  // ─── Drafts awaiting confirmation ───────────────────────────────────────────
+
+  private drafts(): KaiExecutedAction[] {
+    return this.snapshot.actions.filter((a) => a.status === 'draft');
+  }
+
+  /** Show the reading as a card and wait; nothing is written yet. */
+  private holdForConfirmation(action: KaiAction, seq: number, source: string): KaiExecutedAction {
+    const draft = this.shell(action, seq, 'draft');
+    this.upsertAction(draft);
+    this.set({ state: 'awaiting_confirmation', draftSource: source || action.rawSegment });
+    return draft;
+  }
+
+  /** One question for everything this request produced, asked after the last card is on screen. */
+  private async announceDrafts(): Promise<void> {
+    const drafts = this.drafts();
+    if (drafts.length === 0) return;
+    const question = confirmationPrompt(drafts.map((d) => d.summary));
+    this.set({
+      confirmation: { actionIds: drafts.map((d) => d.actionId), question },
+      state: 'awaiting_confirmation',
+      lastSay: question,
+    });
+    await this.say(question);
+  }
+
+  /** Write every held draft, in the order it was understood. */
+  async confirmDrafts(): Promise<void> {
+    const drafts = this.drafts();
+    if (drafts.length === 0) return;
+    this.set({ confirmation: undefined, draftSource: undefined });
+    const saved: KaiExecutedAction[] = [];
+    for (const draft of drafts) {
+      const result = await this.runRecord(this.toAction(draft), draft.utteranceSeq, draft);
+      if (result.status === 'saved') saved.push(result);
+    }
+    if (saved.length > 0) {
+      this.deps.rememberActions(saved);
+      this.deps.onRecordsChanged?.();
+      this.scheduleFollowUp();
+    }
+    await this.finishUtterance();
+  }
+
+  async cancelDrafts(): Promise<void> {
+    const drafts = this.drafts();
+    if (drafts.length === 0) return;
+    const ids = new Set(drafts.map((d) => d.actionId));
+    const actions = this.snapshot.actions.filter((a) => !ids.has(a.actionId));
+    const say = "Okay, I haven't saved that.";
+    this.set({ actions, confirmation: undefined, draftSource: undefined, lastSay: say });
+    await this.say(say);
+    // "No" to a draft only refused that entry. Asking again gives the user the
+    // plain way to end the session, since the same word does both jobs.
+    this.scheduleFollowUp();
+    await this.finishUtterance();
+  }
+
+  /**
+   * More words for the request on screen — the rest of a list of names, or a
+   * correction. The whole request is read again with the new words so the model
+   * re-decides what it is; the first draft keeps its actionId, which is what
+   * the idempotency keys are derived from.
+   */
+  private async amendDrafts(text: string, seq: number): Promise<void> {
+    const drafts = this.drafts();
+    const combined = joinChunks(this.snapshot.draftSource ?? drafts[0]?.rawSegment ?? '', text);
+
+    let understood: UnderstandResult;
+    try {
+      understood = await this.deps.understand({
+        transcript: combined,
+        sessionId: this.snapshot.sessionId,
+        utteranceSeq: seq,
+        context: this.buildContext(),
+      });
+    } catch (err) {
+      this.set({ state: 'awaiting_confirmation', error: err instanceof Error ? err.message : 'Kai could not process that.' });
+      return;
+    }
+    this.set({ parser: understood.parser, offline: understood.offline });
+
+    const records = understood.actions.filter((a) => isRecordKind(a.kind));
+    if (records.length === 0) {
+      const say = "I didn't catch that — say yes to save it, or tell me what to change.";
+      this.set({ state: 'awaiting_confirmation', lastSay: say });
+      await this.say(say);
+      return;
+    }
+
+    const kept = new Set(drafts.map((d) => d.actionId));
+    const remaining = this.snapshot.actions.filter((a) => !kept.has(a.actionId));
+    const rebuilt = records.map((action, index) => this.shell(
+      { ...action, actionId: drafts[index]?.actionId ?? action.actionId, rawSegment: combined },
+      drafts[index]?.utteranceSeq ?? seq,
+      'draft',
+    ));
+    this.set({ actions: [...remaining, ...rebuilt], draftSource: combined });
+    await this.announceDrafts();
+  }
+
+  /** A stored card back to the action shape the executor takes. */
+  private toAction(draft: KaiExecutedAction): KaiAction {
+    return {
+      actionId: draft.actionId,
+      kind: draft.kind,
+      rawSegment: draft.rawSegment,
+      entities: draft.entities,
+      confidence: draft.confidence,
+      requiresReview: false,
+      say: draft.say,
+    };
   }
 
   private async executionContext(action: Pick<KaiAction, 'kind' | 'entities' | 'rawSegment'>): Promise<ExecutionContext> {
@@ -568,6 +882,25 @@ export class KaiSession {
    * update a saved record, or retry a failed one with the corrected values.
    */
   private async applyUpdate(target: KaiExecutedAction, patch: KaiEntityPatch, say?: string): Promise<KaiExecutedAction | null> {
+    // Editing a draft changes what will be written — it does not write it.
+    if (target.status === 'draft') {
+      const edited = applyPatch(this.toAction(target), patch);
+      const next: KaiExecutedAction = {
+        ...target,
+        ...edited,
+        status: 'draft',
+        summary: describeAction(edited),
+      };
+      this.upsertAction(next);
+      this.set({
+        confirmation: {
+          actionIds: this.drafts().map((d) => d.actionId),
+          question: confirmationPrompt(this.drafts().map((d) => d.summary)),
+        },
+      });
+      return next;
+    }
+
     if (target.status === 'pending') {
       const draftPatch = target.entities.patch;
       const draftEntities = omitKeys(target.entities, ['question', 'options', 'patch']);
@@ -621,6 +954,42 @@ export class KaiSession {
 
   // ─── Card interactions ──────────────────────────────────────────────────────
 
+  /** Confirm button on a draft card: write that one. */
+  async confirmAction(actionId: string): Promise<void> {
+    const draft = this.snapshot.actions.find((a) => a.actionId === actionId && a.status === 'draft');
+    if (!draft) return;
+    this.set({ confirmation: this.confirmationFor(this.drafts().filter((d) => d.actionId !== actionId)) });
+    const result = await this.runRecord(this.toAction(draft), draft.utteranceSeq, draft);
+    if (result.status === 'saved') {
+      this.deps.rememberActions([result]);
+      this.deps.onRecordsChanged?.();
+      this.scheduleFollowUp();
+    }
+    if (this.drafts().length === 0) this.set({ draftSource: undefined });
+    this.set({ state: this.listenerState() });
+  }
+
+  /** Cancel button on a draft card: drop that one, keep any others. */
+  async cancelAction(actionId: string): Promise<void> {
+    const draft = this.snapshot.actions.find((a) => a.actionId === actionId && a.status === 'draft');
+    if (!draft) return;
+    const actions = this.snapshot.actions.filter((a) => a.actionId !== actionId);
+    const remaining = actions.filter((a) => a.status === 'draft');
+    this.set({
+      actions,
+      confirmation: this.confirmationFor(remaining),
+      draftSource: remaining.length > 0 ? this.snapshot.draftSource : undefined,
+      state: this.listenerState(),
+    });
+    if (remaining.length === 0) this.scheduleFollowUp();
+  }
+
+  private confirmationFor(drafts: KaiExecutedAction[]): KaiPendingConfirmation | undefined {
+    return drafts.length > 0
+      ? { actionIds: drafts.map((d) => d.actionId), question: confirmationPrompt(drafts.map((d) => d.summary)) }
+      : undefined;
+  }
+
   async answerClarification(actionId: string, optionIndex: number): Promise<void> {
     const target = this.snapshot.actions.find((a) => a.actionId === actionId);
     const option = target?.entities.options?.[optionIndex];
@@ -659,13 +1028,17 @@ export class KaiSession {
     }
     if (this.snapshot.pending?.actionId === actionId) this.set({ pending: undefined });
     const actions = this.snapshot.actions.filter((a) => a.actionId !== actionId);
-    this.set({ actions, savedCount: actions.filter((a) => a.status === 'saved').length });
+    this.set({
+      actions,
+      savedCount: actions.filter((a) => a.status === 'saved').length,
+      confirmation: this.confirmationFor(actions.filter((a) => a.status === 'draft')),
+    });
   }
 
   dismissAction(actionId: string): void {
     if (this.snapshot.pending?.actionId === actionId) this.set({ pending: undefined });
     const actions = this.snapshot.actions.filter((a) => a.actionId !== actionId);
-    this.set({ actions });
+    this.set({ actions, confirmation: this.confirmationFor(actions.filter((a) => a.status === 'draft')) });
   }
 
   // ─── Speech ─────────────────────────────────────────────────────────────────
@@ -687,6 +1060,23 @@ let instance: KaiSession | null = null;
 export function getKaiSession(): KaiSession {
   if (!instance) instance = new KaiSession();
   return instance;
+}
+
+/**
+ * What the voice session has just done, in one line each, for the chat window
+ * to carry over. Without it, a question asked straight after speaking ("was
+ * that too much?") arrives in chat with no idea what "that" was.
+ */
+export function kaiVoiceContext(limit = 5): string[] {
+  const { actions } = getKaiSession().getSnapshot();
+  return actions
+    .filter((a) => a.status !== 'deleted' && a.kind !== 'clarify')
+    .slice(-limit)
+    .map((a) => {
+      const amount = actionAmount(a);
+      const state = a.status === 'saved' ? 'saved' : a.status === 'draft' ? 'waiting for confirmation' : a.status;
+      return `${a.summary}${amount ? ` ${formatInr(amount)}` : ''} (${state})`;
+    });
 }
 
 /** Test/reset hook — replaces the shared session. */

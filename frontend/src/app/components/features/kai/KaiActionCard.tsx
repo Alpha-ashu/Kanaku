@@ -115,9 +115,17 @@ export const KaiActionCard: React.FC<Props> = ({ action, currency, accounts, onC
   const [isWipingOut, setIsWipingOut] = useState(false);
   const busy = action.status === 'saving';
   const failed = action.status === 'failed';
+  /** Understood but not written yet — Confirm is what saves it. */
+  const draft = action.status === 'draft';
   const rows = detailRows(action, currency, accounts).filter((row) => row.value);
 
   const handleConfirm = () => {
+    // A draft is saved by the session, and the card becomes the saved card —
+    // it must not slide away as if it were already filed.
+    if (draft) {
+      onConfirm?.(action);
+      return;
+    }
     setIsConfirmed(true);
     toast.success(`${action.summary} confirmed and saved.`);
     setIsWipingOut(true);
@@ -145,9 +153,10 @@ export const KaiActionCard: React.FC<Props> = ({ action, currency, accounts, onC
     >
       <div
         className={`rounded-[18px] border bg-white/95 backdrop-blur-md shadow-[0_4px_16px_-8px_rgba(112,144,176,0.16)] p-2.5 sm:p-3 transition-all ${
-          failed ? 'border-rose-200' : 'border-purple-100/60'
+          failed ? 'border-rose-200' : draft ? 'border-amber-300' : 'border-purple-100/60'
         }`}
         data-testid="kai-action-card"
+        data-status={action.status}
       >
         <div className="flex items-center justify-between gap-2">
           <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-purple-700 min-w-0">
@@ -166,6 +175,11 @@ export const KaiActionCard: React.FC<Props> = ({ action, currency, accounts, onC
           )}
           {failed && (
             <span className="px-2 py-0.5 rounded-full bg-rose-50 text-[10px] font-bold text-rose-700 shrink-0">Not saved</span>
+          )}
+          {draft && (
+            <span className="px-2 py-0.5 rounded-full bg-amber-50 text-[10px] font-bold text-amber-700 shrink-0 border border-amber-200/70">
+              Check this
+            </span>
           )}
         </div>
 
@@ -221,7 +235,7 @@ export const KaiActionCard: React.FC<Props> = ({ action, currency, accounts, onC
                     : 'text-white bg-gradient-to-tr from-[#8B5CF6] to-[#7C3AED] hover:from-[#7C3AED] hover:to-[#6D28D9] shadow-md shadow-purple-500/25'
                 }`}
               >
-                <Check size={12} strokeWidth={2.8} /> {isConfirmed ? 'Confirmed' : 'Confirm'}
+                <Check size={12} strokeWidth={2.8} /> {isConfirmed ? 'Confirmed' : draft ? 'Confirm & save' : 'Confirm'}
               </button>
 
               <button
@@ -234,16 +248,17 @@ export const KaiActionCard: React.FC<Props> = ({ action, currency, accounts, onC
                 <Pencil size={11} /> Edit
               </button>
 
+              {/* Nothing is written for a draft, so dropping it needs no second tap. */}
               <button
                 type="button"
                 disabled={busy}
-                onClick={() => setConfirmingDelete(true)}
+                onClick={() => (draft ? onDelete(action) : setConfirmingDelete(true))}
                 data-testid="kai-action-delete-button"
                 className="inline-flex items-center justify-center gap-1.5 h-8 sm:h-8.5 px-2.5 rounded-full text-xs font-bold bg-slate-100 text-slate-600 hover:bg-rose-50 hover:text-rose-700 transition-colors cursor-pointer active:scale-95 disabled:opacity-40 shrink-0"
-                title="Delete transaction"
-                aria-label="Delete transaction"
+                title={draft ? 'Cancel this entry' : 'Delete transaction'}
+                aria-label={draft ? 'Cancel this entry' : 'Delete transaction'}
               >
-                <Trash2 size={11} /> Delete
+                <Trash2 size={11} /> {draft ? 'Cancel' : 'Delete'}
               </button>
             </div>
           )}

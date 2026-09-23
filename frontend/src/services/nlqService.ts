@@ -58,10 +58,10 @@ export const NLQService = {
    * @param query          - Raw user message / question
    * @param conversationId - Optional conversation ID for multi-turn context
    */
-  async executeQuery(query: string, conversationId?: string): Promise<QueryResult> {
+  async executeQuery(query: string, conversationId?: string, voiceContext?: string[]): Promise<QueryResult> {
     // ── Backend-first path ────────────────────────────────────────────────────
     try {
-      const chatResponse = await backendService.sendAIChatMessage(query, conversationId);
+      const chatResponse = await backendService.sendAIChatMessage(query, conversationId, voiceContext);
 
       return {
         answer: chatResponse.reply,

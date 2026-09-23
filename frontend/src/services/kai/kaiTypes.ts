@@ -21,7 +21,8 @@ export type RecordRef =
   /** Budgets are keyed by a string id in Dexie. */
   | { table: 'budgets'; budgetId: string; owned?: boolean };
 
-export type KaiActionStatus = 'pending' | 'saving' | 'saved' | 'failed' | 'deleted' | 'answered';
+/** `draft` is understood but not written yet — it is waiting for the user to confirm. */
+export type KaiActionStatus = 'draft' | 'pending' | 'saving' | 'saved' | 'failed' | 'deleted' | 'answered';
 
 export interface KaiExecutedAction extends KaiAction {
   status: KaiActionStatus;
@@ -39,6 +40,8 @@ export type KaiState =
   | 'listening'
   | 'processing'
   | 'executing'
+  /** a draft is on screen and Kai is waiting for confirm / edit / cancel */
+  | 'awaiting_confirmation'
   | 'completed'
   | 'stopping'
   | 'error';
@@ -140,6 +143,87 @@ export function toContextAction(a: KaiExecutedAction): KaiContextAction {
     date: a.entities.date ?? a.entities.targetDate ?? a.entities.dueDate,
     status: a.status === 'saved' ? 'saved' : 'pending',
   };
+}
+
+// ─── Confirmation ─────────────────────────────────────────────────────────────
+
+/**
+ * When a reading is shown for confirmation instead of being written straight
+ * away. A plain, confident "spent 200 on coffee" still saves itself — that is
+ * what voice capture is for — but anything that splits money between people,
+ * carries several records at once, or that Kai is unsure about is worth one
+ * look first, because undoing a wrong group split means unpicking every share.
+ */
+export interface ConfirmationPolicy {
+  /** Records at or above this amount are always confirmed first. */
+  amountCeiling: number;
+  /** Below this model confidence, confirm first. */
+  minConfidence: number;
+}
+
+export const DEFAULT_CONFIRMATION_POLICY: ConfirmationPolicy = {
+  amountCeiling: 10_000,
+  minConfidence: 0.8,
+};
+
+export function needsConfirmation(
+  action: Pick<KaiAction, 'kind' | 'entities' | 'confidence' | 'requiresReview'>,
+  options: { recordsInUtterance?: number; policy?: ConfirmationPolicy } = {},
+): boolean {
+  const policy = options.policy ?? DEFAULT_CONFIRMATION_POLICY;
+  if (!isRecordKind(action.kind)) return false;
+  if (action.requiresReview) return true;
+  if (action.kind === 'group_expense' && (action.entities.members?.length ?? 0) > 0) return true;
+  if ((options.recordsInUtterance ?? 1) > 1) return true;
+  if (action.confidence < policy.minConfidence) return true;
+  // The ceiling is about money leaving or arriving. A goal target or a budget
+  // limit is a number to aim at, not a payment, so a big one is not a risk.
+  if (!isMoneyKind(action.kind)) return false;
+  return (actionAmount(action) ?? 0) >= policy.amountCeiling;
+}
+
+/** What Kai says (and the card asks) while a draft waits. */
+export const confirmationPrompt = (summaries: string[]): string =>
+  summaries.length === 1
+    ? `I understood this as ${summaries[0]}. Shall I save it?`
+    : `I understood ${summaries.length} entries: ${joinNames(summaries)}. Shall I save them?`;
+
+const AFFIRMATION = /^(?:yes|yeah|yep|yup|ya|sure|correct|right|confirm(?:ed|\sit)?|save(?:\sit|\sthat)?|go\sahead|ok(?:ay)?|haan?|ha|theek\shai|sahi)\b[\s.!]*$/i;
+const NEGATION = /^(?:no|nope|nah|cancel(?:\sit|\sthat)?|discard|don'?t(?:\ssave)?|delete(?:\sit|\sthat)?|wrong|not\sright|nahi+n?)\b[\s.!]*$/i;
+/** "add Preeti also", "actually make it 4,500" — changes to the draft on screen. */
+const AMENDMENT = /^(?:add|also|include|plus|and|with|aur)\b|\b(?:actually|instead|change|make\sit|correction|not\s\d)\b/i;
+
+/** Greetings and thanks: nothing to record, and nothing worth opening chat for. */
+const PLEASANTRY = /^(?:hi|hey|hello|yo|namaste|thanks?|thank you|thank u|shukriya|good (?:morning|evening|night)|bye|goodbye|nothing|never ?mind)\b[\s.!]*$/i;
+/** Asks for an opinion, an explanation or a plan — an answer to read, not a record. */
+const CONVERSATIONAL = /\?|^(?:how|what|why|when|which|should|can|could|would|do|does|is|are|tell|explain|suggest|help|give me|advice|any (?:tips|idea))\b/i;
+
+/**
+ * Whether an utterance that produced no records deserves the chat window. A
+ * greeting does not: moving the user out of voice capture for "hi" would be
+ * worse than saying nothing.
+ */
+export function looksConversational(text: string): boolean {
+  const trimmed = text.trim();
+  if (!trimmed || PLEASANTRY.test(trimmed)) return false;
+  return CONVERSATIONAL.test(trimmed) || trimmed.split(/\s+/).length >= 4;
+}
+
+export type ConfirmationReply = 'confirm' | 'cancel' | 'amend' | 'unrelated';
+
+/**
+ * How an utterance relates to the draft on screen. Anything that is not an
+ * answer, an addition or a correction is a fresh request: the draft stays put
+ * rather than swallowing the next sentence.
+ */
+export function classifyConfirmationReply(text: string, isFragment: (t: string) => boolean): ConfirmationReply {
+  const trimmed = text.trim();
+  if (!trimmed) return 'unrelated';
+  if (AFFIRMATION.test(trimmed)) return 'confirm';
+  if (NEGATION.test(trimmed)) return 'cancel';
+  if (AMENDMENT.test(trimmed)) return 'amend';
+  // A bare name or name list right after a draft is the rest of that request.
+  return isFragment(trimmed) ? 'amend' : 'unrelated';
 }
 
 /** Merge a correction/clarification patch into an action's entities (and kind). */

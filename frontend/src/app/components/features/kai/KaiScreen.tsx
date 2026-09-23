@@ -18,6 +18,7 @@ const ORB_STATE: Record<KaiState, AIOrbState> = {
   listening: 'listening',
   processing: 'processing',
   executing: 'executing',
+  awaiting_confirmation: 'completed',
   completed: 'completed',
   stopping: 'processing',
   error: 'idle',
@@ -56,10 +57,15 @@ const toTurns = (actions: KaiExecutedAction[]): Turn[] => {
   return turns;
 };
 
-export const KaiScreen: React.FC = () => {
+export interface KaiScreenProps {
+  /** Called with an utterance that is conversation rather than capture. */
+  onConversation?: (transcript: string) => void;
+}
+
+export const KaiScreen: React.FC<KaiScreenProps> = ({ onConversation }) => {
   const { currency, accounts } = useApp();
   const name = useUserDisplayName();
-  const kai = useKaiSession();
+  const kai = useKaiSession({ onConversation });
   const [draft, setDraft] = useState('');
   const [editing, setEditing] = useState<KaiExecutedAction | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
@@ -77,6 +83,8 @@ export const KaiScreen: React.FC = () => {
         return kai.queueLength > 0 ? `Understanding… (${kai.queueLength} more)` : 'Understanding…';
       case 'executing':
         return 'Saving into Kanaku…';
+      case 'awaiting_confirmation':
+        return kai.confirmation?.question ?? 'Check this and confirm';
       case 'completed':
         return 'Done';
       case 'stopping':
@@ -285,7 +293,9 @@ export const KaiScreen: React.FC = () => {
                       currency={currency}
                       accounts={accounts}
                       onConfirm={(a) => {
-                        kai.dismissAction(a.actionId);
+                        // A draft is written here; a saved card's tick just clears it.
+                        if (a.status === 'draft') void kai.confirmAction(a.actionId);
+                        else kai.dismissAction(a.actionId);
                       }}
                       onEdit={setEditing}
                       onDelete={(a) => void kai.deleteAction(a.actionId)}
