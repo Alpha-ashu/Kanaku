@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useApp } from '@/contexts/AppContext';
+import { useTransactionCreation } from '@/hooks/useTransactionCreation';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { ReceiptScanner, type ReceiptScanPayload } from '@/app/components/transactions/ReceiptScanner';
 import { db, type DocumentRecord, type Transaction } from '@/lib/database';
@@ -134,6 +135,13 @@ async function processBillDocument(doc: DocumentRecord): Promise<ReceiptScanResu
       extractedCurrency: result.currency || 'INR',
       metadata: {
         ...doc.metadata,
+        // The SERVER's id for this receipt, kept so the bill can be linked to an
+        // expense later. Without it a bill scanned here is local-only: the
+        // expense cannot reference it, the receipt does not follow the user to
+        // another device, and the server cannot tell that this bill already
+        // produced an expense. The cloud path returns it; the on-device OCR path
+        // does not, which is why it is conditional rather than assumed.
+        ...(result.billId ? { billId: result.billId } : {}),
         merchantName: result.merchantName || doc.metadata?.merchantName || '',
         merchant: result.merchantName || doc.metadata?.merchant || '',
         amount: result.amount ? String(result.amount) : '',
@@ -678,7 +686,9 @@ function BillDetailModal({
   onClose,
   onDelete,
   onProcessBill,
+  onAddExpense,
   isProcessing = false,
+  isAddingExpense = false,
 }: {
   doc: DocumentRecord;
   tx?: Transaction;
@@ -686,7 +696,17 @@ function BillDetailModal({
   onClose: () => void;
   onDelete?: () => void;
   onProcessBill?: (doc: DocumentRecord) => Promise<void>;
+  /**
+   * Books this bill as an expense.
+   *
+   * Deliberately an explicit action rather than something the scan does on its
+   * own: this page is a document library, and people upload bills they have
+   * already entered by hand. Auto-creating would double-count those, and a
+   * double-counted expense is worse than one the user has to add themselves.
+   */
+  onAddExpense?: (doc: DocumentRecord) => Promise<void>;
   isProcessing?: boolean;
+  isAddingExpense?: boolean;
 }) {
   const [imgSrc, setImgSrc] = useState<string | null>(null);
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -1097,6 +1117,42 @@ function BillDetailModal({
             </Button>
           )}
 
+          {/* Book this bill as an expense.
+              Three states, because "nothing happens when I tap it" is the
+              complaint this whole feature exists to answer:
+                - already booked  -> shows so, and cannot be tapped again
+                - no usable total -> disabled with the reason
+                - otherwise       -> the action
+              The server is the real guard (one expense per bill, keyed on
+              ExpenseBill.transactionId); this only keeps the UI honest. */}
+          {onAddExpense && (
+            tx ? (
+              <span
+                className="rounded-lg font-bold text-xs py-2 px-3 flex items-center justify-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-100"
+                title="This bill is already recorded in your expenses"
+              >
+                <CheckCircle2 size={12} />
+                <span className="hidden sm:inline">In expenses</span>
+              </span>
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                disabled={isAddingExpense || displayAmount <= 0}
+                title={displayAmount <= 0
+                  ? 'No total was read from this bill — re-scan or edit it first'
+                  : 'Add this bill to your expense tracker'}
+                className="rounded-lg font-bold text-xs py-2 flex items-center justify-center gap-1.5 border-slate-200 cursor-pointer disabled:cursor-not-allowed"
+                onClick={() => onAddExpense(doc)}
+              >
+                {isAddingExpense
+                  ? <Loader2 size={12} className="animate-spin" />
+                  : <Plus size={12} />}
+                <span className="hidden sm:inline">Add as expense</span>
+              </Button>
+            )
+          )}
+
           {onDelete && (
             <Button
               data-testid="receipt-scanner-page-modal-delete"
@@ -1136,7 +1192,8 @@ function BillDetailModal({
 }
 
 export const ReceiptScannerPage: React.FC = () => {
-  const { setCurrentPage, currency } = useApp();
+  const { setCurrentPage, currency, accounts } = useApp();
+  const { createTransaction } = useTransactionCreation();
   const [activeTab, setActiveTab] = useState<TabKey>('all');
   const [scannerOpen, setScannerOpen] = useState(false);
   const [viewingDoc, setViewingDoc] = useState<{ doc: DocumentRecord; tx?: Transaction } | null>(null);
@@ -1214,6 +1271,81 @@ export const ReceiptScannerPage: React.FC = () => {
     localStorage.setItem('pendingReceiptScan', JSON.stringify(scan));
     setScannerOpen(false);
     setCurrentPage('add-transaction');
+  };
+
+  /**
+   * Books a scanned bill as an expense.
+   *
+   * Routed through the SAME createFromReceipt the Transactions scanner uses, so
+   * a receipt becomes an expense by exactly one code path. A second parallel
+   * path here would drift — different category defaults, a different duplicate
+   * story, a different idempotency key — and produce the disconnected records
+   * this feature is supposed to stop.
+   *
+   * Duplicate safety comes from three places, and none of them is this button:
+   *   - `attachment: bill:<id>` carried by createFromReceipt, which the server
+   *     matches against ExpenseBill.transactionId (one expense per bill),
+   *   - dedupHash for a same-amount/same-day/same-description repeat,
+   *   - the local guard below so a double-tap cannot fire two requests.
+   */
+  const [addingExpenseDocIds, setAddingExpenseDocIds] = useState<Set<number>>(new Set());
+
+  const handleAddAsExpense = async (doc: DocumentRecord) => {
+    if (!doc.id || addingExpenseDocIds.has(doc.id)) return;
+
+    const amount = Number(
+      doc.extractedAmount ?? doc.metadata?.totalAmount ?? doc.metadata?.amount ?? doc.metadata?.total ?? 0,
+    );
+    if (!(amount > 0)) {
+      toast.error('No total was read from this bill — re-scan or edit it first');
+      return;
+    }
+
+    // An account is required and the page has no picker, so fall back to the
+    // user's first active account rather than failing. Telling them WHICH
+    // account it landed in matters: silently choosing one is how a user ends up
+    // with an expense against a card they never use.
+    const account = accounts.find((a) => !a.deletedAt && a.isActive !== false);
+    if (!account?.id) {
+      toast.error('Add a bank account or wallet first, then add this bill as an expense');
+      return;
+    }
+
+    setAddingExpenseDocIds((prev) => new Set(prev).add(doc.id!));
+    try {
+      await createTransaction(
+        {
+          amount,
+          currency: doc.extractedCurrency || currency,
+          merchantName: doc.metadata?.merchantName || doc.metadata?.merchant || undefined,
+          category: doc.metadata?.category || 'Shopping',
+          subcategory: doc.metadata?.subcategory || undefined,
+          date: doc.metadata?.date ? new Date(doc.metadata.date) : (doc.uploadDate ?? new Date()),
+          // Links the expense to the SERVER-side bill, which is what makes it
+          // visible with its receipt on another device — and what lets the
+          // server refuse a second expense for the same receipt.
+          billId: doc.metadata?.billId || undefined,
+          taxAmount: doc.metadata?.taxAmount ? Number(doc.metadata.taxAmount) : undefined,
+          subtotal: doc.metadata?.subtotal ? Number(doc.metadata.subtotal) : undefined,
+          invoiceNumber: doc.metadata?.invoiceNumber || undefined,
+          paymentMethod: doc.metadata?.paymentMethod || undefined,
+        } as ReceiptScanResult,
+        account.id,
+        doc.id,
+        () => {
+          toast.success(`Added to ${account.name}`);
+          setViewingDoc(null);
+        },
+      );
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Could not add this bill as an expense');
+    } finally {
+      setAddingExpenseDocIds((prev) => {
+        const next = new Set(prev);
+        next.delete(doc.id!);
+        return next;
+      });
+    }
   };
 
   const handleManualProcess = async (doc: DocumentRecord) => {
@@ -1466,7 +1598,9 @@ export const ReceiptScannerPage: React.FC = () => {
           onClose={() => setViewingDoc(null)}
           onDelete={() => setDocToDelete(viewingDoc.doc)}
           onProcessBill={handleManualProcess}
+          onAddExpense={handleAddAsExpense}
           isProcessing={Boolean(viewingDoc.doc.id && processingDocIds.has(viewingDoc.doc.id))}
+          isAddingExpense={Boolean(viewingDoc.doc.id && addingExpenseDocIds.has(viewingDoc.doc.id))}
         />
       )}
 

@@ -110,6 +110,34 @@ export const KaiScreen: React.FC<KaiScreenProps> = ({ onConversation }) => {
   // With a conversation on screen, only show Kai's latest line if a turn isn't already showing it.
   const trailingLine = kaiLine && !turns.some((turn) => turn.say === kaiLine) ? kaiLine : null;
 
+  // Several entries from one sentence: confirming them one card at a time is
+  // busywork, so the whole request can be accepted or dropped in one tap.
+  const draftCount = visibleActions.filter((a) => a.status === 'draft').length;
+  const confirmBar = draftCount > 1 && kai.confirmation ? (
+    <div
+      className="w-full rounded-[18px] border border-amber-300 bg-amber-50/90 px-3 py-2 mb-1.5 shadow-[0_8px_24px_-14px_rgba(180,120,20,0.45)]"
+      data-testid="kai-confirm-bar"
+    >
+      <p className="text-xs sm:text-[13px] font-semibold text-amber-900 leading-snug">{kai.confirmation.question}</p>
+      <div className="mt-1.5 flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => void kai.confirmDrafts()}
+          className="flex-1 h-8 rounded-full text-xs font-black text-white bg-gradient-to-tr from-[#8B5CF6] to-[#7C3AED] shadow-md shadow-purple-500/25 transition-all cursor-pointer active:scale-95"
+        >
+          Save all {draftCount}
+        </button>
+        <button
+          type="button"
+          onClick={() => void kai.cancelDrafts()}
+          className="h-8 px-3 rounded-full text-xs font-bold bg-white/80 text-slate-700 hover:bg-white transition-colors cursor-pointer active:scale-95"
+        >
+          Discard
+        </button>
+      </div>
+    </div>
+  ) : null;
+
   const inputBar = (
     <div className="relative w-full flex items-center gap-2 bg-white/95 backdrop-blur-lg rounded-full py-1.5 pl-2 sm:pl-2.5 pr-1.5 border border-purple-100 shadow-[0_12px_32px_-6px_rgba(112,144,176,0.25)] shrink-0">
       {/* Mic Button */}
@@ -359,6 +387,7 @@ export const KaiScreen: React.FC<KaiScreenProps> = ({ onConversation }) => {
 
       {/* ── Fixed Position Input Bar at bottom ── */}
       <div className="shrink-0 pt-1 pb-[calc(50px+max(12px,calc(env(safe-area-inset-bottom,0px)+10px))+6px)] sm:pb-[calc(56px+max(12px,calc(env(safe-area-inset-bottom,0px)+10px))+6px)] lg:pb-3 w-full bg-gradient-to-t from-white/95 via-white/85 to-transparent sticky bottom-0 z-20">
+        {confirmBar}
         {inputBar}
       </div>
 

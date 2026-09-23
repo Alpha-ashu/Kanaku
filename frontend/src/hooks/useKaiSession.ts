@@ -13,6 +13,10 @@ export interface KaiSessionApi extends KaiSessionSnapshot {
   confirmAction: (actionId: string) => Promise<void>;
   /** Drop a held draft without writing it. */
   cancelAction: (actionId: string) => Promise<void>;
+  /** Write every draft this request produced. */
+  confirmDrafts: () => Promise<void>;
+  /** Drop every draft this request produced. */
+  cancelDrafts: () => Promise<void>;
   answerClarification: (actionId: string, optionIndex: number) => Promise<void>;
   editAction: (actionId: string, patch: KaiEntityPatch) => Promise<void>;
   retryAction: (actionId: string) => Promise<void>;
@@ -61,6 +65,8 @@ export function useKaiSession(options: UseKaiSessionOptions = {}): KaiSessionApi
     submitText: (text) => session.submitText(text),
     confirmAction: (id) => session.confirmAction(id),
     cancelAction: (id) => session.cancelAction(id),
+    confirmDrafts: () => session.confirmDrafts(),
+    cancelDrafts: () => session.cancelDrafts(),
     answerClarification: (id, i) => session.answerClarification(id, i),
     editAction: (id, patch) => session.editAction(id, patch),
     retryAction: (id) => session.retryAction(id),

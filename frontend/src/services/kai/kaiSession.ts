@@ -36,6 +36,7 @@ import {
   actionAmount,
   applyPatch,
   classifyConfirmationReply,
+  confirmationLine,
   confirmationPrompt,
   describeAction,
   formatInr,
@@ -302,7 +303,7 @@ export class KaiSession {
           : undefined,
         // Drafts were never written, so a reload must still ask before saving them.
         confirmation: drafts.length > 0
-          ? { actionIds: drafts.map((a) => a.actionId), question: confirmationPrompt(drafts.map((a) => a.summary)) }
+          ? { actionIds: drafts.map((a) => a.actionId), question: confirmationPrompt(drafts.map(confirmationLine)) }
           : undefined,
       };
     } catch {
@@ -719,7 +720,7 @@ export class KaiSession {
   private async announceDrafts(): Promise<void> {
     const drafts = this.drafts();
     if (drafts.length === 0) return;
-    const question = confirmationPrompt(drafts.map((d) => d.summary));
+    const question = confirmationPrompt(drafts.map(confirmationLine));
     this.set({
       confirmation: { actionIds: drafts.map((d) => d.actionId), question },
       state: 'awaiting_confirmation',
@@ -895,7 +896,7 @@ export class KaiSession {
       this.set({
         confirmation: {
           actionIds: this.drafts().map((d) => d.actionId),
-          question: confirmationPrompt(this.drafts().map((d) => d.summary)),
+          question: confirmationPrompt(this.drafts().map(confirmationLine)),
         },
       });
       return next;
@@ -986,7 +987,7 @@ export class KaiSession {
 
   private confirmationFor(drafts: KaiExecutedAction[]): KaiPendingConfirmation | undefined {
     return drafts.length > 0
-      ? { actionIds: drafts.map((d) => d.actionId), question: confirmationPrompt(drafts.map((d) => d.summary)) }
+      ? { actionIds: drafts.map((d) => d.actionId), question: confirmationPrompt(drafts.map(confirmationLine)) }
       : undefined;
   }
 

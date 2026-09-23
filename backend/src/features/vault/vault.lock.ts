@@ -19,7 +19,8 @@ import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import { Response, NextFunction } from 'express';
 import { prisma } from '../../db/prisma';
-import { AppError } from '../../utils/AppError';
+import { AppError, isStructuralDatabaseError } from '../../utils/AppError';
+import { reportDegradedWrite } from '../../utils/degradedWrite';
 import { logger } from '../../config/logger';
 import { AuthRequest } from '../../middleware/auth';
 
@@ -93,8 +94,32 @@ export const requireVaultUnlock = async (req: AuthRequest, res: Response, next: 
       return next();
     }
   } catch (err) {
-    // Unlike the app PIN gate this fails CLOSED: the vault holds identity
-    // documents, and the owner can always re-enter the PIN.
+    // Failing closed is right when we merely could not READ the lock state: the
+    // vault holds identity documents, and the owner can re-enter their PIN.
+    //
+    // It is wrong when the lock table itself is unusable. Then "your vault is
+    // locked, enter your PIN" is both false and unwinnable — entering the PIN
+    // hits the same broken table and returns 500, so the user loops forever, on
+    // every device, with nothing explaining why. That is not hypothetical: a
+    // staging database missing `vault_lock_settings.pin_length` (migration
+    // 20260920010000_vault_tables_rls) produces exactly this.
+    //
+    // Access is still denied either way — this only changes the reason given,
+    // from a lie the user can act on fruitlessly to the truth that it is us.
+    if (isStructuralDatabaseError(err)) {
+      reportDegradedWrite({
+        operation: 'vault.lock_state_read',
+        error: err,
+        context: { userId, route: req.originalUrl },
+      });
+      return next(new AppError(
+        503,
+        'VAULT_UNAVAILABLE',
+        'The vault is temporarily unavailable. Please try again shortly.',
+        false,
+      ));
+    }
+
     logger.warn('Vault lock evaluation failed; denying request', {
       userId,
       error: err instanceof Error ? err.message : String(err),

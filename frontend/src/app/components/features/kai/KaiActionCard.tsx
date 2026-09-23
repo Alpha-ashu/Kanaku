@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Check, CheckCircle2, Loader2, Pencil, RotateCcw, Sparkles, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { KaiActionKind } from '@kanaku/shared';
-import { actionAmount, type KaiExecutedAction } from '@/services/kai/kaiTypes';
+import { actionAmount, groupPerHead, type KaiExecutedAction } from '@/services/kai/kaiTypes';
 import { formatCurrencyAmount } from '@/lib/currencyUtils';
 import type { Account } from '@/lib/database';
 import { formatDay, KIND_LABEL } from './kaiFormat';
@@ -68,14 +68,24 @@ function detailRows(action: KaiExecutedAction, currency: string, accounts?: Acco
         { label: action.kind === 'loan_borrow' ? 'From' : 'To', value: e.person || '—' },
         { label: 'Date', value: formatDay(e.date) },
       ];
-    case 'group_expense':
+    case 'group_expense': {
+      // The per-head number is the one worth checking before a split is written:
+      // unpicking it afterwards means correcting every share.
+      const perHead = e.splitType === 'custom' ? undefined : groupPerHead(action);
       return [
         { label: 'Amount', value: money },
         { label: 'Account', value: accountName },
         { label: 'For', value: e.description || action.summary },
         { label: 'With', value: e.members?.length ? e.members.join(', ') : 'Shared' },
         { label: 'Split', value: e.splitType === 'custom' ? 'Custom' : 'Equally' },
+        {
+          label: `Each of ${(e.members?.length ?? 0) + 1}`,
+          value: perHead !== undefined
+            ? formatCurrencyAmount(perHead, currency, { minimumFractionDigits: 0, maximumFractionDigits: 2 })
+            : null,
+        },
       ];
+    }
     case 'todo':
       return [
         { label: 'Task', value: e.title || e.description || action.summary },
@@ -178,7 +188,7 @@ export const KaiActionCard: React.FC<Props> = ({ action, currency, accounts, onC
           )}
           {draft && (
             <span className="px-2 py-0.5 rounded-full bg-amber-50 text-[10px] font-bold text-amber-700 shrink-0 border border-amber-200/70">
-              Check this
+              Not saved yet
             </span>
           )}
         </div>

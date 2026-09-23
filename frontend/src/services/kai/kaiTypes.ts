@@ -182,11 +182,42 @@ export function needsConfirmation(
   return (actionAmount(action) ?? 0) >= policy.amountCeiling;
 }
 
+/**
+ * Per person when a group expense is split equally. The speaker is one of the
+ * heads — `members` holds only the others — so this matches what the executor
+ * actually writes (kaiActionExecutor.createGroupExpense).
+ */
+export function groupPerHead(action: Pick<KaiAction, 'kind' | 'entities'>): number | undefined {
+  if (action.kind !== 'group_expense') return undefined;
+  const amount = actionAmount(action);
+  const heads = (action.entities.members?.length ?? 0) + 1;
+  return amount && heads > 1 ? Number((amount / heads).toFixed(2)) : undefined;
+}
+
+/** Shares rarely divide evenly; ₹549.50 must not be read back as ₹550. */
+const formatShare = (amount: number): string =>
+  Number.isInteger(amount)
+    ? formatInr(amount)
+    : `₹${amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+/**
+ * One line of what will be written. The amount leads, because that is what a
+ * person checks first, and a split says what each head owes — the number that
+ * is tedious to unpick once it is in the ledger.
+ */
+export function confirmationLine(action: Pick<KaiAction, 'kind' | 'entities' | 'rawSegment'>): string {
+  const amount = actionAmount(action);
+  const what = describeAction(action);
+  const perHead = groupPerHead(action);
+  const share = perHead ? ` — ${formatShare(perHead)} each` : '';
+  return amount ? `${formatInr(amount)} for ${what}${share}` : what;
+}
+
 /** What Kai says (and the card asks) while a draft waits. */
-export const confirmationPrompt = (summaries: string[]): string =>
-  summaries.length === 1
-    ? `I understood this as ${summaries[0]}. Shall I save it?`
-    : `I understood ${summaries.length} entries: ${joinNames(summaries)}. Shall I save them?`;
+export const confirmationPrompt = (lines: string[]): string =>
+  lines.length === 1
+    ? `I understood this as ${lines[0]}. Shall I save it?`
+    : `I understood ${lines.length} entries: ${joinNames(lines)}. Shall I save them?`;
 
 const AFFIRMATION = /^(?:yes|yeah|yep|yup|ya|sure|correct|right|confirm(?:ed|\sit)?|save(?:\sit|\sthat)?|go\sahead|ok(?:ay)?|haan?|ha|theek\shai|sahi)\b[\s.!]*$/i;
 const NEGATION = /^(?:no|nope|nah|cancel(?:\sit|\sthat)?|discard|don'?t(?:\ssave)?|delete(?:\sit|\sthat)?|wrong|not\sright|nahi+n?)\b[\s.!]*$/i;

@@ -1,9 +1,13 @@
 import { describe, expect, it } from 'vitest';
+import type { KaiActionKind } from '@kanaku/shared';
 import {
   actionAmount,
   applyPatch,
+  confirmationLine,
+  confirmationPrompt,
   describeAction,
   deterministicUuid,
+  groupPerHead,
   isMoneyKind,
   isRecordKind,
   toContextAction,
@@ -97,5 +101,37 @@ describe('toContextAction', () => {
       date: undefined,
       status: 'saved',
     });
+  });
+});
+
+describe('confirmation read-back', () => {
+  const draft = (kind: KaiActionKind, entities: Record<string, unknown>, confidence = 0.95) => ({
+    kind,
+    rawSegment: 'spoken',
+    entities: entities as never,
+    confidence,
+    requiresReview: false,
+  });
+
+  it('leads with the amount and, for a split, what each head owes', () => {
+    expect(confirmationLine(draft('group_expense', { amount: 4396, description: 'Dinner', members: ['Arun', 'Amala', 'Preeti'] })))
+      .toBe('₹4,396 for Dinner with Arun, Amala and Preeti — ₹1,099 each');
+    // The speaker counts as a head, and an uneven share keeps its paise.
+    expect(confirmationLine(draft('group_expense', { amount: 1099, description: 'Lunch', members: ['Arun'] })))
+      .toBe('₹1,099 for Lunch with Arun — ₹549.50 each');
+    expect(confirmationLine(draft('expense', { amount: 200, description: 'Coffee' })))
+      .toBe('₹200 for Coffee');
+  });
+
+  it('matches the split the executor writes: amount ÷ (members + 1)', () => {
+    expect(groupPerHead(draft('group_expense', { amount: 4396, members: ['A', 'B', 'C'] }))).toBe(1099);
+    expect(groupPerHead(draft('group_expense', { amount: 300, members: [] }))).toBeUndefined();
+    expect(groupPerHead(draft('expense', { amount: 300 }))).toBeUndefined();
+  });
+
+  it('asks about one entry or about all of them', () => {
+    expect(confirmationPrompt(['₹200 for Coffee'])).toBe('I understood this as ₹200 for Coffee. Shall I save it?');
+    expect(confirmationPrompt(['₹2,000 for Dinner', '₹500 for Coffee']))
+      .toBe('I understood 2 entries: ₹2,000 for Dinner and ₹500 for Coffee. Shall I save them?');
   });
 });

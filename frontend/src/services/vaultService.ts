@@ -4,6 +4,7 @@ import { downloadFile } from '@/lib/download';
 import { buildApiUrl, getConfiguredApiBase } from '@/lib/apiBase';
 import { awaitPinUnlock, getPinUnlockToken } from '@/lib/pinUnlockCoordinator';
 import {
+  awaitVaultUnlock,
   captureVaultUnlockToken,
   getVaultUnlockToken,
   setVaultUnlockToken,
@@ -66,10 +67,24 @@ const fetchVaultFile = async (path: string, failureMessage: string): Promise<Res
     }
   }
 
+  let alreadySignalledLocked = false;
+
   if (res.status === 403) {
     const firstError = await res.clone().json().catch(() => ({} as Record<string, unknown>));
 
-    if (firstError.code === 'PIN_VERIFICATION_REQUIRED') {
+    if (firstError.code === 'VAULT_LOCKED') {
+      alreadySignalledLocked = true;
+      // Show the lock overlay, then wait for the unlock it is about to produce
+      // and replay — rather than throwing, which closes the preview modal and
+      // makes the user find the document again after unlocking. signalVaultLocked
+      // drops the stale token first, so the replay carries the new one.
+      signalVaultLocked();
+      const unlocked = await awaitVaultUnlock();
+      if (unlocked) {
+        res = await fetch(url, { headers: buildVaultFileHeaders() });
+        captureVaultUnlockToken(res);
+      }
+    } else if (firstError.code === 'PIN_VERIFICATION_REQUIRED') {
       // Wait for the PIN keypad (or an in-flight verify) and retry once. The
       // headers are rebuilt rather than reused: the verify we just awaited is
       // what minted the token, so replaying the originals would resend the
@@ -84,7 +99,12 @@ const fetchVaultFile = async (path: string, failureMessage: string): Promise<Res
 
   if (!res.ok) {
     const errorJson = await res.json().catch(() => ({} as Record<string, string>));
-    if (res.status === 403 && errorJson.code === 'VAULT_LOCKED') signalVaultLocked();
+    // Do not re-signal a lock we already announced above. Signalling drops the
+    // stored token, and if the user unlocked just after our wait timed out that
+    // would throw away the token they had only just created.
+    if (res.status === 403 && errorJson.code === 'VAULT_LOCKED' && !alreadySignalledLocked) {
+      signalVaultLocked();
+    }
     throw new Error(errorJson.error || errorJson.message || failureMessage);
   }
   return res;

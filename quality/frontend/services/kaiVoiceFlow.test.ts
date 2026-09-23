@@ -95,7 +95,7 @@ const deps = (): Deps => ({
   createListener: (cb: KaiListenerCallbacks) => { listenerCallbacks = cb; return listener; },
   refreshContext: async () => ({ knownGoals: [], knownContacts: ['Arun', 'Amala', 'Preeti'] }),
   rememberActions: vi.fn(),
-  onConversation: vi.fn(),
+  onConversation: vi.fn((_transcript: string, _say?: string) => undefined),
   storage: null,
   completedHoldMs: 0,
   aggregator: AGGREGATOR,
@@ -160,7 +160,12 @@ describe('Kai voice flow', () => {
     const s = session.getSnapshot();
     expect(s.state).toBe('awaiting_confirmation');
     expect(s.confirmation?.actionIds).toEqual([s.actions[0].actionId]);
-    expect(s.confirmation?.question).toContain('Dinner');
+    // Read back the numbers a person checks: the total and each head's share
+    // (₹4,396 across the speaker + 7 named people).
+    expect(s.confirmation?.question).toBe(
+      'I understood this as ₹4,396 for Dinner with G Joe, Arun, Amala, Preeti, Prijit, Rajesh and Sandeep — ₹549.50 each. Shall I save it?',
+    );
+    expect(s.lastSay).toBe(s.confirmation?.question);
 
     await session.confirmDrafts();
 

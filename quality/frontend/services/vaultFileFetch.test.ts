@@ -50,11 +50,15 @@ vi.mock('@/lib/pinUnlockCoordinator', () => ({
   getPinUnlockToken: () => 'pin-token',
 }));
 
+const mockSignalVaultLocked = vi.fn();
+const mockAwaitVaultUnlock = vi.fn();
+
 vi.mock('@/lib/vaultUnlock', () => ({
+  awaitVaultUnlock: () => mockAwaitVaultUnlock(),
   captureVaultUnlockToken: vi.fn(),
   getVaultUnlockToken: () => 'vault-token',
   setVaultUnlockToken: vi.fn(),
-  signalVaultLocked: vi.fn(),
+  signalVaultLocked: () => mockSignalVaultLocked(),
 }));
 
 vi.mock('@/lib/clientErrorReporter', () => ({ getSessionId: () => 'session-abc' }));
@@ -84,6 +88,8 @@ describe('vault file fetch — expired access token', () => {
     mockGetAccessToken.mockReset();
     mockAwaitPinUnlock.mockReset();
     mockDownloadFile.mockReset();
+    mockSignalVaultLocked.mockReset();
+    mockAwaitVaultUnlock.mockReset();
     mockPlatform = { native: false, name: 'web' };
     // jsdom has no object-URL implementation. Add the two methods rather than
     // replacing window.URL wholesale — component imports further down this file
@@ -231,4 +237,57 @@ describe('supportsInlinePdfPreview', () => {
     mockPlatform = { native: false, name: 'web' };
     expect(supportsInlinePdfPreview()).toBe(true);
   }, 15000);
+});
+
+/**
+ * A vault lock that lapses while the user is reading.
+ *
+ * Previously this threw, and because the preview modal closes itself on error
+ * the document slammed shut — the user unlocked and then had to find it again.
+ * The unlock that was already happening is precisely what the request needed.
+ */
+describe('vault lock lapsing mid-session', () => {
+  beforeEach(() => {
+    mockGetAccessToken.mockReturnValue('good-token');
+  });
+
+  it('shows the overlay, waits for the unlock, and replays', async () => {
+    mockAwaitVaultUnlock.mockResolvedValue(true);
+
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(makeResponse(403, { code: 'VAULT_LOCKED' }))
+      .mockResolvedValueOnce(makeResponse(200));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const result = await vaultService.previewDocument('doc-1');
+
+    expect(mockSignalVaultLocked).toHaveBeenCalledTimes(1); // overlay shown
+    expect(mockAwaitVaultUnlock).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(result.objectUrl).toBe('blob:mock');
+  });
+
+  it('fails as before when the user never unlocks', async () => {
+    mockAwaitVaultUnlock.mockResolvedValue(false);
+
+    const fetchMock = vi.fn().mockResolvedValue(
+      makeResponse(403, { code: 'VAULT_LOCKED', error: 'Vault is locked' }),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(vaultService.previewDocument('doc-1')).rejects.toThrow();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not signal the lock twice', async () => {
+    // Signalling drops the stored token. Doing it again after the wait timed
+    // out would discard a token the user may have just created.
+    mockAwaitVaultUnlock.mockResolvedValue(false);
+
+    const fetchMock = vi.fn().mockResolvedValue(makeResponse(403, { code: 'VAULT_LOCKED' }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(vaultService.previewDocument('doc-1')).rejects.toThrow();
+    expect(mockSignalVaultLocked).toHaveBeenCalledTimes(1);
+  });
 });
