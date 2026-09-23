@@ -239,10 +239,16 @@ export const PINSetup: React.FC<PINSetupProps> = ({
       >
         <input
           ref={hiddenInputRef}
-          type="password"
-          name="pin"
-          inputMode="none"
-          autoComplete="off"
+          type="tel"
+          name="kanaku-pin-setup"
+          id="kanaku-pin-setup"
+          inputMode="numeric"
+          pattern="[0-9]*"
+          autoComplete="one-time-code"
+          data-lpignore="true"
+          data-1p-ignore="true"
+          data-bwignore="true"
+          data-form-type="other"
           value={currentPinVal}
           onChange={handleInputChange}
           readOnly={true}

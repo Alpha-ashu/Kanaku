@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useApp } from '@/contexts/AppContext';
-import { Search, Bell, Menu, GripVertical, Wallet, LogOut, Receipt } from 'lucide-react';
+import { Search, Bell, Menu, GripVertical, Wallet, LogOut, Receipt, X } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from '@/app/components/ui/sheet';
 import { NavigationItem, headerMenuItems } from '@/app/constants/navigation';
 import { NotificationPopup } from '@/app/components/ui/NotificationPopup';
@@ -101,6 +101,15 @@ export const TopBar: React.FC = () => {
     }
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isSearchOpen]);
+
+  // Reset search when navigating across pages
+  React.useEffect(() => {
+    setSearchQuery('');
+    setDebouncedSearchQuery('');
+    setIsSearchOpen(false);
+    setIsMobileSearchOpen(false);
+    setActiveResultIndex(-1);
+  }, [currentPage]);
 
   React.useEffect(() => {
     const handleProfileUpdate = () => {
@@ -470,16 +479,30 @@ export const TopBar: React.FC = () => {
  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4 group-hover:text-slate-600 transition-colors" />
  <input data-testid="top-bar-search-transactions-assets"
  ref={searchInputRef}
- type="text"
+ type="search"
  id="topbar-search-desktop"
- name="topbar-search-desktop"
+ name="kanaku-global-search"
+ autoComplete="off"
+ autoCorrect="off"
+ autoCapitalize="off"
+ spellCheck={false}
+ role="searchbox"
+ aria-autocomplete="none"
+ data-lpignore="true"
+ data-1p-ignore="true"
+ data-bwignore="true"
+ data-form-type="other"
  value={searchQuery}
  onChange={(e) => {
    setSearchQuery(e.target.value);
-   if (e.target.value.trim()) setIsSearchOpen(true);
+   if (e.target.value.trim() && document.activeElement === searchInputRef.current) {
+     setIsSearchOpen(true);
+   }
  }}
  onFocus={() => {
-   setIsSearchOpen(true);
+   if (searchQuery.trim()) {
+     setIsSearchOpen(true);
+   }
    setActiveResultIndex(-1);
  }}
  onKeyDown={(e) => {
@@ -495,6 +518,21 @@ export const TopBar: React.FC = () => {
  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-2xs font-bold text-slate-300 border border-slate-200 px-1.5 py-0.5 rounded-md pointer-events-none group-hover:border-slate-300 transition-colors">
  ⌘K
  </span>
+ )}
+ {searchQuery && !isSearchPending && (
+ <button
+   type="button"
+   onClick={() => {
+     setSearchQuery('');
+     setIsSearchOpen(false);
+     setActiveResultIndex(-1);
+     searchInputRef.current?.focus();
+   }}
+   className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 rounded-full hover:bg-slate-100 transition-colors cursor-pointer"
+   aria-label="Clear search"
+ >
+   <X size={14} />
+ </button>
  )}
  {isSearchPending && searchQuery.trim() && (
  <span className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4">
@@ -668,9 +706,19 @@ export const TopBar: React.FC = () => {
             <Search className="text-slate-400 w-5 h-5 shrink-0" />
             <input data-testid="top-bar-search-transactions-assets-2"
               autoFocus
-              type="text"
+              type="search"
               id="topbar-search-mobile"
-              name="topbar-search-mobile"
+              name="kanaku-mobile-search"
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="off"
+              spellCheck={false}
+              role="searchbox"
+              aria-autocomplete="none"
+              data-lpignore="true"
+              data-1p-ignore="true"
+              data-bwignore="true"
+              data-form-type="other"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search transactions, assets..."

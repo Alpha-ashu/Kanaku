@@ -301,10 +301,19 @@ export const VaultLockOverlay: React.FC<VaultLockOverlayProps> = ({
       data-testid="vault-lock-overlay"
       className="w-full max-w-sm mx-auto flex flex-col items-center justify-center py-2 sm:py-4 px-2 sm:px-4 select-none"
     >
-      {/* Hidden input to capture physical keyboard input */}
+      {/* Hidden input to capture physical keyboard input without triggering browser credential autofill */}
       <input
         ref={hiddenInputRef}
-        type="password"
+        type="tel"
+        inputMode="numeric"
+        pattern="[0-9]*"
+        autoComplete="one-time-code"
+        name="kanaku-vault-pin"
+        id="kanaku-vault-pin"
+        data-lpignore="true"
+        data-1p-ignore="true"
+        data-bwignore="true"
+        data-form-type="other"
         value={pin}
         onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 12))}
         className="sr-only"
@@ -570,6 +579,11 @@ export const VaultLockOverlay: React.FC<VaultLockOverlayProps> = ({
                         inputMode="numeric"
                         pattern="[0-9]*"
                         maxLength={1}
+                        autoComplete="one-time-code"
+                        data-lpignore="true"
+                        data-1p-ignore="true"
+                        data-bwignore="true"
+                        data-form-type="other"
                         value={resetOtpInputs[i]}
                         onChange={(e) => handleResetOtpChange(i, e.target.value)}
                         onKeyDown={(e) => handleResetOtpKeyDown(i, e)}
