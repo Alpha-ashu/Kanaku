@@ -127,6 +127,8 @@ interface SocketEvents {
   budgets_updated: (data: { reason?: string; originSessionId?: string }) => void;
   recurring_updated: (data: { reason?: string; originSessionId?: string }) => void;
   categories_updated: (data: { reason?: string; originSessionId?: string }) => void;
+  /** A transaction changed on another of this user's devices. */
+  transactions_updated: (data: { reason?: string; originSessionId?: string }) => void;
   notification: (data: any) => void;
 }
 
@@ -591,6 +593,10 @@ class SocketClient {
 
     this.socket.on('categories_updated' as any, (data: any) => {
       this.emit('categories_updated', data);
+    });
+
+    this.socket.on('transactions_updated' as any, (data: any) => {
+      this.emit('transactions_updated', data);
     });
 
     this.socket.on('notification' as any, (data: any) => {

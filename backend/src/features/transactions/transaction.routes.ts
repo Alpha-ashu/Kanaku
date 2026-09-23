@@ -8,6 +8,7 @@ import * as TransactionController from './transaction.controller';
 import { responseCache } from '../../middleware/cache';
 import { CACHE_TTL_SECONDS } from '../../cache/cache-policy';
 import { requireFeature } from '../../middleware/featureGate';
+import { announceChange } from '../../middleware/announceChange';
 import {
 	transactionAccountParamSchema,
 	transactionBulkCreateSchema,
@@ -23,6 +24,17 @@ const router = Router();
 router.use(authMiddleware);
 router.use(pinGate);
 router.use(requireFeature('transactions'));
+// Transactions ARE part of the Dexie sync engine, but that engine only pulls on
+// app start and on page navigation — so an expense added on a phone did not
+// appear on an already-open laptop until the user moved around the app. This is
+// the headline multi-device complaint.
+//
+// Safe to announce because mergeBackendTable does its insert inside a
+// db.transaction('rw') that re-checks by cloudId and shares a lock with
+// storeServerConfirmedRow, so a pull cannot race a local post-POST writeback
+// into a duplicate. The acting device skips its own echo via originSessionId
+// regardless.
+router.use(announceChange('transactions_updated'));
 
 router.get(
 	'/',

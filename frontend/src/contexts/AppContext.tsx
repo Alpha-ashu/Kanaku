@@ -898,6 +898,27 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       ['recurring_updated', syncRecurringTransactions],
       ['categories_updated', syncCategories],
     ] as const;
+    /**
+     * Transactions are the highest-write table in the app, and unlike the
+     * mirrors above a pull here fetches the whole list. A bulk import or a busy
+     * session on another device would otherwise fire one full pull per row, so
+     * the events are collapsed into a single trailing refresh.
+     *
+     * Accounts ride along because a transaction moves a balance, and balances
+     * are server-owned — pulling transactions without accounts would leave the
+     * two disagreeing until the next sync.
+     */
+    let txRefreshTimer: ReturnType<typeof setTimeout> | null = null;
+    const unsubTransactions = socketClient.on('transactions_updated', (payload) => {
+      if (isOwnEcho(payload)) return;
+      if (txRefreshTimer) clearTimeout(txRefreshTimer);
+      txRefreshTimer = setTimeout(() => {
+        txRefreshTimer = null;
+        console.log('[AppContext] transactions_updated — syncing transactions + accounts');
+        void syncUserDataFromCloud(user.id, ['transactions', 'accounts']);
+      }, 1500);
+    });
+
     const unsubMirrors = mirrorSyncs.map(([event, sync]) =>
       socketClient.on(event, (payload) => {
         if (isOwnEcho(payload)) return;
@@ -923,6 +944,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       unsubGroup();
       unsubTodo();
       unsubBills();
+      unsubTransactions();
+      if (txRefreshTimer) clearTimeout(txRefreshTimer);
       unsubMirrors.forEach((off) => off());
       unsubNotification();
     };
