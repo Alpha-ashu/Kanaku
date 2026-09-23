@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import {
   Calendar, Plus, RefreshCw, ShieldCheck, CreditCard, Loader2, Trash2,
-  ArrowLeft, ArrowDownRight, ArrowUpRight, Clock, Wallet, Check, AlertCircle, X
+  ArrowLeft, ArrowDownRight, ArrowUpRight, Clock, X
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { db, RecurringTransaction } from '@/lib/database';
