@@ -70,10 +70,23 @@ export const isValidVaultUnlockToken = (token: string | undefined, userId: strin
 export const getActiveLock = async (userId: string) => {
   const setting = await prisma.vaultLockSetting.findUnique({
     where: { userId },
-    select: { isLockEnabled: true, vaultPinHash: true, autoLockMinutes: true },
+    select: { isLockEnabled: true, vaultPinHash: true, autoLockMinutes: true, lastUnlockedAt: true },
   });
   if (!setting?.isLockEnabled || !setting.vaultPinHash) return null;
   return setting;
+};
+
+/**
+ * Durable fallback for a client that verified its PIN but is not carrying the
+ * token, mirroring the app PIN gate's `UserPin.lastVerifiedAt` safety net
+ * (security/pinUnlock.ts). /lock/verify stamps `lastUnlockedAt`, so a client
+ * that cannot read the response header — an app build released before the token
+ * existed, or a proxy that strips it — still gets its own auto-lock window
+ * instead of a vault it can never open.
+ */
+const unlockedRecently = (lastUnlockedAt: Date | null, autoLockMinutes?: number | null): boolean => {
+  if (!lastUnlockedAt) return false;
+  return Date.now() - new Date(lastUnlockedAt).getTime() <= windowSeconds(autoLockMinutes) * 1000;
 };
 
 /**
@@ -89,7 +102,10 @@ export const requireVaultUnlock = async (req: AuthRequest, res: Response, next: 
     if (!lock) return next();
 
     const presented = req.headers[VAULT_UNLOCK_HEADER] as string | undefined;
-    if (isValidVaultUnlockToken(presented, userId)) {
+    if (
+      isValidVaultUnlockToken(presented, userId) ||
+      unlockedRecently(lock.lastUnlockedAt, lock.autoLockMinutes)
+    ) {
       res.setHeader(VAULT_UNLOCK_RESPONSE_HEADER, issueVaultUnlockToken(userId, lock.autoLockMinutes));
       return next();
     }

@@ -14,15 +14,24 @@ import { MAX_VAULT_FILE_SIZE } from './vault.storage';
 
 const router = Router();
 
-// Every vault operation requires authentication and, like every other route
-// holding personal data, a live app-PIN unlock.
+// Every vault operation requires authentication.
 router.use(authMiddleware);
-router.use(pinGate);
 // The admin panel's `vault` switch (on by default for every role).
 router.use(requireFeature('vault'));
 
-// Vault lock — registered BEFORE requireVaultUnlock so a locked vault can be
-// unlocked. PIN verify and reset are brute-force limited per user.
+// ── Vault lock ───────────────────────────────────────────────────────────────
+//
+// Registered BEFORE `pinGate` and `requireVaultUnlock`, so the keypad can always
+// be reached. These four endpoints return no vault contents — only lock state —
+// and each carries its own proof: /verify needs the Vault PIN (rate limited
+// below), /configure needs a live vault unlock or the current PIN, and /reset
+// needs a verified sensitive_action OTP for the account's email.
+//
+// They used to sit behind pinGate, which made the whole feature unusable on any
+// device that had not unlocked the app PIN in the last PIN_GATE_TIMEOUT_MINUTES:
+// /lock/status answered 403 PIN_VERIFICATION_REQUIRED, so the Vault screen never
+// learned a PIN was set and never showed its keypad, and changing the lock
+// settings failed with a bare "you do not have permission".
 const lockAttemptLimit = authenticatedRateLimit({
   windowMs: 15 * 60_000,
   max: 10,
@@ -34,8 +43,10 @@ router.post('/lock/configure', VaultController.configureLock);
 router.post('/lock/verify', lockAttemptLimit, VaultController.verifyLock);
 router.post('/lock/reset', lockAttemptLimit, VaultController.resetLockPin);
 
-// Everything below holds vault contents and needs a live Vault unlock when the
-// owner has enabled a Vault PIN (vault.lock.ts).
+// ── Vault contents ───────────────────────────────────────────────────────────
+// Like every other route holding personal data, a live app-PIN unlock is
+// required; and on top of it a live Vault unlock when the owner set a Vault PIN.
+router.use(pinGate);
 router.use(requireVaultUnlock);
 
 // Dashboard & stats

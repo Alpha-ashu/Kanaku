@@ -80,8 +80,15 @@ const unlockSecret = (): string => {
   return cachedSecret;
 };
 
+/**
+ * The gate is off under NODE_ENV=test so suites need not carry an unlock token.
+ * That also meant NOTHING exercised it, and a route wrongly placed behind it
+ * looked fine in every test while being unusable in production — which is how
+ * the vault lock endpoints shipped gated (the keypad could never load). A suite
+ * that wants the production behaviour opts in with PIN_GATE_FORCE_IN_TESTS.
+ */
 export const isPinGateEnabled = (): boolean =>
-  PIN_GATE_ENABLED && process.env.NODE_ENV !== 'test';
+  PIN_GATE_ENABLED && (process.env.NODE_ENV !== 'test' || process.env.PIN_GATE_FORCE_IN_TESTS === 'true');
 
 /** Milliseconds a PIN unlock stays valid without further activity. */
 export const getPinGateWindowMs = (): number => PIN_GATE_TIMEOUT_MS;

@@ -380,6 +380,11 @@ export const configureLock = async (req: AuthRequest, res: Response, next: NextF
   try {
     const userId = getUserId(req);
     const validated = configureLockSchema.parse(req.body);
+    // Deliberately STRICTER than reading the vault: changing the lock needs this
+    // session to hold the unlock token (or the current PIN, checked in the
+    // service). The durable "unlocked recently" fallback that keeps older
+    // clients reading (vault.lock.ts) must not also let anyone switch the lock
+    // off with a stolen token during someone else's unlock window.
     const isUnlocked = isValidVaultUnlockToken(req.headers[VAULT_UNLOCK_HEADER] as string | undefined, userId);
     const result = await VaultService.configureLock(userId, validated, isUnlocked);
     res.json(result);
