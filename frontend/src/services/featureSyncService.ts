@@ -21,6 +21,7 @@
  */
 import { apiClient } from '@/lib/api';
 import { fetchAllPages } from '@/lib/pagedFetch';
+import type { Table } from 'dexie';
 import { db, type AppCategory, type Budget, type RecurringTransaction } from '@/lib/database';
 
 export interface FeatureSyncResult {
@@ -32,6 +33,76 @@ export interface FeatureSyncResult {
 }
 
 const EMPTY_RESULT: FeatureSyncResult = { pulled: 0, pushed: 0, removed: 0 };
+
+/**
+ * One run of a given sync at a time.
+ *
+ * Every function below follows the same shape: snapshot the local table, await
+ * the network, then insert the server rows that were missing FROM THAT
+ * SNAPSHOT. Two overlapping runs therefore both decide a row is missing and
+ * both insert it — a duplicate, from a function whose whole job is to converge.
+ *
+ * That overlap used to be unlikely: these ran once per session and on
+ * pull-to-refresh. It stopped being unlikely when the backend started emitting
+ * change events (bills_updated / budgets_updated / recurring_updated /
+ * categories_updated) — that event lands exactly when the user is most likely
+ * to also be opening the page that runs its own sync.
+ *
+ * Returning the in-flight promise is the right answer rather than queueing a
+ * second run: the caller wants "the local table reflects the server", and a run
+ * already in progress is about to deliver precisely that. The DB-level re-check
+ * in `insertIfAbsent` is the backstop for the case this cannot cover — two runs
+ * that genuinely do not overlap in time but still race on a slow write.
+ */
+const inFlight = new Map<string, Promise<FeatureSyncResult>>();
+
+const coalesced = (
+  key: string,
+  run: () => Promise<FeatureSyncResult>,
+): Promise<FeatureSyncResult> => {
+  const existing = inFlight.get(key);
+  if (existing) return existing;
+
+  const promise = (async () => {
+    try {
+      return await run();
+    } finally {
+      inFlight.delete(key);
+    }
+  })();
+
+  inFlight.set(key, promise);
+  return promise;
+};
+
+/**
+ * Insert a row only if nothing with this `cloudId` is in the table RIGHT NOW.
+ *
+ * The caller's `byCloudId` map was built before the network call and is stale by
+ * the time we insert. Re-reading inside a Dexie `rw` transaction closes that
+ * window: Dexie serialises transactions over the same table, so a concurrent
+ * run either sees this row or is seen by it.
+ *
+ * The re-check is a `filter` scan, not a `where` lookup, because `cloudId` is
+ * not a Dexie index on any of these tables — `where('cloudId')` throws a
+ * SchemaError. Indexing it would mean a schema version bump and a migration in
+ * every installed browser, which is not worth it here: these tables hold tens of
+ * rows (budgets, categories, recurring rules, receipts), so the scan is cheap
+ * and it runs only on the insert path, never on the common update path.
+ *
+ * Returns the new primary key, or null when the row already existed.
+ */
+const insertIfAbsent = (
+  table: Table<any, number>,
+  cloudId: string,
+  row: Record<string, unknown>,
+): Promise<number | null> =>
+  db.transaction('rw', table, async () => {
+    const live = await table.filter((r: any) => r.cloudId === cloudId).first();
+    if (live) return null;
+    return (await table.add(row)) as number;
+  });
+
 
 /**
  * A stable idempotency key for a row whose primary key is not globally unique.
@@ -126,7 +197,8 @@ const normalizeBudgetCategory = (category: unknown): string =>
 const budgetIdentity = (category: unknown, period: unknown): string =>
   `${normalizeBudgetCategory(category).toLowerCase()}|${normalizeBudgetPeriod(period)}`;
 
-export const syncBudgets = async (): Promise<FeatureSyncResult> => {
+export const syncBudgets = (): Promise<FeatureSyncResult> =>
+  coalesced('budgets', async () => {
   let serverRows: BudgetApiRow[];
   try {
     // All pages or a throw — a partial list would remove budgets below.
@@ -230,7 +302,7 @@ export const syncBudgets = async (): Promise<FeatureSyncResult> => {
 
 
   return result;
-};
+  });
 
 export const pushBudgetUpdate = async (
   budget: Pick<Budget, 'id' | 'cloudId'>,
@@ -294,7 +366,8 @@ const chunk = <T,>(items: T[], size: number): T[][] => {
  * (returning them rather than 400ing), so this can never fall into the
  * push-reject-retry loop that duplicate handling caused for budgets.
  */
-export const syncCategories = async (): Promise<FeatureSyncResult> => {
+export const syncCategories = (): Promise<FeatureSyncResult> =>
+  coalesced('categories', async () => {
   let serverRows: CategoryApiRow[];
   try {
     const response = await apiClient.get<{ success: boolean; data: CategoryApiRow[] }>('/categories', {
@@ -385,7 +458,7 @@ export const syncCategories = async (): Promise<FeatureSyncResult> => {
   }
 
   return result;
-};
+  });
 
 /** Create a category on both sides. Returns the local row. */
 export const createCategoryEverywhere = async (input: {
@@ -480,7 +553,8 @@ const RECURRING_FREQUENCIES = new Set(['daily', 'weekly', 'biweekly', 'monthly',
 /** Subset the API accepts — POST /recurring rejects anything else with a 400. */
 const PUSHABLE_INTERVALS = new Set(['weekly', 'monthly', 'yearly']);
 
-export const syncRecurringTransactions = async (): Promise<FeatureSyncResult> => {
+export const syncRecurringTransactions = (): Promise<FeatureSyncResult> =>
+  coalesced('recurring', async () => {
   let serverRows: RecurringApiRow[];
   try {
     // All pages or a throw — a partial list would remove rules below.
@@ -530,14 +604,18 @@ export const syncRecurringTransactions = async (): Promise<FeatureSyncResult> =>
       });
       byCloudId.set(row.id, { ...existing, ...fields, cloudId: row.id });
     } else {
-      const newId = await db.recurringTransactions.add({
+      // Re-checked against the live table rather than the pre-network snapshot
+      // above: `recurringTransactions` has an auto-increment key, so a second
+      // insert of the same server row is a duplicate rule, not an upsert.
+      const newId = await insertIfAbsent(db.recurringTransactions, row.id, {
         ...fields,
         cloudId: row.id,
         accountId: 0,
         startDate: row.startDate ? new Date(row.startDate) : new Date(),
         createdAt: new Date(),
-      } as RecurringTransaction);
-      byCloudId.set(row.id, { ...fields, id: newId as number, cloudId: row.id } as RecurringTransaction);
+      });
+      if (newId === null) continue; // another pass inserted it first
+      byCloudId.set(row.id, { ...fields, id: newId, cloudId: row.id } as RecurringTransaction);
     }
     result.pulled += 1;
   }
@@ -587,7 +665,7 @@ export const syncRecurringTransactions = async (): Promise<FeatureSyncResult> =>
   }
 
   return result;
-};
+  });
 
 // ─── Bills / attachments ──────────────────────────────────────────────────────
 
@@ -615,7 +693,8 @@ interface BillApiRow {
  * demand through `downloadUrl`, so logging in on a new device does not drag
  * every receipt over the network. Upload stays with the offline upload queue.
  */
-export const syncBills = async (): Promise<FeatureSyncResult> => {
+export const syncBills = (): Promise<FeatureSyncResult> =>
+  coalesced('bills', async () => {
   let serverRows: BillApiRow[];
   try {
     const response = await apiClient.get<{ success: boolean; data: BillApiRow[] }>('/bills', {
@@ -652,7 +731,10 @@ export const syncBills = async (): Promise<FeatureSyncResult> => {
         updatedAt: new Date(),
       });
     } else {
-      await db.documents.add({
+      // Same reasoning as recurring rules: `documents` is auto-increment, so a
+      // racing pass would add a second copy of the same receipt rather than
+      // updating the first.
+      const inserted = await insertIfAbsent(db.documents, row.id, {
         cloudId: row.id,
         documentType: 'receipt',
         fileName: row.fileName || `bill-${row.id}`,
@@ -666,13 +748,13 @@ export const syncBills = async (): Promise<FeatureSyncResult> => {
         createdAt: row.uploadedAt ? new Date(row.uploadedAt) : new Date(),
         updatedAt: new Date(),
       });
-      result.pulled += 1;
+      if (inserted !== null) result.pulled += 1;
     }
   }
 
   await relinkBillsToTransactions();
   return result;
-};
+  });
 
 /**
  * Attach every synced bill to its transaction, for the rows where both sides are

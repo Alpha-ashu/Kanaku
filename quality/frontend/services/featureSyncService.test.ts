@@ -43,6 +43,11 @@ const makeTable = (rows: Array<Record<string, any>>, key: string) => ({
     rows.push({ ...row, [key]: row[key] ?? id });
     return id;
   }),
+  // Used by insertIfAbsent's live re-check. `cloudId` is not a Dexie index on
+  // these tables, so the real code scans with filter() rather than where().
+  filter: vi.fn((predicate: (row: Record<string, any>) => boolean) => ({
+    first: vi.fn(async () => rows.find(predicate)),
+  })),
   update: vi.fn(async (id: any, changes: Record<string, any>) => {
     const row = rows.find((existing) => existing[key] === id);
     if (!row) return 0;
@@ -68,6 +73,10 @@ vi.mock('@/lib/database', () => ({
   db: {
     get budgets() { return makeTable(mocks.state.budgets, 'id'); },
     get recurringTransactions() { return makeTable(mocks.state.recurring, 'id'); },
+    // Dexie serialises rw transactions over a table, which is what makes the
+    // read-then-insert in insertIfAbsent atomic. Nothing here is concurrent
+    // within a single call, so running the body inline is a faithful stand-in.
+    transaction: vi.fn(async (_mode: string, _table: unknown, fn: () => Promise<unknown>) => fn()),
   },
 }));
 
@@ -273,4 +282,64 @@ describe('syncRecurringTransactions', () => {
     expect(result.offline).toBe(true);
     expect(mocks.state.recurring).toHaveLength(1);
   });
+});
+
+/**
+ * CONCURRENT SYNC MUST NOT DUPLICATE
+ *
+ * Every sync here snapshots the local table, awaits the network, then inserts
+ * the server rows missing FROM THAT SNAPSHOT. Two overlapping runs therefore
+ * both conclude a row is missing and both insert it.
+ *
+ * That overlap was rare while these ran once per session and on pull-to-refresh.
+ * It stopped being rare when the backend started emitting change events
+ * (budgets_updated / recurring_updated / categories_updated / bills_updated):
+ * the event arrives exactly when the user is also opening the page that runs its
+ * own sync. The project's duplicate-prevention notes name this shape directly —
+ * "server create emits a socket event to the SAME user -> pull races the insert".
+ *
+ * SCOPE: this covers the whole-run overlap, which is the risk the change events
+ * actually introduced, and it fails without the coalescer. The narrower
+ * stale-snapshot window inside the merge loop is NOT exercised here — these
+ * functions snapshot the local table after the network call, so a unit test at
+ * this level cannot open that window honestly. `insertIfAbsent` guards it as a
+ * documented backstop rather than as a fix for a demonstrated failure.
+ */
+describe('concurrent syncs do not duplicate rows', () => {
+  it('coalesces overlapping syncRecurringTransactions into one run', async () => {
+    let resolveGet: (value: unknown) => void = () => {};
+    mocks.get.mockImplementation(
+      () => new Promise((resolve) => { resolveGet = resolve; }),
+    );
+
+    // Both callers start while the network call is still outstanding — the
+    // socket event landing mid-page-load.
+    const first = syncRecurringTransactions();
+    const second = syncRecurringTransactions();
+
+    resolveGet({
+      success: true,
+      data: [{
+        id: 'srv-rec-1',
+        name: 'Rent',
+        amount: 20000,
+        type: 'expense',
+        category: 'Housing',
+        frequency: 'monthly',
+        startDate: new Date().toISOString(),
+        isActive: true,
+      }],
+    });
+
+    await Promise.all([first, second]);
+
+    // One server rule, one local row — not two.
+    const forServerRow = mocks.state.recurring.filter((r) => r.cloudId === 'srv-rec-1');
+    expect(forServerRow).toHaveLength(1);
+
+    // And the second caller was served by the first run rather than issuing
+    // its own request.
+    expect(mocks.get).toHaveBeenCalledTimes(1);
+  });
+
 });
