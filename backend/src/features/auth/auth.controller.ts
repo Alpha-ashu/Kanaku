@@ -264,18 +264,38 @@ export const checkEmailAvailability = async (req: Request, res: Response, next: 
     if (!EMAIL_REGEX.test(normalized)) {
       return res.status(200).json({ available: false, code: 'INVALID_EMAIL' });
     }
-    // Check BOTH the local users table and the synced public.profiles table: a
-    // Supabase-managed account can land in profiles before it has a prisma.user
-    // row, so checking users alone under-reports duplicates (finding F2).
-    // NOTE: a brand-new, unconfirmed/unsynced Supabase Auth account may still be
-    // absent from both tables. The signup flow's Supabase duplicate guard
-    // (empty `identities`) is the authoritative gate; this endpoint is only a
-    // best-effort, pre-submit hint.
+    // Check BOTH the local users table and the synced public.profiles table:
+    // An email is in use ONLY if the account is verified or active.
+    // Abandoned / unverified signups do not block registration.
     const [existingUser, existingProfile] = await Promise.all([
-      prisma.user.findUnique({ where: { email: normalized }, select: { id: true } }),
-      prisma.profiles.findFirst({ where: { email: normalized }, select: { id: true } }),
+      prisma.user.findUnique({
+        where: { email: normalized },
+        select: { id: true, emailVerified: true, status: true },
+      }),
+      prisma.profiles.findFirst({
+        where: { email: normalized },
+        select: { id: true },
+      }),
     ]);
-    return res.status(200).json({ available: !existingUser && !existingProfile });
+
+    const userInUse = Boolean(
+      existingUser && (existingUser.emailVerified || existingUser.status !== 'pending_verification')
+    );
+
+    let profileInUse = false;
+    if (existingProfile) {
+      if (existingUser && existingProfile.id === existingUser.id) {
+        profileInUse = userInUse;
+      } else {
+        const owner = await prisma.user.findUnique({
+          where: { id: existingProfile.id },
+          select: { emailVerified: true, status: true },
+        });
+        profileInUse = Boolean(!owner || owner.emailVerified || owner.status !== 'pending_verification');
+      }
+    }
+
+    return res.status(200).json({ available: !userInUse && !profileInUse });
   } catch (error) {
     return next(error);
   }
@@ -369,6 +389,28 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
       });
       targetUserId = existingUser.id;
       registeredTokens = generateTokens(updatedUser);
+
+      // Keep profiles synchronized if name or phone was provided
+      const normalizedPhone = normalizePhone(input.phone ?? input.mobile);
+      if (normalizedPhone) {
+        const phoneHold = await resolveSignupPhoneHold(normalizedPhone);
+        if (phoneHold.inUse && phoneHold.releasableProfileId !== existingUser.id) {
+          throw AppError.conflict('Phone number already in use', 'PHONE_EXISTS');
+        }
+        if (phoneHold.releasableProfileId && phoneHold.releasableProfileId !== existingUser.id) {
+          await prisma.profiles.updateMany({
+            where: { id: phoneHold.releasableProfileId, phone: normalizedPhone },
+            data: { phone: null },
+          });
+        }
+      }
+      await prisma.profiles.updateMany({
+        where: { id: existingUser.id },
+        data: {
+          full_name: sanitizedName,
+          ...(normalizedPhone ? { phone: normalizedPhone } : {}),
+        },
+      });
     } else {
       const sanitizedInput = {
         ...input,

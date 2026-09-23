@@ -99,7 +99,13 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
   const [verifyLaterChosen, setVerifyLaterChosen] = useState(false);
   const [step, setStep] = useState<AuthStep>(initialStep || 'welcome');
   const [email, setEmail] = useState('');
-  const [isNewUser, setIsNewUser] = useState(false);
+  const [isNewUser, setIsNewUser] = useState(() => {
+    try {
+      return localStorage.getItem('is_new_user') === 'true';
+    } catch {
+      return false;
+    }
+  });
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [salaryAccount, setSalaryAccount] = useState<SalaryAccount | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -133,9 +139,10 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
   // Persist the current onboarding/auth step so a reload mid-flow can resume it
   // (the matching reader is `checkFlowState` below). Was referenced but never
   // defined — calling it threw a ReferenceError on every step transition.
-  const saveFlowState = (flowStep: AuthStep) => {
+  const saveFlowState = (flowStep: AuthStep, emailOverride?: string) => {
     try {
-      if (email) localStorage.setItem('pending_auth_email', email);
+      const targetEmail = emailOverride || email;
+      if (targetEmail) localStorage.setItem('pending_auth_email', targetEmail);
       localStorage.setItem('auth_flow_step', flowStep);
       localStorage.setItem('auth_flow_step_timestamp', String(Date.now()));
     } catch {
@@ -165,6 +172,11 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
       const pendingEmail = localStorage.getItem('pending_auth_email');
       const flowStep = localStorage.getItem('auth_flow_step');
       const timestampStr = localStorage.getItem('auth_flow_step_timestamp');
+      const isNewStored = localStorage.getItem('is_new_user') === 'true';
+
+      if (isNewStored) {
+        setIsNewUser(true);
+      }
 
       if (pendingEmail && flowStep) {
         const isResetStep = flowStep === 'reset-otp-verify' || flowStep === 'reset-password';
@@ -186,7 +198,8 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
 
   useEffect(() => {
     const isResetFlow = step === 'reset-otp-verify' || step === 'reset-password' || step === 'reset-success';
-    if (!isResetFlow && step !== 'forgot-password') {
+    const isSignupOtpFlow = step === 'otp-verify';
+    if (!isResetFlow && !isSignupOtpFlow && step !== 'forgot-password') {
       localStorage.removeItem('auth_flow_step');
       localStorage.removeItem('pending_auth_email');
       localStorage.removeItem('auth_flow_step_timestamp');
@@ -432,11 +445,14 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
         monthlyIncome: '',
       });
       setIsNewUser(true);
+      localStorage.setItem('is_new_user', 'true');
+      localStorage.removeItem('onboarding_completed');
+      pinService.clearPinData();
 
       const resData = response.data as any;
       // If registration requires OTP verification, transition to otp-verify step
       if (resData?.requireOtp || !resData?.accessToken) {
-        saveFlowState('otp-verify');
+        saveFlowState('otp-verify', data.email);
         setStep('otp-verify');
         if (resData?.code) {
           sessionStorage.setItem('kanaku_dev_otp', resData.code);
@@ -497,11 +513,20 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
   };
 
   const handleOTPVerified = async () => {
-    if (isNewUser) {
+    const isNew = isNewUser || localStorage.getItem('is_new_user') === 'true';
+    if (isNew) {
       // New users skip AuthFlow onboarding and go to NewUserOnboarding in App.tsx
+      localStorage.removeItem('is_new_user');
       localStorage.removeItem('auth_flow_step');
       localStorage.removeItem('pending_auth_email');
+      localStorage.removeItem('onboarding_completed');
+      pinService.clearPinData();
       window.dispatchEvent(new CustomEvent('KANAKU_AUTH_CHANGE'));
+      setTimeout(() => {
+        if (!window.location.hash || window.location.hash === '#/') {
+          window.location.href = '/';
+        }
+      }, 1500);
     } else {
       // Check if user already has PIN server-side before routing to pin-setup
       try {

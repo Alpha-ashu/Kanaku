@@ -38,6 +38,9 @@ function getTransporter(): Transporter | null {
       port,
       secure,
       auth: user && pass ? { user, pass } : undefined,
+      connectionTimeout: 5000, // 5s connection timeout
+      greetingTimeout: 5000,   // 5s greeting timeout
+      socketTimeout: 8000,     // 8s socket inactivity timeout
     });
 
     logger.info(`[Email/SMTP] Initialized transporter for ${host}:${port}`);

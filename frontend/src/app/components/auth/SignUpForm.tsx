@@ -540,8 +540,8 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
             : 'border-slate-200 bg-slate-50/50 hover:border-slate-300 focus-within:bg-white focus-within:border-violet-600 focus-within:ring-2 focus-within:ring-violet-500/20'
         }`}>
           {/* Country Code Prefix */}
-          <div className="flex items-center pl-3 pr-2 border-r border-slate-200/80 bg-slate-100/50 rounded-l-xl select-none">
-            <Phone size={15} className="text-slate-400 mr-1.5 shrink-0" />
+          <div className="flex items-center pl-2.5 sm:pl-3 pr-1.5 sm:pr-2 border-r border-slate-200/80 bg-slate-100/50 rounded-l-xl select-none shrink-0">
+            <Phone size={14} className="text-slate-400 mr-1 sm:mr-1.5 shrink-0 hidden xs:block" />
             <select
               aria-label="Country code"
               value={countryCode}
@@ -598,7 +598,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
 
       {/* Password */}
       <div>
-        <div className="flex items-center justify-between mb-1.5">
+        <div className="flex flex-wrap items-center justify-between gap-1 mb-1.5">
           <label htmlFor="password" className="block text-xs font-semibold text-slate-700">
             Password <span className="text-red-500">*</span>
           </label>
@@ -608,7 +608,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSwitchToSignIn, onSubm
             data-testid="auth-signup-suggest-password-button"
             className="text-xs text-violet-600 hover:text-violet-700 font-semibold flex items-center gap-1 transition-colors"
           >
-            <Sparkles size={12} /> Suggest a strong password
+            <Sparkles size={12} className="shrink-0" /> <span className="truncate">Suggest a strong password</span>
           </button>
         </div>
         <div className="relative">

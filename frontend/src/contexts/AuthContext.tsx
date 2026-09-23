@@ -214,7 +214,9 @@ const decodeJwt = (token: string): any => {
     const parts = token.split('.');
     if (parts.length !== 3) return null;
     const payload = parts[1];
-    const decoded = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
+    const b64 = payload.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = b64.padEnd(b64.length + (4 - (b64.length % 4)) % 4, '=');
+    const decoded = atob(padded);
     return JSON.parse(decoded);
   } catch (err) {
     console.error('Failed to decode JWT:', err);

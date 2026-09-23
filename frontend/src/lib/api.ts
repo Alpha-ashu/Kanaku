@@ -1142,8 +1142,7 @@ export const api = {
 
     register: (data: { name: string; email: string; password: string; firstName?: string; lastName?: string; mobile?: string }) =>
       apiClient.post('/auth/register', data, {
-        showSuccessToast: true,
-        successMessage: 'Verification code sent to your email',
+        showSuccessToast: false,
       }),
 
     verifyRegistrationOtp: (data: { email: string; code: string; firstName?: string; lastName?: string; mobile?: string }) =>

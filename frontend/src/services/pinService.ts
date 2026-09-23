@@ -132,7 +132,9 @@ class PinService {
           // Treat mock/non-JWT strings in tests as non-expired
           return false;
         }
-        const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+        const b64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+        const padded = b64.padEnd(b64.length + (4 - (b64.length % 4)) % 4, '=');
+        const payload = JSON.parse(atob(padded));
         const exp = payload.exp;
         if (typeof exp === 'number') {
           return Date.now() / 1000 >= exp - 10;
