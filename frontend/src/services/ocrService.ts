@@ -16,6 +16,7 @@ export interface OCRService {
     file: File,
     userId?: string,
     onProgress?: (progress: OCRProgress) => void,
+    preferredCurrency?: string,
   ): Promise<ReceiptScanResult>;
 }
 
@@ -34,6 +35,7 @@ export class TesseractOCRService implements OCRService {
     file: File,
     userId?: string,
     onProgress?: (progress: OCRProgress) => void,
+    preferredCurrency: string = 'INR',
   ): Promise<ReceiptScanResult> {
     try {
       onProgress?.({ status: 'Preparing receipt variants...', progress: 10 });
@@ -68,7 +70,7 @@ export class TesseractOCRService implements OCRService {
           statusPrefix: `Reading text (${variant.label})...`,
         });
 
-        const result = await this.parseAndComposeResult(ocr.text, ocr.confidence, userId);
+        const result = await this.parseAndComposeResult(ocr.text, ocr.confidence, userId, preferredCurrency);
         if (!bestResult || this.scoreResult(result) > this.scoreResult(bestResult)) {
           bestResult = result;
           bestInput = input;
@@ -88,7 +90,7 @@ export class TesseractOCRService implements OCRService {
             language: 'eng+hin+spa',
             statusPrefix: 'Multilingual OCR...',
           });
-          const fallbackResult = await this.parseAndComposeResult(multilingualOcr.text, multilingualOcr.confidence, userId);
+          const fallbackResult = await this.parseAndComposeResult(multilingualOcr.text, multilingualOcr.confidence, userId, preferredCurrency);
           result = this.selectBestResult(result, fallbackResult);
         } catch (multilingualError) {
           console.warn('Multilingual OCR retry failed, using best single-language result:', multilingualError);
@@ -143,8 +145,13 @@ export class TesseractOCRService implements OCRService {
     }
   }
 
-  private async parseAndComposeResult(rawText: string, ocrConfidence: number, userId?: string): Promise<ReceiptScanResult> {
-    const parsed = await this.parseWithStrategies(rawText, userId);
+  private async parseAndComposeResult(
+    rawText: string,
+    ocrConfidence: number,
+    userId?: string,
+    preferredCurrency: string = 'INR',
+  ): Promise<ReceiptScanResult> {
+    const parsed = await this.parseWithStrategies(rawText, userId, preferredCurrency);
     const parserConfidence = parsed.confidence;
     const combinedConfidence = (() => {
       if (typeof parserConfidence === 'number') {
@@ -160,14 +167,21 @@ export class TesseractOCRService implements OCRService {
     };
   }
 
-  private async parseWithStrategies(rawText: string, userId?: string): Promise<ReceiptScanResult> {
+  private async parseWithStrategies(
+    rawText: string,
+    userId?: string,
+    preferredCurrency: string = 'INR',
+  ): Promise<ReceiptScanResult> {
     try {
       const strategic = await receiptParserService.parseReceipt(rawText, { userId });
-      const heuristic = await parseReceiptText(rawText, userId);
+      const heuristic = await parseReceiptText(rawText, userId, preferredCurrency);
+
+      const resolvedCurrency = strategic.currency || heuristic.currency || preferredCurrency;
 
       return {
         ...heuristic,
         ...strategic,
+        currency: resolvedCurrency,
         items: strategic.items?.length ? strategic.items : heuristic.items,
         taxBreakdown: strategic.taxBreakdown?.length ? strategic.taxBreakdown : heuristic.taxBreakdown,
         validationResult: strategic.validationResult ?? heuristic.validationResult,
@@ -176,7 +190,7 @@ export class TesseractOCRService implements OCRService {
       };
     } catch {
       // Keep existing parser as a safety fallback for unknown receipt formats.
-      return parseReceiptText(rawText, userId);
+      return parseReceiptText(rawText, userId, preferredCurrency);
     }
   }
 

@@ -1354,7 +1354,10 @@ const AppContent: React.FC = () => {
       case 'edit-account': return <EditAccount />;
       case 'book-advisor': return <BookAdvisor />;
       case 'add-transaction': return <AddTransaction key={quickActionKey} />;
-      case 'receipt-scanner': return <ReceiptScannerPage />;
+      case 'receipt-scanner':
+      case 'bills':
+      case 'bill':
+      case 'receipts': return <ReceiptScannerPage />;
       case 'loans': return <Loans />;
       case 'goals': return <Goals />;
       case 'goal-detail': return <GoalDetail />;

@@ -1356,7 +1356,7 @@ export async function preprocessReceiptFileVariants(file: File): Promise<Array<{
   }
 }
 
-export async function parseReceiptText(rawText: string, userId?: string): Promise<ReceiptScannerResult> {
+export async function parseReceiptText(rawText: string, userId?: string, preferredCurrency: string = 'INR'): Promise<ReceiptScannerResult> {
   const lines = rawText
     .split(/\r?\n/)
     .map((line) => normalizeWhitespace(line))
@@ -1501,12 +1501,6 @@ export async function parseReceiptText(rawText: string, userId?: string): Promis
 
   let totalWasDerived = false;
   if (!amount && expectedCalculatedTotal > 0) {
-    // The printed total could not be read, so this is the sum of the parts.
-    // That is a guess, not a reading: it silently ignores the round-off line,
-    // any charge the parser missed, and any item it failed to see. On the
-    // Shri Gowri Krishnaa bill it produces 474.90 where the receipt prints
-    // 475.00. Worth showing — but as something to check, not as a confident
-    // answer, which is what the old 0.85 claimed.
     amount = expectedCalculatedTotal;
     totalWasDerived = true;
     finalConfidence = 0.45;
@@ -1533,7 +1527,7 @@ export async function parseReceiptText(rawText: string, userId?: string): Promis
   const time = extractTime(lines);
   const paymentMethod = extractPaymentMethod(lines);
   const invoiceNumber = extractInvoiceNumber(lines);
-  const currency = documentIntelligenceService.detectCurrency(rawText);
+  const currency = documentIntelligenceService.detectCurrency(rawText, preferredCurrency);
   const categoryHint = deriveCategoryHint(rawText, merchantName, items);
   const categoryPrediction = await documentIntelligenceService.predictCategory({
     merchantName,

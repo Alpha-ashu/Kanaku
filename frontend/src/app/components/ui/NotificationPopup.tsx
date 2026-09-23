@@ -3,29 +3,34 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, TrendingDown, AlertCircle, Target, Gift, Zap, X } from 'lucide-react';
 import type { Notification as AppNotification } from '@/lib/database';
 
-interface NotificationItem {
- id: string;
- type: AppNotification['type'] | 'transaction' | 'reminder' | 'investment' | 'achievement';
- title: string;
- description: string;
- timestamp: Date;
- icon: React.ReactNode;
- color: string;
- bgColor: string;
+export interface NotificationItem {
+  id: string;
+  dbId?: number;
+  type: AppNotification['type'] | 'transaction' | 'reminder' | 'investment' | 'achievement' | string;
+  title: string;
+  description: string;
+  timestamp: Date;
+  icon: React.ReactNode;
+  color: string;
+  bgColor: string;
+  deepLink?: string;
+  category?: string;
 }
 
 interface NotificationPopupProps {
- isOpen: boolean;
- onClose: () => void;
- onViewAll: () => void;
- notifications: NotificationItem[];
+  isOpen: boolean;
+  onClose: () => void;
+  onViewAll: () => void;
+  onNotificationClick?: (notification: NotificationItem) => void;
+  notifications: NotificationItem[];
 }
 
 export const NotificationPopup: React.FC<NotificationPopupProps> = ({
- isOpen,
- onClose,
- onViewAll,
- notifications,
+  isOpen,
+  onClose,
+  onViewAll,
+  onNotificationClick,
+  notifications,
 }) => {
  const recentNotifications = notifications.slice(0, 3);
 
@@ -80,41 +85,56 @@ export const NotificationPopup: React.FC<NotificationPopupProps> = ({
  <div className="max-h-96 overflow-y-auto scrollbar-hide">
  {recentNotifications.length > 0 ? (
  <div className="divide-y divide-gray-100">
- {recentNotifications.map((notification) => (
- <motion.div
- key={notification.id}
- initial={{ opacity: 0, x: 20 }}
- animate={{ opacity: 1, x: 0 }}
- className={`p-4 hover:bg-gray-50 transition-colors ${notification.bgColor}`}
- >
- <div className="flex gap-3">
- {/* Icon */}
- <div className={`flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center ${
- notification.color.includes('text-red') ? 'bg-red-100' :
- notification.color.includes('text-orange') ? 'bg-orange-100' :
- notification.color.includes('text-green') ? 'bg-green-100' :
- notification.color.includes('text-blue') ? 'bg-blue-100' :
- notification.color.includes('text-purple') ? 'bg-purple-100' :
- 'bg-yellow-100'
- }`}>
- {notification.icon}
- </div>
+        {recentNotifications.map((notification) => (
+          <motion.div
+            key={notification.id}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            role="button"
+            tabIndex={0}
+            onClick={() => onNotificationClick?.(notification)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onNotificationClick?.(notification);
+              }
+            }}
+            className={`p-4 hover:bg-slate-50/90 active:scale-[0.99] transition-all cursor-pointer select-none group border-b border-gray-50 last:border-b-0 ${notification.bgColor}`}
+          >
+            <div className="flex gap-3 items-start">
+              {/* Icon */}
+              <div className={`flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center shadow-xs transition-transform group-hover:scale-105 ${
+                notification.color.includes('text-red') ? 'bg-red-100 text-red-600' :
+                notification.color.includes('text-orange') ? 'bg-orange-100 text-orange-600' :
+                notification.color.includes('text-green') ? 'bg-green-100 text-green-600' :
+                notification.color.includes('text-blue') ? 'bg-blue-100 text-blue-600' :
+                notification.color.includes('text-purple') ? 'bg-purple-100 text-purple-600' :
+                'bg-indigo-100 text-indigo-600'
+              }`}>
+                {notification.icon}
+              </div>
 
- {/* Content */}
- <div className="flex-1 min-w-0">
- <h4 className="font-semibold text-sm text-gray-900">
- {notification.title}
- </h4>
- <p className="text-xs text-gray-600 mt-1 line-clamp-2">
- {notification.description}
- </p>
- <p className="text-xs text-gray-400 mt-2">
- {getTimeAgo(notification.timestamp)}
- </p>
- </div>
- </div>
- </motion.div>
- ))}
+              {/* Content */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-1">
+                  <h4 className="font-bold text-sm text-gray-900 group-hover:text-indigo-600 transition-colors truncate">
+                    {notification.title}
+                  </h4>
+                  <span className="text-3xs font-semibold text-slate-400 shrink-0">
+                    {getTimeAgo(notification.timestamp)}
+                  </span>
+                </div>
+                <p className="text-xs text-gray-600 mt-1 line-clamp-2 leading-relaxed">
+                  {notification.description}
+                </p>
+                <div className="mt-2 flex items-center gap-1 text-3xs font-bold text-indigo-600 uppercase tracking-wider opacity-0 group-hover:opacity-100 transition-opacity">
+                  <span>View details</span>
+                  <span>→</span>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        ))}
  </div>
  ) : (
  <div className="p-8 text-center">

@@ -253,12 +253,27 @@ async function predictCategory(input: {
   };
 }
 
-function detectCurrency(text: string, defaultCurrency: string = 'INR') {
+function detectCurrency(text: string, defaultCurrency: string = 'INR'): string {
   const t = text.toLowerCase();
 
-  // Location/currency evidence for Vietnam wins before anything else: an
-  // "INDIAN RESTAURANT" in Hanoi would otherwise trip the /india/ heuristic
-  // below and book an 872,000 VND dinner as ₹872,000.
+  // 1. Evidence of Indian Context (GST, FSSAI, INR symbols/tokens, Indian cities, phone +91)
+  const isIndianContext =
+    text.includes('₹') ||
+    t.includes('inr') ||
+    t.includes('rs.') ||
+    t.includes('rs ') ||
+    t.includes('rupee') ||
+    t.includes('rupees') ||
+    t.includes('paise') ||
+    /\b(?:gst|gstin|cgst|sgst|igst|fssai|vat\s*tin)\b/i.test(t) ||
+    /\b(?:india|delhi|mumbai|bengaluru|bangalore|chennai|kolkata|hyderabad|pune|ahmedabad|jaipur|noida|gurgaon|gurugram|kochi|chandigarh)\b/i.test(t) ||
+    /\+91[\s-]?\d{10}/.test(text);
+
+  if (isIndianContext) {
+    return 'INR';
+  }
+
+  // 2. Vietnam
   if (
     t.includes('vnd') || t.includes('₫') ||
     t.includes('vietnam') || t.includes('viet nam') ||
@@ -268,26 +283,30 @@ function detectCurrency(text: string, defaultCurrency: string = 'INR') {
     return 'VND';
   }
 
-  // Strong exact string matches win first to prevent hallucination overrides
-  if (t.includes('inr') || t.includes('rs.') || t.includes('INR')) return 'INR';
-  if (t.includes('usd') || t.includes('$')) return 'USD';
-  if (t.includes('eur') || t.includes('EUR')) return 'EUR';
-  if (t.includes('gbp') || t.includes('GBP')) return 'GBP';
-  if (t.includes('aed')) return 'AED';
-  
-  // OCR often hallucinates  interchangeably with INR, or Y for INR.
-  // ONLY use JPY if it explicitly says "JPY". 
-  if (t.includes('jpy')) return 'JPY';
-  
-  // If the OCR hallucinates "" but it's an Indian receipt (has gst/fssai), ignore .
-  if (t.includes('')) {
-    if (t.match(/gst|fssai|tin|india|delhi|mumbai|bengaluru|bangalore/i)) {
-      return 'INR';
-    }
-    return 'JPY'; 
+  // 3. International currencies (explicit codes first, symbols second)
+  if (/\b(?:eur|euro|euros)\b/i.test(t) || text.includes('€')) return 'EUR';
+  if (/\b(?:gbp|pound|pounds)\b/i.test(t) || text.includes('£')) return 'GBP';
+  if (/\b(?:aed|dirham)\b/i.test(t)) return 'AED';
+  if (/\b(?:jpy|yen)\b/i.test(t) || text.includes('¥')) return 'JPY';
+  if (/\b(?:cad)\b/i.test(t)) return 'CAD';
+  if (/\b(?:aud)\b/i.test(t)) return 'AUD';
+  if (/\b(?:sgd)\b/i.test(t)) return 'SGD';
+
+  // Only return USD if explicitly mentioned as USD or if defaultCurrency is USD
+  if (/\b(?:usd|dollar|dollars)\b/i.test(t)) {
+    return 'USD';
   }
 
-  return defaultCurrency;
+  if (text.includes('$')) {
+    // If user's active currency is already set, respect it over an isolated '$' symbol
+    // which OCR often hallucinates from letters like S, 5, or vertical fold lines.
+    if (defaultCurrency && defaultCurrency !== 'USD') {
+      return defaultCurrency;
+    }
+    return 'USD';
+  }
+
+  return defaultCurrency || 'INR';
 }
 
 function detectBankName(text: string) {

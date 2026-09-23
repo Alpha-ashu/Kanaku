@@ -315,6 +315,7 @@ export const ResultsView: React.FC<{
   onSubcategoryChange: (value: string) => void;
   onRescan: () => void;
   onSubmit: () => void;
+  onSaveReceiptOnly?: () => void;
 }> = ({
   scanResult,
   accounts,
@@ -329,6 +330,7 @@ export const ResultsView: React.FC<{
   onSubcategoryChange,
   onRescan,
   onSubmit,
+  onSaveReceiptOnly,
 }) => {
   const effectiveCurrency = scanResult.currency || currency;
 
@@ -488,6 +490,7 @@ export const ResultsView: React.FC<{
             currency={effectiveCurrency}
             hasError={scanResult.amountMismatchDetected || !scanResult.amount || scanResult.amount <= 0}
             onChange={(value) => onFieldChange('amount', value)}
+            onCurrencyChange={(curr) => onFieldChange('currency', curr)}
           />
 
           {/* Merchant */}
@@ -556,6 +559,7 @@ export const ResultsView: React.FC<{
       <ActionButtons
         onRescan={onRescan}
         onSubmit={onSubmit}
+        onSaveReceiptOnly={onSaveReceiptOnly}
         isFormPrefillMode={isFormPrefillMode}
         expenseMode={expenseMode}
         isDisabled={!selectedAccountId || !scanResult.amount}
@@ -871,41 +875,65 @@ const AmountField: React.FC<{
   currency: string;
   hasError?: boolean;
   onChange: (value: number) => void;
-}> = ({ amount, currency, hasError, onChange }) => (
-  <div className={cn("KANAKU-receipt-field KANAKU-receipt-amount transition-all relative overflow-hidden py-2 px-3", hasError && "!border-rose-400/80")}>
-    <div className="flex items-center justify-between mb-1">
-      <label className={cn("block text-3xs font-bold uppercase tracking-widest", hasError ? "!text-rose-200" : "text-indigo-200")}>
-        Total Amount *
-      </label>
-      {hasError && (
-        <span className="text-3xs font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-rose-500/30 text-rose-200 border border-rose-400/40">
-          Required
-        </span>
-      )}
-    </div>
-    <div className="flex items-center gap-2">
-      <span className={cn(
-        "px-2 py-0.5 rounded-lg bg-white/15 text-white font-bold text-xs sm:text-sm tracking-wide shrink-0 select-none whitespace-nowrap shadow-inner border border-white/10",
-        hasError && "!bg-rose-500/20 !border-rose-400/30"
-      )}>
-        {currency}
-      </span>
-      <input
-        data-testid="receipt-scanner-views-0-00"
-        type="number"
-        step="0.01"
-        value={amount || ''}
-        onChange={(event) => onChange(parseFloat(event.target.value) || 0)}
-        className={cn(
-          "font-display flex-1 min-w-0 bg-transparent text-base sm:text-lg font-bold focus:outline-none transition-colors text-white placeholder-white/40 tracking-tight",
-          hasError && "!text-rose-100"
+  onCurrencyChange?: (currency: string) => void;
+}> = ({ amount, currency, hasError, onChange, onCurrencyChange }) => {
+  const commonCurrencies = ['INR', 'USD', 'EUR', 'GBP', 'AED', 'CAD', 'AUD', 'SGD', 'JPY'];
+
+  return (
+    <div className={cn("KANAKU-receipt-field KANAKU-receipt-amount transition-all relative overflow-hidden py-2 px-3", hasError && "!border-rose-400/80")}>
+      <div className="flex items-center justify-between mb-1">
+        <label className={cn("block text-3xs font-bold uppercase tracking-widest", hasError ? "!text-rose-200" : "text-indigo-200")}>
+          Total Amount *
+        </label>
+        {hasError && (
+          <span className="text-3xs font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-rose-500/30 text-rose-200 border border-rose-400/40">
+            Required
+          </span>
         )}
-        placeholder="0.00"
-        aria-label="Total amount"
-      />
+      </div>
+      <div className="flex items-center gap-2">
+        {onCurrencyChange ? (
+          <select
+            data-testid="receipt-scanner-currency-select"
+            value={currency}
+            onChange={(e) => onCurrencyChange(e.target.value)}
+            className={cn(
+              "px-2 py-0.5 rounded-lg bg-white/20 text-white font-bold text-xs sm:text-sm tracking-wide shrink-0 border border-white/20 cursor-pointer focus:outline-none",
+              hasError && "!bg-rose-500/20 !border-rose-400/30"
+            )}
+            aria-label="Currency"
+          >
+            {commonCurrencies.map((c) => (
+              <option key={c} value={c} className="text-slate-900 bg-white">
+                {c === 'INR' ? 'INR (₹)' : c === 'USD' ? 'USD ($)' : c === 'EUR' ? 'EUR (€)' : c === 'GBP' ? 'GBP (£)' : c}
+              </option>
+            ))}
+          </select>
+        ) : (
+          <span className={cn(
+            "px-2 py-0.5 rounded-lg bg-white/15 text-white font-bold text-xs sm:text-sm tracking-wide shrink-0 select-none whitespace-nowrap shadow-inner border border-white/10",
+            hasError && "!bg-rose-500/20 !border-rose-400/30"
+          )}>
+            {currency}
+          </span>
+        )}
+        <input
+          data-testid="receipt-scanner-views-0-00"
+          type="number"
+          step="0.01"
+          value={amount || ''}
+          onChange={(event) => onChange(parseFloat(event.target.value) || 0)}
+          className={cn(
+            "font-display flex-1 min-w-0 bg-transparent text-base sm:text-lg font-bold focus:outline-none transition-colors text-white placeholder-white/40 tracking-tight",
+            hasError && "!text-rose-100"
+          )}
+          placeholder="0.00"
+          aria-label="Total amount"
+        />
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const TextField: React.FC<{
  label: string;
@@ -1104,27 +1132,42 @@ const AccountSelector: React.FC<{
 const ActionButtons: React.FC<{
   onRescan: () => void;
   onSubmit: () => void;
+  onSaveReceiptOnly?: () => void;
   isFormPrefillMode: boolean;
   expenseMode: 'individual' | 'group';
   isDisabled: boolean;
-}> = ({ onRescan, onSubmit, isFormPrefillMode, expenseMode, isDisabled }) => (
-  <div className="flex gap-2">
+}> = ({ onRescan, onSubmit, onSaveReceiptOnly, isFormPrefillMode, expenseMode, isDisabled }) => (
+  <div className="flex flex-col sm:flex-row gap-2 pt-2">
     <button
       data-testid="receipt-scanner-views-rescan"
+      type="button"
       onClick={onRescan}
-      className="flex shrink-0 items-center justify-center gap-1.5 rounded-lg border border-gray-200 px-4 py-2.5 text-xs sm:text-sm font-semibold text-gray-600 transition-colors hover:bg-gray-50 active:scale-95 cursor-pointer"
+      className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-50 active:scale-95 cursor-pointer shrink-0"
     >
-      <RefreshCw size={13} /> Rescan
+      <RefreshCw size={14} /> Rescan
     </button>
+    {onSaveReceiptOnly && (
+      <button
+        data-testid="receipt-scanner-views-save-receipt-only"
+        type="button"
+        onClick={onSaveReceiptOnly}
+        className="flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-slate-300 bg-slate-100 hover:bg-slate-200/80 px-4 py-2.5 text-xs sm:text-sm font-bold text-slate-800 transition-all active:scale-[0.98] cursor-pointer"
+      >
+        <Paperclip size={14} className="text-slate-600" />
+        Add Bill Receipt Only
+      </button>
+    )}
     <button
       data-testid="receipt-scanner-views-button-6"
+      type="button"
       onClick={onSubmit}
       disabled={isDisabled}
-      className="flex flex-1 items-center justify-center rounded-lg bg-gray-900 py-2.5 text-xs sm:text-sm font-bold text-white shadow-md transition-colors hover:bg-black disabled:opacity-40 active:scale-[0.98] cursor-pointer"
+      className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-slate-900 hover:bg-black py-2.5 px-4 text-xs sm:text-sm font-bold text-white shadow-md transition-all disabled:opacity-40 active:scale-[0.98] cursor-pointer"
     >
+      <CheckCircle2 size={14} className="text-emerald-400" />
       {isFormPrefillMode
         ? `Use in ${expenseMode === 'group' ? 'Group' : 'Individual'} Expense`
-        : 'Add Transaction'}
+        : 'Add to Expense & Transactions'}
     </button>
   </div>
 );

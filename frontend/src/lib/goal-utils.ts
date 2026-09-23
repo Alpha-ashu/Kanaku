@@ -62,14 +62,32 @@ export const getGoalProgress = (currentAmount: number, targetAmount: number) => 
   return Math.max(0, Math.min(100, (currentAmount / targetAmount) * 100));
 };
 
-export const getMonthlySuggestion = (targetAmount: number, currentAmount: number, targetDate: Date) => {
-  const remaining = Math.max(0, targetAmount - currentAmount);
+export const getMonthlySuggestion = (
+  targetAmount: number | string,
+  currentAmount: number | string,
+  targetDate?: Date | string | null,
+) => {
+  const target = Number(targetAmount) || 0;
+  const current = Number(currentAmount) || 0;
+  const remaining = Math.max(0, target - current);
+
+  if (!targetDate) {
+    return { months: 1, monthlyAmount: remaining, remaining };
+  }
+
+  const parsedDate = targetDate instanceof Date ? targetDate : new Date(targetDate);
+  if (Number.isNaN(parsedDate.getTime())) {
+    return { months: 1, monthlyAmount: remaining, remaining };
+  }
+
   const now = new Date();
-  const ms = targetDate.getTime() - now.getTime();
-  const months = Math.max(1, Math.ceil(ms / (1000 * 60 * 60 * 24 * 30)));
+  const ms = parsedDate.getTime() - now.getTime();
+  const months = Math.max(1, Math.ceil(ms / (1000 * 60 * 60 * 24 * 30.4375)));
+  const monthlyAmount = months > 0 ? remaining / months : remaining;
+
   return {
     months,
-    monthlyAmount: remaining / months,
+    monthlyAmount: Number.isFinite(monthlyAmount) ? monthlyAmount : remaining,
     remaining,
   };
 };

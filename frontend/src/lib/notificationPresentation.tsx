@@ -143,3 +143,111 @@ const FALLBACK: NotificationPresentation = {
 
 export const getNotificationPresentation = (type: string): NotificationPresentation =>
   NOTIFICATION_PRESENTATION[type] ?? FALLBACK;
+
+export interface NotificationTarget {
+  page: string;
+  params?: Record<string, string>;
+}
+
+/**
+ * Resolves the destination page for any notification item.
+ * Supports explicit deepLinks as well as intelligent type/title/message heuristics.
+ */
+export function resolveNotificationTarget(notification: {
+  type?: string;
+  title?: string;
+  message?: string;
+  description?: string;
+  deepLink?: string;
+  category?: string;
+}): NotificationTarget {
+  if (notification.deepLink && notification.deepLink.trim()) {
+    const raw = notification.deepLink.trim();
+    const [pathPart, queryPart] = raw.split('?');
+    const cleanPath = pathPart.replace(/^\/+/, '');
+    const params: Record<string, string> = {};
+    if (queryPart) {
+      new URLSearchParams(queryPart).forEach((val, key) => {
+        params[key] = val;
+      });
+    }
+
+    if (cleanPath) {
+      // Normalise known path aliases
+      if (cleanPath === 'bills' || cleanPath === 'bill' || cleanPath === 'receipts') {
+        return { page: 'receipt-scanner', params };
+      }
+      return { page: cleanPath, params };
+    }
+  }
+
+  const type = (notification.type || '').toLowerCase();
+  const text = `${notification.title || ''} ${notification.message || ''} ${notification.description || ''} ${notification.category || ''}`.toLowerCase();
+
+  // Goals
+  if (type === 'goal' || text.includes('goal') || text.includes('saving target') || text.includes('savings plan')) {
+    return { page: 'goals' };
+  }
+
+  // Loans, EMIs, Borrowed / Lent
+  if (
+    type === 'loan' ||
+    type === 'loan_reminder' ||
+    type === 'emi' ||
+    text.includes('loan') ||
+    text.includes('emi') ||
+    text.includes('borrowed') ||
+    text.includes('lent') ||
+    text.includes('due payment')
+  ) {
+    return { page: 'loans' };
+  }
+
+  // Budgets & Budget Alerts
+  if (type === 'budget' || type === 'budget_alert' || text.includes('budget') || text.includes('overspending') || text.includes('spending limit')) {
+    return { page: 'budget-alerts' };
+  }
+
+  // Groups & Split Expenses
+  if (type === 'group' || type === 'group_expense' || text.includes('group') || text.includes('split') || text.includes('settle up')) {
+    return { page: 'groups' };
+  }
+
+  // Advisor Bookings & Sessions
+  if (type === 'booking' || type === 'new_booking' || type === 'session' || text.includes('advisor') || text.includes('booking') || text.includes('session')) {
+    return { page: 'advisor-panel' };
+  }
+
+  // Friends & Connections
+  if (type === 'friend_request' || type === 'friend_accepted' || text.includes('friend')) {
+    return { page: 'friends' };
+  }
+
+  // To-Do Lists & Tasks
+  if (type === 'todo_shared' || text.includes('todo') || text.includes('to-do') || text.includes('task')) {
+    return { page: 'todo-lists' };
+  }
+
+  // Scanned Bills & Receipts
+  if (type === 'bill' || type === 'receipt' || text.includes('bill') || text.includes('receipt') || text.includes('invoice')) {
+    return { page: 'receipt-scanner' };
+  }
+
+  // Recurring Payments
+  if (type === 'recurring' || text.includes('recurring') || text.includes('subscription')) {
+    return { page: 'recurring-transactions' };
+  }
+
+  // Transactions & Expenses
+  if (type === 'transaction' || type === 'expense' || text.includes('transaction') || text.includes('expense') || text.includes('payment')) {
+    return { page: 'transactions' };
+  }
+
+  // AI & Assistant
+  if (type === 'ai' || text.includes('ai assistant') || text.includes('kai')) {
+    return { page: 'ai-assistant' };
+  }
+
+  return { page: 'notifications' };
+}
+

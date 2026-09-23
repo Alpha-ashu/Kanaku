@@ -69,7 +69,7 @@ export const useReceiptScanner = () => {
     setScanStatus('');
   }, [previewUrl]);
 
-  const scanReceipt = useCallback(async (accountId?: number, userId?: string) => {
+  const scanReceipt = useCallback(async (accountId?: number, userId?: string, preferredCurrency: string = 'INR') => {
     if (!selectedFile) {
       toast.error('Please select an image first');
       return null;
@@ -92,6 +92,7 @@ export const useReceiptScanner = () => {
           setScanProgress(progress);
           setScanStatus(status);
         },
+        preferredCurrency,
       );
 
       let result: ReceiptScanResult | null = null;
@@ -102,10 +103,14 @@ export const useReceiptScanner = () => {
 
       const runCloud = async (): Promise<ReceiptScanResult | null> => {
         try {
-          return await cloudOcrService.current.scanReceipt(selectedFile, (progress) => {
-            setScanProgress(progress.progress);
-            setScanStatus(progress.status);
-          });
+          return await cloudOcrService.current.scanReceipt(
+            selectedFile,
+            (progress) => {
+              setScanProgress(progress.progress);
+              setScanStatus(progress.status);
+            },
+            preferredCurrency,
+          );
         } catch (err: any) {
           cloudFailure = err instanceof Error ? err : new Error(String(err));
           console.info('[ReceiptScanner] Cloud AI extraction unavailable:', cloudFailure.message);

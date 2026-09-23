@@ -12,21 +12,31 @@ export class EnhancedReceiptScannerService {
     file: File,
     userId?: string,
     onProgress?: (status: string, progress: number) => void,
+    preferredCurrency: string = 'INR',
   ): Promise<ReceiptScanResult> {
     onProgress?.('Scanning receipt...', 10);
-    const parsed = await this.ocrService.scanReceipt(file, userId, (progress) => {
-      onProgress?.(progress.status, progress.progress);
-    });
+    const parsed = await this.ocrService.scanReceipt(
+      file,
+      userId,
+      (progress) => {
+        onProgress?.(progress.status, progress.progress);
+      },
+      preferredCurrency,
+    );
 
     onProgress?.('Validating extracted fields...', 90);
-    const merged = await this.validateAndCorrect(parsed);
+    const merged = await this.validateAndCorrect(parsed, preferredCurrency);
 
     onProgress?.('Validation complete', 100);
     return merged;
   }
 
-  async validateAndCorrect(result: ReceiptScanResult): Promise<ReceiptScanResult> {
+  async validateAndCorrect(result: ReceiptScanResult, preferredCurrency: string = 'INR'): Promise<ReceiptScanResult> {
     const next = { ...result };
+
+    if (!next.currency || next.currency.trim() === '') {
+      next.currency = preferredCurrency || 'INR';
+    }
 
     if ((!next.amount || next.amount <= 0) && next.items && next.items.length > 0) {
       const totalFromItems = next.items.reduce((sum, item) => sum + (item.amount || 0), 0);

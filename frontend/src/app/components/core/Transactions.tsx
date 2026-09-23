@@ -1601,7 +1601,20 @@ export const Transactions: React.FC = () => {
         <ReceiptScanner
           isOpen={showScanModal}
           onClose={() => setShowScanModal(false)}
-          onTransactionCreated={() => setShowScanModal(false)}
+          onTransactionCreated={async (transactionId) => {
+            setShowScanModal(false);
+            try {
+              if (transactionId) {
+                const createdTx = await db.transactions.get(transactionId);
+                if (createdTx?.date) {
+                  setSelectedDate(new Date(createdTx.date));
+                }
+              }
+            } catch (err) {
+              console.warn('Failed to focus on created transaction date:', err);
+            }
+            refreshData();
+          }}
         />
       </div>
     </CenteredLayout>

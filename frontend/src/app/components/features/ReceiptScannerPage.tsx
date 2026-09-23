@@ -1585,7 +1585,7 @@ export const ReceiptScannerPage: React.FC = () => {
           isOpen={scannerOpen}
           onClose={() => setScannerOpen(false)}
           initialMode="scan"
-          onApplyScan={handleApplyScan}
+          onTransactionCreated={() => setScannerOpen(false)}
         />
       )}
 

@@ -191,19 +191,24 @@ const extractWithVision = async (
   imageBuffer: Buffer,
   mimeType: string,
   model: string,
+  preferredCurrency: string = 'INR',
 ): Promise<OcrEngineResult> => {
   const raw = await callGeminiWithRetry(
     model,
     [
       { inlineData: { data: imageBuffer.toString('base64'), mimeType: mimeType || 'image/jpeg' } },
-      { text: buildVisionPrompt() },
+      { text: buildVisionPrompt(preferredCurrency) },
     ],
     'Gemini vision',
   );
-  return normalizeExtractedReceipt(raw, { engine: 'gemini-vision' });
+  return normalizeExtractedReceipt(raw, { engine: 'gemini-vision', preferredCurrency });
 };
 
-const extractWithTextModel = async (rawText: string, model: string): Promise<OcrEngineResult> => {
+const extractWithTextModel = async (
+  rawText: string,
+  model: string,
+  preferredCurrency: string = 'INR',
+): Promise<OcrEngineResult> => {
   const { sanitized, flagged } = sanitizeAIInput(rawText);
   if (flagged) {
     audit({
@@ -214,8 +219,8 @@ const extractWithTextModel = async (rawText: string, model: string): Promise<Ocr
     logger.warn('Prompt-injection pattern detected in OCR text - proceeding with sanitised input');
   }
 
-  const raw = await callGeminiWithRetry(model, [{ text: buildTextPrompt(sanitized) }], 'Gemini text');
-  return { ...normalizeExtractedReceipt(raw, { engine: 'gemini-text', rawText }), rawText };
+  const raw = await callGeminiWithRetry(model, [{ text: buildTextPrompt(sanitized, preferredCurrency) }], 'Gemini text');
+  return { ...normalizeExtractedReceipt(raw, { engine: 'gemini-text', rawText, preferredCurrency }), rawText };
 };
 
 // ─── Fallback models (any OpenAI-compatible server) ─────────────────────────
@@ -286,6 +291,7 @@ const runFallbackLadder = async (
   engine: 'fallback-vision' | 'fallback-text',
   content: string | ChatContentPart[],
   rawText?: string,
+  preferredCurrency: string = 'INR',
 ): Promise<OcrEngineResult> => {
   let lastError: unknown = new Error('No OCR fallback model available');
   for (const model of endpoint.models) {
@@ -309,7 +315,7 @@ const runFallbackLadder = async (
           signal: AbortSignal.timeout(Math.min(MODEL_CALL_TIMEOUT_MS, remaining)),
         },
       );
-      const result = normalizeExtractedReceipt(parseModelJson(text, label), { engine, rawText });
+      const result = normalizeExtractedReceipt(parseModelJson(text, label), { engine, rawText, preferredCurrency });
       logger.info(`OCR: ${engine} pass complete`, {
         model,
         ms: Date.now() - started,
@@ -328,17 +334,42 @@ const runFallbackLadder = async (
   throw lastError;
 };
 
-const extractWithFallbackVision = (endpoint: FallbackEndpoint, deadline: number, imageBuffer: Buffer, mimeType: string) =>
-  runFallbackLadder(endpoint, deadline, 'fallback-vision', [
-    { type: 'text', text: buildVisionPrompt() },
-    { type: 'image_url', image_url: { url: `data:${mimeType || 'image/jpeg'};base64,${imageBuffer.toString('base64')}` } },
-  ]);
+const extractWithFallbackVision = (
+  endpoint: FallbackEndpoint,
+  deadline: number,
+  imageBuffer: Buffer,
+  mimeType: string,
+  preferredCurrency: string = 'INR',
+) =>
+  runFallbackLadder(
+    endpoint,
+    deadline,
+    'fallback-vision',
+    [
+      { type: 'text', text: buildVisionPrompt(preferredCurrency) },
+      { type: 'image_url', image_url: { url: `data:${mimeType || 'image/jpeg'};base64,${imageBuffer.toString('base64')}` } },
+    ],
+    undefined,
+    preferredCurrency,
+  );
 
-const extractWithFallbackText = (endpoint: FallbackEndpoint, deadline: number, rawText: string) =>
-  runFallbackLadder(endpoint, deadline, 'fallback-text', buildTextPrompt(sanitizeAIInput(rawText).sanitized), rawText);
+const extractWithFallbackText = (
+  endpoint: FallbackEndpoint,
+  deadline: number,
+  rawText: string,
+  preferredCurrency: string = 'INR',
+) =>
+  runFallbackLadder(
+    endpoint,
+    deadline,
+    'fallback-text',
+    buildTextPrompt(sanitizeAIInput(rawText).sanitized, preferredCurrency),
+    rawText,
+    preferredCurrency,
+  );
 
-const extractWithHeuristics = (rawText: string): OcrEngineResult => ({
-  ...normalizeExtractedReceipt(parseReceiptFromText(rawText), { engine: 'ocr-heuristic', rawText }),
+const extractWithHeuristics = (rawText: string, preferredCurrency: string = 'INR'): OcrEngineResult => ({
+  ...normalizeExtractedReceipt(parseReceiptFromText(rawText), { engine: 'ocr-heuristic', rawText, preferredCurrency }),
   rawText,
 });
 
@@ -360,6 +391,7 @@ const readRawText = async (imageBuffer: Buffer, mimeType?: string): Promise<stri
 export const scanReceiptWithGemini = async (
   imageBuffer: Buffer,
   mimeType: string,
+  preferredCurrency: string = 'INR',
 ): Promise<OcrEngineResult> => {
   const config = await getAIConfigurations();
   const provider = config.ocr.provider;
@@ -385,7 +417,7 @@ export const scanReceiptWithGemini = async (
   if (modelAvailable) {
     try {
       const started = Date.now();
-      const result = await withModelLadder(ocrModels(config.ocr.model), (model) => extractWithVision(imageBuffer, mimeType, model));
+      const result = await withModelLadder(ocrModels(config.ocr.model), (model) => extractWithVision(imageBuffer, mimeType, model, preferredCurrency));
       logger.info('OCR: vision pass complete', {
         ms: Date.now() - started,
         total: result.total,
@@ -403,7 +435,7 @@ export const scanReceiptWithGemini = async (
   // 2. The fallback model reads the image.
   if (fallback) {
     try {
-      return await extractWithFallbackVision(fallback, modelDeadline, imageBuffer, mimeType);
+      return await extractWithFallbackVision(fallback, modelDeadline, imageBuffer, mimeType, preferredCurrency);
     } catch (error: any) {
       failures.push(`fallback vision: ${error?.message ?? error}`);
     }
@@ -419,7 +451,7 @@ export const scanReceiptWithGemini = async (
 
   if (modelAvailable && ocrModels(config.ocr.model).length > 0 && rawText.trim().length > 20) {
     try {
-      const result = await withModelLadder(ocrModels(config.ocr.model), (model) => extractWithTextModel(rawText, model));
+      const result = await withModelLadder(ocrModels(config.ocr.model), (model) => extractWithTextModel(rawText, model, preferredCurrency));
       logger.info('OCR: text-model pass complete', { total: result.total, confidence: result.confidence });
       if (usable(result)) return result;
       failures.push('text model returned no total');
@@ -432,14 +464,14 @@ export const scanReceiptWithGemini = async (
   const fallbackForText = provider !== 'tesseract' ? ocrFallbackEndpoint() : null;
   if (fallbackForText && rawText.trim().length > 20) {
     try {
-      return await extractWithFallbackText(fallbackForText, modelDeadline, rawText);
+      return await extractWithFallbackText(fallbackForText, modelDeadline, rawText, preferredCurrency);
     } catch (error: any) {
       failures.push(`fallback text: ${error?.message ?? error}`);
     }
   }
 
   if (rawText.trim().length > 0) {
-    const result = extractWithHeuristics(rawText);
+    const result = extractWithHeuristics(rawText, preferredCurrency);
     logger.info('OCR: heuristic pass complete', {
       total: result.total,
       confidence: result.confidence,
@@ -455,12 +487,15 @@ export const scanReceiptWithGemini = async (
  * Structure text that was already extracted (a digital PDF's text layer, or a
  * transcript from elsewhere). Same engine ladder minus the vision step.
  */
-export const scanReceiptFromText = async (text: string): Promise<OcrEngineResult> => {
+export const scanReceiptFromText = async (
+  text: string,
+  preferredCurrency: string = 'INR',
+): Promise<OcrEngineResult> => {
   const config = await getAIConfigurations();
 
   if (GOOGLE_API_KEY && config.ocr.provider !== 'tesseract' && ocrModels(config.ocr.model).length > 0) {
     try {
-      const result = await withModelLadder(ocrModels(config.ocr.model), (model) => extractWithTextModel(text, model));
+      const result = await withModelLadder(ocrModels(config.ocr.model), (model) => extractWithTextModel(text, model, preferredCurrency));
       if (result.total !== null && result.total > 0) return result;
     } catch (error: any) {
       logger.warn('Text structuring failed, using the offline parser', { error: error?.message ?? String(error) });
@@ -470,11 +505,11 @@ export const scanReceiptFromText = async (text: string): Promise<OcrEngineResult
   const fallback = config.ocr.provider !== 'tesseract' ? ocrFallbackEndpoint() : null;
   if (fallback && text.trim().length > 20) {
     try {
-      return await extractWithFallbackText(fallback, Date.now() + MODEL_BUDGET_MS, text);
+      return await extractWithFallbackText(fallback, Date.now() + MODEL_BUDGET_MS, text, preferredCurrency);
     } catch (error: any) {
       logger.warn('Fallback text structuring failed, using the offline parser', { error: error?.message ?? String(error) });
     }
   }
 
-  return extractWithHeuristics(text);
+  return extractWithHeuristics(text, preferredCurrency);
 };

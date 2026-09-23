@@ -553,7 +553,7 @@ const normalizeDate = (raw: unknown): string | null => {
  */
 export const normalizeExtractedReceipt = (
   raw: Record<string, unknown>,
-  options: { engine: string; rawText?: string },
+  options: { engine: string; rawText?: string; preferredCurrency?: string },
 ): ExtractedReceipt => {
   const merchantRaw = (raw.merchant ?? {}) as Record<string, unknown>;
   const merchantCandidate = cleanString(
@@ -573,6 +573,23 @@ export const normalizeExtractedReceipt = (
   const taxes = normalizeTaxes(raw.taxes ?? raw.taxBreakdown);
   const additionalCharges = normalizeCharges(raw.additionalCharges ?? raw.charges);
   const items = normalizeItems(raw.items ?? raw.lineItems);
+
+  const rawCurrency = cleanString(raw.currency, 8)?.toUpperCase();
+  const defaultCurr = options.preferredCurrency?.toUpperCase() || 'INR';
+  let currency = rawCurrency ?? defaultCurr;
+
+  const hasIndianSignals = Boolean(
+    gstin ||
+    taxes.some((t) => /gst|cgst|sgst|igst/i.test(t.type)) ||
+    options.rawText?.match(/gst|gstin|cgst|sgst|fssai|\+91|₹|rupee|inr|rs\.?/i) ||
+    cleanString(merchantRaw.address ?? raw.address, 250)?.match(/india|karnataka|delhi|maharashtra|mumbai|bangalore|bengaluru|tamil\s*nadu|chennai/i)
+  );
+
+  if (hasIndianSignals && (currency === 'USD' || currency === '')) {
+    currency = 'INR';
+  } else if (options.preferredCurrency && options.preferredCurrency !== 'USD' && currency === 'USD' && !options.rawText?.includes('USD')) {
+    currency = options.preferredCurrency.toUpperCase();
+  }
 
   const totalTax = taxes.length > 0
     ? round2(taxes.reduce((sum, tax) => sum + tax.amount, 0))
@@ -610,7 +627,7 @@ export const normalizeExtractedReceipt = (
     billNumber: cleanString(raw.billNumber ?? raw.invoiceNumber ?? raw.billNo, 60),
     date: normalizeDate(raw.date ?? raw.billDate ?? raw.invoiceDate),
     time: cleanString(raw.time, 12),
-    currency: cleanString(raw.currency, 8)?.toUpperCase() ?? 'INR',
+    currency,
 
     subtotal,
     discount,

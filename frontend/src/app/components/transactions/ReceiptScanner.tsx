@@ -133,61 +133,103 @@ export const ReceiptScanner: React.FC<ReceiptScannerProps> = ({
  setStep('preview-scan');
  };
 
- const handleScanReceipt = async () => {
- if (!selectedFile) {
- toast.error('Please select an image first');
- return;
- }
- const result = await scanReceipt(selectedAccountId ?? undefined, user?.id);
- if (result?.validationResult && !result.validationResult.isValid) {
- const { calculated, detected } = result.validationResult;
- const cur = result.currency ?? '';
- const hint = calculated > detected
- ? `The printed amount (${cur} ${detected.toFixed(2)}) appears to be a pre-tax subtotal. The amount field has been set to the calculated total (${cur} ${calculated.toFixed(2)}) please verify.`
- : `Calculated total (${cur} ${calculated.toFixed(2)}) doesn't match the printed total (${cur} ${detected.toFixed(2)}). Please verify the amount before saving.`;
- toast.warning(hint, { duration: 10000 });
- }
- if (result) setStep('results');
- };
+  const handleScanReceipt = async () => {
+    if (!selectedFile) {
+      toast.error('Please select an image first');
+      return;
+    }
+    const result = await scanReceipt(selectedAccountId ?? undefined, user?.id, currency || 'INR');
+    if (result?.validationResult && !result.validationResult.isValid) {
+      const { calculated, detected } = result.validationResult;
+      const cur = result.currency ?? '';
+      const hint = calculated > detected
+        ? `The printed amount (${cur} ${detected.toFixed(2)}) appears to be a pre-tax subtotal. The amount field has been set to the calculated total (${cur} ${calculated.toFixed(2)}) please verify.`
+        : `Calculated total (${cur} ${calculated.toFixed(2)}) doesn't match the printed total (${cur} ${detected.toFixed(2)}). Please verify the amount before saving.`;
+      toast.warning(hint, { duration: 10000 });
+    }
+    if (result) setStep('results');
+  };
 
- const handleCreateTransaction = guardSubmit(async () => {
- if (!scanResult || !selectedAccountId) {
- toast.error('Please select an account to continue');
- return;
- }
- if (!scanResult.amount || scanResult.amount <= 0) {
- toast.error('Amount must be greater than zero');
- return;
- }
- if (scanDocumentId) {
- await documentService.current.updateDocumentStatus(scanDocumentId, 'completed', {
- extractedCurrency: scanResult.currency,
- extractedAmount: scanResult.amount,
- metadata: {
- merchantName: scanResult.merchantName || '',
- merchant: scanResult.merchantName || '',
- amount: scanResult.amount ? String(scanResult.amount) : '',
- totalAmount: scanResult.amount ? String(scanResult.amount) : '',
- invoiceNumber: scanResult.invoiceNumber || '',
- paymentMethod: scanResult.paymentMethod || '',
- taxAmount: scanResult.taxAmount?.toFixed(2) || '',
- subtotal: scanResult.subtotal?.toFixed(2) || '',
- category: scanResult.category || '',
- date: scanResult.date ? (scanResult.date instanceof Date ? scanResult.date.toISOString() : String(scanResult.date)) : '',
- taxBreakdown: scanResult.taxBreakdown ? JSON.stringify(scanResult.taxBreakdown) : '',
- additionalCharges: scanResult.additionalCharges ? JSON.stringify(scanResult.additionalCharges) : '',
- totalCharges: scanResult.totalCharges ? String(scanResult.totalCharges) : '',
- roundOff: scanResult.roundOff !== undefined ? String(scanResult.roundOff) : '',
- items: scanResult.items ? JSON.stringify(scanResult.items) : '',
- },
- });
- }
- await createTransaction(scanResult, selectedAccountId, scanDocumentId, (transactionId) => {
- onTransactionCreated?.(transactionId);
- handleClose();
- setCurrentPage('transactions');
- });
- });
+  const handleCreateTransaction = guardSubmit(async () => {
+    if (!scanResult || !selectedAccountId) {
+      toast.error('Please select an account to continue');
+      return;
+    }
+    if (!scanResult.amount || scanResult.amount <= 0) {
+      toast.error('Amount must be greater than zero');
+      return;
+    }
+    const effectiveCurr = scanResult.currency || currency || 'INR';
+    const payloadResult = { ...scanResult, currency: effectiveCurr };
+
+    if (scanDocumentId) {
+      await documentService.current.updateDocumentStatus(scanDocumentId, 'completed', {
+        extractedCurrency: effectiveCurr,
+        extractedAmount: scanResult.amount,
+        metadata: {
+          merchantName: scanResult.merchantName || '',
+          merchant: scanResult.merchantName || '',
+          amount: scanResult.amount ? String(scanResult.amount) : '',
+          totalAmount: scanResult.amount ? String(scanResult.amount) : '',
+          invoiceNumber: scanResult.invoiceNumber || '',
+          paymentMethod: scanResult.paymentMethod || '',
+          taxAmount: scanResult.taxAmount?.toFixed(2) || '',
+          subtotal: scanResult.subtotal?.toFixed(2) || '',
+          category: scanResult.category || '',
+          date: scanResult.date ? (scanResult.date instanceof Date ? scanResult.date.toISOString() : String(scanResult.date)) : '',
+          taxBreakdown: scanResult.taxBreakdown ? JSON.stringify(scanResult.taxBreakdown) : '',
+          additionalCharges: scanResult.additionalCharges ? JSON.stringify(scanResult.additionalCharges) : '',
+          totalCharges: scanResult.totalCharges ? String(scanResult.totalCharges) : '',
+          roundOff: scanResult.roundOff !== undefined ? String(scanResult.roundOff) : '',
+          items: scanResult.items ? JSON.stringify(scanResult.items) : '',
+        },
+      });
+    }
+    await createTransaction(payloadResult, selectedAccountId, scanDocumentId, (transactionId) => {
+      onTransactionCreated?.(transactionId);
+      handleClose();
+      setCurrentPage('transactions');
+    });
+  });
+
+  const handleSaveBillReceiptOnly = guardSubmit(async () => {
+    if (!scanResult) {
+      toast.error('No scan result to save');
+      return;
+    }
+    const effectiveCurr = scanResult.currency || currency || 'INR';
+    if (scanDocumentId) {
+      await documentService.current.updateDocumentStatus(scanDocumentId, 'completed', {
+        extractedCurrency: effectiveCurr,
+        extractedAmount: scanResult.amount,
+        metadata: {
+          merchantName: scanResult.merchantName || '',
+          merchant: scanResult.merchantName || '',
+          amount: scanResult.amount ? String(scanResult.amount) : '',
+          totalAmount: scanResult.amount ? String(scanResult.amount) : '',
+          invoiceNumber: scanResult.invoiceNumber || '',
+          paymentMethod: scanResult.paymentMethod || '',
+          taxAmount: scanResult.taxAmount?.toFixed(2) || '',
+          subtotal: scanResult.subtotal?.toFixed(2) || '',
+          category: scanResult.category || '',
+          date: scanResult.date ? (scanResult.date instanceof Date ? scanResult.date.toISOString() : String(scanResult.date)) : '',
+          taxBreakdown: scanResult.taxBreakdown ? JSON.stringify(scanResult.taxBreakdown) : '',
+          additionalCharges: scanResult.additionalCharges ? JSON.stringify(scanResult.additionalCharges) : '',
+          totalCharges: scanResult.totalCharges ? String(scanResult.totalCharges) : '',
+          roundOff: scanResult.roundOff !== undefined ? String(scanResult.roundOff) : '',
+          items: scanResult.items ? JSON.stringify(scanResult.items) : '',
+        },
+      });
+      toast.success('Bill receipt saved to Bills');
+      if (onAttachmentSaved) {
+        onAttachmentSaved(scanDocumentId);
+      }
+    } else {
+      toast.success('Bill receipt saved');
+    }
+    handleClose();
+    setCurrentPage('receipt-scanner');
+  });
 
  const handleApplyScanToForm = async () => {
  if (!scanResult || !selectedAccountId) {
@@ -385,6 +427,7 @@ export const ReceiptScanner: React.FC<ReceiptScannerProps> = ({
  onSubcategoryChange={handleSubcategoryChange}
  onRescan={() => { setScanResult(null); clearFile(); setStep('source-scan'); }}
  onSubmit={isFormPrefillMode ? handleApplyScanToForm : handleCreateTransaction}
+ onSaveReceiptOnly={handleSaveBillReceiptOnly}
  />
  )}
 

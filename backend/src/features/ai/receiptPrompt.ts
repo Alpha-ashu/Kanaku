@@ -56,7 +56,7 @@ TAX MODEL — decide whether tax is already inside the total:
 - Set taxModel to "exclusive" or "inclusive". If genuinely undeterminable, use "unknown".
 
 CURRENCY & CATEGORY
-- currency: ISO code. Default "INR" unless the bill clearly shows another country or symbol.
+- currency: ISO code. Default to the user's active currency if not explicitly stated. On Indian bills (with ₹, Rs, GSTIN, CGST, SGST, FSSAI, or Indian addresses), NEVER use USD.
 - category: one of Food & Dining, Groceries, Transport, Healthcare, Shopping, Utilities, Entertainment, Other.
 
 SELF-CHECK before answering
@@ -88,9 +88,9 @@ Return exactly this JSON shape:
 }`;
 
 /** Prompt for the vision path — the model sees the bill image itself. */
-export const buildVisionPrompt = (): string => `Extract the financial data from this bill image.
+export const buildVisionPrompt = (userCurrency: string = 'INR'): string => `Extract the financial data from this bill image.
 
-You are looking at the actual image, so read the layout: the merchant's name is typically the most prominent text in the header, and the money columns are right-aligned.
+You are looking at the actual image, so read the layout: the merchant's name is typically the most prominent text in the header, and the money columns are right-aligned. Default currency to ${userCurrency} unless the bill clearly specifies another currency.
 ${EXTRACTION_RULES}
 ${OUTPUT_SHAPE}`;
 
@@ -100,9 +100,9 @@ ${OUTPUT_SHAPE}`;
  * useful behaviour is to repair obvious character confusions while refusing to
  * invent the ones it cannot recover.
  */
-export const buildTextPrompt = (rawText: string): string => `Extract the financial data from this bill.
+export const buildTextPrompt = (rawText: string, userCurrency: string = 'INR'): string => `Extract the financial data from this bill.
 
-The text below came from an OCR engine and contains recognition errors: letters substituted for digits (O/0, l/1, S/5, B/8), broken column alignment, and garbled header lines. Repair what is clearly recoverable from context and the bill's own arithmetic. Where a value is too corrupted to recover, return null instead of guessing.
+The text below came from an OCR engine and contains recognition errors: letters substituted for digits (O/0, l/1, S/5, B/8), broken column alignment, and garbled header lines. Repair what is clearly recoverable from context and the bill's own arithmetic. Where a value is too corrupted to recover, return null instead of guessing. Default currency to ${userCurrency} unless clearly another currency.
 
 --- OCR TEXT ---
 ${rawText}

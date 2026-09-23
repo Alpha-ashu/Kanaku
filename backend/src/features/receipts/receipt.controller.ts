@@ -176,7 +176,7 @@ const toApiPayload = (receipt: ExtractedReceipt) => ({
  * and the audit trail. The per-engine normalising that used to live here has
  * moved into receiptSchema so that every path is judged by the same rules.
  */
-const executeFullOcrPipeline = async (userId: string, file: any, validated: any) => {
+const executeFullOcrPipeline = async (userId: string, file: any, validated: any, userCurrency: string = 'INR') => {
   // If PDF text was already extracted (digital PDF), there is no image to
   // preprocess — sharp would throw on the UTF-8 pseudo-buffer.
   const pdfExtractedText = validated._pdfExtractedText as string | undefined;
@@ -195,8 +195,8 @@ const executeFullOcrPipeline = async (userId: string, file: any, validated: any)
 
   try {
     receipt = pdfExtractedText
-      ? await scanReceiptFromText(pdfExtractedText)
-      : await scanReceiptWithGemini(processed.buffer, processed.contentType);
+      ? await scanReceiptFromText(pdfExtractedText, userCurrency)
+      : await scanReceiptWithGemini(processed.buffer, processed.contentType, userCurrency);
   } catch (err: any) {
     failure = err?.message ?? String(err);
     logger.warn('Receipt extraction pipeline failed', { userId, error: failure });
@@ -258,6 +258,7 @@ export const startReceiptScan = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ error: 'Receipt image file is required' });
     }
 
+    const userCurrency = ((req.body?.currency as string) || (req.headers['x-user-currency'] as string) || 'INR').trim().toUpperCase();
     const jobId = randomUUID();
     // Captured HERE, not inside the job below: the background IIFE runs after
     // the response is sent, by which point `req` should not be relied on. The
@@ -285,7 +286,7 @@ export const startReceiptScan = async (req: AuthRequest, res: Response) => {
         // ran out and report a timeout it could not explain.
         const ocrStartedAt = Date.now();
         const { normalized, source, confidence } = await Promise.race([
-          executeFullOcrPipeline(userId, file, ocrValidated),
+          executeFullOcrPipeline(userId, file, ocrValidated, userCurrency),
           new Promise<never>((_, reject) =>
             setTimeout(() => reject(new Error('Extraction took too long')), JOB_BUDGET_MS)),
         ]);
@@ -463,8 +464,9 @@ export const scanReceipt = async (req: AuthRequest, res: Response) => {
     // Timed around the pipeline, not around the insert. This used to be started
     // immediately before aiScan.create, so `processingMs` recorded the duration
     // of building one object — every row said 0.
+    const userCurrency = ((req.body?.currency as string) || (req.headers['x-user-currency'] as string) || 'INR').trim().toUpperCase();
     const ocrStartedAt = Date.now();
-    const { normalized, source, confidence } = await executeFullOcrPipeline(userId, file, ocrValidated);
+    const { normalized, source, confidence } = await executeFullOcrPipeline(userId, file, ocrValidated, userCurrency);
     const processingMs = Date.now() - ocrStartedAt;
 
     // Persist scan result (Fail-safe: Don't crash if DB is down)

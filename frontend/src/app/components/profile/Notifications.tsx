@@ -18,7 +18,7 @@ import {
   markAllNotificationsAsRead,
   markNotificationAsRead,
 } from '@/lib/notifications';
-import { getNotificationPresentation } from '@/lib/notificationPresentation';
+import { getNotificationPresentation, resolveNotificationTarget } from '@/lib/notificationPresentation';
 import { PageHeader } from '@/app/components/ui/PageHeader';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
@@ -99,17 +99,21 @@ export const Notifications: React.FC = () => {
       await markNotificationAsRead(notification.id);
     }
 
-    if (notification.deepLink) {
-      const [path, query] = notification.deepLink.split('?');
-      setCurrentPage(path.replace('/', ''));
+    const target = resolveNotificationTarget({
+      type: notification.type,
+      title: notification.title,
+      message: notification.message,
+      deepLink: notification.deepLink,
+      category: notification.category,
+    });
 
-      if (query) {
-        const params = new URLSearchParams(query);
-        params.forEach((value, key) => {
-          localStorage.setItem(`deepLink_${key}`, value);
-        });
-      }
+    if (target.params) {
+      Object.entries(target.params).forEach(([key, val]) => {
+        localStorage.setItem(`deepLink_${key}`, val);
+      });
     }
+
+    setCurrentPage(target.page);
   };
 
   const handleDelete = async (id?: number) => {
@@ -267,16 +271,14 @@ export const Notifications: React.FC = () => {
                                 Mark Read
                               </button>
                             )}
-                            {notification.deepLink && (
-                              <button
-                                onClick={() => handleOpenNotification(notification)}
-                                data-testid={`notifications-open-button-${notification.id}`}
-                                className="flex items-center gap-1 px-4 py-1.5 rounded-full font-bold text-xs bg-[#18181B] hover:bg-black text-white shadow-xs transition-all active:scale-95 cursor-pointer"
-                              >
-                                Open
-                                <ExternalLink size={12} />
-                              </button>
-                            )}
+                            <button
+                              onClick={() => handleOpenNotification(notification)}
+                              data-testid={`notifications-open-button-${notification.id}`}
+                              className="flex items-center gap-1 px-4 py-1.5 rounded-full font-bold text-xs bg-[#18181B] hover:bg-black text-white shadow-xs transition-all active:scale-95 cursor-pointer"
+                            >
+                              Open
+                              <ExternalLink size={12} />
+                            </button>
                           </div>
                         </div>
                       </div>

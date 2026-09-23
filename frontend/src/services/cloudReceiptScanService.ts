@@ -262,6 +262,7 @@ export class CloudReceiptScanService {
   async scanReceipt(
     file: File,
     onProgress?: (progress: OCRProgress) => void,
+    preferredCurrency: string = 'INR',
   ): Promise<ReceiptScanResult> {
     const isPdf = file.type === 'application/pdf';
     if (!file.type.startsWith('image/') && !isPdf) {
@@ -276,6 +277,7 @@ export class CloudReceiptScanService {
 
     const formData = new FormData();
     formData.append('file', payload, `${baseName}.${isPdf ? 'pdf' : 'jpg'}`);
+    formData.append('currency', preferredCurrency || 'INR');
 
     const token = await getAuthToken();
     const buildHeaders = (): Record<string, string> => {
@@ -380,9 +382,15 @@ export class CloudReceiptScanService {
 
         const merchantName = typeof payload.merchantName === 'string' ? payload.merchantName : undefined;
         const amount = typeof payload.amount === 'number' && Number.isFinite(payload.amount) ? payload.amount : undefined;
-        const currency = typeof payload.currency === 'string' ? payload.currency : 'INR';
         const date = parseScanDate(payload.date);
         const location = typeof payload.location === 'string' ? payload.location : 'UNKNOWN';
+        let currency = typeof payload.currency === 'string' ? payload.currency : (preferredCurrency || 'INR');
+        if (
+          currency === 'USD' &&
+          (preferredCurrency === 'INR' || location === 'INDIA' || Boolean(payload.gstin))
+        ) {
+          currency = 'INR';
+        }
 
         // A missing score means the backend could not vouch for the reading, so
         // it is treated as unreliable. Defaulting to 0.85 here painted every

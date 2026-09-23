@@ -1,16 +1,17 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useApp } from '@/contexts/AppContext';
 import { Search, Bell, Menu, GripVertical, Wallet, LogOut, Receipt, X } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from '@/app/components/ui/sheet';
 import { NavigationItem, headerMenuItems } from '@/app/constants/navigation';
-import { NotificationPopup } from '@/app/components/ui/NotificationPopup';
 import { useSharedMenu } from '@/hooks/useSharedMenu';
 import { useAuth } from '@/contexts/AuthContext';
 import { motion, Reorder, useDragControls } from 'framer-motion';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/database';
-import { getNotificationPresentation } from '@/lib/notificationPresentation';
+import { getNotificationPresentation, resolveNotificationTarget } from '@/lib/notificationPresentation';
+import { markNotificationAsRead } from '@/lib/notifications';
+import { NotificationPopup, type NotificationItem } from '@/app/components/ui/NotificationPopup';
 import { SyncStatusBar } from '@/app/components/ui/SyncStatusBar';
 import { KANAKULogo } from '@/app/components/ui/KANAKULogo';
 
@@ -268,70 +269,97 @@ export const TopBar: React.FC = () => {
  [notifications],
  );
 
- const recentNotifications = useMemo(() => {
- return notifications.slice(0, 3).map((notification) => {
- const presentation = getNotificationPresentation(notification.type);
- return {
- id: String(notification.id ?? notification.remoteId ?? `${notification.title}-${notification.createdAt.toString()}`),
- type: notification.type,
- title: notification.title,
- description: notification.message,
- timestamp: new Date(notification.createdAt),
- icon: presentation.icon,
- color: presentation.color,
- bgColor: presentation.bgColor,
- };
- });
- }, [notifications]);
+  const recentNotifications = useMemo(() => {
+    return notifications.slice(0, 3).map((notification) => {
+      const presentation = getNotificationPresentation(notification.type);
+      return {
+        id: String(notification.id ?? notification.remoteId ?? `${notification.title}-${notification.createdAt.toString()}`),
+        dbId: notification.id,
+        type: notification.type,
+        title: notification.title,
+        description: notification.message,
+        timestamp: new Date(notification.createdAt),
+        deepLink: notification.deepLink,
+        category: notification.category,
+        icon: presentation.icon,
+        color: presentation.color,
+        bgColor: presentation.bgColor,
+      };
+    });
+  }, [notifications]);
 
- const playNotificationSound = () => {
- try {
- const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
- const oscillator = audioContext.createOscillator();
- const gainNode = audioContext.createGain();
+  const playNotificationSound = () => {
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
 
- oscillator.connect(gainNode);
- gainNode.connect(audioContext.destination);
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
 
- oscillator.frequency.value = 800;
- oscillator.type = 'sine';
+      oscillator.frequency.value = 800;
+      oscillator.type = 'sine';
 
- gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
- gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
 
- oscillator.start(audioContext.currentTime);
- oscillator.stop(audioContext.currentTime + 0.5);
- } catch (error) {
- console.error('Failed to play notification sound:', error);
- }
- };
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.5);
+    } catch (error) {
+      console.error('Failed to play notification sound:', error);
+    }
+  };
 
- const handleNotificationClick = () => {
- setNotificationPopupOpen(true);
- if (unreadNotificationsCount > 0) {
- playNotificationSound();
- }
- };
+  const handleNotificationClick = () => {
+    setNotificationPopupOpen(true);
+    if (unreadNotificationsCount > 0) {
+      playNotificationSound();
+    }
+  };
 
- const handleProfileClick = () => {
- setCurrentPage('user-profile');
- };
+  const handleNotificationItemClick = useCallback(async (item: NotificationItem) => {
+    setNotificationPopupOpen(false);
 
- const handleViewAllNotifications = () => {
- setCurrentPage('notifications');
- };
+    if (item.dbId) {
+      await markNotificationAsRead(item.dbId);
+    }
+
+    const target = resolveNotificationTarget({
+      type: item.type,
+      title: item.title,
+      description: item.description,
+      deepLink: item.deepLink,
+      category: item.category,
+    });
+
+    if (target.params) {
+      Object.entries(target.params).forEach(([key, val]) => {
+        localStorage.setItem(`deepLink_${key}`, val);
+      });
+    }
+
+    setCurrentPage(target.page);
+  }, [setCurrentPage]);
+
+  const handleProfileClick = () => {
+    setCurrentPage('user-profile');
+  };
+
+  const handleViewAllNotifications = () => {
+    setCurrentPage('notifications');
+  };
 
   const handleMenuItemClick = (itemId: string) => {
     setCurrentPage(itemId);
     setMobileMenuOpen(false);
   };
- // the viewport edge. `top-3` alone put it underneath the iOS Dynamic Island /
- // notch and the Android status bar, so the logo and the menu button were
- // partly unreadable and partly untappable on every notched device. The
- // left/right insets matter too, for landscape on notched phones.
- // `.mobile-main` already reserves header-height + safe-area-inset-top for the
- // content below, so pushing the header down by the same inset keeps the two in
- // agreement rather than opening a gap.
+  // the viewport edge. `top-3` alone put it underneath the iOS Dynamic Island /
+  // notch and the Android status bar, so the logo and the menu button were
+  // partly unreadable and partly untappable on every notched device. The
+  // left/right insets matter too, for landscape on notched phones.
+  // `.mobile-main` already reserves header-height + safe-area-inset-top for the
+  // content below, so pushing the header down by the same inset keeps the two in
+  // agreement rather than opening a gap.
   return (
     <header
       className="fixed top-[calc(env(safe-area-inset-top,0px)+0.75rem)] left-[calc(env(safe-area-inset-left,0px)+0.75rem)] right-[calc(env(safe-area-inset-right,0px)+0.75rem)] lg:top-4 lg:left-[112px] lg:right-6 z-[60] bg-white/90 backdrop-blur-2xl border border-white/80 rounded-[28px] shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)] transition-shadow duration-150 transform-gpu will-change-transform mobile-topbar-stable"
@@ -347,6 +375,7 @@ export const TopBar: React.FC = () => {
         isOpen={notificationPopupOpen}
         onClose={() => setNotificationPopupOpen(false)}
         onViewAll={handleViewAllNotifications}
+        onNotificationClick={handleNotificationItemClick}
         notifications={recentNotifications}
       />
 
