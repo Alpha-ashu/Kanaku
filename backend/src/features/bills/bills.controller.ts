@@ -23,13 +23,21 @@ import { getSocketManager } from '../../sockets';
  * relaunched — the multi-device complaint in §4.
  *
  * The event goes to the `user:<id>` room, so it reaches every device signed in
- * as this user, including the one that made the change. That device re-pulls a
- * list it already agrees with, which is cheap and self-limiting: a pull writes
- * nothing new, so it emits nothing further.
+ * as this user — but it carries `originSessionId` so the uploader can ignore its
+ * own echo. The uploading client writes its local receipt row BEFORE the POST
+ * and stamps the returned bill id onto it after; a pull that lands between those
+ * two steps sees a local row with no cloudId, fails to match it to the server
+ * row, and adds a second copy. Emitting to the uploader would fire precisely
+ * inside that window.
  */
-const notifyBillsChanged = (userId: string, reason: string, billId?: string) => {
+const notifyBillsChanged = (
+  userId: string,
+  reason: string,
+  billId?: string,
+  originSessionId?: string,
+) => {
   try {
-    getSocketManager().notifyUser(userId, 'bills_updated', { reason, billId });
+    getSocketManager().notifyUser(userId, 'bills_updated', { reason, billId, originSessionId });
   } catch (error: any) {
     // Sockets are a latency optimisation over the next sync, never a
     // correctness requirement — a failure here must not fail the write.
@@ -260,7 +268,7 @@ export const uploadBill = async (req: AuthRequest, res: Response, next: NextFunc
       size: buffer.length,
     });
     logger.info('UPLOAD_SUCCESS', { userId, billId: bill.id });
-    notifyBillsChanged(userId, 'uploaded', bill.id);
+    notifyBillsChanged(userId, 'uploaded', bill.id, req.headers['x-session-id'] as string | undefined);
 
     let downloadUrl: string | null = null;
     try {
@@ -369,7 +377,7 @@ export const deleteBill = async (req: AuthRequest, res: Response, next: NextFunc
     }).catch(() => {});
 
     logger.info('ATTACHMENT_DELETE_SYNCED', { userId, billId: id });
-    notifyBillsChanged(userId, 'deleted', id);
+    notifyBillsChanged(userId, 'deleted', id, req.headers['x-session-id'] as string | undefined);
 
     return res.json({ message: 'Bill deleted' });
   } catch (error: any) {

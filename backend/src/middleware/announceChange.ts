@@ -22,6 +22,15 @@ import { getSocketManager } from '../sockets';
  * refetch by refetching would be a loop. The event goes to the acting user's own
  * room only, so it carries no data another account could act on; the devices
  * that receive it re-pull through the normal authorized endpoints.
+ *
+ * The payload carries `originSessionId` so the device that MADE the change can
+ * ignore its own echo. That is not an optimisation — it is a correctness
+ * requirement. A client create writes its local row first and stamps the server
+ * id onto it only once the POST returns; in the window between those two steps
+ * the local row has no cloudId, so a pull triggered inside that window cannot
+ * match the server row against it and inserts a duplicate instead. The device
+ * that acted already updates its own state through its own code path, so the
+ * echo buys it nothing and costs it that race.
  */
 export const announceChange = (event: string) =>
   (req: AuthRequest, res: Response, next: NextFunction) => {
@@ -36,7 +45,10 @@ export const announceChange = (event: string) =>
       if (!userId) return;
 
       try {
-        getSocketManager().notifyUser(userId, event, { reason: `${req.method} ${req.path}` });
+        getSocketManager().notifyUser(userId, event, {
+          reason: `${req.method} ${req.path}`,
+          originSessionId: req.headers['x-session-id'] as string | undefined,
+        });
       } catch (error: any) {
         // A socket failure must never affect a response that has already been
         // sent — the device reconciles on its next sync regardless.

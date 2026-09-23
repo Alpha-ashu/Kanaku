@@ -73,6 +73,29 @@ describe('announceChange', () => {
     expect(mockEmitted).toHaveLength(0);
   });
 
+  it('carries originSessionId so the acting device can ignore its own echo', async () => {
+    // The device that made the change must be able to skip the event. Its local
+    // row is created before the POST and stamped with the server id after, so a
+    // pull triggered by its own echo lands in the window where the row has no
+    // cloudId and gets duplicated instead of matched.
+    await request(buildApp('user-1'))
+      .post('/')
+      .set('X-Session-Id', 'device-abc')
+      .send({ name: 'Groceries' });
+
+    expect(mockEmitted).toHaveLength(1);
+    expect(mockEmitted[0].payload.originSessionId).toBe('device-abc');
+  });
+
+  it('omits originSessionId when the client sent no session header', async () => {
+    // An older client that does not send the header still gets the event; it
+    // simply cannot filter its own, which is the previous behaviour and no worse.
+    await request(buildApp('user-1')).post('/').send({ name: 'Groceries' });
+
+    expect(mockEmitted).toHaveLength(1);
+    expect(mockEmitted[0].payload.originSessionId).toBeUndefined();
+  });
+
   it('does not fail the response when the socket layer throws', async () => {
     const app = express();
     app.use(express.json());

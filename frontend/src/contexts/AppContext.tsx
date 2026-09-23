@@ -17,6 +17,7 @@ import {
 } from '@/lib/userPreferences';
 import socketClient from '@/lib/socket-client';
 import { compareByRecency } from '@/lib/dateUtils';
+import { getSessionId } from '@/lib/clientErrorReporter';
 import {
   relinkBillsToTransactions,
   syncBills,
@@ -868,7 +869,21 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     // featureSyncService.syncBills(), which otherwise runs only once per session
     // and on pull-to-refresh. Without this listener a receipt uploaded on
     // another device stayed invisible here until the app was relaunched.
-    const unsubBills = socketClient.on('bills_updated', () => {
+    /**
+     * Ignore the echo of a change this device just made.
+     *
+     * Not an optimisation — a correctness requirement. A local create writes its
+     * Dexie row first and stamps the server id onto it only once the POST
+     * returns. In that window the row has no cloudId, so a pull cannot match it
+     * to the server row and inserts a duplicate instead. The server emits at the
+     * moment the write commits, which is squarely inside that window. This
+     * device already updates its own state through its own code path.
+     */
+    const isOwnEcho = (payload?: { originSessionId?: string }) =>
+      Boolean(payload?.originSessionId) && payload!.originSessionId === getSessionId();
+
+    const unsubBills = socketClient.on('bills_updated', (payload) => {
+      if (isOwnEcho(payload)) return;
       console.log('[AppContext] bills_updated received via WebSocket — syncing bills');
       void syncBills().catch((err) => {
         console.warn('[AppContext] Bill sync after socket event failed', err);
@@ -884,7 +899,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       ['categories_updated', syncCategories],
     ] as const;
     const unsubMirrors = mirrorSyncs.map(([event, sync]) =>
-      socketClient.on(event, () => {
+      socketClient.on(event, (payload) => {
+        if (isOwnEcho(payload)) return;
         console.log(`[AppContext] ${event} received via WebSocket — re-syncing`);
         void Promise.resolve(sync()).catch((err) => {
           console.warn(`[AppContext] Sync after ${event} failed`, err);

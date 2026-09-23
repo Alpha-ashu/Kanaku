@@ -116,13 +116,17 @@ interface SocketEvents {
   friend_accepted: (data: any) => void;
   group_expense_updated: (data: any) => void;
   todo_updated: (data: any) => void;
-  /** This user's bill/receipt list changed on one of their devices. */
-  bills_updated: (data: { reason?: string; billId?: string }) => void;
+  /**
+   * This user's bill/receipt list changed on one of their devices.
+   * `originSessionId` identifies the device that made the change, so it can
+   * ignore its own echo — see AppContext's listener for why that matters.
+   */
+  bills_updated: (data: { reason?: string; billId?: string; originSessionId?: string }) => void;
   // Backend-owned tables that mirror into Dexie via featureSyncService rather
   // than the sync engine. Emitted by the announceChange middleware.
-  budgets_updated: (data: { reason?: string }) => void;
-  recurring_updated: (data: { reason?: string }) => void;
-  categories_updated: (data: { reason?: string }) => void;
+  budgets_updated: (data: { reason?: string; originSessionId?: string }) => void;
+  recurring_updated: (data: { reason?: string; originSessionId?: string }) => void;
+  categories_updated: (data: { reason?: string; originSessionId?: string }) => void;
   notification: (data: any) => void;
 }
 

@@ -259,6 +259,12 @@ export const startReceiptScan = async (req: AuthRequest, res: Response) => {
     }
 
     const jobId = randomUUID();
+    // Captured HERE, not inside the job below: the background IIFE runs after
+    // the response is sent, by which point `req` should not be relied on. The
+    // scanning device uses this to ignore its own bills_updated echo — it is
+    // mid-writeback on the local receipt row and a pull in that window would
+    // add a second copy.
+    const originSessionId = req.headers['x-session-id'] as string | undefined;
     OCR_JOBS.set(jobId, { status: 'processing', startedAt: Date.now() });
 
     (async () => {
@@ -329,7 +335,11 @@ export const startReceiptScan = async (req: AuthRequest, res: Response) => {
           // runs in a background job after the client was already given its
           // jobId — so the socket is the only way this reaches a device.
           try {
-            getSocketManager().notifyUser(userId, 'bills_updated', { reason: 'scanned', billId: bill.id });
+            getSocketManager().notifyUser(userId, 'bills_updated', {
+              reason: 'scanned',
+              billId: bill.id,
+              originSessionId,
+            });
           } catch (socketErr: any) {
             logger.warn('Bill socket notification failed after scan', {
               userId,
