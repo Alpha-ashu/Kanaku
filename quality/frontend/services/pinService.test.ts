@@ -29,7 +29,7 @@ vi.mock('@/lib/api', async (importOriginal) => {
   };
 });
 
-import { isPinMissing, isPinServiceUnavailable, isSessionExpired, pinService } from '@/services/pinService';
+import { isPinAlreadySet, isPinMissing, isPinServiceUnavailable, isSessionExpired, pinService } from '@/services/pinService';
 
 describe('pinService', () => {
   beforeEach(() => {
@@ -111,6 +111,80 @@ describe('pinService', () => {
       message: 'PIN not set for this user',
       statusCode: 200,
     })).toBe(true);
+  });
+
+  it('does not report a PIN as missing when the status lookup itself failed', () => {
+    // The regression this guards: a degraded /pin/status answers 200 with a
+    // body-level 503, and reading that as "no PIN set" routed returning users
+    // into PIN *creation* — which the backend then refused, leaving onboarding
+    // with no way forward.
+    expect(isPinMissing({
+      success: false,
+      message: 'PIN service temporarily unavailable',
+      code: 'PIN_STATUS_UNAVAILABLE',
+      statusCode: 503,
+    })).toBe(false);
+
+    expect(isPinMissing({
+      success: false,
+      message: 'PIN service request timeout after 8000ms',
+    })).toBe(false);
+
+    expect(isPinMissing({
+      success: false,
+      message: 'Session expired. Please sign in again.',
+      sessionExpired: true,
+    })).toBe(false);
+  });
+
+  it('still reports an authoritative "no PIN" answer as missing', () => {
+    expect(isPinMissing({
+      success: false,
+      message: 'PIN not set for this user',
+      code: 'PIN_NOT_SET',
+      statusCode: 200,
+    })).toBe(true);
+  });
+
+  it('recognises an existing server-side PIN so callers can switch to verifying it', () => {
+    expect(isPinAlreadySet({
+      success: false,
+      message: 'A PIN is already set for this account. Enter your existing PIN instead.',
+      code: 'PIN_ALREADY_EXISTS',
+      statusCode: 409,
+    })).toBe(true);
+
+    // Backends deployed before the code existed only sent the message.
+    expect(isPinAlreadySet({
+      success: false,
+      message: 'PIN already exists. Use update PIN endpoint instead.',
+      statusCode: 400,
+    })).toBe(true);
+
+    expect(isPinAlreadySet({ success: true, message: 'PIN created successfully' })).toBe(false);
+    expect(isPinAlreadySet({ success: false, message: 'PIN is too weak.', code: 'PIN_TOO_WEAK' })).toBe(false);
+  });
+
+  it('keeps the body-level statusCode of a degraded 200 response', async () => {
+    getSession.mockResolvedValue({ data: { session: { access_token: 'session-token' } } });
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      statusText: 'OK',
+      json: async () => ({
+        success: false,
+        message: 'PIN service temporarily unavailable',
+        code: 'PIN_STATUS_UNAVAILABLE',
+        statusCode: 503,
+      }),
+    }));
+
+    const status = await pinService.getStatus();
+
+    expect(status.statusCode).toBe(503);
+    expect(status.code).toBe('PIN_STATUS_UNAVAILABLE');
+    expect(isPinServiceUnavailable(status)).toBe(true);
+    expect(isPinMissing(status)).toBe(false);
   });
 
   it('detects backend PIN service failures', () => {

@@ -20,6 +20,7 @@ import { adminPlatformGate } from './middleware/adminPlatformGate';
 import { metricsMiddleware, getMetricsSnapshot } from './middleware/metrics';
 import { getCacheMetricsSnapshot } from './cache/redis';
 import { isCryptoConfigured } from './security/crypto';
+import { getStorageHealth } from './utils/storage';
 import { renderMetrics, metricsContentType } from './config/metrics';
 import { renderDrainHandler } from './middleware/renderDrain';
 import { isAllowedOrigin } from './config/cors';
@@ -447,6 +448,7 @@ app.get('/api/v1/health/deep', authMiddleware, async (req: AuthRequest, res) => 
       circuitBreakers: getCircuitBreakerStatus(),
       database: { status: dbStatus, code: dbCode },
       crypto: { configured: isCryptoConfigured() },
+      storage: getStorageHealth(),
     },
   });
 });

@@ -83,7 +83,15 @@ router.post('/create', validateBody(createPinSchema), async (req: AuthRequest, r
     });
 
     if (!result.success) {
-      throw AppError.badRequest(result.message, 'INVALID_PIN');
+      // "A PIN already exists" is a state conflict, not a malformed request, and
+      // the client has a real recovery for it (switch to "enter existing PIN").
+      // It used to come back as an indistinguishable 400/INVALID_PIN, which left
+      // the onboarding PIN screen with nothing to do but show the raw message —
+      // a dead end for any user whose /pin/status lookup had been inconclusive.
+      if (result.code === 'PIN_ALREADY_EXISTS') {
+        throw AppError.conflict(result.message, result.code);
+      }
+      throw AppError.badRequest(result.message, result.code ?? 'INVALID_PIN');
     }
 
     // Creating a PIN implicitly unlocks the session (the user just proved it).
@@ -228,10 +236,13 @@ router.get('/status', async (req: AuthRequest, res: Response, _next: NextFunctio
     const result = await pinService.getPinStatus(userId);
     res.json(result);
   } catch (error) {
-    // PIN status is non-critical — degrade gracefully rather than erroring
+    // PIN status is non-critical — degrade gracefully rather than erroring.
+    // The body carries `statusCode` so the client can still tell this apart from
+    // an authoritative "no PIN set"; the transport stays 200 on purpose.
     res.json({
       success: false,
       message: 'PIN service temporarily unavailable',
+      code: 'PIN_STATUS_UNAVAILABLE',
       statusCode: 503,
     });
   }

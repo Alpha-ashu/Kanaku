@@ -21,6 +21,12 @@ export interface PinStatus {
   statusCode?: number;
   hasBackup?: boolean;
   /**
+   * Machine-readable failure reason from the backend (`PIN_ALREADY_EXISTS`,
+   * `PIN_TOO_WEAK`, `PIN_STATUS_UNAVAILABLE`, ...). Branch on this rather than
+   * on `message`, which is user-facing copy and changes freely.
+   */
+  code?: string;
+  /**
    * True when the request was rejected by the auth layer (expired/invalid
    * session) rather than by PIN verification — i.e. a token refresh could not
    * recover it, so the user must sign in again. Distinct from a wrong PIN.
@@ -73,11 +79,42 @@ export const isPinMissing = (status?: PinStatus | null): boolean => {
     return false;
   }
 
+  if (status.code === 'PIN_NOT_SET') {
+    return true;
+  }
+
+  // Only an authoritative answer means "no PIN". A lookup that failed (service
+  // degraded, session expired, timed out) says nothing about whether a PIN
+  // exists, and treating it as "missing" is what routed users into PIN creation
+  // against an account that already had one.
+  if (status.code || isPinServiceUnavailable(status) || status.sessionExpired) {
+    return false;
+  }
+
   if (status.statusCode === 404) {
     return true;
   }
 
   return PIN_NOT_SET_MESSAGE.test(status.message);
+};
+
+/**
+ * The account already has a server-side PIN, so creating one is the wrong verb.
+ * The backend refuses to overwrite it from a plain session (that would let any
+ * access token re-key the app lock), so the only way forward is to verify the
+ * existing PIN — callers must switch to their "enter PIN" step rather than
+ * surfacing this as a failed creation.
+ */
+export const isPinAlreadySet = (status?: PinStatus | null): boolean => {
+  if (!status || status.success) {
+    return false;
+  }
+
+  return (
+    status.code === 'PIN_ALREADY_EXISTS' ||
+    status.statusCode === 409 ||
+    /pin (?:already exists|is already set)/i.test(status.message)
+  );
 };
 
 export const isPinServiceUnavailable = (status?: PinStatus | null): boolean => {
@@ -282,14 +319,24 @@ class PinService {
     const sessionExpired =
       response.status === 401 && (payload == null || payload.success === undefined);
 
+    // /pin/status answers 200 even when it is degraded, and reports the real
+    // condition as `statusCode` in the body. Overwriting that with the transport
+    // status made isPinServiceUnavailable() read a 503 as a healthy 200.
+    const statusCode =
+      response.ok && typeof payload?.statusCode === 'number'
+        ? payload.statusCode
+        : response.status;
+
     return {
       success: Boolean(payload?.success ?? response.ok),
       message,
+      code: typeof payload?.code === 'string' ? payload.code : undefined,
       expiresAt: payload?.expiresAt,
       attemptsRemaining: payload?.attemptsRemaining,
       lockedUntil: payload?.lockedUntil,
       backup: payload?.backup,
-      statusCode: response.status,
+      hasBackup: payload?.hasBackup,
+      statusCode,
       sessionExpired,
     };
   }

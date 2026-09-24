@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { LogOut, KeyRound, AlertCircle, ChevronLeft, ShieldCheck, Eye, EyeOff, Lock, Loader2, Fingerprint, ScanFace } from 'lucide-react';
 import { KANAKULogo, DISPLAY_FONT } from '@/app/components/ui/KANAKULogo';
 import { clearSecurityData, isPINSet, verifyPIN, storeMasterKey, serializePINKeyBackup, restorePINKeyBackup } from '@/lib/encryption';
-import { isPinMissing, isPinServiceUnavailable, isSessionExpired, pinService } from '@/services/pinService';
+import { isPinAlreadySet, isPinMissing, isPinServiceUnavailable, isSessionExpired, pinService } from '@/services/pinService';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { isGuestMode } from '@/lib/guestMode';
@@ -591,6 +591,17 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
                     pinService.saveKeyBackup(backupPayload, sec.securityToken).catch(() => { });
                   }
                 }).catch(() => { });
+                return;
+              }
+
+              // The server kept an older PIN, so the key just stored locally no
+              // longer matches it: this device unlocks, but /pin/verify — and
+              // with it every pinGate-protected endpoint — will keep refusing
+              // the new PIN. Recording the divergence is what lets the next
+              // launch reconcile instead of silently staying half-locked.
+              if (isPinAlreadySet(result)) {
+                console.warn('[PINAuth] Server already holds a different PIN; local PIN is out of sync.');
+                pinService.markPendingServerSync();
               }
             })
             .catch(() => { });

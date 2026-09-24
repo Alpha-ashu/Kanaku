@@ -49,6 +49,21 @@ export const verifyStorageBucket = async () => {
   }
 };
 
+/**
+ * Cheap, non-leaking view of whether uploads can work at all, for /health/deep.
+ *
+ * SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are dashboard-only secrets
+ * (`sync: false` in render.yaml), so they are easy to have in .env and missing
+ * on the deployed service. When they are, every upload path — advisor
+ * documents, bills, vault files — fails with a 5xx that looks like an
+ * application bug, and the only evidence is a line in the boot log nobody
+ * re-reads. Surfacing it here makes that answerable in one request.
+ */
+export const getStorageHealth = () => ({
+  configured: Boolean(getStorageClient()),
+  bucket: STORAGE_BUCKET,
+});
+
 export const uploadBuffer = async (filePath: string, buffer: Buffer, contentType: string) => {
   try {
     const client = getStorageClient();

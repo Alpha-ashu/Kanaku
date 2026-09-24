@@ -325,7 +325,40 @@ export const rateSession = async (req: AuthRequest, res: Response) => {
 
 const ALLOWED_DOC_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
 
+/**
+ * Flatten a thrown value into something the logger can actually print.
+ *
+ * `logger.error('...', { error })` looks right but is a trap: an Error's message
+ * and stack are non-enumerable, so the meta object serialises to `{"error":{}}`
+ * and the log records only that *something* failed. Every production 500 out of
+ * this controller was therefore undiagnosable from the logs alone. Prisma's
+ * `code`/`meta` are pulled out too — they are what distinguishes schema drift
+ * (P2022), a failed constraint (P2002) and a transaction timeout (P2028).
+ */
+const describeError = (error: unknown): Record<string, unknown> => {
+  if (error instanceof Error) {
+    const prisma = error as Error & { code?: string; meta?: unknown };
+    return {
+      name: error.name,
+      message: error.message,
+      stack: error.stack,
+      ...(prisma.code ? { prismaCode: prisma.code } : {}),
+      ...(prisma.meta ? { prismaMeta: prisma.meta } : {}),
+    };
+  }
+  return { message: String(error) };
+};
+
 export const applyAsAdvisor = async (req: AuthRequest, res: Response) => {
+  // Declared outside the try so every failure path — including the outer catch —
+  // can roll the uploaded objects back: a failure between the uploads and the
+  // saved row used to leave the documents stranded in the bucket with nothing
+  // pointing at them. Once the row IS saved it owns those paths, so the flag
+  // below stops a later failure (the reviewer notification) from deleting the
+  // documents of a perfectly good application.
+  const uploadedDocs: string[] = [];
+  let applicationPersisted = false;
+
   try {
     const userId = getUserId(req);
 
@@ -381,20 +414,29 @@ export const applyAsAdvisor = async (req: AuthRequest, res: Response) => {
       return path;
     };
 
-    const uploaded: string[] = [];
     let panPath: string, aadhaarPath: string, certPath: string | null = null;
     try {
       panPath = await uploadDoc(files.panDocument[0], 'pan');
-      uploaded.push(panPath);
+      uploadedDocs.push(panPath);
       aadhaarPath = await uploadDoc(files.aadhaarDocument[0], 'aadhaar');
-      uploaded.push(aadhaarPath);
+      uploadedDocs.push(aadhaarPath);
       if (files?.certDocument?.[0]) {
         certPath = await uploadDoc(files.certDocument[0], 'cert');
-        uploaded.push(certPath);
+        uploadedDocs.push(certPath);
       }
     } catch (err: any) {
-      await Promise.all(uploaded.map((p) => removeObject(p)));
-      return res.status(err.statusCode ?? 500).json({ error: err.message || 'Document upload failed' });
+      await Promise.all(uploadedDocs.map((path) => removeObject(path).catch(() => undefined)));
+      // The bucket being unreachable is an outage on our side, not a bad
+      // submission, so it must not be reported as a 4xx the user can "fix".
+      const storageDown = /cloud storage unavailable|not configured/i.test(String(err?.message ?? ''));
+      logger.error('Advisor application document upload failed', {
+        userId: req.user?.id,
+        ...describeError(err),
+      });
+      return res.status(err.statusCode ?? (storageDown ? 503 : 500)).json({
+        error: err.message || 'Document upload failed',
+        ...(storageDown ? { code: 'STORAGE_UNAVAILABLE' } : {}),
+      });
     }
 
     // Upsert AdvisorApplication (allow resubmission after rejection). The pending
@@ -427,8 +469,9 @@ export const applyAsAdvisor = async (req: AuthRequest, res: Response) => {
       return { saved };
     });
     const application = result.saved;
+    applicationPersisted = Boolean(application);
     if (!application) {
-      await Promise.all(uploaded.map((p) => removeObject(p)));
+      await Promise.all(uploadedDocs.map((path) => removeObject(path).catch(() => undefined)));
       return res.status(400).json({
         error: result.blockedBy === 'PENDING'
           ? 'You already have a pending application'
@@ -465,8 +508,32 @@ export const applyAsAdvisor = async (req: AuthRequest, res: Response) => {
     if (isDatabaseUnavailableError(error)) {
       return res.status(503).json({ error: 'Database is temporarily offline', code: 'DB_OFFLINE' });
     }
-    logger.error('Advisor application error', { error });
-    return res.status(500).json({ error: 'Failed to submit advisor application' });
+
+    // Nothing downstream will retry, so anything already in the bucket is
+    // garbage from here on — unless the application row was saved, in which case
+    // it references these paths and they must survive.
+    if (!applicationPersisted) {
+      await Promise.all(uploadedDocs.map((path) => removeObject(path).catch(() => undefined)));
+    }
+
+    logger.error('Advisor application error', {
+      applicationPersisted,
+      userId: req.user?.id,
+      ...describeError(error),
+    });
+
+    // Storage being unconfigured or unreachable is an outage, not a bad request,
+    // and it is the failure this endpoint is most exposed to — it is the only
+    // one here that writes to the bucket. Saying so plainly stops it reading as
+    // a mystery 500 and points at the environment instead of the submission.
+    if (/cloud storage unavailable|storage .*not configured/i.test(String(error?.message ?? ''))) {
+      return res.status(503).json({
+        error: 'Document storage is unavailable right now. Please try again shortly.',
+        code: 'STORAGE_UNAVAILABLE',
+      });
+    }
+
+    return res.status(500).json({ error: 'Failed to submit advisor application', code: 'ADVISOR_APPLY_FAILED' });
   }
 };
 

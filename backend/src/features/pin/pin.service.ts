@@ -26,11 +26,20 @@ export interface UpdatePinRequest {
 export interface PinResponse {
   success: boolean;
   message: string;
+  /**
+   * Machine-readable reason for a failure. The message is for humans and is
+   * rewritten freely; clients must branch on this instead. `PIN_ALREADY_EXISTS`
+   * in particular is recoverable — the caller should offer "enter your existing
+   * PIN" rather than treating it as a failed creation.
+   */
+  code?: string;
   expiresAt?: string;
   attemptsRemaining?: number;
   lockedUntil?: string;
   backup?: string;
   hasBackup?: boolean;
+  /** Advisory HTTP status for degraded-but-200 payloads (see getPinStatus). */
+  statusCode?: number;
 }
 
 class PinService {
@@ -88,6 +97,7 @@ class PinService {
         return {
           success: false,
           message: 'PIN must be exactly 6 digits or a valid SHA-256 hash',
+          code: 'PIN_FORMAT_INVALID',
         };
       }
 
@@ -99,6 +109,7 @@ class PinService {
           return {
             success: false,
             message: 'Invalid PIN hash signature',
+            code: 'PIN_HASH_UNRECOVERABLE',
           };
         }
         plaintextPin = recovered;
@@ -109,10 +120,16 @@ class PinService {
         return {
           success: false,
           message: 'PIN is too weak. Avoid sequential, repeating, or common patterns.',
+          code: 'PIN_TOO_WEAK',
         };
       }
 
-      // Check if PIN already exists
+      // Check if PIN already exists.
+      //
+      // Deliberately NOT an overwrite: replacing a PIN from a plain session would
+      // let anyone holding an access token silently re-key the app lock. The
+      // caller is expected to fall back to verifying the existing PIN, which is
+      // what `PIN_ALREADY_EXISTS` tells it to do.
       const existingPin = await prisma.userPin.findUnique({
         where: { userId },
       });
@@ -120,7 +137,8 @@ class PinService {
       if (existingPin) {
         return {
           success: false,
-          message: 'PIN already exists. Use update PIN endpoint instead.',
+          message: 'A PIN is already set for this account. Enter your existing PIN instead.',
+          code: 'PIN_ALREADY_EXISTS',
         };
       }
 
@@ -156,6 +174,7 @@ class PinService {
       return {
         success: false,
         message: 'Failed to create PIN',
+        code: 'PIN_CREATE_FAILED',
       };
     }
   }
@@ -184,6 +203,7 @@ class PinService {
         return {
           success: false,
           message: 'PIN not set for this user',
+          code: 'PIN_NOT_SET',
         };
       }
 
@@ -448,9 +468,15 @@ class PinService {
       };
     } catch (error) {
       logger.error('[PinService] Get PIN status error:', error);
+      // A lookup that FAILED is not a lookup that found nothing. Saying
+      // "unavailable" (and carrying the 503 through `statusCode`) keeps callers
+      // from reading a database blip as "this account has no PIN" and routing the
+      // user into PIN creation, which then dies on PIN_ALREADY_EXISTS.
       return {
         success: false,
-        message: 'Failed to get PIN status',
+        message: 'PIN service temporarily unavailable',
+        code: 'PIN_STATUS_UNAVAILABLE',
+        statusCode: 503,
       };
     }
   }

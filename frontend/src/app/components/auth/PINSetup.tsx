@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Eye, EyeOff, ShieldCheck, ChevronLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { isPINSet, restorePINKeyBackup, serializePINKeyBackup, storeMasterKey, verifyPIN } from '@/lib/encryption';
-import { isPinMissing, isPinServiceUnavailable, pinService } from '@/services/pinService';
+import { isPinAlreadySet, isPinMissing, isPinServiceUnavailable, pinService } from '@/services/pinService';
 import { KANAKULogo, DISPLAY_FONT } from '@/app/components/ui/KANAKULogo';
 
 interface PINSetupProps {
@@ -148,6 +148,24 @@ export const PINSetup: React.FC<PINSetupProps> = ({
           return;
         }
         setError(result.message || 'PIN verification failed. Please try again.');
+        setIsLoading(false);
+        return;
+      }
+
+      // The server already holds a PIN for this account, so there is nothing to
+      // create — switch to verifying it instead of dead-ending on the error.
+      //
+      // Reaching here is normal, not exotic: this screen is entered on the
+      // strength of a /pin/status lookup, and that lookup is inconclusive
+      // whenever the backend is cold, throttled, or the session is still
+      // settling after OTP verification. Before this branch existed, the create
+      // step answered 400 and left the user with no control that could move the
+      // flow forward — permanently stuck in onboarding.
+      if (!result.success && step !== 'enter' && isPinAlreadySet(result)) {
+        setStep('enter');
+        setPin('');
+        setConfirmPin('');
+        setError('This account already has a PIN. Enter it to continue.');
         setIsLoading(false);
         return;
       }
