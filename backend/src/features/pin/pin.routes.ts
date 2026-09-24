@@ -91,7 +91,11 @@ router.post('/create', validateBody(createPinSchema), async (req: AuthRequest, r
       if (result.code === 'PIN_ALREADY_EXISTS') {
         throw AppError.conflict(result.message, result.code);
       }
-      throw AppError.badRequest(result.message, result.code ?? 'INVALID_PIN');
+      // Every other rejection stays 400/INVALID_PIN. The service now carries
+      // finer codes internally, but INVALID_PIN is the documented contract for a
+      // rejected PIN (see docs/api-docs.ts) and nothing consumes a finer one —
+      // renaming it would break that contract without enabling any behaviour.
+      throw AppError.badRequest(result.message, 'INVALID_PIN');
     }
 
     // Creating a PIN implicitly unlocks the session (the user just proved it).

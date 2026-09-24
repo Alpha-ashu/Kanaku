@@ -325,30 +325,6 @@ export const rateSession = async (req: AuthRequest, res: Response) => {
 
 const ALLOWED_DOC_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
 
-/**
- * Flatten a thrown value into something the logger can actually print.
- *
- * `logger.error('...', { error })` looks right but is a trap: an Error's message
- * and stack are non-enumerable, so the meta object serialises to `{"error":{}}`
- * and the log records only that *something* failed. Every production 500 out of
- * this controller was therefore undiagnosable from the logs alone. Prisma's
- * `code`/`meta` are pulled out too — they are what distinguishes schema drift
- * (P2022), a failed constraint (P2002) and a transaction timeout (P2028).
- */
-const describeError = (error: unknown): Record<string, unknown> => {
-  if (error instanceof Error) {
-    const prisma = error as Error & { code?: string; meta?: unknown };
-    return {
-      name: error.name,
-      message: error.message,
-      stack: error.stack,
-      ...(prisma.code ? { prismaCode: prisma.code } : {}),
-      ...(prisma.meta ? { prismaMeta: prisma.meta } : {}),
-    };
-  }
-  return { message: String(error) };
-};
-
 export const applyAsAdvisor = async (req: AuthRequest, res: Response) => {
   // Declared outside the try so every failure path — including the outer catch —
   // can roll the uploaded objects back: a failure between the uploads and the
@@ -429,10 +405,7 @@ export const applyAsAdvisor = async (req: AuthRequest, res: Response) => {
       // The bucket being unreachable is an outage on our side, not a bad
       // submission, so it must not be reported as a 4xx the user can "fix".
       const storageDown = /cloud storage unavailable|not configured/i.test(String(err?.message ?? ''));
-      logger.error('Advisor application document upload failed', {
-        userId: req.user?.id,
-        ...describeError(err),
-      });
+      logger.error('Advisor application document upload failed', { userId: req.user?.id, error: err });
       return res.status(err.statusCode ?? (storageDown ? 503 : 500)).json({
         error: err.message || 'Document upload failed',
         ...(storageDown ? { code: 'STORAGE_UNAVAILABLE' } : {}),
@@ -516,11 +489,7 @@ export const applyAsAdvisor = async (req: AuthRequest, res: Response) => {
       await Promise.all(uploadedDocs.map((path) => removeObject(path).catch(() => undefined)));
     }
 
-    logger.error('Advisor application error', {
-      applicationPersisted,
-      userId: req.user?.id,
-      ...describeError(error),
-    });
+    logger.error('Advisor application error', { userId: req.user?.id, applicationPersisted, error });
 
     // Storage being unconfigured or unreachable is an outage, not a bad request,
     // and it is the failure this endpoint is most exposed to — it is the only

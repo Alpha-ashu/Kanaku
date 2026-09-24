@@ -26,6 +26,14 @@ export const STORAGE_BUCKET = process.env.SUPABASE_STORAGE_BUCKET || 'expense-bi
 export const SIGNED_URL_TTL = Number(process.env.SUPABASE_SIGNED_URL_TTL || 600);
 
 /**
+ * Outcome of the boot-time bucket probe, kept so /health/deep can report it.
+ * `unknown` until the probe resolves.
+ */
+type StorageProbe = 'unknown' | 'ok' | 'unconfigured' | 'unusable';
+let lastProbe: StorageProbe = 'unknown';
+let lastProbeDetail: string | undefined;
+
+/**
  * Boot-time probe that the configured bucket exists. Non-fatal on purpose —
  * attachments are secondary to the money paths, so a bad bucket name must not
  * block a deploy — but it must not be silent either: a missing bucket otherwise
@@ -34,34 +42,47 @@ export const SIGNED_URL_TTL = Number(process.env.SUPABASE_SIGNED_URL_TTL || 600)
 export const verifyStorageBucket = async () => {
   const client = getStorageClient();
   if (!client) {
+    lastProbe = 'unconfigured';
+    lastProbeDetail = 'SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY not set';
     console.warn('[Storage] SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY not set — attachments use local disk, and uploads fail in production.');
     return;
   }
   try {
     const { error } = await client.storage.getBucket(STORAGE_BUCKET);
     if (error) {
+      lastProbe = 'unusable';
+      lastProbeDetail = error.message;
       console.error(`[Storage] Bucket "${STORAGE_BUCKET}" is unusable (${error.message}) — every attachment upload will fail. Check SUPABASE_STORAGE_BUCKET.`);
     } else {
+      lastProbe = 'ok';
+      lastProbeDetail = undefined;
       console.log(`[Storage] Verified cloud storage bucket "${STORAGE_BUCKET}" successfully.`);
     }
   } catch (err: any) {
+    lastProbe = 'unusable';
+    lastProbeDetail = err?.message ?? String(err);
     console.error(`[Storage] Could not verify bucket "${STORAGE_BUCKET}": ${err?.message ?? err}`);
   }
 };
 
 /**
- * Cheap, non-leaking view of whether uploads can work at all, for /health/deep.
+ * Whether uploads can actually work, for /health/deep.
  *
  * SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are dashboard-only secrets
  * (`sync: false` in render.yaml), so they are easy to have in .env and missing
  * on the deployed service. When they are, every upload path — advisor
  * documents, bills, vault files — fails with a 5xx that looks like an
- * application bug, and the only evidence is a line in the boot log nobody
- * re-reads. Surfacing it here makes that answerable in one request.
+ * application bug, and the only evidence is a boot-log line nobody re-reads.
+ *
+ * Reports the boot probe's verdict, not merely whether a client could be
+ * constructed: a wrong service-role key or a renamed bucket builds a client
+ * happily and still fails every upload.
  */
 export const getStorageHealth = () => ({
   configured: Boolean(getStorageClient()),
   bucket: STORAGE_BUCKET,
+  probe: lastProbe,
+  ...(lastProbeDetail ? { detail: lastProbeDetail } : {}),
 });
 
 export const uploadBuffer = async (filePath: string, buffer: Buffer, contentType: string) => {

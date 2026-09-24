@@ -132,9 +132,9 @@ const ALL_PATHS: Record<string, object> = {
   // PIN
   '/api/v1/pin/create': {
     post: {
-      tags: ['PIN'], summary: 'Create PIN', description: 'Weak PINs (sequential, repeated, known) rejected with INVALID_PIN.', operationId: 'pinCreate', security: sec,
+      tags: ['PIN'], summary: 'Create PIN', description: 'Weak PINs (sequential, repeated, known) rejected with INVALID_PIN. If the account already has a PIN this answers 409 PIN_ALREADY_EXISTS — the PIN is never overwritten here; verify it or use the update endpoint.', operationId: 'pinCreate', security: sec,
       requestBody: jbody('PIN hash', { pin: { type: 'string', description: 'SHA-256 of 6-digit PIN' } }, ['pin']),
-      responses: { ...r200('PIN created'), ...errs, '400': { description: 'Weak PIN (INVALID_PIN)' } },
+      responses: { ...r200('PIN created'), ...errs, '400': { description: 'Weak PIN (INVALID_PIN)' }, '409': { description: 'A PIN already exists for this account (PIN_ALREADY_EXISTS)' } },
     },
   },
   '/api/v1/pin/verify': {

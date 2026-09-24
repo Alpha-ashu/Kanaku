@@ -422,6 +422,21 @@ app.get('/health', (_req, res) => {
   });
 });
 
+/**
+ * Which build is actually serving.
+ *
+ * Render's `preDeployCommand` runs migrations and ABORTS the deploy if they
+ * fail, leaving the previous version live — so "I pushed the fix" and "the fix
+ * is running" are genuinely different claims, and there was no way to tell them
+ * apart from outside. Reported only on the authenticated route: `/health` stays
+ * minimal by design.
+ */
+const BUILD_INFO = {
+  commit: (process.env.RENDER_GIT_COMMIT || process.env.VERCEL_GIT_COMMIT_SHA || process.env.GIT_COMMIT || 'unknown').slice(0, 12),
+  branch: process.env.RENDER_GIT_BRANCH || process.env.VERCEL_GIT_COMMIT_REF || 'unknown',
+  bootedAt: new Date().toISOString(),
+};
+
 // Authenticated deep healthcheck for ops dashboards / Fly health probes
 // running with a service token. Does NOT leak raw error messages — only
 // boolean status + safe codes — so it can be polled by external monitors
@@ -444,6 +459,7 @@ app.get('/api/v1/health/deep', authMiddleware, async (req: AuthRequest, res) => 
   res.json({
     status: dbStatus === 'connected' ? 'ok' : 'degraded',
     timestamp: new Date().toISOString(),
+    build: BUILD_INFO,
     services: {
       circuitBreakers: getCircuitBreakerStatus(),
       database: { status: dbStatus, code: dbCode },
