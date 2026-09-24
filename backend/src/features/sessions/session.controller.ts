@@ -3,7 +3,8 @@ import { AuthRequest, getUserId } from '../../middleware/auth';
 import { prisma } from '../../db/prisma';
 import { getSocketManager } from '../../sockets';
 import { logger } from '../../config/logger';
-import { encryptMessageBody, decryptMessageRow } from './message.crypto';
+import { encryptMessageBody, decryptMessageRow, MessageEncryptionUnavailableError } from './message.crypto';
+import { notify } from '../notifications/notify';
 import { asClientRequestId } from '../../utils/idempotentCreate';
 import { validateBillUpload, makeStoragePath } from '../../utils/uploadPolicy';
 import { uploadBuffer, createSignedUrl } from '../../utils/storage';
@@ -148,19 +149,39 @@ export const sendMessage = async (req: AuthRequest, res: Response) => {
     // be either party depending on who sent the message, so the destination
     // has to follow: sessions live under advisor-panel for the advisor
     // (advisor-only) and under book-advisor's "My Bookings" for the client.
-    await prisma.notification.create({
-      data: {
-        userId: otherUserId,
-        title: 'New Message',
-        message: `${senderName}: ${message.substring(0, 50)}${message.length > 50 ? '...' : ''}`,
-        category: 'session',
-        deepLink: otherUserId === session.advisorId ? '/advisor-panel' : '/book-advisor',
+    await notify({
+      userId: otherUserId,
+      sourceUserId: userId,
+      topic: 'session',
+      type: 'session_message',
+      title: 'New Message',
+      message: `${senderName}: ${message.substring(0, 50)}${message.length > 50 ? '...' : ''}`,
+      deepLink: otherUserId === session.advisorId ? '/advisor-panel' : '/book-advisor',
+      // A back-and-forth is many messages in a short window. Without
+      // coalescing each one becomes its own row and its own push.
+      coalesce: {
+        withinMs: 5 * 60_000,
+        summarize: (count: number) => ({
+          title: 'New Messages',
+          message: `${count} new messages from ${senderName}`,
+        }),
       },
     });
 
     res.status(201).json(chatMessage);
   } catch (error: any) {
-    res.status(500).json({ error: error.message || 'Failed to send message' });
+    // Encryption unavailable ⇒ nothing was written. Say so as an outage rather
+    // than a generic 500, so the client can offer "try again" instead of
+    // leaving the user unsure whether their message was delivered.
+    if (error instanceof MessageEncryptionUnavailableError) {
+      return res.status(503).json({ error: error.message, code: error.code });
+    }
+    // Never echo `error.message` — it can carry Prisma/driver internals.
+    logger.error('[Sessions] Failed to send message', {
+      sessionId: req.params?.id,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    res.status(500).json({ error: 'Failed to send message', code: 'MESSAGE_SEND_FAILED' });
   }
 };
 
@@ -207,19 +228,23 @@ export const uploadMessageAttachment = async (req: AuthRequest, res: Response) =
       return res.status(400).json({ error: err?.message || 'Unsupported file type' });
     }
 
+    const caption = typeof req.body?.message === 'string' ? req.body.message.trim().slice(0, 1000) : '';
+
+    // Encrypt BEFORE the upload, not after. Encryption can now fail closed, and
+    // a failure after `uploadBuffer` would strand the object in the bucket with
+    // no row pointing at it. Encrypting first is free to abandon.
+    // An empty caption stays empty rather than becoming a ciphertext blob that
+    // renders as noise.
+    const storedCaption = caption ? encryptMessageBody(userId, sessionId, caption) : caption;
+
     const storagePath = makeStoragePath(userId, validated.extension, `session-${sessionId}`);
     await uploadBuffer(storagePath, validated.buffer, validated.contentType);
-
-    const caption = typeof req.body?.message === 'string' ? req.body.message.trim().slice(0, 1000) : '';
 
     const storedShare = await prisma.chatMessage.create({
       data: {
         sessionId,
         senderId: userId,
-        // The caption is a chat message like any other, so it gets the same
-        // encryption. An empty caption stays empty rather than becoming a
-        // ciphertext blob that renders as noise.
-        message: caption ? encryptMessageBody(userId, sessionId, caption) : caption,
+        message: storedCaption,
         attachmentPath: storagePath,
         attachmentName: validated.originalName,
         attachmentType: validated.contentType,
@@ -243,20 +268,23 @@ export const uploadMessageAttachment = async (req: AuthRequest, res: Response) =
 
     // See the New Message notification above for why this deepLink is
     // conditional rather than the (unregistered) '/sessions/:id' route.
-    await prisma.notification.create({
-      data: {
-        userId: otherUserId,
-        title: 'New Document',
-        message: `${senderName} shared ${validated.originalName}`,
-        category: 'session',
-        deepLink: otherUserId === session.advisorId ? '/advisor-panel' : '/book-advisor',
-      },
+    await notify({
+      userId: otherUserId,
+      sourceUserId: userId,
+      topic: 'session',
+      type: 'session_document',
+      title: 'New Document',
+      message: `${senderName} shared ${validated.originalName}`,
+      deepLink: otherUserId === session.advisorId ? '/advisor-panel' : '/book-advisor',
     });
 
     // The storage key never leaves the server.
     const { attachmentPath, ...safe } = chatMessage;
     res.status(201).json({ ...safe, hasAttachment: true });
   } catch (error: any) {
+    if (error instanceof MessageEncryptionUnavailableError) {
+      return res.status(503).json({ error: error.message, code: error.code });
+    }
     logger.error('Failed to attach file to session message', { error: error.message });
     res.status(500).json({ error: 'Failed to share the document' });
   }
@@ -377,14 +405,14 @@ export const startSession = async (req: AuthRequest, res: Response) => {
 
     // Notify client. '/sessions/:id' is not a registered frontend route —
     // client sessions live under book-advisor's "My Bookings" tab.
-    await prisma.notification.create({
-      data: {
-        userId: session.clientId,
-        title: 'Session Started',
-        message: 'Your advisor has started the session',
-        category: 'session',
-        deepLink: '/book-advisor',
-      },
+    await notify({
+      userId: session.clientId,
+      topic: 'session',
+      type: 'session_started',
+      title: 'Session Started',
+      message: 'Your advisor has started the session',
+      deepLink: '/book-advisor',
+      priority: 'high',
     });
 
     res.json(updated);
@@ -449,14 +477,13 @@ export const completeSession = async (req: AuthRequest, res: Response) => {
     // Notify client to rate the session. '/sessions/:id/rate' is not a
     // registered frontend route — client sessions live under book-advisor's
     // "My Bookings" tab.
-    await prisma.notification.create({
-      data: {
-        userId: session.clientId,
-        title: 'Session Completed',
-        message: 'The session has been completed. Please rate your experience.',
-        category: 'session',
-        deepLink: '/book-advisor',
-      },
+    await notify({
+      userId: session.clientId,
+      topic: 'session',
+      type: 'session_completed',
+      title: 'Session Completed',
+      message: 'The session has been completed. Please rate your experience.',
+      deepLink: '/book-advisor',
     });
 
     res.json(updated);
@@ -516,13 +543,14 @@ export const cancelSession = async (req: AuthRequest, res: Response) => {
     const otherUserId = session.advisorId === userId ? session.clientId : session.advisorId;
     const canceller = session.advisorId === userId ? 'Advisor' : 'Client';
 
-    await prisma.notification.create({
-      data: {
-        userId: otherUserId,
-        title: 'Session Cancelled',
-        message: `${canceller} has cancelled the session${reason ? ': ' + reason : ''}`,
-        category: 'session',
-      },
+    await notify({
+      userId: otherUserId,
+      topic: 'session',
+      type: 'session_cancelled',
+      title: 'Session Cancelled',
+      message: `${canceller} has cancelled the session${reason ? ': ' + reason : ''}`,
+      deepLink: '/book-advisor',
+      priority: 'high',
     });
 
     res.json(updated);

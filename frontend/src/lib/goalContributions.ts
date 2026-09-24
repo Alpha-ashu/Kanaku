@@ -1,7 +1,7 @@
 import { db, type Account, type Goal } from '@/lib/database';
 import { backendService } from '@/lib/backend-api';
 import { applyAccountBalanceDeltas } from '@/lib/transactionAggregation';
-import { processPendingSyncQueue, queueRecordUpsertSync } from '@/lib/auth-sync-integration';
+import { processPendingSyncQueue, queueRecordUpsertSync, refreshTablesForActiveUser } from '@/lib/auth-sync-integration';
 
 export interface GoalContributionInput {
   goal: Goal;
@@ -26,6 +26,11 @@ export async function addGoalContribution({ goal, account, amount, notes, member
 
   const trimmedNotes = notes?.trim() || undefined;
 
+  // Declared out here so the local row below can record how this contribution
+  // was pushed, whether or not the push succeeded.
+  let requestId: string | undefined;
+  let serverId: string | undefined;
+
   if (goal.cloudId && account.cloudId && navigator.onLine) {
     // Minted once, before the request, so every replay of THIS request carries
     // the same key — notably the 401-refresh interceptor, which re-sends the
@@ -35,22 +40,44 @@ export async function addGoalContribution({ goal, account, amount, notes, member
     //
     // Deliberately not minted inside the API client: a key generated per
     // attempt is a new key on every retry, which collapses nothing.
-    const clientRequestId = crypto.randomUUID();
+    requestId = crypto.randomUUID();
     try {
-      await backendService.api.post(`/goals/${goal.cloudId}/contribute`, {
+      const response = await backendService.api.post(`/goals/${goal.cloudId}/contribute`, {
         amount,
         accountId: account.cloudId,
         memberName,
         notes: trimmedNotes,
-        clientRequestId,
+        clientRequestId: requestId,
       });
+      // Remember which server row this became. Without it the local row and the
+      // server row are indistinguishable, and `syncGoalContributions()` would
+      // add a second copy of every contribution the moment it first ran.
+      // The envelope is unwrapped inconsistently across clients, so accept both
+      // `data.contribution` and `data.data.contribution`.
+      type ContributionEnvelope = {
+        data?: {
+          contribution?: { id?: string };
+          data?: { contribution?: { id?: string } };
+        };
+      };
+      const envelope = response as ContributionEnvelope;
+      const created = envelope?.data?.contribution ?? envelope?.data?.data?.contribution;
+      if (created?.id) serverId = String(created.id);
     } catch (backendError) {
       console.warn('[goalContributions] Direct contribution sync failed; relying on sync queue', backendError);
     }
   }
 
+  // A successful push means the server also wrote its own Transaction for this
+  // contribution, which will arrive via the normal transaction sync. Recording
+  // that here stops the balance engine deducting the same money twice.
+  const serverAccounted = Boolean(serverId);
+
   await db.goalContributions.add({
     goalId: goal.id,
+    cloudId: serverId,
+    clientRequestId: requestId,
+    serverAccounted,
     amount,
     accountId: account.id,
     date: new Date(),
@@ -71,4 +98,16 @@ export async function addGoalContribution({ goal, account, amount, notes, member
   queueRecordUpsertSync('goals', goal.id);
   queueRecordUpsertSync('accounts', account.id);
   void processPendingSyncQueue();
+
+  // Pull the server's side-effect Transaction promptly.
+  //
+  // When the push succeeded this row is `serverAccounted`, so the balance
+  // engine leaves the deduction to that transaction. Until it arrives the
+  // account reads as though nothing was spent — correct, but confusing if it
+  // lingers. The goals page does not pull transactions (it is not in that
+  // page's table list), so without this the gap lasted until the user
+  // navigated somewhere that does.
+  if (serverAccounted) {
+    void refreshTablesForActiveUser(['transactions', 'accounts']).catch(() => undefined);
+  }
 }

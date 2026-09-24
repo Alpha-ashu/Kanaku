@@ -3,7 +3,7 @@ import { User, Session } from '@supabase/supabase-js';
 import supabase from '@/utils/supabase/client';
 import { UserRole } from '@/lib/featureFlags';
 import { permissionService } from '@/services/permissionService';
-import { db } from '@/lib/database';
+import { LOGOUT_CLEARED_TABLES } from '@/lib/localDataRegistry';
 import { resolveAvatarSelection } from '@/lib/avatar-gallery';
 import { api, TokenManager } from '@/lib/api';
 import { clearSecurityData } from '@/lib/encryption';
@@ -19,6 +19,11 @@ import {
 import { backendService } from '@/lib/backend-api';
 import { shouldSkipOptionalBackendRequests } from '@/lib/apiBase';
 import { pinService } from '@/services/pinService';
+import {
+  needsInitialHydration,
+  runInitialHydration,
+  clearHydrationMarker,
+} from '@/services/initialHydration';
 import { disableBiometricUnlock } from '@/services/biometricAuthService';
 import { teardownPushNotifications } from '@/services/pushNotificationService';
 import socketClient from '@/lib/socket-client';
@@ -272,48 +277,34 @@ const resolveUserRole = (_user: User | null): UserRole => {
   return 'user';
 };
 
-/** Clear all user data from the local IndexedDB to ensure complete data isolation between accounts */
+/**
+ * Clear all user data from the local IndexedDB so one account's data cannot
+ * leak into the next session on a shared device.
+ *
+ * The table list lives in `lib/localDataRegistry.ts`, not here. It used to be
+ * an inline array, which meant a table could be added to it — and destroyed on
+ * every logout — without anyone establishing that the server could give it
+ * back. That is how EMI repayments and goal contributions came to be deleted
+ * here and restored nowhere. Each entry in the registry has to declare its
+ * restore strategy, and a test asserts the declaration is true.
+ *
+ * Device prefs, reference categories and the per-user sync/upload queues are
+ * intentionally NOT in the registry and are kept.
+ */
 const clearLocalUserData = async () => {
   try {
     await runWithCloudSyncSuppressed(async () => {
-      await Promise.all([
-        db.accounts.clear(),
-        db.transactions.clear(),
-        db.loans.clear(),
-        db.goals.clear(),
-        db.investments.clear(),
-        db.recurringTransactions.clear(),
-        db.budgets.clear(),
-        db.gold.clear(),
-        db.notifications.clear(),
-        db.groupExpenses.clear(),
-        db.friends.clear(),
-        db.merchantProfiles.clear(),
-        db.userCategoryPreferences.clear(),
-        db.documents.clear(),
-        db.smsTransactions.clear(),
-        // Also user-owned. Leaving these behind let the previous user's to-dos,
-        // goal/loan history and advisor chats survive a logout or user switch on
-        // a shared device, and the synced to-do tables then pushed them into the
-        // next account. Device prefs, reference categories and the per-user
-        // sync/upload queues are intentionally kept.
-        db.loanPayments.clear(),
-        db.goalContributions.clear(),
-        db.groups.clear(),
-        db.toDoLists.clear(),
-        db.toDoItems.clear(),
-        db.toDoListShares.clear(),
-        db.expenseBills.clear(),
-        db.importHistories.clear(),
-        db.budgetAlerts.clear(),
-        db.investmentDocuments.clear(),
-        db.investmentLinks.clear(),
-        db.chatMessages.clear(),
-        db.chatConversations.clear(),
-        db.bookingRequests.clear(),
-        db.advisorAssignments.clear(),
-        db.advisorSessions.clear(),
-      ]);
+      await Promise.all(
+        LOGOUT_CLEARED_TABLES.map(async (policy) => {
+          try {
+            await policy.table().clear();
+          } catch (err) {
+            // One missing/renamed table must not abandon the other thirty —
+            // a partial clear is how the previous account's rows survive.
+            console.error(`Failed to clear local table "${policy.name}" on logout:`, err);
+          }
+        }),
+      );
     });
   } catch (err) {
     console.error('Failed to clear local DB on logout/login:', err);
@@ -340,10 +331,16 @@ const clearLocalAuthPresentationState = (preservePinKeys = false) => {
   ].forEach((key) => localStorage.removeItem(key));
 
   // Clear per-table sync timestamps so the next login always re-fetches fresh
-  // data instead of hitting the 5-minute cooldown against an empty Dexie DB.
+  // data instead of hitting the cooldown against an empty Dexie DB.
   Object.keys(localStorage)
     .filter((k) => k.startsWith('KANAKU_last_sync_at_'))
     .forEach((k) => localStorage.removeItem(k));
+
+  // And the hydration markers. clearLocalUserData() has just emptied Dexie, so
+  // a marker left behind would tell the next login "this device already has the
+  // data" about a database that no longer holds any — which is precisely the
+  // logout-then-login data loss this pairs with.
+  clearHydrationMarker();
 
   if (!preservePinKeys) {
     pinService.clearPinData();
@@ -1145,6 +1142,47 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
   }, []);
 
+  /**
+   * Apply a server-pushed role change without waiting for the cache to expire.
+   *
+   * `permissionService` caches the role in localStorage and only re-reads it in
+   * the background every five minutes. That is fine for a role that rarely
+   * changes, and badly wrong at the one moment it does: a Manager approving an
+   * advisor application flipped the DB and the API immediately, while the
+   * applicant's screen kept the plain-user shell — no User/Advisor toggle —
+   * until the cooldown elapsed. The same in reverse for a revoke, where the UI
+   * went on offering advisor actions the API had begun refusing.
+   *
+   * Invalidating the timestamp and re-fetching (rather than trusting the role
+   * in the payload) keeps the server the only authority on what the role is:
+   * the event is a prompt to re-read, not the new state itself.
+   */
+  // Both dependencies are primitives, so the listener is re-subscribed only when
+  // the account or its fallback role actually changes — not on every re-render
+  // that happens to produce a new `user` object.
+  const roleChangeFallback = resolveUserRole(user);
+  useEffect(() => {
+    const userId = user?.id;
+    if (!userId) return;
+
+    const unsubscribe = socketClient.on('role_changed', (payload) => {
+      console.info('[AuthContext] role_changed received — re-reading permissions', payload);
+      permissionService.invalidateRoleCacheTimestamp(userId);
+      void permissionService
+        .fetchUserPermissions(userId, roleChangeFallback)
+        .then((permissions) => {
+          if (activeSyncUserId.current === userId || !activeSyncUserId.current) {
+            setRole(permissions.role);
+          }
+        })
+        .catch((err) => {
+          console.warn('[AuthContext] Role refresh after role_changed failed', err);
+        });
+    });
+
+    return unsubscribe;
+  }, [user?.id, roleChangeFallback]);
+
   const signOut = async () => {
     // Flush any locally queued writes before logging out so no data is lost.
     // Give it up to 5 seconds — if it times out, proceed anyway (user intent wins).
@@ -1227,8 +1265,25 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setRole(permissions.role);
       }
 
-      // Skip the heavy table sync entirely when the current page needs no financial data.
-      if (requestedTables && requestedTables.length > 0) {
+      // First login for this account on this device: pull EVERYTHING before
+      // falling back to the per-page behaviour.
+      //
+      // The guard below used to be the whole story — so a device only ever
+      // received the tables some page happened to ask for, and the backend-owned
+      // mirrors (categories, budgets, recurring rules, bills) only via a
+      // separate once-per-session effect. A second device therefore showed a
+      // partial account, and a re-login restored a partial one, because signing
+      // out empties Dexie and nothing guaranteed a complete refill.
+      //
+      // Still off the critical path: `dataReady` was set above, so the UI is
+      // already interactive and rows appear through useLiveQuery as they land.
+      if (needsInitialHydration(targetUserId)) {
+        const result = await runInitialHydration(targetUserId);
+        if (!result.core && activeSyncUserId.current === targetUserId) {
+          setDataSyncError('Could not load your data. Check your connection and try again.');
+        }
+      } else if (requestedTables && requestedTables.length > 0) {
+        // Steady state: only what this page needs.
         await syncFromSupabase(user, true, requestedTables);
       }
     } catch (err) {

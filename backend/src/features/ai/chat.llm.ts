@@ -12,6 +12,7 @@
 import { logger } from '../../config/logger';
 import { getAIConfigurations } from '../../utils/aiConfig';
 import { classifyLLMError, geminiModelLadder, isGeminiModelCoolingDown, noteGeminiFailure } from './gemini.models';
+import { recordAiEvent, recordAiPhase } from './ai.timing';
 
 export type LLMParser = 'gemini' | 'openlux' | 'xkiro' | 'groq' | 'openrouter';
 
@@ -288,6 +289,17 @@ export async function completeWithLLM(
     });
   }
 
+  // Timed as one 'provider' phase covering the whole ladder walk, not just the
+  // call that eventually answers. That is the number that matters: on the free
+  // Google tier each model allows 20 requests a DAY, so once the quota is spent
+  // every request pays a string of failures before reaching a provider that
+  // still has budget. Charging only the successful call would report a healthy
+  // latency for a path that is in fact several seconds of failover.
+  const ladderStartedAt = process.hrtime.bigint();
+  const finishProviderTiming = () => {
+    recordAiPhase('ai.llm', 'provider', Number(process.hrtime.bigint() - ladderStartedAt) / 1_000_000);
+  };
+
   for (const step of steps) {
     if (step.cooldownKey && isGeminiModelCoolingDown(step.cooldownKey)) continue;
 
@@ -295,14 +307,20 @@ export async function completeWithLLM(
       const remaining = deadline - Date.now();
       if (remaining < 1_000) {
         logger.warn('Chat LLM: deadline reached before any provider answered', { lastTried: step.label });
+        recordAiEvent('ai.llm', 'timeout');
+        finishProviderTiming();
         return null;
       }
       try {
         const text = await withTimeout(step.run(), Math.min(timeoutMs, remaining), step.label);
+        finishProviderTiming();
         return { text, parser: step.parser, model: step.model };
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
         const kind = step.cooldownKey ? noteGeminiFailure(step.cooldownKey, message) : classifyLLMError(message);
+        // Counted so the metrics endpoint distinguishes "the model is slow" from
+        // "we are walking a ladder of exhausted quotas" — different fixes.
+        recordAiEvent('ai.llm', 'providerRetry');
         // A capacity blip (503 "high demand") usually clears within a second; one
         // short retry beats dropping to the next model. Quota, timeouts and bad
         // requests fail the same way twice, so those move straight on.
@@ -316,6 +334,9 @@ export async function completeWithLLM(
       }
     }
   }
+  // Every provider exhausted. The caller falls back to offline heuristics.
+  recordAiEvent('ai.llm', 'failure');
+  finishProviderTiming();
   return null;
 }
 

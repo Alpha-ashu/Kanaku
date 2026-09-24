@@ -322,13 +322,16 @@ const CONFIG_MANIFEST: readonly ConfigItem[] = [
       'AES-256-GCM at-rest encryption for AA/KYC payloads AND advisor/client chat ' +
       'messages — without it, consultations are stored as PLAINTEXT',
     services: ['api'],
-    // Still only "recommended", deliberately: promoting it to required would
-    // abort startup on any existing deploy that lacks it, and a chat feature
-    // that refuses to send a message is worse than one that stores it the way
-    // this table stored every message before encryption existed. The fallback
-    // is loud rather than silent — message.crypto.ts logs an error per send and
-    // this line puts it in the boot report.
-    tier: () => 'recommended',
+    // Promoted to required-in-production (2026-09-24). It was 'recommended' on
+    // the reasoning that aborting startup was worse than a chat feature that
+    // refuses to send. That traded the wrong way round: message.crypto.ts used
+    // to fall back to storing PLAINTEXT, and since this key is not in
+    // render.yaml the "degraded" path was most likely the live one — every
+    // consultation readable, evidenced only by a log line per message.
+    // message.crypto.ts now fails closed, so without this gate production would
+    // boot into an API whose chat endpoints all 503. Refusing to start is the
+    // honest failure: it is loud, immediate, and fixed by setting one variable.
+    tier: prodRequired,
   },
 
   {

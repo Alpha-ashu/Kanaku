@@ -18,6 +18,7 @@ import { performanceTracker } from './middleware/performanceTracker';
 import { requireRole } from './middleware/rbac';
 import { adminPlatformGate } from './middleware/adminPlatformGate';
 import { metricsMiddleware, getMetricsSnapshot } from './middleware/metrics';
+import { getAiTimingSnapshot } from './features/ai/ai.timing';
 import { getCacheMetricsSnapshot } from './cache/redis';
 import { isCryptoConfigured } from './security/crypto';
 import { getStorageHealth } from './utils/storage';
@@ -486,6 +487,10 @@ app.get('/api/v1/health/metrics', adminPlatformGate, authMiddleware, requireRole
     requests: getMetricsSnapshot(),
     cache: getCacheMetricsSnapshot(),
     circuitBreakers: getCircuitBreakerStatus(),
+    // Where time goes INSIDE an AI request — database vs model provider vs
+    // failover — plus cache hits, coalesced duplicates and timeouts. Per-route
+    // latency above gives the total; this says which half to fix.
+    ai: getAiTimingSnapshot(),
   });
 });
 

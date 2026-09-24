@@ -15,7 +15,7 @@ import { canAccessPage } from '@/lib/featureFlags';
 import { ADMIN_UI_ENABLED } from '@/config/platform';
 
 import { syncUserDataFromCloud, SyncedTableName } from '@/lib/auth-sync-integration';
-import { syncBills, syncBudgets, syncCategories, syncRecurringTransactions } from '@/services/featureSyncService';
+import { syncBills, syncBudgets, syncCategories, syncGoalContributions, syncRecurringTransactions } from '@/services/featureSyncService';
 
 
 //  Shell components (always visible - eager load) 
@@ -692,6 +692,10 @@ const AppContent: React.FC = () => {
     void syncCategories();
     void syncBudgets();
     void syncRecurringTransactions();
+    // Savings history: contributions are pushed to the server but were never
+    // pulled back, so a second device (or this one after a logout) showed a
+    // goal's progress with none of the contributions that produced it.
+    void syncGoalContributions();
     // Attachments uploaded on another device: without this the bill exists on
     // the server but never appears here.
     void syncBills();

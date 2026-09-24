@@ -134,8 +134,25 @@ model BookingRequest {
   proposedTime    String
   duration        Int
   amount          Decimal         @db.Decimal(12, 2)
+  /// pending | accepted | rejected | reschedule | completed | cancelled
+  /// `reschedule` means a new time has been PROPOSED and is awaiting the other
+  /// party's answer. Deliberately not renamed to `reschedule_proposed`: live
+  /// rows and shipped clients already use this spelling.
   status          String          @default("pending")
   rejectionReason String?
+  /// ── Reschedule negotiation ────────────────────────────────────────────────
+  /// Added 2026-09-24. The advisor could put a booking into `reschedule`, but
+  /// no endpoint let the client answer, so the booking dead-ended there: it
+  /// could only be cancelled. These four give the proposal an author, its own
+  /// message field (it was being stuffed into `rejectionReason`), a bound on
+  /// how many times the two sides may volley, and an expiry so an unanswered
+  /// proposal does not hold a slot forever.
+  /// All nullable / defaulted: existing rows read as "no proposal outstanding".
+  rescheduleCount Int             @default(0)
+  /// userId of whoever proposed the time currently on the row.
+  rescheduleProposedBy String?
+  rescheduleMessage    String?
+  rescheduleExpiresAt  DateTime?
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
   session         AdvisorSession?

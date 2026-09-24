@@ -28,7 +28,17 @@ export type NotificationTopic =
   | 'todo'
   | 'group'
   | 'friend'
-  | 'security';
+  | 'security'
+  // Added 2026-09-24. The advisor and booking flows were calling
+  // `prisma.notification.create` / `dispatchNotification` directly precisely
+  // because notify() had no topic for them — which meant those events skipped
+  // preference checks, the outbox, push delivery AND the realtime emit, so an
+  // approved advisor or a rescheduled client learned nothing until they next
+  // refetched by hand. These three are account-lifecycle events the user
+  // cannot opt out of, so they map to `null` below, like security.
+  | 'system'
+  | 'booking'
+  | 'session';
 
 export const NOTIFICATION_PREFERENCE_KEYS = [
   'transactionAlerts',
@@ -58,6 +68,12 @@ const TOPIC_PREFERENCE: Record<NotificationTopic, NotificationPreferenceKey | nu
   group: 'groupExpenseUpdates',
   friend: 'friendUpdates',
   security: null,
+  // Not silenceable: "your advisor application was approved", "your advisor
+  // proposed a new time" and "you have a new message from your advisor" are
+  // things the user has to be told for the flow to work at all.
+  system: null,
+  booking: null,
+  session: null,
 };
 
 const toObject = (value: unknown): Record<string, any> => {

@@ -3,12 +3,12 @@ import { useApp } from '@/contexts/AppContext';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { PageHeader } from '@/app/components/ui/PageHeader';
 import { db } from '@/lib/database';
-import { applyAccountBalanceDeltas } from '@/lib/transactionAggregation';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { toast } from 'sonner';
 import { CreditCard, AlertCircle, DollarSign, Calendar } from 'lucide-react';
 import { formatCurrencyAmount } from '@/lib/currencyUtils';
 import { useSubmitLock } from '@/hooks/useSubmitLock';
+import { recordLoanRepayment } from '@/services/loanRepaymentService';
 
 export const PayEMI: React.FC = () => {
  const guardSubmit = useSubmitLock();
@@ -80,25 +80,23 @@ export const PayEMI: React.FC = () => {
  return;
  }
 
- // Create EMI payment transaction
- await db.loanPayments.add({
- loanId: selectedLoanId,
+ // One path for every repayment (services/loanRepaymentService): it posts to
+ // the server, which owns the loan's outstanding balance, and leaves the
+ // account debit to the repayment row that the derived balance engine already
+ // counts. The three local writes this replaces never reached the server at
+ // all, so an EMI paid here existed on this device only — and the explicit
+ // balance write fought the derived engine for the same deduction.
+ const result = await recordLoanRepayment({
+ loan: selectedLoan,
+ account: paymentAccount,
  amount: paymentAmount,
- accountId: paymentAccount.id as number,
- date: new Date(paymentDate),
  notes: notes || 'EMI Payment',
+ date: new Date(paymentDate),
  });
 
- // Update loan outstanding balance
- const newBalance = selectedLoan.outstandingBalance - paymentAmount;
- await db.loans.update(selectedLoanId, {
- outstandingBalance: newBalance,
- status: newBalance <= 0 ? 'completed' : 'active',
- });
-
- await applyAccountBalanceDeltas(new Map([[paymentAccount.id as number, -paymentAmount]]));
-
- toast.success(`EMI payment of ${formatCurrency(paymentAmount)} recorded successfully`);
+ toast.success(result.pending
+ ? `EMI payment of ${formatCurrency(paymentAmount)} recorded. It will sync when you are back online.`
+ : `EMI payment of ${formatCurrency(paymentAmount)} recorded successfully`);
  
  // Reset form
  setSelectedLoanId(null);

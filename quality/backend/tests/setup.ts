@@ -37,6 +37,49 @@ for (const [key, value] of [['AUTH_RATE_LIMIT', '1000'], ['LOGIN_RATE_LIMIT', '1
 // Tests live in quality/backend/tests/; the env file stays in backend/.
 config({ path: path.resolve(__dirname, '../../../backend/.env.test') });
 
+// ── The suite must never run against production ──────────────────────────────
+//
+// `backend/.env` points DATABASE_URL at the PRODUCTION database, and
+// `src/db/prisma.ts` loads it. `.env.test` is loaded first and dotenv never
+// overrides an existing key, so today the test database wins — but that is an
+// ordering accident, not a guarantee. One reordered import, one missing
+// `.env.test`, and a suite that truncates tables would run against real user
+// data.
+//
+// So this asserts the outcome rather than trusting the mechanism. It checks the
+// resolved URL, which is what Prisma will actually connect to.
+const assertNotProduction = (): void => {
+  const url = process.env.DATABASE_URL || '';
+  if (!url) return; // nothing resolved yet; Prisma will fail its own way
+
+  let host = '';
+  let database = '';
+  try {
+    const parsed = new URL(url);
+    host = parsed.hostname;
+    database = parsed.pathname.replace(/^\//, '');
+  } catch {
+    return; // unparseable — not something we can judge
+  }
+
+  // A test database announces itself. Anything else is treated as production,
+  // because the safe default when we cannot tell is to refuse.
+  const looksLikeTest =
+    /(^|[_-])(test|ci|scratch|staging|shadow)([_-]|$)/i.test(database) ||
+    /^(localhost|127\.0\.0\.1|\[::1\]|host\.docker\.internal)$/i.test(host);
+
+  const override = process.env.ALLOW_NON_TEST_DATABASE === 'true';
+
+  if (!looksLikeTest && !override) {
+    throw new Error(
+      `Refusing to run the test suite against database "${database}" on ${host}: ` +
+        'it is not recognisably a test database. Point DATABASE_URL at a scratch/CI/staging ' +
+        'database, or set ALLOW_NON_TEST_DATABASE=true if you are certain.',
+    );
+  }
+};
+assertNotProduction();
+
 // The Account-Aggregator router is mount-gated OFF by default in production
 // (see src/routes/index.ts), but the integration suite exercises it, so opt it
 // in for tests unless the runner already configured ENABLED_MODULES.

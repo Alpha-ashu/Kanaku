@@ -15,6 +15,7 @@ import { prisma } from '../../db/prisma';
 import { logger } from '../../config/logger';
 import { getFinancialBaseline, type FinancialBaseline } from './financial-baseline';
 import { INR } from './financial-snapshot';
+import { timeAiPhase } from './ai.timing';
 
 //  Type Definitions
 
@@ -118,6 +119,13 @@ async function soft<T>(label: string, fallback: T, fn: () => Promise<T>): Promis
 }
 
 export async function loadAgentData(userId: string, now = new Date()): Promise<AgentData> {
+  // Timed separately from the analysis so the metrics endpoint can answer the
+  // question that decides what to optimise: is an insights request slow because
+  // of these seven cross-region queries, or because of the work that follows?
+  return timeAiPhase('ai.agents.load', 'db', () => loadAgentDataInner(userId, now));
+}
+
+async function loadAgentDataInner(userId: string, now: Date): Promise<AgentData> {
   const [transactions, goals, loans, budgets, recurring, investments, baseline] = await Promise.all([
     soft('transactions', [] as AgentTransaction[], async () => {
       const rows = await prisma.transaction.findMany({

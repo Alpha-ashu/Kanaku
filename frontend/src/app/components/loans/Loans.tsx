@@ -1,6 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { useApp, useSubFeature, useAICapability } from '@/contexts/AppContext';
 import { db } from '@/lib/database';
+import { getLoanStatusFromDueDate } from '@/lib/loanStatus';
+import { recordLoanRepayment } from '@/services/loanRepaymentService';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Plus, DollarSign, TrendingUp, AlertCircle, Edit2, Trash2, Home, Users, ScanLine, Paperclip, ChevronDown, ExternalLink, FileText, Check, X, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
@@ -111,17 +113,6 @@ const SEED_MOCK_LOANS = [
   },
 ];
 
-const getLoanStatusFromDueDate = (dueDate?: Date | string, outstandingBalance?: number) => {
- if ((outstandingBalance ?? 0) <= 0) return 'completed' as const;
- if (!dueDate) return 'active' as const;
-
- const date = new Date(dueDate);
- const today = new Date();
- const dueKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
- const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-
- return dueKey < todayKey ? 'overdue' as const : 'active' as const;
-};
 
 const getEffectiveLoanStatus = (loan: { dueDate?: Date | string; outstandingBalance: number }) =>
  getLoanStatusFromDueDate(loan.dueDate, loan.outstandingBalance);
@@ -801,33 +792,33 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ loanId, accounts, onClose }
  const loan = await db.loans.get(loanId);
  if (!loan) return;
 
- await db.loanPayments.add({
- loanId,
- amount,
- accountId,
- date: new Date(),
- notes,
- documentId: documentId || undefined
- });
-
- const newOutstanding = Math.max(0, loan.outstandingBalance - amount);
- await db.loans.update(loanId, {
- outstandingBalance: newOutstanding,
- status: getLoanStatusFromDueDate(loan.dueDate, newOutstanding),
- });
-
  const account = accounts.find(a => a.id === accountId);
- if (account) {
- const nextBalance = loan.type === 'lent'
- ? account.balance + amount
- : account.balance - amount;
- await db.accounts.update(accountId, {
- balance: nextBalance,
- });
+ if (!account) {
+ toast.error('Select an account for this payment');
+ return;
  }
 
- toast.success('Payment recorded successfully');
+ // One path for every repayment (see services/loanRepaymentService).
+ // This used to write the payment row, recompute the loan balance AND set
+ // account.balance directly — none of it reaching the server, and the last of
+ // those fighting the derived balance engine, which already counts the
+ // repayment row. The service posts to the server, which owns the loan's
+ // outstanding balance, and keeps the row as the account's cash movement.
+ try {
+ const result = await recordLoanRepayment({
+ loan,
+ account,
+ amount,
+ notes,
+ documentId: documentId || undefined,
+ });
+ toast.success(result.pending
+ ? 'Payment recorded. It will sync when you are back online.'
+ : 'Payment recorded successfully');
  onClose();
+ } catch (error) {
+ toast.error(error instanceof Error ? error.message : 'Could not record the payment');
+ }
  });
 
  return (

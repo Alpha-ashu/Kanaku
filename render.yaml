@@ -104,6 +104,14 @@ services:
         value: "https://kanaku-fawn.vercel.app,*.vercel.app"
       - key: SENTRY_DSN
         sync: false
+      # REQUIRED in production — the API refuses to boot without it (config/env.ts).
+      # 64 hex chars: openssl rand -hex 32
+      # Encrypts advisor/client chat messages and AA/KYC payloads at rest. Chat
+      # sends fail closed (503) rather than storing plaintext when it is absent,
+      # so this must be set before the service is deployed. Rotating it makes
+      # existing ciphertext unreadable — plan a re-encrypt, do not just replace.
+      - key: AA_ENCRYPTION_ROOT_KEY
+        sync: false
       - key: VAULT_ENCRYPTION_ROOT_KEY
         sync: false     # 64 hex chars (openssl rand -hex 32). Vault file encryption; unset = public dev key
       # AI & Scanner Fallback Providers

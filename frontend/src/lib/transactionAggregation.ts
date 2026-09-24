@@ -139,7 +139,24 @@ export function getAccountBalanceSnapshot(
   };
 }
 
-type LedgerMovement = { accountId?: number | null; amount?: number | null; transactionId?: number | null };
+type LedgerMovement = {
+  accountId?: number | null;
+  amount?: number | null;
+  transactionId?: number | null;
+  /**
+   * The SERVER already recorded this movement as its own transaction, which
+   * this device syncs into `db.transactions` and counts there.
+   *
+   * `POST /goals/:id/contribute` and `/withdraw` each create a side-effect
+   * Transaction row (`goal.controller.ts`), so a contribution made online is
+   * represented twice on the client: once as the synced transaction and once as
+   * the local contribution row. Counting both deducts the same money twice.
+   * `transactionId` covers the case where the two are explicitly linked; this
+   * flag covers the case where we know the server made one but have not matched
+   * it to a local row.
+   */
+  serverAccounted?: boolean | null;
+};
 type AccountLike = { id?: number; balance: number; openingBalance?: number | null };
 
 /**
@@ -189,7 +206,15 @@ export function computeAccountDeltas(
     // Skip contributions that already have their own cash transaction — that
     // transaction is counted above, so counting the contribution too would
     // double-deduct the same spend.
-    if (contribution.transactionId != null) continue;
+    //
+    // `serverAccounted` is the same rule for the transaction this device did not
+    // create: the contribute/withdraw endpoints each write a side-effect
+    // Transaction server-side, which arrives through the normal transaction
+    // sync. Before this flag existed, every contribution made while online was
+    // deducted twice — once as that synced transaction, once as the local
+    // contribution row — and pulling contributions onto a second device would
+    // have reproduced the error there.
+    if (contribution.transactionId != null || contribution.serverAccounted) continue;
     addDelta(contribution.accountId, -Math.abs(Number(contribution.amount) || 0));
   }
 

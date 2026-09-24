@@ -785,3 +785,163 @@ export const relinkBillsToTransactions = async (): Promise<number> => {
   }
   return linked;
 };
+
+// ─── Goal contributions ──────────────────────────────────────────────────────
+
+interface ContributionApiRow {
+  id: string;
+  goalId: string;
+  accountId: string | null;
+  amount: number | string;
+  date: string;
+  memberName?: string | null;
+  status?: string | null;
+  notes?: string | null;
+  clientRequestId?: string | null;
+}
+
+/**
+ * Pull each goal's contribution history onto this device.
+ *
+ * `goalContributions` is not one of the sync engine's tables, yet
+ * `clearLocalUserData()` empties it on sign-out — so a user's entire savings
+ * history vanished at logout and never appeared on a second device, while the
+ * server held every row the whole time (contributions ARE pushed, via
+ * `POST /goals/:id/contribute`).
+ *
+ * Because they are pushed, a naive pull would duplicate all of them. Matching
+ * runs in descending order of confidence:
+ *   1. `cloudId` — already pulled here. Updated in place.
+ *   2. `clientRequestId` — this device pushed it; the key is the same one the
+ *      server deduplicates on. Adopts the server id.
+ *   3. Same goal, same amount, same calendar day — a row written before
+ *      `clientRequestId` was persisted locally. Adopts the server id.
+ *   4. Otherwise insert.
+ *
+ * Pull-only, and never deletes: a local row with no server match was written
+ * while offline and is the only copy there is.
+ *
+ * Contributions are per-goal on the API (`GET /goals/:id/contributions`), so
+ * this is N requests for N goals. Bounded concurrency keeps a user with a long
+ * goal list from opening dozens of sockets at once.
+ */
+export const syncGoalContributions = (): Promise<FeatureSyncResult> =>
+  coalesced('goal-contributions', async () => {
+    const goals = await db.goals.toArray();
+    const syncable = goals.filter((g) => g.cloudId && g.id);
+    if (syncable.length === 0) return { ...EMPTY_RESULT };
+
+    const accounts = await db.accounts.toArray();
+    const accountByCloudId = new Map(
+      accounts.filter((a) => a.cloudId && a.id).map((a) => [String(a.cloudId), a.id as number]),
+    );
+
+    // Fetch first, write second. A failed pull must change nothing — an
+    // unreachable server and a goal with no contributions look identical
+    // otherwise, and acting on the second would be indistinguishable from
+    // acting on the first.
+    const CONCURRENCY = 4;
+    const fetched: Array<{ localGoalId: number; rows: ContributionApiRow[] }> = [];
+    let reachedServer = false;
+
+    for (let i = 0; i < syncable.length; i += CONCURRENCY) {
+      const batch = syncable.slice(i, i + CONCURRENCY);
+      const settled = await Promise.all(
+        batch.map(async (goal) => {
+          try {
+            const response = await apiClient.get<{ success: boolean; data: ContributionApiRow[] }>(
+              `/goals/${goal.cloudId}/contributions`,
+              { showErrorToast: false },
+            );
+            return { localGoalId: goal.id as number, rows: unwrapList<ContributionApiRow>(response.data) };
+          } catch {
+            return null;
+          }
+        }),
+      );
+      for (const entry of settled) {
+        if (entry) {
+          reachedServer = true;
+          fetched.push(entry);
+        }
+      }
+    }
+
+    if (!reachedServer) return { ...EMPTY_RESULT, offline: true };
+
+    const result: FeatureSyncResult = { pulled: 0, pushed: 0, removed: 0 };
+    const localRows = await db.goalContributions.toArray();
+    const byCloudId = new Map(localRows.filter((r) => r.cloudId).map((r) => [String(r.cloudId), r]));
+    const byRequestId = new Map(
+      localRows.filter((r) => r.clientRequestId).map((r) => [String(r.clientRequestId), r]),
+    );
+    const claimed = new Set<number>();
+
+    const sameDay = (a: Date, b: Date) =>
+      a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+
+    for (const { localGoalId, rows } of fetched) {
+      for (const row of rows) {
+        const cloudId = String(row.id);
+        const amount = toNumber(row.amount);
+        const date = row.date ? new Date(row.date) : new Date();
+
+        const existing = byCloudId.get(cloudId);
+        if (existing?.id) {
+          await db.goalContributions.update(existing.id, {
+            serverAccounted: true,
+            amount,
+            date,
+            memberName: row.memberName ?? existing.memberName,
+            status: (row.status === 'pending' ? 'pending' : 'paid') as 'paid' | 'pending',
+            notes: row.notes ?? existing.notes,
+          });
+          continue;
+        }
+
+        const byKey = row.clientRequestId ? byRequestId.get(String(row.clientRequestId)) : undefined;
+        const adoptable =
+          byKey ??
+          localRows.find(
+            (r) =>
+              !r.cloudId &&
+              !claimed.has(r.id as number) &&
+              r.goalId === localGoalId &&
+              Number(r.amount) === amount &&
+              sameDay(new Date(r.date), date),
+          );
+
+        if (adoptable?.id) {
+          // Same reasoning as the insert below: now that this local row is known
+          // to exist on the server, its cash movement is the server's
+          // transaction, not this row.
+          await db.goalContributions.update(adoptable.id, { cloudId, serverAccounted: true });
+          adoptable.cloudId = cloudId;
+          adoptable.serverAccounted = true;
+          byCloudId.set(cloudId, adoptable);
+          claimed.add(adoptable.id);
+          continue;
+        }
+
+        const inserted = await insertIfAbsent(db.goalContributions, cloudId, {
+          cloudId,
+          clientRequestId: row.clientRequestId ?? undefined,
+          // Every contribution the server holds was written by
+          // /contribute or /withdraw, and both create their own Transaction.
+          // That transaction syncs into db.transactions and carries the cash
+          // movement, so counting this row too would deduct the money twice.
+          serverAccounted: true,
+          goalId: localGoalId,
+          amount,
+          accountId: row.accountId ? (accountByCloudId.get(String(row.accountId)) ?? 0) : 0,
+          date,
+          memberName: row.memberName ?? undefined,
+          status: (row.status === 'pending' ? 'pending' : 'paid') as 'paid' | 'pending',
+          notes: row.notes ?? undefined,
+        });
+        if (inserted !== null) result.pulled += 1;
+      }
+    }
+
+    return result;
+  });

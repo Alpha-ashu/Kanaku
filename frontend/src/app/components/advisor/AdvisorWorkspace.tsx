@@ -53,7 +53,7 @@ export const AdvisorWorkspace: React.FC = () => {
  const [loading, setLoading] = useState(true);
  const [processingId, setProcessingId] = useState<string | null>(null);
  const [isTogglingAvail, setIsTogglingAvail] = useState(false);
- const [rescheduleModal, setRescheduleModal] = useState<{ id: string; date: string; time: string } | null>(null);
+ const [rescheduleModal, setRescheduleModal] = useState<{ id: string; date: string; time: string; reason: string } | null>(null);
  const [posts, setPosts] = useState<AdvisorPostRow[]>([]);
  const [postForm, setPostForm] = useState({ category: POST_CATEGORIES[0], title: '', content: '' });
  const [isPublishing, setIsPublishing] = useState(false);
@@ -276,7 +276,14 @@ export const AdvisorWorkspace: React.FC = () => {
  if (!rescheduleModal || !rescheduleModal.date || !rescheduleModal.time) return;
  setProcessingId(rescheduleModal.id);
  try {
- await backendService.api.put(`/bookings/${rescheduleModal.id}/reschedule`, { proposedDate: rescheduleModal.date, proposedTime: rescheduleModal.time });
+ // `reason` is the note the client sees with the proposal. It used to be
+ // stored in `rejectionReason`, which meant a reschedule and a rejection
+ // shared one field; the backend now has `rescheduleMessage` for it.
+ await backendService.api.put(`/bookings/${rescheduleModal.id}/reschedule`, {
+ proposedDate: rescheduleModal.date,
+ proposedTime: rescheduleModal.time,
+ reason: rescheduleModal.reason.trim() || undefined,
+ });
  toast.success('Reschedule proposed.'); setRescheduleModal(null); fetchData();
  } catch { toast.error('Failed to reschedule'); }
  finally { setProcessingId(null); }
@@ -397,7 +404,7 @@ export const AdvisorWorkspace: React.FC = () => {
  >
  {processingId === b.id ? <Loader2 size={13} className="animate-spin" /> : <CheckCircle size={13} />} Accept
  </button>
- <button onClick={() => setRescheduleModal({ id: b.id, date: '', time: '' })} disabled={processingId === b.id}
+ <button onClick={() => setRescheduleModal({ id: b.id, date: '', time: '', reason: '' })} disabled={processingId === b.id}
  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-blue-50 text-blue-700 border border-blue-200 rounded-xl text-sm font-bold disabled:opacity-50"
  data-testid={`advisor-ws-booking-reschedule-toggle-${b.id}`}
  >
@@ -665,6 +672,20 @@ export const AdvisorWorkspace: React.FC = () => {
  onChange={e => setRescheduleModal(m => m ? { ...m, time: e.target.value } : null)}
  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
  data-testid="advisor-ws-resched-time-input" />
+ </div>
+ <div>
+ <label htmlFor="advisor-ws-resched-reason" className="block text-sm font-bold text-gray-700 mb-1">
+ Message <span className="font-medium text-gray-400">(optional)</span>
+ </label>
+ <textarea
+ id="advisor-ws-resched-reason"
+ rows={2}
+ maxLength={500}
+ value={rescheduleModal.reason}
+ onChange={e => setRescheduleModal(m => m ? { ...m, reason: e.target.value } : null)}
+ placeholder="e.g. I have a conflict at 10:00 — would 11:00 work?"
+ className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-none"
+ data-testid="advisor-ws-resched-reason-input" />
  </div>
  </div>
  <div className="flex gap-3 mt-5">

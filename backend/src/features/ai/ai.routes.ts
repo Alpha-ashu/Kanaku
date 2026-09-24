@@ -5,6 +5,7 @@ import { captureAIEvent } from './ai.controller';
 import { aiEventBodySchema } from './ai.validation';
 import { handleChatMessage, handleGetCategories } from './chat.controller';
 import { getAIQuotaInfo } from '../../utils/aiUsageTracker';
+import { withInsightsCache } from './insights.cache';
 import { requireAIFeature } from '../../middleware/featureGate';
 import { authenticatedRateLimit } from '../../middleware/rateLimit';
 import {
@@ -50,7 +51,10 @@ router.use(aiGenerationLimiter);
 router.get('/insights', requireAIFeature('aiAutomation'), async (req: AuthRequest, res: Response) => {
   try {
     const userId = getUserId(req);
-    const results = await runAllAgents(userId);
+    // Cached + coalesced. This endpoint ran all seven agents — and their seven
+    // Prisma queries over 120 days of transactions — on every call, including
+    // the duplicate calls the dashboard and the insights page make together.
+    const results = await withInsightsCache('ai.insights', userId, () => runAllAgents(userId));
 
     const allRecommendations = results.flatMap(r => r.output?.recommendations ?? []);
     const allInsights = results.flatMap(r => r.output?.insights ?? []);
@@ -72,7 +76,8 @@ router.get('/insights', requireAIFeature('aiAutomation'), async (req: AuthReques
 
 router.get('/health-score', requireAIFeature('aiAutomation', 'healthScoring'), async (req: AuthRequest, res: Response) => {
   try {
-    const result = await runFinancialHealthScoreAgent(getUserId(req));
+    const uid = getUserId(req);
+    const result = await withInsightsCache('ai.health-score', uid, () => runFinancialHealthScoreAgent(uid));
     res.json(result.output);
   } catch { res.status(500).json({ error: 'Failed to compute health score' }); }
 });
@@ -92,21 +97,24 @@ router.get('/recommendations', requireAIFeature('aiAutomation', 'smartCategoriza
 
 router.get('/fraud-alerts', requireAIFeature('aiAutomation', 'anomalyDetection'), async (req: AuthRequest, res: Response) => {
   try {
-    const result = await runFraudDetectionAgent(getUserId(req));
+    const uid = getUserId(req);
+    const result = await withInsightsCache('ai.fraud', uid, () => runFraudDetectionAgent(uid));
     res.json({ flags: result.output?.flags ?? [] });
   } catch { res.status(500).json({ error: 'Failed to check fraud alerts' }); }
 });
 
 router.get('/bill-predictions', requireAIFeature('aiAutomation', 'subscriptionDetection'), async (req: AuthRequest, res: Response) => {
   try {
-    const result = await runBillPredictionAgent(getUserId(req));
+    const uid = getUserId(req);
+    const result = await withInsightsCache('ai.bill-predictions', uid, () => runBillPredictionAgent(uid));
     res.json({ predictions: result.output?.predictions ?? [] });
   } catch { res.status(500).json({ error: 'Failed to get bill predictions' }); }
 });
 
 router.get('/spending-patterns', requireAIFeature('aiAutomation', 'smartCategorization'), async (req: AuthRequest, res: Response) => {
   try {
-    const result = await runSpendingPatternAgent(getUserId(req));
+    const uid = getUserId(req);
+    const result = await withInsightsCache('ai.spending-patterns', uid, () => runSpendingPatternAgent(uid));
     res.json({ insights: result.output?.insights ?? [] });
   } catch { res.status(500).json({ error: 'Failed to analyze spending patterns' }); }
 });

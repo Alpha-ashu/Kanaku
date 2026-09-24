@@ -10,6 +10,7 @@ import { getVisibleFeaturesForRole, mergeVisibleFeatures, normalizeFeatures, Fea
 import { type SyncStats, useSyncStats, offlineSyncEngine } from '@/lib/offline-sync-engine';
 import { deduplicateLocalData, saveAccountWithBackendSync, syncUserDataFromCloud, updateAccountWithBackendSync } from '@/lib/auth-sync-integration';
 import { computeDerivedBalances } from '@/lib/transactionAggregation';
+import { pushPendingLoanRepayments } from '@/services/loanRepaymentService';
 import { backendSyncService } from '@/lib/backend-sync-service';
 import {
   mergeStoredUserSettings,
@@ -939,6 +940,34 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       });
     });
 
+    // ── Fallback poll: only while realtime is actually down ──────────────────
+    //
+    // Every listener above depends on a live socket. Until 2026-09-24 the web
+    // client never opened one at all, and the code that skipped it claimed an
+    // "on-demand sync" fallback that did not exist — so a change made on one
+    // device reached another only when the user happened to navigate. The
+    // socket is fixed (socket-client.ts), but it can still be unavailable:
+    // a blocked WebSocket, a corporate proxy, or the reconnect loop giving up
+    // after its 5 attempts. This keeps the cross-device contract in those cases.
+    //
+    // Deliberately cheap and self-silencing: it does nothing while the socket
+    // is connected, nothing while the tab is hidden, and nothing while offline,
+    // so a healthy session pays no requests for it.
+    const POLL_INTERVAL_MS = 30_000;
+    const pollTimer = setInterval(() => {
+      if (socketClient.isConnectedToServer()) return;
+      if (typeof document !== 'undefined' && document.hidden) return;
+      if (typeof navigator !== 'undefined' && navigator.onLine === false) return;
+
+      console.log('[AppContext] Realtime unavailable — falling back to polling sync');
+      void syncUserDataFromCloud(user.id, ['transactions', 'accounts']);
+      void syncBills().catch(() => undefined);
+      // Repayments recorded while the server was unreachable. Retried under the
+      // key stored on each row, so a push whose response was lost is recognised
+      // as a replay rather than paid twice.
+      void pushPendingLoanRepayments().catch(() => undefined);
+    }, POLL_INTERVAL_MS);
+
     return () => {
       unsubFriend();
       unsubGroup();
@@ -946,6 +975,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       unsubBills();
       unsubTransactions();
       if (txRefreshTimer) clearTimeout(txRefreshTimer);
+      clearInterval(pollTimer);
       unsubMirrors.forEach((off) => off());
       unsubNotification();
     };

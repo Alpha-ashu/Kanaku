@@ -268,6 +268,12 @@ export const GoalDetail: React.FC = () => {
 
     setIsSubmitting(true);
     try {
+      // Tracks whether the SERVER recorded this withdrawal. /withdraw writes its
+      // own side-effect Transaction, which syncs into db.transactions and
+      // carries the cash movement — so when the push succeeds the balance engine
+      // must count that transaction and NOT this row, or the same money moves
+      // twice. See computeAccountDeltas.
+      let serverAccounted = false;
       if (goal.cloudId && account.cloudId && navigator.onLine) {
         try {
           await backendService.api.post(`/goals/${goal.cloudId}/withdraw`, {
@@ -275,6 +281,7 @@ export const GoalDetail: React.FC = () => {
             accountId: account.cloudId,
             notes: withdrawNotes.trim() || undefined,
           });
+          serverAccounted = true;
         } catch (backendError) {
           console.warn('[GoalDetail] Direct withdrawal sync failed, falling back to sync queue:', backendError);
         }
@@ -282,6 +289,7 @@ export const GoalDetail: React.FC = () => {
 
       await db.goalContributions.add({
         goalId: goal.id,
+        serverAccounted,
         amount: -withdrawAmount,
         accountId: withdrawAccountId,
         date: new Date(),

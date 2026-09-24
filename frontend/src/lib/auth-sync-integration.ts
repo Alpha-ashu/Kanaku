@@ -1,6 +1,6 @@
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import supabase from '@/utils/supabase/client';
-import { db } from '@/lib/database';
+import { db, type LoanPayment } from '@/lib/database';
 import { apiClient, TokenManager, refreshAccessToken } from '@/lib/api';
 import { coalesceCreate } from '@/lib/submitGuard';
 import { fetchAllPages } from '@/lib/pagedFetch';
@@ -2223,6 +2223,122 @@ async function shouldSkipFullSync(requestedTables: SyncedTableName[]): Promise<b
   }
 }
 
+/**
+ * Hydrate `db.loanPayments` from the repayments embedded in the loans response.
+ *
+ * Repayments were the clearest case of local-only data that logout destroyed:
+ * `PayEMI` and the Loans payment modal write straight to Dexie, `AuthContext`
+ * clears the table on sign-out, and nothing ever read it back — even though
+ * `GET /loans` has always returned `payments` alongside each loan. So an EMI
+ * history survived exactly until the user signed out, and never existed on a
+ * second device at all.
+ *
+ * Idempotency, in order of confidence:
+ *   1. `cloudId` — a row this device already pulled. Updated in place.
+ *   2. A local row with no `cloudId` whose parent, amount and calendar day all
+ *      match — the same repayment recorded locally before it was ever pulled.
+ *      It ADOPTS the server id rather than being duplicated beside it.
+ *   3. Otherwise insert.
+ *
+ * Rows with no `cloudId` and no server match are left alone: they were never
+ * pushed (no client path posts to `/loans/:id/payment` today), so they are the
+ * only copy in existence and deleting them would be the very data loss this
+ * function exists to stop.
+ */
+interface BackendLoanPaymentRow {
+  id: string | number;
+  amount?: number | string | null;
+  accountId?: string | null;
+  date?: string | null;
+  notes?: string | null;
+}
+
+interface BackendLoanWithPayments {
+  id: string | number;
+  payments?: BackendLoanPaymentRow[] | null;
+}
+
+async function mergeLoanPaymentsFromBackend(backendLoans: BackendLoanWithPayments[]): Promise<void> {
+  if (!Array.isArray(backendLoans) || backendLoans.length === 0) return;
+
+  const hasPayments = backendLoans.some((loan) => Array.isArray(loan?.payments) && loan.payments.length > 0);
+  if (!hasPayments) return;
+
+  const [localLoans, localAccounts, localPayments] = await Promise.all([
+    db.loans.toArray(),
+    db.accounts.toArray(),
+    db.loanPayments.toArray(),
+  ]);
+
+  const loanByCloudId = new Map(
+    localLoans.filter((l) => l.cloudId && l.id).map((l) => [String(l.cloudId), l.id as number]),
+  );
+  const accountByCloudId = new Map(
+    localAccounts.filter((a) => a.cloudId && a.id).map((a) => [String(a.cloudId), a.id as number]),
+  );
+  const byCloudId = new Map(
+    localPayments.filter((p) => p.cloudId).map((p) => [String(p.cloudId), p]),
+  );
+
+  const sameDay = (a: Date, b: Date) =>
+    a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+
+  const toInsert: LoanPayment[] = [];
+
+  for (const loan of backendLoans) {
+    const payments = Array.isArray(loan?.payments) ? loan.payments : [];
+    if (payments.length === 0) continue;
+
+    const localLoanId = loanByCloudId.get(String(loan.id));
+    // The parent loan is not on this device (filtered out, or the merge did not
+    // reach it). Without it the payment has nothing to hang off.
+    if (!localLoanId) continue;
+
+    for (const payment of payments) {
+      const cloudId = String(payment.id);
+      const date = toDate(payment.date) ?? new Date();
+      const amount = Number(payment.amount ?? 0);
+
+      const existing = byCloudId.get(cloudId);
+      if (existing?.id) {
+        await db.loanPayments.update(existing.id, {
+          amount,
+          date,
+          notes: payment.notes ?? existing.notes,
+        });
+        continue;
+      }
+
+      const adoptable = localPayments.find(
+        (p) => !p.cloudId && p.loanId === localLoanId && Number(p.amount) === amount && sameDay(new Date(p.date), date),
+      );
+      if (adoptable?.id) {
+        await db.loanPayments.update(adoptable.id, { cloudId });
+        // Claim it so a second server row with the same shape cannot adopt it too.
+        adoptable.cloudId = cloudId;
+        byCloudId.set(cloudId, adoptable);
+        continue;
+      }
+
+      toInsert.push({
+        cloudId,
+        loanId: localLoanId,
+        amount,
+        accountId: payment.accountId ? (accountByCloudId.get(String(payment.accountId)) ?? 0) : 0,
+        date,
+        notes: payment.notes ?? undefined,
+      });
+    }
+  }
+
+  // One bulk write rather than a loop of adds: every Dexie write re-runs the
+  // app's live queries, and a loop over a long repayment history is what makes
+  // the UI hang during a sync.
+  if (toInsert.length > 0) {
+    await db.loanPayments.bulkAdd(toInsert);
+  }
+}
+
 async function syncUserDataFromBackend(
   requestedTables?: SyncedTableName[],
   force = false
@@ -2680,6 +2796,10 @@ async function _syncUserDataFromBackendInner(
 
     if (mergeTargets.has('loans')) {
       await mergeBackendTable('loans', backendLoans, mappedLoans, localLoans);
+      // The repayments arrive embedded in the same response (GET /loans uses
+      // `include: { payments }`), so this costs no extra request. Runs after the
+      // loans merge because it resolves each payment's parent by cloudId.
+      await mergeLoanPaymentsFromBackend(backendLoans);
     }
     if (mergeTargets.has('goals')) {
       await mergeBackendTable('goals', backendGoals, mappedGoals, localGoals);
@@ -2865,6 +2985,24 @@ async function _syncUserDataFromBackendInner(
   void deduplicateLocalData().catch((err) =>
     console.warn('[Sync] Background dedup failed (non-fatal):', err)
   );
+}
+
+/**
+ * Pull specific tables for whoever is currently signed in.
+ *
+ * For callers that legitimately need a refresh but hold no user context — a
+ * shared helper invoked from several screens, say. `syncUserDataFromCloud`
+ * takes a userId that the backend-first path does not actually use, and
+ * inventing one at the call site to satisfy the signature reads as a bug.
+ * No active user means nothing to sync, which is not an error.
+ */
+export async function refreshTablesForActiveUser(
+  tables: SyncedTableName[],
+  force = true,
+): Promise<void> {
+  const userId = syncState.activeUserId;
+  if (!userId) return;
+  await syncUserDataFromCloud(userId, tables, force);
 }
 
 export async function syncUserDataFromCloud(

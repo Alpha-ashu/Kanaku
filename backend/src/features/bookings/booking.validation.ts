@@ -30,3 +30,12 @@ export const rescheduleSchema = z.object({
 export const cancelBookingSchema = z.object({
   reason: z.string().trim().max(500).optional(),
 }).passthrough();
+
+/**
+ * Answering a reschedule proposal. The decision itself is in the route, so the
+ * body carries only an optional note — a declining party explaining why, which
+ * the other side sees in the notification.
+ */
+export const rescheduleDecisionSchema = z.object({
+  reason: z.string().trim().max(500).optional(),
+}).passthrough();

@@ -66,6 +66,15 @@ export interface BookingData {
   } | null;
   sessionStatus?: string;
   unsent?: boolean;
+  /**
+   * Who proposed the time currently on the booking, when `status` is
+   * 'reschedule'. Only the OTHER party may answer it — the backend enforces
+   * this, and the UI must agree or it offers a button that always 403s.
+   */
+  rescheduleProposedBy?: string | null;
+  /** The note that accompanied the proposal. */
+  rescheduleMessage?: string | null;
+  rescheduleCount?: number;
 }
 
 export interface ChatMessage {
@@ -127,6 +136,9 @@ interface BookingApiRow {
   amount?: number | string;
   status?: string;
   createdAt?: string;
+  rescheduleProposedBy?: string | null;
+  rescheduleMessage?: string | null;
+  rescheduleCount?: number;
   advisor?: { id: string; name: string } | null;
   session?: {
     id: string;
@@ -233,6 +245,9 @@ const mapBooking = (row: BookingApiRow, advisorLookup: Map<string, AdvisorProfil
     sessionId: row.session?.id,
     payment,
     sessionStatus: row.session?.status,
+    rescheduleProposedBy: row.rescheduleProposedBy ?? null,
+    rescheduleMessage: row.rescheduleMessage ?? null,
+    rescheduleCount: row.rescheduleCount ?? 0,
   };
 };
 
@@ -302,6 +317,8 @@ export const BookAdvisor: React.FC = () => {
   const [advisors, setAdvisors] = useState<AdvisorProfileData[]>([]);
   const [bookings, setBookings] = useState<BookingData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  /** Booking currently being answered — guards against a double-tap. */
+  const [answeringBookingId, setAnsweringBookingId] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [posts, setPosts] = useState<AdvisorPost[]>([]);
   const [followedAdvisorIds, setFollowedAdvisorIds] = useState<string[]>([]);
@@ -676,6 +693,38 @@ export const BookAdvisor: React.FC = () => {
       await loadAdvisorsAndBookings();
     } catch (error: any) {
       toast.error(error?.response?.data?.error || error?.message || 'Could not cancel the booking');
+    }
+  };
+
+  /**
+   * Answer a reschedule proposal.
+   *
+   * Until the accept/decline endpoints existed, a booking the advisor moved to
+   * 'reschedule' could only be cancelled from here — the proposed time was
+   * shown with no way to agree to it. Declining does NOT reject the booking; it
+   * returns it to 'pending' so a new time can be proposed.
+   */
+  const handleAnswerReschedule = async (bookingId: string, decision: 'accept' | 'decline') => {
+    if (answeringBookingId) return; // one answer at a time — no double-submit
+    setAnsweringBookingId(bookingId);
+    try {
+      await backendService.api.put(`/bookings/${bookingId}/reschedule/${decision}`, {});
+      toast.success(decision === 'accept'
+        ? 'New time confirmed. Your consultation is booked.'
+        : 'Time declined. Your advisor can propose another.');
+      await loadAdvisorsAndBookings();
+    } catch (error) {
+      // The backend answers 400/403 with a `code` when the transition is
+      // illegal (e.g. the proposer trying to accept their own time), so prefer
+      // its message over a generic one.
+      const apiError = error as { response?: { data?: { error?: string } }; message?: string };
+      toast.error(
+        apiError?.response?.data?.error
+          || apiError?.message
+          || 'Could not answer the proposal',
+      );
+    } finally {
+      setAnsweringBookingId(null);
     }
   };
 
@@ -1518,6 +1567,26 @@ export const BookAdvisor: React.FC = () => {
                         {getStatusBadge(bkg.status)}
                       </div>
                       <p className="text-xs text-slate-600 font-semibold mt-0.5">{bkg.topic}</p>
+
+                      {/* What the user is being asked to agree to. The date and
+                          time chips already show the PROPOSED slot, so without
+                          this the proposal was indistinguishable from the
+                          original booking. */}
+                      {bkg.status === 'reschedule' && (
+                        <div className="mt-2 rounded-2xl border border-violet-200/80 bg-violet-50/70 px-3 py-2">
+                          <p className="text-xs font-black text-violet-900">
+                            {bkg.rescheduleProposedBy === user?.id
+                              ? 'You proposed a new time'
+                              : `${bkg.advisorName} proposed a new time`}
+                            : {bkg.proposedDate} at {bkg.proposedTime}
+                          </p>
+                          {bkg.rescheduleMessage && (
+                            <p className="text-xs text-violet-800/90 font-medium mt-1 leading-relaxed">
+                              “{bkg.rescheduleMessage}”
+                            </p>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -1565,6 +1634,35 @@ export const BookAdvisor: React.FC = () => {
                     {bkg.payment?.status === 'completed' && (
                       <span className="px-3.5 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200/80 rounded-full text-xs font-bold flex items-center gap-1.5">
                         <CheckCircle2 size={13} /> Paid <FinancialAmount value={bkg.payment.amount} />
+                      </span>
+                    )}
+
+                    {bkg.status === 'reschedule' && bkg.rescheduleProposedBy !== user?.id && (
+                      <>
+                        <button
+                          type="button"
+                          disabled={answeringBookingId === bkg.id}
+                          onClick={() => void handleAnswerReschedule(bkg.id, 'accept')}
+                          data-testid={`booking-reschedule-accept-${bkg.id}`}
+                          className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-full font-bold text-xs shadow-xs cursor-pointer flex items-center gap-1.5 active:scale-95 transition-all"
+                        >
+                          <CheckCircle2 size={13} /> Accept new time
+                        </button>
+                        <button
+                          type="button"
+                          disabled={answeringBookingId === bkg.id}
+                          onClick={() => void handleAnswerReschedule(bkg.id, 'decline')}
+                          data-testid={`booking-reschedule-decline-${bkg.id}`}
+                          className="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-full transition-colors border border-slate-200 cursor-pointer disabled:opacity-50"
+                        >
+                          Decline
+                        </button>
+                      </>
+                    )}
+
+                    {bkg.status === 'reschedule' && bkg.rescheduleProposedBy === user?.id && (
+                      <span className="px-3.5 py-1.5 bg-slate-50 text-slate-600 border border-slate-200 rounded-full text-xs font-bold">
+                        Waiting for your advisor to respond
                       </span>
                     )}
 

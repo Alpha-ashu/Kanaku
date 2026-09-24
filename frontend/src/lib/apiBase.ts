@@ -19,6 +19,19 @@ const DEFAULT_API_BASE = '/api/v1';
  */
 const NATIVE_FALLBACK_API_BASE = 'https://kanaku-api.onrender.com/api/v1';
 
+/**
+ * Origin of the deployed backend, with no API path.
+ *
+ * Derived from the same constant as the native fallback so there is one place
+ * to change when the backend moves. `socket-client.ts` needs it because the web
+ * app is served by a static host (Vercel) whose rewrite proxies `/api/*` and
+ * `/socket.io/*` to Render but cannot perform a WebSocket upgrade — so realtime
+ * has to address the backend directly, while ordinary HTTP keeps riding the
+ * relative base through the proxy.
+ */
+export const getBackendOrigin = (): string =>
+  NATIVE_FALLBACK_API_BASE.replace(/\/api\/v1\/?$/i, '').replace(/\/+$/, '');
+
 const isNativeRuntime = (): boolean => {
   try {
     return Capacitor.isNativePlatform();

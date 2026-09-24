@@ -1,6 +1,6 @@
 import { io, Socket } from 'socket.io-client';
 import { TokenManager } from './api';
-import { getConfiguredApiBase } from '@/lib/apiBase';
+import { getConfiguredApiBase, getBackendOrigin } from '@/lib/apiBase';
 
 /**
  * Shape of a socket event handler. Replaces the unsafe `Function` type, which
@@ -117,6 +117,13 @@ interface SocketEvents {
   group_expense_updated: (data: any) => void;
   todo_updated: (data: any) => void;
   /**
+   * This user's platform role changed server-side (advisor approved, revoked,
+   * or otherwise re-assigned). The client caches its role for five minutes, so
+   * without this the UI kept the old shell long after the API had switched —
+   * "approved, but the Advisor toggle never appeared".
+   */
+  role_changed: (data: { role: string; isApproved: boolean; at: string }) => void;
+  /**
    * This user's bill/receipt list changed on one of their devices.
    * `originSessionId` identifies the device that made the change, so it can
    * ignore its own echo — see AppContext's listener for why that matters.
@@ -200,17 +207,30 @@ class SocketClient {
     }
 
     // Derive the socket origin from the resolved API base rather than the raw
-    // env var. On web this still yields a relative base and we fall through to
-    // window.location.origin, which is correct there. On native it yields the
-    // absolute backend URL — where the old code returned window.location.origin,
-    // i.e. capacitor://localhost, so realtime silently never connected on
-    // Android or iOS whenever VITE_SOCKET_URL was unset.
+    // env var. On native it yields the absolute backend URL — where the old code
+    // returned window.location.origin, i.e. capacitor://localhost, so realtime
+    // silently never connected on Android or iOS whenever VITE_SOCKET_URL was
+    // unset.
     const apiBase = getConfiguredApiBase().trim();
-    if (!apiBase || apiBase.startsWith('/')) {
+    if (apiBase && !apiBase.startsWith('/')) {
+      return apiBase.replace(/\/api\/v1\/?$/i, '').replace(/\/+$/, '');
+    }
+
+    // Relative API base — i.e. web. In dev that means Vite's own server, which
+    // proxies /socket.io to the local backend (see vite.config.ts), so the page
+    // origin is right and is what the proxy exists for.
+    if (import.meta.env.DEV) {
       return window.location.origin;
     }
 
-    return apiBase.replace(/\/api\/v1\/?$/i, '').replace(/\/+$/, '');
+    // Production web. The page origin is a STATIC host: vercel.json rewrites
+    // /socket.io/* to Render, but a Vercel rewrite does not perform the HTTP
+    // Upgrade handshake, so a socket addressed at the page origin cannot
+    // establish. Address the backend directly — CORS_ORIGIN already allows this
+    // origin, and the handshake carries its own bearer token, so nothing
+    // depends on the proxy. Set VITE_SOCKET_URL to override when the frontend
+    // and backend share an origin.
+    return getBackendOrigin();
   }
 
   /**
@@ -250,14 +270,19 @@ class SocketClient {
     // the original stack. Callers already treat a socket failure as non-fatal.
     {
       const socketUrl = this.resolveSocketUrl();
-      
-      // Vercel hosts the static SPA only (no WebSocket support on the proxied
-      // origin), so we skip realtime entirely there and rely on on-demand sync.
-      // No connection is opened — there is no polling fallback or overhead.
-      if (socketUrl.includes('vercel.app') || window.location.hostname.endsWith('vercel.app')) {
-        if (import.meta.env.DEV) {
-          console.log('[SocketClient] Realtime disabled on Vercel (static host); using on-demand sync.');
-        }
+
+      // This used to bail out whenever the page was served from *.vercel.app,
+      // which is EVERY production web session — so no web user has received a
+      // realtime event, and the comment's claim of an "on-demand sync" fallback
+      // was not implemented anywhere. The reasoning conflated two hosts: Vercel
+      // serves the static bundle, but the socket server runs on Render, which
+      // supports WebSockets. resolveSocketUrl() now addresses Render directly.
+      //
+      // Only an explicit opt-out disables realtime, so a deployment that really
+      // cannot reach the socket server can still turn it off without a rebuild
+      // of this logic.
+      if (String(import.meta.env.VITE_REALTIME_DISABLED).toLowerCase() === 'true') {
+        console.info('[SocketClient] Realtime disabled by VITE_REALTIME_DISABLED; using polling sync.');
         this.isConnected = false;
         return;
       }
@@ -567,6 +592,10 @@ class SocketClient {
       this.emit('feature_flags_updated', data);
     });
 
+    this.socket.on('role_changed', (data: { role: string; isApproved: boolean; at: string }) => {
+      this.emit('role_changed', data);
+    });
+
     this.socket.on('friend_accepted' as any, (data: any) => {
       this.emit('friend_accepted', data);
     });
@@ -648,15 +677,32 @@ class SocketClient {
    * Setup reconnection logic
    */
   private setupReconnectionLogic(): void {
-    // Listen for visibility change to reconnect when tab becomes active
+    if (typeof document === 'undefined' || typeof window === 'undefined') return;
+
+    // Both of these used to only log ("Reconnection will be handled by the error
+    // handler" — it was not: handleReconnection stops permanently once
+    // maxReconnectAttempts is spent, and nothing ever reset the counter). So a
+    // laptop that slept through five failed attempts stayed without realtime
+    // until a full reload.
+    //
+    // Foregrounding and regaining the network are exactly the moments when the
+    // previous failures stopped being predictive, so they clear the budget and
+    // retry once.
+    const retryNow = (reason: string) => {
+      if (this.isConnectedToServer()) return;
+      if (import.meta.env.DEV) console.log(`[SocketClient] ${reason} — retrying connection`);
+      this.reconnectAttempts = 0;
+      this.reconnectDelay = 1000;
+      void this.reconnect();
+    };
+
     document.addEventListener('visibilitychange', () => {
-      if (!document.hidden && !this.isConnectedToServer()) {
-        if (import.meta.env.DEV) {
-          console.log('Tab became visible, attempting to reconnect...');
-        }
-        // Reconnection will be handled by the error handler
-      }
+      if (document.hidden) return;
+      if (navigator.onLine === false) return;
+      retryNow('Tab became visible');
     });
+
+    window.addEventListener('online', () => retryNow('Network back online'));
   }
 
   /**

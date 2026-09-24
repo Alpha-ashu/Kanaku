@@ -13,6 +13,7 @@ import {
   bookingIdParamSchema,
   rescheduleSchema,
   cancelBookingSchema,
+  rescheduleDecisionSchema,
 } from './booking.validation';
 
 const router = Router();
@@ -51,13 +52,30 @@ router.put(
   BookingController.rejectBooking
 );
 
+// Propose a new time. No longer advisor-only: the brief's flow lets the client
+// counter-propose, and the state machine is what decides whose turn it is (the
+// party who proposed the outstanding time cannot propose again).
 router.put(
   '/:id/reschedule',
-  requireRole('advisor'),
-  requireApproved,
   validateParams(bookingIdParamSchema),
   validateBody(rescheduleSchema),
   BookingController.rescheduleBooking
+);
+
+// Answer an outstanding proposal. These two are the exit that did not exist:
+// a booking in `reschedule` could previously only be cancelled, so the advisor
+// proposing a new time stranded the request.
+router.put(
+  '/:id/reschedule/accept',
+  validateParams(bookingIdParamSchema),
+  validateBody(rescheduleDecisionSchema),
+  BookingController.acceptReschedule
+);
+router.put(
+  '/:id/reschedule/decline',
+  validateParams(bookingIdParamSchema),
+  validateBody(rescheduleDecisionSchema),
+  BookingController.declineReschedule
 );
 
 // Cancel booking (client only - but any authenticated user can call)

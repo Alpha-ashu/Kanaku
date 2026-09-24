@@ -2,6 +2,8 @@ import { prisma } from '../../db/prisma';
 import { logger } from '../../config/logger';
 import { invalidateUserSnapshotCache } from '../../middleware/auth';
 import { sendRoleAssignedEmail } from '../../emails';
+import { notify } from '../notifications/notify';
+import { announceRoleChange } from './roleChange.announcer';
 
 /**
  * The single implementation of an advisor-application decision.
@@ -74,14 +76,29 @@ export const approveAdvisorApplication = async (userId: string, reviewerId: stri
   if (!result.user) return alreadyReviewed(result.blockedBy);
   invalidateUserSnapshotCache(userId);
 
-  await prisma.notification.create({
-    data: {
-      userId,
-      title: 'Advisor Application Approved!',
-      message: 'Congratulations! Your advisor application has been approved. You can now accept client bookings.',
-      category: 'system',
-      deepLink: '/advisor-panel',
-    },
+  // Tell the applicant's open clients immediately. The backend already grants
+  // advisor access on the next request (the auth snapshot cache was just
+  // invalidated), but the CLIENT caches its role in localStorage and refreshes
+  // it at most once every five minutes — so without this the User/Advisor
+  // toggle did not appear until that window elapsed or the app was reloaded,
+  // which read as "approval didn't work".
+  announceRoleChange(userId, result.user.role, result.user.isApproved);
+
+  // notify(), not prisma.notification.create(): the direct write produced a row
+  // and nothing else — no push, no email, and no socket emit — so the user was
+  // told only if they happened to refetch their notification list.
+  await notify({
+    userId,
+    topic: 'system',
+    type: 'advisor_application_approved',
+    title: 'Advisor Application Approved!',
+    message: 'Congratulations! Your advisor application has been approved. You can now accept client bookings.',
+    deepLink: '/advisor-panel',
+    priority: 'high',
+    email: true,
+    // One decision, one announcement — a re-approval after a revoke gets its own
+    // key because `reviewedAt` differs.
+    dedupKey: `advisor_approved:${userId}:${result.previousStatus}`,
   });
   logger.info('Advisor approved', { advisorId: userId, reviewerId, previousStatus: result.previousStatus });
 
@@ -121,18 +138,25 @@ export const rejectAdvisorApplication = async (
   if (!result.user) return alreadyReviewed(result.blockedBy);
   invalidateUserSnapshotCache(userId);
 
+  // A revoke DEMOTES a live advisor, so the client must drop the advisor shell
+  // at once rather than keep offering actions the API will now refuse.
+  announceRoleChange(userId, result.user.role, result.user.isApproved);
+
   const revoked = result.previousStatus === 'APPROVED';
-  await prisma.notification.create({
-    data: {
-      userId,
-      title: revoked ? 'Advisor Access Revoked' : 'Advisor Application Update',
-      message: revoked
-        ? `Your advisor access has been revoked${reason ? `: ${reason}` : '. Please contact support for more details.'}`
-        : reason
-          ? `Your advisor application was not approved: ${reason}`
-          : 'Your advisor application was not approved at this time. Please contact support for more details.',
-      category: 'system',
-    },
+  await notify({
+    userId,
+    topic: 'system',
+    type: revoked ? 'advisor_access_revoked' : 'advisor_application_rejected',
+    title: revoked ? 'Advisor Access Revoked' : 'Advisor Application Update',
+    message: revoked
+      ? `Your advisor access has been revoked${reason ? `: ${reason}` : '. Please contact support for more details.'}`
+      : reason
+        ? `Your advisor application was not approved: ${reason}`
+        : 'Your advisor application was not approved at this time. Please contact support for more details.',
+    deepLink: '/profile',
+    priority: 'high',
+    email: true,
+    dedupKey: `advisor_rejected:${userId}:${result.previousStatus}`,
   });
   logger.info(revoked ? 'Advisor revoked' : 'Advisor rejected', { advisorId: userId, reviewerId, reason });
   return { ok: true, user: result.user, previousStatus: result.previousStatus };

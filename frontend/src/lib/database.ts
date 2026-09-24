@@ -140,6 +140,31 @@ export interface Loan {
 
 export interface LoanPayment {
   id?: number;
+  /**
+   * Server id for this repayment.
+   *
+   * Added 2026-09-24. Repayments were written locally and cleared on logout,
+   * but never pulled back — even though `GET /loans` has always returned them
+   * with their parent loan. So an EMI history disappeared on sign-out and never
+   * appeared on a second device. Without a server identity there was no way to
+   * tell a pulled row from a local one, so a pull would have duplicated
+   * everything; this is what makes the merge idempotent.
+   */
+  cloudId?: string;
+  /**
+   * Idempotency key for `POST /loans/:id/payment`, minted once per user action.
+   *
+   * A repayment is the only write in this app that reduces a debt AND moves
+   * cash, so a replay must be impossible rather than merely unlikely. The
+   * server matches this against `LoanPayment.clientRequestId` and returns the
+   * original row instead of paying twice — which matters most on the retry
+   * paths the user never sees, like the 401-refresh interceptor re-sending a
+   * request after rotating the token.
+   *
+   * Minted before the request and stored on the local row, so a repayment
+   * recorded offline pushes later under the SAME key.
+   */
+  clientRequestId?: string;
   loanId: number;
   amount: number;
   accountId: number;
@@ -179,6 +204,30 @@ export interface GoalMember {
 
 export interface GoalContribution {
   id?: number;
+  /** Server id. See LoanPayment.cloudId — same history, same reason. */
+  cloudId?: string;
+  /**
+   * The idempotency key sent with `POST /goals/:id/contribute`.
+   *
+   * Unlike loan repayments, contributions ARE pushed to the server — but the
+   * local row kept no record of which server row it became, so a pull could not
+   * tell "this contribution is already here" from "this is a new one" and would
+   * have duplicated every single one. Persisting the key (and the returned
+   * `cloudId`) is what makes the pull idempotent.
+   */
+  clientRequestId?: string;
+  /**
+   * The server created its own Transaction for this movement.
+   *
+   * `POST /goals/:id/contribute` and `/withdraw` both write a side-effect
+   * Transaction, which syncs into `db.transactions` like any other. The balance
+   * engine must therefore count the transaction OR this row, never both — see
+   * `computeAccountDeltas`. Set when the push succeeded, and on every row
+   * pulled from the server (a contribution that exists there always has one).
+   * Left false for a contribution recorded offline, which has no server
+   * transaction behind it yet.
+   */
+  serverAccounted?: boolean;
   goalId: number;
   amount: number;
   accountId: number;
@@ -1250,6 +1299,19 @@ export class OfflineSyncDB extends ProductionDB {
     this.version(18).stores({
       documents: '++id, cloudId, documentType, userId, processingStatus, uploadDate, accountId, syncStatus',
       pendingFileUploads: '++id, localId, userId, transactionLocalId, documentId, createdAt',
+    });
+
+    // Version 19: index cloudId on the two money child-tables so they can be
+    // pulled back after a logout.
+    //
+    // Both were write-only AND cleared on sign-out, so an EMI history or a set
+    // of goal contributions existed on exactly one device until that device
+    // logged out, and then existed nowhere the user could see — while the
+    // server held them the whole time. Indexing the server id is what lets the
+    // pull merge them instead of duplicating them.
+    this.version(19).stores({
+      loanPayments: '++id, cloudId, loanId, date',
+      goalContributions: '++id, cloudId, goalId, date',
     });
   }
 }

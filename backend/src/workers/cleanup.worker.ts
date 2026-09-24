@@ -190,7 +190,51 @@ export const runCleanupTasks = async (): Promise<void> => {
   // 5. GDPR hard-delete sweep (runs after the generic cleanup).
   await runAccountDeletionSweep();
 
+  // 6. Release bookings whose reschedule proposal was never answered.
+  await runExpiredRescheduleSweep();
+
   markCleanupRun(); // liveness heartbeat for worker health monitoring
+};
+
+/**
+ * Return unanswered reschedule proposals to `pending`.
+ *
+ * A proposed time holds the slot: the booking sits in `reschedule` until the
+ * other party answers. If they never do, it used to sit there forever — and
+ * before the accept/decline routes existed there was no way to answer at all.
+ * `rescheduleExpiresAt` bounds that wait.
+ *
+ * Deliberately `pending`, not `cancelled`. The parties still want the
+ * consultation; what expired is one proposed time. Returning it to `pending`
+ * puts the request back in the advisor's queue, where a fresh proposal or an
+ * accept can still happen. Cancelling would destroy a live booking because
+ * someone was slow to answer.
+ */
+export const runExpiredRescheduleSweep = async (): Promise<number> => {
+  try {
+    const { count } = await prisma.bookingRequest.updateMany({
+      where: {
+        status: 'reschedule',
+        rescheduleExpiresAt: { lt: new Date() },
+      },
+      data: {
+        status: 'pending',
+        rescheduleProposedBy: null,
+        rescheduleExpiresAt: null,
+      },
+    });
+
+    if (count > 0) {
+      logger.info('Expired reschedule proposals returned to pending', { count });
+    }
+    return count;
+  } catch (error) {
+    // Never let this fail the rest of the cleanup run.
+    logger.error('Expired-reschedule sweep failed', {
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return 0;
+  }
 };
 
 /**

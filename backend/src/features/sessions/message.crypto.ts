@@ -36,27 +36,54 @@ const HKDF_INFO = 'kanaku/chat/v1';
 export const isEncryptedMessage = (value: string): boolean => value.startsWith(PREFIX);
 
 /**
- * Encrypts a message body for storage.
+ * Thrown when a message cannot be encrypted. Callers must translate this into a
+ * 503 and MUST NOT persist the message.
  *
- * Falls back to plaintext when no root key is configured, because refusing to
- * send a message is a worse outcome than storing it the way this table already
- * stored every message before today. The condition is logged loudly — and
- * `isCryptoConfigured()` is what the deployment check should assert.
+ * A distinct class rather than a bare Error so the transports can tell "we
+ * refused to store this" apart from "the database rejected it": the first is a
+ * server misconfiguration the operator can fix, the second is not.
+ */
+export class MessageEncryptionUnavailableError extends Error {
+  readonly code = 'MESSAGE_ENCRYPTION_UNAVAILABLE';
+  constructor(cause?: unknown) {
+    super('Secure messaging is temporarily unavailable.');
+    this.name = 'MessageEncryptionUnavailableError';
+    if (cause !== undefined) (this as { cause?: unknown }).cause = cause;
+  }
+}
+
+/**
+ * Encrypts a message body for storage. **Fails closed.**
+ *
+ * This used to return the plaintext when no root key was configured, on the
+ * reasoning that refusing to send was worse than storing a message the way this
+ * table stored every message before encryption existed. That trade was wrong:
+ * `AA_ENCRYPTION_ROOT_KEY` is not provisioned in `render.yaml`, so the fallback
+ * was not a rare degraded mode — it was, in all likelihood, the normal one, and
+ * the only trace was one log line per message that nobody reads. A consultation
+ * silently stored in the clear is a confidentiality breach the user has no way
+ * to detect; a send that fails with "try again shortly" is an outage they can.
+ *
+ * So: no key, or encryption throws ⇒ raise. The caller answers 503 and nothing
+ * is written. `isCryptoConfigured()` is still what the deployment check should
+ * assert, and env.ts now refuses to boot production without the key, so this
+ * path should be unreachable outside a partial rollout.
  */
 export const encryptMessageBody = (senderId: string, sessionId: string, plaintext: string): string => {
   if (!isCryptoConfigured()) {
     logger.error(
-      '[chat] No encryption root key configured — message stored as PLAINTEXT. Set AA_ENCRYPTION_ROOT_KEY.',
+      '[chat] No encryption root key configured — REFUSING to store message. Set AA_ENCRYPTION_ROOT_KEY.',
+      { sessionId },
     );
-    return plaintext;
+    throw new MessageEncryptionUnavailableError();
   }
   try {
     return PREFIX + encryptForUser(senderId, plaintext, { aad: sessionId, info: HKDF_INFO });
   } catch (err) {
-    logger.error('[chat] Message encryption failed — storing plaintext', {
+    logger.error('[chat] Message encryption failed — REFUSING to store message', {
       sessionId, error: err instanceof Error ? err.message : String(err),
     });
-    return plaintext;
+    throw new MessageEncryptionUnavailableError(err);
   }
 };
 

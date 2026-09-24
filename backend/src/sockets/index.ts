@@ -6,7 +6,7 @@ import { isAllowedOrigin } from '../config/cors';
 import { isAccountLocked } from '../utils/accountStatus';
 import { getPurposeClient } from '../config/redis-connections';
 import { isTokenRevoked } from '../security/tokenRevocation';
-import { encryptMessageBody } from '../features/sessions/message.crypto';
+import { encryptMessageBody, MessageEncryptionUnavailableError } from '../features/sessions/message.crypto';
 
 const SOCKET_AUTH_CACHE_TTL = 60; // seconds — cache verified identity to avoid DB on every connect
 
@@ -692,6 +692,17 @@ export class SocketManager {
             message: chatMessage,
           });
         } catch (error) {
+          // Encryption unavailable ⇒ nothing was stored. Carry the code so the
+          // client can distinguish "retry later" from "this message is invalid",
+          // exactly as the REST path's 503 does.
+          if (error instanceof MessageEncryptionUnavailableError) {
+            authSocket.emit('message_sent', {
+              success: false,
+              error: error.message,
+              code: error.code,
+            });
+            return;
+          }
           console.error('Chat message error:', error);
           authSocket.emit('message_sent', {
             success: false,

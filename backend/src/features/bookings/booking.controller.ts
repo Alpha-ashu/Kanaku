@@ -2,10 +2,16 @@ import { Response } from 'express';
 import { AuthRequest, getUserId } from '../../middleware/auth';
 import { prisma } from '../../db/prisma';
 import { isDatabaseUnavailableError } from '../../utils/databaseAvailability';
-import { dispatchNotification } from '../notifications/notification.dispatcher';
 import { getSocketManager } from '../../sockets';
 import { logger } from '../../config/logger';
 import { asClientRequestId } from '../../utils/idempotentCreate';
+import { notify } from '../notifications/notify';
+import {
+  checkTransition,
+  failureHttpStatus,
+  RESCHEDULE_EXPIRY_MS,
+  type BookingActor,
+} from './booking.stateMachine';
 
 /**
  * Push a live update into a user's socket room.
@@ -140,16 +146,16 @@ export const createBooking = async (req: AuthRequest, res: Response) => {
 
     // Create multi-channel notification for advisor (app, email, push).
     const clientName = req.user?.name || 'A client';
-    await dispatchNotification({
+    await notify({
       userId: advisorId,
       sourceUserId: clientId,
+      topic: 'booking',
+      type: 'booking_request',
       title: 'New Booking Request',
       message: `${clientName} requested a ${sessionType} consultation on ${proposedDate} at ${proposedTime}`,
-      type: 'booking_request',
-      category: 'booking',
       deepLink: '/advisor-panel',
       priority: 'high',
-      channels: ['app', 'email', 'push'],
+      email: true,
     });
 
     // Live update so an advisor already looking at their workspace sees the
@@ -331,16 +337,16 @@ export const acceptBooking = async (req: AuthRequest, res: Response) => {
     }
 
     // Notify client via multi-channel delivery (app, email, push)
-    await dispatchNotification({
+    await notify({
       userId: booking.clientId,
       sourceUserId: advisorId,
+      topic: 'booking',
+      type: 'booking_accepted',
       title: 'Booking Accepted',
       message: `Your advisor has accepted your ${booking.sessionType} consultation on ${booking.proposedDate}`,
-      type: 'booking_accepted',
-      category: 'booking',
       deepLink: '/book-advisor',
       priority: 'high',
-      channels: ['app', 'email', 'push'],
+      email: true,
     });
 
     res.json({ booking: updated, session });
@@ -379,16 +385,16 @@ export const rejectBooking = async (req: AuthRequest, res: Response) => {
     }
 
     // Notify client via multi-channel delivery (app, email, push)
-    await dispatchNotification({
+    await notify({
       userId: booking.clientId,
       sourceUserId: advisorId,
+      topic: 'booking',
+      type: 'booking_rejected',
       title: 'Booking Declined',
       message: `Your advisor declined your booking request${reason ? `: ${reason}` : ''}`,
-      type: 'booking_rejected',
-      category: 'booking',
       deepLink: '/book-advisor',
       priority: 'normal',
-      channels: ['app', 'email', 'push'],
+      email: true,
     });
 
     res.json(updated);
@@ -397,57 +403,227 @@ export const rejectBooking = async (req: AuthRequest, res: Response) => {
   }
 };
 
+/**
+ * Propose a new time for a booking — from either side.
+ *
+ * This used to be advisor-only and validated nothing beyond ownership: a
+ * completed or cancelled booking could be rescheduled, the proposal message was
+ * stuffed into `rejectionReason`, and — the real defect — the client had no
+ * endpoint to answer with. A booking that entered `reschedule` could only be
+ * cancelled from there. See `acceptReschedule` / `declineReschedule` below for
+ * the other half, and `booking.stateMachine.ts` for the rules.
+ */
 export const rescheduleBooking = async (req: AuthRequest, res: Response) => {
   try {
-    const advisorId = getUserId(req);
+    const userId = getUserId(req);
     const { id } = req.params;
-    const { proposedDate, proposedTime, reason } = req.body;
+    const { proposedDate, proposedTime, newDate, newTime, reason } = req.body;
 
-    if (!proposedDate || !proposedTime) {
+    // The validation schema accepts either spelling; normalise here so the
+    // handler has one shape to reason about.
+    const date = proposedDate || newDate;
+    const time = proposedTime || newTime;
+
+    if (!date || !time) {
       return res.status(400).json({ error: 'proposedDate and proposedTime are required' });
     }
 
     const booking = await prisma.bookingRequest.findFirst({
-      where: { id, advisorId },
+      where: { id, OR: [{ advisorId: userId }, { clientId: userId }] },
     });
 
     if (!booking) {
       return res.status(403).json({ error: 'Access denied' });
     }
 
-    const nextDate = new Date(`${proposedDate}T${proposedTime}`);
+    const nextDate = new Date(`${date}T${time}`);
     if (Number.isNaN(nextDate.getTime())) {
       return res.status(400).json({ error: 'Invalid proposed date/time' });
     }
 
-    const updated = await prisma.bookingRequest.update({
-      where: { id },
+    const actor: BookingActor = booking.advisorId === userId ? 'advisor' : 'client';
+    const failure = checkTransition({
+      from: booking.status,
+      to: 'reschedule',
+      actor,
+      actorId: userId,
+      proposedBy: booking.rescheduleProposedBy,
+      rescheduleCount: booking.rescheduleCount,
+    });
+    if (failure) {
+      return res.status(failureHttpStatus(failure)).json({ error: failure.message, code: failure.code });
+    }
+
+    const counterparty = actor === 'advisor' ? booking.clientId : booking.advisorId;
+
+    // Conditional update on the status we validated against, so two proposals
+    // racing each other cannot both apply.
+    const { count } = await prisma.bookingRequest.updateMany({
+      where: { id, status: booking.status },
       data: {
         status: 'reschedule',
         proposedDate: nextDate,
-        proposedTime,
-        rejectionReason: reason || '',
+        proposedTime: time,
+        rescheduleCount: { increment: 1 },
+        rescheduleProposedBy: userId,
+        rescheduleMessage: reason || null,
+        rescheduleExpiresAt: new Date(Date.now() + RESCHEDULE_EXPIRY_MS),
       },
     });
+    if (count === 0) {
+      return res.status(409).json({
+        error: 'This booking changed while you were proposing a new time. Reload and try again.',
+        code: 'BOOKING_CONFLICT',
+      });
+    }
 
-    // Notify client via multi-channel delivery (app, email, push)
-    await dispatchNotification({
-      userId: booking.clientId,
-      sourceUserId: advisorId,
-      title: 'Booking Reschedule Requested',
-      message: `Your advisor proposed a new time: ${proposedDate} ${proposedTime}${reason ? ` (${reason})` : ''}`,
-      type: 'booking_rescheduled',
-      category: 'booking',
-      deepLink: '/book-advisor',
+    const updated = await prisma.bookingRequest.findUniqueOrThrow({ where: { id } });
+
+    // notify(), not dispatchNotification(): the latter skips the preference
+    // check and, more importantly, the realtime emit — so the other party was
+    // told only when they next refetched.
+    await notify({
+      userId: counterparty,
+      sourceUserId: userId,
+      topic: 'booking',
+      type: 'booking_reschedule_proposed',
+      title: actor === 'advisor' ? 'Advisor proposed a new time' : 'Client proposed a new time',
+      message: `A new time was proposed: ${date} ${time}${reason ? ` — ${reason}` : ''}. Accept or decline it.`,
+      deepLink: actor === 'advisor' ? '/book-advisor' : '/advisor-panel',
       priority: 'high',
-      channels: ['app', 'email', 'push'],
+      email: true,
     });
+
+    pushLive(counterparty, 'booking_status_changed', { bookingId: id, status: 'reschedule', booking: updated });
 
     res.json(updated);
   } catch (error: any) {
+    logger.error('[bookings] reschedule failed', {
+      bookingId: req.params?.id,
+      error: error instanceof Error ? error.message : String(error),
+    });
     res.status(500).json({ error: 'Failed to reschedule booking' });
   }
 };
+
+/**
+ * Answer an outstanding reschedule proposal.
+ *
+ * `accept` confirms the proposed time and creates the session, exactly as the
+ * advisor's accept path does — a confirmed booking must behave identically
+ * however it got there, or a rescheduled consultation would have no session and
+ * therefore no chat. `decline` returns the booking to `pending` so the slot can
+ * be renegotiated rather than dying.
+ *
+ * Only the party who did NOT propose may answer; the state machine enforces it.
+ */
+const answerReschedule = (decision: 'accept' | 'decline') =>
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = getUserId(req);
+      const { id } = req.params;
+      const { reason } = req.body ?? {};
+
+      const booking = await prisma.bookingRequest.findFirst({
+        where: { id, OR: [{ advisorId: userId }, { clientId: userId }] },
+      });
+      if (!booking) {
+        return res.status(403).json({ error: 'Access denied' });
+      }
+
+      const actor: BookingActor = booking.advisorId === userId ? 'advisor' : 'client';
+      const target = decision === 'accept' ? 'accepted' : 'rejected';
+      const failure = checkTransition({
+        from: booking.status,
+        to: target,
+        actor,
+        actorId: userId,
+        proposedBy: booking.rescheduleProposedBy,
+        rescheduleCount: booking.rescheduleCount,
+      });
+      if (failure) {
+        return res.status(failureHttpStatus(failure)).json({ error: failure.message, code: failure.code });
+      }
+
+      const counterparty = actor === 'advisor' ? booking.clientId : booking.advisorId;
+
+      const outcome = await prisma.$transaction(async (tx) => {
+        // Declining does NOT reject the booking outright — it hands the slot
+        // back so either side can propose again. Only an explicit decline of
+        // the whole request (the advisor's /reject route) ends it.
+        const nextStatus = decision === 'accept' ? 'accepted' : 'pending';
+
+        const { count } = await tx.bookingRequest.updateMany({
+          where: { id, status: 'reschedule' },
+          data: {
+            status: nextStatus,
+            rescheduleProposedBy: null,
+            rescheduleExpiresAt: null,
+            ...(decision === 'decline' ? { rescheduleMessage: reason || null } : {}),
+          },
+        });
+        if (count === 0) return { conflict: true as const };
+
+        const current = await tx.bookingRequest.findUniqueOrThrow({ where: { id } });
+
+        if (decision === 'accept') {
+          const session = await tx.advisorSession.upsert({
+            where: { bookingId: id },
+            update: { startTime: current.proposedDate },
+            create: {
+              bookingId: id,
+              advisorId: current.advisorId,
+              clientId: current.clientId,
+              startTime: current.proposedDate,
+              sessionType: current.sessionType,
+              status: 'scheduled',
+            },
+          });
+          return { booking: current, session };
+        }
+        return { booking: current, session: null };
+      });
+
+      if ('conflict' in outcome) {
+        return res.status(409).json({
+          error: 'This proposal is no longer outstanding.',
+          code: 'BOOKING_CONFLICT',
+        });
+      }
+
+      await notify({
+        userId: counterparty,
+        sourceUserId: userId,
+        topic: 'booking',
+        type: decision === 'accept' ? 'booking_reschedule_accepted' : 'booking_reschedule_declined',
+        title: decision === 'accept' ? 'New time confirmed' : 'Proposed time declined',
+        message: decision === 'accept'
+          ? 'Your proposed time was accepted. The consultation is confirmed.'
+          : `Your proposed time was declined${reason ? `: ${reason}` : ''}. You can propose another time.`,
+        deepLink: actor === 'advisor' ? '/book-advisor' : '/advisor-panel',
+        priority: 'high',
+        email: true,
+      });
+
+      pushLive(counterparty, 'booking_status_changed', {
+        bookingId: id,
+        status: outcome.booking.status,
+        booking: outcome.booking,
+      });
+
+      res.json({ booking: outcome.booking, session: outcome.session });
+    } catch (error: any) {
+      logger.error('[bookings] reschedule answer failed', {
+        bookingId: req.params?.id,
+        decision,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      res.status(500).json({ error: 'Failed to answer the reschedule proposal' });
+    }
+  };
+
+export const acceptReschedule = answerReschedule('accept');
+export const declineReschedule = answerReschedule('decline');
 
 // Cancel booking (client only)
 export const cancelBooking = async (req: AuthRequest, res: Response) => {
@@ -463,26 +639,45 @@ export const cancelBooking = async (req: AuthRequest, res: Response) => {
       return res.status(403).json({ error: 'Access denied' });
     }
 
-    if (booking.status === 'completed' || booking.status === 'cancelled') {
-      return res.status(400).json({ error: 'Cannot cancel this booking' });
+    // Was a hand-rolled pair of status checks that happened to agree with the
+    // state machine; routed through it now so there is one place that decides.
+    const failure = checkTransition({
+      from: booking.status,
+      to: 'cancelled',
+      actor: 'client',
+      actorId: clientId,
+      proposedBy: booking.rescheduleProposedBy,
+      rescheduleCount: booking.rescheduleCount,
+    });
+    if (failure) {
+      return res.status(failureHttpStatus(failure)).json({ error: failure.message, code: failure.code });
     }
 
-    const updated = await prisma.bookingRequest.update({
-      where: { id },
-      data: { status: 'cancelled' },
+    // Conditional on the status we just validated: a booking the advisor
+    // accepted in the meantime must not be cancelled on a stale read.
+    const { count } = await prisma.bookingRequest.updateMany({
+      where: { id, status: booking.status },
+      data: { status: 'cancelled', rescheduleProposedBy: null, rescheduleExpiresAt: null },
     });
+    if (count === 0) {
+      return res.status(409).json({
+        error: 'This booking changed while you were cancelling it. Reload and try again.',
+        code: 'BOOKING_CONFLICT',
+      });
+    }
+    const updated = await prisma.bookingRequest.findUniqueOrThrow({ where: { id } });
 
     // Notify advisor via multi-channel delivery (app, email, push)
-    await dispatchNotification({
+    await notify({
       userId: booking.advisorId,
       sourceUserId: clientId,
+      topic: 'booking',
+      type: 'booking_cancelled',
       title: 'Booking Cancelled',
       message: 'A client has cancelled their booking request.',
-      type: 'booking_cancelled',
-      category: 'booking',
       deepLink: '/advisor-panel',
       priority: 'normal',
-      channels: ['app', 'email', 'push'],
+      email: true,
     });
 
     res.json(updated);
@@ -547,13 +742,15 @@ export const markFeePaid = async (req: AuthRequest, res: Response) => {
       });
     } catch { /* Model may vary */ }
 
-    await prisma.notification.create({
-      data: {
-        userId: booking.clientId,
-        title: 'Payment Received',
-        message: `Your consultation fee of ${amount ?? booking.amount} has been recorded`,
-        category: 'payment',
-      },
+    await notify({
+      userId: booking.clientId,
+      sourceUserId: advisorId,
+      topic: 'booking',
+      type: 'booking_fee_paid',
+      title: 'Payment Received',
+      message: `Your consultation fee of ${amount ?? booking.amount} has been recorded`,
+      deepLink: '/book-advisor',
+      priority: 'normal',
     });
 
     return res.json({ success: true, payment });
