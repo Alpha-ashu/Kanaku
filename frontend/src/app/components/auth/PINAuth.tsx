@@ -5,7 +5,6 @@ import { clearSecurityData, isPINSet, verifyPIN, storeMasterKey, serializePINKey
 import { isPinAlreadySet, isPinMissing, isPinServiceUnavailable, isSessionExpired, pinService } from '@/services/pinService';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
-import { isGuestMode } from '@/lib/guestMode';
 import supabase from '@/utils/supabase/client';
 import { apiClient } from '@/lib/api';
 import { Capacitor } from '@capacitor/core';
@@ -59,7 +58,7 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  // there are no local PIN keys. A returning user (the overwhelmingly common case)
  // starts at `false` and gets the keypad on the very first paint — a lazy initialiser
  // rather than an effect, so not even one frame of spinner is shown.
- const [isLoading, setIsLoading] = useState(() => !isPINSet() && !isGuestMode());
+ const [isLoading, setIsLoading] = useState(() => !isPINSet());
  const [isSubmitting, setIsSubmitting] = useState(false);
  const [shake, setShake] = useState(false);
  const [errorMsg, setErrorMsg] = useState('');
@@ -207,13 +206,6 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
    setIsLoading(false);
  }
 
- // Guest mode is local-only — nothing to reconcile.
- if (isGuestMode()) {
-   setIsCreating(!hasLocalPin);
-   setIsLoading(false);
-   return () => { mounted = false; };
- }
-
  (async () => {
  try {
  const status = await pinService.getStatus();
@@ -336,8 +328,7 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
     const canOffer =
       biometric?.available &&
       !isBiometricEnabled() &&
-      !isBiometricOfferDismissed() &&
-      !isGuestMode();
+      !isBiometricOfferDismissed();
 
     if (canOffer) {
       setEnrolOffer({ pin: verifiedPin });
@@ -576,12 +567,11 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
         }
 
         // Server sync is best-effort - always proceed after PINs match.
-        // Guest mode: skip server entirely.
         // storeMasterKey writes the verifier, so the backup payload must be
         // serialised AFTER it — not before.
         const key = await storeMasterKey(currentPin);
 
-        if (!isGuestMode()) {
+        {
           const backupPayload = serializePINKeyBackup();
           pinService.createPin(currentPin)
             .then(result => {
@@ -612,18 +602,6 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
       } else {
         // Fast path: verify against local encryption key first
         const localResult = await verifyPIN(currentPin);
-
-        // Guest mode: verify locally only, no server call.
-        if (isGuestMode()) {
-          if (localResult.isValid && localResult.key) {
-            resetPinAttempts();
-            await finalizeAuth(localResult.key, 'Welcome back!');
-          } else {
-            registerFailedAttempt('Incorrect PIN. Please try again.');
-            setIsSubmitting(false);
-          }
-          return;
-        }
 
         // Local PIN is valid — unlock without waiting on the network.
         //
@@ -930,7 +908,7 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
             <Lock size={16} className="flex-shrink-0 text-red-600" />
             <p className="text-xs font-medium leading-snug">
               Too many incorrect attempts. Try again in {formatLockCountdown(lockRemainingMs)}
-              {!isGuestMode() && ', or reset your PIN by email'}.
+              , or reset your PIN by email.
             </p>
           </div>
         )}
@@ -1044,7 +1022,7 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
               </button>
             ))}
             {/* Bottom row */}
-            {!isCreating && !isGuestMode() ? (
+            {!isCreating ? (
               <button
                 type="button"
                 onClick={handleForgotPin}

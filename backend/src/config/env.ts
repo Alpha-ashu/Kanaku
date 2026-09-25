@@ -365,11 +365,16 @@ const CONFIG_MANIFEST: readonly ConfigItem[] = [
   {
     key: 'METRICS_TOKEN',
     group: 'Observability',
-    purpose: 'Bearer token guarding GET /metrics — prevents public metric exposure',
+    purpose:
+      'Bearer token guarding GET /metrics. In production the endpoint now FAILS ' +
+      'CLOSED (503 METRICS_NOT_CONFIGURED) without it — Prometheus cannot scrape ' +
+      'until it is set in the Render dashboard',
     services: ALL,
-    // Recommended (not hard-required): the /metrics endpoint serves openly when
-    // unset, which is acceptable during initial setup. Set it in Render dashboard
-    // before going fully live to prevent metric data from being publicly readable.
+    // Still 'recommended', deliberately. Promoting it to required would refuse
+    // to BOOT the API over a monitoring secret — trading a metrics outage for a
+    // service outage, which is the wrong way round. The endpoint itself is what
+    // fails closed (app.ts); this line makes the consequence visible in the
+    // startup report rather than leaving it to be discovered by a scrape error.
     tier: () => 'recommended',
   },
   {

@@ -489,7 +489,20 @@ export const applyAsAdvisor = async (req: AuthRequest, res: Response) => {
       await Promise.all(uploadedDocs.map((path) => removeObject(path).catch(() => undefined)));
     }
 
-    logger.error('Advisor application error', { userId: req.user?.id, applicationPersisted, error });
+    // requestId ties this log line to the response the user saw. This handler
+    // answers directly instead of delegating to middleware/error.ts, so it did
+    // NOT get that middleware's `requestId` echo — which meant a user reporting
+    // "advisor apply gives a 500" left nothing to grep the Render logs for, and
+    // the cause had to be guessed. It is the correlator, not a diagnosis.
+    const requestId = (req as unknown as { id?: string }).id;
+    logger.error('Advisor application error', {
+      requestId,
+      userId: req.user?.id,
+      applicationPersisted,
+      // Serialised centrally by logger.ts (serializeErrors) — name, message,
+      // stack and any Prisma code/meta all reach the log from here.
+      error,
+    });
 
     // Storage being unconfigured or unreachable is an outage, not a bad request,
     // and it is the failure this endpoint is most exposed to — it is the only
@@ -502,7 +515,13 @@ export const applyAsAdvisor = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    return res.status(500).json({ error: 'Failed to submit advisor application', code: 'ADVISOR_APPLY_FAILED' });
+    return res.status(500).json({
+      error: 'Failed to submit advisor application',
+      code: 'ADVISOR_APPLY_FAILED',
+      // Safe to expose: an opaque per-request id, no internal detail. It is
+      // what turns "a user hit a 500" into one greppable Render log line.
+      requestId,
+    });
   }
 };
 

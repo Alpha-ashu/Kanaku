@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Mail, ArrowLeft, RefreshCw, Shield, AlertCircle, CheckCircle, ShieldCheck, Clock, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
-import supabase from '@/utils/supabase/client';
 import { api, TokenManager } from '@/lib/api';
 import { setLocalProfileVerification } from '@/hooks/useProfileVerification';
 import { KanakuWordmark } from '@/app/components/ui/KANAKULogo';
@@ -125,49 +124,47 @@ export const OTPVerification: React.FC<OTPVerificationProps> = ({
           setTimeout(() => onVerified(), 1200);
           return;
         }
-      } catch (backendErr: any) {
-        // Fall through to try Supabase if backend failed and Supabase is configured
-        if (backendErr?.code === 'INVALID_OTP' || backendErr?.code === 'INVALID_OTP_FORMAT') {
-          setError(backendErr.message || 'Invalid or expired verification code.');
+      } catch (backendErr: unknown) {
+        // Report what actually went wrong.
+        //
+        // This used to swallow every non-INVALID_OTP failure and fall through to
+        // `supabase.auth.verifyOtp()` — for a code Supabase never issued, since
+        // registration mints it through the backend's own OTP service. That call
+        // always failed, and the user was told "Invalid or expired verification
+        // code" whatever the real cause was: a 502 because the mail provider was
+        // down, a 500, a 429, or no network at all. They would then retype a
+        // perfectly good code, fail again, and have no way to learn that the
+        // problem was not their code.
+        const err = backendErr as { code?: string; status?: number; message?: string };
+        const clearInput = () => {
           setOtp(['', '', '', '', '', '']);
           inputRefs.current[0]?.focus();
+        };
+
+        if (err?.code === 'INVALID_OTP' || err?.code === 'INVALID_OTP_FORMAT') {
+          // The one case where the code really is wrong: keep the server's
+          // wording (it distinguishes expired from incorrect, and reports
+          // remaining attempts).
+          setError(err.message || 'Invalid or expired verification code.');
+          clearInput();
           return;
         }
-      }
 
-      // Supabase verification fallback
-      let verifySuccess = false;
-      const { data, error: verifyError } = await supabase.auth.verifyOtp({
-        email,
-        token: otpCode,
-        type: 'email',
-      });
-
-      if (!verifyError && data.session) {
-        verifySuccess = true;
-      } else {
-        const { data: signupData, error: signupError } = await supabase.auth.verifyOtp({
-          email,
-          token: otpCode,
-          type: 'signup',
-        });
-        if (!signupError && signupData.session) {
-          verifySuccess = true;
+        if (err?.code === 'OTP_SEND_FAILED' || err?.status === 502) {
+          setError('We could not reach the verification service. Please try "Resend code" in a moment.');
+          return; // keep what they typed — it may well be correct
         }
-      }
 
-      if (verifySuccess) {
-        localStorage.setItem('email_verified', 'true');
-        localStorage.setItem('user_status', 'verified');
-        setLocalProfileVerification(true);
-        sessionStorage.removeItem('kanaku_dev_otp');
-        setVerified(true);
-        toast.success('Email verified successfully! Welcome to Kanaku.');
-        setTimeout(() => onVerified(), 1200);
-      } else {
-        setError('Invalid or expired verification code. Please try again.');
-        setOtp(['', '', '', '', '', '']);
-        inputRefs.current[0]?.focus();
+        if (err?.status === 429) {
+          setError('Too many attempts. Please wait a moment before trying again.');
+          return;
+        }
+
+        setError(
+          err?.message
+            || 'We could not verify your code right now. Please try again in a moment.',
+        );
+        return;
       }
     } catch (err: any) {
       setError(err?.message || 'Verification failed. Please check the code and try again.');
@@ -199,23 +196,24 @@ export const OTPVerification: React.FC<OTPVerificationProps> = ({
         return;
       }
 
-      // Fallback to Supabase
-      const { error: resendError } = await supabase.auth.signInWithOtp({
-        email,
-        options: { shouldCreateUser: false },
-      });
-
-      if (resendError) {
-        throw resendError;
+      // No Supabase fallback here, deliberately.
+      //
+      // It used to call `supabase.auth.signInWithOtp()` when the backend resend
+      // failed. That is worse than doing nothing: registration codes are minted
+      // and checked by the BACKEND's OTP service, so the fallback emailed the
+      // user a second, Supabase-issued code that `verifyRegistrationOtp` can
+      // never accept — and then reported success. The user would enter the
+      // newest code they received and be told it was invalid, indefinitely.
+      toast.error('We could not send a new code right now. Please try again in a moment.');
+    } catch (err: unknown) {
+      const error = err as { code?: string; status?: number; message?: string };
+      // 429 carries a retry window; anything else is a delivery failure the
+      // user can only wait out. Either way, say which it is.
+      if (error?.status === 429) {
+        toast.error('Too many requests. Please wait a moment before asking for another code.');
+      } else {
+        toast.error(error?.message || 'Failed to resend code. Please try again in a moment.');
       }
-
-      setResendAttempts(prev => prev + 1);
-      setResendCooldown(30);
-      setOtp(['', '', '', '', '', '']);
-      inputRefs.current[0]?.focus();
-      toast.success(`New verification code sent to ${email}`);
-    } catch (err: any) {
-      toast.error(err?.message || 'Failed to resend code. Please try again in a moment.');
     } finally {
       setIsResending(false);
     }

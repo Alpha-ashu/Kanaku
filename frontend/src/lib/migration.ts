@@ -19,10 +19,6 @@ export function runGlobalMigration() {
       { old: 'KANAKU_encrypted_key', new: 'KANAKU_encrypted_key' },
       { old: 'KANAKU_salt', new: 'KANAKU_salt' },
 
-      // Guest Mode
-      { old: 'KANAKU_guest_mode', new: 'KANAKU_guest_mode' },
-      { old: 'KANAKU_guest_created_at', new: 'KANAKU_guest_created_at' },
-
       // Sync & Engine
       { old: 'KANAKU_sync_queue_v3', new: 'KANAKU_sync_queue_v3' },
       { old: 'KANAKU_learning_data', new: 'KANAKU_learning_data' },

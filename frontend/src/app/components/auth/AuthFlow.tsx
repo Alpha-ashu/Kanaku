@@ -14,7 +14,6 @@ import { PrivacyPolicy } from '@/app/components/marketing/PrivacyPolicy';
 import { Terms } from '@/app/components/marketing/Terms';
 import { saveAccountWithBackendSync } from '@/lib/auth-sync-integration';
 import { api, TokenManager } from '@/lib/api';
-import { isGuestMode, disableGuestMode, migrateGuestDataToUser, migrateGuestLocalStorage } from '@/lib/guestMode';
 import { pinService, isPinMissing } from '@/services/pinService';
 import { signIn as supabaseSignIn, signUp as supabaseSignUp, resendSignupConfirmation, DUPLICATE_ACCOUNT_MESSAGE } from '@/lib/supabase-helpers';
 import { MailCheck } from 'lucide-react';
@@ -238,21 +237,6 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
     }
   };
 
- // Migrate any guest data when a guest user signs in / signs up
- const runGuestMigrationIfNeeded = async (userId: string) => {
- if (!isGuestMode()) return;
- try {
- migrateGuestLocalStorage();
- const summary = await migrateGuestDataToUser(userId);
- disableGuestMode();
- const total = Object.values(summary).reduce((a, b) => a + b, 0);
- if (total > 0) {
- toast.success(`${total} item${total > 1 ? 's' : ''} from your guest session have been saved to your account.`);
- }
- } catch {
- // Non-blocking - data stays local and will sync later
- }
- };
 
 
   const handleSignIn = async (credentials: { email: string; password: string }) => {
@@ -264,7 +248,6 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
         const { user } = await supabaseSignIn(credentials.email, credentials.password);
         setEmail(credentials.email);
         setIsNewUser(false);
-        if (user) await runGuestMigrationIfNeeded(user.id);
         localStorage.removeItem('auth_flow_step');
         localStorage.removeItem('pending_auth_email');
         if (user) localStorage.setItem('onboarding_completed', 'true');
@@ -293,10 +276,6 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
 
       setEmail(credentials.email);
       setIsNewUser(false);
-
-      if (user) {
-        await runGuestMigrationIfNeeded(user.id);
-      }
 
       localStorage.removeItem('auth_flow_step');
       localStorage.removeItem('pending_auth_email');
@@ -411,7 +390,6 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
           throw halt;
         }
 
-        if (user) await runGuestMigrationIfNeeded(user.id);
         localStorage.removeItem('auth_flow_step');
         localStorage.removeItem('pending_auth_email');
         localStorage.removeItem('onboarding_completed');
@@ -468,10 +446,6 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
 
       if (accessToken) {
         TokenManager.setAccessToken(accessToken);
-      }
-
-      if (user) {
-        await runGuestMigrationIfNeeded(user.id);
       }
 
       localStorage.removeItem('auth_flow_step');

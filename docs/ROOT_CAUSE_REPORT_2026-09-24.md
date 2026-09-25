@@ -1014,3 +1014,237 @@ encryption tests.
    transaction, that account's derived balance stays too low until the
    contribution is re-pulled. A one-off reconciliation may be warranted — worth
    a decision, not a silent migration.
+
+---
+
+# PART IV — v20.5 production follow-up (2026-09-25)
+
+Answers the 12-point report required by the v20.5 follow-up brief. Targeted,
+evidence-based fixes only; no architectural rework.
+
+## 27. Deployment status discovered at the start of this pass
+
+The Phase 1–8 work was **committed by the IDE agent** as `cd2301db "version 20.5"`
+and pushed. `render.yaml` sets `autoDeploy: true`, so Render built it and
+`preDeployCommand: npm run db:deploy` applied `20260924000000_booking_reschedule_negotiation`
+to the **production database**.
+
+Verified live: `PUT /api/v1/bookings/<id>/reschedule/accept` answers **401, not
+404**. Those routes exist only in the new build.
+
+**`AA_ENCRYPTION_ROOT_KEY` is therefore set in production.** `validateConfig()`
+runs at import time and throws in production when a required variable is
+missing; the service booted and `/health` returns 200, so the variable is
+present. Chat is encrypting rather than failing closed.
+
+## 28. The twelve-point report
+
+### 1. SendGrid root cause — NOT FIXED (needs account access)
+
+Confirmed the mechanism, not the account state. `POST /auth/register` answers
+**502 `OTP_SEND_FAILED`** (`auth.controller.ts:433-440`) when
+`otpService.sendOtp()` returns `success:false`. The provider chain is SendGrid →
+SMTP fallback → dev-mock, and `render.yaml` provisions only `SENDGRID_*` — **no
+`SMTP_*` fallback is configured**, so a SendGrid rejection is terminal. The
+sender is a `@gmail.com` address, which cannot pass DMARC alignment through
+SendGrid; there is a recorded prior incident of `401 Maximum credits exceeded`.
+
+Needs, in order: SendGrid credit/account status → add `SMTP_HOST/PORT/USER/PASS/SMTP_FROM_EMAIL`
+on Render as a fallback → move to a custom-domain sender with Domain
+Authentication as the permanent fix.
+
+### 2. OTP fix — FIXED (the masking, not the delivery)
+
+The registration-side message was already correct. The **verification** step was
+not: `OTPVerification.tsx` swallowed every non-`INVALID_OTP` failure and fell
+through to `supabase.auth.verifyOtp()` — for a code Supabase never issued, since
+registration mints it through the backend's own OTP service. That call always
+failed, so a 502, a 500, a 429 or an offline device all surfaced as **"Invalid or
+expired verification code"**. Users retyped a correct code and failed again, with
+no way to learn the code was not the problem.
+
+Now reports the real cause: `INVALID_OTP` keeps the server's wording (it
+distinguishes expired from incorrect and reports remaining attempts); 502 →
+"could not reach the verification service, try Resend"; 429 → wait message;
+anything else → a generic retry message. The typed code is preserved on a
+transport failure rather than cleared.
+
+The **resend** path had the same fallback and was worse: on a backend failure it
+called `supabase.auth.signInWithOtp()`, emailing a *second, Supabase-issued* code
+that `verifyRegistrationOtp` can never accept — and reported success. A user
+would enter the newest code they received and be rejected indefinitely. Removed.
+`OTPVerification.tsx` no longer imports Supabase at all.
+
+### 3. OTP persistence verification — PARTLY FIXED, one decision owed
+
+Server-side persistence is correct: `verifyRegistrationOtp` sets
+`emailVerified: true`, `verifiedAt`, `status`.
+
+Two client defects, both fixed:
+
+- `useProfileVerification` re-applied its **own** 90-day expiry to the *server's*
+  `verifiedAt`, so the window was evaluated twice against two clocks. A client
+  with a fast clock, or a build older than a server-side change, put a verified
+  user into View-Only Mode the server did not agree with — and re-verifying
+  could not clear it. `verificationExpired` from the server is now the only
+  expiry signal honoured.
+- `checkIsProfileVerified()` expired the **local cache** too. On a second device
+  localStorage is empty, so a verified user read as unverified until
+  `/auth/profile` answered — and stayed unverified if that call 401'd, which the
+  production console shows happening. The cache is now optimistic. This is safe
+  because the flag is presentational: write access is enforced server-side on
+  every request, so a client guessing "verified" wrongly is refused by the API,
+  whereas one guessing "unverified" wrongly blocks a user the server would allow.
+
+**Still owed — a product decision, not a code change.** The **backend** expires
+email verification every 90 days into View-Only Mode
+(`middleware/auth.ts`, `auth.controller.ts`: *"Profile verification has expired
+(required every 90 days)"*). That is exactly the reading the brief rejects —
+"the 90-day requirement must not be interpreted as force email OTP every 90
+days". Removing it changes live behaviour for any user currently restricted that
+way, so it belongs in the policy decision, not in this pass. See
+`docs/PROPOSAL-account-lifecycle-policy.md` §11 decision 1.
+
+### 4. advisors/apply 500 root cause — NOT IDENTIFIED (needs the Render log line)
+
+Established what it is **not**, and made the next occurrence diagnosable.
+
+- Not storage: the live build answers **503 `STORAGE_UNAVAILABLE`** for that, and
+  the console shows a plain 500.
+- Not a broken happy path: `advisor-application-notify.test.ts` performs a full
+  successful application against a clean schema and passes.
+- Not a logging regression: I suspected `07f43e99` had reverted the
+  `describeError` helper, and it had — but it **moved error serialisation into
+  `logger.ts` centrally** (`serializeErrors`, 83 lines), so `{ error }` is now the
+  correct call-site form and these 500s already carry a full stack.
+
+So the cause is environment- or data-specific — most plausibly the out-of-band
+triggers/constraints known to exist in production but created by no migration.
+
+**Fix applied:** `applyAsAdvisor` answers directly instead of delegating to
+`middleware/error.ts`, so it never got that middleware's `requestId` echo — a
+user reporting "advisor apply gives a 500" left nothing to grep for. The 500
+response and its log line now both carry `requestId`. That is a correlator, not
+a diagnosis: **one Render log line for a failing request closes this item.**
+
+### 5. PIN 400 root cause — IDENTIFIED
+
+A 400 is correct behaviour, not a bug. On the live build `PIN_ALREADY_EXISTS`
+answers 409, so a 400 means the PIN failed validation — format, or `isWeakPin`.
+
+The rule most likely to surprise: the sequential check is a **substring** test,
+so a PIN is refused for containing any run of three anywhere — `849876` is
+refused because of `987`. Repeats of three (`411125`) and six anchored patterns
+(`121212`, `112233`, …) are also refused. Roughly one random six-digit PIN in
+twenty is rejected.
+
+Documented by 30 unit tests (`quality/backend/unit/pin/weak-pin-rules.test.ts`).
+`PINSetup.tsx` already surfaces `result.message`, so the user is told why. **No
+code change** — the endpoint behaves correctly.
+
+### 6. Auth/refresh validation — NOT REPRODUCED
+
+`GET /auth/profile → 401` followed by `POST /auth/refresh → 401` is consistent
+with an expired access token and a refresh token that is also expired or
+revoked, which is correct secure behaviour. It is only a defect if it happens
+immediately after a fresh login, which the captured console does not show.
+Needs a fresh-login reproduction before any change; the existing expiry
+behaviour is deliberately left alone.
+
+### 7. Guest Mode removal — DONE
+
+`enableGuestMode()` had **zero callers** — guest mode was already unreachable
+dead code, so the entry point had been removed previously. Removed:
+
+- `frontend/src/lib/guestMode.ts` — deleted
+- `PINAuth.tsx` — 8 guest branches collapsed to the authenticated path (the
+  local-only PIN create/verify short-circuits, the biometric-offer condition,
+  the lockout copy, the forgot-PIN button)
+- `AuthFlow.tsx` — `runGuestMigrationIfNeeded` and its four call sites
+- `migration.ts` — the two guest localStorage key mappings
+
+Zero matches remain for `guestMode|isGuest|continueAsGuest|__KANAKU_guest__|anonymousUser|skipLogin`.
+Frontend lint warnings dropped 1171 → 1157.
+
+**Deliberately kept:** `DemoUserDto` / `toggleDemoStatus` / `resetDemoAccount` in
+the admin console. The brief listed `demoUser` as a search term, but these back
+the admin demo-account feature (`User.accountType = 'DEMO'`, `demoStatus`), which
+is a real product surface, not guest mode. Say if it should go too.
+
+### 8. Prometheus scrape root cause — NOT IDENTIFIED (needs Prometheus/Grafana access)
+
+The backend is exonerated: `GET https://kanaku-api.onrender.com/metrics` returns
+**200 with 60 valid metric families**. So `DatasourceNoData` / "a kanaku process
+is not being scraped" is **not** a backend outage; the break is in the scrape
+configuration or the Grafana datasource.
+
+One contributing factor visible from here: Render is on `plan: free`, which spins
+down when idle. A Prometheus scraping on any normal interval would keep the
+service awake — so the fact that it is alerting at all suggests scrapes are not
+reaching it. Closing this needs the target's status page and its last scrape
+error, which are in your Grafana Cloud account. The alert was not touched.
+
+### 9. METRICS_TOKEN — FIXED IN CODE, needs the variable set
+
+`/metrics` served **openly** whenever `METRICS_TOKEN` was unset, and it is unset
+on Render — so every route name, request count, error rate, event-loop lag and
+memory figure was world-readable. The guard was opt-in and the instruction to
+enable it was a source comment, not a control.
+
+Now **fails closed in production**: no token ⇒ **503 `METRICS_NOT_CONFIGURED`**,
+with an error log at request time. Outside production it stays open so local
+development and a local Prometheus need no secret. The config manifest entry now
+states the consequence so it appears in the startup report.
+
+Deliberately **not** promoted to a required variable: that would refuse to boot
+the API over a monitoring secret, trading a metrics outage for a service outage.
+
+Covered by 7 tests (`metrics-auth.test.ts`): unauthenticated production refused,
+no metric data in the refusal, missing/wrong/scheme-less tokens rejected,
+correct token still serves Prometheus text, non-production still open.
+
+> ⚠️ **Sequencing:** once this deploys, `/metrics` returns 503 until
+> `METRICS_TOKEN` is set on Render **and** the same value is configured on the
+> scraper. Set both before deploying, or monitoring stays dark — though it is
+> already dark today, per §8.
+
+### 10. Tests executed
+
+| Gate | Result |
+|---|---|
+| Type-check | **3/3 workspaces clean** |
+| Lint | **0 errors**; frontend **1157** (was 1171 — guest removal), backend 636/652 |
+| Backend unit | **17 suites, 171 tests pass** |
+| Backend integration (scratch PG) | **87 suites, 1128 tests pass** |
+| Frontend | **66 files, 583 tests pass** |
+
+New this pass: 30 weak-PIN rule tests, 7 metrics-auth tests.
+
+### 11. Production validation
+
+| Check | Method | Result |
+|---|---|---|
+| v20.5 live | Route-existence probe (unauthenticated) | **Confirmed** — reschedule routes 401, not 404 |
+| `AA_ENCRYPTION_ROOT_KEY` set | Service booted the new build; `validateConfig()` throws without it | **Confirmed present** |
+| Backend reachable | `GET /health` | **200 in 0.35 s** |
+| `/metrics` reachable | `GET /metrics` | **200, 60 metric families** — and publicly readable |
+| Mail delivery | Console: `502 OTP_SEND_FAILED` | **Failing** — needs SendGrid/SMTP |
+
+Nothing was run against the production database; the scratch cluster
+(`127.0.0.1:55433/kanaku_ci`) was used throughout.
+
+### 12. Remaining issues
+
+1. **Mail delivery is down** — registration cannot complete. Highest priority,
+   and only you can fix it.
+2. **`advisors/apply` 500 unidentified** — one Render log line closes it.
+3. **`METRICS_TOKEN` not set** — `/metrics` is publicly readable today, and will
+   return 503 once this deploys.
+4. **Prometheus scrape chain unresolved** — needs Grafana Cloud access.
+5. **Server-side 90-day verification expiry still live** — awaiting decision 1 in
+   the policy proposal.
+6. **Auth 401/refresh not reproduced** — needs a fresh-login repro.
+7. Carried over: pre-existing plaintext goal contributions reading too low;
+   vault files under the public dev key until `reencrypt-vault-files.ts` runs;
+   registry gaps (`importHistories`, `gold`, `investmentDocuments`,
+   `investmentLinks`).

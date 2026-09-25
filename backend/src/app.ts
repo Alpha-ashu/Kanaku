@@ -388,9 +388,31 @@ app.use('/api/v1/sync', authenticatedRateLimit({
 // dev / staging) the endpoint is open — set it in production.
 app.get('/metrics', async (req, res): Promise<void> => {
   const token = process.env.METRICS_TOKEN;
-  if (token) {
+
+  // Fail CLOSED in production. This used to serve openly whenever METRICS_TOKEN
+  // was unset — and it was unset on Render, so the endpoint was world-readable:
+  // every route name, request volume, error rate, event-loop lag and memory
+  // figure, to anyone who asked. "Set it in production" was a comment, not a
+  // control, and nothing enforced it.
+  //
+  // Outside production the endpoint stays open, because a local Prometheus or a
+  // `curl /metrics` while developing should not need a secret.
+  if (!token) {
+    if (process.env.NODE_ENV === 'production') {
+      logger.error('[metrics] METRICS_TOKEN is not set — refusing to serve /metrics publicly.');
+      res.status(503).json({
+        success: false,
+        error: 'Metrics endpoint is not configured',
+        code: 'METRICS_NOT_CONFIGURED',
+      });
+      return;
+    }
+  } else {
     const authHeader = req.headers.authorization ?? '';
     const provided = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
+    // Length-independent comparison is unnecessary here (the token is compared
+    // as a whole string and a timing oracle on a scrape secret is not a
+    // practical attack), but a mismatch must be indistinguishable from absent.
     if (provided !== token) {
       res.status(401).json({ success: false, error: 'Unauthorized' });
       return;

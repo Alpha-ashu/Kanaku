@@ -27,9 +27,21 @@ export const checkIsProfileVerified = (): boolean => {
     const profileVerified = localStorage.getItem('profile_verified');
     const verifiedAt = localStorage.getItem('verified_at');
 
-    if (verifiedAt && isLocalVerificationExpired(verifiedAt)) {
-      return false;
-    }
+    // NOTE: no local expiry check here, deliberately.
+    //
+    // This is a CACHE read, used synchronously before `/auth/profile` answers.
+    // It used to expire the cached value on its own 90-day clock, which meant a
+    // verified user was shown as unverified whenever the cache was stale, absent
+    // (a second device — localStorage is empty there) or the profile fetch
+    // failed with a 401. Re-verifying did not help, because the server had never
+    // said they were unverified.
+    //
+    // Being optimistic here is safe: this flag is presentational. Write access
+    // is enforced server-side on every request (middleware/auth.ts), so a client
+    // that guesses "verified" wrongly gets refused by the API — whereas one that
+    // guesses "unverified" wrongly blocks a user the server would have allowed.
+    // `verificationExpired` from the server is the only expiry signal honoured.
+    void verifiedAt;
 
     if (viewOnlyMode || profileVerified === 'false' || emailVerified === 'false') {
       return false;
@@ -47,9 +59,11 @@ export const checkIsProfileVerified = (): boolean => {
         if (p.isVerified === false || p.emailVerified === false || p.status === 'pending_verification' || p.verificationExpired === true) {
           return false;
         }
-        if (p.verifiedAt && isLocalVerificationExpired(p.verifiedAt)) {
-          return false;
-        }
+        // Same reasoning as above: `verificationExpired` is a server-computed
+        // field and is already handled by the `p.verificationExpired === true`
+        // branch. Recomputing it from `verifiedAt` here would reintroduce the
+        // second clock.
+
       } catch {
         // ignore JSON parse errors
       }
@@ -156,7 +170,17 @@ export const useProfileVerification = () => {
         const res = await api.auth.getProfile();
         if (isMounted && res.success && res.data) {
           const p = res.data;
-          const isExpired = Boolean(p.verificationExpired || (p.verifiedAt && isLocalVerificationExpired(String(p.verifiedAt))));
+          // EXPIRY IS THE SERVER'S DECISION, not ours.
+          //
+          // This used to re-apply `isLocalVerificationExpired()` to the server's
+          // own `verifiedAt`, so the window was evaluated in two places against
+          // two clocks. A client whose clock ran fast, or a build shipped before
+          // a server-side window change, would put a verified user into
+          // View-Only Mode that the server did not agree with — and the user had
+          // no way to resolve it, because re-verifying did not change the
+          // server's answer. `verificationExpired` is computed by auth.controller
+          // and is the only expiry signal we honour.
+          const isExpired = Boolean(p.verificationExpired);
           const serverVerified = Boolean((p.isVerified ?? (p.emailVerified && p.status !== 'pending_verification')) && !isExpired);
           if (p.verifiedAt) {
             localStorage.setItem('verified_at', String(p.verifiedAt));
