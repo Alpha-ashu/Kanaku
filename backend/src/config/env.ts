@@ -292,11 +292,12 @@ const CONFIG_MANIFEST: readonly ConfigItem[] = [
     key: 'SENDGRID_API_KEY',
     group: 'Email',
     purpose:
-      'Outbound mail (OTP, alerts, notifications) — SENDGRID_API_KEY + SENDGRID_FROM_EMAIL, ' +
-      'or SMTP_HOST / SMTP_USER + SMTP_PASS (+ SMTP_FROM_EMAIL)',
+      'Outbound mail (OTP, alerts, notifications) — BREVO_API_KEY, ' +
+      'SENDGRID_API_KEY + SENDGRID_FROM_EMAIL, or SMTP_HOST / SMTP_USER + SMTP_PASS (+ SMTP_FROM_EMAIL)',
     services: ALL, // worker delivers; api delivers too in combined mode
     tier: prodRequired,
     present: () =>
+      has('BREVO_API_KEY') ||
       (has('SENDGRID_API_KEY') && has('SENDGRID_FROM_EMAIL')) ||
       has('SMTP_HOST') ||
       (has('SMTP_USER') && has('SMTP_PASS')),

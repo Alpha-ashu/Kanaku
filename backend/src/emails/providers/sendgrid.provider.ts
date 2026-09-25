@@ -7,6 +7,7 @@ import sgMail from '@sendgrid/mail';
 import { logger } from '../../config/logger';
 import { env } from '../../config/env';
 import { isSmtpConfigured, sendSmtpEmail, SMTP_FROM_EMAIL, SMTP_FROM_NAME } from './smtp.provider';
+import { isBrevoHttpConfigured, sendBrevoHttpEmail } from './brevo.provider';
 
 // Sender identity comes from configuration (SendGrid or SMTP).
 export const FROM_EMAIL = (process.env.EMAIL_PROVIDER === 'smtp' && SMTP_FROM_EMAIL)
@@ -43,12 +44,14 @@ export async function sendEmail(opts: SendEmailOptions): Promise<boolean> {
   const preferredProvider = process.env.EMAIL_PROVIDER || (isSmtpConfigured() ? 'smtp' : 'sendgrid');
   const sendgridConfigured = ensureInitialized() && Boolean(env.SENDGRID_FROM_EMAIL);
   const smtpConfigured = isSmtpConfigured();
+  const brevoHttpConfigured = isBrevoHttpConfigured();
 
   // One-time startup diagnostic (logged once per process)
   if (!sendEmailLoggedOnce) {
     sendEmailLoggedOnce = true;
     logger.info('[Email] Provider configuration:', {
       preferred: preferredProvider,
+      brevoHttp: brevoHttpConfigured ? 'configured' : 'NOT configured',
       sendgrid: sendgridConfigured ? 'configured' : 'NOT configured',
       smtp: smtpConfigured ? 'configured' : 'NOT configured',
       smtpHost: process.env.SMTP_HOST || '(not set)',
@@ -56,14 +59,23 @@ export async function sendEmail(opts: SendEmailOptions): Promise<boolean> {
     });
   }
 
-  // 1. Try SMTP if preferred and configured (e.g. Brevo SMTP)
+  // 1. Try Brevo HTTP API first when preferred provider is 'smtp'.
+  //    Brevo HTTP uses HTTPS (port 443) which is never blocked, unlike SMTP
+  //    port 587 which PaaS providers like Render's free tier block.
+  if (preferredProvider === 'smtp' && brevoHttpConfigured) {
+    const brevoSuccess = await sendBrevoHttpEmail(opts);
+    if (brevoSuccess) return true;
+    logger.warn('[Email] Brevo HTTP API send failed, attempting SMTP relay fallback...');
+  }
+
+  // 2. Try SMTP relay if preferred and configured (e.g. Brevo SMTP port 587)
   if (preferredProvider === 'smtp' && smtpConfigured) {
     const smtpSuccess = await sendSmtpEmail(opts);
     if (smtpSuccess) return true;
     logger.warn('[Email] Preferred SMTP send failed, attempting SendGrid fallback...');
   }
 
-  // 2. Try SendGrid if configured and either it is preferred OR SMTP already failed above
+  // 3. Try SendGrid if configured and either it is preferred OR previous providers failed
   if (sendgridConfigured) {
     try {
       await sgMail.send({
@@ -83,17 +95,23 @@ export async function sendEmail(opts: SendEmailOptions): Promise<boolean> {
         status: err?.code ?? err?.response?.statusCode,
         error: err?.response?.body || err.message,
       });
-      // Fall through to SMTP fallback if not already tried
+      // Fall through to remaining fallbacks
     }
   }
 
-  // 3. Try SMTP fallback if it was not the preferred provider (or preferred but already failed)
+  // 4. Try SMTP fallback if it was not the preferred provider (or preferred but already failed)
   if (preferredProvider !== 'smtp' && smtpConfigured) {
     const smtpSuccess = await sendSmtpEmail(opts);
     if (smtpSuccess) return true;
   }
 
-  // 4. Dev/test fallback: In non-production environments, simulate if no provider
+  // 5. Try Brevo HTTP as last resort if not already tried
+  if (preferredProvider !== 'smtp' && brevoHttpConfigured) {
+    const brevoSuccess = await sendBrevoHttpEmail(opts);
+    if (brevoSuccess) return true;
+  }
+
+  // 6. Dev/test fallback: In non-production environments, simulate if no provider
   // is configured OR if the configured provider failed (e.g. provider quota exhausted,
   // network unreachable, invalid key). This prevents local development and testing
   // from being hard-blocked by third-party provider limits.
@@ -108,10 +126,12 @@ export async function sendEmail(opts: SendEmailOptions): Promise<boolean> {
     subject: opts.subject,
     sendgridConfigured,
     smtpConfigured,
+    brevoHttpConfigured,
     preferredProvider,
-    hint: !sendgridConfigured && !smtpConfigured
+    hint: !sendgridConfigured && !smtpConfigured && !brevoHttpConfigured
       ? 'No email provider configured. Set SMTP_HOST/SMTP_USER/SMTP_PASS or SENDGRID_API_KEY/SENDGRID_FROM_EMAIL in Render env vars.'
       : 'Provider(s) configured but all sends failed. Check credentials, sender verification, and quotas.',
   });
   return false;
 }
+

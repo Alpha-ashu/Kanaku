@@ -357,6 +357,7 @@ class OtpService {
       // Diagnostic: log email provider state so Render logs show exactly why delivery fails
       const providerState = {
         preferredProvider: process.env.EMAIL_PROVIDER || '(not set)',
+        brevoHttpConfigured: Boolean(process.env.BREVO_API_KEY),
         smtpConfigured: Boolean(process.env.SMTP_HOST || (process.env.SMTP_USER && process.env.SMTP_PASS)),
         smtpHost: process.env.SMTP_HOST ? `${process.env.SMTP_HOST}:${process.env.SMTP_PORT || 587}` : '(not set)',
         sendgridConfigured: Boolean(process.env.SENDGRID_API_KEY && process.env.SENDGRID_FROM_EMAIL),
@@ -376,8 +377,8 @@ class OtpService {
       } else {
         logger.error(`[OTP] Email delivery FAILED for ${destination.substring(0, 3)}*** (${purposeText})`, {
           providerState,
-          hint: !providerState.smtpConfigured && !providerState.sendgridConfigured
-            ? 'No email provider configured — set SMTP_HOST/SMTP_USER/SMTP_PASS or SENDGRID_API_KEY/SENDGRID_FROM_EMAIL in Render env vars'
+          hint: !providerState.brevoHttpConfigured && !providerState.smtpConfigured && !providerState.sendgridConfigured
+            ? 'No email provider configured — set BREVO_API_KEY, SMTP_HOST/SMTP_USER/SMTP_PASS, or SENDGRID_API_KEY/SENDGRID_FROM_EMAIL in Render env vars'
             : 'Provider configured but send failed — check provider credentials and sender verification',
         });
       }
