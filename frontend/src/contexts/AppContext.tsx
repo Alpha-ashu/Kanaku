@@ -90,9 +90,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const skipBackendSyncRef = useRef(false);
   const lastFetchTimeRef = useRef<number>(0);
 
-  const currentPage = location.pathname.length > 1
+  const hashPage = location.hash ? location.hash.replace(/^#\/?/, '').split('?')[0].split('#')[0] : '';
+  const pathPage = location.pathname.length > 1
     ? location.pathname.substring(1).split('?')[0].split('#')[0]
-    : 'dashboard';
+    : '';
+  const currentPage = pathPage || (hashPage && !hashPage.startsWith('access_token') ? hashPage : '') || 'dashboard';
 
   const setCurrentPage = useCallback((page: string) => {
     const targetPath = page === 'dashboard' ? '/' : `/${page}`;

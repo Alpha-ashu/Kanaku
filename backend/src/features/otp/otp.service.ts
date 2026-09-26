@@ -347,7 +347,9 @@ class OtpService {
       reset_password: 'password reset',
       aa_consent: 'Account Aggregator consent',
       sensitive_action: 'action verification',
-    }[purpose];
+      phone_change: 'mobile number change',
+      email_change: 'email address change',
+    }[purpose] || 'verification';
 
     if (channel === 'email') {
       if (process.env.NODE_ENV !== 'production') {
@@ -393,13 +395,66 @@ class OtpService {
       return sent;
     }
 
-    // SMS delivery — no gateway integrated yet (Twilio, MSG91, etc.); treat as
-    // best-effort success since this is a placeholder path, not a real send.
-    logger.info(`[OTP] SMS delivery to ${destination}: OTP for ${purposeText}`);
+    // SMS delivery via Brevo Transactional SMS
+    const brevoKey = process.env.BREVO_API_KEY;
+    if (brevoKey) {
+      try {
+        let recipientPhone = destination.replace(/[^\d+]/g, '');
+        if (!recipientPhone.startsWith('+')) {
+          if (recipientPhone.length === 10) {
+            recipientPhone = '+91' + recipientPhone;
+          } else {
+            recipientPhone = '+' + recipientPhone;
+          }
+        }
+
+        const smsContent = `Your Kanaku verification code for ${purposeText} is ${otp}. Valid for 5 minutes. Do not share this OTP.`;
+        
+        const response = await fetch('https://api.brevo.com/v3/transactionalSMS/send', {
+          method: 'POST',
+          headers: {
+            'accept': 'application/json',
+            'content-type': 'application/json',
+            'api-key': brevoKey,
+          },
+          body: JSON.stringify({
+            sender: 'Kanaku',
+            recipient: recipientPhone,
+            content: smsContent,
+            type: 'transactional',
+          }),
+        });
+
+        if (response.ok) {
+          const resData = await response.json().catch(() => ({}));
+          logger.info(`[OTP] SMS delivered successfully via Brevo to ${recipientPhone.substring(0, 5)}*** for ${purposeText}`, {
+            messageId: (resData as any)?.messageId,
+          });
+          return true;
+        } else {
+          const errBody = await response.text().catch(() => '');
+          logger.error(`[OTP] Brevo SMS delivery error: ${response.status}`, { response: errBody });
+          if (process.env.NODE_ENV !== 'production') {
+            logger.warn(`[OTP] Dev mode fallback: Proceeding despite SMS delivery failure for ${destination}. Dev OTP: ${otp}`);
+            return true;
+          }
+          return false;
+        }
+      } catch (smsErr: any) {
+        logger.error(`[OTP] SMS delivery exception:`, { error: smsErr?.message });
+        if (process.env.NODE_ENV !== 'production') {
+          return true;
+        }
+        return false;
+      }
+    }
+
+    logger.warn(`[OTP] No SMS gateway configured (BREVO_API_KEY missing) for ${destination}`);
     if (process.env.NODE_ENV !== 'production') {
       logger.info(`[OTP] DEV MODE - OTP: ${otp} (destination: ${destination})`);
+      return true;
     }
-    return true;
+    return false;
   }
 
   /**

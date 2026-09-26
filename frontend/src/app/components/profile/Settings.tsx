@@ -22,6 +22,7 @@ import { Card } from '@/app/components/ui/card';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { cn } from '@/lib/utils';
 import { useLiveQuery } from 'dexie-react-hooks';
+import { UserAvatar } from '@/app/components/ui/UserAvatar';
 import { resolveAvatarSelection } from '@/lib/avatar-gallery';
 import { backupPINKeys, restorePINKeys } from '@/lib/encryption';
 import {
@@ -616,21 +617,11 @@ export const Settings: React.FC = () => {
             onClick={() => setCurrentPage('user-profile')}
             className="flex items-center gap-3 min-w-0 flex-1 cursor-pointer group"
           >
-            <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 overflow-hidden shadow-md shrink-0 relative flex items-center justify-center border border-white/10">
-              {profileData.avatarUrl ? (
-                <img
-                  src={profileData.avatarUrl}
-                  alt={profileData.displayName}
-                  className="w-full h-full object-cover relative z-10"
-                  onError={(e) => {
-                    (e.currentTarget as HTMLElement).style.display = 'none';
-                  }}
-                />
-              ) : null}
-              <span className="absolute z-0 text-lg font-black text-white">
-                {profileData.displayName.charAt(0).toUpperCase()}
-              </span>
-            </div>
+            <UserAvatar
+              size="lg"
+              rounded="2xl"
+              className="w-11 h-11 sm:w-12 sm:h-12 border border-white/10 shrink-0 shadow-md"
+            />
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 flex-wrap">
                 <p className="text-sm sm:text-base font-bold text-white truncate group-hover:text-indigo-200 transition-colors">

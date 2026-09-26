@@ -70,101 +70,101 @@ export const SignInForm: React.FC<SignInFormProps> = ({ onSwitchToSignUp, onSubm
  };
 
   const inputBase = (hasError: boolean) =>
-    `w-full pl-10 pr-10 pt-5 pb-1.5 bg-slate-50/50 border rounded-xl text-slate-900 placeholder-transparent text-sm focus:outline-none focus:ring-2 transition-all duration-200 ${
+    `w-full pl-10 pr-10 py-3 bg-slate-50/50 border rounded-xl text-slate-900 placeholder:text-slate-400 text-sm focus:outline-none focus:ring-2 transition-all duration-200 ${
       hasError
         ? 'border-red-300 focus:ring-red-500/20 focus:border-red-400 bg-red-50/30'
-        : 'border-slate-200 hover:border-slate-300 focus:ring-violet-500/20 focus:border-violet-500 focus:bg-white'
+        : 'border-slate-200 hover:border-slate-300 focus:ring-violet-500/20 focus:border-violet-600 focus:bg-white'
     }`;
 
-  const labelBase = `absolute left-10 top-1.5 text-2xs font-bold text-slate-400 transition-all duration-200 pointer-events-none
-    peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-sm peer-placeholder-shown:text-slate-400 peer-placeholder-shown:font-normal
-    peer-focus:top-1.5 peer-focus:text-2xs peer-focus:text-violet-600 peer-focus:font-bold`;
-
   return (
-    <form data-testid="sign-in-form-form" onSubmit={handleSubmit} className="space-y-5">
+    <form data-testid="sign-in-form-form" onSubmit={handleSubmit} className="space-y-4">
       {errors.general && (
         <div className="bg-red-50 border border-red-200 rounded-xl p-3">
-          <p className="text-sm text-red-600 text-center font-semibold">{errors.general}</p>
+          <p className="text-sm text-red-600 text-center font-medium">{errors.general}</p>
         </div>
       )}
 
       {/* Email */}
-      <div className="relative">
-        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-          <Mail size={16} />
-        </div>
-        <input
-          type="email"
-          id="signin-email"
-          name="email"
-          value={formData.email}
-          onChange={handleInputChange}
-          disabled={isLoading}
-          placeholder=" "
-          autoComplete="email"
-          data-testid="auth-signin-email-input"
-          className={`${inputBase(!!errors.email)} peer`}
-        />
-        <label htmlFor="signin-email" className={labelBase}>
+      <div>
+        <label htmlFor="signin-email" className="block text-xs font-semibold text-slate-700 mb-1.5">
           Email Address
         </label>
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+            <Mail size={16} />
+          </div>
+          <input
+            type="email"
+            id="signin-email"
+            name="email"
+            value={formData.email}
+            onChange={handleInputChange}
+            disabled={isLoading}
+            placeholder="name@example.com"
+            autoComplete="email"
+            data-testid="auth-signin-email-input"
+            className={inputBase(!!errors.email)}
+          />
+        </div>
         {errors.email && <p className="mt-1 text-xs text-red-500 pl-1 font-medium">{errors.email}</p>}
       </div>
 
       {/* Password */}
-      <div className="relative">
-        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-          <Lock size={16} />
-        </div>
-        <input
-          type={showPassword ? 'text' : 'password'}
-          id="signin-password"
-          name="password"
-          value={formData.password}
-          onChange={handleInputChange}
-          disabled={isLoading}
-          placeholder=" "
-          autoComplete="current-password"
-          data-testid="auth-signin-password-input"
-          className={`${inputBase(!!errors.password)} peer pr-12`}
-        />
-        <label htmlFor="signin-password" className={labelBase}>
+      <div>
+        <label htmlFor="signin-password" className="block text-xs font-semibold text-slate-700 mb-1.5">
           Password
         </label>
-        <button
-          type="button"
-          onClick={() => setShowPassword(!showPassword)}
-          data-testid="auth-signin-password-toggle"
-          className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 transition-colors"
-        >
-          {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-        </button>
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+            <Lock size={16} />
+          </div>
+          <input
+            type={showPassword ? 'text' : 'password'}
+            id="signin-password"
+            name="password"
+            value={formData.password}
+            onChange={handleInputChange}
+            disabled={isLoading}
+            placeholder="Enter your password"
+            autoComplete="current-password"
+            data-testid="auth-signin-password-input"
+            className={`${inputBase(!!errors.password)} pr-11`}
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            data-testid="auth-signin-password-toggle"
+            aria-label={showPassword ? 'Hide password' : 'Show password'}
+            className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 transition-colors"
+          >
+            {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+          </button>
+        </div>
         {errors.password && <p className="mt-1 text-xs text-red-500 pl-1 font-medium">{errors.password}</p>}
       </div>
 
       {/* Remember + Forgot */}
-      <div className="flex items-center justify-between px-1">
+      <div className="flex items-center justify-between pt-0.5">
         <label htmlFor="rememberMe" className="flex items-center gap-2 cursor-pointer select-none">
           <input
             type="checkbox"
             id="rememberMe"
             name="rememberMe"
             data-testid="auth-signin-remember-checkbox"
-            className="w-4 h-4 text-violet-600 border-slate-300 rounded focus:ring-violet-500/40 accent-violet-600 cursor-pointer"
+            className="w-4 h-4 text-violet-600 border-slate-300 rounded focus:ring-violet-500/20 accent-violet-600 cursor-pointer"
           />
-          <span className="text-sm text-slate-600 font-medium">Remember me</span>
+          <span className="text-xs text-slate-600 font-medium">Remember me</span>
         </label>
-        <a 
-          data-testid="sign-in-form-forgot-password" 
-          href="#" 
-          onClick={(e) => {
-            e.preventDefault();
+        <button
+          type="button"
+          data-testid="sign-in-form-forgot-password"
+          onClick={() => {
             if (onForgotPassword) onForgotPassword();
-          }} 
-          className="text-sm text-violet-600 hover:text-violet-700 font-bold transition-colors"
+          }}
+          className="text-xs text-violet-600 hover:text-violet-700 font-bold transition-colors cursor-pointer"
         >
           Forgot password?
-        </a>
+        </button>
       </div>
 
       {/* Submit */}
@@ -172,28 +172,11 @@ export const SignInForm: React.FC<SignInFormProps> = ({ onSwitchToSignUp, onSubm
         type="submit"
         disabled={isLoading}
         data-testid="auth-signin-submit-button"
-        style={{
-          width: '100%',
-          background: isLoading ? '#6366f1' : 'linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)',
-          color: '#ffffff',
-          fontWeight: '700',
-          fontSize: '15px',
-          padding: '14px 16px',
-          borderRadius: '14px',
-          border: 'none',
-          cursor: isLoading ? 'not-allowed' : 'pointer',
-          opacity: isLoading ? 0.7 : 1,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          boxShadow: '0 4px 16px rgba(124, 58, 237, 0.28)',
-          letterSpacing: '0.3px',
-          transition: 'all 0.2s',
-        }}
+        className="w-full bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 hover:from-violet-700 hover:to-blue-700 active:scale-[0.99] text-white font-bold py-3 sm:py-3.5 px-4 rounded-xl transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_4px_16px_rgba(124,58,237,0.25)] hover:shadow-[0_6px_22px_rgba(124,58,237,0.35)] text-sm h-11 sm:h-12 cursor-pointer"
       >
         {isLoading ? (
           <>
-            <div style={{ width: 18, height: 18, border: '2px solid rgba(255,255,255,0.35)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite', marginRight: 8 }} />
+            <div className="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white mr-2" />
             Signing in...
           </>
         ) : (
@@ -201,13 +184,13 @@ export const SignInForm: React.FC<SignInFormProps> = ({ onSwitchToSignUp, onSubm
         )}
       </button>
 
-      <p className="text-center text-sm text-slate-500 pt-1 font-medium">
+      <p className="text-center text-xs sm:text-sm text-slate-500 pt-1 font-normal">
         Don't have an account?{' '}
         <button
           type="button"
           onClick={onSwitchToSignUp}
           data-testid="auth-signin-switch-signup-button"
-          className="text-violet-600 hover:text-violet-700 font-bold transition-colors"
+          className="text-violet-600 hover:text-violet-700 font-bold underline underline-offset-2 transition-colors cursor-pointer"
         >
           Sign up
         </button>

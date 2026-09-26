@@ -536,6 +536,8 @@ interface RequestConfig extends RequestInit {
   cacheTtlMs?: number;
   /** Internal: set on the single quiet replay of a rate-limited request. */
   isRateLimitRetry?: boolean;
+  /** When true, a 401 refresh failure will NOT destroy the local session or trigger KANAKU_SESSION_EXPIRED */
+  suppressSessionExpiry?: boolean;
 }
 
 const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
@@ -821,16 +823,31 @@ class HTTPClient {
                 // 5xx) must NOT destroy a still-valid session — fail soft so the call
                 // can be retried and the user stays logged in.
                 if (wasRefreshFailureFatal()) {
-                  TokenManager.clearTokens();
-                  if (typeof window !== 'undefined') {
-                    // Coordinated SOFT logout (no page reload): AuthContext clears the
-                    // user (→ Login renders via state) and SecurityContext re-locks the
-                    // PIN so the next sign-in correctly requires a fresh PIN unlock.
-                    window.dispatchEvent(new CustomEvent('KANAKU_SESSION_EXPIRED', {
-                      detail: { reason: 'refresh_rejected' },
-                    }));
+                  const isOnboardingActive = typeof window !== 'undefined' && (
+                    config.suppressSessionExpiry === true ||
+                    localStorage.getItem('is_new_user') === 'true' ||
+                    localStorage.getItem('auth_flow_step') === 'profile-setup' ||
+                    localStorage.getItem('pin_setup_required') === 'true' ||
+                    window.location.pathname.includes('/onboarding') ||
+                    window.location.pathname.includes('/signup')
+                  );
+
+                  if (!isOnboardingActive) {
+                    TokenManager.clearTokens();
+                    if (typeof window !== 'undefined') {
+                      // Coordinated SOFT logout (no page reload): AuthContext clears the
+                      // user (→ Login renders via state) and SecurityContext re-locks the
+                      // PIN so the next sign-in correctly requires a fresh PIN unlock.
+                      window.dispatchEvent(new CustomEvent('KANAKU_SESSION_EXPIRED', {
+                        detail: { reason: 'refresh_rejected' },
+                      }));
+                    }
+                    throw new APIError('UNAUTHORIZED', 'Your session has expired. Please sign in again.', 401);
+                  } else {
+                    // During onboarding or local-first setup, fail soft without killing user session
+                    _refreshFailureFatal = false;
+                    throw new APIError('UNAUTHORIZED', 'Backend sync temporarily unauthenticated during onboarding setup.', 401);
                   }
-                  throw new APIError('UNAUTHORIZED', 'Your session has expired. Please sign in again.', 401);
                 }
                 throw new APIError('SERVICE_UNAVAILABLE', 'Could not reach the server. Please try again in a moment.', 503);
               }
@@ -1161,9 +1178,10 @@ export const api = {
     verifyLater: (email: string, password: string) =>
       apiClient.post('/auth/verify-later', { email, password }),
 
-    getProfile: async (options?: { force?: boolean; includePrivate?: boolean }) => {
+    getProfile: async (options?: { force?: boolean; includePrivate?: boolean; suppressSessionExpiry?: boolean }) => {
       const force = options?.force === true;
       const includePrivate = options?.includePrivate === true;
+      const suppressSessionExpiry = options?.suppressSessionExpiry === true;
 
       // Check if we have a valid cached private profile (which satisfies both private and public requests)
       if (!force && profilePrivateCache && profilePrivateCache.expiresAt > Date.now()) {
@@ -1190,7 +1208,10 @@ export const api = {
       }
 
       const suffix = includePrivate ? '?includePrivate=true' : '';
-      const request = apiClient.get('/auth/profile' + suffix)
+      const request = apiClient.get('/auth/profile' + suffix, {
+        suppressSessionExpiry,
+        showErrorToast: false,
+      })
         .then((response) => {
           if (includePrivate) {
             profilePrivateCache = {
@@ -1222,10 +1243,11 @@ export const api = {
       return request;
     },
 
-    updateProfile: (data: any) =>
+    updateProfile: (data: any, config?: RequestConfig) =>
       apiClient.put('/auth/profile', data, {
         showSuccessToast: true,
         successMessage: 'Profile updated successfully',
+        ...config,
       }).then((response) => {
         profilePrivateCache = null;
         profilePublicCache = null;
@@ -1263,6 +1285,23 @@ export const api = {
 
     deleteAccount: () =>
       apiClient.delete('/auth/account', { showErrorToast: true }),
+
+    changePhone: (data: { phone: string; otp: string }) =>
+      apiClient.post<{ success: boolean; message: string; phone: string }>('/auth/phone/change', data),
+
+    uploadAvatar: (formData: FormData) =>
+      apiClient.post<{ success: boolean; message: string; avatarUrl: string }>('/auth/avatar', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      }),
+
+    deleteAvatar: () =>
+      apiClient.delete<{ success: boolean; message: string }>('/auth/avatar'),
+
+    sendOtp: (data: { destination: string; channel?: 'sms' | 'email'; purpose: string }) =>
+      apiClient.post<{ success: boolean; message: string; expiresIn?: number; retryAfter?: number }>('/otp/send', data),
+
+    verifyOtp: (data: { destination: string; purpose: string; otp: string }) =>
+      apiClient.post<{ success: boolean; message: string }>('/otp/verify', data),
   },
 
   // Accounts

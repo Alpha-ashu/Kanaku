@@ -14,6 +14,7 @@ import { markNotificationAsRead } from '@/lib/notifications';
 import { NotificationPopup, type NotificationItem } from '@/app/components/ui/NotificationPopup';
 import { SyncStatusBar } from '@/app/components/ui/SyncStatusBar';
 import { KANAKULogo } from '@/app/components/ui/KANAKULogo';
+import { UserAvatar } from '@/app/components/ui/UserAvatar';
 
 interface DraggablePageMenuItemProps {
  item: NavigationItem;
@@ -465,16 +466,7 @@ export const TopBar: React.FC = () => {
         <div className="p-4 border-t border-slate-100 bg-slate-50/50 shrink-0">
           <div className="flex items-center gap-3 p-3 bg-white border border-slate-100 rounded-2xl shadow-sm shadow-slate-100/50">
             {/* Avatar */}
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-bold text-sm shrink-0 flex items-center justify-center overflow-hidden shadow-sm shadow-indigo-100">
-              {avatarUrl && avatarUrl.startsWith('http') ? (
-                <>
-                  <span className="absolute z-0">{displayName.charAt(0).toUpperCase()}</span>
-                  <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover relative z-10" onError={(e) => { (e.currentTarget as HTMLElement).style.display = 'none'; }} />
-                </>
-              ) : (
-                <span>{displayName.charAt(0).toUpperCase()}</span>
-              )}
-            </div>
+            <UserAvatar size="md" rounded="xl" className="w-10 h-10 shadow-sm shadow-indigo-100" />
             {/* User Details */}
             <div className="flex-1 min-w-0">
               <h3 className="text-xs font-black text-slate-800 truncate">{displayName}</h3>
@@ -679,50 +671,9 @@ export const TopBar: React.FC = () => {
               whileTap={{ scale: 0.95 }}
               onClick={handleProfileClick}
               aria-label="User profile"
-              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full overflow-hidden shadow-xs shrink-0 hover:shadow-md transition-all flex items-center justify-center bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-bold text-xs sm:text-sm cursor-pointer border-2 border-white"
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full overflow-hidden shadow-xs shrink-0 hover:shadow-md transition-all flex items-center justify-center cursor-pointer border-2 border-white p-0"
             >
-              {(() => {
-                let initials = 'U';
-                try {
-                  const profileStr = localStorage.getItem('user_profile');
-                  if (profileStr) {
-                    const profile = JSON.parse(profileStr);
-                    const name = profile.full_name || profile.displayName || user?.email || 'U';
-                    const names = name.split(' ').filter(Boolean);
-                    initials = (names[0]?.[0] || 'U') + (names.length > 1 ? names[names.length - 1][0] : '');
-                  } else {
-                    initials = user?.email?.charAt(0).toUpperCase() || 'U';
-                  }
-                } catch (e) {
-                  initials = user?.email?.charAt(0).toUpperCase() || 'U';
-                }
-                return (
-                  <>
-                    <span className="absolute z-0">{initials.toUpperCase()}</span>
-                    {(() => {
-                      try {
-                        const profileStr = localStorage.getItem('user_profile');
-                        if (profileStr) {
-                          const profile = JSON.parse(profileStr);
-                          if (profile.avatarUrl?.startsWith('http')) {
-                            return (
-                              <img
-                                src={profile.avatarUrl}
-                                alt=""
-                                className="w-full h-full object-cover relative z-10"
-                                onError={(e) => { (e.currentTarget as HTMLElement).style.display = 'none'; }}
-                              />
-                            );
-                          }
-                        }
-                      } catch (avatarErr) {
-                        console.debug('[TopBar] Failed to parse avatar URL from profileStr:', avatarErr);
-                      }
-                      return null;
-                    })()}
-                  </>
-                );
-              })()}
+              <UserAvatar size="sm" rounded="full" className="w-full h-full" />
             </motion.button>
           )}
         </div>

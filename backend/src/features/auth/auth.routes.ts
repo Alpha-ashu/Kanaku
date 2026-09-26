@@ -21,7 +21,11 @@ import {
   forgotPassword,
   resetPassword,
   verifyResetCode,
+  changeMobilePhone,
+  uploadAvatar,
+  deleteAvatar,
 } from './auth.controller';
+import { uploadSingle } from '../../middleware/upload';
 import { rateLimit, authenticatedRateLimit } from '../../middleware/rateLimit';
 import type { Request } from 'express';
 import { validateBody } from '../../middleware/validate';
@@ -179,6 +183,13 @@ router.post('/refresh', refreshLimiter, refreshToken);
 router.post('/logout', logout);
 router.get('/profile', authMiddleware, getProfile);
 router.put('/profile', authMiddleware, validateBody(updateProfileSchema), updateProfile);
+
+// Mobile phone change (authenticated + OTP verified)
+router.post('/phone/change', otpLimiter, authMiddleware, changeMobilePhone);
+
+// Avatar management (authenticated)
+router.post('/avatar', authMiddleware, uploadSingle('avatar', { maxBytes: 5 * 1024 * 1024 }), uploadAvatar);
+router.delete('/avatar', authMiddleware, deleteAvatar);
 
 // Password Reset endpoints (public)
 router.post('/forgot-password', authLimiter, validateBody(forgotPasswordSchema), forgotPassword);

@@ -23,6 +23,8 @@ import { auditFromRequest } from '../../utils/auditLogger';
 import { isProtectedAccount } from '../../utils/protectedAccounts';
 import { isAccountLocked, isAccountPending, isDemoDisabled, isVerificationExpired } from '../../utils/accountStatus';
 import { normalizePhone } from './registration.defaults';
+import * as pathLib from 'path';
+import { uploadBuffer, getPublicUrl } from '../../utils/storage';
 
 const authService = new AuthService();
 const challengeMemoryCache = new Map<string, { payload: any; expiresAt: number }>();
@@ -1258,6 +1260,114 @@ export const updateProfile = async (req: AuthRequest, res: Response, next: NextF
       ));
     }
     return next(error);
+  }
+};
+
+/**
+ * POST /api/v1/auth/phone/change
+ * Authenticated endpoint to verify mobile OTP and update user's phone number.
+ */
+export const changeMobilePhone = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    if (!req.userId) throw AppError.unauthorized();
+    const { phone, otp } = req.body;
+    if (!phone || typeof phone !== 'string' || !otp || typeof otp !== 'string') {
+      throw AppError.badRequest('Mobile number and verification code are required.', 'MISSING_FIELDS');
+    }
+
+    const cleanPhone = phone.trim();
+    const digitsOnly = cleanPhone.replace(/[^\d]/g, '');
+    if (digitsOnly.length < 10) {
+      throw AppError.badRequest('Please enter a valid mobile number with at least 10 digits.', 'INVALID_PHONE');
+    }
+
+    // Verify the OTP via otpService
+    const verifyResult = await otpService.verifyOtp(cleanPhone, 'phone_change', otp.trim());
+    if (!verifyResult.success) {
+      return res.status(400).json({
+        success: false,
+        message: verifyResult.message || 'Invalid or expired verification code.',
+        code: verifyResult.code || 'OTP_INVALID',
+      });
+    }
+
+    // OTP verified successfully. Now update the phone in the database
+    await authService.updateProfile(req.userId, { phone: cleanPhone }, req.user?.email);
+
+    // Invalidate caches
+    await cacheDeleteByPrefix(`profile:${req.userId}`);
+    invalidateUserSnapshotCache(req.userId);
+
+    logger.info(`[AuthController] Mobile phone updated successfully for userId: ${req.userId}`);
+
+    res.json({
+      success: true,
+      message: 'Mobile number updated successfully.',
+      phone: cleanPhone,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * POST /api/v1/auth/avatar
+ * Authenticated endpoint to upload custom avatar image.
+ */
+export const uploadAvatar = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    if (!req.userId) throw AppError.unauthorized();
+    const file = req.file;
+    if (!file) {
+      throw AppError.badRequest('Image file is required', 'FILE_REQUIRED');
+    }
+
+    const allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (!allowedMimes.includes(file.mimetype)) {
+      throw AppError.badRequest('Only JPEG, PNG, WEBP, or GIF images are allowed', 'INVALID_FILE_TYPE');
+    }
+
+    const ext = pathLib.extname(file.originalname).toLowerCase() || '.png';
+    const storagePath = `avatars/${req.userId}-${Date.now()}${ext}`;
+    await uploadBuffer(storagePath, file.buffer, file.mimetype);
+
+    const avatarUrl = getPublicUrl(storagePath);
+
+    await authService.updateProfile(req.userId, { avatarUrl, avatarId: null }, req.user?.email);
+    await cacheDeleteByPrefix(`profile:${req.userId}`);
+    invalidateUserSnapshotCache(req.userId);
+
+    logger.info(`[AuthController] Custom avatar uploaded for userId: ${req.userId}`);
+
+    res.json({
+      success: true,
+      message: 'Profile image updated successfully.',
+      avatarUrl,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * DELETE /api/v1/auth/avatar
+ * Authenticated endpoint to remove user avatar.
+ */
+export const deleteAvatar = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    if (!req.userId) throw AppError.unauthorized();
+    await authService.updateProfile(req.userId, { avatarUrl: null, avatarId: null }, req.user?.email);
+    await cacheDeleteByPrefix(`profile:${req.userId}`);
+    invalidateUserSnapshotCache(req.userId);
+
+    logger.info(`[AuthController] Avatar deleted for userId: ${req.userId}`);
+
+    res.json({
+      success: true,
+      message: 'Profile image removed successfully.',
+    });
+  } catch (error) {
+    next(error);
   }
 };
 

@@ -55,25 +55,6 @@ export const OnboardingCompleteStep: React.FC<OnboardingCompleteStepProps> = ({
  const [progress, setProgress] = useState(0);
  const [error, setError] = useState<string | null>(null);
 
- const getProgressWidthClass = (value: number) => {
- const progressValue = Math.max(0, Math.min(100, value));
- const bucket = Math.round(progressValue / 10) * 10;
-
- switch (bucket) {
- case 0: return 'w-0';
- case 10: return 'w-[10%]';
- case 20: return 'w-[20%]';
- case 30: return 'w-[30%]';
- case 40: return 'w-[40%]';
- case 50: return 'w-1/2';
- case 60: return 'w-[60%]';
- case 70: return 'w-[70%]';
- case 80: return 'w-[80%]';
- case 90: return 'w-[90%]';
- default: return 'w-full';
- }
- };
-
  // Only start processing when user clicks 'Complete Setup'
  const startProcessing = async () => {
  setIsProcessing(true);
@@ -153,6 +134,9 @@ export const OnboardingCompleteStep: React.FC<OnboardingCompleteStepProps> = ({
    jobType: data.jobType,
    avatarId: resolvedAvatar.id,
    avatarUrl: resolvedAvatar.url
+   }, {
+     showErrorToast: false,
+     suppressSessionExpiry: true,
    });
    } catch (apiErr: any) {
    console.warn('Backend API sync failed:', apiErr);
@@ -174,6 +158,7 @@ export const OnboardingCompleteStep: React.FC<OnboardingCompleteStepProps> = ({
   settings: toSettingsPayload(userSettings),
   }, {
   showErrorToast: false,
+  suppressSessionExpiry: true,
   });
   } catch (settingsErr) {
   console.warn('Backend settings sync failed:', settingsErr);
@@ -226,12 +211,23 @@ export const OnboardingCompleteStep: React.FC<OnboardingCompleteStepProps> = ({
  account: accountId ? { ...accountData, id: accountId } : null,
  },
  }));
+ window.dispatchEvent(new CustomEvent('KANAKU_AUTH_CHANGE'));
 
+ localStorage.removeItem('auth_flow_step');
+ localStorage.removeItem('pending_auth_email');
+ localStorage.removeItem('auth_flow_step_timestamp');
+ localStorage.removeItem('is_new_user');
  localStorage.setItem('onboarding_refresh_timestamp', Date.now().toString());
  setProgress(100);
  await new Promise(resolve => setTimeout(resolve, 500));
  toast.success('Account setup complete!');
  onComplete();
+
+ if (typeof window !== 'undefined') {
+   if (window.location.pathname === '/signup' || window.location.pathname === '/onboarding') {
+     window.history.replaceState(null, '', '/');
+   }
+ }
  } catch (err: any) {
   const errMsg = err?.message || '';
   if (
@@ -254,8 +250,23 @@ export const OnboardingCompleteStep: React.FC<OnboardingCompleteStepProps> = ({
   // Last-resort: if anything truly fatal happens, still mark onboarding done
   // and proceed so the user is never stuck on this screen.
   localStorage.setItem('onboarding_completed', 'true');
+  window.dispatchEvent(new CustomEvent('ONBOARDING_COMPLETED', {
+    detail: {
+      profile: userProfile,
+      account: null,
+    },
+  }));
+  window.dispatchEvent(new CustomEvent('KANAKU_AUTH_CHANGE'));
+  setProgress(100);
+  await new Promise(resolve => setTimeout(resolve, 500));
   toast.success('Setup complete! Some data will sync when you reconnect.');
   onComplete();
+
+  if (typeof window !== 'undefined') {
+    if (window.location.pathname === '/signup' || window.location.pathname === '/onboarding') {
+      window.history.replaceState(null, '', '/');
+    }
+  }
   }
  };
 
@@ -299,54 +310,11 @@ export const OnboardingCompleteStep: React.FC<OnboardingCompleteStepProps> = ({
   return (
     <div className="text-center space-y-6">
       {/* Header */}
-      <div>
-        <div className={`inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-3.5 transition-all ${
-          progress === 100
-            ? 'bg-emerald-500/10 text-emerald-600 ring-1 ring-emerald-500/20 shadow-lg shadow-emerald-500/10'
-            : 'bg-gradient-to-tr from-violet-600/10 to-indigo-600/20 text-violet-600 ring-1 ring-violet-500/20 shadow-lg shadow-violet-500/10'
-        }`}>
-          {progress === 100 ? (
-            <CheckCircle2 size={30} className="text-emerald-500" />
-          ) : (
-            <Sparkles size={28} className="text-violet-600 animate-pulse" />
-          )}
-        </div>
-        <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight mb-1.5">
+      <div className="text-center mb-6">
+        <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
           {progress === 100 ? "You're All Set!" : isProcessing ? 'Initializing Your Workspace' : 'Ready to Launch'}
         </h3>
-        <p className="text-sm text-slate-500 max-w-sm mx-auto">
-          {progress === 100
-            ? 'Your ledger, accounts, and privacy settings have been configured.'
-            : isProcessing
-            ? 'Configuring accounts, localized categories, and encrypted storage...'
-            : 'Review your personalized configuration and initialize your secure ledger.'}
-        </p>
       </div>
-
-      {/* Progress Indicator (shown when processing or completed) */}
-      {(isProcessing || progress > 0) && (
-        <div className="space-y-2 bg-slate-50/70 border border-slate-200/70 rounded-2xl p-4 text-left">
-          <div className="flex justify-between items-center text-xs font-bold text-slate-600">
-            <span className="flex items-center gap-1.5">
-              {progress < 100 && <span className="w-2 h-2 rounded-full bg-violet-600 animate-ping inline-block mr-1" />}
-              {progress < 15 && 'Initializing secure database...'}
-              {progress >= 15 && progress < 35 && 'Saving your profile details...'}
-              {progress >= 35 && progress < 55 && 'Registering primary bank ledger...'}
-              {progress >= 55 && progress < 75 && 'Configuring income & salary schedules...'}
-              {progress >= 75 && progress < 90 && 'Encrypting local storage...'}
-              {progress >= 90 && progress < 100 && 'Finalizing workspace...'}
-              {progress === 100 && 'Ready to explore!'}
-            </span>
-            <span className="font-mono text-violet-600 bg-violet-50 px-2 py-0.5 rounded-full border border-violet-200/60">{progress}%</span>
-          </div>
-
-          <div className="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden">
-            <div
-              className={`bg-gradient-to-r from-violet-600 via-indigo-600 to-emerald-500 h-2.5 rounded-full transition-all duration-300 ease-out ${getProgressWidthClass(progress)}`}
-            />
-          </div>
-        </div>
-      )}
 
       {/* Summary Bento Card */}
       <div className="bg-slate-50/70 border border-slate-200/80 rounded-2xl p-4 text-left space-y-3">
@@ -425,11 +393,33 @@ export const OnboardingCompleteStep: React.FC<OnboardingCompleteStepProps> = ({
         <button
           data-testid="onboarding-complete-step-back-2"
           onClick={onBack}
-          disabled={isProcessing}
+          disabled={isProcessing && progress < 100}
           className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-3 px-4 rounded-xl transition-colors font-bold text-sm disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Back
         </button>
+        {progress === 100 && (
+          <button
+            data-testid="onboarding-complete-step-proceed"
+            type="button"
+            onClick={() => {
+              onComplete();
+              window.dispatchEvent(new CustomEvent('ONBOARDING_COMPLETED', {
+                detail: { profile: JSON.parse(localStorage.getItem('user_profile') || '{}') }
+              }));
+              window.dispatchEvent(new CustomEvent('KANAKU_AUTH_CHANGE'));
+              if (typeof window !== 'undefined') {
+                if (window.location.pathname === '/signup' || window.location.pathname === '/onboarding') {
+                  window.history.replaceState(null, '', '/');
+                }
+              }
+            }}
+            className="flex-1 inline-flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-700 hover:to-teal-700 text-white py-3 px-4 rounded-xl transition-all font-bold text-sm shadow-md shadow-emerald-500/20 active:scale-[0.99] cursor-pointer"
+          >
+            <span>Explore App Features</span>
+            <ArrowRight size={16} />
+          </button>
+        )}
         {!isProcessing && progress === 0 && (
           <button
             data-testid="onboarding-complete-step-complete-setup"

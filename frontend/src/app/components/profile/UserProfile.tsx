@@ -6,7 +6,7 @@ import { PageHeader } from '@/app/components/ui/PageHeader';
 import { Button } from '@/app/components/ui/button';
 import { Card } from '@/app/components/ui/card';
 import { Skeleton } from '@/app/components/ui/skeleton';
-import { Lock, Eye, EyeOff, Mail, Phone, User, Calendar, Briefcase, LogOut, ShieldAlert, Trash2, X, KeyRound, Check, MapPin, DollarSign, Save, RotateCcw } from 'lucide-react';
+import { Lock, Eye, EyeOff, Mail, Phone, User, Calendar, Briefcase, LogOut, ShieldAlert, Trash2, X, KeyRound, Check, MapPin, DollarSign, Save, RotateCcw, Upload, Camera, Loader2, ShieldCheck, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { db } from '@/lib/database';
@@ -14,6 +14,7 @@ import { permissionService } from '@/services/permissionService';
 import { backupPINKeys, restorePINKeys, serializePINKeyBackup, storeMasterKey } from '@/lib/encryption';
 import { calculateAge, getAgeGroup, getAgeGroupLabel } from '@/lib/avatar';
 import { AVATAR_OPTIONS, DEFAULT_AVATAR, resolveAvatarSelection } from '@/lib/avatar-gallery';
+import { UserAvatar } from '@/app/components/ui/UserAvatar';
 import { api } from '@/lib/api';
 import { shouldSkipOptionalBackendRequests } from '@/lib/apiBase';
 import { format, parseISO } from 'date-fns';
@@ -303,6 +304,29 @@ export const UserProfile: React.FC = () => {
  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
  const [deletePassword, setDeletePassword] = useState('');
  const [isDeleting, setIsDeleting] = useState(false);
+
+ // Photo upload & preview state
+ const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+ const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+ const [avatarFile, setAvatarFile] = useState<File | null>(null);
+ const [isSavingAvatar, setIsSavingAvatar] = useState(false);
+
+ // Mobile number SMS OTP change state
+ const [mobileChangeStep, setMobileChangeStep] = useState<'idle' | 'input' | 'otp-sent'>('idle');
+ const [newMobileNumber, setNewMobileNumber] = useState('');
+ const [mobileOtp, setMobileOtp] = useState('');
+ const [isSendingMobileOtp, setIsSendingMobileOtp] = useState(false);
+ const [isVerifyingMobileOtp, setIsVerifyingMobileOtp] = useState(false);
+ const [mobileOtpCooldown, setMobileOtpCooldown] = useState(0);
+
+ // Countdown timer for mobile OTP resend
+ useEffect(() => {
+   if (mobileOtpCooldown <= 0) return;
+   const timer = setInterval(() => {
+     setMobileOtpCooldown((prev) => prev - 1);
+   }, 1000);
+   return () => clearInterval(timer);
+ }, [mobileOtpCooldown]);
 
  // Fetch profile data: localStorage first, then backend profile API.
  /**
@@ -774,92 +798,188 @@ export const UserProfile: React.FC = () => {
  window.dispatchEvent(new Event('PROFILE_UPDATED'));
  } else { toast.error('Invalid OTP'); }
  };
- const handleChangeMobile = () => {
- if (!verification.newValue) { toast.error('Please enter new mobile number'); return; }
- setVerification({ ...verification, type: 'mobile-change', step: 'otp-sent' });
- toast.success('OTP sent to your registered email');
- };
-  const handleVerifyMobileOTP = async () => {
-    if (verification.otp.length === 6) {
-      setIsLoading(true);
-      try {
-        const nextProfileData: ProfileData = {
-          ...profileData,
-          mobile: verification.newValue,
-        };
+  const handleRequestMobileOtp = async () => {
+    const rawDigits = newMobileNumber.replace(/[^\d]/g, '');
+    if (rawDigits.length < 10) {
+      toast.error('Please enter a valid 10-digit mobile number');
+      return;
+    }
+    const formattedPhone = newMobileNumber.startsWith('+')
+      ? newMobileNumber.trim()
+      : rawDigits.length === 10
+      ? `+91${rawDigits}`
+      : `+${rawDigits}`;
 
-        // 1. Update local states
-        setProfileData(nextProfileData);
-        setTempData(nextProfileData);
-        setVerification({ type: null, otp: '', newValue: '', step: 'request' });
-
-        const resolvedAvatar = resolveAvatar(nextProfileData.profilePhoto, nextProfileData.avatarId);
-        const operationId = `profile_update_mobile_${Date.now()}`;
-        const updatedAt = new Date().toISOString();
-
-        // 2. Save to localStorage
-        localStorage.setItem('user_profile', JSON.stringify({
-          displayName: `${nextProfileData.firstName} ${nextProfileData.lastName}`.trim(),
-          firstName: nextProfileData.firstName,
-          lastName: nextProfileData.lastName,
-          gender: nextProfileData.gender,
-          email: nextProfileData.email,
-          mobile: nextProfileData.mobile,
-          dateOfBirth: nextProfileData.dateOfBirth,
-          jobType: nextProfileData.jobType,
-          salary: (nextProfileData.monthlyIncome || 0) * 12,
-          monthlyIncome: nextProfileData.monthlyIncome || 0,
-          country: nextProfileData.country,
-          state: nextProfileData.state,
-          city: nextProfileData.city,
-          profilePhoto: resolvedAvatar.url,
-          avatarUrl: resolvedAvatar.url,
-          avatarId: resolvedAvatar.id,
-          updatedAt,
-        }));
-        localStorage.setItem('profile_updated_at', updatedAt);
-        localStorage.setItem('profile_sync_pending', 'true');
-
-        // 3. Add to backend sync queue (non-blocking)
-        const { backendSyncService } = await import('@/lib/backend-sync-service');
-        backendSyncService.addPendingOperation(operationId);
-
-        // 4. Update via Backend API
-        if (!shouldSkipOptionalBackendRequests()) {
-          void api.auth.updateProfile({
-            firstName: nextProfileData.firstName,
-            lastName: nextProfileData.lastName,
-            gender: nextProfileData.gender,
-            country: nextProfileData.country,
-            state: nextProfileData.state,
-            city: nextProfileData.city,
-            monthlyIncome: nextProfileData.monthlyIncome,
-            dateOfBirth: nextProfileData.dateOfBirth,
-            jobType: nextProfileData.jobType,
-            mobile: nextProfileData.mobile,
-            avatarId: resolvedAvatar.id,
-            avatarUrl: resolvedAvatar.url,
-          }).then(() => {
-            backendSyncService.removePendingOperation(operationId);
-            localStorage.removeItem('profile_sync_pending');
-            console.log('... Profile mobile number synced to backend');
-          }).catch((error) => {
-            console.warn('Backend sync for mobile failed, will retry:', error);
-          });
-        } else {
-          console.info('[UserProfile] Skipping backend profile mobile sync while backend is unavailable in development mode.');
-        }
-
-        toast.success('Mobile number updated successfully');
-        window.dispatchEvent(new Event('PROFILE_UPDATED'));
-      } catch (err: any) {
-        console.error('Failed to update mobile number:', err);
-        toast.error(err.message || 'Failed to save mobile number. Please try again.');
-      } finally {
-        setIsLoading(false);
+    setIsSendingMobileOtp(true);
+    try {
+      const res = await api.auth.sendOtp({
+        destination: formattedPhone,
+        channel: 'sms',
+        purpose: 'phone_change',
+      });
+      if (res.data?.success) {
+        toast.success(`Verification code sent via SMS to ${formattedPhone}`);
+        setMobileChangeStep('otp-sent');
+        setMobileOtpCooldown(60);
+      } else {
+        toast.error(res.data?.message || 'Failed to send verification SMS.');
       }
-    } else {
-      toast.error('Invalid OTP');
+    } catch (err: any) {
+      const status = err?.status || err?.response?.status;
+      if (status === 429) {
+        toast.error('Too many OTP requests. Please wait a moment before trying again.');
+      } else {
+        toast.error(err?.message || 'Failed to send verification code. Please check the number and try again.');
+      }
+    } finally {
+      setIsSendingMobileOtp(false);
+    }
+  };
+
+  const handleConfirmMobileOtp = async () => {
+    if (mobileOtp.trim().length !== 6) {
+      toast.error('Please enter the 6-digit verification code');
+      return;
+    }
+    const rawDigits = newMobileNumber.replace(/[^\d]/g, '');
+    const formattedPhone = newMobileNumber.startsWith('+')
+      ? newMobileNumber.trim()
+      : rawDigits.length === 10
+      ? `+91${rawDigits}`
+      : `+${rawDigits}`;
+
+    setIsVerifyingMobileOtp(true);
+    try {
+      const res = await api.auth.changePhone({
+        phone: formattedPhone,
+        otp: mobileOtp.trim(),
+      });
+
+      if (res.data?.success) {
+        toast.success('Mobile number updated successfully!');
+        const nextData = {
+          ...profileData,
+          mobile: formattedPhone,
+        };
+        setProfileData(nextData);
+        setTempData(nextData);
+
+        // Update localStorage
+        const stored = localStorage.getItem('user_profile');
+        if (stored) {
+          try {
+            const p = JSON.parse(stored);
+            p.mobile = formattedPhone;
+            p.phone = formattedPhone;
+            localStorage.setItem('user_profile', JSON.stringify(p));
+          } catch {}
+        }
+        window.dispatchEvent(new Event('PROFILE_UPDATED'));
+
+        // Reset state
+        setMobileChangeStep('idle');
+        setNewMobileNumber('');
+        setMobileOtp('');
+      } else {
+        toast.error(res.data?.message || 'Incorrect verification code.');
+      }
+    } catch (err: any) {
+      const status = err?.status || err?.response?.status;
+      if (status === 400) {
+        toast.error(err?.message || 'Incorrect verification code. Please check and try again.');
+      } else if (status === 429) {
+        toast.error('Too many verification attempts. Please request a new code.');
+      } else {
+        toast.error('Verification failed. Please try again.');
+      }
+    } finally {
+      setIsVerifyingMobileOtp(false);
+    }
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file (PNG, JPG, WEBP)');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image size must be less than 5MB');
+      return;
+    }
+
+    setAvatarFile(file);
+    const reader = new FileReader();
+    reader.onload = () => {
+      setAvatarPreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleSaveAvatar = async () => {
+    if (!avatarFile) return;
+    setIsSavingAvatar(true);
+    try {
+      const formData = new FormData();
+      formData.append('avatar', avatarFile);
+
+      const res = await api.auth.uploadAvatar(formData);
+      if (res.data?.success && res.data?.avatarUrl) {
+        const newUrl = res.data.avatarUrl;
+        setProfileData((prev) => ({ ...prev, profilePhoto: newUrl, avatarId: undefined }));
+        setTempData((prev) => ({ ...prev, profilePhoto: newUrl, avatarId: undefined }));
+
+        const storedStr = localStorage.getItem('user_profile');
+        if (storedStr) {
+          try {
+            const parsed = JSON.parse(storedStr);
+            parsed.profilePhoto = newUrl;
+            parsed.avatarUrl = newUrl;
+            parsed.avatar_url = newUrl;
+            delete parsed.avatarId;
+            localStorage.setItem('user_profile', JSON.stringify(parsed));
+          } catch {}
+        }
+        window.dispatchEvent(new Event('PROFILE_UPDATED'));
+        toast.success('Profile image updated successfully!');
+        setAvatarPreview(null);
+        setAvatarFile(null);
+      } else {
+        toast.error(res.data?.message || 'Failed to save avatar image');
+      }
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to upload image. Please try again.');
+    } finally {
+      setIsSavingAvatar(false);
+    }
+  };
+
+  const handleDeleteAvatar = async () => {
+    try {
+      await api.auth.deleteAvatar();
+      setProfileData((prev) => ({ ...prev, profilePhoto: '', avatarId: undefined }));
+      setTempData((prev) => ({ ...prev, profilePhoto: '', avatarId: undefined }));
+
+      const storedStr = localStorage.getItem('user_profile');
+      if (storedStr) {
+        try {
+          const parsed = JSON.parse(storedStr);
+          parsed.profilePhoto = '';
+          parsed.avatarUrl = '';
+          parsed.avatar_url = '';
+          delete parsed.avatarId;
+          localStorage.setItem('user_profile', JSON.stringify(parsed));
+        } catch {}
+      }
+      window.dispatchEvent(new Event('PROFILE_UPDATED'));
+      toast.success('Profile image removed');
+      setAvatarPreview(null);
+      setAvatarFile(null);
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to remove image');
     }
   };
 
@@ -997,23 +1117,37 @@ export const UserProfile: React.FC = () => {
   animate={{ opacity: 1, y: 0 }}
   className="bg-white border border-slate-100 rounded-[28px] sm:rounded-[32px] p-6 flex flex-col items-center gap-4 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)]"
   >
+  {/* Hidden file input */}
+  <input
+    ref={fileInputRef}
+    type="file"
+    accept="image/png,image/jpeg,image/webp,image/gif"
+    className="hidden"
+    onChange={handleFileSelect}
+  />
+
   <motion.div
   animate={{ y: [0, -6, 0] }}
   transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
   className="relative"
   >
   <div className="relative group">
-  <img
-  src={activeAvatar.url}
-  alt="Avatar"
-  className="w-32 h-32 rounded-full border-4 border-slate-900 object-cover shadow-xl bg-white"
-  onError={(e) => {
-  (e.target as HTMLImageElement).src = 'https://api.dicebear.com/7.x/avataaars/svg?seed=fallback';
-  }}
-  />
-  <div className="absolute inset-0 rounded-full bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+    <UserAvatar
+      avatarUrl={avatarPreview || profileData.profilePhoto}
+      name={`${isEditingBasic ? tempData.firstName : profileData.firstName} ${isEditingBasic ? tempData.lastName : profileData.lastName}`}
+      email={profileData.email}
+      size="3xl"
+      rounded="full"
+      className="w-32 h-32 border-4 border-slate-900 shadow-xl"
+    />
+    {avatarPreview && (
+      <span className="absolute bottom-1 right-1 bg-violet-600 text-white px-2 py-0.5 rounded-full shadow-md text-2xs font-extrabold uppercase tracking-wider">
+        Preview
+      </span>
+    )}
   </div>
   </motion.div>
+
   <div className="flex flex-wrap items-center justify-center gap-2">
   <p className="text-slate-900 font-bold text-lg">
   {[
@@ -1027,35 +1161,68 @@ export const UserProfile: React.FC = () => {
   </span>
   )}
   </div>
-  <div className="flex flex-wrap items-center justify-center gap-2">
-  <button
-  onClick={() => {
-  if (isViewOnly) {
-  promptVerification('change your avatar', () => {
-  setIsEditingBasic(true);
-  setShowAvatarGallery((prev) => !prev);
-  });
-  } else {
-  setIsEditingBasic(true);
-  setShowAvatarGallery((prev) => !prev);
-  }
-  }}
-  data-testid="profile-choose-avatar-button"
-  className="inline-flex items-center gap-2 rounded-full border border-slate-200/80 bg-white hover:bg-slate-50 px-4 py-2 text-xs font-bold text-slate-700 shadow-xs active:scale-95 transition-all cursor-pointer"
-  >
-  Choose Avatar
-  </button>
-  {showAvatarGallery && (
-  <button
-  onClick={handleSaveProfile}
-  data-testid="profile-save-avatar-button"
-  className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 px-4 py-2 text-xs font-bold text-emerald-700 shadow-xs active:scale-95 transition-all cursor-pointer"
-  >
-  <Check size={14} />
-  Save Avatar
-  </button>
+
+  {avatarPreview ? (
+    <div className="flex flex-wrap items-center justify-center gap-2">
+      <button
+        type="button"
+        onClick={handleSaveAvatar}
+        disabled={isSavingAvatar}
+        data-testid="profile-save-uploaded-avatar"
+        className="inline-flex items-center gap-2 rounded-full bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 text-xs font-bold shadow-xs active:scale-95 transition-all cursor-pointer disabled:opacity-50"
+      >
+        {isSavingAvatar ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+        Save Photo
+      </button>
+      <button
+        type="button"
+        onClick={() => {
+          setAvatarPreview(null);
+          setAvatarFile(null);
+        }}
+        disabled={isSavingAvatar}
+        data-testid="profile-cancel-uploaded-avatar"
+        className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white hover:bg-slate-50 px-4 py-2 text-xs font-bold text-slate-700 shadow-xs active:scale-95 transition-all cursor-pointer"
+      >
+        Cancel
+      </button>
+    </div>
+  ) : (
+    <div className="flex flex-wrap items-center justify-center gap-2">
+      <button
+        type="button"
+        onClick={() => fileInputRef.current?.click()}
+        data-testid="profile-upload-photo-button"
+        className="inline-flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-white hover:bg-slate-50 px-4 py-2 text-xs font-bold text-slate-700 shadow-xs active:scale-95 transition-all cursor-pointer"
+      >
+        <Camera size={14} className="text-slate-500" />
+        {profileData.profilePhoto ? 'Replace Photo' : 'Upload Photo'}
+      </button>
+
+      {profileData.profilePhoto && (
+        <button
+          type="button"
+          onClick={handleDeleteAvatar}
+          data-testid="profile-delete-photo-button"
+          className="inline-flex items-center gap-1.5 rounded-full border border-rose-200 bg-rose-50 hover:bg-rose-100 px-3.5 py-2 text-xs font-bold text-rose-700 shadow-xs active:scale-95 transition-all cursor-pointer"
+        >
+          <Trash2 size={13} />
+          Delete
+        </button>
+      )}
+
+      <button
+        type="button"
+        onClick={() => {
+          setShowAvatarGallery((prev) => !prev);
+        }}
+        data-testid="profile-choose-avatar-button"
+        className="inline-flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-white hover:bg-slate-50 px-4 py-2 text-xs font-bold text-slate-700 shadow-xs active:scale-95 transition-all cursor-pointer"
+      >
+        {showAvatarGallery ? 'Close Characters' : 'Choose Character'}
+      </button>
+    </div>
   )}
-  </div>
   {showAvatarGallery && (
   <div className="mt-4 w-full max-w-3xl rounded-[28px] sm:rounded-[32px] border border-slate-100 bg-white p-6 shadow-md">
   <div className="flex items-center justify-between mb-4">
@@ -1120,7 +1287,7 @@ export const UserProfile: React.FC = () => {
  <Card data-testid="user-profile-card-7" variant="flat" className="overflow-hidden relative shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] bg-white border border-slate-100 rounded-[28px] sm:rounded-[32px] p-6 lg:p-8">
   {/* Header row */}
   <div className="flex items-center justify-between mb-5">
-  <h3 className="text-lg font-bold text-slate-900">Basic Information</h3>
+  <h3 className="text-lg font-bold text-slate-900">Personal Information</h3>
   <button
   onClick={() => {
   if (isViewOnly) {
@@ -1157,6 +1324,18 @@ export const UserProfile: React.FC = () => {
   <User size={14} className="text-slate-400" /> Last Name
   </span>
   <span className="text-sm font-bold text-slate-900">{profileData.lastName || ''}</span>
+  </div>
+  <div className="flex items-center justify-between py-3.5">
+  <span className="text-sm text-slate-500 flex items-center gap-2">
+  <Mail size={14} className="text-slate-400" /> Email
+  </span>
+  <span className="text-sm font-bold text-slate-900 break-all">{profileData.email || ''}</span>
+  </div>
+  <div className="flex items-center justify-between py-3.5">
+  <span className="text-sm text-slate-500 flex items-center gap-2">
+  <Phone size={14} className="text-slate-400" /> Mobile Number
+  </span>
+  <span className="text-sm font-bold text-slate-900">{profileData.mobile || 'Not added'}</span>
   </div>
   <div className="flex items-center justify-between py-3.5">
   <span className="text-sm text-slate-500 flex items-center gap-2">
@@ -1523,138 +1702,26 @@ export const UserProfile: React.FC = () => {
  >
  <Card data-testid="user-profile-card-9" variant="flat" className="overflow-hidden relative shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] bg-white border border-slate-100 rounded-[28px] sm:rounded-[32px] p-6 lg:p-8">
   <h3 className="text-lg font-bold text-slate-900 mb-5 flex items-center gap-2">
-  <Lock size={18} className="text-amber-500" />
-  Secure Information
+  <ShieldCheck size={18} className="text-emerald-600" />
+  Account &amp; Security
   </h3>
 
   {/* Email Section */}
   <div className="mb-5 pb-5 border-b border-slate-100">
-  <div className="flex items-center justify-between mb-4">
+  <div className="flex items-center justify-between mb-2">
   <div className="flex items-center gap-3">
   <Mail size={18} className="text-slate-600" />
   <div>
   <p className="font-bold text-slate-900">Email Address</p>
-  <p className="text-xs text-slate-400 mt-0.5">Change via mobile verification</p>
+  <p className="text-xs text-slate-400 mt-0.5">Primary login credential</p>
   </div>
   </div>
-  <Lock size={16} className="text-amber-500" />
+  <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100">
+    <ShieldCheck size={12} />
+    Verified
+  </span>
   </div>
-
-  {verification.type !== 'email-change' ? (
-  <>
-  <p className="text-slate-900 font-bold text-sm mb-3 break-all">{profileData.email}</p>
-  <button
-  onClick={() => {
-  if (isViewOnly) {
-  promptVerification('change your email', () =>
-  setVerification({
-  type: 'email-change',
-  otp: '',
-  newValue: '',
-  step: 'request',
-  })
-  );
-  return;
-  }
-  setVerification({
-  type: 'email-change',
-  otp: '',
-  newValue: '',
-  step: 'request',
-  });
-  }}
-  data-testid="profile-change-email-button"
-  className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-full font-bold text-xs sm:text-sm transition-colors cursor-pointer shadow-xs active:scale-95"
-  >
-  Change Email
-  </button>
-  </>
-  ) : (
-  <div className="space-y-4">
-  {verification.step === 'request' && (
-  <>
-  <input
-  type="email"
-  placeholder="Enter new email"
-  value={verification.newValue}
-  onChange={(e) =>
-  setVerification({ ...verification, newValue: e.target.value })
-  }
-  data-testid="profile-new-email-input"
-  className="w-full px-4 py-3 border border-slate-200 bg-slate-50/50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-slate-900/10 text-sm font-medium"
-  id="newEmail"
-  name="newEmail"
-  />
-  <div className="flex gap-3">
-  <button
-  onClick={handleChangeEmail}
-  data-testid="profile-send-email-otp-button"
-  className="flex-1 bg-slate-900 hover:bg-black text-white py-2.5 rounded-full font-bold text-xs sm:text-sm shadow-xs transition-colors cursor-pointer active:scale-95"
-  >
-  Send OTP to Mobile
-  </button>
-  <button
-  onClick={() =>
-  setVerification({
-  type: null,
-  otp: '',
-  newValue: '',
-  step: 'request',
-  })
-  }
-  data-testid="profile-cancel-email-change-button"
-  className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-2.5 rounded-full font-bold text-xs sm:text-sm shadow-xs transition-colors cursor-pointer"
-  >
-  Cancel
-  </button>
-  </div>
-  </>
-  )}
-
-  {verification.step === 'otp-sent' && (
-  <>
-  <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 mb-4">
-  <p className="text-sm font-medium text-slate-800">
-  OTP sent to your registered mobile number
-  </p>
-  </div>
-  <input
-  type="text"
-  placeholder="Enter 6-digit OTP"
-  value={verification.otp}
-  onChange={(e) => setVerification({ ...verification, otp: e.target.value })}
-  maxLength={6}
-  data-testid="profile-email-otp-input"
-  className="w-full px-4 py-3 border border-slate-200 bg-slate-50/50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-slate-900/10 text-center text-2xl tracking-widest font-mono"
-  />
-  <p className="text-xs text-slate-400 mt-2">Use code: 123456 (Demo)</p>
-  <div className="flex gap-3 mt-4">
-  <button
-  onClick={handleVerifyEmailOTP}
-  data-testid="profile-verify-email-otp-button"
-  className="flex-1 bg-slate-900 hover:bg-black text-white py-2.5 rounded-full font-bold text-xs sm:text-sm shadow-xs transition-colors cursor-pointer active:scale-95"
-  >
-  Verify OTP
-  </button>
-  <button
-  onClick={() =>
-  setVerification({
-  type: null,
-  otp: '',
-  newValue: '',
-  step: 'request',
-  })
-  }
-  data-testid="profile-cancel-email-otp-button"
-  className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-2.5 rounded-full font-bold text-xs sm:text-sm shadow-xs transition-colors cursor-pointer"
-  >
-  Cancel
-  </button>
-  </div>
-  </>
-  )}
-  </div>
-  )}
+  <p className="text-slate-900 font-bold text-sm break-all pl-7">{profileData.email}</p>
   </div>
 
 
@@ -1664,128 +1731,168 @@ export const UserProfile: React.FC = () => {
   <Phone size={18} className="text-slate-600" />
   <div>
   <p className="font-bold text-slate-900">Mobile Number</p>
-  <p className="text-xs text-slate-400 mt-0.5">Change via email verification</p>
+  <p className="text-xs text-slate-400 mt-0.5">Verified via SMS code</p>
   </div>
   </div>
-  <Lock size={16} className="text-amber-500" />
-  </div>
-
-  {verification.type !== 'mobile-change' ? (
-  <>
-  <p className="text-slate-900 font-bold text-lg mb-4">{profileData.mobile}</p>
-  <button
-  onClick={() => {
-    if (isViewOnly) {
-      promptVerification('change your mobile number', () =>
-        setVerification({
-          type: 'mobile-change',
-          otp: '',
-          newValue: '',
-          step: 'request',
-        })
-      );
-      return;
-    }
-    setVerification({
-      type: 'mobile-change',
-      otp: '',
-      newValue: '',
-      step: 'request',
-    });
-  }}
-  data-testid="profile-change-mobile-button"
-  className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-full font-bold text-xs sm:text-sm transition-colors cursor-pointer shadow-xs active:scale-95"
-  >
-  Change Mobile
-  </button>
-  </>
+  {profileData.mobile ? (
+    <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100">
+      <ShieldCheck size={12} />
+      Active
+    </span>
   ) : (
-  <div className="space-y-4">
-  {verification.step === 'request' && (
-  <>
-  <input
-  type="tel"
-  placeholder="Enter new mobile number"
-  value={verification.newValue}
-  onChange={(e) =>
-  setVerification({ ...verification, newValue: e.target.value })
-  }
-  data-testid="profile-new-mobile-input"
-  className="w-full px-4 py-3 border border-slate-200 bg-slate-50/50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-slate-900/10 text-sm font-medium"
-  id="newMobile"
-  name="newMobile"
-  />
-  <div className="flex gap-3">
-  <button
-  onClick={handleChangeMobile}
-  data-testid="profile-send-mobile-otp-button"
-  className="flex-1 bg-slate-900 hover:bg-black text-white py-2.5 rounded-full font-bold text-xs sm:text-sm shadow-xs transition-colors cursor-pointer active:scale-95"
-  >
-  Send OTP to Email
-  </button>
-  <button
-  onClick={() =>
-  setVerification({
-  type: null,
-  otp: '',
-  newValue: '',
-  step: 'request',
-  })
-  }
-  data-testid="profile-cancel-mobile-change-button"
-  className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-2.5 rounded-full font-bold text-xs sm:text-sm shadow-xs transition-colors cursor-pointer"
-  >
-  Cancel
-  </button>
-  </div>
-  </>
+    <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-600 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-100">
+      Not added
+    </span>
   )}
+  </div>
 
-  {verification.step === 'otp-sent' && (
-  <>
-  <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 mb-4">
-  <p className="text-sm font-medium text-slate-800">
-  OTP sent to your registered email
-  </p>
-  </div>
-  <input
-  type="text"
-  placeholder="Enter 6-digit OTP"
-  value={verification.otp}
-  onChange={(e) => setVerification({ ...verification, otp: e.target.value })}
-  maxLength={6}
-  data-testid="profile-mobile-otp-input"
-  className="w-full px-4 py-3 border border-slate-200 bg-slate-50/50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-slate-900/10 text-center text-2xl tracking-widest font-mono"
-  id="emailOtp"
-  name="emailOtp"
-  />
-  <p className="text-xs text-slate-400 mt-2">Use code: 123456 (Demo)</p>
-  <div className="flex gap-3 mt-4">
-  <button
-  onClick={handleVerifyMobileOTP}
-  data-testid="profile-verify-mobile-otp-button"
-  className="flex-1 bg-slate-900 hover:bg-black text-white py-2.5 rounded-full font-bold text-xs sm:text-sm shadow-xs transition-colors cursor-pointer active:scale-95"
-  >
-  Verify OTP
-  </button>
-  <button
-  onClick={() =>
-  setVerification({
-  type: null,
-  otp: '',
-  newValue: '',
-  step: 'request',
-  })
-  }
-  data-testid="profile-cancel-mobile-otp-button"
-  className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-2.5 rounded-full font-bold text-xs sm:text-sm shadow-xs transition-colors cursor-pointer"
-  >
-  Cancel
-  </button>
-  </div>
-  </>
-  )}
-  </div>
+  {mobileChangeStep === 'idle' ? (
+    <>
+      <p className="text-slate-900 font-bold text-lg mb-4">{profileData.mobile || 'No mobile number added'}</p>
+      <button
+        type="button"
+        onClick={() => {
+          if (isViewOnly) {
+            promptVerification('change your mobile number', () => {
+              setMobileChangeStep('input');
+              setNewMobileNumber('');
+              setMobileOtp('');
+            });
+            return;
+          }
+          setMobileChangeStep('input');
+          setNewMobileNumber('');
+          setMobileOtp('');
+        }}
+        data-testid="profile-change-mobile-button"
+        className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-full font-bold text-xs sm:text-sm transition-colors cursor-pointer shadow-xs active:scale-95"
+      >
+        {profileData.mobile ? 'Change Mobile Number' : 'Add Mobile Number'}
+      </button>
+    </>
+  ) : (
+    <div className="space-y-4">
+      {mobileChangeStep === 'input' && (
+        <div className="space-y-3">
+          <div>
+            <label htmlFor="newMobile" className="block text-xs font-semibold text-slate-700 mb-1.5">
+              New Mobile Number (10 digits)
+            </label>
+            <div className="relative flex items-center">
+              <span className="absolute left-3 text-xs font-bold text-slate-400">+91</span>
+              <input
+                type="tel"
+                id="newMobile"
+                name="newMobile"
+                placeholder="98765 43210"
+                value={newMobileNumber.replace(/^\+91/, '')}
+                onChange={(e) => setNewMobileNumber(e.target.value.replace(/[^\d]/g, '').slice(0, 10))}
+                data-testid="profile-new-mobile-input"
+                className="w-full pl-12 pr-4 py-2.5 border border-slate-200 bg-slate-50/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900/10 text-sm font-medium"
+              />
+            </div>
+          </div>
+
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={handleRequestMobileOtp}
+              disabled={isSendingMobileOtp || newMobileNumber.replace(/[^\d]/g, '').length < 10}
+              data-testid="profile-send-mobile-otp-button"
+              className="flex-1 bg-slate-900 hover:bg-black text-white py-2.5 rounded-xl font-bold text-xs sm:text-sm shadow-xs transition-colors cursor-pointer active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {isSendingMobileOtp ? (
+                <>
+                  <Loader2 size={14} className="animate-spin" />
+                  Sending OTP...
+                </>
+              ) : (
+                'Request OTP via SMS'
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={() => setMobileChangeStep('idle')}
+              data-testid="profile-cancel-mobile-change-button"
+              className="bg-slate-100 hover:bg-slate-200 text-slate-700 py-2.5 px-4 rounded-xl font-bold text-xs sm:text-sm shadow-xs transition-colors cursor-pointer"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {mobileChangeStep === 'otp-sent' && (
+        <div className="space-y-3">
+          <div className="bg-emerald-50 border border-emerald-200/80 rounded-xl p-3">
+            <p className="text-xs font-medium text-emerald-800">
+              OTP sent via SMS to <strong className="font-bold">{newMobileNumber.startsWith('+') ? newMobileNumber : `+91 ${newMobileNumber}`}</strong>
+            </p>
+          </div>
+
+          <div>
+            <label htmlFor="mobileOtp" className="block text-xs font-semibold text-slate-700 mb-1.5">
+              Enter 6-digit SMS verification code
+            </label>
+            <input
+              type="text"
+              id="mobileOtp"
+              name="mobileOtp"
+              inputMode="numeric"
+              maxLength={6}
+              value={mobileOtp}
+              onChange={(e) => setMobileOtp(e.target.value.replace(/[^\d]/g, '').slice(0, 6))}
+              placeholder="• • • • • •"
+              data-testid="profile-mobile-otp-input"
+              className="w-full px-4 py-3 border border-slate-200 bg-white rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900/10 text-center text-2xl tracking-[0.5em] font-mono font-bold"
+            />
+          </div>
+
+          <div className="flex items-center justify-between text-xs text-slate-500 px-1">
+            <span>Didn't receive the SMS?</span>
+            {mobileOtpCooldown > 0 ? (
+              <span className="font-semibold text-slate-400">Resend code in {mobileOtpCooldown}s</span>
+            ) : (
+              <button
+                type="button"
+                onClick={handleRequestMobileOtp}
+                disabled={isSendingMobileOtp}
+                className="font-bold text-violet-600 hover:text-violet-700 cursor-pointer"
+              >
+                Resend SMS OTP
+              </button>
+            )}
+          </div>
+
+          <div className="flex gap-2 pt-1">
+            <button
+              type="button"
+              onClick={handleConfirmMobileOtp}
+              disabled={isVerifyingMobileOtp || mobileOtp.length !== 6}
+              data-testid="profile-verify-mobile-otp-button"
+              className="flex-1 bg-violet-600 hover:bg-violet-700 text-white py-2.5 rounded-xl font-bold text-xs sm:text-sm shadow-xs transition-colors cursor-pointer active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {isVerifyingMobileOtp ? (
+                <>
+                  <Loader2 size={14} className="animate-spin" />
+                  Verifying...
+                </>
+              ) : (
+                'Verify & Update Mobile'
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={() => setMobileChangeStep('idle')}
+              data-testid="profile-cancel-mobile-otp-button"
+              className="bg-slate-100 hover:bg-slate-200 text-slate-700 py-2.5 px-4 rounded-xl font-bold text-xs sm:text-sm shadow-xs transition-colors cursor-pointer"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
   )}
   </div>
   </Card>

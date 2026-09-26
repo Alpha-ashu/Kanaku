@@ -1583,39 +1583,89 @@ export const Reports: React.FC = () => {
 
             {/* 📋 TABLE 2: Monthly Cash Flow Financial Table */}
             <Card
+              data-testid="reports-card-monthly-cashflow"
               variant="default"
-              className={cn(GLASS_CARD_ROUNDED, 'p-4 sm:p-6 space-y-3')}
+              className={cn(GLASS_CARD_ROUNDED, 'p-4 sm:p-6 space-y-3 sm:space-y-4')}
             >
               <div className="flex items-start sm:items-center justify-between gap-2.5 border-b border-slate-100/90 pb-3">
                 <div className="min-w-0 flex-1">
-                  <h3 className="text-xs sm:text-sm md:text-base font-bold text-slate-900 tracking-tight truncate">Monthly Cash Flow Statement</h3>
+                  <h3 className="text-xs sm:text-sm md:text-base font-bold text-slate-900 tracking-tight flex items-center gap-1.5 leading-snug truncate">
+                    <TableIcon size={14} className="text-emerald-600 shrink-0" />
+                    <span className="truncate">Monthly Cash Flow Statement</span>
+                  </h3>
                   <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5 truncate">Past 6 months cash flow breakdown</p>
                 </div>
                 <span className="shrink-0 whitespace-nowrap text-2xs font-bold px-2 sm:px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200/60">
                   Past 6 Months
                 </span>
               </div>
-              <div className="divide-y divide-slate-100">
-                {monthlyTimeline.map((item) => (
-                  <div
-                    key={item.key}
-                    className="flex items-center justify-between py-2.5 px-1 rounded-xl hover:bg-slate-50/60 transition-colors"
-                  >
-                    <span className="text-xs sm:text-sm font-semibold text-slate-700">
-                      {item.monthYearShort}
-                    </span>
-                    <div className="flex items-center gap-3">
-                      <span className="text-xs sm:text-sm text-emerald-600 font-semibold">+{formatCurrency(item.income)}</span>
-                      <span className="text-xs sm:text-sm text-rose-600 font-semibold">-{formatCurrency(item.expense)}</span>
-                      <span className={cn(
-                        'text-xs sm:text-sm font-bold min-w-[75px] text-right',
-                        item.net >= 0 ? 'text-emerald-700' : 'text-rose-700'
-                      )}>
-                        {item.net >= 0 ? '+' : ''}{formatCurrency(item.net)}
-                      </span>
-                    </div>
+
+              {/* Responsive Aligned Grid Table */}
+              <div className="overflow-x-auto -mx-1 sm:mx-0">
+                <div className="min-w-[420px] sm:min-w-full">
+                  {/* Column Header */}
+                  <div className="grid grid-cols-4 gap-2 sm:gap-4 px-2 sm:px-3 py-2 text-2xs uppercase tracking-wider font-bold text-slate-400 border-b border-slate-100/90 select-none">
+                    <span className="text-left">Month</span>
+                    <span className="text-right">Income</span>
+                    <span className="text-right">Expenses</span>
+                    <span className="text-right">Net Flow</span>
                   </div>
-                ))}
+
+                  {/* Rows */}
+                  <div className="divide-y divide-slate-100/80">
+                    {monthlyTimeline.map((item) => {
+                      const isIncomeZero = Math.abs(item.income) < 0.005;
+                      const isExpenseZero = Math.abs(item.expense) < 0.005;
+                      const isNetZero = Math.abs(item.net) < 0.005;
+
+                      return (
+                        <div
+                          key={item.key}
+                          className="grid grid-cols-4 gap-2 sm:gap-4 items-center py-2.5 px-2 sm:px-3 rounded-xl hover:bg-slate-50/70 transition-colors"
+                        >
+                          <span className="text-xs sm:text-sm font-semibold text-slate-800 tracking-tight">
+                            {item.monthYearShort}
+                          </span>
+
+                          <span
+                            className={cn(
+                              'text-xs sm:text-sm tabular-nums text-right font-semibold',
+                              !isIncomeZero ? 'text-emerald-600' : 'text-slate-400 font-normal'
+                            )}
+                          >
+                            {!isIncomeZero ? `+${formatCurrency(item.income)}` : formatCurrency(0)}
+                          </span>
+
+                          <span
+                            className={cn(
+                              'text-xs sm:text-sm tabular-nums text-right font-semibold',
+                              !isExpenseZero ? 'text-rose-600' : 'text-slate-400 font-normal'
+                            )}
+                          >
+                            {!isExpenseZero ? `-${formatCurrency(item.expense)}` : formatCurrency(0)}
+                          </span>
+
+                          <span
+                            className={cn(
+                              'text-xs sm:text-sm tabular-nums text-right font-bold',
+                              isNetZero
+                                ? 'text-slate-400 font-medium'
+                                : item.net > 0
+                                ? 'text-emerald-700'
+                                : 'text-rose-700'
+                            )}
+                          >
+                            {isNetZero
+                              ? formatCurrency(0)
+                              : item.net > 0
+                              ? `+${formatCurrency(item.net)}`
+                              : formatCurrency(item.net)}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
             </Card>
           </motion.div>

@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Check, Calendar, ShieldCheck, CheckCircle, Clock } from 'lucide-react';
+import { Check, Calendar, ShieldCheck, CheckCircle, Clock, Trash2 } from 'lucide-react';
 import { AVATAR_OPTIONS, getAvatarById, resolveAvatarSelection } from '@/lib/avatar-gallery';
 import { ProfileVerificationModal } from '@/app/components/auth/ProfileVerificationModal';
 import { useProfileVerification, setLocalProfileVerification } from '@/hooks/useProfileVerification';
@@ -17,6 +17,7 @@ interface ProfileSetupStepProps {
   };
   onUpdate: (data: Record<string, unknown>) => void;
   onNext: () => void;
+  onDiscard?: () => void;
 }
 
 const JOB_TYPES = [
@@ -37,6 +38,7 @@ export const ProfileSetupStep: React.FC<ProfileSetupStepProps> = ({
   data,
   onUpdate,
   onNext,
+  onDiscard,
 }) => {
   const { isVerified, userEmail } = useProfileVerification();
   const [showVerifyModal, setShowVerifyModal] = useState(false);
@@ -111,13 +113,71 @@ export const ProfileSetupStep: React.FC<ProfileSetupStepProps> = ({
 
   return (
     <form data-testid="profile-setup-step-form" onSubmit={handleSubmit} className="space-y-6">
-      <div className="text-center mb-4 md:mb-6">
-        <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight mb-1.5">
+      <div className="text-center mb-6">
+        <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
           Profile Information
         </h3>
-        <p className="text-sm text-slate-500 max-w-sm mx-auto">
-          Personalize your avatar and identity details to set up your private financial ledger.
+      </div>
+
+      {/* Profile Verification Section placed on top above grid */}
+      <div className={`p-4 rounded-2xl border transition-all ${
+        isVerified
+          ? 'bg-emerald-50/70 border-emerald-200/80'
+          : verifyLaterChosen
+          ? 'bg-amber-50/70 border-amber-200/80'
+          : 'bg-slate-50 border-slate-200/80'
+      }`}>
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${
+              isVerified ? 'bg-emerald-100 text-emerald-600' : 'bg-violet-100 text-violet-600'
+            }`}>
+              {isVerified ? <CheckCircle size={16} /> : <ShieldCheck size={16} />}
+            </div>
+            <span className="text-xs font-bold text-slate-900">
+              Profile Verification
+            </span>
+          </div>
+        </div>
+
+        <p className="text-xs text-slate-500 leading-relaxed mb-3">
+          {isVerified
+            ? 'Your profile is verified. You can add transactions, link accounts, and edit records.'
+            : verifyLaterChosen
+            ? 'View-Only Mode selected: You can explore your dashboard, but adding or editing records is locked until verification.'
+            : 'Verify your profile now to unlock adding transactions and full ledger features, or choose verify later to preview in View-Only mode.'}
         </p>
+
+        {!isVerified && (
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setShowVerifyModal(true)}
+              data-testid="profile-setup-verify-now-btn"
+              className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs shadow-xs transition-colors cursor-pointer"
+            >
+              <ShieldCheck size={14} />
+              <span>Verify Now</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setVerifyLaterChosen(true);
+                setLocalProfileVerification(false);
+              }}
+              data-testid="profile-setup-verify-later-btn"
+              className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl font-bold text-xs transition-colors cursor-pointer ${
+                verifyLaterChosen
+                  ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                  : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+              }`}
+            >
+              <Clock size={14} />
+              <span>Verify Later</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Responsive Grid layout for desktop support */}
@@ -301,83 +361,11 @@ export const ProfileSetupStep: React.FC<ProfileSetupStepProps> = ({
             )}
           </div>
 
-          {/* Profile Verification Section */}
-          <div className="pt-2">
-            <div className={`p-4 rounded-2xl border transition-all ${
-              isVerified
-                ? 'bg-emerald-50/70 border-emerald-200/80'
-                : verifyLaterChosen
-                ? 'bg-amber-50/70 border-amber-200/80'
-                : 'bg-slate-50 border-slate-200/80'
-            }`}>
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${
-                    isVerified ? 'bg-emerald-100 text-emerald-600' : 'bg-violet-100 text-violet-600'
-                  }`}>
-                    {isVerified ? <CheckCircle size={16} /> : <ShieldCheck size={16} />}
-                  </div>
-                  <span className="text-xs font-bold text-slate-900">
-                    Profile Verification
-                  </span>
-                </div>
-                <span className={`text-2xs font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${
-                  isVerified
-                    ? 'bg-emerald-100 text-emerald-700'
-                    : verifyLaterChosen
-                    ? 'bg-amber-100 text-amber-700'
-                    : 'bg-slate-200/80 text-slate-600'
-                }`}>
-                  {isVerified ? 'Verified' : verifyLaterChosen ? 'Deferred (View-Only)' : 'Required'}
-                </span>
-              </div>
-
-              <p className="text-xs text-slate-500 leading-relaxed mb-3">
-                {isVerified
-                  ? 'Your profile is verified. You can add transactions, link accounts, and edit records.'
-                  : verifyLaterChosen
-                  ? 'View-Only Mode selected: You can explore your dashboard, but adding or editing records is locked until verification.'
-                  : 'Verify your profile now to unlock adding transactions and full ledger features, or choose verify later to preview in View-Only mode.'}
-              </p>
-
-              {!isVerified && (
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setShowVerifyModal(true)}
-                    data-testid="profile-setup-verify-now-btn"
-                    className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs shadow-xs transition-colors cursor-pointer"
-                  >
-                    <ShieldCheck size={14} />
-                    <span>Verify Now</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setVerifyLaterChosen(true);
-                      setLocalProfileVerification(false);
-                    }}
-                    data-testid="profile-setup-verify-later-btn"
-                    className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl font-bold text-xs transition-colors cursor-pointer ${
-                      verifyLaterChosen
-                        ? 'bg-amber-100 text-amber-800 border border-amber-300'
-                        : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
-                    }`}
-                  >
-                    <Clock size={14} />
-                    <span>Verify Later</span>
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="pt-2">
+          <div className="pt-2 space-y-2">
             <button
               data-testid="profile-setup-step-continue-to-bank-account"
               type="submit"
-              className="w-full bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 hover:from-violet-700 hover:to-blue-700 text-white font-bold py-3 px-4 rounded-xl shadow-md shadow-violet-500/20 transition-all text-sm cursor-pointer"
+              className="w-full bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 hover:from-violet-700 hover:to-blue-700 text-white font-bold py-3.5 px-4 rounded-2xl shadow-md shadow-violet-500/20 transition-all text-sm cursor-pointer active:scale-[0.99]"
             >
               {isVerified
                 ? 'Continue to Location & Language'
@@ -385,6 +373,18 @@ export const ProfileSetupStep: React.FC<ProfileSetupStepProps> = ({
                 ? 'Continue in View-Only Mode'
                 : 'Continue to Location & Language'}
             </button>
+
+            {onDiscard && (
+              <button
+                type="button"
+                data-testid="discard-profile-setup-button"
+                onClick={onDiscard}
+                className="w-full py-2.5 px-4 text-xs font-bold text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-2xl transition-all border border-rose-200/80 hover:border-rose-300 flex items-center justify-center gap-1.5 cursor-pointer active:scale-[0.99]"
+              >
+                <Trash2 size={14} />
+                <span>Discard Profile Setup & Cancel Registration</span>
+              </button>
+            )}
           </div>
         </div>
       </div>

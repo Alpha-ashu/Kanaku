@@ -184,6 +184,16 @@ export const resolveAvatarSelection = (args?: {
   if (byId) return byId;
   const byUrl = getAvatarByUrl(args?.avatarUrl ?? null);
   if (byUrl) return byUrl;
+  if (args?.avatarUrl && args.avatarUrl.trim().length > 0) {
+    return {
+      id: args.avatarId || 'custom',
+      url: args.avatarUrl,
+      label: 'Custom Photo',
+      gender: 'neutral' as const,
+      style: 'casual' as const,
+      skinTone: 'tan' as const,
+    };
+  }
   return DEFAULT_AVATAR;
 };
 

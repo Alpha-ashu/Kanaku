@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { LogOut, KeyRound, AlertCircle, ChevronLeft, ShieldCheck, Eye, EyeOff, Lock, Loader2, Fingerprint, ScanFace } from 'lucide-react';
+import { LogOut, KeyRound, AlertCircle, ChevronLeft, ShieldCheck, Eye, EyeOff, Lock, Loader2, Fingerprint, ScanFace, Delete } from 'lucide-react';
 import { KANAKULogo, DISPLAY_FONT } from '@/app/components/ui/KANAKULogo';
 import { clearSecurityData, isPINSet, verifyPIN, storeMasterKey, serializePINKeyBackup, restorePINKeyBackup } from '@/lib/encryption';
 import { isPinAlreadySet, isPinMissing, isPinServiceUnavailable, isSessionExpired, pinService } from '@/services/pinService';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
+import { useUserDisplayName } from '@/hooks/useUserDisplayName';
 import supabase from '@/utils/supabase/client';
 import { apiClient } from '@/lib/api';
 import { Capacitor } from '@capacitor/core';
@@ -47,6 +48,7 @@ const SERVER_VERIFY_PENDING = Symbol('pin-server-verify-pending');
 
 export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
  const { signOut, user } = useAuth();
+ const displayName = useUserDisplayName('User');
 
  // State 
  const [isCreating, setIsCreating] = useState(false);
@@ -825,16 +827,16 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
     }
   };
 
- // Derived display 
- const currentStepLabel = isCreating
- ? createStage === 'enter' ? 'Create your PIN' : 'Confirm your PIN'
- : 'Enter your PIN';
+  // Derived display 
+  const currentStepLabel = isCreating
+    ? createStage === 'enter' ? 'Create your PIN' : 'Confirm your PIN'
+    : `Welcome back, ${displayName}`;
 
- const currentStepSub = isCreating
- ? createStage === 'enter'
- ? 'Choose a 6-digit PIN to secure your account'
- : 'Re-enter the same PIN to confirm'
- : 'Enter your PIN to access KANAKU';
+  const currentStepSub = isCreating
+    ? createStage === 'enter'
+      ? 'Choose a 6-digit PIN to secure your account'
+      : 'Re-enter the same PIN to confirm'
+    : 'Enter your PIN to unlock KANAKU';
 
  // Loading skeleton 
  if (isLoading) {
@@ -852,16 +854,19 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
 
  // Main render 
   return (
-    <div data-testid="pinauth-div"
-      className="fixed inset-0 z-50 overflow-y-auto bg-white flex flex-col items-center justify-start sm:justify-center p-3 sm:p-6 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))] min-h-full"
+    <div
+      data-testid="pinauth-div"
+      className="fixed inset-0 z-50 overflow-y-auto bg-[#f8f9fc] flex flex-col items-center justify-center p-4 sm:p-6 min-h-full select-none"
     >
       {/* Hidden form - non-focusable so mobile software keyboards never open */}
-      <form data-testid="pinauth-form"
+      <form
+        data-testid="pinauth-form"
         style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', width: 0, height: 0, overflow: 'hidden' }}
         autoComplete="off"
         onSubmit={e => e.preventDefault()}
       >
-        <input data-testid="pinauth-username"
+        <input
+          data-testid="pinauth-username"
           type="text"
           name="username"
           value={user?.email || ''}
@@ -888,22 +893,39 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
         />
       </form>
 
-      <div className="w-full max-w-md p-3 sm:p-6 md:p-8 flex flex-col my-auto">
-        {/* Header */}
-        <div className="pt-2 sm:pt-4 pb-3 sm:pb-6 flex flex-col items-center px-4 sm:px-6">
-          <div className="mb-2 sm:mb-4">
-            <KANAKULogo className="w-10 h-10 sm:w-12 sm:h-12" />
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-[0.02em] mb-1" style={{ fontFamily: DISPLAY_FONT }}>KANAKU</h1>
-          <p className="text-xs sm:text-sm text-gray-500 font-medium text-center max-w-[260px] leading-tight">{currentStepSub}</p>
+      <div className="w-full max-w-[340px] sm:max-w-sm px-2 py-4 sm:py-6 flex flex-col items-center my-auto">
+        {/* Top Logo */}
+        <div className="mb-4 sm:mb-5">
+          <KANAKULogo className="w-14 h-14 sm:w-16 sm:h-16" />
         </div>
 
-        {/* Brute-force lockout notice */}
+        {/* User Greeting / Title */}
+        <h1 className="text-2xl sm:text-[28px] font-bold text-slate-900 tracking-tight text-center leading-snug">
+          {currentStepLabel}
+        </h1>
+
+        {/* Subtitle */}
+        <p className="text-sm sm:text-base text-slate-500 font-normal text-center mt-1.5 leading-snug">
+          {currentStepSub}
+        </p>
+
+        {isCreating && createStage === 'confirm' && (
+          <button
+            type="button"
+            onClick={() => { setCreateStage('enter'); setPin(''); setFirstPin(''); setErrorMsg(''); }}
+            data-testid="pin-auth-confirm-back-button"
+            className="flex items-center gap-1 text-slate-500 hover:text-slate-900 text-xs sm:text-sm font-medium transition-colors mt-2"
+          >
+            <ChevronLeft size={16} /> Back
+          </button>
+        )}
+
+        {/* Lockout & Inactivity Alerts */}
         {isPinLocked && (
           <div
             data-testid="pinauth-throttle-banner"
             role="alert"
-            className="mx-3 sm:mx-6 mb-3 sm:mb-4 flex items-center gap-2.5 rounded-2xl border border-red-200 bg-red-50 px-4 py-2.5 sm:py-3 text-red-800"
+            className="w-full mt-4 flex items-center gap-2.5 rounded-2xl border border-red-200 bg-red-50 px-4 py-2.5 sm:py-3 text-red-800"
           >
             <Lock size={16} className="flex-shrink-0 text-red-600" />
             <p className="text-xs font-medium leading-snug">
@@ -913,12 +935,11 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
           </div>
         )}
 
-        {/* Inactivity auto-lock notice */}
         {lockedForInactivity && !isCreating && !isPinLocked && (
           <div
             data-testid="pinauth-inactivity-banner"
             role="status"
-            className="mx-3 sm:mx-6 mb-3 sm:mb-4 flex items-center gap-2.5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-2.5 sm:py-3 text-amber-800"
+            className="w-full mt-4 flex items-center gap-2.5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-2.5 sm:py-3 text-amber-800"
           >
             <Lock size={16} className="flex-shrink-0 text-amber-600" />
             <p className="text-xs font-medium leading-snug">
@@ -927,183 +948,160 @@ export const PINAuth: React.FC<PINAuthProps> = ({ onAuthenticated }) => {
           </div>
         )}
 
-        {/* Card Content */}
-        <div className="px-2 sm:px-6 md:px-8 flex flex-col gap-3.5 sm:gap-6">
-          {/* Step label + back button for confirm stage */}
-          <div className="flex flex-col items-center text-center">
-            <p className="text-2xs font-black uppercase tracking-[0.2em] text-gray-400 mb-0.5 sm:mb-1">
-              {isCreating ? `Step ${createStage === 'enter' ? '1' : '2'} of 2` : 'Secure Unlock'}
-            </p>
-            <h2 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight">{currentStepLabel}</h2>
-            {isCreating && createStage === 'confirm' && (
-              <button
-                type="button"
-                onClick={() => { setCreateStage('enter'); setPin(''); setFirstPin(''); setErrorMsg(''); }}
-                data-testid="pin-auth-confirm-back-button"
-                className="flex items-center gap-1 text-gray-500 hover:text-gray-900 text-xs sm:text-sm font-medium transition-colors mt-1 sm:mt-2"
-              >
-                <ChevronLeft size={16} /> Back
-              </button>
-            )}
-          </div>
+        {/* Password PIN Section as Dots */}
+        <div data-testid="pinauth-div-2" className="flex justify-center items-center gap-3.5 sm:gap-4 my-6 sm:my-8">
+          {Array.from({ length: 6 }, (_, i) => {
+            const isFilled = i < pin.length;
+            const hasError = !!errorMsg && shake;
 
-          {/* PIN digit boxes */}
-          <div data-testid="pinauth-div-2" className="flex justify-center gap-2 sm:gap-3">
-            {Array.from({ length: 6 }, (_, i) => {
-              const isActive = i === pin.length;
-              const isFilled = i < pin.length;
-              const hasError = !!errorMsg && shake;
-              const revealed = showReveal && i < pin.length ? pin[i] : undefined;
-
-              return (
-                <div
-                  key={i}
-                  className={`w-9 h-9 sm:w-11 sm:h-11 md:w-13 md:h-13 rounded-xl sm:rounded-2xl border-2 flex items-center justify-center text-lg sm:text-xl font-black transition-all ${hasError
-                    ? 'border-red-400 bg-red-50 text-red-600'
-                    : isActive
-                    ? 'border-gray-900 bg-white ring-2 sm:ring-4 ring-gray-100'
+            return (
+              <span
+                key={i}
+                className={`w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full transition-all duration-200 ${
+                  hasError
+                    ? 'border-2 border-red-500 bg-red-100 scale-110 animate-[shake_0.4s_ease-in-out]'
                     : isFilled
-                    ? 'border-gray-900 bg-gray-900 text-white'
-                    : 'border-gray-200 bg-white/50 text-transparent'
-                  } ${shake ? 'animate-[shake_0.4s_ease-in-out]' : ''}`}
-                >
-                  {revealed !== undefined ? revealed : isFilled ? '●' : ''}
-                  {isActive && <div className="w-[2px] sm:w-[2.5px] h-4 sm:h-5 bg-gray-900 animate-[blink_1s_infinite]" />}
-                </div>
-              );
-            })}
-          </div>
+                    ? 'bg-[#7c3aed] ring-2 ring-violet-200 shadow-[0_0_8px_rgba(124,58,237,0.35)] scale-110'
+                    : 'border-2 border-slate-300 bg-transparent'
+                }`}
+              />
+            );
+          })}
+        </div>
 
-          {/* Show/hide toggle + error */}
-          <div className="flex flex-col items-center">
+        {/* Error message or revealed PIN */}
+        <div className="flex flex-col items-center min-h-[22px] mb-2 sm:mb-3">
+          {errorMsg ? (
+            <p className="text-red-500 text-xs font-medium text-center flex items-center justify-center gap-1">
+              <AlertCircle size={13} /> {errorMsg}
+            </p>
+          ) : showReveal && pin.length > 0 ? (
+            <p className="text-xs font-mono tracking-widest text-violet-600 font-bold">
+              {pin}
+            </p>
+          ) : null}
+
+          {/* Session too old to refresh */}
+          {sessionExpired && (
             <button
               type="button"
-              onClick={() => setShowReveal(r => !r)}
-              data-testid="pin-auth-reveal-toggle"
-              className="flex items-center gap-1.5 text-gray-400 hover:text-gray-900 text-2xs font-bold transition-colors"
+              onClick={handleReLogin}
+              disabled={isReLoggingIn}
+              data-testid="pin-auth-relogin-button"
+              className="mt-2 inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800 active:scale-95 transition-all disabled:opacity-60 disabled:pointer-events-none"
             >
-              {showReveal ? <EyeOff size={14} /> : <Eye size={14} />}
-              {showReveal ? 'HIDE PIN' : 'SHOW PIN'}
+              <LogOut size={14} />
+              {isReLoggingIn ? 'Redirecting…' : 'Sign in again'}
             </button>
-            <div className="h-4 mt-0.5 sm:mt-1">
-              {errorMsg && (
-                <p className="text-red-500 text-2xs font-bold text-center flex items-center justify-center gap-1">
-                  <AlertCircle size={12} /> {errorMsg}
-                </p>
-              )}
-            </div>
-            {/* Session too old to refresh — let the user re-login instead of being stuck. */}
-            {sessionExpired && (
-              <button
-                type="button"
-                onClick={handleReLogin}
-                disabled={isReLoggingIn}
-                data-testid="pin-auth-relogin-button"
-                className="mt-2 sm:mt-3 inline-flex items-center justify-center gap-2 rounded-xl bg-gray-900 px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold text-white hover:bg-gray-800 active:scale-95 transition-all disabled:opacity-60 disabled:pointer-events-none"
-              >
-                <LogOut size={15} />
-                {isReLoggingIn ? 'Redirecting…' : 'Sign in again'}
-              </button>
-            )}
-          </div>
+          )}
+        </div>
 
-          {/* Number pad */}
-          <div className="grid grid-cols-3 gap-2 sm:gap-3 w-full max-w-[280px] sm:max-w-[320px] mx-auto">
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => (
-              <button
-                key={n}
-                type="button"
-                onClick={() => appendDigit(String(n))}
-                disabled={isSubmitting || isPinLocked}
-                data-testid={`pin-auth-digit-${n}`}
-                className="h-11 sm:h-14 rounded-xl sm:rounded-2xl bg-white hover:bg-gray-100 active:bg-gray-200 active:scale-95 transition-all text-lg sm:text-xl font-semibold text-gray-900 flex items-center justify-center disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
-              >
+        {/* Circular Keypad */}
+        <div className="grid grid-cols-3 gap-y-4 gap-x-6 sm:gap-y-5 sm:gap-x-7 w-full max-w-[280px] sm:max-w-[310px] mx-auto place-items-center">
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => (
+            <button
+              key={n}
+              type="button"
+              onClick={() => appendDigit(String(n))}
+              disabled={isSubmitting || isPinLocked}
+              data-testid={`pin-auth-digit-${n}`}
+              className="w-16 h-16 sm:w-[72px] sm:h-[72px] rounded-full aspect-square bg-white border border-slate-200/80 shadow-[0_4px_14px_-2px_rgba(15,23,42,0.06),0_2px_4px_rgba(15,23,42,0.04)] hover:bg-slate-50 hover:border-slate-300 active:scale-95 active:bg-slate-100 transition-all flex items-center justify-center disabled:opacity-50 disabled:pointer-events-none cursor-pointer select-none"
+            >
+              <span className="text-2xl sm:text-[28px] font-semibold text-slate-800 leading-none">
                 {n}
-              </button>
-            ))}
-            {/* Bottom row */}
-            {!isCreating ? (
-              <button
-                type="button"
-                onClick={handleForgotPin}
-                disabled={isSubmitting}
-                title="Forgot PIN"
-                data-testid="pin-auth-forgot-pin-button"
-                className="h-11 sm:h-14 rounded-xl sm:rounded-2xl bg-transparent hover:bg-gray-50 active:bg-gray-100 transition-all text-gray-500 hover:text-gray-900 flex items-center justify-center disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
-              >
-                <KeyRound size={18} />
-              </button>
-            ) : (
-              <div /> /* empty cell */
-            )}
-            <button
-              type="button"
-              onClick={() => appendDigit('0')}
-              disabled={isSubmitting || isPinLocked}
-              data-testid="pin-auth-digit-0"
-              className="h-11 sm:h-14 rounded-xl sm:rounded-2xl bg-white hover:bg-gray-100 active:bg-gray-200 active:scale-95 transition-all text-lg sm:text-xl font-semibold text-gray-900 flex items-center justify-center disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
-            >
-              0
+              </span>
             </button>
-            <button
-              type="button"
-              onClick={deleteDigit}
-              disabled={isSubmitting || isPinLocked}
-              data-testid="pin-auth-delete-button"
-              className="h-11 sm:h-14 rounded-xl sm:rounded-2xl bg-transparent hover:bg-gray-50 active:bg-gray-100 transition-all text-gray-500 hover:text-gray-900 flex items-center justify-center disabled:opacity-50 disabled:pointer-events-none cursor-pointer text-lg"
-            >
-              {isSubmitting ? (
-                <div className="w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
-              ) : (
-                '⌫'
-              )}
-            </button>
-          </div>
+          ))}
 
-          {/* Biometric unlock. */}
-          {!isCreating && biometric?.available && biometricEnrolled && (
+          {/* Bottom Row: Biometrics (left), 0 (center), Delete (right) */}
+          {!isCreating ? (
             <button
               type="button"
               onClick={() => void handleBiometricUnlock()}
               disabled={isSubmitting || biometricBusy || isPinLocked}
+              title={biometric?.available ? `Unlock with ${biometric.label}` : 'Unlock with biometrics'}
               data-testid="pin-auth-biometric-button"
-              className="flex items-center justify-center gap-2 mx-auto rounded-full border border-gray-200 bg-white px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold text-gray-900 transition-all hover:bg-gray-50 active:scale-95 disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
+              className="w-16 h-16 sm:w-[72px] sm:h-[72px] rounded-full aspect-square bg-transparent hover:bg-violet-50/60 active:scale-95 transition-all text-violet-600 flex items-center justify-center disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
             >
               {biometricBusy ? (
-                <Loader2 size={16} className="animate-spin" />
-              ) : biometric.isFace ? (
-                <ScanFace size={16} />
+                <Loader2 size={24} className="animate-spin text-violet-600" />
+              ) : biometric?.isFace ? (
+                <ScanFace size={26} className="text-violet-600 stroke-[1.8]" />
               ) : (
-                <Fingerprint size={16} />
+                <Fingerprint size={28} className="text-violet-600 stroke-[1.8]" />
               )}
-              {biometricBusy ? 'Waiting…' : `Unlock with ${biometric.label}`}
             </button>
+          ) : (
+            <div className="w-16 h-16 sm:w-[72px] sm:h-[72px]" />
           )}
 
-          {/* Sign out / different account */}
+          <button
+            type="button"
+            onClick={() => appendDigit('0')}
+            disabled={isSubmitting || isPinLocked}
+            data-testid="pin-auth-digit-0"
+            className="w-16 h-16 sm:w-[72px] sm:h-[72px] rounded-full aspect-square bg-white border border-slate-200/80 shadow-[0_4px_14px_-2px_rgba(15,23,42,0.06),0_2px_4px_rgba(15,23,42,0.04)] hover:bg-slate-50 hover:border-slate-300 active:scale-95 active:bg-slate-100 transition-all flex items-center justify-center disabled:opacity-50 disabled:pointer-events-none cursor-pointer select-none"
+          >
+            <span className="text-2xl sm:text-[28px] font-semibold text-slate-800 leading-none">
+              0
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={deleteDigit}
+            disabled={isSubmitting || isPinLocked || pin.length === 0}
+            data-testid="pin-auth-delete-button"
+            aria-label="Delete digit"
+            className="w-16 h-16 sm:w-[72px] sm:h-[72px] rounded-full aspect-square bg-transparent hover:bg-slate-100/70 active:scale-95 transition-all text-slate-500 hover:text-slate-800 flex items-center justify-center disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+          >
+            {isSubmitting ? (
+              <div className="w-5 h-5 border-2 border-violet-600 border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <Delete size={24} className="text-slate-600 stroke-[1.8]" />
+            )}
+          </button>
+        </div>
+
+        {/* Forgot PIN? Link */}
+        {!isCreating && (
+          <button
+            type="button"
+            onClick={handleForgotPin}
+            disabled={isSubmitting}
+            data-testid="pin-auth-forgot-pin-button"
+            className="mt-7 sm:mt-9 text-sm font-semibold text-violet-600 hover:text-violet-700 hover:underline transition-colors cursor-pointer"
+          >
+            Forgot PIN?
+          </button>
+        )}
+
+        {/* Secondary Links: Reveal PIN & Switch Account */}
+        <div className="mt-4 flex items-center justify-center gap-3 text-xs text-slate-400">
+          <button
+            type="button"
+            onClick={() => setShowReveal(r => !r)}
+            data-testid="pin-auth-reveal-toggle"
+            className="hover:text-slate-600 font-medium transition-colors flex items-center gap-1 cursor-pointer"
+          >
+            {showReveal ? <EyeOff size={13} /> : <Eye size={13} />}
+            <span>{showReveal ? 'Hide PIN' : 'Show PIN'}</span>
+          </button>
           {!isCreating && (
-            <button
-              type="button"
-              onClick={handleSignOut}
-              disabled={isLoggingOut || isSubmitting}
-              data-testid="pin-auth-signout-button"
-              className="flex items-center justify-center gap-2 text-gray-500 hover:text-gray-900 text-xs sm:text-sm font-medium transition-colors py-0.5 sm:py-1 cursor-pointer"
-            >
-              <LogOut size={15} />
-              {isLoggingOut ? 'Signing out...' : 'Use a different account'}
-            </button>
+            <>
+              <span>•</span>
+              <button
+                type="button"
+                onClick={handleSignOut}
+                disabled={isLoggingOut || isSubmitting}
+                data-testid="pin-auth-signout-button"
+                className="hover:text-slate-600 font-medium transition-colors flex items-center gap-1 cursor-pointer"
+              >
+                <LogOut size={13} />
+                <span>{isLoggingOut ? 'Signing out...' : 'Switch account'}</span>
+              </button>
+            </>
           )}
-
-          {/* Security banner */}
-          <div className="bg-gray-50 border border-gray-100 rounded-2xl sm:rounded-[28px] p-3 sm:p-5 flex flex-col items-center text-center gap-1.5 sm:gap-2 mt-1 sm:mt-2 mb-2 sm:mb-4">
-            <ShieldCheck className="text-emerald-500" size={18} />
-            <div>
-              <p className="text-gray-900 text-2xs font-black uppercase tracking-wider mb-0.5">Secure Encryption</p>
-              <p className="text-gray-500 text-2xs leading-relaxed max-w-[240px]">
-                Your PIN never leaves this device — only a salted, slow-to-crack verifier is stored. Nothing financial loads or syncs until you unlock.
-              </p>
-            </div>
-          </div>
         </div>
       </div>
 

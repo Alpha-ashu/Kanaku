@@ -227,9 +227,15 @@ export class ErrorHandler {
   private static executeRecoveryStrategy(error: AppError): void {
     switch (error.type) {
       case ErrorType.AUTHENTICATION:
-        // Redirect to login
+        // Redirect to login only if not on a public page
         setTimeout(() => {
-          window.location.href = '/login';
+          if (typeof window !== 'undefined') {
+            const currentPath = window.location.pathname.replace(/^\//, '').split('?')[0].toLowerCase();
+            const isPublic = !currentPath || ['about', 'pricing', 'contact', 'privacy', 'privacy-policy', 'terms', 'data-deletion', 'login', 'auth', 'signin', 'signup', 'register'].includes(currentPath);
+            if (!isPublic) {
+              window.location.href = '/login';
+            }
+          }
         }, 1000);
         break;
 

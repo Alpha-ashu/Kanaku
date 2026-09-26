@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Globe, Languages, MapPin, ChevronRight, SkipForward } from 'lucide-react';
+import { Languages, MapPin, ChevronRight, SkipForward } from 'lucide-react';
 
 interface CountryLanguageStepProps {
  data: {
@@ -185,15 +185,9 @@ export const CountryLanguageStep: React.FC<CountryLanguageStepProps> = ({
   return (
     <form data-testid="country-language-step-form" onSubmit={handleSubmit} className="space-y-6">
       <div className="text-center mb-6">
-        <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-tr from-violet-600/10 to-indigo-600/20 text-violet-600 mb-3 ring-1 ring-violet-500/20">
-          <Globe size={24} className="text-violet-600" />
-        </div>
-        <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight mb-1.5">
+        <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
           Region &amp; Language
         </h3>
-        <p className="text-sm text-slate-500 max-w-sm mx-auto">
-          Help us customize your experience with accurate currency, banking rails, and regional formats.
-        </p>
       </div>
 
       {/* Location input */}

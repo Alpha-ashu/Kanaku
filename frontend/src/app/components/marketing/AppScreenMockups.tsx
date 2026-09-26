@@ -28,6 +28,7 @@ import {
   HandCoins,
   House,
   Landmark,
+  Lock,
   Plane,
   Plus,
   Receipt,
@@ -993,40 +994,151 @@ export const GroupsScreen: React.FC = () => (
   </div>
 );
 
-export const PinLockScreen: React.FC = () => (
-  <div className="flex h-full flex-col items-center px-8 pt-10">
-    <KANAKULogo className="h-12 w-12" />
-    <p className="mt-4 text-[16px] font-extrabold tracking-tight text-slate-900">Welcome back, Priya</p>
-    <p className="mt-0.5 text-[10.5px] font-medium text-slate-500">Enter your PIN to unlock KANAKU</p>
+const PIN_KEYPAD: { id: string; num?: string; letters?: string; type: 'num' | 'bio' | 'del' }[] = [
+  { id: '1', num: '1', letters: '', type: 'num' },
+  { id: '2', num: '2', letters: 'ABC', type: 'num' },
+  { id: '3', num: '3', letters: 'DEF', type: 'num' },
+  { id: '4', num: '4', letters: 'GHI', type: 'num' },
+  { id: '5', num: '5', letters: 'JKL', type: 'num' },
+  { id: '6', num: '6', letters: 'MNO', type: 'num' },
+  { id: '7', num: '7', letters: 'PQRS', type: 'num' },
+  { id: '8', num: '8', letters: 'TUV', type: 'num' },
+  { id: '9', num: '9', letters: 'WXYZ', type: 'num' },
+  { id: 'bio', type: 'bio' },
+  { id: '0', num: '0', letters: '+', type: 'num' },
+  { id: 'del', type: 'del' },
+];
 
-    <div className="mt-6 flex gap-3">
-      {[true, true, false, false].map((filled, i) => (
-        <span
-          key={i}
-          className={`h-3 w-3 rounded-full ${filled ? 'bg-violet-600' : 'border-2 border-slate-300'}`}
-        />
-      ))}
+export const PinLockScreen: React.FC = () => {
+  const [pinLength, setPinLength] = React.useState(2);
+  const [unlocked, setUnlocked] = React.useState(false);
+
+  const handlePress = (type: 'num' | 'bio' | 'del') => {
+    if (unlocked) return;
+    if (type === 'num') {
+      if (pinLength < 4) {
+        const next = pinLength + 1;
+        setPinLength(next);
+        if (next === 4) {
+          setUnlocked(true);
+          setTimeout(() => {
+            setUnlocked(false);
+            setPinLength(2);
+          }, 1500);
+        }
+      }
+    } else if (type === 'del') {
+      if (pinLength > 0) setPinLength(pinLength - 1);
+    } else if (type === 'bio') {
+      setPinLength(4);
+      setUnlocked(true);
+      setTimeout(() => {
+        setUnlocked(false);
+        setPinLength(2);
+      }, 1500);
+    }
+  };
+
+  return (
+    <div className="flex h-full flex-col items-center justify-between px-6 pt-7 pb-6 select-none bg-gradient-to-b from-[#F9FAFB] via-[#F5F6FA] to-[#F1F3F9]">
+      {/* Top Section: Emblem, Title & Subtitle */}
+      <div className="flex flex-col items-center text-center">
+        {/* Sleek branded shield emblem */}
+        <div className="relative mb-3 flex items-center justify-center">
+          <div className="absolute -inset-1.5 rounded-2xl bg-gradient-to-tr from-violet-500/20 via-purple-500/10 to-transparent blur-md" />
+          <div className="relative flex h-13 w-13 items-center justify-center rounded-2xl border border-white/90 bg-white/95 shadow-[0_8px_20px_-6px_rgba(124,58,237,0.18)]">
+            <KANAKULogo className="h-7 w-7" />
+          </div>
+          <span className="absolute -bottom-1 -right-1 flex h-4.5 w-4.5 items-center justify-center rounded-full border-2 border-white bg-emerald-500 text-white shadow-sm">
+            <Lock className="h-2.5 w-2.5" />
+          </span>
+        </div>
+
+        <p className="text-[16px] font-extrabold tracking-tight text-slate-900 leading-snug">
+          {unlocked ? 'Unlocked!' : 'Welcome back, Priya'}
+        </p>
+        <p className="mt-0.5 text-[11px] font-medium text-slate-500">
+          {unlocked ? 'Access granted • Loading ledger…' : 'Enter your PIN to unlock KANAKU'}
+        </p>
+
+        {/* PIN Indicators */}
+        <div className="mt-4 flex items-center gap-3 rounded-full border border-slate-200/80 bg-white/80 px-4 py-2 shadow-[inset_0_1px_2px_rgba(0,0,0,0.03)] backdrop-blur-sm">
+          {[0, 1, 2, 3].map((index) => {
+            const filled = index < pinLength;
+            return (
+              <span
+                key={index}
+                className={`h-3 w-3 rounded-full transition-all duration-200 ${
+                  unlocked
+                    ? 'scale-110 bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]'
+                    : filled
+                    ? 'scale-110 bg-gradient-to-tr from-violet-600 to-indigo-600 shadow-[0_0_8px_rgba(124,58,237,0.45)]'
+                    : 'border border-slate-300 bg-slate-100/70'
+                }`}
+              />
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Keypad Grid (3x4) */}
+      <div className="grid grid-cols-3 gap-x-4 gap-y-2.5">
+        {PIN_KEYPAD.map((k) => {
+          if (k.type === 'bio') {
+            return (
+              <button
+                key={k.id}
+                type="button"
+                onClick={() => handlePress('bio')}
+                className="group flex h-[52px] w-[52px] items-center justify-center rounded-full border border-violet-200/80 bg-violet-50/70 text-violet-600 shadow-[0_2px_6px_rgba(124,58,237,0.08)] transition-all duration-150 hover:border-violet-300 hover:bg-violet-100/80 active:scale-95 active:bg-violet-200/70 cursor-pointer"
+                title="Unlock with Biometrics"
+              >
+                <FingerprintPattern className="h-5 w-5 transition-transform group-hover:scale-110" />
+              </button>
+            );
+          }
+
+          if (k.type === 'del') {
+            return (
+              <button
+                key={k.id}
+                type="button"
+                onClick={() => handlePress('del')}
+                className="flex h-[52px] w-[52px] items-center justify-center rounded-full border border-slate-200/70 bg-white/80 text-slate-500 shadow-[0_2px_6px_rgba(15,23,42,0.03)] transition-all duration-150 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-800 active:scale-95 cursor-pointer"
+                title="Delete"
+              >
+                <Delete className="h-4 w-4" />
+              </button>
+            );
+          }
+
+          return (
+            <button
+              key={k.id}
+              type="button"
+              onClick={() => handlePress('num')}
+              className="group flex h-[52px] w-[52px] flex-col items-center justify-center rounded-full border border-slate-200/80 bg-white shadow-[0_2px_6px_rgba(15,23,42,0.04),0_1px_2px_rgba(15,23,42,0.06)] transition-all duration-150 hover:border-violet-300 hover:bg-violet-50/40 hover:shadow-md active:scale-95 active:bg-violet-100/60 cursor-pointer"
+            >
+              <span className="text-[19px] font-bold leading-none text-slate-800 transition-colors group-hover:text-violet-700">
+                {k.num}
+              </span>
+              {k.letters && (
+                <span className="mt-0.5 text-[7px] font-extrabold tracking-widest text-slate-400 uppercase transition-colors group-hover:text-violet-500">
+                  {k.letters}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Bottom Footer Action */}
+      <button
+        type="button"
+        className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-bold text-violet-700 hover:bg-violet-50 hover:text-violet-800 transition-colors"
+      >
+        <span>Forgot PIN?</span>
+      </button>
     </div>
-
-    <div className="mt-8 grid grid-cols-3 gap-x-5 gap-y-3">
-      {['1', '2', '3', '4', '5', '6', '7', '8', '9', 'bio', '0', 'del'].map((key) => (
-        <span
-          key={key}
-          className={`flex h-[54px] w-[54px] items-center justify-center rounded-full text-[20px] font-semibold text-slate-900 ${
-            key === 'bio' || key === 'del' ? '' : 'border border-slate-100 bg-white shadow-sm'
-          }`}
-        >
-          {key === 'bio' ? (
-            <FingerprintPattern className="h-6 w-6 text-violet-600" />
-          ) : key === 'del' ? (
-            <Delete className="h-5 w-5 text-slate-500" />
-          ) : (
-            key
-          )}
-        </span>
-      ))}
-    </div>
-
-    <p className="mt-6 text-[10.5px] font-semibold text-violet-700">Forgot PIN?</p>
-  </div>
-);
+  );
+};

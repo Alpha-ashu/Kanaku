@@ -325,6 +325,7 @@ const clearLocalAuthPresentationState = (preservePinKeys = false) => {
     'pending_auth_email',
     'user_email',
     'user_name',
+    'user_first_name',
     'pin_created_at',
     'pin_expiry',
     'KANAKU_last_full_sync_at',
@@ -455,6 +456,12 @@ const syncProfileFromBackend = async (user: User) => {
 
       localStorage.setItem('onboarding_completed', 'true');
       localStorage.setItem('profile_updated_at', updatedAt);
+      if (firstName) {
+        localStorage.setItem('user_first_name', firstName);
+      }
+      if (displayName) {
+        localStorage.setItem('user_name', displayName);
+      }
       localStorage.setItem('user_profile', JSON.stringify({
         ...localProfile,
         displayName,
@@ -685,6 +692,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   useEffect(() => {
     const onSessionExpired = async (e: Event) => {
       const reason = (e as CustomEvent)?.detail?.reason || 'unknown';
+      const isOnboardingActive = typeof window !== 'undefined' && (
+        localStorage.getItem('is_new_user') === 'true' ||
+        localStorage.getItem('auth_flow_step') === 'profile-setup' ||
+        localStorage.getItem('pin_setup_required') === 'true' ||
+        window.location.pathname.includes('/onboarding') ||
+        window.location.pathname.includes('/signup')
+      );
+      if (isOnboardingActive) {
+        console.log(`[KANAKU Redirect] Ignored session expired (${reason}) because onboarding is in progress.`);
+        return;
+      }
       console.log(`[KANAKU Redirect] → Login | Reason = Session Expired (${reason})`);
       TokenManager.clearTokens();
       backendService.clearToken();
@@ -733,14 +751,28 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             const decoded = decodeJwt(customToken);
             if (decoded && decoded.userId) {
               const localProfile = readLocalProfile();
+              const storedFirst = localStorage.getItem('user_first_name') || '';
+              const storedName = localStorage.getItem('user_name') || '';
+              const fullName = decoded.name || localProfile?.displayName || storedName || '';
+              const nameParts = fullName.trim().split(/\s+/).filter(Boolean);
+              const firstName = localProfile?.firstName || storedFirst || (nameParts[0] || '');
+              const lastName = localProfile?.lastName || nameParts.slice(1).join(' ');
+              if (firstName && !localStorage.getItem('user_first_name')) {
+                localStorage.setItem('user_first_name', firstName);
+              }
+              if (fullName && !localStorage.getItem('user_name')) {
+                localStorage.setItem('user_name', fullName);
+              }
               nextUser = {
                 id: decoded.userId,
                 email: decoded.email || localProfile?.email || '',
                 user_metadata: {
                   role: decoded.role || localProfile?.role || 'user',
-                  full_name: localProfile?.displayName || '',
-                  firstName: localProfile?.firstName || '',
-                  lastName: localProfile?.lastName || '',
+                  full_name: fullName,
+                  firstName: firstName,
+                  first_name: firstName,
+                  lastName: lastName,
+                  last_name: lastName,
                 },
                 app_metadata: {},
                 aud: 'authenticated',
@@ -801,14 +833,28 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           const decoded = decodeJwt(customToken);
           if (decoded && decoded.userId) {
             const localProfile = readLocalProfile();
+            const storedFirst = localStorage.getItem('user_first_name') || '';
+            const storedName = localStorage.getItem('user_name') || '';
+            const fullName = decoded.name || localProfile?.displayName || storedName || '';
+            const nameParts = fullName.trim().split(/\s+/).filter(Boolean);
+            const firstName = localProfile?.firstName || storedFirst || (nameParts[0] || '');
+            const lastName = localProfile?.lastName || nameParts.slice(1).join(' ');
+            if (firstName && !localStorage.getItem('user_first_name')) {
+              localStorage.setItem('user_first_name', firstName);
+            }
+            if (fullName && !localStorage.getItem('user_name')) {
+              localStorage.setItem('user_name', fullName);
+            }
             const nextUser = {
               id: decoded.userId,
               email: decoded.email || localProfile?.email || '',
               user_metadata: {
                 role: decoded.role || localProfile?.role || 'user',
-                full_name: localProfile?.displayName || '',
-                firstName: localProfile?.firstName || '',
-                lastName: localProfile?.lastName || '',
+                full_name: fullName,
+                firstName: firstName,
+                first_name: firstName,
+                lastName: lastName,
+                last_name: lastName,
               },
               app_metadata: {},
               aud: 'authenticated',
@@ -864,6 +910,51 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           console.warn('Error during custom auth change handler:', err);
         }
       } else {
+        const localProfile = readLocalProfile();
+        const storedEmail = localStorage.getItem('user_email') || localStorage.getItem('pending_auth_email') || localProfile?.email;
+        const storedName = localStorage.getItem('user_name') || localProfile?.displayName || localProfile?.firstName;
+        const isNewOrOnboarding = localStorage.getItem('is_new_user') === 'true' ||
+          localStorage.getItem('auth_flow_step') === 'profile-setup' ||
+          localStorage.getItem('pin_setup_required') === 'true' ||
+          localStorage.getItem('onboarding_completed') === 'true';
+
+        if (isNewOrOnboarding && (storedEmail || storedName || localProfile)) {
+          const fullName = storedName || localProfile?.displayName || 'User';
+          const nameParts = fullName.trim().split(/\s+/).filter(Boolean);
+          const firstName = localProfile?.firstName || nameParts[0] || 'User';
+          const lastName = localProfile?.lastName || nameParts.slice(1).join(' ');
+
+          const nextUser = {
+            id: (localProfile as any)?.id || localStorage.getItem('user_id') || `local_user_${Date.now()}`,
+            email: storedEmail || 'user@kanaku.local',
+            user_metadata: {
+              role: 'user',
+              full_name: fullName,
+              firstName,
+              first_name: firstName,
+              lastName,
+              last_name: lastName,
+              onboarding_completed: localStorage.getItem('onboarding_completed') === 'true',
+            },
+            app_metadata: {},
+            aud: 'authenticated',
+            created_at: new Date().toISOString(),
+          } as User;
+
+          if (isMounted) {
+            setUser(nextUser);
+            setSession({
+              access_token: 'local_offline_token',
+              refresh_token: '',
+              expires_in: 86400,
+              token_type: 'bearer',
+              user: nextUser,
+            } as Session);
+            setRole('user');
+          }
+          return;
+        }
+
         const { data: { session: supabaseSession } } = await supabase.auth.getSession();
         if (supabaseSession) {
           return;
@@ -891,10 +982,55 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setDataSyncError(null);
     };
 
+    // When onboarding completes, ensure the authenticated user state is immediately populated
+    const handleOnboardingCompletedEvent = (e: Event) => {
+      const detail = (e as CustomEvent)?.detail;
+      const profile = detail?.profile || readLocalProfile();
+      const localProfile = profile || {};
+      const storedFirst = localStorage.getItem('user_first_name') || localProfile?.firstName || '';
+      const storedName = localStorage.getItem('user_name') || localProfile?.displayName || '';
+      const fullName = localProfile?.displayName || storedName || (storedFirst ? `${storedFirst}` : 'User');
+      const nameParts = fullName.trim().split(/\s+/).filter(Boolean);
+      const firstName = localProfile?.firstName || storedFirst || (nameParts[0] || 'User');
+      const lastName = localProfile?.lastName || nameParts.slice(1).join(' ');
+      const email = localProfile?.email || localStorage.getItem('user_email') || localStorage.getItem('pending_auth_email') || 'user@kanaku.local';
+
+      const completedUser: User = {
+        id: (localProfile as any)?.id || localStorage.getItem('user_id') || `local_user_${Date.now()}`,
+        email,
+        user_metadata: {
+          role: 'user',
+          full_name: fullName,
+          firstName,
+          first_name: firstName,
+          lastName,
+          last_name: lastName,
+          onboarding_completed: true,
+        },
+        app_metadata: {},
+        aud: 'authenticated',
+        created_at: new Date().toISOString(),
+      };
+
+      if (isMounted) {
+        setUser(completedUser);
+        setSession({
+          access_token: TokenManager.getAccessToken() || 'local_offline_token',
+          refresh_token: TokenManager.getRefreshToken() || '',
+          expires_in: 86400,
+          token_type: 'bearer',
+          user: completedUser,
+        } as Session);
+        setRole('user');
+        setLoading(false);
+      }
+    };
+
     window.addEventListener('offline', handleOffline);
     window.addEventListener('online', handleOnline);
     window.addEventListener('KANAKU_AUTH_CHANGE', handleCustomAuthChange);
     window.addEventListener('KANAKU_PIN_LOCKED', handlePinLocked);
+    window.addEventListener('ONBOARDING_COMPLETED', handleOnboardingCompletedEvent);
 
     let initialSyncDone = false;
 
@@ -912,14 +1048,28 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             const decoded = decodeJwt(customToken);
             if (decoded && decoded.userId) {
               const localProfile = readLocalProfile();
+              const storedFirst = localStorage.getItem('user_first_name') || '';
+              const storedName = localStorage.getItem('user_name') || '';
+              const fullName = decoded.name || localProfile?.displayName || storedName || '';
+              const nameParts = fullName.trim().split(/\s+/).filter(Boolean);
+              const firstName = localProfile?.firstName || storedFirst || (nameParts[0] || '');
+              const lastName = localProfile?.lastName || nameParts.slice(1).join(' ');
+              if (firstName && !localStorage.getItem('user_first_name')) {
+                localStorage.setItem('user_first_name', firstName);
+              }
+              if (fullName && !localStorage.getItem('user_name')) {
+                localStorage.setItem('user_name', fullName);
+              }
               nextUser = {
                 id: decoded.userId,
                 email: decoded.email || localProfile?.email || '',
                 user_metadata: {
                   role: decoded.role || localProfile?.role || 'user',
-                  full_name: localProfile?.displayName || '',
-                  firstName: localProfile?.firstName || '',
-                  lastName: localProfile?.lastName || '',
+                  full_name: fullName,
+                  firstName: firstName,
+                  first_name: firstName,
+                  lastName: lastName,
+                  last_name: lastName,
                 },
                 app_metadata: {},
                 aud: 'authenticated',
@@ -934,21 +1084,49 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 user: nextUser,
               } as Session;
 
-              // Validate the token against the backend in background
+              // Validate the token against the backend in background and pre-populate profile
               void (async () => {
                 try {
                   const profileResponse = await api.auth.getProfile({ includePrivate: true });
-                  if (!profileResponse.success) {
+                  if (profileResponse.success && profileResponse.data) {
+                    const p = profileResponse.data;
+                    const remoteFirst = (p.firstName || p.first_name || (p.name ? p.name.trim().split(/\s+/)[0] : '')).trim();
+                    const remoteFull = (p.name || p.fullName || `${p.firstName || ''} ${p.lastName || ''}`).trim();
+                    if (remoteFirst) {
+                      localStorage.setItem('user_first_name', remoteFirst);
+                    }
+                    if (remoteFull) {
+                      localStorage.setItem('user_name', remoteFull);
+                    }
+                    const lp = readLocalProfile() || {} as any;
+                    localStorage.setItem('user_profile', JSON.stringify({
+                      ...lp,
+                      firstName: remoteFirst || lp.firstName,
+                      displayName: remoteFull || lp.displayName,
+                    }));
+                    window.dispatchEvent(new CustomEvent('KANAKU_PROFILE_UPDATED'));
+                  } else if (!profileResponse.success) {
                     console.warn('Backend custom JWT profile verification failed:', profileResponse.message);
                   }
                 } catch (err: any) {
                   if (err?.status === 401) {
-                    console.warn('Custom token is unauthorized, performing clean signout.');
-                    TokenManager.clearTokens();
-                    if (isMounted) {
-                      setUser(null);
-                      setSession(null);
-                      setRole('user');
+                    const isOnboardingActive = typeof window !== 'undefined' && (
+                      localStorage.getItem('is_new_user') === 'true' ||
+                      localStorage.getItem('auth_flow_step') === 'profile-setup' ||
+                      localStorage.getItem('pin_setup_required') === 'true' ||
+                      window.location.pathname.includes('/onboarding') ||
+                      window.location.pathname.includes('/signup')
+                    );
+                    if (!isOnboardingActive) {
+                      console.warn('Custom token is unauthorized, performing clean signout.');
+                      TokenManager.clearTokens();
+                      if (isMounted) {
+                        setUser(null);
+                        setSession(null);
+                        setRole('user');
+                      }
+                    } else {
+                      console.warn('Custom token unauthorized during onboarding background sync, keeping local user session intact.');
                     }
                   }
                 }
@@ -957,6 +1135,49 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           } catch (err) {
             console.warn('Error during custom JWT session recovery:', err);
           }
+        }
+      }
+
+      // Local-first fallback session recovery when token is not yet established or offline:
+      if (!nextUser) {
+        const localProfile = readLocalProfile();
+        const storedEmail = localStorage.getItem('user_email') || localStorage.getItem('pending_auth_email') || localProfile?.email;
+        const storedName = localStorage.getItem('user_name') || localProfile?.displayName || localProfile?.firstName;
+        const isNewOrOnboarding = localStorage.getItem('is_new_user') === 'true' ||
+          localStorage.getItem('auth_flow_step') === 'profile-setup' ||
+          localStorage.getItem('pin_setup_required') === 'true' ||
+          localStorage.getItem('onboarding_completed') === 'true';
+
+        if (isNewOrOnboarding && (storedEmail || storedName || localProfile)) {
+          const fullName = storedName || localProfile?.displayName || 'User';
+          const nameParts = fullName.trim().split(/\s+/).filter(Boolean);
+          const firstName = localProfile?.firstName || nameParts[0] || 'User';
+          const lastName = localProfile?.lastName || nameParts.slice(1).join(' ');
+
+          nextUser = {
+            id: (localProfile as any)?.id || localStorage.getItem('user_id') || `local_user_${Date.now()}`,
+            email: storedEmail || 'user@kanaku.local',
+            user_metadata: {
+              role: 'user',
+              full_name: fullName,
+              firstName,
+              first_name: firstName,
+              lastName,
+              last_name: lastName,
+              onboarding_completed: localStorage.getItem('onboarding_completed') === 'true',
+            },
+            app_metadata: {},
+            aud: 'authenticated',
+            created_at: new Date().toISOString(),
+          } as User;
+
+          activeSession = {
+            access_token: TokenManager.getAccessToken() || 'local_offline_token',
+            refresh_token: TokenManager.getRefreshToken() || '',
+            expires_in: 86400,
+            token_type: 'bearer',
+            user: nextUser,
+          } as Session;
         }
       }
 
@@ -1139,6 +1360,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('KANAKU_AUTH_CHANGE', handleCustomAuthChange);
       window.removeEventListener('KANAKU_PIN_LOCKED', handlePinLocked);
+      window.removeEventListener('ONBOARDING_COMPLETED', handleOnboardingCompletedEvent);
     };
   }, []);
 

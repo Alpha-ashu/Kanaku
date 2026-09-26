@@ -7,6 +7,7 @@ import { SignUpForm } from './SignUpForm';
 import { OTPVerification } from './OTPVerification';
 import { PINSetup } from './PINSetup';
 import { ProfileVerificationModal } from './ProfileVerificationModal';
+import { NewUserOnboarding } from './onboarding/NewUserOnboarding';
 import { useProfileVerification, setLocalProfileVerification } from '@/hooks/useProfileVerification';
 import supabase from '@/utils/supabase/client';
 import { toast } from 'sonner';
@@ -96,7 +97,18 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
   const { isVerified } = useProfileVerification();
   const [showVerifyModal, setShowVerifyModal] = useState(false);
   const [verifyLaterChosen, setVerifyLaterChosen] = useState(false);
-  const [step, setStep] = useState<AuthStep>(initialStep || 'welcome');
+  const [step, setStep] = useState<AuthStep>(() => {
+    try {
+      const storedStep = localStorage.getItem('auth_flow_step') as AuthStep | null;
+      if (
+        storedStep &&
+        ['profile-setup', 'salary-setup', 'otp-verify', 'email-confirm', 'reset-otp-verify', 'reset-password'].includes(storedStep)
+      ) {
+        return storedStep;
+      }
+    } catch {}
+    return initialStep || 'signup';
+  });
   const [email, setEmail] = useState('');
   const [isNewUser, setIsNewUser] = useState(() => {
     try {
@@ -177,6 +189,12 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
         setIsNewUser(true);
       }
 
+      if (flowStep === 'profile-setup' || flowStep === 'salary-setup') {
+        if (pendingEmail) setEmail(pendingEmail);
+        setStep(flowStep as AuthStep);
+        return;
+      }
+
       if (pendingEmail && flowStep) {
         const isResetStep = flowStep === 'reset-otp-verify' || flowStep === 'reset-password';
         if (isResetStep && timestampStr) {
@@ -198,12 +216,25 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
   useEffect(() => {
     const isResetFlow = step === 'reset-otp-verify' || step === 'reset-password' || step === 'reset-success';
     const isSignupOtpFlow = step === 'otp-verify';
-    if (!isResetFlow && !isSignupOtpFlow && step !== 'forgot-password') {
+    const isOnboardingFlow = step === 'profile-setup' || step === 'salary-setup';
+    if (!isResetFlow && !isSignupOtpFlow && !isOnboardingFlow && step !== 'forgot-password' && step !== 'signup') {
       localStorage.removeItem('auth_flow_step');
       localStorage.removeItem('pending_auth_email');
       localStorage.removeItem('auth_flow_step_timestamp');
     }
   }, [step]);
+
+  useEffect(() => {
+    const handleOnboardingDone = () => {
+      localStorage.removeItem('auth_flow_step');
+      localStorage.removeItem('pending_auth_email');
+      localStorage.removeItem('auth_flow_step_timestamp');
+      localStorage.removeItem('is_new_user');
+      onLogin?.();
+    };
+    window.addEventListener('ONBOARDING_COMPLETED', handleOnboardingDone);
+    return () => window.removeEventListener('ONBOARDING_COMPLETED', handleOnboardingDone);
+  }, [onLogin]);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -282,6 +313,13 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
 
       if (user) {
         localStorage.setItem('onboarding_completed', 'true');
+        if (user.name) {
+          localStorage.setItem('user_name', user.name);
+          const first = user.name.trim().split(/\s+/)[0];
+          if (first) {
+            localStorage.setItem('user_first_name', first);
+          }
+        }
       }
 
       window.dispatchEvent(new CustomEvent('KANAKU_AUTH_CHANGE'));
@@ -374,6 +412,10 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
           monthlyIncome: '',
         });
         setIsNewUser(true);
+        if (data.firstName) {
+          localStorage.setItem('user_first_name', data.firstName.trim());
+          localStorage.setItem('user_name', fullName);
+        }
 
         // Email confirmation ON → Supabase returns no session until the user
         // clicks the confirmation link. We must NOT advance into onboarding (the
@@ -425,6 +467,10 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
       setIsNewUser(true);
       localStorage.setItem('is_new_user', 'true');
       localStorage.removeItem('onboarding_completed');
+      if (data.firstName) {
+        localStorage.setItem('user_first_name', data.firstName.trim());
+        localStorage.setItem('user_name', `${data.firstName} ${data.lastName || ''}`.trim());
+      }
       pinService.clearPinData();
 
       const resData = response.data as any;
@@ -448,8 +494,8 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
         TokenManager.setAccessToken(accessToken);
       }
 
-      localStorage.removeItem('auth_flow_step');
-      localStorage.removeItem('pending_auth_email');
+      setStep('profile-setup');
+      saveFlowState('profile-setup', data.email);
       localStorage.removeItem('onboarding_completed');
       window.dispatchEvent(new CustomEvent('KANAKU_AUTH_CHANGE'));
       toast.success("Account created! Let's set up your profile.");
@@ -487,20 +533,13 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
   };
 
   const handleOTPVerified = async () => {
-    const isNew = isNewUser || localStorage.getItem('is_new_user') === 'true';
+    const isNew = isNewUser || localStorage.getItem('is_new_user') === 'true' || localStorage.getItem('onboarding_completed') !== 'true';
     if (isNew) {
-      // New users skip AuthFlow onboarding and go to NewUserOnboarding in App.tsx
-      localStorage.removeItem('is_new_user');
-      localStorage.removeItem('auth_flow_step');
-      localStorage.removeItem('pending_auth_email');
+      setStep('profile-setup');
+      saveFlowState('profile-setup');
       localStorage.removeItem('onboarding_completed');
       pinService.clearPinData();
       window.dispatchEvent(new CustomEvent('KANAKU_AUTH_CHANGE'));
-      setTimeout(() => {
-        if (!window.location.hash || window.location.hash === '#/') {
-          window.location.href = '/';
-        }
-      }, 1500);
     } else {
       // Check if user already has PIN server-side before routing to pin-setup
       try {
@@ -528,7 +567,8 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
     // Limited mode - record unverified status so view-only mode is active
     setLocalProfileVerification(false);
     setVerifyLaterChosen(true);
-    if (isNewUser) {
+    const isNew = isNewUser || localStorage.getItem('is_new_user') === 'true' || localStorage.getItem('onboarding_completed') !== 'true';
+    if (isNew) {
       setStep('profile-setup');
       saveFlowState('profile-setup');
     } else {
@@ -723,59 +763,61 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
     testIdPrefix?: string;
   }) => {
     return (
-      <div className="relative min-h-screen bg-[#FDFEFE] text-slate-900 font-sans flex flex-col lg:flex-row overflow-x-hidden select-none">
+      <div className="relative min-h-screen bg-gradient-to-br from-[#EDE9FE]/50 via-[#F5F4FE]/40 to-[#F8F9FD] text-slate-900 font-sans flex flex-col lg:flex-row overflow-x-hidden select-none">
         {/* Left Column: Branded SaaS Desktop Showcase */}
-        <div className="hidden lg:block lg:w-1/2 xl:w-[48%] sticky top-0 h-screen overflow-hidden">
+        <div className="hidden lg:block lg:w-[45%] xl:w-[44%] sticky top-0 h-screen overflow-hidden">
           <AuthShowcase />
         </div>
 
         {/* Right Column: Form Container with Smooth Viewport-Aware Scrolling */}
-        <div className="w-full lg:w-1/2 xl:w-[52%] min-h-screen overflow-y-auto flex flex-col justify-between p-4 sm:p-6 md:p-8 lg:p-10 xl:p-12 relative z-10">
+        <div className="w-full lg:w-[55%] xl:w-[56%] min-h-screen overflow-y-auto flex flex-col justify-between p-4 sm:p-6 md:p-8 lg:p-8 xl:p-12 relative z-10">
           {/* Ambient Glows */}
-          <div className="absolute top-0 right-0 w-[450px] h-[450px] bg-violet-100/35 rounded-full blur-3xl pointer-events-none -z-10" />
-          <div className="absolute bottom-10 left-10 w-[400px] h-[400px] bg-blue-100/25 rounded-full blur-3xl pointer-events-none -z-10" />
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-violet-300/20 rounded-full blur-3xl pointer-events-none -z-10" />
+          <div className="absolute bottom-10 left-10 w-[450px] h-[450px] bg-indigo-200/20 rounded-full blur-3xl pointer-events-none -z-10" />
 
           {/* Top Bar: Brand + Navigation */}
-          <div className="w-full flex items-center justify-between mb-4 sm:mb-6">
+          <div className="w-full flex items-center justify-between mb-4 sm:mb-6 max-w-md sm:max-w-lg lg:max-w-xl xl:max-w-[560px] mx-auto">
             <div className="flex items-center">
-              <KanakuWordmark logoClassName="w-8 h-8" textClassName="text-xl" />
+              <KanakuWordmark logoClassName="w-8 h-8 sm:w-9 sm:h-9" textClassName="text-xl sm:text-2xl font-black text-slate-900" />
             </div>
 
-            {showBackButton ? (
-              <button
-                data-testid={`${testIdPrefix}-back`}
-                type="button"
-                onClick={backAction || (() => setStep('welcome'))}
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 transition-colors py-1.5 px-3 rounded-xl hover:bg-slate-100"
-              >
-                <span>←</span> {backLabel}
-              </button>
-            ) : <div />}
+            <div className="flex items-center gap-2 sm:gap-3">
+              {showBackButton && (
+                <button
+                  data-testid={`${testIdPrefix}-back`}
+                  type="button"
+                  onClick={backAction || (() => setStep('welcome'))}
+                  className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 transition-all py-1.5 px-3 rounded-full bg-white/80 hover:bg-white border border-slate-200/80 shadow-2xs cursor-pointer active:scale-95"
+                >
+                  <span>←</span> <span>{backLabel}</span>
+                </button>
+              )}
 
-            <div className="hidden sm:flex items-center gap-2 text-xs font-semibold text-slate-400">
-              <span className="w-2 h-2 rounded-full bg-emerald-500" />
-              <span>Encrypted connection</span>
+              <div className="hidden sm:inline-flex items-center gap-1.5 text-2xs sm:text-xs font-bold text-emerald-700 bg-emerald-50/90 border border-emerald-200/80 px-2.5 py-1 rounded-full shadow-2xs">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span>Encrypted connection</span>
+              </div>
             </div>
           </div>
 
           {/* Centered Form / Content Card */}
           <div className="flex-1 flex flex-col justify-center my-auto w-full py-2 sm:py-4">
             <motion.div
-              initial={{ opacity: 0, y: 12 }}
+              initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-              className="w-full max-w-lg mx-auto p-4 sm:p-6 bg-white border border-slate-100/80 shadow-[0_10px_30px_-4px_rgba(112,144,176,0.08)] rounded-[28px] sm:rounded-[32px] relative overflow-hidden"
+              className="w-full max-w-md sm:max-w-lg lg:max-w-xl xl:max-w-[560px] mx-auto p-5 sm:p-7 md:p-8 xl:p-9 bg-white/95 backdrop-blur-2xl border border-slate-200/90 shadow-[0_20px_50px_-12px_rgba(112,144,176,0.14),0_1px_3px_rgba(0,0,0,0.04)] rounded-3xl sm:rounded-[32px] relative overflow-hidden transition-all"
             >
               {title && (
-                <div className="pb-4 sm:pb-5 border-b border-slate-100 mb-4 sm:mb-5">
+                <div className="pb-4 sm:pb-5 border-b border-slate-100 mb-5 sm:mb-6">
                   {badge && (
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-50 text-purple-700 border border-purple-100/80 text-xs font-bold mb-2.5">
-                      <Sparkles size={13} className="text-purple-600" />
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-violet-50 text-violet-700 border border-violet-200/80 text-xs font-bold mb-3 shadow-2xs">
+                      <Sparkles size={13} className="text-violet-600" />
                       <span>{badge}</span>
                     </div>
                   )}
-                  <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight leading-snug">{title}</h1>
-                  {subtitle && <p className="text-slate-500 mt-1.5 text-xs sm:text-sm font-normal leading-relaxed">{subtitle}</p>}
+                  <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight leading-tight">{title}</h1>
+                  {subtitle && <p className="text-slate-500 mt-2 text-xs sm:text-sm font-normal leading-relaxed">{subtitle}</p>}
                 </div>
               )}
 
@@ -786,13 +828,13 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
           </div>
 
           {/* Footer Legal Links */}
-          <div className="pt-6 pb-2 text-center text-xs text-slate-400 font-medium select-none flex items-center justify-center flex-wrap gap-x-2 gap-y-1">
+          <div className="pt-6 pb-2 text-center text-xs text-slate-400 font-medium select-none flex items-center justify-center flex-wrap gap-x-2.5 gap-y-1">
             <span>Local-First Private Ledger</span>
             <span className="text-slate-300">&bull;</span>
             <button
               type="button"
               onClick={() => setStep('privacy')}
-              className="inline text-xs font-medium text-slate-400 hover:text-slate-600 underline underline-offset-2 transition-colors"
+              className="inline text-xs font-medium text-slate-400 hover:text-slate-600 underline underline-offset-2 transition-colors cursor-pointer"
             >
               Privacy Policy
             </button>
@@ -800,7 +842,7 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
             <button
               type="button"
               onClick={() => setStep('terms')}
-              className="inline text-xs font-medium text-slate-400 hover:text-slate-600 underline underline-offset-2 transition-colors"
+              className="inline text-xs font-medium text-slate-400 hover:text-slate-600 underline underline-offset-2 transition-colors cursor-pointer"
             >
               Terms of Service
             </button>
@@ -815,430 +857,59 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
     return (
       <>
         {renderAuthContainer({
-          title: 'Master Your Finances',
-          subtitle: 'Track spending, budgets and net worth in one offline-first app.',
-          badge: 'Intelligent Wealth OS',
+          title: 'Take Control of Your Money',
+          subtitle: 'Track your expenses, accounts, and budgets in one private, offline-first app.',
           showBackButton: !!onBack,
           backAction: onBack,
           backLabel: 'Landing Page',
           children: (
-            <div className="space-y-6">
-              {/* 3 Value Pillars */}
-              <div className="grid grid-cols-3 gap-2.5 py-1">
-                <div className="p-3 bg-slate-50 border border-slate-100 rounded-2xl text-center">
-                  <TrendingUp className="w-4 h-4 text-violet-600 mx-auto mb-1" />
-                  <p className="text-xs font-bold text-slate-800">Insights</p>
-                  <p className="text-2xs text-slate-400">Live Delta</p>
-                </div>
-                <div className="p-3 bg-slate-50 border border-slate-100 rounded-2xl text-center">
-                  <Shield className="w-4 h-4 text-emerald-600 mx-auto mb-1" />
-                  <p className="text-xs font-bold text-slate-800">Private</p>
-                  <p className="text-2xs text-slate-400">PIN lock</p>
-                </div>
-                <div className="p-3 bg-slate-50 border border-slate-100 rounded-2xl text-center">
-                  <Sparkles className="w-4 h-4 text-amber-500 mx-auto mb-1" />
-                  <p className="text-xs font-bold text-slate-800">Smart</p>
-                  <p className="text-2xs text-slate-400">AI Alerts</p>
-                </div>
-              </div>
+            <div className="space-y-4 pt-2">
+              <motion.button
+                data-testid="auth-flow-create-account"
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
+                onClick={() => setStep('signup')}
+                className="w-full bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 hover:from-violet-700 hover:to-blue-700 text-white font-bold rounded-2xl py-4 text-base shadow-lg shadow-violet-500/20 transition-all flex items-center justify-center gap-2"
+              >
+                <span>Create Free Account</span>
+                <ArrowRight className="w-4 h-4" />
+              </motion.button>
 
-              <div className="space-y-3 pt-2">
-                <motion.button
-                  data-testid="auth-flow-create-account"
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.99 }}
-                  onClick={() => setStep('signup')}
-                  className="w-full bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 hover:from-violet-700 hover:to-blue-700 text-white font-bold rounded-2xl py-4 text-base shadow-lg shadow-violet-500/20 transition-all flex items-center justify-center gap-2"
-                >
-                  <span>Create Free Account</span>
-                  <ArrowRight className="w-4 h-4" />
-                </motion.button>
-
-                <motion.button
-                  data-testid="auth-flow-sign-in"
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.99 }}
-                  onClick={() => setStep('signin')}
-                  className="w-full bg-white hover:bg-slate-50 border border-slate-200 text-slate-800 rounded-2xl py-3.5 font-bold text-base shadow-sm transition-all flex items-center justify-center gap-2"
-                >
-                  Sign In
-                </motion.button>
-
-              </div>
+              <motion.button
+                data-testid="auth-flow-sign-in"
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
+                onClick={() => setStep('signin')}
+                className="w-full bg-white hover:bg-slate-50 border border-slate-200 text-slate-800 rounded-2xl py-3.5 font-bold text-base shadow-sm transition-all flex items-center justify-center gap-2"
+              >
+                Sign In
+              </motion.button>
             </div>
           ),
         })}
-
       </>
     );
   };
 
 
- // Profile Setup Step
- const renderProfileSetup = () => (
- <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
- <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg">
- <div className="p-6 border-b border-gray-200">
- <h2 className="text-xl font-semibold text-gray-800">Complete Your Profile</h2>
- <p className="text-sm text-gray-600 mt-1">Tell us a bit about yourself</p>
- </div>
- <form data-testid="auth-flow-form"
- className="p-6 space-y-4"
- onSubmit={(e) => {
- e.preventDefault();
- const formData = new FormData(e.target as HTMLFormElement);
- handleProfileComplete({
- // Read firstName/lastName/mobile from the actual form inputs (not stale state)
- firstName: (formData.get('firstName') as string) || userProfile?.firstName || '',
- lastName: (formData.get('lastName') as string) || userProfile?.lastName || '',
- email: email,
- mobile: (formData.get('mobile') as string) || userProfile?.mobile || '',
- dateOfBirth: formData.get('dob') as string,
- jobType: formData.get('jobType') as string,
- jobIndustry: formData.get('jobIndustry') as string,
- monthlyIncome: formData.get('income') as string,
- });
- }}
- >
- <div className="grid grid-cols-2 gap-4">
- <div>
- <label htmlFor="ps-firstName" className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
- <input data-testid="auth-flow-first-name"
- type="text"
- id="ps-firstName"
- name="firstName"
- defaultValue={userProfile?.firstName}
- className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
- required
- />
- </div>
- <div>
- <label htmlFor="ps-lastName" className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
- <input data-testid="auth-flow-last-name"
- type="text"
- id="ps-lastName"
- name="lastName"
- defaultValue={userProfile?.lastName}
- className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
- required
- />
- </div>
- </div>
-
-  <div>
-    <label htmlFor="ps-dob" className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
-    <div data-testid="auth-flow-div" 
-      className="relative group w-full" 
-      onClick={(e) => {
-        const input = e.currentTarget.querySelector('input');
-        if (input) (input as any).showPicker?.();
+  // Profile Setup & Salary Setup (delegates to canonical 4-step NewUserOnboarding)
+  const renderProfileSetup = () => (
+    <NewUserOnboarding
+      onComplete={() => {
+        localStorage.removeItem('auth_flow_step');
+        localStorage.removeItem('pending_auth_email');
+        onLogin?.();
       }}
-    >
-      <div className="w-full px-4 py-3 border border-gray-300 rounded-xl focus-within:ring-2 focus-within:ring-blue-500 text-sm text-left flex items-center justify-between bg-white min-h-[46px] cursor-pointer">
-        <span className={psDob ? "text-gray-900" : "text-gray-400"}>
-          {(() => {
-            if (!psDob) return 'Select Date';
-            try {
-              const date = new Date(psDob);
-              if (isNaN(date.getTime())) return psDob;
-              const day = String(date.getDate()).padStart(2, '0');
-              const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-              return `${day}-${months[date.getMonth()]}-${date.getFullYear()}`;
-            } catch (err) {
-              return psDob;
-            }
-          })()}
-        </span>
-        <Calendar size={14} className="text-gray-400" />
-      </div>
-      <input data-testid="auth-flow-dob"
-        type="date"
-        id="ps-dob"
-        name="dob"
-        value={psDob}
-        onChange={(e) => setPsDob(e.target.value)}
-        className="absolute inset-0 opacity-0 cursor-pointer z-20"
-        required
-        max={new Date().toISOString().split('T')[0]}
-      />
-    </div>
-  </div>
-
-  <div>
-  <label htmlFor="ps-mobile" className="block text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
-  <input data-testid="auth-flow-mobile"
-  type="tel"
-  id="ps-mobile"
-  name="mobile"
-  defaultValue={userProfile?.mobile}
-  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-  placeholder="e.g. 9876543210"
-  required
-  />
-  </div>
-
- <div className="grid grid-cols-2 gap-4">
- <div>
- <label htmlFor="ps-jobType" className="block text-sm font-medium text-gray-700 mb-1">Job Type</label>
- <select data-testid="auth-flow-job-type"
- id="ps-jobType"
- name="jobType"
- className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
- required
- >
- <option data-testid="auth-flow-select" value="">Select...</option>
- <option data-testid="auth-flow-full-time" value="full-time">Full-time</option>
- <option data-testid="auth-flow-part-time" value="part-time">Part-time</option>
- <option data-testid="auth-flow-self-employed" value="self-employed">Self-employed</option>
- <option data-testid="auth-flow-freelance" value="freelance">Freelance</option>
- <option data-testid="auth-flow-student" value="student">Student</option>
- <option data-testid="auth-flow-retired" value="retired">Retired</option>
- </select>
- </div>
- <div>
- <label htmlFor="ps-jobIndustry" className="block text-sm font-medium text-gray-700 mb-1">Industry</label>
- <select data-testid="auth-flow-job-industry"
- id="ps-jobIndustry"
- name="jobIndustry"
- className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
- required
- >
- <option data-testid="auth-flow-select-2" value="">Select...</option>
- <option data-testid="auth-flow-it-technology" value="it">IT / Technology</option>
- <option data-testid="auth-flow-finance" value="finance">Finance</option>
- <option data-testid="auth-flow-healthcare" value="healthcare">Healthcare</option>
- <option data-testid="auth-flow-education" value="education">Education</option>
- <option data-testid="auth-flow-retail" value="retail">Retail</option>
- <option data-testid="auth-flow-other" value="other">Other</option>
- </select>
- </div>
- </div>
-
- <div>
- <label htmlFor="ps-income" className="block text-sm font-medium text-gray-700 mb-1">Monthly Income (INR)</label>
- <input data-testid="auth-flow-50000"
- type="number"
- id="ps-income"
- name="income"
- placeholder="50000"
- className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
- required
- />
- </div>
-
-          {/* Profile Verification Card with Verify Now and Verify Later */}
-          <div className="pt-2">
-            <div className={`p-4 rounded-xl border transition-all ${
-              isVerified
-                ? 'bg-emerald-50/70 border-emerald-200/80'
-                : verifyLaterChosen
-                ? 'bg-amber-50/70 border-amber-200/80'
-                : 'bg-slate-50 border-slate-200/80'
-            }`}>
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${
-                    isVerified ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-100 text-blue-600'
-                  }`}>
-                    {isVerified ? <CheckCircle size={16} /> : <ShieldCheck size={16} />}
-                  </div>
-                  <span className="text-xs font-bold text-slate-900">
-                    Profile Verification
-                  </span>
-                </div>
-                <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider ${
-                  isVerified
-                    ? 'bg-emerald-100 text-emerald-700'
-                    : verifyLaterChosen
-                    ? 'bg-amber-100 text-amber-700'
-                    : 'bg-slate-200 text-slate-600'
-                }`}>
-                  {isVerified ? 'Verified' : verifyLaterChosen ? 'Deferred (View-Only)' : 'Required'}
-                </span>
-              </div>
-
-              <p className="text-xs text-slate-500 mb-3 leading-relaxed">
-                {isVerified
-                  ? 'Your profile is verified. You have full access to enter transactions, link accounts, and manage your ledger.'
-                  : verifyLaterChosen
-                  ? 'View-Only Mode active: You can explore your dashboard, but adding or editing records is locked until verification.'
-                  : 'Verify now with a 6-digit code to enable record entry, or choose verify later to proceed in View-Only mode.'}
-              </p>
-
-              {!isVerified && (
-                <div className="grid grid-cols-2 gap-2 mb-1">
-                  <button
-                    type="button"
-                    onClick={() => setShowVerifyModal(true)}
-                    data-testid="auth-flow-profile-verify-now"
-                    className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-xs transition-colors cursor-pointer"
-                  >
-                    <ShieldCheck size={14} />
-                    <span>Verify Now</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setVerifyLaterChosen(true);
-                      setLocalProfileVerification(false);
-                      toast.info('View-Only mode selected. You can verify anytime to add records.');
-                    }}
-                    data-testid="auth-flow-profile-verify-later"
-                    className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg font-bold text-xs transition-colors cursor-pointer ${
-                      verifyLaterChosen
-                        ? 'bg-amber-100 text-amber-800 border border-amber-300'
-                        : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
-                    }`}
-                  >
-                    <Clock size={14} />
-                    <span>Verify Later</span>
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-
- <button data-testid="auth-flow-button"
- type="submit"
- disabled={isLoading}
- className="w-full py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
- >
- {isLoading
-   ? 'Saving...'
-   : isVerified
-   ? 'Continue'
-   : verifyLaterChosen
-   ? 'Continue in View-Only Mode'
-   : 'Continue'}
- </button>
- </form>
-
- <ProfileVerificationModal
-   isOpen={showVerifyModal}
-   onClose={() => setShowVerifyModal(false)}
-   email={email}
-   onVerified={() => {
-     setShowVerifyModal(false);
-     setVerifyLaterChosen(false);
-   }}
- />
- </div>
- </div>
- );
-
- // Salary Setup Step
- const renderSalarySetup = () => (
- <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
- <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg">
- <div className="p-6 border-b border-gray-200">
- <h2 className="text-xl font-semibold text-gray-800">Salary Account Setup</h2>
- <p className="text-sm text-gray-600 mt-1">Link your salary account for automatic tracking</p>
- </div>
- <form data-testid="auth-flow-form-2"
- className="p-6 space-y-4"
- onSubmit={(e) => {
- e.preventDefault();
- const formData = new FormData(e.target as HTMLFormElement);
- handleSalarySetupComplete({
- bankName: formData.get('bankName') as string,
- accountName: formData.get('accountName') as string,
- accountType: 'bank',
- openingBalance: formData.get('balance') as string,
- salaryCreditDate: formData.get('creditDate') as string,
- isPrimary: formData.get('isPrimary') === 'on',
- });
- }}
- >
- <div>
- <label htmlFor="bankName" className="block text-sm font-medium text-gray-700 mb-1">Bank Name</label>
- <select data-testid="auth-flow-bank-name"
- id="bankName"
- name="bankName"
- className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
- required
- >
- <option data-testid="auth-flow-select-your-bank" value="">Select your bank</option>
- <option data-testid="auth-flow-state-bank-of-india" value="SBI">State Bank of India</option>
- <option data-testid="auth-flow-hdfc-bank" value="HDFC">HDFC Bank</option>
- <option data-testid="auth-flow-icici-bank" value="ICICI">ICICI Bank</option>
- <option data-testid="auth-flow-axis-bank" value="Axis">Axis Bank</option>
- <option data-testid="auth-flow-kotak-mahindra-bank" value="Kotak">Kotak Mahindra Bank</option>
- <option data-testid="auth-flow-punjab-national-bank" value="PNB">Punjab National Bank</option>
- <option data-testid="auth-flow-other-2" value="other">Other</option>
- </select>
- </div>
-
- <div>
- <label className="block text-sm font-medium text-gray-700 mb-1">Account Holder Name</label>
- <input data-testid="auth-flow-as-per-bank-records"
- type="text"
- name="accountName"
- placeholder="As per bank records"
- defaultValue={`${userProfile?.firstName} ${userProfile?.lastName}`}
- className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
- required
- />
- </div>
-
- <div>
- <label className="block text-sm font-medium text-gray-700 mb-1">Opening Balance (INR)</label>
- <input data-testid="auth-flow-0"
- type="number"
- name="balance"
- placeholder="0"
- className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
- />
- <p className="text-xs text-gray-500 mt-1">Optional - current balance in this account</p>
- </div>
-
- <div>
- <label htmlFor="creditDate" className="block text-sm font-medium text-gray-700 mb-1">Salary Credit Date</label>
- <select data-testid="auth-flow-credit-date"
- id="creditDate"
- name="creditDate"
- className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
- required
- >
- <option data-testid="auth-flow-select-date" value="">Select date</option>
- {Array.from({ length: 28 }, (_, i) => i + 1).map(day => (
- <option data-testid={`auth-flow-of-every-month-${day}`} key={day} value={day}>
- {day}{day === 1 || day === 21 ? 'st' : day === 2 || day === 22 ? 'nd' : day === 3 || day === 23 ? 'rd' : 'th'} of every month
- </option>
- ))}
- </select>
- </div>
-
- <div className="flex items-center gap-2">
- <input data-testid="auth-flow-is-primary"
- type="checkbox"
- name="isPrimary"
- id="isPrimary"
- defaultChecked
- className="w-4 h-4 text-blue-600 border-gray-300 rounded"
- />
- <label htmlFor="isPrimary" className="text-sm text-gray-700">
- Set as primary account
- </label>
- </div>
-
- <div className="bg-blue-50 rounded-lg p-4">
- <p className="text-sm text-blue-800">
- <strong>Note:</strong> Your account will be automatically set up after PIN creation.
- You can add more accounts later.
- </p>
- </div>
-
- <button data-testid="auth-flow-button-2"
- type="submit"
- disabled={isLoading}
- className="w-full py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50"
- >
- {isLoading ? 'Setting up...' : 'Continue to PIN Setup'}
- </button>
- </form>
- </div>
-  </div>
+    />
+  );
+  const renderSalarySetup = () => (
+    <NewUserOnboarding
+      onComplete={() => {
+        localStorage.removeItem('auth_flow_step');
+        localStorage.removeItem('pending_auth_email');
+        onLogin?.();
+      }}
+    />
   );
 
   // Confirm-your-email Screen (shown when Supabase requires email confirmation)
@@ -1763,9 +1434,8 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  return renderResetSuccess();
  case 'signin':
     return renderAuthContainer({
-      title: 'Welcome Back',
-      subtitle: 'Sign in to access your encrypted financial dashboard.',
-      badge: 'Secure Login',
+      title: 'Sign In',
+      subtitle: 'Enter your credentials to access your financial dashboard.',
       backAction: () => setStep('welcome'),
       children: (
         <SignInForm
@@ -1778,8 +1448,7 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  case 'signup':
     return renderAuthContainer({
       title: 'Create Your Account',
-      subtitle: 'Join KANAKU to start mastering your wealth with local-first security.',
-      badge: 'Fast Setup',
+      subtitle: 'Start tracking and managing your finances in one place.',
       backAction: () => setStep('welcome'),
       testIdPrefix: 'auth-flow-back-2',
       children: (
@@ -1814,7 +1483,7 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBack, initialStep, onNavig
  <OTPVerification
  email={email}
  isNewUser={isNewUser}
- mandatory={true}
+ mandatory={false}
  onVerified={handleOTPVerified}
  onVerifyLater={handleOTPSkip}
  onBack={() => setStep('signup')}

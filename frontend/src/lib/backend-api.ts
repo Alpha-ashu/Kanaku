@@ -263,9 +263,13 @@ class BackendService {
           console.warn('[BackendService] Unauthorized request, performing clean signout.');
           TokenManager.clearTokens();
           setTimeout(() => {
-            if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
-              console.log('[KANAKU Navigation] Redirected to Login: Reason = Unauthorized / Session Expired');
-              window.location.href = '/login';
+            if (typeof window !== 'undefined') {
+              const currentPath = window.location.pathname.replace(/^\//, '').split('?')[0].toLowerCase();
+              const isPublic = !currentPath || ['about', 'pricing', 'contact', 'privacy', 'privacy-policy', 'terms', 'data-deletion', 'login', 'auth', 'signin', 'signup', 'register'].includes(currentPath);
+              if (!isPublic) {
+                console.log('[KANAKU Navigation] Redirected to Login: Reason = Unauthorized / Session Expired');
+                window.location.href = '/login';
+              }
             }
           }, 100);
 

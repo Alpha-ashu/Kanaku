@@ -261,12 +261,81 @@ const PAGE_REQUIRED_TABLES: Record<string, SyncedTableName[]> = {
 
 type PublicPage = 'landing' | 'about' | 'pricing' | 'contact' | 'privacy' | 'privacy-policy' | 'terms' | 'data-deletion' | 'account-deletion' | 'delete-account';
 
-const getInitialPublicPage = (): PublicPage => {
-  const path = window.location.pathname.substring(1).split('?')[0].split('#')[0];
-  if (['privacy', 'privacy-policy', 'terms', 'data-deletion', 'account-deletion', 'delete-account', 'about', 'pricing', 'contact'].includes(path)) {
-    return path as PublicPage;
+const getCleanRoute = (): string => {
+  if (typeof window === 'undefined') return '';
+  // Check hash first (e.g. #/pricing or #pricing or #/auth or #/login)
+  if (window.location.hash) {
+    const hash = window.location.hash.replace(/^#\/?/, '').split('?')[0].trim().toLowerCase();
+    if (hash && !hash.startsWith('access_token')) {
+      return hash;
+    }
   }
-  return 'landing';
+  // Otherwise check pathname
+  const path = window.location.pathname.replace(/^\//, '').split('?')[0].trim().toLowerCase();
+  return path;
+};
+
+const getInitialRouteState = () => {
+  const route = getCleanRoute();
+  const storedFlowStep = typeof window !== 'undefined' ? localStorage.getItem('auth_flow_step') : null;
+  const onboardingDone = typeof window !== 'undefined' && localStorage.getItem('onboarding_completed') === 'true';
+
+  if (
+    ['onboarding', 'profile-setup'].includes(route) ||
+    (route === 'user-profile' && !onboardingDone) ||
+    storedFlowStep === 'profile-setup' ||
+    storedFlowStep === 'salary-setup'
+  ) {
+    return {
+      showLanding: false,
+      publicPage: 'landing' as PublicPage,
+      authInitialStep: 'profile-setup' as any,
+    };
+  }
+
+  if (storedFlowStep === 'otp-verify') {
+    return {
+      showLanding: false,
+      publicPage: 'landing' as PublicPage,
+      authInitialStep: 'otp-verify' as any,
+    };
+  }
+
+  if (['auth', 'login', 'signin'].includes(route)) {
+    return {
+      showLanding: false,
+      publicPage: 'landing' as PublicPage,
+      authInitialStep: 'signin' as const,
+    };
+  }
+
+  if (['signup', 'register'].includes(route)) {
+    return {
+      showLanding: false,
+      publicPage: 'landing' as PublicPage,
+      authInitialStep: 'signup' as const,
+    };
+  }
+
+  const validPublicPages: PublicPage[] = [
+    'privacy', 'privacy-policy', 'terms', 'data-deletion',
+    'account-deletion', 'delete-account', 'about', 'pricing', 'contact'
+  ];
+
+  if (validPublicPages.includes(route as PublicPage)) {
+    return {
+      showLanding: true,
+      publicPage: route as PublicPage,
+      authInitialStep: 'welcome' as const,
+    };
+  }
+
+  // Default: Landing page (Home page)
+  return {
+    showLanding: true,
+    publicPage: 'landing' as PublicPage,
+    authInitialStep: 'welcome' as const,
+  };
 };
 
 const AppContent: React.FC = () => {
@@ -301,12 +370,55 @@ const AppContent: React.FC = () => {
   // Auto scroll to top when page changes
   useScrollToTopOnPageChange(currentPage);
 
-  // Landing page: shown only to confirmed unauthenticated visitors on web (native goes directly to signin)
-  const [showLanding, setShowLanding] = useState(() => !Capacitor.isNativePlatform());
-  const [publicPage, setPublicPage] = useState<PublicPage>(getInitialPublicPage);
+  // Landing page & route state: properly parsed from URL path or hash so reload always preserves the current page
+  const [showLanding, setShowLanding] = useState(() => getInitialRouteState().showLanding);
+  const [publicPage, setPublicPage] = useState<PublicPage>(() => getInitialRouteState().publicPage);
   const [authInitialStep, setAuthInitialStep] = useState<'welcome' | 'signin' | 'signup'>(() =>
-    Capacitor.isNativePlatform() ? 'signin' : 'welcome'
+    getInitialRouteState().authInitialStep
   );
+
+  const navigateToPublicPage = React.useCallback((page: PublicPage) => {
+    setPublicPage(page);
+    setShowLanding(true);
+    const target = page === 'landing' ? '/' : `/${page}`;
+    if (window.location.pathname !== target && window.location.hash !== `#${target}`) {
+      window.history.pushState(null, '', target);
+    }
+  }, []);
+
+  const navigateToAuth = React.useCallback((step: 'signin' | 'signup' = 'signin') => {
+    setAuthInitialStep(step);
+    setShowLanding(false);
+    const target = step === 'signup' ? '/signup' : '/login';
+    if (window.location.pathname !== target && window.location.hash !== `#${target}`) {
+      window.history.pushState(null, '', target);
+    }
+  }, []);
+
+  const navigateBackToLanding = React.useCallback(() => {
+    setShowLanding(true);
+    setPublicPage('landing');
+    if (window.location.pathname !== '/' && window.location.hash !== '#/') {
+      window.history.pushState(null, '', '/');
+    }
+  }, []);
+
+  // Sync state whenever browser URL changes (Back / Forward / Hash navigation)
+  useEffect(() => {
+    const handleLocationChange = () => {
+      const state = getInitialRouteState();
+      setShowLanding(state.showLanding);
+      setPublicPage(state.publicPage);
+      setAuthInitialStep(state.authInitialStep);
+    };
+
+    window.addEventListener('popstate', handleLocationChange);
+    window.addEventListener('hashchange', handleLocationChange);
+    return () => {
+      window.removeEventListener('popstate', handleLocationChange);
+      window.removeEventListener('hashchange', handleLocationChange);
+    };
+  }, []);
   const [criticalPagesPrefetched, setCriticalPagesPrefetched] = useState(false);
   const hasModuleReloaded = useRef(false);
   // Live-state refs for the native hardware-back handler (registered once, so it
@@ -343,13 +455,15 @@ const AppContent: React.FC = () => {
   useEffect(() => {
     const handleOnboardingCompleted = () => {
       setOnboardingCompleted(true);
-      // `onboarding_slides_viewed` is plain (unscoped) localStorage, not tied to
-      // a specific account. If a different user previously completed onboarding
-      // on this same browser, this flag would already be "true" and every
-      // subsequent new registration would silently skip the App Feature Slides.
-      // Force it false whenever a fresh onboarding just completed.
+      // Force fresh slides view for the new onboarding user
       localStorage.removeItem('onboarding_slides_viewed');
       setSlidesViewed(false);
+      setShowLanding(false);
+      if (typeof window !== 'undefined') {
+        if (window.location.pathname === '/signup' || window.location.pathname === '/onboarding') {
+          window.history.replaceState(null, '', '/');
+        }
+      }
     };
     window.addEventListener('ONBOARDING_COMPLETED', handleOnboardingCompleted);
     return () => {
@@ -357,11 +471,15 @@ const AppContent: React.FC = () => {
     };
   }, []);
 
-  // Handle soft logout / relogin from PIN lockscreen: route directly to signin screen
+  // Handle soft logout / relogin from PIN lockscreen: route to signin screen only when on a private route
   useEffect(() => {
     const handleSessionExpired = () => {
-      setShowLanding(false);
-      setAuthInitialStep('signin');
+      const cleanRoute = getCleanRoute();
+      const isPublic = !cleanRoute || ['about', 'pricing', 'contact', 'privacy', 'privacy-policy', 'terms', 'data-deletion'].includes(cleanRoute);
+      if (!isPublic) {
+        setShowLanding(false);
+        setAuthInitialStep('signin');
+      }
     };
     window.addEventListener('KANAKU_SESSION_EXPIRED', handleSessionExpired);
     return () => {
@@ -400,14 +518,15 @@ const AppContent: React.FC = () => {
   isAuthenticatedRef.current = isAuthenticated;
   closeOverlaysRef.current = () => false;
 
-  // Show landing page only once we KNOW the user is not signed in (web only; native stays on signin)
+  // Once auth finishes loading, ensure unauthenticated users stay on the page requested by URL
   useEffect(() => {
     if (!authLoading && !user) {
-      if (Capacitor.isNativePlatform()) {
-        setShowLanding(false);
-        setAuthInitialStep('signin');
+      const state = getInitialRouteState();
+      setShowLanding(state.showLanding);
+      if (state.showLanding) {
+        setPublicPage(state.publicPage);
       } else {
-        setShowLanding((prev) => (prev ? prev : true));
+        setAuthInitialStep(state.authInitialStep);
       }
     }
   }, [authLoading, user]);
@@ -1031,12 +1150,16 @@ const AppContent: React.FC = () => {
   }
 
   const hasProfileData = localStorage.getItem('user_profile') || localStorage.getItem('user_settings');
+  const hasOnboardingDone = onboardingCompleted || localStorage.getItem('onboarding_completed') === 'true';
+  const needsPinSetup = localStorage.getItem('pin_setup_required') === 'true';
+  const shouldShowSlides = hasOnboardingDone && needsPinSetup && !slidesViewed;
+  const shouldShowPinSetup = hasOnboardingDone && needsPinSetup;
 
   // A user is new if they haven't completed onboarding.
   // Enforce onboarding completion (removed 15-minute bypass).
-  const isNewUser = !onboardingCompleted;
+  const isNewUser = !hasOnboardingDone;
 
-  if (!user) {
+  if (!user && !shouldShowSlides && !shouldShowPinSetup) {
     if (lastStateLogged.current !== 'login') {
       lastStateLogged.current = 'login';
       const hasToken = !!localStorage.getItem('auth_token');
@@ -1047,50 +1170,38 @@ const AppContent: React.FC = () => {
         case 'about':
           return (
             <AboutPage
-              onBack={() => setPublicPage('landing')}
-              onGetStarted={() => setShowLanding(false)}
-              onNavigate={(page) => setPublicPage(page as PublicPage)}
-              onLogin={() => {
-                setAuthInitialStep('signin');
-                setShowLanding(false);
-              }}
+              onBack={() => navigateToPublicPage('landing')}
+              onGetStarted={() => navigateToAuth('signup')}
+              onNavigate={(page) => navigateToPublicPage(page as PublicPage)}
+              onLogin={() => navigateToAuth('signin')}
             />
           );
         case 'pricing':
           return (
             <PricingPage
-              onBack={() => setPublicPage('landing')}
-              onGetStarted={() => setShowLanding(false)}
-              onNavigate={(page) => setPublicPage(page as PublicPage)}
-              onLogin={() => {
-                setAuthInitialStep('signin');
-                setShowLanding(false);
-              }}
+              onBack={() => navigateToPublicPage('landing')}
+              onGetStarted={() => navigateToAuth('signup')}
+              onNavigate={(page) => navigateToPublicPage(page as PublicPage)}
+              onLogin={() => navigateToAuth('signin')}
             />
           );
         case 'contact':
           return (
             <ContactPage
-              onBack={() => setPublicPage('landing')}
-              onGetStarted={() => setShowLanding(false)}
-              onNavigate={(page) => setPublicPage(page as PublicPage)}
-              onLogin={() => {
-                setAuthInitialStep('signin');
-                setShowLanding(false);
-              }}
+              onBack={() => navigateToPublicPage('landing')}
+              onGetStarted={() => navigateToAuth('signup')}
+              onNavigate={(page) => navigateToPublicPage(page as PublicPage)}
+              onLogin={() => navigateToAuth('signin')}
             />
           );
         case 'privacy':
         case 'privacy-policy':
           return (
             <PrivacyPolicy
-              onBack={() => setPublicPage('landing')}
-              onGetStarted={() => setShowLanding(false)}
-              onNavigate={(page) => setPublicPage(page as PublicPage)}
-              onLogin={() => {
-                setAuthInitialStep('signin');
-                setShowLanding(false);
-              }}
+              onBack={() => navigateToPublicPage('landing')}
+              onGetStarted={() => navigateToAuth('signup')}
+              onNavigate={(page) => navigateToPublicPage(page as PublicPage)}
+              onLogin={() => navigateToAuth('signin')}
             />
           );
         case 'data-deletion':
@@ -1098,72 +1209,73 @@ const AppContent: React.FC = () => {
         case 'delete-account':
           return (
             <DataDeletion
-              onBack={() => setPublicPage('landing')}
-              onGetStarted={() => setShowLanding(false)}
-              onNavigate={(page) => setPublicPage(page as PublicPage)}
-              onLogin={() => {
-                setAuthInitialStep('signin');
-                setShowLanding(false);
-              }}
+              onBack={() => navigateToPublicPage('landing')}
+              onGetStarted={() => navigateToAuth('signup')}
+              onNavigate={(page) => navigateToPublicPage(page as PublicPage)}
+              onLogin={() => navigateToAuth('signin')}
             />
           );
         case 'terms':
           return (
             <Terms
-              onBack={() => setPublicPage('landing')}
-              onGetStarted={() => setShowLanding(false)}
-              onNavigate={(page) => setPublicPage(page as PublicPage)}
-              onLogin={() => {
-                setAuthInitialStep('signin');
-                setShowLanding(false);
-              }}
+              onBack={() => navigateToPublicPage('landing')}
+              onGetStarted={() => navigateToAuth('signup')}
+              onNavigate={(page) => navigateToPublicPage(page as PublicPage)}
+              onLogin={() => navigateToAuth('signin')}
             />
           );
         default:
           return (
             <LandingPage
-              onGetStarted={() => {
-                setAuthInitialStep('welcome');
-                setShowLanding(false);
-              }}
-              onLogin={() => {
-                setAuthInitialStep('signin');
-                setShowLanding(false);
-              }}
-              onNavigate={(page) => setPublicPage(page as PublicPage)}
+              onGetStarted={() => navigateToAuth('signup')}
+              onLogin={() => navigateToAuth('signin')}
+              onNavigate={(page) => navigateToPublicPage(page as PublicPage)}
             />
           );
       }
     }
     return (
       <AuthFlow
-        onBack={() => setShowLanding(true)}
+        onBack={navigateBackToLanding}
         initialStep={authInitialStep}
         onNavigate={(page) => {
           if (['landing', 'about', 'pricing', 'contact', 'privacy', 'terms'].includes(page)) {
-            setPublicPage(page as PublicPage);
-            setShowLanding(true);
+            navigateToPublicPage(page as PublicPage);
           }
         }}
-        onLogin={() => setAuthInitialStep('signin')}
-        onGetStarted={() => setAuthInitialStep('signup')}
+        onLogin={() => navigateToAuth('signin')}
+        onGetStarted={() => navigateToAuth('signup')}
       />
     );
   }
 
   // Gate 1: Onboarding
-  // Redirect to onboarding if user has not completed onboarding
-  if (user && !onboardingCompleted) {
+  // Redirect to onboarding if user has not completed onboarding OR if explicit onboarding route requested
+  const isExplicitOnboardingRoute =
+    ['onboarding', 'profile-setup'].includes(currentPage) ||
+    (currentPage === 'user-profile' && !hasOnboardingDone);
+
+  if (((user || isNewUser) && !hasOnboardingDone) || isExplicitOnboardingRoute) {
     return (
       <Suspense fallback={<PageLoader />}>
-        <NewUserOnboarding />
+        <NewUserOnboarding
+          onComplete={() => {
+            setOnboardingCompleted(true);
+            setSlidesViewed(false);
+            localStorage.removeItem('onboarding_slides_viewed');
+            if (typeof window !== 'undefined') {
+              if (window.location.pathname === '/signup' || window.location.pathname === '/onboarding') {
+                window.history.replaceState(null, '', '/');
+              }
+            }
+          }}
+        />
       </Suspense>
     );
   }
 
   // Gate 1.25: App Feature Slides for new users (after onboarding completes, before PIN setup)
-  const needsPinSetup = localStorage.getItem('pin_setup_required') === 'true';
-  if (user && needsPinSetup && !slidesViewed) {
+  if ((user || hasOnboardingDone) && needsPinSetup && !slidesViewed) {
     return (
       <Suspense fallback={<PageLoader />}>
         <AppFeatureSlides
@@ -1178,7 +1290,7 @@ const AppContent: React.FC = () => {
 
   // Gate 1.5: PIN setup for new users (after onboarding completes)
   // Positioned before the !isAuthenticated check to avoid locking out new users
-  if (user && needsPinSetup) {
+  if ((user || hasOnboardingDone) && needsPinSetup) {
     return (
       <Suspense fallback={<PageLoader />}>
         <PINSetup
@@ -1383,6 +1495,8 @@ const AppContent: React.FC = () => {
       case 'vault': return <Vault />;
       case 'settings': return <Settings />;
       case 'notifications': return <Notifications />;
+      case 'onboarding':
+      case 'profile-setup': return <NewUserOnboarding />;
       case 'user-profile': return <UserProfile />;
       case 'privacy':
       case 'privacy-policy': return (

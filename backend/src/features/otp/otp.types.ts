@@ -3,7 +3,7 @@
  */
 
 export type OtpChannel = 'sms' | 'email';
-export type OtpPurpose = 'signup' | 'login' | 'reset_password' | 'aa_consent' | 'sensitive_action';
+export type OtpPurpose = 'signup' | 'login' | 'reset_password' | 'aa_consent' | 'sensitive_action' | 'phone_change' | 'email_change';
 export type OtpStatus = 'ACTIVE' | 'VERIFIED' | 'EXPIRED' | 'BLOCKED';
 
 export interface SendOtpRequest {

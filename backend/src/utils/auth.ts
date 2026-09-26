@@ -29,6 +29,7 @@ export const generateTokens = (user: {
   const claims = {
     userId: user.id,
     email: user.email,
+    name: user.name,
     role: user.role,
     isApproved: user.isApproved,
   };

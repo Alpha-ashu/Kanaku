@@ -123,6 +123,15 @@ export const uploadBuffer = async (filePath: string, buffer: Buffer, contentType
   }
 };
 
+export const getPublicUrl = (filePath: string): string => {
+  const client = getStorageClient();
+  if (client) {
+    const { data } = client.storage.from(STORAGE_BUCKET).getPublicUrl(filePath);
+    if (data?.publicUrl) return data.publicUrl;
+  }
+  return `/uploads/${filePath}`;
+};
+
 export const removeObject = async (filePath: string) => {
   try {
     const client = getStorageClient();

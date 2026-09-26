@@ -236,7 +236,7 @@ const faqs = [
   {
     question: 'Is KANAKU free to use?',
     answer:
-      'Yes. KANAKU is free to use, with no time limit and no card required. AI features like KAI and bill scanning have a fair-use daily limit.',
+      'Yes. KANAKU offers a ₹0 Free plan that includes basic expense tracking with up to 3 accounts. If you want KAI AI financial assistance, recurring expense automation, smart budget alerts, and AI insights, you can upgrade to Pro for ₹29/month or ₹99 for your first year (renews at ₹299/year).',
   },
   {
     question: 'Does KANAKU work without internet?',
@@ -251,7 +251,7 @@ const faqs = [
   {
     question: 'Can I track multiple accounts?',
     answer:
-      'Yes. Add as many bank accounts, cards, cash and wallets as you need. You choose your home currency during setup, and investments held in other currencies are converted to it.',
+      'Yes. On the Free plan, you can connect up to 3 accounts. With Kanakku Pro, you get unlimited accounts across bank accounts, credit cards, cash, and digital wallets.',
   },
   {
     question: 'Can I split expenses with friends or family?',
@@ -618,14 +618,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin,
               </button>
 
               <h1 className="mt-6 text-4xl sm:text-5xl lg:text-6xl leading-[1.04] font-extrabold tracking-[-0.035em] text-slate-950 text-balance">
-                Track every expense.
+                Take Control of Your Money.
                 <br />
-                <span className="block text-violet-600">Understand every rupee.</span>
+                <span className="block text-violet-600">Let KAI Handle the Rest.</span>
               </h1>
 
               <p className="mt-6 max-w-2xl mx-auto text-base sm:text-lg leading-relaxed text-slate-600">
-                KANAKU is the expense tracker that keeps up with you. Log spending in seconds by voice, receipt scan or
-                bank SMS, then see your budgets, reports and net worth in one app — even offline.
+                Kanakku brings your everyday money management into one simple place. Track expenses, manage accounts, automate recurring bills, and let our AI assistant KAI keep your finances organized — online or offline.
               </p>
 
               <div className="mt-8 flex flex-col sm:flex-row justify-center gap-3">
