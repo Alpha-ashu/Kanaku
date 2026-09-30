@@ -1,11 +1,22 @@
-import { Response } from 'express';
+import { NextFunction, Response } from 'express';
 import { AuthRequest, getUserId } from '../../middleware/auth';
+import type { TimeoutRequest } from '../../middleware/timeout';
 import { prisma } from '../../db/prisma';
 import { logger } from '../../config/logger';
+import { AppError } from '../../utils/AppError';
+import { auditFromRequest } from '../../utils/auditLogger';
 import { isDatabaseUnavailableError } from '../../utils/databaseAvailability';
-import { uploadBuffer, createSignedUrl, removeObject } from '../../utils/storage';
 import { approveAdvisorApplication, rejectAdvisorApplication } from './advisorReview.service';
 import { decryptMessageRow } from '../sessions/message.crypto';
+import { notify } from '../notifications/notify';
+import {
+  AdvisorDocType,
+  readAdvisorDocument,
+  removeAdvisorDocuments,
+  storeAdvisorDocuments,
+  validateAdvisorDocument,
+} from './advisorDocuments';
+import type { ApplyAdvisorInput } from './advisor.validation';
 
 const STAFF_ROLES = ['admin', 'manager'];
 
@@ -323,7 +334,49 @@ export const rateSession = async (req: AuthRequest, res: Response) => {
 
 // ─── Advisor Application ───────────────────────────────────────────────────────
 
-const ALLOWED_DOC_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+type ApplicationFiles = Partial<Record<'panDocument' | 'aadhaarDocument' | 'certDocument', Express.Multer.File[]>>;
+type Applicant = { email: string };
+
+const requestIdOf = (req: AuthRequest) => (req as unknown as { id?: string }).id;
+
+/**
+ * Who may apply — checked BEFORE multer reads the body (see advisor.routes.ts).
+ *
+ * Refusing an ineligible caller after the upload made them wait out up to 30 MB
+ * of documents only to be told they already had a pending application, and made
+ * the server buffer every one of those bytes for nothing. The transaction in
+ * applyAsAdvisor re-checks under a lock, so this is a fast path, not the guard.
+ */
+export const checkAdvisorEligibility = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const userId = getUserId(req);
+    const [user, existing] = await Promise.all([
+      prisma.user.findUnique({ where: { id: userId }, select: { role: true, isApproved: true, email: true } }),
+      prisma.advisorApplication.findUnique({ where: { userId }, select: { status: true } }),
+    ]);
+    if (!user) return res.status(404).json({ error: 'User not found', code: 'USER_NOT_FOUND' });
+    if (user.role === 'advisor' && user.isApproved) {
+      return res.status(400).json({ error: 'You are already an approved advisor', code: 'ALREADY_ADVISOR' });
+    }
+    // Approval assigns role 'advisor', which would silently strip a staff role.
+    if (STAFF_ROLES.includes(user.role)) {
+      return res.status(403).json({ error: 'Admin and manager accounts cannot apply as advisors', code: 'STAFF_ACCOUNT' });
+    }
+    if (existing?.status === 'PENDING') {
+      return res.status(400).json({ error: 'You already have a pending application', code: 'APPLICATION_PENDING' });
+    }
+    if (existing?.status === 'APPROVED') {
+      return res.status(400).json({ error: 'Your advisor application has already been approved', code: 'APPLICATION_APPROVED' });
+    }
+    res.locals.applicant = { email: user.email } satisfies Applicant;
+    return next();
+  } catch (error) {
+    if (isDatabaseUnavailableError(error)) {
+      return res.status(503).json({ error: 'Database is temporarily offline', code: 'DB_OFFLINE' });
+    }
+    return next(error);
+  }
+};
 
 export const applyAsAdvisor = async (req: AuthRequest, res: Response) => {
   // Declared outside the try so every failure path — including the outer catch —
@@ -332,125 +385,105 @@ export const applyAsAdvisor = async (req: AuthRequest, res: Response) => {
   // pointing at them. Once the row IS saved it owns those paths, so the flag
   // below stops a later failure (the reviewer notification) from deleting the
   // documents of a perfectly good application.
-  const uploadedDocs: string[] = [];
+  let uploadedDocs: string[] = [];
   let applicationPersisted = false;
+  const requestId = requestIdOf(req);
 
   try {
+    // The body took longer than the route's budget and the client has already
+    // been told the request failed: saving the application now would create
+    // one the applicant believes does not exist.
+    if ((req as TimeoutRequest).timedOut) return undefined;
+
     const userId = getUserId(req);
+    const applicant = res.locals.applicant as Applicant | undefined;
+    if (!applicant) throw new Error('checkAdvisorEligibility must run before applyAsAdvisor');
+    // Parsed, trimmed and sanitised by validateAdvisorApplication.
+    const input = req.body as ApplyAdvisorInput;
+    const files = (req as AuthRequest & { files?: ApplicationFiles }).files;
 
-    // Block re-application if already approved
-    const user = await prisma.user.findUnique({ where: { id: userId }, select: { role: true, isApproved: true, name: true, email: true } });
-    if (!user) return res.status(404).json({ error: 'User not found' });
-    if (user.role === 'advisor' && user.isApproved) {
-      return res.status(400).json({ error: 'You are already an approved advisor' });
+    if (!files?.panDocument?.[0]) {
+      return res.status(400).json({ error: 'PAN Card document is required', code: 'DOCUMENT_REQUIRED', field: 'panDocument' });
     }
-    // Approval assigns role 'advisor', which would silently strip a staff role.
-    if (STAFF_ROLES.includes(user.role)) {
-      return res.status(403).json({ error: 'Admin and manager accounts cannot apply as advisors', code: 'STAFF_ACCOUNT' });
-    }
-
-    // Check for an existing pending application
-    const existing = await prisma.advisorApplication.findUnique({ where: { userId } });
-    if (existing && existing.status === 'PENDING') {
-      return res.status(400).json({ error: 'You already have a pending application' });
+    if (!files?.aadhaarDocument?.[0]) {
+      return res.status(400).json({ error: 'Aadhaar Card document is required', code: 'DOCUMENT_REQUIRED', field: 'aadhaarDocument' });
     }
 
-    const { fullName, phone, experienceYears, expertise, organizationName, bio, hourlyRate } = req.body;
-    if (!fullName || !phone || !experienceYears || !expertise || !bio) {
-      return res.status(400).json({ error: 'Missing required fields: fullName, phone, experienceYears, expertise, bio' });
-    }
-
-    // Optional: multipart sends everything as a string, and an empty field must
-    // stay null rather than becoming 0 — a free consultation and an unstated
-    // rate are different things on the booking screen.
-    const parsedHourlyRate = hourlyRate === undefined || hourlyRate === null || `${hourlyRate}`.trim() === ''
-      ? null
-      : Number(hourlyRate);
-    if (parsedHourlyRate !== null && (!Number.isFinite(parsedHourlyRate) || parsedHourlyRate < 0 || parsedHourlyRate > 1_000_000)) {
-      return res.status(400).json({ error: 'hourlyRate must be a positive amount' });
-    }
-
-    const files = (req as any).files as Record<string, Express.Multer.File[]> | undefined;
-
-    // Validate mandatory documents
-    if (!files?.panDocument?.[0]) return res.status(400).json({ error: 'PAN Card document is required' });
-    if (!files?.aadhaarDocument?.[0]) return res.status(400).json({ error: 'Aadhaar Card document is required' });
-
-    const uploadDoc = async (file: Express.Multer.File, label: string) => {
-      if (!ALLOWED_DOC_TYPES.includes(file.mimetype)) {
-        throw Object.assign(new Error(`${label}: only JPEG, PNG, WEBP, or PDF allowed`), { statusCode: 400 });
-      }
-      // `originalname` is attacker-controlled. Taking the raw substring after the
-      // last dot let it carry path separators straight into the storage key, so
-      // it is reduced to a plain alphanumeric extension here.
-      const rawExt = file.originalname.split('.').pop() || '';
-      const ext = /^[A-Za-z0-9]{1,8}$/.test(rawExt) ? rawExt.toLowerCase() : 'bin';
-      const path = `advisor-docs/${userId}/${label}-${Date.now()}.${ext}`;
-      await uploadBuffer(path, file.buffer, file.mimetype);
-      return path;
-    };
-
-    let panPath: string, aadhaarPath: string, certPath: string | null = null;
+    // Every document is checked before any is uploaded, so a bad last file
+    // costs no uploads and no rollback.
+    let documents;
     try {
-      panPath = await uploadDoc(files.panDocument[0], 'pan');
-      uploadedDocs.push(panPath);
-      aadhaarPath = await uploadDoc(files.aadhaarDocument[0], 'aadhaar');
-      uploadedDocs.push(aadhaarPath);
-      if (files?.certDocument?.[0]) {
-        certPath = await uploadDoc(files.certDocument[0], 'cert');
-        uploadedDocs.push(certPath);
-      }
-    } catch (err: any) {
-      await Promise.all(uploadedDocs.map((path) => removeObject(path).catch(() => undefined)));
-      // The bucket being unreachable is an outage on our side, not a bad
-      // submission, so it must not be reported as a 4xx the user can "fix".
-      const storageDown = /cloud storage unavailable|not configured/i.test(String(err?.message ?? ''));
-      logger.error('Advisor application document upload failed', { userId: req.user?.id, error: err });
-      return res.status(err.statusCode ?? (storageDown ? 503 : 500)).json({
-        error: err.message || 'Document upload failed',
-        ...(storageDown ? { code: 'STORAGE_UNAVAILABLE' } : {}),
-      });
+      documents = await Promise.all([
+        validateAdvisorDocument(files.panDocument[0], 'pan'),
+        validateAdvisorDocument(files.aadhaarDocument[0], 'aadhaar'),
+        ...(files.certDocument?.[0] ? [validateAdvisorDocument(files.certDocument[0], 'cert')] : []),
+      ]);
+    } catch (err) {
+      if (err instanceof AppError) return res.status(err.statusCode).json({ error: err.message, code: err.code });
+      throw err;
     }
 
-    // Upsert AdvisorApplication (allow resubmission after rejection). The pending
-    // check above runs before the slow uploads, so a double-tap passes it twice;
-    // re-check under a per-user lock so exactly one submission wins.
+    let paths: Record<AdvisorDocType, string | null>;
+    try {
+      paths = await storeAdvisorDocuments(userId, documents);
+    } catch (err: any) {
+      // storeAdvisorDocuments has already removed whatever did land. The bucket
+      // being unreachable is an outage on our side, not a bad submission, so it
+      // must not be reported as a 4xx the user can "fix" — and the raw storage
+      // error is for the log, not the applicant.
+      const storageDown = /cloud storage unavailable|not configured/i.test(String(err?.message ?? ''));
+      logger.error('Advisor application document upload failed', { userId, requestId, error: err });
+      return storageDown
+        ? res.status(503).json({ error: 'Document storage is unavailable right now. Please try again shortly.', code: 'STORAGE_UNAVAILABLE', requestId })
+        : res.status(500).json({ error: 'Your documents could not be uploaded. Please try again.', code: 'DOCUMENT_UPLOAD_FAILED', requestId });
+    }
+    uploadedDocs = [paths.pan, paths.aadhaar, paths.cert].filter((p): p is string => Boolean(p));
+
+    // Upsert AdvisorApplication (allow resubmission after rejection). The
+    // eligibility check runs before the slow uploads, so a double-tap passes it
+    // twice; re-check under a per-user lock so exactly one submission wins.
     const result = await prisma.$transaction(async (tx) => {
       await lockKey(tx, `advisor-apply:${userId}`);
-      const current = await tx.advisorApplication.findUnique({ where: { userId }, select: { status: true } });
+      const current = await tx.advisorApplication.findUnique({
+        where: { userId },
+        select: { status: true, panDocumentPath: true, aadhaarDocumentPath: true, certDocumentPath: true },
+      });
       if (current && current.status !== 'REJECTED') return { blockedBy: current.status };
+      const fields = {
+        fullName: input.fullName,
+        email: applicant.email,
+        phone: input.phone,
+        experienceYears: input.experienceYears,
+        expertise: input.expertise,
+        organizationName: input.organizationName ?? null,
+        bio: input.bio,
+        hourlyRate: input.hourlyRate ?? null,
+        panDocumentPath: paths.pan,
+        aadhaarDocumentPath: paths.aadhaar,
+        certDocumentPath: paths.cert,
+        status: 'PENDING',
+      };
       const saved = await tx.advisorApplication.upsert({
         where: { userId },
-        create: {
-          userId, fullName, email: user.email, phone,
-          experienceYears: Number(experienceYears), expertise,
-          organizationName: organizationName || null, bio,
-          hourlyRate: parsedHourlyRate,
-          panDocumentPath: panPath, aadhaarDocumentPath: aadhaarPath,
-          certDocumentPath: certPath, status: 'PENDING',
-        },
-        update: {
-          fullName, phone, experienceYears: Number(experienceYears), expertise,
-          organizationName: organizationName || null, bio,
-          hourlyRate: parsedHourlyRate,
-          panDocumentPath: panPath, aadhaarDocumentPath: aadhaarPath,
-          certDocumentPath: certPath, status: 'PENDING',
-          rejectionReason: null, reviewedBy: null, reviewedAt: null,
-          submittedAt: new Date(),
-        },
+        create: { userId, ...fields },
+        update: { ...fields, rejectionReason: null, reviewedBy: null, reviewedAt: null, submittedAt: new Date() },
       });
-      return { saved };
+      const superseded = current ? [current.panDocumentPath, current.aadhaarDocumentPath, current.certDocumentPath] : [];
+      return { saved, superseded };
     });
-    const application = result.saved;
-    applicationPersisted = Boolean(application);
-    if (!application) {
-      await Promise.all(uploadedDocs.map((path) => removeObject(path).catch(() => undefined)));
-      return res.status(400).json({
-        error: result.blockedBy === 'PENDING'
-          ? 'You already have a pending application'
-          : 'Your advisor application has already been approved',
-      });
+    if (!result.saved) {
+      await removeAdvisorDocuments(uploadedDocs);
+      return res.status(400).json(result.blockedBy === 'PENDING'
+        ? { error: 'You already have a pending application', code: 'APPLICATION_PENDING' }
+        : { error: 'Your advisor application has already been approved', code: 'APPLICATION_APPROVED' });
     }
+    const application = result.saved;
+    applicationPersisted = true;
+
+    // A resubmission replaces the rejected application's documents. Nothing can
+    // reach the old copies any more, and identity documents kept with no purpose
+    // are a liability, so they are deleted rather than left in the bucket.
+    await removeAdvisorDocuments(result.superseded);
 
     // The role is NOT changed here. A pending applicant stays a 'user' (keeps
     // booking access, gains nothing); approval assigns 'advisor' + isApproved.
@@ -458,43 +491,44 @@ export const applyAsAdvisor = async (req: AuthRequest, res: Response) => {
     // Notify BOTH admins and managers — the advisor-verification queue is
     // reviewable/approvable by either role (requireRole(['admin','manager']) on
     // /advisors/admin/*), so both must see incoming applications. Each gets a
-    // deep link to their own verification surface.
+    // deep link to their own verification surface. notify(), not a bare
+    // notification insert: the insert reached nobody until they refetched —
+    // no socket emit, no push — so a reviewer with the queue open never knew.
     const reviewers = await prisma.user.findMany({
-      where: { role: { in: ['admin', 'manager'] } },
+      where: { role: { in: STAFF_ROLES } },
       select: { id: true, role: true },
     });
-    if (reviewers.length > 0) {
-      await prisma.notification.createMany({
-        data: reviewers.map((r) => ({
-          userId: r.id,
-          title: 'New Advisor Application',
-          message: `${fullName} has applied to become an advisor. Review required.`,
-          category: 'system',
-          deepLink: r.role === 'manager' ? '/manager-advisor-verification' : '/admin-advisor-verification',
-        })),
-      });
-    }
+    const submission = application.submittedAt.getTime();
+    await Promise.all(reviewers.map((reviewer) => notify({
+      userId: reviewer.id,
+      topic: 'system',
+      type: 'advisor_application_submitted',
+      title: 'New Advisor Application',
+      message: `${input.fullName} has applied to become an advisor. Review required.`,
+      deepLink: reviewer.role === 'manager' ? '/manager-advisor-verification' : '/admin-advisor-verification',
+      metadata: { applicationId: application.id, applicantId: userId },
+      // One announcement per reviewer per submission; a resubmission after a
+      // rejection is a new submission and is announced again.
+      dedupKey: `advisor_application_submitted:${application.id}:${submission}:${reviewer.id}`,
+    })));
 
     logger.info('Advisor application submitted', { userId, applicationId: application.id });
-    return res.json({ success: true, message: 'Application submitted. Awaiting review.', application });
+    // Storage keys are internal: the response carries status only.
+    return res.json({
+      success: true,
+      message: 'Application submitted. Awaiting review.',
+      application: { id: application.id, status: application.status, submittedAt: application.submittedAt },
+    });
   } catch (error: any) {
-    if (isDatabaseUnavailableError(error)) {
-      return res.status(503).json({ error: 'Database is temporarily offline', code: 'DB_OFFLINE' });
-    }
-
     // Nothing downstream will retry, so anything already in the bucket is
     // garbage from here on — unless the application row was saved, in which case
     // it references these paths and they must survive.
     if (!applicationPersisted) {
-      await Promise.all(uploadedDocs.map((path) => removeObject(path).catch(() => undefined)));
+      await removeAdvisorDocuments(uploadedDocs);
     }
 
-    // requestId ties this log line to the response the user saw. This handler
-    // answers directly instead of delegating to middleware/error.ts, so it did
-    // NOT get that middleware's `requestId` echo — which meant a user reporting
-    // "advisor apply gives a 500" left nothing to grep the Render logs for, and
-    // the cause had to be guessed. It is the correlator, not a diagnosis.
-    const requestId = (req as unknown as { id?: string }).id;
+    // requestId ties this log line to the response the user saw — it is the
+    // correlator a user's "advisor apply gives a 500" report can be grepped by.
     logger.error('Advisor application error', {
       requestId,
       userId: req.user?.id,
@@ -503,23 +537,15 @@ export const applyAsAdvisor = async (req: AuthRequest, res: Response) => {
       // stack and any Prisma code/meta all reach the log from here.
       error,
     });
+    if (res.headersSent) return undefined;
 
-    // Storage being unconfigured or unreachable is an outage, not a bad request,
-    // and it is the failure this endpoint is most exposed to — it is the only
-    // one here that writes to the bucket. Saying so plainly stops it reading as
-    // a mystery 500 and points at the environment instead of the submission.
-    if (/cloud storage unavailable|storage .*not configured/i.test(String(error?.message ?? ''))) {
-      return res.status(503).json({
-        error: 'Document storage is unavailable right now. Please try again shortly.',
-        code: 'STORAGE_UNAVAILABLE',
-      });
+    if (isDatabaseUnavailableError(error)) {
+      return res.status(503).json({ error: 'Database is temporarily offline', code: 'DB_OFFLINE' });
     }
-
     return res.status(500).json({
       error: 'Failed to submit advisor application',
       code: 'ADVISOR_APPLY_FAILED',
-      // Safe to expose: an opaque per-request id, no internal detail. It is
-      // what turns "a user hit a 500" into one greppable Render log line.
+      // Safe to expose: an opaque per-request id, no internal detail.
       requestId,
     });
   }
@@ -552,48 +578,72 @@ export const getMyApplication = async (req: AuthRequest, res: Response) => {
   }
 };
 
+/**
+ * Streams one KYC document to its owner or to a reviewer.
+ *
+ * This used to answer with a Supabase signed URL: a bearer link that anyone it
+ * reached (a forwarded message, browser history, a proxy log) could open for
+ * its lifetime with no login and no record of who looked. Now the bytes are
+ * served only on this authenticated request, decrypted in memory, never cached,
+ * and every view — and every refused attempt — is written to the audit log.
+ */
 export const getApplicationDocument = async (req: AuthRequest, res: Response) => {
+  const requestId = requestIdOf(req);
+  const viewerId = getUserId(req);
+  const { id, docType } = req.params as { id: string; docType: AdvisorDocType };
   try {
-    const userId = getUserId(req);
-    const { id, docType } = req.params;
-    const requestingUser = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } });
-    const isAdmin = requestingUser && ['admin', 'manager'].includes(requestingUser.role);
-
-    const application = await prisma.advisorApplication.findFirst({
-      where: {
-        OR: [{ id }, { userId: id }],
-      },
+    const [viewer, application] = await Promise.all([
+      prisma.user.findUnique({ where: { id: viewerId }, select: { role: true } }),
+      prisma.advisorApplication.findFirst({
+        where: { OR: [{ id }, { userId: id }] },
+        select: { id: true, userId: true, panDocumentPath: true, aadhaarDocumentPath: true, certDocumentPath: true },
+      }),
+    ]);
+    // Authorised from the database role, never the token's claims.
+    const isReviewer = STAFF_ROLES.includes(viewer?.role ?? '');
+    const audit = (granted: boolean, outcome: string) => auditFromRequest(req, granted ? 'kyc.document_view' : 'kyc.document_view_denied', {
+      userId: viewerId,
+      actorRole: viewer?.role,
+      resource: 'AdvisorApplication',
+      resourceId: application?.id ?? id,
+      meta: { docType, outcome, ownerId: application?.userId ?? null },
     });
-    if (!application) return res.status(404).json({ error: 'Application not found' });
-    if (!isAdmin && application.userId !== userId) return res.status(403).json({ error: 'Access denied' });
 
-    const pathMap: Record<string, string | null | undefined> = {
-      pan: application.panDocumentPath,
-      aadhaar: application.aadhaarDocumentPath,
-      cert: application.certDocumentPath,
-    };
-    const docPath = pathMap[docType];
-
-    let url: string | null = null;
-    if (docPath) {
-      try {
-        url = await createSignedUrl(docPath, 300);
-      } catch {
-        url = null;
-      }
+    // Someone else's application is answered exactly like a missing one, so the
+    // route cannot be used to learn which ids exist.
+    if (!application || (!isReviewer && application.userId !== viewerId)) {
+      if (application) audit(false, 'not_owner_or_reviewer');
+      return res.status(404).json({ error: 'Document not found', code: 'DOCUMENT_NOT_FOUND' });
     }
 
-    res.json({
-      success: true,
-      url,
-      docType,
-      applicationId: application.id,
-      userId: application.userId,
-      fullName: application.fullName,
-      status: application.status,
-    });
-  } catch (error: any) {
-    res.status(500).json({ error: error?.message || 'Failed to generate document URL' });
+    const storagePath = { pan: application.panDocumentPath, aadhaar: application.aadhaarDocumentPath, cert: application.certDocumentPath }[docType];
+    if (!storagePath) {
+      return res.status(404).json({ error: 'This document was not provided', code: 'DOCUMENT_NOT_PROVIDED' });
+    }
+
+    const document = await readAdvisorDocument(application.userId, docType, storagePath);
+    if (!document) {
+      logger.error('Advisor document missing from storage', { requestId, applicationId: application.id, docType });
+      audit(false, 'missing_from_storage');
+      return res.status(404).json({ error: 'This document could not be retrieved from storage', code: 'DOCUMENT_UNAVAILABLE' });
+    }
+
+    audit(true, 'served');
+    const renderable = document.contentType !== 'application/octet-stream';
+    res.setHeader('Content-Type', document.contentType);
+    res.setHeader('Content-Disposition', `${renderable ? 'inline' : 'attachment'}; filename="${docType}.${document.extension}"`);
+    // The bytes came from an applicant: never sniffed into something else, and
+    // sandboxed so nothing active in them can run on the API origin.
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Content-Security-Policy', "sandbox; default-src 'none'; img-src 'self' data: blob:; style-src 'unsafe-inline'");
+    res.setHeader('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+    return res.send(document.buffer);
+  } catch (error) {
+    if (isDatabaseUnavailableError(error)) {
+      return res.status(503).json({ error: 'Database is temporarily offline', code: 'DB_OFFLINE' });
+    }
+    logger.error('Advisor document read failed', { requestId, viewerId, docType, error });
+    return res.status(500).json({ error: 'Failed to load document', code: 'DOCUMENT_READ_FAILED', requestId });
   }
 };
 

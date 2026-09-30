@@ -153,6 +153,24 @@ model BookingRequest {
   rescheduleProposedBy String?
   rescheduleMessage    String?
   rescheduleExpiresAt  DateTime?
+  /// Absolute start/end instants. proposedDate/proposedTime are the client's
+  /// wall-clock values; these are what the payment window and session access
+  /// are computed from (server time). Null on rows created before 2026-09-30,
+  /// which are resolved in Asia/Kolkata (bookingTime.ts).
+  startsAt             DateTime?
+  endsAt               DateTime?
+  timeZone             String?
+  /// Server-computed session price in coins. Null/0 = no payment required.
+  coinCost             Int?
+  /// NOT_REQUIRED | UNPAID | PAID | REFUNDED
+  paymentStatus        String          @default("NOT_REQUIRED")
+  paidAt               DateTime?
+  refundedAt           DateTime?
+  earningsReleasedAt   DateTime?
+  expiredAt            DateTime?
+  cancelledAt          DateTime?
+  cancelledBy          String?
+  cancelReason         String?
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
   session         AdvisorSession?
@@ -167,6 +185,8 @@ model BookingRequest {
   @@index([clientId])
   @@index([proposedDate])
   @@index([status])
+  @@index([startsAt])
+  @@index([paymentStatus])
   @@schema("public")
 }
 
@@ -202,6 +222,8 @@ model ChatMessage {
   attachmentName String?
   attachmentType String?
   attachmentSize Int?
+  /// When the other participant read it. Null = unread.
+  readAt    DateTime?
   sender    User           @relation(fields: [senderId], references: [id], onDelete: Cascade)
   session   AdvisorSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   /// Idempotency key for creates. The in-memory duplicateSubmitGuard stops a
@@ -212,6 +234,7 @@ model ChatMessage {
   @@index([senderId])
   @@index([sessionId])
   @@index([timestamp])
+  @@index([sessionId, readAt])
   @@schema("public")
 }
 
@@ -921,6 +944,9 @@ model User {
   vaultAuditLogsAsOwner       VaultAuditLog[]            @relation("VaultAuditLog_owner")
   vaultAuditLogsAsActor       VaultAuditLog[]            @relation("VaultAuditLog_actor")
   vaultLockSetting            VaultLockSetting?
+  permissionGrants            StaffPermissionGrant[]     @relation("StaffPermissionGrant_user")
+  managedAssignments          ManagerAssignment[]        @relation("ManagerAssignment_manager")
+  managerAssignments          ManagerAssignment[]        @relation("ManagerAssignment_subject")
 
 
   @@index([isApproved])
@@ -1975,3 +2001,193 @@ model VaultLockSetting {
   @@schema("public")
 }
 
+// ─── Coin wallet, ledger and payments (20260930000000) ───────────────────────
+//
+// Coins are application credits bought through a payment provider and spent on
+// advisor sessions. The ledger (WalletTransaction) is the financial record:
+// append-only (a trigger refuses UPDATE/DELETE), one row per balance movement,
+// each with a unique `reference` so a replayed operation can never apply twice.
+// Wallet balances are a cache of the ledger kept in the same transaction and
+// guarded by CHECK (>= 0) constraints.
+//
+// No foreign key to User on wallets, ledger rows or payment orders — on purpose:
+// financial records must survive account deletion (pseudonymised by id), and
+// deletion is refused while a user still holds coins or unsettled sessions
+// (see wallet.guards.ts).
+
+/// One per user, created on first use. Balances are whole coins.
+model Wallet {
+  id               String              @id @default(uuid())
+  userId           String              @unique @map("user_id")
+  /// Spendable coins.
+  availableBalance Int                 @default(0) @map("available_balance")
+  /// Advisor earnings held until the session completes; not spendable.
+  pendingBalance   Int                 @default(0) @map("pending_balance")
+  /// ACTIVE | FROZEN (a frozen wallet cannot be debited or credited by users).
+  status           String              @default("ACTIVE")
+  createdAt        DateTime            @default(now()) @map("created_at")
+  updatedAt        DateTime            @updatedAt @map("updated_at")
+  transactions     WalletTransaction[]
+
+  @@map("wallets")
+  @@schema("public")
+}
+
+/// Immutable ledger. Corrections are compensating rows (`reversalOfId`), never edits.
+model WalletTransaction {
+  id                 String              @id @default(uuid())
+  walletId           String              @map("wallet_id")
+  userId             String              @map("user_id")
+  /// PAYMENT_CREDIT | SESSION_PAYMENT | SESSION_EARNING | EARNING_RELEASE |
+  /// SESSION_REFUND | EARNING_REVERSAL | PURCHASE_REVERSAL | ADMIN_ADJUSTMENT
+  type               String
+  /// AVAILABLE | PENDING — the balance this row moved.
+  bucket             String              @default("AVAILABLE")
+  /// Signed coins: positive credits, negative debits. Never zero.
+  amount             Int
+  availableAfter     Int                 @map("available_after")
+  pendingAfter       Int                 @map("pending_after")
+  status             String              @default("COMPLETED")
+  /// Unique idempotency reference, e.g. `purchase:<orderId>`.
+  reference          String              @unique
+  bookingId          String?             @map("booking_id")
+  paymentOrderId     String?             @map("payment_order_id")
+  reversalOfId       String?             @map("reversal_of_id")
+  counterpartyUserId String?             @map("counterparty_user_id")
+  description        String
+  reason             String?
+  actorId            String?             @map("actor_id")
+  actorRole          String?             @map("actor_role")
+  metadata           Json?
+  createdAt          DateTime            @default(now()) @map("created_at")
+  wallet             Wallet              @relation(fields: [walletId], references: [id], onDelete: Restrict)
+  paymentOrder       PaymentOrder?       @relation(fields: [paymentOrderId], references: [id], onDelete: Restrict)
+  reversalOf         WalletTransaction?  @relation("WalletTransaction_reversal", fields: [reversalOfId], references: [id], onDelete: Restrict)
+  reversals          WalletTransaction[] @relation("WalletTransaction_reversal")
+
+  @@index([userId, createdAt])
+  @@index([walletId, createdAt])
+  @@index([bookingId])
+  @@index([paymentOrderId])
+  @@index([reversalOfId])
+  @@index([type, createdAt])
+  @@map("wallet_transactions")
+  @@schema("public")
+}
+
+/// Purchasable coin bundles. Price is in minor units (paise).
+model CoinPackage {
+  id            String         @id @default(uuid())
+  code          String         @unique
+  name          String
+  coins         Int
+  bonusCoins    Int            @default(0) @map("bonus_coins")
+  priceMinor    Int            @map("price_minor")
+  currency      String         @default("INR")
+  isActive      Boolean        @default(false) @map("is_active")
+  sortOrder     Int            @default(0) @map("sort_order")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+  paymentOrders PaymentOrder[]
+
+  @@index([isActive, sortOrder])
+  @@map("coin_packages")
+  @@schema("public")
+}
+
+/// A coin purchase at a payment provider. Coins are credited only once the
+/// provider's server-side confirmation has been verified.
+model PaymentOrder {
+  id                String                @id @default(uuid())
+  userId            String                @map("user_id")
+  packageId         String                @map("package_id")
+  provider          String
+  providerOrderId   String?               @map("provider_order_id")
+  providerPaymentId String?               @map("provider_payment_id")
+  amountMinor       Int                   @map("amount_minor")
+  currency          String                @default("INR")
+  /// Coins credited on success (package coins + bonus, snapshotted at order time).
+  coins             Int
+  /// CREATED | PAID | FAILED | EXPIRED | CANCELLED | REFUNDED
+  status            String                @default("CREATED")
+  failureReason     String?               @map("failure_reason")
+  idempotencyKey    String?               @map("idempotency_key")
+  /// webhook | callback | reconcile — which confirmation path settled it.
+  verifiedVia       String?               @map("verified_via")
+  expiresAt         DateTime              @map("expires_at")
+  paidAt            DateTime?             @map("paid_at")
+  creditedAt        DateTime?             @map("credited_at")
+  refundedAt        DateTime?             @map("refunded_at")
+  providerRefundId  String?               @map("provider_refund_id")
+  refundReason      String?               @map("refund_reason")
+  lastCheckedAt     DateTime?             @map("last_checked_at")
+  createdAt         DateTime              @default(now()) @map("created_at")
+  updatedAt         DateTime              @updatedAt @map("updated_at")
+  package           CoinPackage           @relation(fields: [packageId], references: [id], onDelete: Restrict)
+  transactions      WalletTransaction[]
+  webhookEvents     PaymentWebhookEvent[]
+
+  @@unique([provider, providerOrderId])
+  @@unique([provider, providerPaymentId])
+  @@unique([userId, idempotencyKey])
+  @@index([userId, createdAt])
+  @@index([status, createdAt])
+  @@map("payment_orders")
+  @@schema("public")
+}
+
+/// Every webhook delivery, verified or not. (provider, eventId) is unique, so a
+/// redelivered event is recognised and never processed twice.
+model PaymentWebhookEvent {
+  id             String        @id @default(uuid())
+  provider       String
+  eventId        String        @map("event_id")
+  eventType      String        @map("event_type")
+  signatureValid Boolean       @map("signature_valid")
+  paymentOrderId String?       @map("payment_order_id")
+  /// RECEIVED | PROCESSED | IGNORED | REJECTED | FAILED
+  status         String        @default("RECEIVED")
+  error          String?
+  /// Provider payload minus anything sensitive (see payments/providers).
+  payload        Json?
+  receivedAt     DateTime      @default(now()) @map("received_at")
+  processedAt    DateTime?     @map("processed_at")
+  paymentOrder   PaymentOrder? @relation(fields: [paymentOrderId], references: [id], onDelete: SetNull)
+
+  @@unique([provider, eventId])
+  @@index([paymentOrderId])
+  @@index([receivedAt])
+  @@map("payment_webhook_events")
+  @@schema("public")
+}
+
+/// Granular permissions granted to a staff account on top of its role defaults
+/// (see security/permissions.ts). Managers get nothing admin-level implicitly.
+model StaffPermissionGrant {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  permission String
+  grantedBy  String   @map("granted_by")
+  createdAt  DateTime @default(now()) @map("created_at")
+  user       User     @relation("StaffPermissionGrant_user", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, permission])
+  @@map("staff_permission_grants")
+  @@schema("public")
+}
+
+/// Which users/advisors a manager is responsible for. Manager reads are scoped to these.
+model ManagerAssignment {
+  id            String   @id @default(uuid())
+  managerId     String   @map("manager_id")
+  subjectUserId String   @map("subject_user_id")
+  assignedBy    String   @map("assigned_by")
+  createdAt     DateTime @default(now()) @map("created_at")
+  manager       User     @relation("ManagerAssignment_manager", fields: [managerId], references: [id], onDelete: Cascade)
+  subject       User     @relation("ManagerAssignment_subject", fields: [subjectUserId], references: [id], onDelete: Cascade)
+
+  @@unique([managerId, subjectUserId])
+  @@index([subjectUserId])
+  @@map("manager_assignments")
+  @@schema("public")
+}

@@ -346,6 +346,26 @@ const CONFIG_MANIFEST: readonly ConfigItem[] = [
     present: () => has('VAULT_ENCRYPTION_ROOT_KEY') || has('AA_ENCRYPTION_ROOT_KEY'),
   },
 
+  // ── Coin purchases (payment gateway) ─────────────────────────────────────────
+  // Optional: the wallet ships dark (admin `wallet` module) and purchases are
+  // simply not offered while no provider is configured. Reported so a
+  // half-configured gateway is visible at startup, not at a customer's checkout.
+  {
+    key: 'RAZORPAY_KEY_ID',
+    group: 'Payments (Razorpay)',
+    purpose: 'Razorpay key id (public) + RAZORPAY_KEY_SECRET — needed to sell coins',
+    services: ['api'],
+    tier: () => 'optional',
+    present: () => has('RAZORPAY_KEY_ID') && has('RAZORPAY_KEY_SECRET'),
+  },
+  {
+    key: 'RAZORPAY_WEBHOOK_SECRET',
+    group: 'Payments (Razorpay)',
+    purpose: 'Verifies Razorpay webhooks (POST /api/v1/payments/webhooks/razorpay); without it only checkout callbacks and reconciliation credit coins',
+    services: ['api'],
+    tier: () => (has('RAZORPAY_KEY_ID') ? 'recommended' : 'optional'),
+  },
+
   // ── Account Aggregator (Setu) credentials ────────────────────────────────────
   // The /aa module is fully implemented but mounted only when ENABLED_MODULES
   // includes 'aa'. These four are what it needs to talk to Setu; without them the

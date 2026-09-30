@@ -114,6 +114,17 @@ services:
         sync: false
       - key: VAULT_ENCRYPTION_ROOT_KEY
         sync: false     # 64 hex chars (openssl rand -hex 32). Vault file encryption; unset = public dev key
+      # Coin purchases. Dashboard-only secrets; the wallet stays dark until an
+      # admin enables the `wallet` module AND these are set. Webhook URL to
+      # register at Razorpay: https://<api-host>/api/v1/payments/webhooks/razorpay
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
+        sync: false
+      - key: RAZORPAY_WEBHOOK_SECRET
+        sync: false
+      - key: PAYMENT_PROVIDERS
+        value: razorpay   # the sandbox provider is never offered in production regardless
       # AI & Scanner Fallback Providers
       - key: XKIRO_API_KEY
         sync: false     # xkiro proxy API key (for KAI assistant and OCR scanner backup in production)

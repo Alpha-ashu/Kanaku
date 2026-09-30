@@ -28,7 +28,9 @@ export type FeatureKey =
   | 'aiInsights'
   | 'recurringTransactions'
   | 'budgetAlerts'
-  | 'vault';
+  | 'vault'
+  // Coin wallet: buying coins, paying for advisor sessions, advisor earnings.
+  | 'wallet';
 
 export interface FeatureVisibility extends Record<FeatureKey, boolean> {
   accounts: boolean;
@@ -57,6 +59,7 @@ export interface FeatureVisibility extends Record<FeatureKey, boolean> {
   recurringTransactions: boolean;
   budgetAlerts: boolean;
   vault: boolean;
+  wallet: boolean;
 }
 
 const DEFAULT_FEATURES: FeatureVisibility = {
@@ -86,6 +89,7 @@ const DEFAULT_FEATURES: FeatureVisibility = {
   recurringTransactions: true,
   budgetAlerts: true,
   vault: true,
+  wallet: true,
 };
 
 // DENY-BY-DEFAULT: These are the code-level baseline used ONLY when no admin DB
@@ -125,6 +129,7 @@ export const ROLE_FEATURES: Record<UserRole, FeatureVisibility> = {
     recurringTransactions: true,
     budgetAlerts: true,
     vault: true,
+    wallet: true,
   },
   manager: {
     accounts: true,
@@ -153,6 +158,7 @@ export const ROLE_FEATURES: Record<UserRole, FeatureVisibility> = {
     recurringTransactions: true,
     budgetAlerts: true,
     vault: true,
+    wallet: false,
   },
   advisor: {
     accounts: true,
@@ -181,6 +187,7 @@ export const ROLE_FEATURES: Record<UserRole, FeatureVisibility> = {
     recurringTransactions: true,
     budgetAlerts: true,
     vault: true,
+    wallet: false,
   },
   user: {
     accounts: true,
@@ -209,6 +216,7 @@ export const ROLE_FEATURES: Record<UserRole, FeatureVisibility> = {
     recurringTransactions: true,
     budgetAlerts: true,
     vault: true,
+    wallet: false,
   },
 };
 
@@ -249,6 +257,10 @@ export function mergeVisibleFeatures(
 export const PAGE_TO_FEATURE_MAPPING: Record<string, FeatureKey> = {
   'dashboard': 'dashboard',
   'vault': 'vault',
+  'wallet': 'wallet',
+  'advisor-earnings': 'wallet',
+  'admin-finance': 'managerPanel',
+  'manager-team': 'managerPanel',
   'accounts': 'accounts',
   'add-account': 'accountSetup',
   'account-setup': 'accountSetup',

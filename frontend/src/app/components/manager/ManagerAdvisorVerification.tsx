@@ -5,12 +5,15 @@ import { useAuth } from '@/contexts/AuthContext';
 import { backendService } from '@/lib/backend-api';
 import {
   CheckCircle2, XCircle, Clock, Loader2, RefreshCw, Eye, BadgeCheck, Mail, Phone,
-  Calendar, Briefcase, FileText, Building, FileCheck, Info, ShieldCheck, X,
-  ExternalLink, AlertTriangle, IndianRupee,
+  Calendar, Briefcase, FileText, Building, FileCheck, Info, ShieldCheck,
+  AlertTriangle, IndianRupee,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import { AdvisorDocumentViewer } from '@/app/components/advisor/AdvisorDocumentViewer';
+import { useAdvisorDocumentViewer, useAdvisorQueueLiveRefresh } from '@/hooks/useAdvisorVerification';
+import { describeApiFailure } from '@/services/advisorApplicationService';
 
 /**
  * Manager advisor-verification queue.
@@ -46,13 +49,6 @@ interface AdvisorApplication {
   hasCert: boolean;
 }
 
-interface DocumentViewerState {
-  type: DocType;
-  title: string;
-  app: AdvisorApplication;
-  url: string | null;
-}
-
 type FilterTab = 'pending' | 'approved' | 'rejected' | 'all';
 
 const DOCUMENTS: { type: DocType; label: string; required: boolean; flag: keyof AdvisorApplication }[] = [
@@ -70,15 +66,7 @@ const STATUS_BADGE: Record<ApplicationStatus, { label: string; className: string
 const formatDate = (value?: string | null) =>
   value ? new Date(value).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
 
-const isPdfUrl = (url: string) => {
-  try {
-    return new URL(url).pathname.toLowerCase().endsWith('.pdf');
-  } catch {
-    return url.toLowerCase().split('?')[0].endsWith('.pdf');
-  }
-};
-
-const apiError = (err: any, fallback: string) => err?.response?.data?.error || err?.message || fallback;
+const apiError = async (err: unknown, fallback: string) => (await describeApiFailure(err, fallback)).message;
 
 export const ManagerAdvisorVerification: React.FC = () => {
   const { setCurrentPage } = useApp();
@@ -90,8 +78,7 @@ export const ManagerAdvisorVerification: React.FC = () => {
   const [selectedApp, setSelectedApp] = useState<AdvisorApplication | null>(null);
   const [rejectReason, setRejectReason] = useState('');
   const [isRejecting, setIsRejecting] = useState(false);
-  const [viewingDoc, setViewingDoc] = useState<DocumentViewerState | null>(null);
-  const [docLoading, setDocLoading] = useState<DocType | null>(null);
+  const { viewer: viewingDoc, loadingKey: docLoadingKey, openDocument, closeDocument } = useAdvisorDocumentViewer();
 
   // Role Guard: Manager & Admin
   useEffect(() => {
@@ -110,8 +97,8 @@ export const ManagerAdvisorVerification: React.FC = () => {
     try {
       const { data } = await backendService.api.get('/advisors/admin/applications');
       setApplications(Array.isArray(data?.all) ? data.all : []);
-    } catch (err: any) {
-      console.error('Failed to load verification queue:', err?.message ?? err);
+    } catch (err) {
+      console.error('Failed to load verification queue:', err instanceof Error ? err.message : err);
       toast.error('Failed to load verification queue');
     } finally {
       setLoading(false);
@@ -119,32 +106,25 @@ export const ManagerAdvisorVerification: React.FC = () => {
     }
   }, []);
 
+  const isReviewer = dataReady && (role === 'manager' || role === 'admin');
+
   useEffect(() => {
-    if (!dataReady) return;
-    if (role !== 'manager' && role !== 'admin') return;
+    if (!isReviewer) return;
     fetchApplications();
-  }, [dataReady, role, fetchApplications]);
+  }, [isReviewer, fetchApplications]);
+
+  // New applications appear without a reload.
+  useAdvisorQueueLiveRefresh(fetchApplications, isReviewer);
 
   const closeReview = () => {
     setSelectedApp(null);
-    setViewingDoc(null);
+    closeDocument();
     setIsRejecting(false);
     setRejectReason('');
   };
 
-  const openDocumentViewer = async (app: AdvisorApplication, type: DocType, title: string) => {
-    setDocLoading(type);
-    let url: string | null = null;
-    try {
-      const res = await backendService.api.get(`/advisors/application/${app.applicationId}/document/${type}`);
-      url = res.data?.url ?? null;
-    } catch (err: any) {
-      toast.error(apiError(err, 'Could not load the document'));
-    } finally {
-      setDocLoading(null);
-    }
-    setViewingDoc({ type, title, app, url });
-  };
+  const openDocumentViewer = (app: AdvisorApplication, type: DocType, title: string) =>
+    openDocument(app.applicationId, type, title, `Uploaded by ${app.fullName}`);
 
   const handleApprove = async (app: AdvisorApplication) => {
     setProcessingId(app.userId);
@@ -152,8 +132,8 @@ export const ManagerAdvisorVerification: React.FC = () => {
       await backendService.api.put(`/advisors/admin/${app.userId}/approve`);
       toast.success(`${app.fullName}'s advisor profile is now ACTIVE.`);
       closeReview();
-    } catch (err: any) {
-      toast.error(apiError(err, 'Approval failed. Please try again.'));
+    } catch (err) {
+      toast.error(await apiError(err, 'Approval failed. Please try again.'));
     } finally {
       setProcessingId(null);
       fetchApplications();
@@ -170,8 +150,8 @@ export const ManagerAdvisorVerification: React.FC = () => {
       await backendService.api.put(`/advisors/admin/${selectedApp.userId}/reject`, { reason: rejectReason.trim() });
       toast.success('Application rejected. User has been notified.');
       closeReview();
-    } catch (err: any) {
-      toast.error(apiError(err, 'Rejection failed'));
+    } catch (err) {
+      toast.error(await apiError(err, 'Rejection failed'));
     } finally {
       setProcessingId(null);
       fetchApplications();
@@ -404,11 +384,11 @@ export const ManagerAdvisorVerification: React.FC = () => {
                                   <button
                                     type="button"
                                     onClick={() => openDocumentViewer(selectedApp, doc.type, doc.label)}
-                                    disabled={docLoading !== null}
+                                    disabled={docLoadingKey !== null}
                                     className="px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-100 flex items-center gap-1.5 shrink-0 disabled:opacity-50"
                                     data-testid={`manager-verify-open-${doc.type}-button`}
                                   >
-                                    {docLoading === doc.type ? <Loader2 size={12} className="animate-spin" /> : <Eye size={12} />}
+                                    {docLoadingKey === `${selectedApp.applicationId}:${doc.type}` ? <Loader2 size={12} className="animate-spin" /> : <Eye size={12} />}
                                     View
                                   </button>
                                 )}
@@ -508,74 +488,13 @@ export const ManagerAdvisorVerification: React.FC = () => {
         </AnimatePresence>
 
         {/* ─── Document Viewer ─────────────────────────────────────────────── */}
-        <AnimatePresence>
-          {viewingDoc && (
-            <div className="fixed inset-0 z-[120] flex items-center justify-center p-3 sm:p-6 backdrop-blur-md bg-slate-950/75">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.93, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.93, y: 20 }}
-                className="bg-slate-900 border border-slate-800 w-full max-w-5xl rounded-3xl overflow-hidden shadow-2xl flex flex-col text-white max-h-[92vh]"
-              >
-                <div className="px-6 py-4 bg-slate-950/80 border-b border-slate-800 flex items-center justify-between gap-4 shrink-0">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-10 h-10 rounded-xl bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 flex items-center justify-center shrink-0">
-                      <FileText size={20} />
-                    </div>
-                    <div className="min-w-0">
-                      <h3 className="text-sm font-black text-white truncate">{viewingDoc.title}</h3>
-                      <p className="text-xs text-slate-400 truncate">Uploaded by {viewingDoc.app.fullName}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    {viewingDoc.url && (
-                      <a
-                        href={viewingDoc.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-2 bg-slate-800/80 hover:bg-slate-700 border border-slate-700/60 rounded-xl text-slate-300 transition-colors"
-                        title="Open in new tab"
-                      >
-                        <ExternalLink size={15} />
-                      </a>
-                    )}
-                    <button
-                      onClick={() => setViewingDoc(null)}
-                      className="p-2 bg-slate-800/80 hover:bg-rose-500 hover:text-white border border-slate-700/60 rounded-xl text-slate-400 transition-colors"
-                      title="Close viewer"
-                    >
-                      <X size={18} />
-                    </button>
-                  </div>
-                </div>
-
-                <div className="flex-1 bg-slate-950 p-4 sm:p-8 flex items-center justify-center overflow-auto min-h-[380px]">
-                  {!viewingDoc.url ? (
-                    <div className="text-center space-y-3 max-w-sm">
-                      <AlertTriangle size={36} className="mx-auto text-amber-400" />
-                      <p className="text-sm font-bold">This document could not be loaded</p>
-                      <p className="text-xs text-slate-400">
-                        The file is on record but a secure link could not be issued. Do not approve an application whose documents you have not been able to inspect — try again, or escalate to an admin.
-                      </p>
-                    </div>
-                  ) : isPdfUrl(viewingDoc.url) ? (
-                    <iframe
-                      src={viewingDoc.url}
-                      title={viewingDoc.title}
-                      className="w-full h-[70vh] rounded-2xl bg-white"
-                    />
-                  ) : (
-                    <img
-                      src={viewingDoc.url}
-                      alt={viewingDoc.title}
-                      className="max-w-full max-h-[70vh] object-contain rounded-2xl bg-white"
-                    />
-                  )}
-                </div>
-              </motion.div>
-            </div>
-          )}
-        </AnimatePresence>
+        <AdvisorDocumentViewer
+          open={viewingDoc !== null}
+          title={viewingDoc?.title ?? ''}
+          subtitle={viewingDoc?.subtitle}
+          document={viewingDoc?.document ?? null}
+          onClose={closeDocument}
+        />
 
       </div>
     </CenteredLayout>

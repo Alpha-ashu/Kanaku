@@ -7,6 +7,8 @@ import { uploadFields } from '../../middleware/upload';
 import { validateBody, validateParams } from '../../middleware/validate';
 import { duplicateSubmitGuard } from '../../middleware/duplicateSubmitGuard';
 import { idempotency } from '../../middleware/idempotency';
+import { authenticatedRateLimit } from '../../middleware/rateLimit';
+import { extendRequestTimeout } from '../../middleware/timeout';
 import * as AdvisorController from './advisor.controller';
 import * as PostController from './post.controller';
 import {
@@ -19,6 +21,7 @@ import {
   rateSessionSchema,
   rejectApplicationSchema,
   createPostSchema,
+  validateAdvisorApplication,
 } from './advisor.validation';
 
 const router = Router();
@@ -42,13 +45,29 @@ router.use(authMiddleware);
 // IMPORTANT: These specific paths MUST be defined BEFORE the /:id catch-all
 router.get('/application/my', AdvisorController.getMyApplication);
 router.get('/application/:id/document/:docType', validateParams(documentParamSchema), AdvisorController.getApplicationDocument);
+// Order matters on /apply. The limiter and the eligibility check run before
+// multer, so a refused or throttled caller is answered without the server first
+// buffering up to 30 MB of documents. The budget is extended before the body is
+// read: the global 30 s timer also covers the upload itself.
 router.post(
   '/apply',
-  uploadFields([
-    { name: 'panDocument', maxCount: 1 },
-    { name: 'aadhaarDocument', maxCount: 1 },
-    { name: 'certDocument', maxCount: 1 },
-  ]),
+  authenticatedRateLimit({
+    windowMs: 60 * 60_000,
+    max: Number(process.env.ADVISOR_APPLY_RATE_LIMIT || 20),
+    scope: 'advisor-apply',
+    message: 'Too many application attempts. Please try again later.',
+  }),
+  extendRequestTimeout(Number(process.env.ADVISOR_APPLY_TIMEOUT_MS || 120_000)),
+  AdvisorController.checkAdvisorEligibility,
+  uploadFields(
+    [
+      { name: 'panDocument', maxCount: 1 },
+      { name: 'aadhaarDocument', maxCount: 1 },
+      { name: 'certDocument', maxCount: 1 },
+    ],
+    { limits: { files: 3, fields: 20, fieldSize: 32 * 1024 } },
+  ),
+  validateAdvisorApplication,
   AdvisorController.applyAsAdvisor,
 );
 

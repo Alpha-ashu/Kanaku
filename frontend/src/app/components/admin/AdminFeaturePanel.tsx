@@ -2,13 +2,13 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useApp } from '@/contexts/AppContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { PageHeader } from '@/app/components/ui/PageHeader';
-import { Shield, Brain, Layers, Search, Settings, Activity, Sparkles, ChevronDown, ChevronUp, X } from 'lucide-react';
+import { Shield, Brain, Layers, Search, Settings, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { backendService } from '@/lib/backend-api';
-import { ROLE_FEATURES, SUB_FEATURE_DEFINITIONS, AI_MODULE_DEFINITIONS, UserRole, AIModuleKey, AIModuleDef } from '@/lib/featureFlags';
+import { SUB_FEATURE_DEFINITIONS, AI_MODULE_DEFINITIONS, UserRole, AIModuleKey, AIModuleDef } from '@/lib/featureFlags';
 import { AdminAIFeatureSection } from './AdminAIFeatureSection';
 
 const ADMIN_FEATURE_SETTINGS_KEY = 'admin_global_feature_settings';
@@ -84,6 +84,7 @@ const FEATURE_DEFAULT_ROLE_ACCESS: Record<string, Record<UserRole, boolean>> = {
   aiInsights:             { admin: true, manager: false, advisor: true,  user: true  },
   recurringTransactions:  { admin: true, manager: true,  advisor: true,  user: true  },
   budgetAlerts:           { admin: true, manager: true,  advisor: true,  user: true  },
+  wallet:                 { admin: true, manager: false, advisor: true,  user: true  },
 };
 
 const FEATURES_BASE: FeatureControlBase[] = [
@@ -109,7 +110,15 @@ const FEATURES_BASE: FeatureControlBase[] = [
   { name: 'Client Management', key: 'clientManagement', description: 'Advisors and Managers can manage assigned clients' },
   { name: 'AI Management', key: 'aiManagement', description: 'Centralized control panel for AI models and insights' },
   { name: 'Advisor Verification', key: 'managerPanel', description: 'Manager module for approving advisor applications' },
+  { name: 'Coin Wallet', key: 'wallet', description: 'Buy coins, pay for advisor sessions from the wallet, advisor earnings. Turning this on also starts charging coins for new bookings.' },
 ];
+
+/**
+ * Modules that start switched OFF in the panel. Every other module defaults to
+ * enabled, so without this the first save of the panel for any reason would
+ * silently launch coin purchases and paid sessions.
+ */
+const DEFAULT_DISABLED_MODULES = new Set(['wallet']);
 
 const FEATURES: FeatureControl[] = FEATURES_BASE.map(f => {
   const defaults = SUB_FEATURE_DEFINITIONS[f.key];
@@ -128,7 +137,7 @@ const FEATURES: FeatureControl[] = FEATURES_BASE.map(f => {
 
   return {
     ...f,
-    enabled: true,
+    enabled: !DEFAULT_DISABLED_MODULES.has(f.key),
     roleAccess: FEATURE_DEFAULT_ROLE_ACCESS[f.key] ?? { admin: true, manager: true, advisor: true, user: true },
     lastUpdated: new Date(),
     children

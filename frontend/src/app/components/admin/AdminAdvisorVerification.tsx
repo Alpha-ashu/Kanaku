@@ -7,11 +7,14 @@ import {
   Shield, CheckCircle2, XCircle, Clock, Users, Star,
   Loader2, AlertTriangle, ChevronLeft, RefreshCw,
   BadgeCheck, UserX, Mail, Calendar, Briefcase, FileText,
-  ExternalLink, ChevronDown, ChevronUp,
+  Eye, ChevronDown, ChevronUp,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import { AdvisorDocumentViewer } from '@/app/components/advisor/AdvisorDocumentViewer';
+import { useAdvisorDocumentViewer, useAdvisorQueueLiveRefresh } from '@/hooks/useAdvisorVerification';
+import { describeApiFailure } from '@/services/advisorApplicationService';
 
 interface AdvisorApplicationRow {
   applicationId: string;
@@ -63,7 +66,7 @@ export const AdminAdvisorVerification: React.FC = () => {
   const [rejectModal, setRejectModal] = useState<{ userId: string; name: string } | null>(null);
   const [rejectReason, setRejectReason] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [loadingDocUrl, setLoadingDocUrl] = useState<string | null>(null);
+  const { viewer, loadingKey: loadingDocKey, openDocument, closeDocument } = useAdvisorDocumentViewer();
 
   const isFetching = useRef(false);
 
@@ -86,10 +89,15 @@ export const AdminAdvisorVerification: React.FC = () => {
     }
   }, []);
 
+  const isReviewer = !authLoading && dataReady && ['admin', 'manager'].includes(role);
+
   useEffect(() => {
-    if (authLoading || !dataReady || !['admin', 'manager'].includes(role)) return;
+    if (!isReviewer) return;
     fetchApplications();
-  }, [fetchApplications, authLoading, dataReady, role]);
+  }, [fetchApplications, isReviewer]);
+
+  // New applications appear without a reload.
+  useAdvisorQueueLiveRefresh(fetchApplications, isReviewer);
 
   if (authLoading || !dataReady) {
     return (
@@ -121,8 +129,8 @@ export const AdminAdvisorVerification: React.FC = () => {
     try {
       await backendService.api.put(`/advisors/admin/${userId}/approve`);
       toast.success(`${name} has been approved as an advisor!`);
-    } catch (err: any) {
-      toast.error(err?.response?.data?.error || 'Failed to approve advisor');
+    } catch (err) {
+      toast.error((await describeApiFailure(err, 'Failed to approve advisor')).message);
     } finally {
       setProcessingId(null);
       fetchApplications();
@@ -137,28 +145,11 @@ export const AdminAdvisorVerification: React.FC = () => {
       toast.success('Application rejected and user notified');
       setRejectModal(null);
       setRejectReason('');
-    } catch (err: any) {
-      toast.error(err?.response?.data?.error || 'Failed to reject application');
+    } catch (err) {
+      toast.error((await describeApiFailure(err, 'Failed to reject application')).message);
     } finally {
       setProcessingId(null);
       fetchApplications();
-    }
-  };
-
-  const openDocument = async (applicationId: string, docType: 'pan' | 'aadhaar' | 'cert') => {
-    const key = `${applicationId}-${docType}`;
-    setLoadingDocUrl(key);
-    try {
-      const res = await backendService.api.get(`/advisors/application/${applicationId}/document/${docType}`);
-      if (!res.data?.url) {
-        toast.error('This document could not be loaded — a secure link was not issued');
-        return;
-      }
-      window.open(res.data.url, '_blank', 'noopener,noreferrer');
-    } catch {
-      toast.error('Failed to load document');
-    } finally {
-      setLoadingDocUrl(null);
     }
   };
 
@@ -406,18 +397,18 @@ export const AdminAdvisorVerification: React.FC = () => {
                                   { label: 'Aadhaar Card', type: 'aadhaar' as const, has: app.hasAadhaar },
                                   { label: 'Certificate', type: 'cert' as const, has: app.hasCert },
                                 ].map((doc) => {
-                                  const key = `${app.applicationId}-${doc.type}`;
+                                  const key = `${app.applicationId}:${doc.type}`;
                                   return doc.has ? (
                                     <button data-testid={`admin-advisor-verification-button-2-${doc.type}`}
                                       key={doc.type}
                                       type="button"
-                                      onClick={() => openDocument(app.applicationId, doc.type)}
-                                      disabled={loadingDocUrl === key}
+                                      onClick={() => openDocument(app.applicationId, doc.type, doc.label, `Uploaded by ${app.fullName}`)}
+                                      disabled={loadingDocKey !== null}
                                       className="flex items-center gap-2 px-3 py-2 bg-indigo-50 border border-indigo-200 text-indigo-700 rounded-xl text-xs font-bold hover:bg-indigo-100 transition-colors disabled:opacity-50"
                                     >
-                                      {loadingDocUrl === key ? <Loader2 size={12} className="animate-spin" /> : <FileText size={12} />}
+                                      {loadingDocKey === key ? <Loader2 size={12} className="animate-spin" /> : <FileText size={12} />}
                                       {doc.label}
-                                      <ExternalLink size={11} />
+                                      <Eye size={11} />
                                     </button>
                                   ) : (
                                     <span key={doc.type} className="flex items-center gap-2 px-3 py-2 bg-gray-50 border border-gray-200 text-gray-400 rounded-xl text-xs">
@@ -490,6 +481,14 @@ export const AdminAdvisorVerification: React.FC = () => {
             </div>
           )}
         </AnimatePresence>
+
+        <AdvisorDocumentViewer
+          open={viewer !== null}
+          title={viewer?.title ?? ''}
+          subtitle={viewer?.subtitle}
+          document={viewer?.document ?? null}
+          onClose={closeDocument}
+        />
 
       </div>
     </CenteredLayout>

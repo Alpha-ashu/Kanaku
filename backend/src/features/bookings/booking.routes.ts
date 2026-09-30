@@ -7,6 +7,8 @@ import { requireRole, requireApproved } from '../../middleware/rbac';
 import { requireFeature } from '../../middleware/featureGate';
 import { idempotency } from '../../middleware/idempotency';
 import { validateBody, validateParams } from '../../middleware/validate';
+import { pinGate } from '../../middleware/pinGate';
+import { authenticatedRateLimit } from '../../middleware/rateLimit';
 import * as BookingController from './booking.controller';
 import {
   bookingCreateSchema,
@@ -35,6 +37,19 @@ router.get('/', BookingController.getBookings);
 
 // Get specific booking
 router.get('/:id', BookingController.getBooking);
+
+// Payment & access state on the server clock (either party), and paying for an
+// accepted session from the coin wallet (the client — enforced in the handler,
+// which refuses anyone else's booking as not found).
+router.get('/:id/payment', validateParams(bookingIdParamSchema), BookingController.getBookingPayment);
+router.post(
+  '/:id/pay',
+  requireFeature('wallet'),
+  pinGate,
+  authenticatedRateLimit({ windowMs: 60_000, max: 10, scope: 'booking-pay', message: 'Too many payment attempts. Please wait a moment.' }),
+  validateParams(bookingIdParamSchema),
+  BookingController.payBooking,
+);
 
 // Accept booking (advisor only)
 router.put(

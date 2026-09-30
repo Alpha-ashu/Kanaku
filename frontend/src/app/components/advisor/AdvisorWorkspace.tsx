@@ -10,6 +10,8 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { describeApiFailure, failureText } from '@/lib/apiFailure';
+import { SessionPaymentPanel } from '@/app/components/wallet/SessionPaymentPanel';
 import { motion, AnimatePresence } from 'framer-motion';
 
 type WorkspaceTab = 'bookings' | 'clients' | 'schedule' | 'earnings' | 'updates';
@@ -103,8 +105,9 @@ export const AdvisorWorkspace: React.FC = () => {
       toast.success('Consultation started! Chat is active.');
       setConsultationModal(prev => prev ? { ...prev, status: 'in-progress' } : null);
       fetchData();
-    } catch (err: any) {
-      toast.error(err?.response?.data?.error || 'Failed to start session');
+    } catch (err) {
+      // 423 SESSION_LOCKED = unpaid, too early or too late — the server says which.
+      toast.error(failureText(await describeApiFailure(err, 'Failed to start session')));
     } finally {
       setIsStartingSession(false);
     }
@@ -122,8 +125,8 @@ export const AdvisorWorkspace: React.FC = () => {
         message: text,
       });
       setConsultationMessages(prev => [...prev, res.data]);
-    } catch (err: any) {
-      toast.error(err?.response?.data?.error || 'Failed to send message');
+    } catch (err) {
+      toast.error(failureText(await describeApiFailure(err, 'Failed to send message')));
       setNewConsultationMsg(text);
     } finally {
       setIsSendingConsultationMsg(false);
@@ -137,11 +140,11 @@ export const AdvisorWorkspace: React.FC = () => {
       await backendService.api.post(`/sessions/${consultationModal.sessionId}/complete`, {
         notes: consultationNotes.trim() || undefined,
       });
-      toast.success('Consultation completed! Payment logged.');
+      toast.success('Consultation completed. Any coin earnings for it are now in your balance.');
       setConsultationModal(prev => prev ? { ...prev, status: 'completed' } : null);
       fetchData();
-    } catch (err: any) {
-      toast.error(err?.response?.data?.error || 'Failed to complete session');
+    } catch (err) {
+      toast.error(failureText(await describeApiFailure(err, 'Failed to complete session')));
     } finally {
       setIsCompletingSession(false);
     }
@@ -535,6 +538,14 @@ export const AdvisorWorkspace: React.FC = () => {
  <p className="text-sm text-gray-500 mt-0.5">Sessions Done</p>
  </div>
  </div>
+ <button
+ type="button"
+ onClick={() => setCurrentPage('advisor-earnings')}
+ className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-violet-200 bg-violet-50 text-violet-800 text-sm font-bold hover:bg-violet-100"
+ data-testid="advisor-ws-coin-earnings"
+ >
+ Coin earnings &amp; wallet
+ </button>
  <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400">Session History</h2>
  {sessions.length === 0 ? (
  <div className="text-center py-10 bg-white rounded-2xl border border-gray-100"><IndianRupee size={32} className="mx-auto text-gray-300 mb-2" /><p className="text-gray-500 text-sm">No sessions yet</p></div>
@@ -754,6 +765,18 @@ export const AdvisorWorkspace: React.FC = () => {
             </button>
           </div>
         </div>
+
+        {consultationModal.booking?.id && (
+          <div className="px-4 sm:px-6 py-2.5 border-b border-gray-100">
+            {/* Paid? Inside the window? Decided by the server; also the join link. */}
+            <SessionPaymentPanel
+              bookingId={consultationModal.booking.id}
+              viewer="advisor"
+              initialState={consultationModal.booking.paymentState}
+              compact
+            />
+          </div>
+        )}
 
         {consultationModal.booking?.description && (
           <div className="px-6 py-2.5 bg-indigo-50/60 border-b border-indigo-100/50 flex items-center justify-between text-xs text-indigo-900">

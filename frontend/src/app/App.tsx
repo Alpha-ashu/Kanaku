@@ -100,6 +100,10 @@ const BudgetAlertsPage = lazy(() => import('@/app/components/features/BudgetAler
 const ClientManagementPage = lazy(() => import('@/app/components/features/ClientManagementPage').then(m => ({ default: m.ClientManagementPage })));
 const ReceiptScannerPage = lazy(() => import('@/app/components/features/ReceiptScannerPage').then(m => ({ default: m.ReceiptScannerPage })));
 const Vault = lazy(() => import('@/app/components/vault/Vault').then(m => ({ default: m.Vault })));
+const WalletPage = lazy(() => import('@/app/components/wallet/WalletPage').then(m => ({ default: m.WalletPage })));
+const AdvisorEarnings = lazy(() => import('@/app/components/advisor/AdvisorEarnings').then(m => ({ default: m.AdvisorEarnings })));
+const AdminFinanceConsole = ADMIN_UI_ENABLED ? lazy(() => import('@/app/components/admin/finance/AdminFinanceConsole').then(m => ({ default: m.AdminFinanceConsole }))) : null;
+const ManagerTeamDashboard = ADMIN_UI_ENABLED ? lazy(() => import('@/app/components/manager/ManagerTeamDashboard').then(m => ({ default: m.ManagerTeamDashboard }))) : null;
 
 //  Capacitor (native only)
 import { App as CapacitorApp } from '@capacitor/app';
@@ -937,7 +941,8 @@ const AppContent: React.FC = () => {
     const isManager = normalizedRole === 'manager';
 
     const isSystemAdminPage = ['admin', 'admin-feature-panel', 'admin-ai', 'ai-management', 'sync-monitor'].includes(currentPage);
-    const isManagerPage = ['manager-advisor-verification', 'admin-advisor-verification', 'advisor-verification'].includes(currentPage);
+    // Staff pages open to admins AND managers (the API scopes managers by permission).
+    const isManagerPage = ['manager-advisor-verification', 'admin-advisor-verification', 'advisor-verification', 'admin-finance', 'manager-team'].includes(currentPage);
     const isPublicPage = ['privacy-policy', 'terms', 'diagnostics', 'auth-callback', 'settings', 'user-profile', 'notifications'].includes(currentPage);
 
     // User-surface build: the Admin/Manager UI is compiled out, so bounce off
@@ -1380,7 +1385,7 @@ const AppContent: React.FC = () => {
     const isManager = normalizedRole === 'manager';
 
     const isSystemAdminPage = ['admin', 'admin-feature-panel', 'admin-ai', 'ai-management', 'sync-monitor'].includes(currentPage);
-    const isManagerPage = ['manager-advisor-verification', 'admin-advisor-verification', 'advisor-verification'].includes(currentPage);
+    const isManagerPage = ['manager-advisor-verification', 'admin-advisor-verification', 'advisor-verification', 'admin-finance', 'manager-team'].includes(currentPage);
     const isPublicPage = ['privacy', 'privacy-policy', 'terms', 'data-deletion', 'account-deletion', 'delete-account', 'diagnostics', 'auth-callback', 'settings', 'user-profile', 'notifications'].includes(currentPage);
 
     // User-surface build: Admin/Manager pages are compiled out — render the
@@ -1493,6 +1498,8 @@ const AppContent: React.FC = () => {
       case 'todo-list-detail': return <ToDoListDetail />;
       case 'todo-list-share': return <ToDoListShare />;
       case 'vault': return <Vault />;
+      case 'wallet': return <WalletPage />;
+      case 'advisor-earnings': return <AdvisorEarnings />;
       case 'settings': return <Settings />;
       case 'notifications': return <Notifications />;
       case 'onboarding':
@@ -1533,6 +1540,9 @@ const AppContent: React.FC = () => {
       case 'advisor-verification':
       case 'manager-advisor-verification': return ManagerAdvisorVerification ? <ManagerAdvisorVerification /> : <Dashboard setCurrentPage={setCurrentPage} />;
       case 'advisor': return <AdvisorWorkspace />;
+      case 'finance':
+      case 'admin-finance': return AdminFinanceConsole ? <AdminFinanceConsole /> : <Dashboard setCurrentPage={setCurrentPage} />;
+      case 'manager-team': return ManagerTeamDashboard ? <ManagerTeamDashboard /> : <Dashboard setCurrentPage={setCurrentPage} />;
       case 'ai-assistant': return <AIAssistantPage />;
       case 'voice-input': return <VoiceInput />;
       case 'voice-review': return <VoiceReview />;

@@ -14,12 +14,17 @@
  * renaming it would be a data migration and a client break for no behavioural
  * gain.
  *
- *   pending     → accepted | rejected | reschedule | cancelled
- *   reschedule  → accepted | rejected | reschedule | cancelled
- *   accepted    → completed | cancelled
+ *   pending     → accepted | rejected | reschedule | cancelled | expired
+ *   reschedule  → accepted | rejected | reschedule | cancelled | expired
+ *   accepted    → completed | cancelled | expired
  *   completed   → (terminal)
  *   rejected    → (terminal)
  *   cancelled   → (terminal)
+ *   expired     → (terminal)
+ *
+ * `expired` (2026-09-30) is set only by the system, on server time: a request
+ * nobody answered before its start, or an accepted session still unpaid when
+ * its payment window closed. An expired booking never charged anything.
  *
  * `reschedule → reschedule` is the counter-proposal: either party may answer a
  * proposed time with one of their own, bounded by MAX_RESCHEDULE_ROUNDS.
@@ -36,9 +41,11 @@ export type BookingStatus =
   | 'rejected'
   | 'reschedule'
   | 'completed'
-  | 'cancelled';
+  | 'cancelled'
+  | 'expired';
 
-export type BookingActor = 'client' | 'advisor';
+/** `system` = the server acting on its own clock; `admin` = a staff decision. */
+export type BookingActor = 'client' | 'advisor' | 'system' | 'admin';
 
 /** How many times the two sides may propose new times before it must be settled. */
 export const MAX_RESCHEDULE_ROUNDS = Number(process.env.BOOKING_MAX_RESCHEDULE_ROUNDS || 3);
@@ -63,12 +70,13 @@ export const normalizeStatus = (value: string | null | undefined): BookingStatus
 };
 
 const TRANSITIONS: Record<BookingStatus, BookingStatus[]> = {
-  pending: ['accepted', 'rejected', 'reschedule', 'cancelled'],
-  reschedule: ['accepted', 'rejected', 'reschedule', 'cancelled'],
-  accepted: ['completed', 'cancelled'],
+  pending: ['accepted', 'rejected', 'reschedule', 'cancelled', 'expired'],
+  reschedule: ['accepted', 'rejected', 'reschedule', 'cancelled', 'expired'],
+  accepted: ['completed', 'cancelled', 'expired'],
   completed: [],
   rejected: [],
   cancelled: [],
+  expired: [],
 };
 
 /**
@@ -83,8 +91,9 @@ const ACTOR_ALLOWED: Record<BookingStatus, BookingActor[]> = {
   accepted: ['client', 'advisor'],
   rejected: ['client', 'advisor'],
   reschedule: ['client', 'advisor'],
-  cancelled: ['client', 'advisor'],
-  completed: ['advisor'],
+  cancelled: ['client', 'advisor', 'system', 'admin'],
+  completed: ['advisor', 'system'],
+  expired: ['system'],
   pending: [],
 };
 

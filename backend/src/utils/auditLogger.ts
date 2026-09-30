@@ -95,7 +95,31 @@ export type AuditEventType =
   | 'admin.approval_rejected'
   | 'gdpr.account_delete_executed'
   | 'file.upload'
-  | 'file.delete';
+  | 'file.delete'
+  // Every read of an advisor's PAN / Aadhaar / certificate, by whom, and every
+  // refused attempt ('denied' marks the row as a failure).
+  | 'kyc.document_view'
+  | 'kyc.document_view_denied'
+  // Coin wallet & payments
+  | 'payment.order_created'
+  | 'payment.credited'
+  | 'payment.refunded'
+  | 'wallet.adjusted'
+  | 'wallet.status_changed'
+  | 'wallet.session_paid'
+  | 'wallet.session_refunded'
+  | 'wallet.earnings_released'
+  | 'booking.expired'
+  | 'session.unlocked'
+  | 'session.access_denied'
+  | 'security.payment_signature_invalid'
+  | 'security.payment_amount_mismatch'
+  | 'security.refund_unrecovered'
+  | 'security.payment_id_reused'
+  // Staff authority
+  | 'staff.permissions_changed'
+  | 'staff.assignment_changed'
+  | 'finance.package_changed';
 
 export interface AuditPayload {
   event: AuditEventType;
@@ -128,6 +152,9 @@ const isFailureEvent = (event: AuditEventType): boolean =>
   event.includes('invalid') ||
   event.includes('expired') ||
   event.includes('denied') ||
+  event.includes('mismatch') ||
+  event.includes('unrecovered') ||
+  event.includes('reused') ||
   event.includes('circuit_open');
 
 /**

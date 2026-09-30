@@ -6,6 +6,8 @@ import { Prisma } from '../../db/prisma-client';
 import { logger } from '../../config/logger';
 import { getSupabaseAdminClient } from '../../db/supabase';
 import { removeObject } from '../../utils/storage';
+import { AppError } from '../../utils/AppError';
+import { financialDeletionBlockers } from '../wallet/wallet.guards';
 import { authProvider } from './auth.provider';
 import { isAccountLocked, isAccountPending, isDemoDisabled } from '../../utils/accountStatus';
 import {
@@ -611,6 +613,17 @@ export class AuthService {
     if (!user) {
       // User might be Supabase-only (no Prisma record) — proceed to Supabase deletion
       logger.warn(`[AuthService] Prisma user not found for deletion: ${userId}`);
+    }
+
+    // Coins and paid sessions must be settled before anything is removed.
+    if (user) {
+      const blockers = await financialDeletionBlockers(userId);
+      if (blockers.length) {
+        throw AppError.conflict(
+          `Your account cannot be deleted yet: ${blockers.join('; ')}. Use or cancel them first, or contact support.`,
+          'ACCOUNT_HAS_OPEN_BALANCE',
+        );
+      }
     }
 
     // Uploaded bills/receipts and advisor-session attachments live in object

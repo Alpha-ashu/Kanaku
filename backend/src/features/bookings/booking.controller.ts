@@ -12,6 +12,23 @@ import {
   RESCHEDULE_EXPIRY_MS,
   type BookingActor,
 } from './booking.stateMachine';
+import { DEFAULT_BOOKING_TIME_ZONE, isValidTimeZone, resolveBookingTimes, zonedWallClockToInstant } from './bookingTime';
+import { sessionCoinCost, sessionPaymentsEnabled, sessionPrice } from '../wallet/wallet.config';
+import {
+  cancelBookingWithRefund,
+  describeBookingState,
+  payForSession,
+  settleBookingIfDue,
+} from '../wallet/sessionPayment.service';
+import { getWalletSummary } from '../wallet/wallet.service';
+import { requestIdOf, sendWalletError } from '../wallet/wallet.http';
+
+/** Payment/lifecycle view of a booking row for whoever is looking at it. */
+const withPaymentState = <T extends Parameters<typeof describeBookingState>[0] & { session?: { id: string; status: string } | null }>(
+  booking: T,
+  viewerId: string,
+  now: Date,
+) => ({ ...booking, paymentState: describeBookingState(booking, booking.session ?? null, viewerId, now) });
 
 /**
  * Push a live update into a user's socket room.
@@ -39,7 +56,10 @@ const pushLive = (userId: string, event: string, payload: unknown): void => {
 export const createBooking = async (req: AuthRequest, res: Response) => {
   try {
     const clientId = getUserId(req);
-    const { advisorId, sessionType, description, proposedDate, proposedTime, duration, amount } = req.body;
+    // `amount` from the client is ignored: the price is derived below from the
+    // advisor's published rate, so a tampered request cannot book at its own price.
+    const { advisorId, sessionType, description, proposedDate, proposedTime, duration } = req.body;
+    const timeZone = isValidTimeZone(req.body?.timeZone) ? req.body.timeZone : DEFAULT_BOOKING_TIME_ZONE;
     const requestKey = asClientRequestId(req.body?.clientRequestId);
 
     // Replay of a booking we already created. The slot-based duplicate check
@@ -50,8 +70,7 @@ export const createBooking = async (req: AuthRequest, res: Response) => {
       if (replay) return res.status(200).json(replay);
     }
 
-    // Validate required fields — note: amount can legitimately be 0 (free session)
-    if (!advisorId || !sessionType || !proposedDate || !proposedTime || !duration || amount === undefined || amount === null) {
+    if (!advisorId || !sessionType || !proposedDate || !proposedTime || !duration) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
@@ -61,7 +80,7 @@ export const createBooking = async (req: AuthRequest, res: Response) => {
 
     const advisor = await prisma.user.findUnique({
       where: { id: advisorId },
-      select: { id: true, name: true, role: true, isApproved: true },
+      select: { id: true, name: true, role: true, isApproved: true, advisorApplication: { select: { hourlyRate: true } } },
     }).catch(() => null);
 
     if (!advisor || advisor.role !== 'advisor' || !advisor.isApproved) {
@@ -105,6 +124,20 @@ export const createBooking = async (req: AuthRequest, res: Response) => {
       }
     }
 
+    const startsAt = zonedWallClockToInstant(proposedDate, proposedTime, timeZone);
+    if (!startsAt) {
+      return res.status(400).json({ error: 'Invalid date or time', code: 'INVALID_BOOKING_TIME' });
+    }
+    // Server clock, absolute instant: a slot that has already begun is refused
+    // whatever the device thinks the time is.
+    if (startsAt.getTime() <= Date.now()) {
+      return res.status(400).json({ error: 'Please choose a time that has not already passed', code: 'BOOKING_IN_PAST' });
+    }
+    const endsAt = new Date(startsAt.getTime() + Number(duration) * 60_000);
+    const hourlyRate = advisor.advisorApplication?.hourlyRate != null ? Number(advisor.advisorApplication.hourlyRate) : 0;
+    const price = sessionPrice(hourlyRate, Number(duration));
+    const coinCost = (await sessionPaymentsEnabled()) ? sessionCoinCost(hourlyRate, Number(duration)) : 0;
+
     const proposedDateTime = new Date(`${proposedDate}T${proposedTime}`);
 
     // One active request per client, advisor and slot. The Idempotency-Key only
@@ -132,7 +165,12 @@ export const createBooking = async (req: AuthRequest, res: Response) => {
           proposedDate: proposedDateTime,
           proposedTime,
           duration,
-          amount,
+          amount: price,
+          startsAt,
+          endsAt,
+          timeZone,
+          coinCost: coinCost > 0 ? coinCost : null,
+          paymentStatus: coinCost > 0 ? 'UNPAID' : 'NOT_REQUIRED',
           status: 'pending',
           clientRequestId: requestKey,
         },
@@ -202,7 +240,8 @@ export const getBookings = async (req: AuthRequest, res: Response) => {
         },
         orderBy: { createdAt: 'desc' },
       });
-      return res.json(bookings);
+      const now = new Date();
+      return res.json(bookings.map((b) => withPaymentState(b, userId, now)));
     } else {
       // Get bookings where user is the client
       const bookings = await prisma.bookingRequest.findMany({
@@ -228,7 +267,8 @@ export const getBookings = async (req: AuthRequest, res: Response) => {
         },
         orderBy: { createdAt: 'desc' },
       });
-      return res.json(bookings);
+      const now = new Date();
+      return res.json(bookings.map((b) => withPaymentState(b, userId, now)));
     }
   } catch (error: any) {
     if (isDatabaseUnavailableError(error)) {
@@ -281,7 +321,7 @@ export const getBooking = async (req: AuthRequest, res: Response) => {
       return res.status(403).json({ error: 'Access denied' });
     }
 
-    res.json(booking);
+    res.json(withPaymentState(booking, userId, new Date()));
   } catch (error: any) {
     res.status(500).json({ error: 'Failed to fetch booking' });
   }
@@ -299,6 +339,11 @@ export const acceptBooking = async (req: AuthRequest, res: Response) => {
 
     if (!booking) {
       return res.status(403).json({ error: 'Access denied' });
+    }
+
+    const times = resolveBookingTimes(booking);
+    if (times && times.startsAt.getTime() <= Date.now() && ['pending', 'reschedule'].includes(booking.status)) {
+      return res.status(409).json({ error: 'This request is for a time that has already passed', code: 'BOOKING_IN_PAST' });
     }
 
     // Conditional transition + session upsert in one transaction. A second tap
@@ -320,7 +365,7 @@ export const acceptBooking = async (req: AuthRequest, res: Response) => {
           bookingId: id,
           advisorId,
           clientId: current.clientId,
-          startTime: current.proposedDate,
+          startTime: current.startsAt ?? current.proposedDate,
           sessionType: current.sessionType,
           status: 'scheduled',
         },
@@ -343,7 +388,9 @@ export const acceptBooking = async (req: AuthRequest, res: Response) => {
       topic: 'booking',
       type: 'booking_accepted',
       title: 'Booking Accepted',
-      message: `Your advisor has accepted your ${booking.sessionType} consultation on ${booking.proposedDate}`,
+      message: booking.paymentStatus === 'UNPAID' && booking.coinCost
+        ? `Your advisor accepted your ${booking.sessionType} consultation. Pay ${booking.coinCost} coins at least 5 minutes before it starts to unlock it.`
+        : `Your advisor has accepted your ${booking.sessionType} consultation on ${booking.proposedDate}`,
       deepLink: '/book-advisor',
       priority: 'high',
       email: true,
@@ -440,6 +487,13 @@ export const rescheduleBooking = async (req: AuthRequest, res: Response) => {
     if (Number.isNaN(nextDate.getTime())) {
       return res.status(400).json({ error: 'Invalid proposed date/time' });
     }
+    const nextStartsAt = zonedWallClockToInstant(String(date), String(time), booking.timeZone || DEFAULT_BOOKING_TIME_ZONE);
+    if (!nextStartsAt) {
+      return res.status(400).json({ error: 'Invalid proposed date/time' });
+    }
+    if (nextStartsAt.getTime() <= Date.now()) {
+      return res.status(400).json({ error: 'Please propose a time that has not already passed', code: 'BOOKING_IN_PAST' });
+    }
 
     const actor: BookingActor = booking.advisorId === userId ? 'advisor' : 'client';
     const failure = checkTransition({
@@ -464,6 +518,8 @@ export const rescheduleBooking = async (req: AuthRequest, res: Response) => {
         status: 'reschedule',
         proposedDate: nextDate,
         proposedTime: time,
+        startsAt: nextStartsAt,
+        endsAt: new Date(nextStartsAt.getTime() + booking.duration * 60_000),
         rescheduleCount: { increment: 1 },
         rescheduleProposedBy: userId,
         rescheduleMessage: reason || null,
@@ -569,12 +625,12 @@ const answerReschedule = (decision: 'accept' | 'decline') =>
         if (decision === 'accept') {
           const session = await tx.advisorSession.upsert({
             where: { bookingId: id },
-            update: { startTime: current.proposedDate },
+            update: { startTime: current.startsAt ?? current.proposedDate },
             create: {
               bookingId: id,
               advisorId: current.advisorId,
               clientId: current.clientId,
-              startTime: current.proposedDate,
+              startTime: current.startsAt ?? current.proposedDate,
               sessionType: current.sessionType,
               status: 'scheduled',
             },
@@ -653,19 +709,16 @@ export const cancelBooking = async (req: AuthRequest, res: Response) => {
       return res.status(failureHttpStatus(failure)).json({ error: failure.message, code: failure.code });
     }
 
-    // Conditional on the status we just validated: a booking the advisor
-    // accepted in the meantime must not be cancelled on a stale read.
-    const { count } = await prisma.bookingRequest.updateMany({
-      where: { id, status: booking.status },
-      data: { status: 'cancelled', rescheduleProposedBy: null, rescheduleExpiresAt: null },
-    });
-    if (count === 0) {
+    // Status change and any refund are one transaction (booking row locked), so
+    // a paid session can never end up cancelled-but-charged or refunded twice.
+    const outcome = await cancelBookingWithRefund(id, { actor: 'client', actorId: clientId, reason: req.body?.reason ?? null });
+    if (!outcome.changed) {
       return res.status(409).json({
         error: 'This booking changed while you were cancelling it. Reload and try again.',
         code: 'BOOKING_CONFLICT',
       });
     }
-    const updated = await prisma.bookingRequest.findUniqueOrThrow({ where: { id } });
+    const updated = outcome.booking;
 
     // Notify advisor via multi-channel delivery (app, email, push)
     await notify({
@@ -712,50 +765,59 @@ export const getAdvisorClients = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// Mark session fee as paid
-export const markFeePaid = async (req: AuthRequest, res: Response) => {
+/**
+ * Retired 2026-09-30. It let an advisor declare a client's fee paid with any
+ * amount; the payment row it tried to write never matched the schema (so it
+ * silently failed) and the client was still told "payment received". Session
+ * fees are now paid in coins and settled by the server (POST /bookings/:id/pay).
+ */
+export const markFeePaid = async (_req: AuthRequest, res: Response) =>
+  res.status(410).json({
+    error: 'Recording fees by hand is no longer supported. Clients pay for sessions from their coin wallet.',
+    code: 'FEE_RECORDING_RETIRED',
+  });
+
+// ─── Session payment (coins) ───────────────────────────────────────────────────
+
+/**
+ * The booking's payment and access state on the server clock. Settles the
+ * booking first (auto-charge in the window, expiry after it), so what the
+ * client sees is never stale because a timer did not run.
+ */
+export const getBookingPayment = async (req: AuthRequest, res: Response) => {
   try {
-    const advisorId = getUserId(req);
-    const { bookingId } = req.params;
-    const { amount, paymentMethod, paymentReference } = req.body;
+    const userId = getUserId(req);
+    const { id } = req.params;
+    const booking = await prisma.bookingRequest.findFirst({ where: { id, OR: [{ clientId: userId }, { advisorId: userId }] }, select: { id: true } });
+    if (!booking) return res.status(404).json({ success: false, error: 'Booking not found', code: 'BOOKING_NOT_FOUND' });
+    await settleBookingIfDue(id);
+    const fresh = await prisma.bookingRequest.findUniqueOrThrow({ where: { id }, include: { session: { select: { id: true, status: true } } } });
+    const wallet = userId === fresh.clientId ? await getWalletSummary(userId) : null;
+    return res.json({ success: true, data: describeBookingState(fresh, fresh.session, userId, new Date(), wallet?.availableBalance) });
+  } catch (error) {
+    return sendWalletError(res, error, 'booking payment state', requestIdOf(req));
+  }
+};
 
-    const booking = await prisma.bookingRequest.findFirst({ where: { id: bookingId, advisorId } });
-    if (!booking) {
-      return res.status(403).json({ error: 'Access denied' });
-    }
-
-    // Create payment record if the model exists
-    let payment: any = null;
-    try {
-      payment = await (prisma as any).payment?.create({
-        data: {
-          bookingId,
-          clientId: booking.clientId,
-          advisorId,
-          amount: amount ?? booking.amount,
-          currency: 'INR',
-          status: 'paid',
-          paymentMethod: paymentMethod ?? 'manual',
-          transactionId: paymentReference ?? `manual_${Date.now()}`,
-          paidAt: new Date(),
-        },
-      });
-    } catch { /* Model may vary */ }
-
-    await notify({
-      userId: booking.clientId,
-      sourceUserId: advisorId,
-      topic: 'booking',
-      type: 'booking_fee_paid',
-      title: 'Payment Received',
-      message: `Your consultation fee of ${amount ?? booking.amount} has been recorded`,
-      deepLink: '/book-advisor',
-      priority: 'normal',
+/** The client pays for an accepted session from their coin wallet. */
+export const payBooking = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = getUserId(req);
+    const { id } = req.params;
+    const result = await payForSession(id, userId);
+    const fresh = await prisma.bookingRequest.findUniqueOrThrow({ where: { id }, include: { session: { select: { id: true, status: true } } } });
+    const wallet = await getWalletSummary(userId);
+    pushLive(fresh.advisorId, 'booking_status_changed', { bookingId: id, status: fresh.status, paymentStatus: fresh.paymentStatus });
+    return res.json({
+      success: true,
+      data: {
+        alreadyPaid: result.alreadyPaid,
+        transactionId: result.paid ? result.debit?.id ?? null : null,
+        state: describeBookingState(fresh, fresh.session, userId, new Date(), wallet.availableBalance),
+      },
     });
-
-    return res.json({ success: true, payment });
-  } catch (error: any) {
-    return res.status(500).json({ error: 'Failed to mark fee as paid' });
+  } catch (error) {
+    return sendWalletError(res, error, 'pay booking', requestIdOf(req));
   }
 };
 

@@ -1,3 +1,4 @@
+import type React from 'react';
 import {
   LayoutDashboard,
   Wallet,
@@ -22,9 +23,12 @@ import {
   ToggleRight,
   Briefcase,
   HandCoins,
-  Mic,
   ScanLine,
   FolderLock,
+  Coins,
+  BadgeIndianRupee,
+  Landmark,
+  UsersRound,
 } from 'lucide-react';
 
 export type UserRole = 'admin' | 'manager' | 'advisor' | 'user';
@@ -32,7 +36,7 @@ export type UserRole = 'admin' | 'manager' | 'advisor' | 'user';
 export interface NavigationItem {
   id: string;
   label: string;
-  icon: any;
+  icon: React.ElementType;
   feature: string; // RBAC feature name to check
   roles?: UserRole[]; // If undefined, accessible by all. If defined, only these roles can see it
 }
@@ -50,6 +54,7 @@ export const headerMenuItems: NavigationItem[] = [
   { id: 'vault', label: 'Vault', icon: FolderLock, feature: 'vault' },
   { id: 'todo-lists', label: 'Todo Lists', icon: ListTodo, feature: 'todoLists' },
   { id: 'book-advisor', label: 'Book Advisor', icon: Handshake, feature: 'bookAdvisor' },
+  { id: 'wallet', label: 'Wallet', icon: Coins, feature: 'wallet', roles: ['admin', 'advisor', 'user'] },
   { id: 'notifications', label: 'Notifications', icon: Bell, feature: 'notifications' },
   { id: 'user-profile', label: 'Profile', icon: User, feature: 'userProfile' },
   { id: 'settings', label: 'Settings', icon: Settings, feature: 'settings' },
@@ -63,6 +68,7 @@ export const headerMenuItems: NavigationItem[] = [
   { id: 'admin-feature-panel', label: 'Feature Panel', icon: ToggleRight, feature: 'adminPanel' },
   { id: 'ai-management', label: 'AI Management', icon: Brain, feature: 'aiManagement' },
   { id: 'advisor-verification', label: 'Advisor Verification', icon: ShieldCheck, feature: 'managerPanel' },
+  { id: 'admin-finance', label: 'Payments & Wallets', icon: Landmark, feature: 'managerPanel', roles: ['admin', 'manager'] },
 ];
 
 export const sidebarMenuItems: NavigationItem[] = [
@@ -78,6 +84,7 @@ export const sidebarMenuItems: NavigationItem[] = [
   { id: 'vault', label: 'Vault', icon: FolderLock, feature: 'vault' },
   { id: 'todo-lists', label: 'Todo Lists', icon: ListTodo, feature: 'todoLists' },
   { id: 'book-advisor', label: 'Book Advisor', icon: Handshake, feature: 'bookAdvisor', roles: ['admin', 'user'] },
+  { id: 'wallet', label: 'Wallet', icon: Coins, feature: 'wallet', roles: ['admin', 'advisor', 'user'] },
   { id: 'voice-input', label: 'Kai', icon: Sparkles, feature: 'transactions' },
   { id: 'receipt-scanner', label: 'Receipt Scanner', icon: ScanLine, feature: 'transactions' },
   { id: 'notifications', label: 'Notifications', icon: Bell, feature: 'notifications' },
@@ -93,6 +100,9 @@ export const sidebarMenuItems: NavigationItem[] = [
   { id: 'ai-management', label: 'AI Management', icon: Brain, feature: 'aiManagement', roles: ['admin'] },
   // Manager-only items
   { id: 'advisor-verification', label: 'Advisor Verification', icon: ShieldCheck, feature: 'managerPanel', roles: ['admin', 'manager'] },
+  { id: 'manager-team', label: 'My Team', icon: UsersRound, feature: 'managerPanel', roles: ['manager'] },
+  { id: 'admin-finance', label: 'Payments & Wallets', icon: Landmark, feature: 'managerPanel', roles: ['admin', 'manager'] },
   // Advisor-only items
   { id: 'advisor-panel', label: 'Advisor Panel', icon: Briefcase, feature: 'advisorPanel', roles: ['admin', 'advisor'] },
+  { id: 'advisor-earnings', label: 'Earnings', icon: BadgeIndianRupee, feature: 'wallet', roles: ['advisor'] },
 ];

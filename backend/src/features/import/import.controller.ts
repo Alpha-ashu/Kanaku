@@ -264,7 +264,7 @@ export const uploadImport = async (req: AuthRequest, res: Response) => {
 
     importSessions.set(sessionId, preview);
     // Auto-expire after 30 minutes
-    setTimeout(() => importSessions.delete(sessionId), 30 * 60 * 1000);
+    setTimeout(() => importSessions.delete(sessionId), 30 * 60 * 1000).unref();
 
     return res.json(preview);
   } catch (error: any) {
@@ -363,7 +363,7 @@ export const uploadStatement = async (req: AuthRequest, res: Response) => {
     };
 
     importSessions.set(sessionId, preview);
-    setTimeout(() => importSessions.delete(sessionId), 30 * 60 * 1000);
+    setTimeout(() => importSessions.delete(sessionId), 30 * 60 * 1000).unref();
 
     return res.json(preview);
   } catch (error: any) {

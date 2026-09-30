@@ -21,14 +21,30 @@ const router = Router();
 // All session routes require authentication
 router.use(authMiddleware);
 
+const messageLimiter = authenticatedRateLimit({
+  windowMs: 60_000,
+  max: Number(process.env.SESSION_MESSAGE_RATE_LIMIT || 40),
+  scope: 'session-messages',
+  message: 'You are sending messages too quickly. Please slow down.',
+});
+const accessLimiter = authenticatedRateLimit({ windowMs: 60_000, max: 60, scope: 'session-access' });
+
+// Registered before /:id so "unread" is not read as a session id.
+router.get('/unread', SessionController.getUnreadCounts);
+
 // Get session details
 router.get('/:id', validateParams(sessionIdParamSchema), SessionController.getSession);
+
+// May the caller enter this session now? Decided on the server clock, after
+// settling payment (auto-charge / expiry) for the booking.
+router.get('/:id/access', accessLimiter, validateParams(sessionIdParamSchema), SessionController.getSessionAccess);
+router.post('/:id/messages/read', requireFeature('bookAdvisor', 'chat'), validateParams(sessionIdParamSchema), SessionController.markMessagesRead);
 
 // Chat messages (gated by chat sub-feature under bookAdvisor)
 // ChatMessage has no unique constraint, so a retried send used to post the same
 // message twice into the conversation. The content guard is right here: two
 // identical messages within its window are a double-tap, not a real repeat.
-router.post('/:id/messages', requireFeature('bookAdvisor', 'chat'), validateParams(sessionIdParamSchema), idempotency({ scope: 'sessions.messages.create' }), validateBody(sendMessageSchema), duplicateSubmitGuard({ scope: 'sessions.messages.create' }), SessionController.sendMessage);
+router.post('/:id/messages', messageLimiter, requireFeature('bookAdvisor', 'chat'), validateParams(sessionIdParamSchema), idempotency({ scope: 'sessions.messages.create' }), validateBody(sendMessageSchema), duplicateSubmitGuard({ scope: 'sessions.messages.create' }), SessionController.sendMessage);
 router.get('/:id/messages', requireFeature('bookAdvisor', 'chat'), validateParams(sessionIdParamSchema), SessionController.getMessages);
 
 // Document sharing inside a consultation. Rate-limited and size-capped like the

@@ -6,13 +6,15 @@ import {
   Star, Calendar, Clock, MessageSquare, Briefcase, Users,
   CheckCircle, XCircle, Loader2, ChevronLeft, Search,
   Video, Phone, MessageCircle, ArrowRight, RefreshCw, CheckCircle2,
-  Sparkles, Shield, Info, Plus, X, UserPlus,
+  X, UserPlus,
   UserCheck, Send, Paperclip, Lock, FileText, Share2, ThumbsUp,
   CreditCard, Wallet, Banknote, QrCode, ShieldCheck, Download,
   ChevronRight, Check
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { SessionPaymentPanel } from '@/app/components/wallet/SessionPaymentPanel';
+import type { BookingPaymentState } from '@/services/walletService';
 import { resolveAvatarSelection } from '@/lib/avatar-gallery';
 import { motion, AnimatePresence } from 'framer-motion';
 import { db } from '@/lib/database';
@@ -48,7 +50,7 @@ export interface BookingData {
   advisorId: string;
   advisorName: string;
   advisorAvatar: string;
-  status: 'pending' | 'accepted' | 'rejected' | 'reschedule' | 'completed' | 'cancelled';
+  status: 'pending' | 'accepted' | 'rejected' | 'reschedule' | 'completed' | 'cancelled' | 'expired';
   proposedDate: string;
   proposedTime: string;
   sessionType: 'video' | 'audio' | 'chat';
@@ -75,6 +77,8 @@ export interface BookingData {
   /** The note that accompanied the proposal. */
   rescheduleMessage?: string | null;
   rescheduleCount?: number;
+  /** Server-decided payment / access state (coins, deadlines, join window). */
+  paymentState?: BookingPaymentState | null;
 }
 
 export interface ChatMessage {
@@ -139,6 +143,7 @@ interface BookingApiRow {
   rescheduleProposedBy?: string | null;
   rescheduleMessage?: string | null;
   rescheduleCount?: number;
+  paymentState?: BookingPaymentState | null;
   advisor?: { id: string; name: string } | null;
   session?: {
     id: string;
@@ -208,8 +213,15 @@ const mapAdvisor = (row: AdvisorApiRow): AdvisorProfileData => {
 };
 
 const BOOKING_STATUSES: BookingData['status'][] = [
-  'pending', 'accepted', 'rejected', 'reschedule', 'completed', 'cancelled',
+  'pending', 'accepted', 'rejected', 'reschedule', 'completed', 'cancelled', 'expired',
 ];
+
+/**
+ * Sessions paid in coins are settled by the server (SessionPaymentPanel). Only
+ * bookings with no coin price keep the "record a fee I paid outside the app"
+ * flow — which records a personal expense, and never marks anything paid.
+ */
+const isOffPlatformFee = (bkg: BookingData) => !bkg.paymentState || bkg.paymentState.paymentStatus === 'NOT_REQUIRED';
 
 const mapBooking = (row: BookingApiRow, advisorLookup: Map<string, AdvisorProfileData>): BookingData => {
   const advisor = advisorLookup.get(row.advisorId);
@@ -248,6 +260,7 @@ const mapBooking = (row: BookingApiRow, advisorLookup: Map<string, AdvisorProfil
     rescheduleProposedBy: row.rescheduleProposedBy ?? null,
     rescheduleMessage: row.rescheduleMessage ?? null,
     rescheduleCount: row.rescheduleCount ?? 0,
+    paymentState: row.paymentState ?? null,
   };
 };
 
@@ -297,6 +310,7 @@ function getStatusBadge(status: string) {
     rejected: { color: 'bg-rose-500/10 text-rose-700 border-rose-500/20', label: 'DECLINED', icon: XCircle },
     reschedule: { color: 'bg-indigo-500/10 text-indigo-700 border-indigo-500/20', label: 'RESCHEDULED', icon: RefreshCw },
     cancelled: { color: 'bg-slate-500/10 text-slate-600 border-slate-500/20', label: 'CANCELLED', icon: XCircle },
+    expired: { color: 'bg-slate-500/10 text-slate-600 border-slate-500/20', label: 'EXPIRED', icon: Clock },
     completed: { color: 'bg-violet-500/10 text-violet-700 border-violet-500/20', label: 'COMPLETED', icon: CheckCircle },
   };
   const s = map[status] ?? map.pending;
@@ -388,28 +402,11 @@ export const BookAdvisor: React.FC = () => {
     const amountToPay = Number(payingBooking.payment?.amount || payingBooking.amount || 0);
 
     try {
-      let paymentId = payingBooking.payment?.id;
-
-      if (!paymentId && payingBooking.sessionId) {
-        try {
-          const initRes = await backendService.api.post('/payments/initiate', {
-            sessionId: payingBooking.sessionId,
-            paymentMethod,
-            description: `Payment for ${payingBooking.topic || 'Consultation'}`,
-          });
-          paymentId = initRes.data?.payment?.id;
-        } catch {
-          // If already initiated, proceed
-        }
-      }
-
-      if (paymentId) {
-        await backendService.api.post('/payments/complete', {
-          paymentId,
-          paymentMethod,
-          transactionId: `pay_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
-        });
-      }
+      // This records a fee the user paid the advisor OUTSIDE the app, in the
+      // user's own accounts. It used to also call /payments/complete — the
+      // browser marking a payment as received — which the server now refuses:
+      // in-app session payments are settled by the server from the coin wallet.
+      const paymentId = payingBooking.payment?.id;
 
       if (selectedAccountId !== null && amountToPay > 0) {
         try {
@@ -454,21 +451,13 @@ export const BookAdvisor: React.FC = () => {
         return b;
       }));
 
-      toast.success(`Payment of ₹${amountToPay.toLocaleString('en-IN')} settled successfully!`);
+      toast.success(`Fee of ₹${amountToPay.toLocaleString('en-IN')} recorded in your accounts.`);
       setPayingBooking(null);
     } catch (err: any) {
       toast.error(err?.response?.data?.error || 'Failed to complete payment');
     } finally {
       setIsProcessingPayment(false);
     }
-  };
-
-  const handleJoinCall = (bkg: BookingData) => {
-    const sessionId = bkg.sessionId || bkg.id;
-    const roomName = `Kanaku-Consultation-${sessionId.slice(0, 12)}`;
-    const meetUrl = `https://meet.jit.si/${encodeURIComponent(roomName)}`;
-    toast.success('Connecting to encrypted video consultation room...');
-    window.open(meetUrl, '_blank', 'noopener,noreferrer');
   };
 
   const handleDownloadIcs = (bkg: BookingData) => {
@@ -1184,8 +1173,18 @@ export const BookAdvisor: React.FC = () => {
                       </span>
                     </div>
 
-                    {/* Consultation Settlement Status */}
-                    {bkg.payment?.status === 'completed' ? (
+                    {bkg.paymentState && ['accepted', 'completed', 'cancelled', 'expired'].includes(bkg.status) && !isOffPlatformFee(bkg) && (
+                      <SessionPaymentPanel
+                        bookingId={bkg.id}
+                        viewer="client"
+                        initialState={bkg.paymentState}
+                        compact
+                        onChanged={(next) => setBookings((prev) => prev.map((b) => (b.id === bkg.id ? { ...b, paymentState: next } : b)))}
+                      />
+                    )}
+
+                    {/* Consultation Settlement Status (fees paid outside the app) */}
+                    {!isOffPlatformFee(bkg) ? null : bkg.payment?.status === 'completed' ? (
                       <div className="flex items-center justify-between px-3.5 py-2.5 bg-emerald-50 border border-emerald-200/80 rounded-2xl text-emerald-700 text-xs font-bold">
                         <span className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-emerald-600" /> Fee Settled</span>
                         <span className="font-black"><FinancialAmount value={bkg.payment.amount} /></span>
@@ -1611,23 +1610,13 @@ export const BookAdvisor: React.FC = () => {
                       </button>
                     )}
 
-                    {bkg.status === 'accepted' && (
-                      <button
-                        type="button"
-                        onClick={() => handleJoinCall(bkg)}
-                        className="px-4 py-1.5 bg-[#18181B] hover:bg-black text-white rounded-full font-bold text-xs shadow-xs cursor-pointer flex items-center gap-1.5 active:scale-95 transition-all"
-                      >
-                        <Video size={13} /> Join Call
-                      </button>
-                    )}
-
-                    {(bkg.status === 'completed' || bkg.payment?.status === 'pending') && bkg.payment?.status !== 'completed' && (
+                    {isOffPlatformFee(bkg) && (bkg.status === 'completed' || bkg.payment?.status === 'pending') && bkg.payment?.status !== 'completed' && (
                       <button
                         type="button"
                         onClick={() => void openPaymentModal(bkg)}
                         className="px-4 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-full font-bold text-xs shadow-xs cursor-pointer flex items-center gap-1.5 active:scale-95 transition-all"
                       >
-                        <CreditCard size={13} /> Settle Fee
+                        <CreditCard size={13} /> Record fee
                       </button>
                     )}
 
@@ -1676,6 +1665,18 @@ export const BookAdvisor: React.FC = () => {
                       </button>
                     )}
                   </div>
+
+                  {/* Payment, countdown and the server-granted join link. */}
+                  {bkg.status === 'accepted' && (
+                    <div className="md:basis-full w-full">
+                      <SessionPaymentPanel
+                        bookingId={bkg.id}
+                        viewer="client"
+                        initialState={bkg.paymentState}
+                        onChanged={(next) => setBookings((prev) => prev.map((b) => (b.id === bkg.id ? { ...b, paymentState: next } : b)))}
+                      />
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -2071,8 +2072,8 @@ export const BookAdvisor: React.FC = () => {
                     <CreditCard size={22} />
                   </div>
                   <div>
-                    <h3 className="font-black text-lg tracking-tight">Settle Consultation Fee</h3>
-                    <p className="text-xs text-slate-300 font-medium">Direct payment to {payingBooking.advisorName}</p>
+                    <h3 className="font-black text-lg tracking-tight">Record Consultation Fee</h3>
+                    <p className="text-xs text-slate-300 font-medium">A fee you paid {payingBooking.advisorName} outside KANAKU</p>
                   </div>
                 </div>
               </div>
@@ -2167,7 +2168,7 @@ export const BookAdvisor: React.FC = () => {
                 >
                   {isProcessingPayment ? <Loader2 size={16} className="animate-spin" /> : <ShieldCheck size={16} />}
                   <span>
-                    Confirm & Settle <FinancialAmount value={payingBooking.payment?.amount || payingBooking.amount} />
+                    Record fee <FinancialAmount value={payingBooking.payment?.amount || payingBooking.amount} />
                   </span>
                 </button>
               </div>

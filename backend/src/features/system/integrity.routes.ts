@@ -11,4 +11,11 @@ router.use(authMiddleware);
 // Admin-only: exposes cross-tenant aggregate state, not a per-user view.
 router.get('/integrity', requireRole('admin'), getSystemIntegrity);
 
+// Server clock. Session countdowns and payment deadlines are rendered from the
+// offset between this and the device clock — never from the device clock alone.
+router.get('/time', (_req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  res.json({ success: true, data: { serverNow: new Date().toISOString() } });
+});
+
 export { router as systemRoutes };

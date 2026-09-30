@@ -38,7 +38,10 @@ export type NotificationTopic =
   // cannot opt out of, so they map to `null` below, like security.
   | 'system'
   | 'booking'
-  | 'session';
+  | 'session'
+  // Coin purchases, session charges, refunds and earnings: money moved, so the
+  // account holder is always told (not silenceable, like security).
+  | 'wallet';
 
 export const NOTIFICATION_PREFERENCE_KEYS = [
   'transactionAlerts',
@@ -74,6 +77,7 @@ const TOPIC_PREFERENCE: Record<NotificationTopic, NotificationPreferenceKey | nu
   system: null,
   booking: null,
   session: null,
+  wallet: null,
 };
 
 const toObject = (value: unknown): Record<string, any> => {

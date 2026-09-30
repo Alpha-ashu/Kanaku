@@ -8,8 +8,12 @@ export const bookingCreateSchema = z.object({
   // Anything else used to reach `new Date()` as an Invalid Date and surface as a 500.
   proposedDate: z.string().trim().regex(/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/, 'proposedDate must be YYYY-MM-DD'),
   proposedTime: z.string().trim().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'proposedTime must be HH:MM (24h)'),
-  duration: z.coerce.number().int().min(1).max(600),
-  amount: z.coerce.number().min(0),
+  duration: z.coerce.number().int().min(15, 'Sessions are at least 15 minutes').max(240, 'Sessions are at most 4 hours'),
+  // Ignored for pricing (the server derives the price from the advisor's rate);
+  // still accepted and range-checked so older clients keep working.
+  amount: z.coerce.number().min(0).optional(),
+  // IANA zone of the wall-clock date/time above, e.g. "Asia/Kolkata".
+  timeZone: z.string().trim().max(64).optional(),
   // Declared so Zod does not strip it: the controller's replay check and the
   // DB's per-owner unique index both key off this.
   clientRequestId: z.string().trim().max(200).optional(),

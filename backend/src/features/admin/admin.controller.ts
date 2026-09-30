@@ -18,6 +18,7 @@ import { approveAdvisorApplication, rejectAdvisorApplication } from '../advisors
 import { 
   UserRole,
 } from '../../utils/roleBasedFeatures';
+import { financialDeletionBlockers } from '../wallet/wallet.guards';
 import {
   transformFeaturesToRoleCentric,
   reconstructFeatures,
@@ -781,6 +782,18 @@ export const deleteUser = async (req: AuthRequest, res: Response) => {
     // project's secure credentials and must never be deleted.
     if (isProtectedAccount(email)) {
       return res.status(403).json({ error: 'This is a protected Kanaku role account and cannot be deleted.' });
+    }
+
+    // Open coin balances and paid-but-unheld sessions are settled first: the
+    // cascade would otherwise take bookings (and the coins paid for them) with it.
+    if (user) {
+      const blockers = await financialDeletionBlockers(userId);
+      if (blockers.length) {
+        return res.status(409).json({
+          error: `This account cannot be deleted yet: ${blockers.join('; ')}. Refund or adjust first.`,
+          code: 'ACCOUNT_HAS_OPEN_BALANCE',
+        });
+      }
     }
 
     // Delete from profiles first since it is not cascaded via schema.prisma's User model

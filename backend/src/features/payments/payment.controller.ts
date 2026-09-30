@@ -2,6 +2,8 @@ import { Response } from 'express';
 import { timingSafeEqual, createHmac } from 'crypto';
 import { AuthRequest, getUserId } from '../../middleware/auth';
 import { prisma } from '../../db/prisma';
+import { logger } from '../../config/logger';
+import { handleProviderWebhook } from '../wallet/coinPurchase.service';
 
 /**
  * Constant-time string comparison to prevent timing attacks on secret/token
@@ -34,6 +36,12 @@ const PAYMENT_TRANSITIONS: Record<string, string[]> = {
 };
 
 const isAdmin = (req: AuthRequest) => req.user?.role === 'admin';
+
+/** Never echo internal error text (Prisma, driver) to a client. */
+const failure = (res: Response, error: unknown, message: string) => {
+  logger.error(`[payments] ${message}`, { error });
+  return res.status(500).json({ error: message });
+};
 
 const normalizePaymentMethod = (paymentMethod: unknown) => {
   if (typeof paymentMethod !== 'string') return null;
@@ -267,7 +275,7 @@ export const getPayments = async (req: AuthRequest, res: Response) => {
 
     res.json(payments);
   } catch (error: any) {
-    res.status(500).json({ error: error.message || 'Failed to fetch payments' });
+    failure(res, error, 'Failed to fetch payments');
   }
 };
 
@@ -300,7 +308,7 @@ export const getPayment = async (req: AuthRequest, res: Response) => {
 
     res.json(payment);
   } catch (error: any) {
-    res.status(500).json({ error: error.message || 'Failed to fetch payment' });
+    failure(res, error, 'Failed to fetch payment');
   }
 };
 
@@ -371,7 +379,7 @@ export const initiatePayment = async (req: AuthRequest, res: Response) => {
 
     res.status(201).json({ payment });
   } catch (error: any) {
-    res.status(500).json({ error: error.message || 'Failed to initiate payment' });
+    failure(res, error, 'Failed to initiate payment');
   }
 };
 
@@ -404,7 +412,7 @@ export const completePayment = async (req: AuthRequest, res: Response) => {
     if (error.message === 'PAYMENT_NOT_FOUND') {
       return res.status(404).json({ error: 'Payment not found' });
     }
-    res.status(500).json({ error: error.message || 'Failed to complete payment' });
+    failure(res, error, 'Failed to complete payment');
   }
 };
 
@@ -436,7 +444,7 @@ export const failPayment = async (req: AuthRequest, res: Response) => {
     if (error.message === 'PAYMENT_NOT_FOUND') {
       return res.status(404).json({ error: 'Payment not found' });
     }
-    res.status(500).json({ error: error.message || 'Failed to handle payment failure' });
+    failure(res, error, 'Failed to handle payment failure');
   }
 };
 
@@ -468,7 +476,7 @@ export const refundPayment = async (req: AuthRequest, res: Response) => {
     if (error.message === 'PAYMENT_NOT_FOUND') {
       return res.status(404).json({ error: 'Payment not found' });
     }
-    res.status(500).json({ error: error.message || 'Failed to refund payment' });
+    failure(res, error, 'Failed to refund payment');
   }
 };
 
@@ -504,7 +512,22 @@ export const handleWebhook = async (req: AuthRequest | any, res: Response) => {
     if (error.message === 'PAYMENT_NOT_FOUND') {
       return res.status(404).json({ error: 'Payment not found' });
     }
-    console.error('Webhook error:', error);
-    res.status(500).json({ error: error.message || 'Webhook processing failed' });
+    failure(res, error, 'Webhook processing failed');
+  }
+};
+
+/**
+ * Signed webhook from a coin-purchase gateway. The signature is computed over
+ * the exact bytes received, so the raw body captured by express.json's
+ * `verify` hook is what is checked — never the parsed (and sanitised) object.
+ */
+export const handleProviderWebhookRoute = async (req: AuthRequest & { rawBody?: unknown }, res: Response) => {
+  const raw: Buffer | undefined = Buffer.isBuffer(req.rawBody) ? req.rawBody : undefined;
+  if (!raw) return res.status(400).json({ error: 'Expected a JSON body' });
+  try {
+    const outcome = await handleProviderWebhook(String(req.params.provider || ''), raw, req.headers);
+    return res.status(outcome.httpStatus).json(outcome.body);
+  } catch (error) {
+    return failure(res, error, 'Webhook processing failed');
   }
 };

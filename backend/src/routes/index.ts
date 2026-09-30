@@ -38,6 +38,8 @@ import { collaborationRoutes } from '../features/collaboration/collaboration.rou
 import { webhookRoutes } from '../features/webhooks/webhook.routes';
 import { reportsRoutes } from '../features/reports/reports.routes';
 import { systemRoutes } from '../features/system/integrity.routes';
+import { walletRoutes } from '../features/wallet/wallet.routes';
+import { financeRoutes } from '../features/wallet/financeAdmin.routes';
 import { vaultRoutes } from '../features/vault/vault.routes';
 
 const router = Router();
@@ -117,6 +119,11 @@ router.use('/sessions', sessionRoutes);
 // feature flag `payments` (enforced in payment.routes.ts → requireFeature),
 // so the admin panel can enable/disable the whole module at the API layer.
 router.use('/payments', paymentRoutes);
+
+// Coin wallet (users/advisors, gated by the admin `wallet` module) and the
+// permission-based staff finance console.
+router.use('/wallet', walletRoutes);
+router.use('/finance', financeRoutes);
 
 // Notification routes
 router.use('/notifications', notificationRoutes);

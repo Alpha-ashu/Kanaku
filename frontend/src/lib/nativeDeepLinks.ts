@@ -64,6 +64,8 @@ const ALLOWED_PAGES = new Set<string>([
   // Advisor marketplace surfaces — the backend emits notification deep links to
   // these (/advisor-panel, /book-advisor).
   'advisor', 'advisor-panel', 'book-advisor',
+  // Coin wallet — payment, refund and earnings notifications link here.
+  'wallet', 'advisor-earnings',
   // Public/legal pages reachable from a notification or an emailed link.
   'privacy', 'privacy-policy', 'terms', 'data-deletion', 'account-deletion',
   'delete-account',

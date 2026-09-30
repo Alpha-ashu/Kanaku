@@ -26,8 +26,8 @@ export const useSharedMenu = () => {
       }
 
       // Special case: Admin/Manager core panels are ALWAYS visible to their respective roles to prevent lockouts
-      if (['admin', 'admin-feature-panel', 'admin-ai', 'ai-management', 'manager-advisor-verification', 'advisor-verification'].includes(item.id) && role === 'admin') return true;
-      if (['advisor-verification', 'manager-advisor-verification'].includes(item.id) && role === 'manager') return true;
+      if (['admin', 'admin-feature-panel', 'admin-ai', 'ai-management', 'manager-advisor-verification', 'advisor-verification', 'admin-finance'].includes(item.id) && role === 'admin') return true;
+      if (['advisor-verification', 'manager-advisor-verification', 'manager-team', 'admin-finance'].includes(item.id) && role === 'manager') return true;
 
       // Gate AI insights based on the aiAutomation system status
       if (item.id === 'ai-insights' && aiCapabilities?.aiAutomation?.enabled === false) {

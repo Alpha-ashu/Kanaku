@@ -187,6 +187,19 @@ const getGlobalFeatures = async () => {
   }
 };
 
+/**
+ * True only when an admin has explicitly switched `moduleKey` on for the
+ * platform (saved settings, enabled, released). For server-side behaviour that
+ * must stay off until someone decides otherwise — e.g. charging coins for
+ * sessions — as opposed to request gating, which `requireFeature` does.
+ */
+export const isModuleExplicitlyEnabled = async (moduleKey: string): Promise<boolean> => {
+  const features = await getGlobalFeatures();
+  const settings = features?.[moduleKey];
+  if (!settings || settings.enabled !== true) return false;
+  return settings.readiness !== 'deprecated' && settings.readiness !== 'unreleased';
+};
+
 export const requireFeature = (moduleKey: string, childKey?: string) => {
   return async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {

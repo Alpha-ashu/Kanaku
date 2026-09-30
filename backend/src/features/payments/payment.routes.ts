@@ -5,6 +5,7 @@ import { requireFeature } from '../../middleware/featureGate';
 import { validateBody } from '../../middleware/validate';
 import { rateLimit, authenticatedRateLimit } from '../../middleware/rateLimit';
 import { idempotency } from '../../middleware/idempotency';
+import { requirePermission } from '../../security/permissions';
 import * as PaymentController from './payment.controller';
 import {
   initiatePaymentSchema,
@@ -22,6 +23,15 @@ router.post(
   '/webhook',
   rateLimit({ windowMs: 60_000, max: 120, scope: 'payment-webhook' }),
   PaymentController.handleWebhook,
+);
+
+// Coin-purchase gateways (Razorpay, sandbox…). Public by necessity; trust comes
+// from each provider's signature over the RAW body, checked in the adapter.
+// Duplicate deliveries are recognised by (provider, event id) and ignored.
+router.post(
+  '/webhooks/:provider',
+  rateLimit({ windowMs: 60_000, max: 240, scope: 'payment-provider-webhook' }),
+  PaymentController.handleProviderWebhookRoute,
 );
 
 // Protected routes
@@ -55,20 +65,23 @@ router.post(
   PaymentController.initiatePayment,
 );
 
-// Complete payment
+// Legacy session-payment records. /complete used to be callable by the CLIENT
+// on their own payment — the browser could declare itself paid. Marking a
+// payment completed, failed or refunded is now a finance-staff action only;
+// coin purchases are confirmed by the provider (see /webhooks/:provider).
 router.post(
   '/complete',
+  requirePermission('finance.reconcile'),
   idempotency({ scope: 'payments.complete' }),
   validateBody(completePaymentSchema),
   PaymentController.completePayment,
 );
 
-// Handle payment failure
-router.post('/fail', validateBody(failPaymentSchema), PaymentController.failPayment);
+router.post('/fail', requirePermission('finance.reconcile'), validateBody(failPaymentSchema), PaymentController.failPayment);
 
-// Refund payment
 router.post(
   '/refund',
+  requirePermission('finance.refund'),
   idempotency({ scope: 'payments.refund' }),
   validateBody(refundPaymentSchema),
   PaymentController.refundPayment,

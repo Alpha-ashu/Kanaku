@@ -37,6 +37,11 @@ export const AUDIT_MODELS_FULL = new Set([
   'VaultDocument', 'VaultFolder', 'VaultShare', 'VaultLockSetting',
   // Collaboration & contacts
   'CollaborationParticipant', 'ExpenseBill', 'Friend',
+  // Coin wallet & payments. The ledger itself (WalletTransaction) is excluded
+  // below: it is already an append-only financial record.
+  'Wallet', 'PaymentOrder', 'CoinPackage',
+  // Staff authority
+  'StaffPermissionGrant', 'ManagerAssignment',
 ]);
 
 /** Activity worth recording, but the previous value is not interesting. */
@@ -58,7 +63,13 @@ export const AUDIT_MODELS_LIGHT = new Set([
 //   ApiIdempotencyKey — request plumbing with no business meaning, and it churns
 //                       on every mutating request, which would double AuditLog's
 //                       write volume to record nothing a human would read.
-export const AUDIT_MODELS_EXCLUDED = new Set(['AuditLog', 'VaultAuditLog', 'ApiIdempotencyKey']);
+//   WalletTransaction — the immutable coin ledger; every row already records
+//                       actor, reason and balances after, and mirroring it would
+//                       double the write cost of every financial operation.
+//   PaymentWebhookEvent — itself the log of every provider delivery.
+export const AUDIT_MODELS_EXCLUDED = new Set([
+  'AuditLog', 'VaultAuditLog', 'ApiIdempotencyKey', 'WalletTransaction', 'PaymentWebhookEvent',
+]);
 
 /**
  * Union of both tiers. Kept as the original export name because tests and

@@ -1,4 +1,5 @@
 import { Response } from 'express';
+import { createHmac } from 'crypto';
 import { AuthRequest, getUserId } from '../../middleware/auth';
 import { prisma } from '../../db/prisma';
 import { getSocketManager } from '../../sockets';
@@ -8,6 +9,40 @@ import { notify } from '../notifications/notify';
 import { asClientRequestId } from '../../utils/idempotentCreate';
 import { validateBillUpload, makeStoragePath } from '../../utils/uploadPolicy';
 import { uploadBuffer, createSignedUrl } from '../../utils/storage';
+import { audit } from '../../utils/auditLogger';
+import { checkTransition, failureHttpStatus } from '../bookings/booking.stateMachine';
+import {
+  cancelBookingWithRefund,
+  chatAllowed,
+  completeSessionWithRelease,
+  deriveLifecycle,
+  describeBookingState,
+  sessionAccess,
+} from '../wallet/sessionPayment.service';
+import { isWalletError } from '../wallet/wallet.errors';
+
+/** Chat is locked while the session is unpaid, and after it ends. */
+const chatLockedResponse = (res: Response, lifecycle: string) =>
+  res.status(423).json({
+    error: lifecycle === 'AWAITING_PAYMENT' || lifecycle === 'PAYMENT_DUE'
+      ? 'Chat unlocks once the session is paid.'
+      : 'This conversation is closed.',
+    code: 'SESSION_LOCKED',
+    lifecycle,
+  });
+
+const MESSAGE_SELECT = {
+  id: true,
+  sessionId: true,
+  senderId: true,
+  message: true,
+  timestamp: true,
+  readAt: true,
+  attachmentName: true,
+  attachmentType: true,
+  attachmentSize: true,
+  sender: { select: { id: true, name: true } },
+} as const;
 
 // Get session details
 export const getSession = async (req: AuthRequest, res: Response) => {
@@ -25,21 +60,12 @@ export const getSession = async (req: AuthRequest, res: Response) => {
       },
       include: {
         booking: true,
-        advisor: {
-          select: { id: true, name: true, email: true },
-        },
-        client: {
-          select: { id: true, name: true, email: true },
-        },
-        chatMessages: {
-          orderBy: { timestamp: 'asc' },
-          include: {
-            sender: {
-              select: { id: true, name: true },
-            },
-          },
-        },
-        payment: true,
+        // Names only: contact happens through the session chat, so neither side
+        // needs the other's email from this route.
+        advisor: { select: { id: true, name: true } },
+        client: { select: { id: true, name: true } },
+        // Explicit select — `include` returned attachmentPath, a private storage key.
+        chatMessages: { orderBy: { timestamp: 'asc' }, select: MESSAGE_SELECT },
       },
     });
 
@@ -52,11 +78,101 @@ export const getSession = async (req: AuthRequest, res: Response) => {
       return res.status(403).json({ error: 'Access denied' });
     }
 
+    const { booking, ...rest } = session;
     // This route embeds the whole thread, so it needs the same decryption the
     // dedicated messages route does — otherwise the chat renders as base64.
-    res.json({ ...session, chatMessages: session.chatMessages.map(decryptMessageRow) });
+    res.json({
+      ...rest,
+      booking: { id: booking.id, status: booking.status, duration: booking.duration, sessionType: booking.sessionType },
+      paymentState: describeBookingState(booking, { id: session.id, status: session.status }, userId, new Date()),
+      chatMessages: session.chatMessages.map(decryptMessageRow),
+    });
   } catch (error: any) {
-    res.status(500).json({ error: error.message || 'Failed to fetch session' });
+    logger.error('[Sessions] Failed to fetch session', { error });
+    res.status(500).json({ error: 'Failed to fetch session' });
+  }
+};
+
+/**
+ * The video room for a session. Derived from the session id with a server
+ * secret, so it cannot be guessed from anything a client sees, and handed out
+ * only by the access check below — the client used to build the room name from
+ * the session id itself, so anyone who learned the id could walk in.
+ */
+const sessionRoomUrl = (sessionId: string) => {
+  const secret = process.env.SESSION_ROOM_SECRET || process.env.JWT_SECRET || 'kanaku-dev-room-secret';
+  const room = createHmac('sha256', secret).update(`session-room:${sessionId}`).digest('base64url').slice(0, 32);
+  const base = (process.env.SESSION_VIDEO_BASE_URL || 'https://meet.jit.si').replace(/\/+$/, '');
+  return `${base}/Kanaku-${room}`;
+};
+
+/** Whether the caller may enter the session right now — decided on the server clock. */
+export const getSessionAccess = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = getUserId(req);
+    const access = await sessionAccess(req.params.id, userId);
+    if (!access) return res.status(404).json({ error: 'Session not found' });
+    if (!access.state.canJoin) {
+      audit({ event: 'session.access_denied', userId, resource: 'AdvisorSession', resourceId: req.params.id, meta: { lifecycle: access.state.lifecycle } });
+    }
+    return res.json({
+      success: true,
+      data: { ...access.state, role: access.role, ...(access.state.canJoin ? { joinUrl: sessionRoomUrl(req.params.id) } : {}) },
+    });
+  } catch (error) {
+    logger.error('[Sessions] access check failed', { sessionId: req.params?.id, error });
+    return res.status(500).json({ error: 'Failed to check session access' });
+  }
+};
+
+/** Mark the other participant's messages in this session as read. */
+export const markMessagesRead = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = getUserId(req);
+    const { id: sessionId } = req.params;
+    const session = await prisma.advisorSession.findFirst({
+      where: { id: sessionId, OR: [{ advisorId: userId }, { clientId: userId }] },
+      select: { id: true, advisorId: true, clientId: true },
+    });
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+    const now = new Date();
+    const { count } = await prisma.chatMessage.updateMany({
+      where: { sessionId, senderId: { not: userId }, readAt: null, timestamp: { lte: now } },
+      data: { readAt: now },
+    });
+    if (count > 0) {
+      const otherUserId = session.advisorId === userId ? session.clientId : session.advisorId;
+      try {
+        getSocketManager().notifyUser(otherUserId, 'messages_read', { sessionId, readAt: now.toISOString(), readerId: userId });
+      } catch {
+        // best-effort; the reader's state is already saved
+      }
+    }
+    return res.json({ success: true, data: { marked: count, readAt: now.toISOString() } });
+  } catch (error) {
+    logger.error('[Sessions] mark read failed', { sessionId: req.params?.id, error });
+    return res.status(500).json({ error: 'Failed to update read state' });
+  }
+};
+
+/** Unread message counts across the caller's sessions. */
+export const getUnreadCounts = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = getUserId(req);
+    const rows = await prisma.chatMessage.groupBy({
+      by: ['sessionId'],
+      where: {
+        readAt: null,
+        senderId: { not: userId },
+        session: { OR: [{ advisorId: userId }, { clientId: userId }] },
+      },
+      _count: { _all: true },
+    });
+    const counts = Object.fromEntries(rows.map((r) => [r.sessionId, r._count._all]));
+    return res.json({ success: true, data: { counts, total: rows.reduce((sum, r) => sum + r._count._all, 0) } });
+  } catch (error) {
+    logger.error('[Sessions] unread counts failed', { error });
+    return res.status(500).json({ error: 'Failed to load unread counts' });
   }
 };
 
@@ -90,6 +206,7 @@ export const sendMessage = async (req: AuthRequest, res: Response) => {
           { clientId: userId },
         ],
       },
+      include: { booking: true },
     });
 
     if (!session) {
@@ -100,6 +217,9 @@ export const sendMessage = async (req: AuthRequest, res: Response) => {
     if (session.status !== 'in-progress' && session.status !== 'scheduled') {
       return res.status(400).json({ error: 'Cannot send messages in a ended session' });
     }
+
+    const lifecycle = deriveLifecycle(session.booking, session.status, new Date());
+    if (!chatAllowed(lifecycle)) return chatLockedResponse(res, lifecycle);
 
     const plaintext = message.trim();
 
@@ -211,6 +331,7 @@ export const uploadMessageAttachment = async (req: AuthRequest, res: Response) =
         id: sessionId,
         OR: [{ advisorId: userId }, { clientId: userId }],
       },
+      include: { booking: true },
     });
 
     if (!session) {
@@ -220,6 +341,9 @@ export const uploadMessageAttachment = async (req: AuthRequest, res: Response) =
     if (session.status !== 'in-progress' && session.status !== 'scheduled') {
       return res.status(400).json({ error: 'Cannot share files in an ended session' });
     }
+
+    const attachLifecycle = deriveLifecycle(session.booking, session.status, new Date());
+    if (!chatAllowed(attachLifecycle)) return chatLockedResponse(res, attachLifecycle);
 
     let validated;
     try {
@@ -356,24 +480,15 @@ export const getMessages = async (req: AuthRequest, res: Response) => {
       // Explicit select: attachmentPath is a private storage key and must not
       // travel to the client. Attachments are opened through the signed-URL
       // route instead.
-      select: {
-        id: true,
-        sessionId: true,
-        senderId: true,
-        message: true,
-        timestamp: true,
-        attachmentName: true,
-        attachmentType: true,
-        attachmentSize: true,
-        sender: { select: { id: true, name: true } },
-      },
+      select: MESSAGE_SELECT,
     });
 
     // Rows written before encryption existed carry no marker and pass through
     // untouched, so old threads keep rendering without a backfill.
     res.json(messages.map(decryptMessageRow));
   } catch (error: any) {
-    res.status(500).json({ error: error.message || 'Failed to fetch messages' });
+    logger.error('[Sessions] Failed to fetch messages', { sessionId: req.params?.id, error });
+    res.status(500).json({ error: 'Failed to fetch messages' });
   }
 };
 
@@ -395,13 +510,33 @@ export const startSession = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ error: 'Session is not in scheduled status' });
     }
 
-    const updated = await prisma.advisorSession.update({
-      where: { id },
-      data: {
-        status: 'in-progress',
-        startTime: new Date(),
-      },
+    // Paid (or free) AND inside the join window, on the server clock.
+    const access = await sessionAccess(id, advisorId);
+    if (!access || access.state.lifecycle !== 'READY') {
+      const lifecycle = access?.state.lifecycle ?? 'UNKNOWN';
+      audit({ event: 'session.access_denied', userId: advisorId, resource: 'AdvisorSession', resourceId: id, meta: { lifecycle, action: 'start' } });
+      return res.status(423).json({
+        error: lifecycle === 'AWAITING_PAYMENT' || lifecycle === 'PAYMENT_DUE'
+          ? 'This session has not been paid yet.'
+          : lifecycle === 'UPCOMING'
+            ? 'This session cannot be started yet.'
+            : 'This session can no longer be started.',
+        code: 'SESSION_LOCKED',
+        lifecycle,
+        state: access?.state,
+      });
+    }
+
+    // Conditional: two taps (or advisor + auto-cancel) cannot both move it.
+    const { count } = await prisma.advisorSession.updateMany({
+      where: { id, status: 'scheduled' },
+      data: { status: 'in-progress', startTime: new Date() },
     });
+    if (count === 0) {
+      return res.status(409).json({ error: 'Session is no longer scheduled', code: 'SESSION_CONFLICT' });
+    }
+    const updated = await prisma.advisorSession.findUniqueOrThrow({ where: { id } });
+    audit({ event: 'session.unlocked', userId: advisorId, resource: 'AdvisorSession', resourceId: id, meta: { bookingId: session.bookingId } });
 
     // Notify client. '/sessions/:id' is not a registered frontend route —
     // client sessions live under book-advisor's "My Bookings" tab.
@@ -417,7 +552,8 @@ export const startSession = async (req: AuthRequest, res: Response) => {
 
     res.json(updated);
   } catch (error: any) {
-    res.status(500).json({ error: error.message || 'Failed to start session' });
+    logger.error('[Sessions] Failed to start session', { sessionId: req.params?.id, error });
+    res.status(500).json({ error: 'Failed to start session' });
   }
 };
 
@@ -440,16 +576,14 @@ export const completeSession = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ error: 'Session is not in progress' });
     }
 
-    const updated = await prisma.advisorSession.update({
-      where: { id },
-      data: {
-        status: 'completed',
-        endTime: new Date(),
-        notes: notes || '',
-      },
-    });
+    // Completion, the booking's status and the release of the advisor's held
+    // earnings are one transaction.
+    const completion = await completeSessionWithRelease(id, { kind: 'advisor', userId: advisorId }, notes || '');
+    const updated = completion.session;
 
-    // Try to process payment automatically (if not already done)
+    // Legacy record-keeping for sessions booked before coin payments (free /
+    // off-platform fees): unchanged. Coin-paid sessions are fully described by
+    // the wallet ledger and get no legacy Payment row.
     const existingPayment = await prisma.payment.findUnique({
       where: { sessionId: id },
     });
@@ -459,7 +593,7 @@ export const completeSession = async (req: AuthRequest, res: Response) => {
         where: { id: session.bookingId },
       });
 
-      if (booking) {
+      if (booking && booking.paymentStatus === 'NOT_REQUIRED' && Number(booking.amount) > 0) {
         await prisma.payment.create({
           data: {
             sessionId: id,
@@ -488,7 +622,9 @@ export const completeSession = async (req: AuthRequest, res: Response) => {
 
     res.json(updated);
   } catch (error: any) {
-    res.status(500).json({ error: error.message || 'Failed to complete session' });
+    if (isWalletError(error)) return res.status(error.status).json({ error: error.message, code: error.code });
+    logger.error('[Sessions] Failed to complete session', { sessionId: req.params?.id, error });
+    res.status(500).json({ error: 'Failed to complete session' });
   }
 };
 
@@ -522,22 +658,18 @@ export const cancelSession = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ error: 'Cannot cancel a completed or already cancelled session' });
     }
 
-    const updated = await prisma.advisorSession.update({
-      where: { id },
-      data: { status: 'cancelled' },
-    });
-
-    // Refund payment if completed
-    const payment = await prisma.payment.findUnique({
-      where: { sessionId: id },
-    });
-
-    if (payment && payment.status === 'completed') {
-      await prisma.payment.update({
-        where: { id: payment.id },
-        data: { status: 'refunded' },
-      });
+    const actor = session.advisorId === userId ? 'advisor' as const : 'client' as const;
+    const booking = await prisma.bookingRequest.findUnique({ where: { id: session.bookingId } });
+    if (booking) {
+      const failure = checkTransition({ from: booking.status, to: 'cancelled', actor, actorId: userId, proposedBy: booking.rescheduleProposedBy, rescheduleCount: booking.rescheduleCount });
+      if (failure) return res.status(failureHttpStatus(failure)).json({ error: failure.message, code: failure.code });
     }
+
+    // Session, booking and any coin refund change together. This route used to
+    // cancel the session but leave the booking 'accepted', and marked the legacy
+    // payment 'refunded' without returning anything.
+    await cancelBookingWithRefund(session.bookingId, { actor, actorId: userId, reason: reason ?? null });
+    const updated = await prisma.advisorSession.findUniqueOrThrow({ where: { id } });
 
     // Notify both parties
     const otherUserId = session.advisorId === userId ? session.clientId : session.advisorId;
@@ -555,6 +687,8 @@ export const cancelSession = async (req: AuthRequest, res: Response) => {
 
     res.json(updated);
   } catch (error: any) {
-    res.status(500).json({ error: error.message || 'Failed to cancel session' });
+    if (isWalletError(error)) return res.status(error.status).json({ error: error.message, code: error.code });
+    logger.error('[Sessions] Failed to cancel session', { sessionId: req.params?.id, error });
+    res.status(500).json({ error: 'Failed to cancel session' });
   }
 };

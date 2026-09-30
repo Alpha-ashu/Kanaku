@@ -14,6 +14,7 @@ import { startNotificationOutbox, stopNotificationOutbox } from './workers/index
 import { startCleanupWorker, stopCleanupWorker } from './workers/cleanup.worker';
 import { startRecurringWorker, stopRecurringWorker } from './workers/recurring.worker';
 import { startReminderWorker, stopReminderWorker } from './workers/reminder.worker';
+import { startSessionClockWorker, stopSessionClockWorker } from './workers/sessionClock.worker';
 import { runWorkersInApiProcess } from './config/serviceRole';
 import { verifyStorageBucket } from './utils/storage';
 import './features/budgets/budget.listener';
@@ -63,6 +64,9 @@ if (runWorkersInApiProcess()) {
   startCleanupWorker();
   // Daily due-date reminders (notifications only — no data changes).
   startReminderWorker();
+  // Session payments on the server clock: T-5 charge, expiry, auto-complete,
+  // purchase reconciliation. Idempotent; bookings also settle lazily on read.
+  startSessionClockWorker();
   // The recurring worker was only ever started by the separate worker process,
   // so the combined-mode deployment (Render) has never run recurring rules. Its
   // first run posts up to 24 missed occurrences per auto-process rule into real
@@ -85,6 +89,7 @@ const shutdown = async (signal: string) => {
       stopCleanupWorker();
       stopRecurringWorker();
       stopReminderWorker();
+      stopSessionClockWorker();
       await stopNotificationOutbox();
     }
     await closePurposeClients();

@@ -175,8 +175,12 @@ describe('Advisor journey integrity', () => {
     const toggle = () => request(app).put(`${API}/advisors/availability/status`).set(auth(ids.applicant, 'advisor')).send({ available: true });
     const saturday = () => request(app).post(`${API}/advisors/availability`).set(auth(ids.applicant, 'advisor'))
       .send({ dayOfWeek: 6, startTime: '10:00', endTime: '13:00', isActive: true });
-    const statuses = (await Promise.all([toggle(), toggle(), saturday(), saturday()])).map((r) => r.status);
-    expect(statuses).toEqual([200, 200, 200, 200]);
+    // Each pair is a double-tap. The pairs run in order: a toggle only seeds the
+    // default weekdays when the advisor has no rows, so Saturday landing first
+    // (a legitimate outcome) left only [6] and failed the case at random.
+    const toggles = await Promise.all([toggle(), toggle()]);
+    const saves = await Promise.all([saturday(), saturday()]);
+    expect([...toggles, ...saves].map((r) => r.status)).toEqual([200, 200, 200, 200]);
 
     const rows = await prisma.advisorAvailability.groupBy({ by: ['dayOfWeek'], where: { advisorId: ids.applicant }, _count: true });
     expect(rows.map((r) => r.dayOfWeek).sort()).toEqual([1, 2, 3, 4, 5, 6]);

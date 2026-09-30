@@ -8,6 +8,12 @@ import {
 import { toast } from 'sonner';
 import { backendService } from '@/lib/backend-api';
 import { cn } from '@/lib/utils';
+import { useSubmitLock } from '@/hooks/useSubmitLock';
+import {
+  checkAdvisorDocument,
+  describeApiFailure,
+  submitAdvisorApplication,
+} from '@/services/advisorApplicationService';
 
 interface ApplicationState {
   id: string;
@@ -52,6 +58,8 @@ export const AdvisorRoleSection: React.FC<Props> = ({ userRole, userName, userEm
   const [loadingApp, setLoadingApp] = useState(false);
   const [isApproved, setIsApproved] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+  const guardSubmit = useSubmitLock();
   const [switchingMode, setSwitchingMode] = useState(false);
   const [switchingStatus, setSwitchingStatus] = useState(false);
   const [showForm, setShowForm] = useState(false);
@@ -90,7 +98,8 @@ export const AdvisorRoleSection: React.FC<Props> = ({ userRole, userName, userEm
     }
   }, [expanded]);
 
-  const fetchApplication = async () => {
+  /** Resolves to the application on record, or undefined when the status could not be read. */
+  const fetchApplication = async (): Promise<ApplicationState | null | undefined> => {
     setLoadingApp(true);
     try {
       const res = await backendService.api.get('/advisors/application/my');
@@ -98,14 +107,26 @@ export const AdvisorRoleSection: React.FC<Props> = ({ userRole, userName, userEm
       setIsApproved(res.data.isApproved ?? false);
       setRoleMode(res.data.roleMode ?? 'user');
       setOnlineStatus(res.data.advisorStatus ?? 'NOT_AVAILABLE');
+      return res.data.application ?? null;
     } catch {
       // non-fatal; user may not have an application yet
+      return undefined;
     } finally {
       setLoadingApp(false);
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const pickDocument = (label: string, setFile: (f: File | null) => void) => (file: File | null) => {
+    const problem = file ? checkAdvisorDocument(file, label) : null;
+    if (problem) {
+      toast.error(problem);
+      setFile(null);
+      return;
+    }
+    setFile(file);
+  };
+
+  const handleSubmit = guardSubmit(async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.confirmed) {
       toast.error('Please confirm that all submitted information is accurate');
@@ -113,10 +134,14 @@ export const AdvisorRoleSection: React.FC<Props> = ({ userRole, userName, userEm
     }
     if (!panFile) { toast.error('PAN Card is required'); return; }
     if (!aadhaarFile) { toast.error('Aadhaar Card is required'); return; }
+    const fileProblem = checkAdvisorDocument(panFile, 'PAN Card')
+      ?? checkAdvisorDocument(aadhaarFile, 'Aadhaar Card')
+      ?? (certFile ? checkAdvisorDocument(certFile, 'Professional certificate') : null);
+    if (fileProblem) { toast.error(fileProblem); return; }
 
+    // The server records the account's own email; the read-only field is display only.
     const data = new FormData();
     data.append('fullName', formData.fullName);
-    data.append('email', formData.email);
     data.append('phone', formData.phone);
     data.append('experienceYears', formData.experienceYears);
     data.append('expertise', formData.expertise);
@@ -130,17 +155,31 @@ export const AdvisorRoleSection: React.FC<Props> = ({ userRole, userName, userEm
     if (certFile) data.append('certDocument', certFile);
 
     setSubmitting(true);
+    setUploadProgress(0);
     try {
-      await backendService.api.post('/advisors/apply', data, { headers: { 'Content-Type': 'multipart/form-data' } });
+      await submitAdvisorApplication(data, setUploadProgress);
       toast.success('Application submitted! Our team will review within 4–7 business days.');
       setShowForm(false);
       await fetchApplication();
-    } catch (err: any) {
-      toast.error(err?.response?.data?.error || 'Submission failed. Please try again.');
+    } catch (err) {
+      const failure = await describeApiFailure(err, 'Submission failed. Please try again.');
+      // A dropped connection or a server error does not prove the application
+      // was not saved — the upload may have finished after the client stopped
+      // waiting. Ask the server before telling the user it failed.
+      if (failure.noResponse || (failure.status ?? 0) >= 500 || failure.code === 'APPLICATION_PENDING') {
+        const onRecord = await fetchApplication();
+        if (onRecord?.status === 'PENDING') {
+          toast.success('Your application has been received and is awaiting review.');
+          setShowForm(false);
+          return;
+        }
+      }
+      toast.error(failure.requestId ? `${failure.message} (Ref: ${failure.requestId.slice(0, 8)})` : failure.message);
     } finally {
       setSubmitting(false);
+      setUploadProgress(null);
     }
-  };
+  });
 
   const handleSwitchMode = async () => {
     const newMode = roleMode === 'advisor' ? 'user' : 'advisor';
@@ -219,7 +258,10 @@ export const AdvisorRoleSection: React.FC<Props> = ({ userRole, userName, userEm
         accept=".pdf,.jpg,.jpeg,.png,.webp"
         aria-label={`Upload ${label}`}
         className="hidden"
-        onChange={(e) => setFile(e.target.files?.[0] || null)}
+        onChange={(e) => {
+          setFile(e.target.files?.[0] || null);
+          e.target.value = '';
+        }}
       />
     </div>
   );
@@ -329,7 +371,9 @@ export const AdvisorRoleSection: React.FC<Props> = ({ userRole, userName, userEm
                 <div className="flex items-center justify-center py-8">
                   <Loader2 size={24} className="animate-spin text-indigo-400" />
                 </div>
-              ) : application ? (
+              ) : application && !(showForm && application.status === 'REJECTED') ? (
+                // A rejected applicant who chose "Resubmit" gets the form below;
+                // before, the status card always won and the button did nothing.
                 // Show current application status
                 <div className="space-y-4">
                   <div className="flex items-center gap-3 p-4 bg-slate-50/70 rounded-2xl border border-slate-100">
@@ -528,12 +572,13 @@ export const AdvisorRoleSection: React.FC<Props> = ({ userRole, userName, userEm
                       <Shield size={14} className="shrink-0 mt-0.5 text-blue-600" />
                       <span>All documents are encrypted and only accessible to our verification team.</span>
                     </div>
-                    {renderFileInput('PAN Card', true, panFile, setPanFile, panRef)}
-                    {renderFileInput('Aadhaar Card', true, aadhaarFile, setAadhaarFile, aadhaarRef)}
-                    {renderFileInput('Professional Certificate / License', false, certFile, setCertFile, certRef)}
+                    {renderFileInput('PAN Card', true, panFile, pickDocument('PAN Card', setPanFile), panRef)}
+                    {renderFileInput('Aadhaar Card', true, aadhaarFile, pickDocument('Aadhaar Card', setAadhaarFile), aadhaarRef)}
+                    {renderFileInput('Professional Certificate / License', false, certFile, pickDocument('Professional certificate', setCertFile), certRef)}
                     <p className="text-xs text-slate-400">
                       Accepted: CA Certification · CFP Certification · Investment Advisor License · Financial Advisor Certification · Other
                     </p>
+                    <p className="text-xs text-slate-400">PDF, JPG, PNG or WEBP · up to 10 MB each</p>
                   </div>
 
                   {/* Declaration */}
@@ -555,7 +600,11 @@ export const AdvisorRoleSection: React.FC<Props> = ({ userRole, userName, userEm
                     className="w-full py-3.5 bg-slate-900 hover:bg-black text-white rounded-full font-bold text-sm shadow-xs transition-colors flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
                   >
                     {submitting ? <Loader2 size={16} className="animate-spin" /> : <FileText size={16} />}
-                    {submitting ? 'Submitting Application...' : 'Submit Application'}
+                    {!submitting
+                      ? 'Submit Application'
+                      : uploadProgress !== null && uploadProgress < 100
+                        ? `Uploading documents… ${uploadProgress}%`
+                        : 'Submitting Application...'}
                   </button>
                 </form>
               ) : (
