@@ -3,7 +3,6 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import {
  AlertTriangle,
  CheckCircle2,
- Database,
  FileJson,
  FileSpreadsheet,
  Loader2,
@@ -30,6 +29,8 @@ interface ImportDataModalProps {
  userId?: string;
  onClose: () => void;
  onImported?: () => void;
+ /** Open straight on this file (e.g. a stored backup snapshot). */
+ initialFile?: File;
 }
 
 const formatAmount = (amount: number) =>
@@ -52,6 +53,7 @@ export const ImportDataModal: React.FC<ImportDataModalProps> = ({
  userId,
  onClose,
  onImported,
+ initialFile,
 }) => {
  const fileInputRef = useRef<HTMLInputElement | null>(null);
  const closeButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -154,6 +156,15 @@ export const ImportDataModal: React.FC<ImportDataModalProps> = ({
  // Re-run analysis with the user's column choices. Kept separate from selection
  // so choosing a column doesn't re-parse on every click — the user confirms with
  // "Apply mapping" once they've set every field they care about.
+ // Opened on a stored backup: analyse it straight away (once).
+ const initialFileHandled = useRef(false);
+ useEffect(() => {
+ if (!initialFile || initialFileHandled.current) return;
+ initialFileHandled.current = true;
+ void handleFileSelection(initialFile);
+ // eslint-disable-next-line react-hooks/exhaustive-deps -- run once for the file the modal opened with
+ }, [initialFile]);
+
  const handleApplyMapping = async () => {
  if (!selectedFile) return;
  setIsRemapping(true);
@@ -209,25 +220,6 @@ export const ImportDataModal: React.FC<ImportDataModalProps> = ({
  setIsImporting(true);
 
  try {
- if (preview.kind === 'backup') {
- if (!window.confirm('This backup restore will replace all existing local data. Continue?')) {
- setIsImporting(false);
- return;
- }
-
- await smartExpenseImportService.restoreBackup({
- fileName: selectedFile.name,
- jsonText: await selectedFile.text(),
- userId,
- });
-
- toast.success('Backup restored successfully');
- onImported?.();
- onClose();
- window.location.reload();
- return;
- }
-
  const result = await smartExpenseImportService.applyPreviewImport({
  rows,
  fileName: selectedFile.name,
@@ -261,9 +253,6 @@ export const ImportDataModal: React.FC<ImportDataModalProps> = ({
  }
  if (selectedFile && preview?.kind === 'third-party') {
  return `Preview ready. ${rows.length} rows loaded.`;
- }
- if (selectedFile && preview?.kind === 'backup') {
- return 'Backup file detected. Restoring will replace local data.';
  }
  return 'Choose a CSV or JSON file to begin smart import.';
  }, [importReport, isImporting, isParsing, preview?.kind, rows.length, selectedFile]);
@@ -422,6 +411,13 @@ export const ImportDataModal: React.FC<ImportDataModalProps> = ({
  <p className="mt-1 text-sm text-emerald-800">
  Transactions, accounts, and dependent modules were updated from this file.
  </p>
+ {importReport.serverSync && (
+ <p className="mt-1 text-sm text-emerald-800" data-testid="import-server-sync-summary">
+ {importReport.serverSync.queued > 0
+ ? `${importReport.serverSync.pushed + importReport.serverSync.alreadyOnServer} saved to your account; ${importReport.serverSync.queued} will sync automatically when you are back online.`
+ : `All ${importReport.serverSync.pushed + importReport.serverSync.alreadyOnServer} saved to your account and available on your other devices.`}
+ </p>
+ )}
  </div>
  </div>
  </div>
@@ -527,52 +523,6 @@ export const ImportDataModal: React.FC<ImportDataModalProps> = ({
  <Loader2 size={36} className="animate-spin text-gray-500" />
  <h4 className="mt-4 text-lg font-semibold text-gray-900">Preparing preview</h4>
  <p className="mt-1 text-sm text-gray-500">Parsing rows, matching categories, and checking duplicates.</p>
- </div>
- )}
-
- {!importReport && selectedFile && preview?.kind === 'backup' && !isParsing && (
- <div className="space-y-5">
- <div className="rounded-[24px] border border-amber-200 bg-amber-50 px-5 py-4">
- <div className="flex items-start gap-3">
- <div className="mt-0.5 rounded-2xl bg-amber-100 p-2 text-amber-700">
- <Database size={18} />
- </div>
- <div>
- <h4 className="font-semibold text-amber-900">KANAKUbackup detected</h4>
- <p className="mt-1 text-sm text-amber-800">
- Restoring this file will replace your current local data.
- </p>
- </div>
- </div>
- </div>
-
- <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
- {preview.counts.map((item) => (
- <div key={item.label} className="rounded-[24px] border border-gray-200 bg-white px-4 py-4">
- <p className="text-xs font-bold uppercase tracking-[0.22em] text-gray-400">{item.label}</p>
- <p className="mt-2 text-2xl font-semibold text-gray-900">{item.count}</p>
- </div>
- ))}
- </div>
-
- <div className="rounded-[24px] border border-gray-200 bg-white px-5 py-4">
- <div className="flex flex-wrap gap-6 text-sm text-gray-600">
- <div>
- <span className="font-medium text-gray-900">File:</span> {preview.fileName}
- </div>
- {preview.version && (
- <div>
- <span className="font-medium text-gray-900">Version:</span> {preview.version}
- </div>
- )}
- {preview.exportedAt && (
- <div>
- <span className="font-medium text-gray-900">Exported:</span>{' '}
- {new Date(preview.exportedAt).toLocaleString('en-IN')}
- </div>
- )}
- </div>
- </div>
  </div>
  )}
 
@@ -914,15 +864,11 @@ export const ImportDataModal: React.FC<ImportDataModalProps> = ({
  isImporting ||
  !selectedFile ||
  !preview ||
- (preview.kind === 'third-party' && !canImportThirdParty)
+ !canImportThirdParty
  }
  className="min-h-11 rounded-full bg-black px-5 py-2 text-sm font-semibold text-white transition hover:bg-gray-900 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-black/20 disabled:cursor-not-allowed disabled:opacity-50"
  >
- {isImporting
- ? 'Importing...'
- : preview?.kind === 'backup'
- ? 'Restore Backup'
- : 'Confirm Import'}
+ {isImporting ? 'Importing...' : 'Confirm Import'}
  </button>
  </>
  )}

@@ -7,6 +7,15 @@ import { cacheSetJson, cacheGetJson } from '../../../../backend/src/cache/redis'
 import { initializeLedgerSubscriptions } from '../../../../backend/src/features/transactions/ledger.subscriber';
 
 const API = '/api/v1';
+
+/** Reset now needs re-authentication: a verified, single-use sensitive_action code for the account email. */
+const proveWithEmailCode = (email: string) =>
+  prisma.otpRequest.create({
+    data: {
+      destination: email, channel: 'email', purpose: 'sensitive_action', otpHash: 'test',
+      expiryTime: new Date(Date.now() + 5 * 60_000), status: 'VERIFIED', verifiedAt: new Date(),
+    },
+  });
 const TEST_USER_ID = 'da6d92bf-33ab-41c6-a675-ea285f524021';
 const TEST_FRIEND_EMAIL = 'consistency_friend@example.com';
 
@@ -190,10 +199,11 @@ describe('Phase 9 — Platform Consistency & Data Integrity Integration Tests', 
       expect(cachedBefore).toBeDefined();
 
       // 2. Call Clear Data endpoint
+      await proveWithEmailCode('consistency_test@example.com');
       const clearRes = await request(app)
         .post(`${API}/settings/clear-data`)
         .set('Authorization', `Bearer ${authToken}`)
-        .send({});
+        .send({ proof: { method: 'email_code' } });
       expect(clearRes.status).toBe(200);
       expect(clearRes.body.success).toBe(true);
 

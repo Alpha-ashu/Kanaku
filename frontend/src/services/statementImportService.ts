@@ -4,7 +4,8 @@
  */
 
 import { db, type Transaction } from '@/lib/database';
-import { queueRecordUpsertSync, processPendingSyncQueue } from '@/lib/auth-sync-integration';
+import { queueRecordUpsertSync, processPendingSyncQueue, runWithCloudSyncSuppressed } from '@/lib/auth-sync-integration';
+import { pushImportedTransactions, type BulkPushResult } from '@/services/importSync';
 import { getPinUnlockToken, setPinUnlockToken } from '@/lib/pinUnlockCoordinator';
 import { enqueueFileUpload } from '@/lib/offlineUploadQueue';
 import { rebuildAccountBalances, setAccountTargetBalance } from '@/lib/transactionAggregation';
@@ -91,6 +92,8 @@ export interface ImportApplyResult {
   importedCount: number;
   insertedTransactionIds: number[];
   importedTransactions: ParsedTransaction[];
+  /** How the rows reached the server (bulk import, or the sync queue when offline). */
+  serverSync?: BulkPushResult;
 }
 
 type TransactionColumns = {
@@ -571,7 +574,9 @@ class StatementImportService {
 
     let insertedTransactionIds: number[] = [];
 
-    await db.transaction('rw', [db.transactions, db.accounts, db.documents, db.merchantProfiles, db.userCategoryPreferences], async () => {
+    // Written without queueing an upload per row — pushImportedTransactions below
+    // sends them in bulk (one request per 250 rows instead of one per row).
+    await runWithCloudSyncSuppressed(() => db.transaction('rw', [db.transactions, db.accounts, db.documents, db.merchantProfiles, db.userCategoryPreferences], async () => {
       const newTransactions: Transaction[] = validTransactions.map((transaction) => ({
         accountId: options.accountId,
         userId: options.userId,
@@ -620,7 +625,7 @@ class StatementImportService {
           notes: `Imported ${validTransactions.length} transactions`,
         });
       }
-    });
+    }));
 
     // Balance reconciliation runs AFTER the rw transaction commits so the
     // imported rows are visible to the canonical engine. The imported
@@ -638,16 +643,15 @@ class StatementImportService {
       await rebuildAccountBalances();
     }
 
-    for (const transactionId of insertedTransactionIds) {
-      queueRecordUpsertSync('transactions', transactionId);
-    }
     queueRecordUpsertSync('accounts', options.accountId);
+    const serverSync = await pushImportedTransactions(insertedTransactionIds, options.documentId ? 'statement' : 'statement-import');
     void processPendingSyncQueue();
 
     return {
       importedCount: validTransactions.length,
       insertedTransactionIds,
       importedTransactions: validTransactions,
+      serverSync,
     };
   }
 

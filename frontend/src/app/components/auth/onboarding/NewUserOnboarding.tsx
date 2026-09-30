@@ -7,6 +7,9 @@ import { CountryLanguageStep } from './CountryLanguageStep';
 import { OnboardingCompleteStep } from './OnboardingCompleteStep';
 import { useAuth } from '@/contexts/AuthContext';
 import { api } from '@/lib/api';
+import { accountLifecycleService } from '@/services/accountLifecycleService';
+import { wipeDeletedAccountFromDevice } from '@/lib/localAccountWipe';
+import { describeApiFailure, failureText } from '@/lib/apiFailure';
 import { KanakuWordmark } from '@/app/components/ui/KANAKULogo';
 
 interface OnboardingData {
@@ -149,45 +152,45 @@ export const NewUserOnboarding: React.FC<NewUserOnboardingProps> = ({ onComplete
   const skipToComplete = () => setCurrentStep(4);
 
   // Permanently delete user from database and cancel registration
+  /**
+   * "Cancel registration": deletes the just-created, still-empty account. The
+   * server allows that without re-authentication only while the account is a
+   * fresh shell; if it already holds data it answers 428 and the user is sent to
+   * Profile → Delete account. This used to swallow every failure and announce
+   * "Account removed" anyway, leaving the account behind while signed out.
+   */
   const handleDiscardAccount = async () => {
     setIsDiscarding(true);
     try {
-      // 1. Delete user and profile record from backend database (Prisma & Supabase)
-      await api.auth.deleteAccount();
+      await accountLifecycleService.deleteAccount();
     } catch (err) {
-      console.warn('Backend account deletion during discard:', err);
-    } finally {
-      // 2. Clear all local application state and tokens
-      const localKeys = [
-        'auth_token', 'accessToken', 'refresh_token', 'refreshToken', 'token', 'authToken',
-        'user_profile', 'profile_updated_at', 'profile_sync_pending',
-        'pin_hash', 'pin_salt', 'pin_created_at', 'pin_expiry',
-        'currency', 'app_settings', 'kanaku_onboarding_completed', 'kanaku_active_route',
-        'auth_flow_step', 'pending_auth_email', 'auth_flow_step_timestamp',
-        'is_new_user', 'onboarding_completed', 'user_first_name', 'user_name', 'user_email',
-        'profile_verification_unverified'
-      ];
-      localKeys.forEach(k => localStorage.removeItem(k));
-
-      // 3. Clear auth context session
-      try {
-        await signOut();
-      } catch {
-        // ignore
-      }
-
-      window.dispatchEvent(new CustomEvent('KANAKU_AUTH_CHANGE'));
-      toast.success('Registration cancelled. Account removed from database.');
+      const failure = await describeApiFailure(err, 'Your registration could not be cancelled. Please try again.');
+      toast.error(failure.status === 428
+        ? 'This account already has data. Delete it from Profile → Delete account instead.'
+        : failureText(failure));
       setIsDiscarding(false);
-      setShowDiscardModal(false);
-
-      // 4. Return cleanly to the landing page
-      if (window.location.pathname && window.location.pathname !== '/') {
-        window.history.replaceState(null, '', '/');
-      }
-      window.location.hash = '#/landing';
-      window.dispatchEvent(new Event('hashchange'));
+      return;
     }
+
+    // Nothing of the discarded account may stay on this device.
+    await wipeDeletedAccountFromDevice();
+    try {
+      await signOut();
+    } catch {
+      // ignore — the account no longer exists
+    }
+
+    window.dispatchEvent(new CustomEvent('KANAKU_AUTH_CHANGE'));
+    toast.success('Registration cancelled. Your account was removed.');
+    setIsDiscarding(false);
+    setShowDiscardModal(false);
+
+    // Return cleanly to the landing page
+    if (window.location.pathname && window.location.pathname !== '/') {
+      window.history.replaceState(null, '', '/');
+    }
+    window.location.hash = '#/landing';
+    window.dispatchEvent(new Event('hashchange'));
   };
 
   const renderStep = () => {

@@ -30,96 +30,6 @@ export const exportDataToJSON = async (): Promise<string> => {
 };
 
 
-// Import data from JSON
-export const importDataFromJSON = async (jsonData: string): Promise<void> => {
-  try {
-    const data = JSON.parse(jsonData);
-
-    // Validate data structure
-    if (!data.accounts || !Array.isArray(data.accounts)) {
-      throw new Error('Invalid data format: missing accounts');
-    }
-
-    // Clear existing data
-    await db.accounts.clear();
-    await db.transactions.clear();
-    await db.categories.clear();
-    await db.loans.clear();
-    await db.loanPayments.clear();
-    await db.goals.clear();
-    await db.goalContributions.clear();
-    await db.groupExpenses.clear();
-    await db.investments.clear();
-    await db.notifications.clear();
-    await db.friends.clear();
-    await db.importHistories.clear();
-
-    // Import data
-    if (data.accounts.length > 0) {
-      await db.accounts.bulkAdd(data.accounts);
-    }
-    if (data.transactions?.length > 0) {
-      await db.transactions.bulkAdd(data.transactions);
-    }
-    if (data.categories?.length > 0) {
-      await db.categories.bulkAdd(data.categories);
-    }
-    if (data.loans?.length > 0) {
-      await db.loans.bulkAdd(data.loans);
-    }
-    if (data.loanPayments?.length > 0) {
-      await db.loanPayments.bulkAdd(data.loanPayments);
-    }
-    if (data.goals?.length > 0) {
-      await db.goals.bulkAdd(data.goals);
-    }
-    if (data.goalContributions?.length > 0) {
-      await db.goalContributions.bulkAdd(data.goalContributions);
-    }
-    if (data.groupExpenses?.length > 0) {
-      await db.groupExpenses.bulkAdd(data.groupExpenses);
-    }
-    if (data.investments?.length > 0) {
-      await db.investments.bulkAdd(data.investments);
-    }
-    if (data.notifications?.length > 0) {
-      await db.notifications.bulkAdd(data.notifications);
-    }
-    if (data.friends?.length > 0) {
-      await db.friends.bulkAdd(data.friends);
-    }
-    if (data.importHistories?.length > 0) {
-      await db.importHistories.bulkAdd(data.importHistories);
-    }
-
-    toast.success('Data imported successfully');
-  } catch (error) {
-    console.error('Import failed:', error);
-    throw error;
-  }
-};
-
-
-// Upload data from file
-export const uploadDataFromFile = async (file: File): Promise<void> => {
-  try {
-    const text = await file.text();
-
-    if (file.name.endsWith('.json')) {
-      await importDataFromJSON(text);
-    } else if (file.name.endsWith('.csv')) {
-      // CSV import would need more sophisticated parsing
-      toast.error('CSV import not yet implemented');
-    } else {
-      throw new Error('Unsupported file format');
-    }
-  } catch (error) {
-    console.error('Upload failed:', error);
-    toast.error('Failed to import data');
-    throw error;
-  }
-};
-
 export interface BackupSummary {
   id: string;
   filename: string;
@@ -208,13 +118,22 @@ export const downloadBackup = async (backupId: string): Promise<void> => {
   });
 };
 
-/** Replace all local data with a stored backup's contents. */
-export const restoreBackup = async (backupId: string): Promise<void> => {
+/**
+ * A stored backup as a File, for the import dialog.
+ *
+ * Restoring used to wipe this device's tables and write the snapshot's rows back
+ * with their old server ids — the next sync then deleted whatever the server no
+ * longer had, and nothing reached the server. A snapshot now goes through the
+ * normal reviewed import instead: matched to existing accounts, duplicates
+ * skipped, merged, and saved to the account on the server.
+ */
+export const backupAsFile = async (backupId: string): Promise<File> => {
   const entry = await db.backups.get(backupId);
   if (!entry) {
     throw new Error('Backup not found');
   }
-  await importDataFromJSON(entry.data);
+  const timestamp = new Date(entry.timestamp).toISOString();
+  return new File([entry.data], backupFilename(timestamp), { type: 'application/json' });
 };
 
 /**

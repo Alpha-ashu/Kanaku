@@ -15,6 +15,7 @@ import { isDatabaseUnavailableError } from '../../utils/databaseAvailability';
 import { AppError } from '../../utils/AppError';
 import { generateTokens, verifyRefreshToken, verifyToken, REFRESH_TOKEN_TTL_SECONDS } from '../../utils/auth';
 import { setRefreshCookie, clearRefreshCookie, readRefreshCookie } from '../../security/refreshCookie';
+import { deleteAccountForUser } from '../settings/accountDeletion.service';
 import { establishIdleSession, clearIdleSession } from '../../security/idleSession';
 import { revokeToken, isTokenRevoked } from '../../security/tokenRevocation';
 import { clearPinUnlock, isPinUnlocked, PIN_UNLOCK_HEADER } from '../../security/pinUnlock';
@@ -1491,24 +1492,20 @@ export const logout = async (req: AuthRequest, res: Response, next: NextFunction
 export const deleteAccount = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     if (!req.userId) throw AppError.unauthorized();
-
-    logger.info(`[AuthController] Account deletion request for userId: ${req.userId}`);
-    await authService.deleteAccount(req.userId);
+    // Same implementation as DELETE /settings/account: role and balance checks,
+    // server-side re-authentication (password or one-time email code), cleanup.
+    const result = await deleteAccountForUser(req, req.userId, (req.body as { proof?: unknown } | undefined)?.proof);
 
     // Clear the refresh cookie — the account is gone.
     clearRefreshCookie(res);
 
     res.json({
       success: true,
-      message: 'Account deleted successfully. All your data has been permanently removed.',
+      message: 'Your account and its data have been permanently deleted.',
+      cancelledBookings: result.cancelledBookings,
     });
-  } catch (error: any) {
-    logger.error('[AuthController] Account deletion error:', {
-      message: error?.message,
-      stack: error?.stack,
-      userId: req.userId,
-    });
-    return next(error instanceof AppError ? error : AppError.internal());
+  } catch (error) {
+    return next(error);
   }
 };
 

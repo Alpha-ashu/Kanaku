@@ -1283,8 +1283,8 @@ export const api = {
     resetPassword: (data: any) =>
       apiClient.post('/auth/reset-password', data),
 
-    deleteAccount: () =>
-      apiClient.delete('/auth/account', { showErrorToast: true }),
+    // Account deletion needs the step-up proof in the request body and the
+    // server's own error details — see services/accountLifecycleService.ts.
 
     changePhone: (data: { phone: string; otp: string }) =>
       apiClient.post<{ success: boolean; message: string; phone: string }>('/auth/phone/change', data),

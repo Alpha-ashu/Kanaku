@@ -94,6 +94,12 @@ export type AuditEventType =
   | 'admin.approval_approved'
   | 'admin.approval_rejected'
   | 'gdpr.account_delete_executed'
+  | 'gdpr.account_delete_refused'
+  | 'gdpr.data_reset'
+  // Re-authentication before an irreversible action ('failed' marks a wrong
+  // password / missing code as a failure row).
+  | 'security.step_up_verified'
+  | 'security.step_up_failed'
   | 'file.upload'
   | 'file.delete'
   // Every read of an advisor's PAN / Aadhaar / certificate, by whom, and every
@@ -155,6 +161,7 @@ const isFailureEvent = (event: AuditEventType): boolean =>
   event.includes('mismatch') ||
   event.includes('unrecovered') ||
   event.includes('reused') ||
+  event.includes('refused') ||
   event.includes('circuit_open');
 
 /**

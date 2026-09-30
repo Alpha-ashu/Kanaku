@@ -8,6 +8,11 @@ export class AppError extends Error {
   public readonly statusCode: number;
   public readonly code: string;
   public readonly isOperational: boolean;
+  /**
+   * Client-safe structured context (e.g. which balances block a deletion).
+   * Serialised as `details` in the error response, so never put internals here.
+   */
+  public details?: Record<string, unknown>;
 
   constructor(statusCode: number, code: string, message: string, isOperational = true) {
     super(message);
@@ -16,6 +21,12 @@ export class AppError extends Error {
     this.code = code;
     this.isOperational = isOperational;
     Error.captureStackTrace(this, this.constructor);
+  }
+
+  /** Attach client-safe `details` to the response; returns `this` for `throw`. */
+  withDetails(details: Record<string, unknown>): this {
+    this.details = details;
+    return this;
   }
 
   //  Common factory helpers 

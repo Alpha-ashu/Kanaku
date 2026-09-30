@@ -30,8 +30,13 @@ import {
   downloadBackup,
   listBackups,
   purgeLegacyBackupRecords,
-  restoreBackup
+  backupAsFile
 } from '@/lib/importExport';
+import { DangerActionDialog } from '@/app/components/shared/DangerActionDialog';
+import { accountLifecycleService, newActionKey, type StepUpProof } from '@/services/accountLifecycleService';
+import { discardPendingUploads, resetLocalUserData } from '@/lib/localAccountWipe';
+import { downloadMyDataJson, downloadTransactionsCsv } from '@/lib/dataExportDownload';
+import { describeApiFailure, failureText } from '@/lib/apiFailure';
 import {
   type BiometricAvailability,
   disableBiometricUnlock,
@@ -63,10 +68,6 @@ import {
 } from '@/lib/notificationPreferences';
 import { refreshLocalReminders } from '@/lib/localReminders';
 
-// Factory reset budget.
-const CLEAR_DATA_TIMEOUT_MS = 180_000;
-const CLEAR_DATA_IDEMPOTENCY_STORAGE_KEY = 'KANAKU_clear_data_idempotency_key';
-
 type SettingsCategory = 'all' | 'bottom-nav' | 'quick-actions' | 'general' | 'security' | 'notifications' | 'data' | 'categories' | 'sms' | 'legal';
 
 export const Settings: React.FC = () => {
@@ -77,6 +78,11 @@ export const Settings: React.FC = () => {
   // Desktop active tab / Mobile filter category
   const [selectedCategory, setSelectedCategory] = useState<SettingsCategory>('all');
   const [showImportModal, setShowImportModal] = useState(false);
+  const [importInitialFile, setImportInitialFile] = useState<File | undefined>(undefined);
+  const [showResetDialog, setShowResetDialog] = useState(false);
+  const [exporting, setExporting] = useState<'json' | 'csv' | null>(null);
+  // One key per reset attempt: a lost response is replayed by the server, never re-run.
+  const resetKeyRef = React.useRef<string | null>(null);
   const [backups, setBackups] = useState<Array<any>>([]);
   const [showBackups, setShowBackups] = useState(false);
   const [importHistory, setImportHistory] = useState<Array<any>>([]);
@@ -241,16 +247,31 @@ export const Settings: React.FC = () => {
     }
   };
 
-  const handleRestoreBackup = async (backupId: string, label: string) => {
-    if (!confirm(`Restore ${label}? This replaces all current data on this device.`)) return;
+  /**
+   * Restore = import the snapshot through the reviewed import: anything missing
+   * is added back to the account (on the server too); nothing current is deleted
+   * or overwritten, and rows already present are skipped as duplicates.
+   */
+  const handleRestoreBackup = async (backupId: string) => {
     try {
-      await restoreBackup(backupId);
-      toast.success('Backup restored successfully');
-      refreshData();
-      window.location.reload();
+      setImportInitialFile(await backupAsFile(backupId));
+      setShowImportModal(true);
     } catch (error) {
-      console.error('Failed to restore backup:', error);
-      toast.error('Failed to restore backup');
+      console.error('Failed to open backup:', error);
+      toast.error('That backup could not be opened');
+    }
+  };
+
+  const handleExport = async (kind: 'json' | 'csv') => {
+    if (exporting) return;
+    setExporting(kind);
+    try {
+      if (kind === 'json') await downloadMyDataJson();
+      else await downloadTransactionsCsv();
+    } catch (error) {
+      toast.error(failureText(await describeApiFailure(error, 'The export did not finish. Please try again.')));
+    } finally {
+      setExporting(null);
     }
   };
 
@@ -351,96 +372,24 @@ export const Settings: React.FC = () => {
     }
   };
 
-  const handleClearAllData = async () => {
-    if (confirm('This will delete ALL local & cloud transaction and account records. This action cannot be undone. Are you sure?')) {
-      if (confirm('Are you ABSOLUTELY sure? This is your final warning!')) {
-        try {
-          let idempotencyKey = sessionStorage.getItem(CLEAR_DATA_IDEMPOTENCY_STORAGE_KEY);
-          if (!idempotencyKey) {
-            idempotencyKey = crypto.randomUUID();
-            sessionStorage.setItem(CLEAR_DATA_IDEMPOTENCY_STORAGE_KEY, idempotencyKey);
-          }
-
-          const res = await apiClient.post<any>('/settings/clear-data', undefined, {
-            timeout: CLEAR_DATA_TIMEOUT_MS,
-            idempotencyKey,
-            showErrorToast: false,
-          });
-          if (!res.success) {
-            throw new Error(res.message || 'Failed to clear cloud data');
-          }
-
-          localStorage.removeItem('KANAKU_sync_queue_v3');
-
-          await runWithCloudSyncSuppressed(async () => {
-            await Promise.all([
-              db.accounts.clear(),
-              db.friends.clear(),
-              db.transactions.clear(),
-              db.loans.clear(),
-              db.loanPayments.clear(),
-              db.goals.clear(),
-              db.goalContributions.clear(),
-              db.groupExpenses.clear(),
-              db.investments.clear(),
-              db.notifications.clear(),
-              db.categories.clear(),
-              db.importHistories.clear(),
-              db.smsTransactions.clear(),
-              db.documents.clear(),
-              db.merchantProfiles.clear(),
-              db.userCategoryPreferences.clear(),
-              db.expenseBills.clear(),
-              db.expenseCategories.clear(),
-              db.budgets.clear(),
-              db.gold.clear(),
-              db.groups.clear(),
-              db.toDoItems.clear(),
-              db.toDoLists.clear(),
-              db.toDoListShares.clear(),
-              db.chatMessages.clear(),
-              db.chatConversations.clear(),
-              db.bookingRequests.clear(),
-              db.advisorAssignments.clear(),
-              db.advisorSessions.clear(),
-              db.financeAdvisors.clear(),
-              db.logs.clear(),
-              db.errorReports.clear(),
-              db.backups.clear(),
-            ]);
-          });
-
-          for (const key of Object.keys(localStorage)) {
-            if (!['auth_token', 'refresh_token', 'accessToken', 'refreshToken', 'token', 'user'].includes(key)) {
-              localStorage.removeItem(key);
-            }
-          }
-          sessionStorage.clear();
-
-          try {
-            const channel = new BroadcastChannel('kanaku-system');
-            channel.postMessage({ type: 'clear-all-data' });
-          } catch {
-            // Ignore
-          }
-
-          toast.success('All user records cleared. Profile identity preserved.');
-          refreshData();
-          window.location.reload();
-        } catch (error) {
-          console.error('Failed to clear all data:', error);
-          const status = (error as { status?: number } | null)?.status;
-          const code = (error as { code?: string } | null)?.code;
-          if (status === 409) {
-            toast.error('A data reset is already running. Give it a moment, then try again.');
-          } else if (code === 'TIMEOUT_ERROR') {
-            toast.error('The reset is taking longer than expected. Please check back in a moment.');
-          } else {
-            toast.error('Failed to clear all data');
-          }
-        }
-      }
-    }
+  /**
+   * Factory reset, confirmed in DangerActionDialog with the password or an
+   * emailed code (checked by the server). Sync is held for the whole operation
+   * and the upload queue is dropped first: a queued create pushed during or after
+   * the reset would put deleted data straight back.
+   */
+  const handleResetData = async (proof: StepUpProof | undefined) => {
+    if (!proof) throw new Error('Confirm it is you first.');
+    resetKeyRef.current = resetKeyRef.current ?? newActionKey();
+    await runWithCloudSyncSuppressed(async () => {
+      discardPendingUploads();
+      await accountLifecycleService.resetData(proof, resetKeyRef.current as string);
+      await resetLocalUserData();
+    });
+    resetKeyRef.current = null;
+    setShowResetDialog(false);
+    toast.success('All your data has been reset.');
+    window.location.reload();
   };
 
   const handleToggleSmsDetection = async () => {
@@ -998,6 +947,39 @@ export const Settings: React.FC = () => {
                   </button>
                 </div>
 
+                {/* Export Row — the server's complete copy, not just this device's */}
+                <div className="p-3.5 sm:p-4 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-slate-700 shrink-0">
+                      <Download size={18} />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs sm:text-sm font-bold text-slate-900">Export My Data</p>
+                      <p className="text-xs text-slate-400">Everything as JSON, or transactions as CSV</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => void handleExport('csv')}
+                      disabled={exporting !== null}
+                      data-testid="settings-export-csv-button"
+                      className="px-3 py-1.5 rounded-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-800 text-xs font-bold active:scale-95 transition-all disabled:opacity-50"
+                    >
+                      {exporting === 'csv' ? 'Exporting…' : 'CSV'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void handleExport('json')}
+                      disabled={exporting !== null}
+                      data-testid="settings-export-json-button"
+                      className="px-3 py-1.5 rounded-full bg-[#18181B] hover:bg-black text-white text-xs font-bold active:scale-95 transition-all disabled:opacity-50"
+                    >
+                      {exporting === 'json' ? 'Exporting…' : 'JSON'}
+                    </button>
+                  </div>
+                </div>
+
                 {/* Backup Row */}
                 <div className="p-3.5 sm:p-4 flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3 min-w-0">
@@ -1053,7 +1035,7 @@ export const Settings: React.FC = () => {
                               </button>
                               <button
                                 type="button"
-                                onClick={() => handleRestoreBackup(backup.id, backup.filename)}
+                                onClick={() => handleRestoreBackup(backup.id)}
                                 data-testid="settings-restore-backup-button"
                                 className="p-1.5 bg-slate-900 text-white rounded-lg hover:bg-slate-800"
                                 title="Restore"
@@ -1237,11 +1219,11 @@ export const Settings: React.FC = () => {
               <div className="bg-rose-50/50 rounded-[24px] sm:rounded-[28px] border border-rose-100/80 p-4 sm:p-5 flex items-center justify-between gap-3">
                 <div className="min-w-0">
                   <p className="text-xs sm:text-sm font-bold text-rose-950">Factory Reset / Clear All</p>
-                  <p className="text-xs text-rose-700">Wipe all local and cloud ledger data</p>
+                  <p className="text-xs text-rose-700">Erase your financial records on every device; your account stays</p>
                 </div>
                 <button
                   type="button"
-                  onClick={handleClearAllData}
+                  onClick={() => { resetKeyRef.current = null; setShowResetDialog(true); }}
                   data-testid="settings-clear-data-button"
                   className="px-4 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-full text-xs font-bold transition-all active:scale-95 shrink-0 shadow-xs cursor-pointer"
                 >
@@ -1258,11 +1240,23 @@ export const Settings: React.FC = () => {
           <ImportDataModal
             accounts={accounts}
             userId={user?.id}
-            onClose={() => setShowImportModal(false)}
+            initialFile={importInitialFile}
+            onClose={() => { setShowImportModal(false); setImportInitialFile(undefined); }}
             onImported={async () => {
               await loadImportHistory();
               await refreshData();
             }}
+          />
+        )}
+
+        {/* ─── Factory reset (server-verified) ─────────────────────────── */}
+        {showResetDialog && user?.email && (
+          <DangerActionDialog
+            action="reset-data"
+            accountEmail={user.email}
+            onClose={() => setShowResetDialog(false)}
+            onConfirm={handleResetData}
+            onDownloadCopy={downloadMyDataJson}
           />
         )}
 

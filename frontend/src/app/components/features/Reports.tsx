@@ -60,6 +60,7 @@ import { isClosedInvestment } from '@/lib/investmentUtils';
 import { AIInsightsCard } from '@/app/components/shared/AIInsightsCard';
 import { ReportPdfPreviewModal } from '@/app/components/features/ReportPdfPreviewModal';
 import { cn } from '@/lib/utils';
+import { csvCell, htmlCell } from '@/lib/spreadsheetSafe';
 
 /* ─── Pro Design Tokens ─────────────────────────────────────────────────────── */
 const CHART_COLORS = [
@@ -610,7 +611,8 @@ export const Reports: React.FC = () => {
     const csvLines = [
       ...headerRows,
       columnHeaders.map((cell) => `"${cell}"`).join(','),
-      ...rows.map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(',')),
+      // csvCell: formula-safe — descriptions come from users and imported files.
+      ...rows.map((row) => row.map(csvCell).join(',')),
       ...summaryRows,
     ];
 
@@ -659,7 +661,7 @@ export const Reports: React.FC = () => {
 
     const html = `<!DOCTYPE html><html><head><meta charset="utf-8"/></head><body style="font-family:Arial,sans-serif;margin:20px">
       <h1 style="font-size:22px;color:#0f172a;margin-bottom:4px">KANAKU Financial Report</h1>
-      <p ${metaStyle}>Period: ${reportPeriodLabel}</p>
+      <p ${metaStyle}>Period: ${htmlCell(reportPeriodLabel)}</p>
       <p ${metaStyle}>Generated: ${now.toLocaleDateString('en-US', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
       <p ${metaStyle}>Currency: ${currency}</p>
 
@@ -678,19 +680,19 @@ export const Reports: React.FC = () => {
       <h2 ${sectionStyle}>Category Breakdown</h2>
       <table style="border-collapse:collapse;width:100%;margin:12px 0">
         <tr><th ${thStyle}>Category</th><th ${thStyle}>Amount</th><th ${thStyle}>Percentage</th></tr>
-        ${catRows.map((r, i) => `<tr>${r.map((c) => `<td ${i % 2 === 0 ? tdStyle : tdAltStyle}>${c}</td>`).join('')}</tr>`).join('')}
+        ${catRows.map((r, i) => `<tr>${r.map((c) => `<td ${i % 2 === 0 ? tdStyle : tdAltStyle}>${htmlCell(c)}</td>`).join('')}</tr>`).join('')}
       </table>
 
       <h2 ${sectionStyle}>Monthly Trend</h2>
       <table style="border-collapse:collapse;width:100%;margin:12px 0">
         <tr><th ${thStyle}>Month</th><th ${thStyle}>Income</th><th ${thStyle}>Expense</th><th ${thStyle}>Net</th></tr>
-        ${monthRows.map((r, i) => `<tr>${r.map((c) => `<td ${i % 2 === 0 ? tdStyle : tdAltStyle}>${c}</td>`).join('')}</tr>`).join('')}
+        ${monthRows.map((r, i) => `<tr>${r.map((c) => `<td ${i % 2 === 0 ? tdStyle : tdAltStyle}>${htmlCell(c)}</td>`).join('')}</tr>`).join('')}
       </table>
 
       <h2 ${sectionStyle}>Transaction Statement</h2>
       <table style="border-collapse:collapse;width:100%;margin:12px 0">
         <tr><th ${thStyle}>Date</th><th ${thStyle}>Description</th><th ${thStyle}>Category</th><th ${thStyle}>Type</th><th ${thStyle}>Amount</th><th ${thStyle}>Account</th></tr>
-        ${rows.map((r, i) => `<tr>${r.map((c) => `<td ${i % 2 === 0 ? tdStyle : tdAltStyle}>${c}</td>`).join('')}</tr>`).join('')}
+        ${rows.map((r, i) => `<tr>${r.map((c) => `<td ${i % 2 === 0 ? tdStyle : tdAltStyle}>${htmlCell(c)}</td>`).join('')}</tr>`).join('')}
       </table>
 
       <p style="font-size:10px;color:#94a3b8;margin-top:30px;border-top:1px solid #e2e8f0;padding-top:10px">

@@ -22,6 +22,11 @@ import { pinService } from '@/services/pinService';
 import { syncBiometricPin } from '@/services/biometricAuthService';
 import { AdvisorRoleSection } from './AdvisorRoleSection';
 import { useProfileVerification } from '@/hooks/useProfileVerification';
+import { DangerActionDialog } from '@/app/components/shared/DangerActionDialog';
+import { accountLifecycleService, type StepUpProof } from '@/services/accountLifecycleService';
+import { discardPendingUploads, wipeDeletedAccountFromDevice } from '@/lib/localAccountWipe';
+import { downloadMyDataJson } from '@/lib/dataExportDownload';
+import { runWithCloudSyncSuppressed } from '@/lib/auth-sync-integration';
 
 interface ProfileData {
  firstName: string;
@@ -302,8 +307,6 @@ export const UserProfile: React.FC = () => {
 
  // States for Delete Account functionality
  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
- const [deletePassword, setDeletePassword] = useState('');
- const [isDeleting, setIsDeleting] = useState(false);
 
  // Photo upload & preview state
  const fileInputRef = React.useRef<HTMLInputElement | null>(null);
@@ -983,51 +986,23 @@ export const UserProfile: React.FC = () => {
     }
   };
 
-  const handleDeleteAccount = async () => {
-    if (!user) return;
-    if (!deletePassword) {
-      toast.error('Please enter your password to confirm deletion');
-      return;
-    }
-
-    setIsDeleting(true);
-    try {
-      // 1. Re-authenticate via backend login endpoint before the destructive action
-      const loginRes = await api.auth.login({
-        email: user.email!,
-        password: deletePassword,
-      });
-
-      if (!loginRes.success) {
-        throw new Error('Incorrect password. Please try again.');
-      }
-
-      // 2. Call the backend endpoint — it deletes all Prisma data and Supabase Auth user
-      const result = await api.auth.deleteAccount();
-      if (!result.success) {
-        throw new Error(result.message || 'Account deletion failed. Please contact support.');
-      }
-
-      // 3. Clear all local app state so nothing lingers after account is gone
-      const localKeys = [
-        'auth_token', 'accessToken', 'refresh_token', 'refreshToken', 'token', 'authToken', 'auth_token_v1',
-        'user_profile', 'profile_updated_at', 'profile_sync_pending',
-        'pin_hash', 'pin_salt', 'pin_created_at', 'pin_expiry',
-        'currency', 'app_settings',
-      ];
-      localKeys.forEach(k => localStorage.removeItem(k));
-
-      toast.success('Account deleted. Goodbye!');
-
-      // 4. Sign out and redirect to the auth screen
-      signOut();
-
-    } catch (error: any) {
-      console.error('Account deletion failed:', error);
-      toast.error(error.message || 'Failed to delete account. Please try again.');
-    } finally {
-      setIsDeleting(false);
-    }
+  /**
+   * Deletes the account. The proof (password or a one-time email code) goes to
+   * the server WITH the delete request — the old flow re-checked the password
+   * by calling /auth/login from the browser and then sent a bare DELETE that
+   * any access token could make. Admins, protected accounts and wallets with
+   * coins are refused by the server; the dialog shows why.
+   */
+  const handleDeleteAccount = async (proof: StepUpProof | undefined) => {
+    // Nothing queued on this device may be pushed for an account being deleted.
+    await runWithCloudSyncSuppressed(async () => {
+      discardPendingUploads();
+      await accountLifecycleService.deleteAccount(proof);
+    });
+    await wipeDeletedAccountFromDevice();
+    setIsDeleteModalOpen(false);
+    toast.success('Your account has been deleted.');
+    await signOut().catch(() => undefined);
   };
 
   if (visibleFeatures?.userProfile === false) {
@@ -2089,71 +2064,15 @@ export const UserProfile: React.FC = () => {
  </div>{/* end px wrapper */}
  </div>{/* end max-w-7xl */}
 
- {/* Delete Account Modal (Popup) */}
- {isDeleteModalOpen && (
- <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
- <motion.div
- initial={{ scale: 0.95, opacity: 0 }}
- animate={{ scale: 1, opacity: 1 }}
- className="bg-white rounded-[28px] sm:rounded-[36px] shadow-2xl w-full max-w-md overflow-hidden relative border border-slate-100"
- >
- <div className="bg-gradient-to-br from-red-600 to-rose-700 p-6 text-white relative">
- <button
- type="button"
- onClick={() => {
- setIsDeleteModalOpen(false);
- setDeletePassword('');
- }}
- aria-label="Close delete account dialog"
- title="Close delete account dialog"
- data-testid="profile-delete-close-button"
- className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white transition-all cursor-pointer active:scale-95"
- >
- <X size={18} />
- </button>
- <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mb-4 backdrop-blur-xs">
- <Trash2 size={24} className="text-white" />
- </div>
- <h3 className="text-xl font-bold tracking-tight">Delete Account</h3>
- <p className="text-red-100 text-sm mt-1 leading-relaxed">
- You are about to permanently delete your KANAKU account.
- All your tracked accounts, transactions, and data will be erased.
- </p>
- </div>
-
- <div className="p-6">
- <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
- Verify your password to continue
- </label>
- <input
- type="password"
- placeholder="Enter your password"
- value={deletePassword}
- onChange={(e) => setDeletePassword(e.target.value)}
- data-testid="profile-delete-password-input"
- className="w-full px-4 py-3.5 border border-slate-200 rounded-2xl bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 mb-6 text-sm text-slate-800 transition-all placeholder:text-slate-400"
+ {/* Delete Account — server-verified, shared with every role */}
+ {isDeleteModalOpen && user?.email && (
+ <DangerActionDialog
+ action="delete-account"
+ accountEmail={user.email}
+ onClose={() => setIsDeleteModalOpen(false)}
+ onConfirm={handleDeleteAccount}
+ onDownloadCopy={downloadMyDataJson}
  />
-
- <div className="flex gap-3">
- <button
- onClick={() => setIsDeleteModalOpen(false)}
- data-testid="profile-delete-cancel-button"
- className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-3 rounded-full font-bold text-sm transition-all active:scale-95"
- >
- Cancel
- </button>
- <button
- onClick={handleDeleteAccount}
- disabled={isDeleting || !deletePassword}
- data-testid="profile-delete-confirm-button"
- className="flex-1 bg-rose-600 hover:bg-rose-700 text-white py-3 rounded-full font-bold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center active:scale-95 shadow-xs"
- >
- {isDeleting ? 'Deleting...' : 'Delete Permanently'}
- </button>
- </div>
- </div>
- </motion.div>
- </div>
  )}
  </div>{/* end outer pb-32 div */}
 

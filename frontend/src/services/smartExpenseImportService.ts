@@ -10,7 +10,8 @@ import {
   type Loan,
   type Transaction,
 } from '@/lib/database';
-import { initializeBackendSync } from '@/lib/auth-sync-integration';
+import { initializeBackendSync, runWithCloudSyncSuppressed } from '@/lib/auth-sync-integration';
+import { pushImportedTransactions, type BulkPushResult } from '@/services/importSync';
 import { rebuildAccountBalances, setAccountTargetBalance } from '@/lib/transactionAggregation';
 import {
   INCOME_CATEGORIES,
@@ -21,7 +22,6 @@ import {
   normalizeCategorySelection,
 } from '@/lib/expenseCategories';
 import { normalizeCurrencyCode } from '@/lib/currencyUtils';
-import { importDataFromJSON } from '@/lib/importExport';
 
 type ImportFileType = 'csv' | 'json';
 /**
@@ -95,15 +95,6 @@ export interface ThirdPartyImportPreview {
   unmappedRequiredFields: ImportColumnField[];
 }
 
-export interface BackupImportPreview {
-  kind: 'backup';
-  fileName: string;
-  fileType: 'json';
-  exportedAt?: string;
-  version?: string;
-  counts: Array<{ label: string; count: number }>;
-}
-
 export interface ThirdPartyImportResult {
   importedCount: number;
   skippedCount: number;
@@ -119,9 +110,11 @@ export interface ThirdPartyImportResult {
   updatedLoans: number;
   createdInvestments: number;
   updatedInvestments: number;
+  /** How the imported transactions reached the server (bulk import, or the sync queue when offline). */
+  serverSync?: BulkPushResult;
 }
 
-export type SmartImportPreview = ThirdPartyImportPreview | BackupImportPreview;
+export type SmartImportPreview = ThirdPartyImportPreview;
 
 /**
  * Fields the user can point at a column by hand when auto-detection guesses
@@ -184,12 +177,6 @@ interface ApplyPreviewOptions {
   fileType: ImportFileType;
   userId?: string;
   skipDuplicates: boolean;
-}
-
-interface RestoreBackupOptions {
-  fileName: string;
-  jsonText: string;
-  userId?: string;
 }
 
 interface ExistingCategoryCatalog {
@@ -741,12 +728,6 @@ const parseCsvRecords = (text: string): Array<Record<string, unknown>> => {
     });
     return record;
   });
-};
-
-const isKANAKUBackupPayload = (payload: unknown): payload is Record<string, unknown> => {
-  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) return false;
-  const record = payload as Record<string, unknown>;
-  return Array.isArray(record.accounts) && Array.isArray(record.transactions) && typeof record.version === 'string';
 };
 
 const isRecordObject = (value: unknown): value is Record<string, unknown> =>
@@ -1371,11 +1352,11 @@ class SmartExpenseImportService {
         throw new Error('Invalid JSON file');
       }
 
-      if (isKANAKUBackupPayload(payload)) {
-        this.structuredPayload = null;
-        return this.buildBackupPreview(file.name, payload);
-      }
-
+      // A KANAKU backup or export imports like any other structured ledger:
+      // previewed, matched to existing accounts, duplicates skipped, merged.
+      // It used to "restore" by wiping this device's tables and writing the
+      // file's rows back with their old server ids — which the next sync then
+      // deleted again, because those ids were not (or no longer) on the server.
       this.structuredPayload = isStructuredLedgerPayload(payload) ? payload : null;
 
       return this.buildThirdPartyPreview({
@@ -1428,6 +1409,7 @@ class SmartExpenseImportService {
     let createdInvestments = 0;
     let updatedInvestments = 0;
     let importedCount = 0;
+    const importedTransactionIds: number[] = [];
 
     const structuredPayload = this.structuredPayload;
     this.structuredPayload = null;
@@ -1511,7 +1493,9 @@ class SmartExpenseImportService {
               originalCategory: row.rawCategory || undefined,
             };
 
-            const transactionId = await db.transactions.add(transactionPayload);
+            // Not queued row by row: pushed in bulk after the import (importSync.ts).
+            const transactionId = await runWithCloudSyncSuppressed(() => db.transactions.add(transactionPayload)) as number;
+            importedTransactionIds.push(transactionId);
             importedCount += 1;
 
             const accountChange = row.transactionType === 'income' ? resolvedAmount : -resolvedAmount;
@@ -1567,13 +1551,13 @@ class SmartExpenseImportService {
                 createdAt: importedAt,
               });
 
-              await db.transactions.update(transactionId, {
+              await runWithCloudSyncSuppressed(() => db.transactions.update(transactionId, {
                 groupExpenseId,
                 expenseMode: 'group',
                 groupName: groupData.name,
                 splitType: groupData.splitType,
                 updatedAt: importedAt,
-              } as Partial<Transaction>);
+              } as Partial<Transaction>));
               createdGroupExpenses += 1;
             }
 
@@ -1648,7 +1632,15 @@ class SmartExpenseImportService {
       await rebuildAccountBalances();
     }
 
+    // One request per 250 rows instead of one per row; the server applies each
+    // chunk atomically and skips anything it already has.
+    const serverSync = await pushImportedTransactions(importedTransactionIds, options.fileName);
+    for (const failure of serverSync.failed) {
+      runtimeErrors.push(`Transaction ${failure.localId}: ${failure.message}`);
+    }
+
     return {
+      serverSync,
       importedCount,
       skippedCount: options.rows.length - importedCount,
       duplicateCount,
@@ -1663,55 +1655,6 @@ class SmartExpenseImportService {
       updatedLoans,
       createdInvestments,
       updatedInvestments,
-    };
-  }
-
-  async restoreBackup(options: RestoreBackupOptions) {
-    await importDataFromJSON(options.jsonText);
-
-    const payload = JSON.parse(options.jsonText) as Record<string, unknown>;
-    await db.importHistories.add({
-      fileName: options.fileName,
-      fileType: 'json',
-      sourceKind: 'backup',
-      totalRecords: Array.isArray(payload.transactions) ? payload.transactions.length : 0,
-      importedRecords: Array.isArray(payload.transactions) ? payload.transactions.length : 0,
-      skippedRecords: 0,
-      duplicateRecords: 0,
-      createdCategories: [],
-      errors: [],
-      createdAt: new Date(),
-      userId: options.userId,
-      metadata: {
-        restoredBackup: true,
-        exportedAt: typeof payload.exportedAt === 'string' ? payload.exportedAt : undefined,
-        version: typeof payload.version === 'string' ? payload.version : undefined,
-      },
-    });
-  }
-
-  private buildBackupPreview(fileName: string, payload: Record<string, unknown>): BackupImportPreview {
-    const labels: Array<[string, unknown]> = [
-      ['Accounts', payload.accounts],
-      ['Transactions', payload.transactions],
-      ['Loans', payload.loans],
-      ['Goals', payload.goals],
-      ['Group Expenses', payload.groupExpenses],
-      ['Investments', payload.investments],
-      ['Friends', payload.friends],
-      ['Categories', payload.categories],
-    ];
-
-    return {
-      kind: 'backup',
-      fileName,
-      fileType: 'json',
-      exportedAt: typeof payload.exportedAt === 'string' ? payload.exportedAt : undefined,
-      version: typeof payload.version === 'string' ? payload.version : undefined,
-      counts: labels.map(([label, value]) => ({
-        label,
-        count: Array.isArray(value) ? value.length : 0,
-      })),
     };
   }
 

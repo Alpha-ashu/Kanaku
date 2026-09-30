@@ -7,6 +7,15 @@ import { drainNotificationOutbox } from '../../../../backend/src/workers/index';
 
 const API = '/api/v1';
 
+/** Reset now needs re-authentication: a verified, single-use sensitive_action code for the account email. */
+const proveWithEmailCode = (email: string) =>
+  prisma.otpRequest.create({
+    data: {
+      destination: email, channel: 'email', purpose: 'sensitive_action', otpHash: 'test',
+      expiryTime: new Date(Date.now() + 5 * 60_000), status: 'VERIFIED', verifiedAt: new Date(),
+    },
+  });
+
 const getSignedAuthHeaders = (userId = '123e4567-e89b-12d3-a456-426614174000', role = 'user') => {
   const secret = process.env.JWT_SECRET || 'test-jwt-secret';
   if (!process.env.JWT_SECRET) process.env.JWT_SECRET = secret;
@@ -152,11 +161,13 @@ describe('Factory Reset (Clear Data) E2E Hardening Test', () => {
     expect(dryRunRes.body.wouldDelete.transactions).toBe(1);
     expect(dryRunRes.body.wouldDelete.recurringTransactions).toBe(1);
 
-    // 3. Execute real Clear Data request
+    // 3. Execute real Clear Data request (re-authenticated with an email code)
+    await proveWithEmailCode('clear-e2e@test.com');
     const clearRes = await request(app)
       .post(`${API}/settings/clear-data`)
       .set(getSignedAuthHeaders(userId))
-      .set('idempotency-key', 'reset-test-key-1');
+      .set('idempotency-key', 'reset-test-key-1')
+      .send({ proof: { method: 'email_code' } });
 
     expect(clearRes.status).toBe(200);
     expect(clearRes.body.success).toBe(true);

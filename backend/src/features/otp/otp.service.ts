@@ -458,6 +458,33 @@ class OtpService {
   }
 
   /**
+   * Use up a recent verification as proof for ONE irreversible action.
+   *
+   * `hasRecentVerification` lets a verified code stand as proof for its whole
+   * window, which suits flows that call several endpoints in a row (forgot-PIN).
+   * Deleting an account or wiping its data must not be repeatable off the same
+   * code, so this marks the proof EXPIRED in the same statement that claims it —
+   * of two racing requests exactly one gets `true`. EXPIRED (not a new status)
+   * because it is a value every environment already accepts.
+   */
+  async consumeRecentVerification(destination: string, purpose: OtpPurpose, withinSeconds = 300): Promise<boolean> {
+    const cleanDestination = destination.includes('@') ? destination.toLowerCase().trim() : destination.trim();
+    if (!cleanDestination) return false;
+    const threshold = new Date(Date.now() - withinSeconds * 1000);
+    const proof = await prisma.otpRequest.findFirst({
+      where: { destination: cleanDestination, purpose, status: 'VERIFIED', verifiedAt: { gte: threshold } },
+      orderBy: { verifiedAt: 'desc' },
+      select: { id: true },
+    });
+    if (!proof) return false;
+    const { count } = await prisma.otpRequest.updateMany({
+      where: { id: proof.id, status: 'VERIFIED' },
+      data: { status: 'EXPIRED' },
+    });
+    return count === 1;
+  }
+
+  /**
    * Check if a valid verification exists (for gating sensitive operations)
    */
   async hasRecentVerification(destination: string, purpose: OtpPurpose, withinSeconds = 300): Promise<boolean> {

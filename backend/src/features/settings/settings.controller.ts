@@ -11,6 +11,11 @@ import {
 } from './clearDataLock';
 import { markUserClearing, unmarkUserClearing } from '../../workers/recurring.worker';
 import { FinancialEventStore } from '../events/eventStore';
+import { verifyStepUp } from '../../security/stepUp';
+import { AppError } from '../../utils/AppError';
+import { auditFromRequest } from '../../utils/auditLogger';
+import { logger } from '../../config/logger';
+import { DEFAULT_CATEGORIES } from '../auth/registration.defaults';
 import crypto from 'crypto';
 
 /** Server-authoritative cap on the monthly budget stored in the settings blob. */
@@ -236,8 +241,9 @@ export const clearAllUserData = async (req: AuthRequest, res: Response) => {
         },
         estimatedDurationMs,
       });
-    } catch (err: any) {
-      return res.status(500).json({ success: false, error: `Dry run failed: ${err.message}` });
+    } catch (err) {
+      logger.error('[clearAllUserData] dry run failed', { userId, error: err });
+      return res.status(500).json({ success: false, code: 'RESET_PREVIEW_FAILED', error: 'Could not check your data right now. Please try again.' });
     }
   }
 
@@ -248,6 +254,18 @@ export const clearAllUserData = async (req: AuthRequest, res: Response) => {
     if (cached) {
       return res.json(cached);
     }
+  }
+
+  // ── 1b. Re-authentication ──────────────────────────────────────────────────
+  // Wiping every record is irreversible, so an access token alone is not
+  // enough: the request must carry a password or a fresh one-time email code.
+  try {
+    await verifyStepUp(req, userId, (req.body as { proof?: unknown } | undefined)?.proof, 'data.reset');
+  } catch (error) {
+    if (error instanceof AppError) {
+      return res.status(error.statusCode).json({ success: false, code: error.code, error: error.message });
+    }
+    throw error;
   }
 
   // ── 2. Postgres Session Advisory Lock ──────────────────────────────────────
@@ -384,29 +402,49 @@ export const clearAllUserData = async (req: AuthRequest, res: Response) => {
       const { count: sqCount } = await tx.syncQueue.deleteMany({ where: { userId } });
       deleted.syncQueues = sqCount;
 
-      // ── 13. Advisor / booking / chat ─────────────────────────────────────
-      const { count: chatCount } = await tx.chatMessage.deleteMany({ where: { senderId: userId } });
-      deleted.chatMessages = chatCount;
-      const { count: sessCount } = await tx.advisorSession.deleteMany({ where: { clientId: userId } });
-      deleted.advisorSessions = sessCount;
-      const { count: bookCount } = await tx.bookingRequest.deleteMany({ where: { clientId: userId } });
-      deleted.bookingRequests = bookCount;
-      const { count: payCount } = await tx.payment.deleteMany({ where: { clientId: userId } });
-      deleted.payments = payCount;
-      const { count: availCount } = await tx.advisorAvailability.deleteMany({ where: { advisorId: userId } });
-      deleted.advisorAvailability = availCount;
-      const { count: appCount } = await tx.advisorApplication.deleteMany({ where: { userId } });
-      deleted.advisorApplications = appCount;
+      // ── 13. Advisor / booking / chat — deliberately KEPT ──────────────────
+      // Bookings, sessions, their chat and payments are shared with another
+      // person (the advisor or the client) and paid ones are referenced by the
+      // immutable coin ledger: deleting them here stranded an advisor's held
+      // earnings and erased the other side's history. An advisor's application,
+      // KYC documents and availability are their professional identity, not
+      // personal finance data — wiping them left role 'advisor' with no
+      // application behind it. The coin wallet is a balance the user paid for.
+      // Users cancel or leave these individually; deleting the account removes them.
 
       // ── 14. Raw SQL tables (no Prisma model) ─────────────────────────────
-      await tx.$executeRawUnsafe(
-        'DELETE FROM public.todo_list_shares WHERE shared_with_user_id = $1::uuid OR shared_by = $1::uuid OR list_id IN (SELECT id FROM public.todo_lists WHERE user_id = $1::uuid)',
-        userId,
+      // Created at runtime by todo.repository.ts, so absent on a fresh database.
+      // The lists themselves used to survive (only items and shares went), and
+      // the next sync pulled them straight back onto the device.
+      const [todoTables] = await tx.$queryRawUnsafe<Array<{ lists: boolean; items: boolean; shares: boolean }>>(
+        "SELECT to_regclass('public.todo_lists') IS NOT NULL AS lists, to_regclass('public.todo_items') IS NOT NULL AS items, to_regclass('public.todo_list_shares') IS NOT NULL AS shares",
       );
-      await tx.$executeRawUnsafe(
-        'DELETE FROM public.todo_items WHERE user_id = $1::uuid OR list_id IN (SELECT id FROM public.todo_lists WHERE user_id = $1::uuid)',
-        userId,
-      );
+      if (todoTables?.shares && todoTables.lists) {
+        await tx.$executeRawUnsafe(
+          'DELETE FROM public.todo_list_shares WHERE shared_with_user_id::text = $1 OR shared_by::text = $1 OR list_id IN (SELECT id FROM public.todo_lists WHERE user_id::text = $1)',
+          userId,
+        );
+      }
+      if (todoTables?.items && todoTables.lists) {
+        await tx.$executeRawUnsafe(
+          'DELETE FROM public.todo_items WHERE user_id::text = $1 OR list_id IN (SELECT id FROM public.todo_lists WHERE user_id::text = $1)',
+          userId,
+        );
+      }
+      if (todoTables?.lists) {
+        const listCount = await tx.$executeRawUnsafe('DELETE FROM public.todo_lists WHERE user_id::text = $1', userId);
+        deleted.todoLists = Number(listCount) || 0;
+      }
+
+      // Custom categories go back to the defaults a new account starts with.
+      // The device clears its copy on reset, so leaving the server's in place
+      // brought every custom category back on the next fetch.
+      const { count: categoryCount } = await tx.category.deleteMany({ where: { userId } });
+      deleted.categories = categoryCount;
+      await tx.category.createMany({
+        data: DEFAULT_CATEGORIES.map((c) => ({ userId, name: c.name, type: c.type, color: c.color, icon: c.icon })),
+        skipDuplicates: true,
+      });
       // user_learning is created lazily by categorization.engine.ts; only delete if the table exists
       const hasUserLearning = await tx.$queryRawUnsafe<Array<{ exists: boolean }>>(
         "SELECT to_regclass('public.user_learning') IS NOT NULL AS exists"
@@ -579,13 +617,9 @@ export const clearAllUserData = async (req: AuthRequest, res: Response) => {
           devices:       deleted.devices       ?? 0,
           todos:         deleted.todos         ?? 0,
         },
-        advisor: {
-          advisorSessions:       deleted.advisorSessions       ?? 0,
-          bookingRequests:       deleted.bookingRequests       ?? 0,
-          payments:              deleted.payments              ?? 0,
-          advisorAvailability:   deleted.advisorAvailability   ?? 0,
-          advisorApplications:   deleted.advisorApplications   ?? 0,
-          chatMessages:          deleted.chatMessages          ?? 0,
+        lists: {
+          todoLists:  deleted.todoLists  ?? 0,
+          categories: deleted.categories ?? 0,
         },
         data: {
           importLogs:              deleted.importLogs               ?? 0,
@@ -633,6 +667,11 @@ export const clearAllUserData = async (req: AuthRequest, res: Response) => {
         refreshTokens:  'kept — current session remains active',
         userProfile:    'kept — identity preserved',
         userSettings:   'reset to factory defaults',
+        categories:     'reset to the default set',
+        coinWallet:     'kept — balance, ledger and purchases are financial records',
+        advisorRecords: 'kept — bookings, sessions, chats and payments are shared with the other party',
+        advisorProfile: 'kept — application, KYC documents and availability',
+        vault:          'kept — Vault documents are managed from the Vault',
       },
       clientActions: {
         clearDexie:           true,
@@ -652,6 +691,13 @@ export const clearAllUserData = async (req: AuthRequest, res: Response) => {
       integrity: report.integrity,
     });
 
+    auditFromRequest(req, 'gdpr.data_reset', {
+      userId,
+      resource: 'user',
+      resourceId: userId,
+      meta: { factoryResetId, durationMs, integrity: integrityStatus },
+    });
+
     // Store idempotency response if key exists
     if (clientKey) {
       await storeIdempotentResponse(userId, 'clearAllUserData', clientKey, report);
@@ -668,19 +714,21 @@ export const clearAllUserData = async (req: AuthRequest, res: Response) => {
 
     if (error?.message?.startsWith('VERIFY_FAILED:')) {
       const [, table, count] = error.message.split(':');
+      logger.error('[clearAllUserData] verification failed, rolled back', { userId, table, remaining: Number(count) });
       return res.status(500).json({
         success: false,
+        code: 'RESET_VERIFY_FAILED',
         durationMs: Date.now() - startMs,
-        error: 'Verification failed — all deletions rolled back',
-        detail: { table, remaining: Number(count) },
+        error: 'The reset could not be completed, so nothing was deleted. Please try again.',
       });
     }
 
-    console.error('[clearAllUserData] Failed:', error);
+    logger.error('[clearAllUserData] Failed', { userId, error });
     res.status(500).json({
       success: false,
+      code: 'RESET_FAILED',
       durationMs: Date.now() - startMs,
-      error: error.message || 'Failed to clear user data',
+      error: 'The reset could not be completed, so nothing was deleted. Please try again.',
     });
   } finally {
     // ── 9. Unlock and Unmark Worker Skip Set ─────────────────────────────────

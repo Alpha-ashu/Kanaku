@@ -5,6 +5,10 @@ import { isDatabaseUnavailableError } from '../../utils/databaseAvailability';
 import { AppError } from '../../utils/AppError';
 import { logger } from '../../config/logger';
 import { readKeysetPage } from '../../utils/pagination';
+import { prisma } from '../../db/prisma';
+import { csvCell, iterateTransactionsForExport, TRANSACTION_CSV_HEADERS } from '../settings/dataExport.service';
+import { importLedgerRows, MAX_IMPORT_ROWS } from '../import/importLedger.service';
+import { z } from 'zod';
 
 const handleTransactionDatabaseError = (error: unknown, next: NextFunction) => {
   if (isDatabaseUnavailableError(error)) {
@@ -113,35 +117,41 @@ export const exportTransactions = async (req: AuthRequest, res: Response, next: 
   try {
     const userId = getUserId(req);
 
-    const headers = ['ID', 'Date', 'Type', 'Category', 'Subcategory', 'Amount', 'Description', 'Merchant'];
-    const escape = (val: unknown) => `"${String(val ?? '').replace(/"/g, '""')}"`;
+    // Account names and currencies make the file usable outside KANAKU (and by
+    // the in-app importer, which matches accounts by name).
+    const accounts = await prisma.account.findMany({ where: { userId }, select: { id: true, name: true, currency: true } });
+    const accountById = new Map(accounts.map((a) => [a.id, a]));
 
-    res.setHeader('Content-Type', 'text/csv');
-    res.setHeader('Content-Disposition', `attachment; filename=transactions_export_${Date.now()}.csv`);
-    res.write(headers.join(',') + '\n');
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="kanaku-transactions-${new Date().toISOString().slice(0, 10)}.csv"`);
+    res.setHeader('Cache-Control', 'no-store');
+    // UTF-8 BOM: without it Excel reads ₹ and non-Latin names as mojibake.
+    res.write(`${String.fromCharCode(0xfeff)}${TRANSACTION_CSV_HEADERS.join(',')}\n`);
 
-    // Stream in bounded batches so the whole (possibly large) statement is
-    // exported without materialising every row + the full CSV string in memory.
-    // This also fixes the prior truncation to 100 rows (fetchTransactions caps
-    // limit at 100; the batched iterator does not).
-    for await (const batch of transactionService.iterateAllTransactions(userId)) {
+    // Streamed in keyset batches: bounded memory, and no row skipped or repeated
+    // when several share a date (the old offset paging could do both).
+    for await (const batch of iterateTransactionsForExport(userId)) {
       const chunk = batch
-        .map((t) =>
-          [
+        .map((t) => {
+          const account = accountById.get(t.accountId);
+          return [
             t.id,
-            t.date.toISOString(),
+            t.date.toISOString().slice(0, 10),
             t.type,
             t.category,
             t.subcategory || '',
             t.amount.toString(),
             t.description || '',
             t.merchant || '',
+            account?.name || '',
+            t.transferToAccountId ? accountById.get(t.transferToAccountId)?.name || '' : '',
+            t.currency || account?.currency || '',
           ]
-            .map(escape)
-            .join(','),
-        )
+            .map(csvCell)
+            .join(',');
+        })
         .join('\n');
-      res.write(chunk + '\n');
+      res.write(`${chunk}\n`);
     }
 
     res.end();
@@ -149,9 +159,7 @@ export const exportTransactions = async (req: AuthRequest, res: Response, next: 
     // If streaming already began we can't change the status; just terminate the
     // response so the client sees a truncated (failed) download rather than a hang.
     if (res.headersSent) {
-      logger.error('[Transactions] Export stream failed after headers sent', {
-        error: error instanceof Error ? error.message : String(error),
-      });
+      logger.error('[Transactions] Export stream failed after headers sent', { error });
       res.end();
       return;
     }
@@ -160,31 +168,54 @@ export const exportTransactions = async (req: AuthRequest, res: Response, next: 
 };
 
 // ── Import Third-Party Data (importThirdPartyData sub-feature) ───────────────
-// Accepts transaction feeds in third-party schemas (e.g. Plaid, OFX) and converts
-// them to standard Kanaku transactions.
+// Accepts transaction feeds in third-party schemas (e.g. Plaid, OFX-derived
+// JSON) and books them through the shared bulk importer: validated, one DB
+// transaction, idempotent per row (the feed's transaction_id when present).
+const thirdPartyFeedSchema = z.object({
+  provider: z.string().trim().min(1).max(60).optional(),
+  accountId: z.string().min(1).max(100),
+  transactions: z.array(z.object({
+    transaction_id: z.string().max(200).optional(),
+    amount: z.number().refine((n) => Number.isFinite(n) && n !== 0, 'amount must be non-zero'),
+    date: z.string().min(10).max(40),
+    name: z.string().max(500).optional(),
+    description: z.string().max(500).optional(),
+    merchant_name: z.string().max(200).nullish(),
+    category: z.union([z.string().max(100), z.array(z.string().max(100)).max(5)]).optional(),
+  })).min(1).max(MAX_IMPORT_ROWS),
+});
+
 export const importThirdPartyData = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userId = getUserId(req);
-    const { provider, accountId, transactions } = req.body;
-
-    if (!accountId || !transactions || !Array.isArray(transactions)) {
-      throw AppError.badRequest('accountId and transactions array are required', 'MISSING_FIELDS');
+    const parsed = thirdPartyFeedSchema.safeParse(req.body);
+    if (!parsed.success) {
+      throw AppError.badRequest('accountId and a transactions array (amount, date) are required', 'INVALID_FEED');
     }
+    const { provider, accountId, transactions } = parsed.data;
 
-    // Map third party formats (e.g. { amount, name, date, category }) to Kanaku body
-    const mapped = transactions.map((tx: any) => ({
+    const result = await importLedgerRows(userId, transactions.map((tx, index) => ({
+      key: String(index),
       accountId,
-      amount: Math.abs(tx.amount || 0),
-      category: tx.category?.[0] || tx.category || 'Uncategorized',
-      type: tx.amount < 0 ? 'income' : 'expense', // Plaid: positive is outflow, negative is inflow
-      date: tx.date || new Date().toISOString(),
+      // Plaid convention: positive is money out, negative is money in.
+      type: tx.amount < 0 ? 'income' : 'expense',
+      amount: Math.abs(tx.amount),
+      date: new Date(tx.date.length === 10 ? `${tx.date}T00:00:00.000Z` : tx.date),
+      category: (Array.isArray(tx.category) ? tx.category[0] : tx.category) || 'Uncategorized',
       description: tx.name || tx.description || 'Imported Transaction',
       merchant: tx.merchant_name || null,
-      importSource: provider || 'third_party_api',
-    }));
+      externalId: tx.transaction_id ? `${provider || 'feed'}:${tx.transaction_id}` : null,
+    })), { source: provider || 'third_party_api', enforceBalance: false });
 
-    const result = await transactionService.createTransactionsBulk(userId, mapped);
-    res.status(201).json({ success: true, data: result });
+    res.status(201).json({
+      success: true,
+      data: {
+        created: result.created.map((c) => c.transaction),
+        duplicates: result.duplicates.length,
+        failed: result.failed,
+        summary: { total: transactions.length, succeeded: result.created.length, failedCount: result.failed.length },
+      },
+    });
   } catch (error) {
     handleTransactionDatabaseError(error, next);
   }

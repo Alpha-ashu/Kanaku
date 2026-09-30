@@ -369,8 +369,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     try {
       const channel = new BroadcastChannel('kanaku-system');
       channel.onmessage = (event) => {
-        if (event.data?.type === 'clear-all-data') {
-          console.log('Detected clear-all-data from another tab. Reloading...');
+        // A reset or an account deletion in another tab: this tab's in-memory
+        // state is stale (and after a deletion its session is gone) — reload.
+        if (event.data?.type === 'clear-all-data' || event.data?.type === 'account-deleted') {
           window.location.reload();
         }
       };

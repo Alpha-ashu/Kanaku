@@ -95,5 +95,6 @@ export const errorHandler = (
     error: appError.message,
     code: appError.code,
     requestId: (req as any).id ?? undefined,
+    ...(appError.details ? { details: appError.details } : {}),
   });
 };
