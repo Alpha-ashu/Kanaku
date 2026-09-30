@@ -36,8 +36,12 @@ import { invalidateUserSnapshotCache } from '../../middleware/auth';
 import { cacheDeleteByUserId } from '../../cache/redis';
 import { notify } from '../notifications/notify';
 
-/** A sign-up younger than this, holding no data, can be discarded without re-authentication. */
-const DISCARDABLE_ACCOUNT_AGE_MS = 24 * 60 * 60 * 1000;
+/**
+ * A sign-up younger than this, holding no data, can be discarded without
+ * re-authentication — onboarding's "cancel registration", minutes after signing
+ * up. Kept short: the exemption exists for that flow, not for new accounts at large.
+ */
+const DISCARDABLE_ACCOUNT_AGE_MS = 2 * 60 * 60 * 1000;
 const OPEN_BOOKING_STATUSES = ['pending', 'accepted', 'reschedule'];
 
 export interface DeletionBlocker {

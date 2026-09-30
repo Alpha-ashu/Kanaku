@@ -181,6 +181,19 @@ describe('Data portability: third-party import and export', () => {
     });
   });
 
+  describe('accounts created with their transactions', () => {
+    it('opens a new account at its opening balance, not a client balance that already includes transactions', async () => {
+      if (!dbReady) return;
+      const res = await request(app).post(`${API}/accounts`).set('Authorization', bearer(owner.id))
+        .send({ name: 'Restored Wallet', type: 'bank', balance: 700, openingBalance: 200 });
+      expect([200, 201]).toContain(res.status);
+      const row = await prisma.account.findFirstOrThrow({ where: { userId: owner.id, name: 'Restored Wallet' } });
+      expect(Number(row.openingBalance)).toBe(200);
+      expect(Number(row.balance)).toBe(200);
+      await prisma.account.delete({ where: { id: row.id } });
+    });
+  });
+
   describe('export', () => {
     it('exports everything the user owns, without secrets or internal keys', async () => {
       if (!dbReady) return;

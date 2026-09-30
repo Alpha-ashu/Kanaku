@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { smartExpenseImportService } from '@/services/smartExpenseImportService';
+import { parseAmountValue, smartExpenseImportService } from '@/services/smartExpenseImportService';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -373,6 +373,26 @@ describe('SmartExpenseImportService Integration Test', () => {
             expect(preview.kind).toBe('third-party');
             if (preview.kind !== 'third-party') return;
             expect(preview.rows[0]?.amount).toBe(999);
+        });
+    });
+
+    describe('signed amounts (regression: negatives came back positive)', () => {
+        it('keeps the sign of negative figures, however they are written', () => {
+            expect(parseAmountValue('-120')).toBe(-120);
+            expect(parseAmountValue('(1,200.50)')).toBe(-1200.5);
+            expect(parseAmountValue('300-')).toBe(-300);
+            expect(parseAmountValue('INR -45')).toBe(-45);
+            expect(parseAmountValue('Rs. 99')).toBe(99);
+            expect(parseAmountValue('1,23,456.78')).toBe(123456.78);
+        });
+
+        it('reads a signed amount column without a type column as money in and money out', async () => {
+            const csv = ['Date,Description,Amount', '05/01/2025,Item A,50000', '06/01/2025,Item B,-1500'].join(String.fromCharCode(10));
+            const file = new File([csv], 'signed.csv', { type: 'text/csv' });
+            // @ts-ignore
+            const preview = await smartExpenseImportService.analyzeFile(file, { defaultAccountId: 1 });
+            expect(preview.rows.map((r) => r.transactionType)).toEqual(['income', 'expense']);
+            expect(preview.rows.map((r) => r.amount)).toEqual([50000, 1500]);
         });
     });
 });

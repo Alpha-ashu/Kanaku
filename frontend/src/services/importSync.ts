@@ -107,13 +107,26 @@ export async function pushImportedTransactions(localIds: number[], source: strin
     return result;
   }
 
-  // Accounts the import just created are queued as ordinary creates; push them
-  // first so the transactions have a server account to point at.
-  await processPendingSyncQueue().catch(() => undefined);
-
   const rows = (await db.transactions.bulkGet(ids)).map((row, i) => ({ row, localId: ids[i] }));
-  const accounts = await db.accounts.toArray();
-  const cloudIdOf = new Map(accounts.filter((a) => a.id != null && a.cloudId).map((a) => [a.id as number, String(a.cloudId)]));
+  const neededAccounts = new Set<number>();
+  for (const { row } of rows) {
+    if (!row) continue;
+    neededAccounts.add(row.accountId);
+    if (row.transferToAccountId != null) neededAccounts.add(row.transferToAccountId);
+  }
+
+  // Accounts the import just created are queued as ordinary creates; they must
+  // reach the server first so the transactions have an account to point at. A
+  // drain already in progress makes processPendingSyncQueue() return at once,
+  // so wait (briefly) until the accounts this import needs have server ids.
+  let cloudIdOf = new Map<number, string>();
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    await processPendingSyncQueue().catch(() => undefined);
+    const accounts = await db.accounts.toArray();
+    cloudIdOf = new Map(accounts.filter((a) => a.id != null && a.cloudId).map((a) => [a.id as number, String(a.cloudId)]));
+    if ([...neededAccounts].every((id) => cloudIdOf.has(id))) break;
+    if (attempt < 4) await new Promise((resolve) => setTimeout(resolve, 600));
+  }
 
   const fallback: number[] = [];
   const payload: Array<Record<string, unknown>> = [];

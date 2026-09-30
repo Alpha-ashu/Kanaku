@@ -37,6 +37,8 @@ const seed = () => {
   localStorage.setItem('pin_hash', 'hash');
   localStorage.setItem('KANAKU_sync_queue_v3', '[{"table":"transactions"}]');
   localStorage.setItem('user_profile', '{"name":"A"}');
+  localStorage.setItem('onboarding_completed', 'true');
+  localStorage.setItem('currency', 'USD');
   localStorage.setItem('KANAKU_last_sync_at_transactions', '123');
   sessionStorage.setItem('draft', 'x');
 };
@@ -63,7 +65,10 @@ describe('local wipe', () => {
     expect(localStorage.getItem('refresh_token')).toBe('refresh');
     expect(localStorage.getItem('device_id')).toBe('device-1');
     expect(localStorage.getItem('pin_hash')).toBe('hash');
-    expect(localStorage.getItem('user_profile')).toBeNull();
+    // The profile is kept (server keeps it too) — or the app re-runs onboarding.
+    expect(localStorage.getItem('user_profile')).toBe('{"name":"A"}');
+    expect(localStorage.getItem('onboarding_completed')).toBe('true');
+    expect(localStorage.getItem('currency')).toBeNull();
     expect(localStorage.getItem('KANAKU_last_sync_at_transactions')).toBeNull();
     expect(localStorage.getItem('KANAKU_sync_queue_v3')).toBeNull();
     expect(sessionStorage.getItem('draft')).toBeNull();
@@ -76,6 +81,8 @@ describe('local wipe', () => {
     expect(cleared).not.toContain('investmentCategories');
     expect(localStorage.getItem('auth_token')).toBeNull();
     expect(localStorage.getItem('pin_hash')).toBeNull();
+    expect(localStorage.getItem('user_profile')).toBeNull();
+    expect(localStorage.getItem('onboarding_completed')).toBeNull();
     expect(localStorage.getItem('device_id')).toBe('device-1');
     expect(mocks.clearPinData).toHaveBeenCalled();
     expect(mocks.clearSecurityData).toHaveBeenCalled();

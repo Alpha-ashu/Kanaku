@@ -492,7 +492,10 @@ export const reconcileStaleOrders = async (now = new Date(), limit = 25) => {
       ],
       AND: [{ OR: [{ lastCheckedAt: null }, { lastCheckedAt: { lt: new Date(now.getTime() - 5 * 60_000) } }] }],
     },
-    orderBy: { createdAt: 'asc' },
+    // Never-checked orders first, then the longest-unchecked. Oldest-first let a
+    // backlog of expired orders (re-checked for a day) fill every batch, so a
+    // freshly abandoned order could wait indefinitely behind them.
+    orderBy: [{ lastCheckedAt: { sort: 'asc', nulls: 'first' } }, { createdAt: 'asc' }],
     take: limit,
     select: { id: true },
   });

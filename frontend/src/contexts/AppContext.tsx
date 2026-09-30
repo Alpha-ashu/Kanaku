@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode, useCa
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { db, Account, Transaction, Loan, Goal, Investment, GroupExpense, Friend } from '@/lib/database';
+import { TAB_ID } from '@/lib/tabIdentity';
 import { ingestServerNotification } from '@/lib/notifications';
 import { isBoilerplateDescription } from '@/services/smartExpenseImportService';
 import { useAuth } from '@/contexts/AuthContext';
@@ -371,6 +372,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       channel.onmessage = (event) => {
         // A reset or an account deletion in another tab: this tab's in-memory
         // state is stale (and after a deletion its session is gone) — reload.
+        // Messages from this very tab are ignored: the tab that reset or deleted
+        // navigates on its own (see lib/tabIdentity.ts).
+        if (event.data?.tabId === TAB_ID) return;
         if (event.data?.type === 'clear-all-data' || event.data?.type === 'account-deleted') {
           window.location.reload();
         }

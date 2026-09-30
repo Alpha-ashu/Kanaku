@@ -12,6 +12,7 @@
  *   4. requires the confirm word typed, and locks against double submission.
  */
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { AlertTriangle, CheckCircle2, Download, KeyRound, Loader2, Mail, RotateCcw, Trash2, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { describeApiFailure, failureText } from '@/lib/apiFailure';
@@ -223,7 +224,10 @@ export const DangerActionDialog: React.FC<DangerActionDialogProps> = ({
     }
   });
 
-  return (
+  // Portalled to <body>: rendered inside the page, the dialog is trapped in the
+  // content area's stacking context and the mobile bottom nav (a sibling of
+  // that area) sat on top of it, swallowing taps on the confirm button.
+  return createPortal(
     <div
       className="fixed inset-0 z-[300] flex items-center justify-center bg-slate-950/60 p-4"
       onMouseDown={(event) => {
@@ -457,7 +461,8 @@ export const DangerActionDialog: React.FC<DangerActionDialogProps> = ({
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 };
 

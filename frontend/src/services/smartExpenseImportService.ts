@@ -509,20 +509,27 @@ const parseExcelSerialDate = (value: number) => {
   );
 };
 
-const parseAmountValue = (value: unknown): number | null => {
+export const parseAmountValue = (value: unknown): number | null => {
   if (typeof value === 'number' && Number.isFinite(value)) return value;
   if (typeof value !== 'string') return null;
 
-  const trimmed = value.trim();
+  // A leading currency label ("Rs. 99", "INR -120", "₹ 500") — its dot must
+  // not become a decimal point.
+  const trimmed = value.trim().replace(/^[A-Za-z₹$€£¥\s]+\.?\s*/, '');
   if (!trimmed) return null;
 
-  const negative = (trimmed.startsWith('(') && trimmed.endsWith(')')) || /^-/.test(trimmed);
   const normalized = normalizeLocaleNumberString(trimmed);
   if (!normalized) return null;
 
+  // normalizeLocaleNumberString keeps a leading minus, so `parsed` is already
+  // signed for "-120". Negating it again (as this used to) turned every
+  // negative balance and amount positive. Brackets and a trailing minus are
+  // the other two ways statements write a negative.
   const parsed = Number.parseFloat(normalized);
   if (!Number.isFinite(parsed)) return null;
-  return negative ? -parsed : parsed;
+  const bracketed = trimmed.startsWith('(') && trimmed.endsWith(')');
+  const trailingMinus = /\d\s*-$/.test(trimmed);
+  return bracketed || trailingMinus ? -Math.abs(parsed) : parsed;
 };
 
 const parseDateValue = (value: unknown): Date | null => {
@@ -1702,6 +1709,17 @@ class SmartExpenseImportService {
     const fallbackAccountId = getFallbackAccountId(accounts, options.defaultAccountId);
     const errors: string[] = [];
 
+    // Does this file write money out as a negative amount? Then a positive
+    // amount is money in. Without this, a signed bank export with no type
+    // column imported every salary credit as an expense.
+    const readSignedAmount = (record: Record<string, unknown>) => {
+      const lookup = applyColumnMapping(buildLookup(record), record, options.columnMapping);
+      return parseAmountValue(
+        getFieldValueByFuzzyKey(lookup, AMOUNT_KEYS, ['amount', 'amt', 'total', 'spent', 'debit', 'expense', 'paid'], ['targetamount', 'goalamount', 'balance']),
+      );
+    };
+    const fileUsesSignedAmounts = options.records.some((record) => (readSignedAmount(record) ?? 0) < 0);
+
     const rows = options.records.map((record, index) => {
       const lookup = applyColumnMapping(buildLookup(record), record, options.columnMapping);
       const rawTextBundle = collectStringLeaves(record).join(' ');
@@ -1758,6 +1776,10 @@ class SmartExpenseImportService {
           // transfer, so it identifies one even when the file has no type column.
           transactionType = 'transfer';
         } else if (creditAmount != null && creditAmount > 0 && (debitAmount == null || debitAmount === 0)) {
+          transactionType = 'income';
+        } else if (debitAmount != null && debitAmount < 0) {
+          transactionType = 'expense';
+        } else if (fileUsesSignedAmounts && debitAmount != null && debitAmount > 0 && creditAmount == null) {
           transactionType = 'income';
         } else if (debitAmount != null && debitAmount > 0 && (creditAmount == null || creditAmount === 0)) {
           transactionType = 'expense';
@@ -2024,8 +2046,13 @@ class SmartExpenseImportService {
 
     for (const row of rows) {
       const desiredName = toFriendlyAccountName(row.sourceAccountName, row.sourcePaymentMethod) || row.resolvedAccountName;
+      // A row the preview marked "Will create account" carries the fallback
+      // account's id only as a placeholder. Matching on that id booked every
+      // row of an unknown account (a new card, a second bank) into the
+      // fallback account instead of creating the account the preview promised.
+      const willCreate = row.accountResolution === 'created' || row.accountResolution === 'payment-method';
       const matched = findMatchingAccount(accountCache, desiredName, row.sourcePaymentMethod)
-        ?? accountCache.find((account) => account.id === row.accountId);
+        ?? (willCreate ? undefined : accountCache.find((account) => account.id === row.accountId));
 
       if (matched) {
         accountsByRowId.set(row.id, matched);
@@ -2141,6 +2168,40 @@ class SmartExpenseImportService {
         ? payload.wallets.filter(isRecordObject)
         : [];
 
+    // The file's own transactions, per account, so a new account can be opened
+    // at the balance it had BEFORE them (see below).
+    const payloadTransactions = Array.isArray(payload.transactions)
+      ? payload.transactions.filter(isRecordObject)
+      : Array.isArray(payload.records)
+        ? payload.records.filter(isRecordObject)
+        : [];
+    const accountRefOf = (row: Record<string, unknown>) => normalizeText(toDisplayValue(
+      row.account_id ?? row.accountId ?? row.account ?? row.wallet_id ?? row.walletId ?? row.wallet_ref ?? row.walletRef,
+    ));
+    const transferRefOf = (row: Record<string, unknown>) => normalizeText(toDisplayValue(
+      row.transfer_to_account_id ?? row.transferToAccountId ?? row.to_account ?? row.toAccount,
+    ));
+    const netOfFileTransactions = (keys: Set<string>) => {
+      let net = 0;
+      for (const tx of payloadTransactions) {
+        const signed = parseAmountValue(tx.amount ?? tx.value ?? tx.total);
+        if (signed == null || signed === 0) continue;
+        const amount = Math.abs(signed);
+        const kind = normalizeText(toDisplayValue(tx.type ?? tx.transaction_type ?? tx.transactionType));
+        const from = accountRefOf(tx);
+        if (kind.includes('transfer')) {
+          if (keys.has(from)) net -= amount;
+          const to = transferRefOf(tx);
+          if (to && keys.has(to)) net += amount;
+        } else if (keys.has(from)) {
+          if (/income|credit|deposit|refund|received/.test(kind)) net += amount;
+          else if (kind) net -= amount;
+          else net += signed; // untyped: the sign says which way it went
+        }
+      }
+      return Math.round(net * 100) / 100;
+    };
+
     for (const accountRow of accountRows) {
       const accountName = toDisplayValue(accountRow.account_name ?? accountRow.accountName ?? accountRow.name ?? accountRow.title).trim();
       if (!accountName) continue;
@@ -2149,13 +2210,26 @@ class SmartExpenseImportService {
       let account = accountNameMap.get(normalizedName);
       if (!account) {
         const rawType = toDisplayValue(accountRow.type ?? accountRow.account_type ?? accountRow.accountType ?? accountRow.category);
-        const balance = parseAmountValue(accountRow.balance ?? accountRow.current_balance ?? accountRow.currentBalance) ?? 0;
         const currency = toDisplayValue(accountRow.currency ?? accountRow.currency_code ?? accountRow.currencyCode) || userCurrency || 'INR';
+
+        // Open the account at its balance BEFORE this file's transactions, which
+        // are imported next and move it to the current figure. Opening it at the
+        // current balance counted every one of them twice on the server (a
+        // restored export came back with double the money). A KANAKU export
+        // says the opening figure outright; otherwise derive it.
+        const externalRef = normalizeText(toDisplayValue(accountRow.account_id ?? accountRow.accountId ?? accountRow.id ?? accountRow.wallet_id ?? accountRow.walletId));
+        const statedOpening = parseAmountValue(accountRow.openingBalance ?? accountRow.opening_balance);
+        const currentBalance = parseAmountValue(accountRow.balance ?? accountRow.current_balance ?? accountRow.currentBalance);
+        const opening = statedOpening
+          ?? (currentBalance != null
+            ? Math.round((currentBalance - netOfFileTransactions(new Set([externalRef, normalizedName].filter(Boolean)))) * 100) / 100
+            : 0);
 
         const newAccount: Account = {
           name: accountName,
           type: inferAccountType(accountName, rawType),
-          balance,
+          balance: opening,
+          openingBalance: opening,
           currency,
           isActive: true,
           createdAt: timestamp,

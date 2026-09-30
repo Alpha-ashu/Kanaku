@@ -414,7 +414,7 @@ export const ImportDataModal: React.FC<ImportDataModalProps> = ({
  {importReport.serverSync && (
  <p className="mt-1 text-sm text-emerald-800" data-testid="import-server-sync-summary">
  {importReport.serverSync.queued > 0
- ? `${importReport.serverSync.pushed + importReport.serverSync.alreadyOnServer} saved to your account; ${importReport.serverSync.queued} will sync automatically when you are back online.`
+ ? `${importReport.serverSync.pushed + importReport.serverSync.alreadyOnServer} saved to your account; ${importReport.serverSync.queued} will finish syncing in the background.`
  : `All ${importReport.serverSync.pushed + importReport.serverSync.alreadyOnServer} saved to your account and available on your other devices.`}
  </p>
  )}

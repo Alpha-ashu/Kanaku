@@ -25,7 +25,11 @@ export async function downloadMyDataJson(): Promise<void> {
 
 /** Every transaction as CSV — opens in Excel/Sheets and in other finance apps. */
 export async function downloadTransactionsCsv(): Promise<void> {
-  const csv = await accountLifecycleService.exportTransactionsCsv();
+  const text = await accountLifecycleService.exportTransactionsCsv();
+  // The browser's UTF-8 decoder drops the server's byte-order mark; without it
+  // Excel opens ₹ and non-Latin names as mojibake. Put it back.
+  const bom = String.fromCharCode(0xfeff);
+  const csv = text.startsWith(bom) ? text : bom + text;
   await downloadFile({
     filename: `kanaku-transactions-${today()}.csv`,
     mimeType: 'text/csv;charset=utf-8',

@@ -37,6 +37,7 @@ All documentation files have been consolidated into single, topic-specific files
 - **[DATABASE_MIGRATIONS.md](./DATABASE_MIGRATIONS.md)**: Database Baseline workflow documentation.
 - **[architecture/ADR-007-coin-wallet-and-payments.md](./architecture/ADR-007-coin-wallet-and-payments.md)**: Coin wallet, immutable ledger, payment providers, session payments and staff permissions.
 - **[runbooks/wallet-launch.md](./runbooks/wallet-launch.md)**: Go-live checklist, rollback and operations for the coin wallet.
+- **[architecture/ADR-008-account-lifecycle-and-data-portability.md](./architecture/ADR-008-account-lifecycle-and-data-portability.md)**: Delete account and reset data (re-authenticated), import pipeline, export format, and the client-roles-read-only RLS migration.
 - **[legal/](./legal/)**: User agreement and regulatory terms.
 - **[skills/](./skills/)**: Guidelines for engineering development agents.
 

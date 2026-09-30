@@ -68,7 +68,12 @@ export class AccountService {
       provider: provider ? sanitize(provider) : null,
       country: country ? sanitize(country) : null,
       openingBalance: resolvedOpening,
-      balance: balance != null ? balance : resolvedOpening,
+      // balance = openingBalance + Σ transactions, and a new account has none
+      // yet. Taking the client's `balance` when it also sent an opening figure
+      // counted its transactions twice: an account created offline (or by an
+      // import) carries a balance that already includes them, and each of those
+      // transactions then moves the balance again as it is posted.
+      balance: resolvedOpening,
       currency: currency || 'INR',
       isActive: true,
       clientRequestId: clientRequestId || null,

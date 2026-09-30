@@ -16,6 +16,7 @@ import { runWithCloudSyncSuppressed } from '@/lib/auth-sync-integration';
 import { backupPINKeys, clearSecurityData, restorePINKeys } from '@/lib/encryption';
 import { pinService } from '@/services/pinService';
 import { disableBiometricUnlock } from '@/services/biometricAuthService';
+import { TAB_ID } from '@/lib/tabIdentity';
 
 /** Pending uploads live in localStorage (auth-sync-integration SYNC_QUEUE_STORAGE_KEY). */
 const SYNC_QUEUE_KEYS = ['KANAKU_sync_queue_v3'];
@@ -23,10 +24,17 @@ const SYNC_QUEUE_KEYS = ['KANAKU_sync_queue_v3'];
 /** Read-only reference catalogues seeded on this device — not user data. */
 const REFERENCE_TABLES = new Set(['investmentCategories', 'investmentSubcategories']);
 
-/** Session and device identity that survives a reset (the user stays signed in). */
+/**
+ * What survives a reset: the session and device identity (the user stays signed
+ * in) and the profile, which the reset keeps on the server too. Dropping the
+ * profile flags made App.tsx send the user back through onboarding — it decides
+ * from `onboarding_completed` before the profile is refetched.
+ */
 const RESET_KEPT_KEYS = [
   'auth_token', 'refresh_token', 'accessToken', 'refreshToken', 'token', 'authToken', 'auth_token_v1',
   'user', 'device_id',
+  'onboarding_completed', 'onboarding_slides_viewed', 'user_profile', 'profile_updated_at',
+  'user_first_name', 'user_name', 'user_email', 'pin_setup_required',
 ];
 
 /** Drop queued uploads so nothing written before a wipe is pushed after it. */
@@ -64,7 +72,7 @@ export async function clearAllLocalTables(): Promise<string[]> {
 const tellOtherTabs = (type: 'clear-all-data' | 'account-deleted') => {
   try {
     const channel = new BroadcastChannel('kanaku-system');
-    channel.postMessage({ type });
+    channel.postMessage({ type, tabId: TAB_ID });
     channel.close();
   } catch {
     /* BroadcastChannel unsupported (old WebView) — other tabs reload on next sync */

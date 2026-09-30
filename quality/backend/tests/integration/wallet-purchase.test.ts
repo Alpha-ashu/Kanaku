@@ -173,6 +173,26 @@ describe('Coin purchase', () => {
     expect((await walletOf(ids.buyer)).available).toBe(220);
   });
 
+  it('checks a newly abandoned order even behind a backlog of already-checked ones', async () => {
+    if (!dbReady) return;
+    // 30 stale orders that were checked 10 minutes ago (due again) and are older:
+    // oldest-first used to fill every 25-order batch with them.
+    const longAgo = new Date(Date.now() - 6 * 60 * 60_000);
+    await prisma.paymentOrder.createMany({
+      data: Array.from({ length: 30 }, (_, i) => ({
+        userId: ids.other, packageId: pkgId, provider: 'sandbox', providerOrderId: `sbx_backlog_${Date.now()}_${i}`,
+        amountMinor: 10_000, currency: 'INR', coins: 110, status: 'EXPIRED',
+        expiresAt: longAgo, createdAt: new Date(Date.now() - 20 * 60 * 60_000), lastCheckedAt: new Date(Date.now() - 10 * 60_000),
+      })),
+    });
+    const fresh = (await createOrder('backlog-key-0001')).body.data.order;
+    await prisma.paymentOrder.update({ where: { id: fresh.id }, data: { expiresAt: new Date(Date.now() - 60_000), createdAt: new Date(Date.now() - 40 * 60_000) } });
+
+    await reconcileStaleOrders(new Date());
+    expect((await prisma.paymentOrder.findUniqueOrThrow({ where: { id: fresh.id } })).status).toBe('EXPIRED');
+    await prisma.paymentOrder.deleteMany({ where: { providerOrderId: { startsWith: 'sbx_backlog_' } } });
+  });
+
   it('marks declined payments failed, expires abandoned ones, and still credits a late capture', async () => {
     if (!dbReady) return;
     const declined = (await createOrder('declined-key-001')).body.data.order;

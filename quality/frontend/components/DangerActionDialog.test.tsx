@@ -31,7 +31,8 @@ let container: HTMLDivElement;
 let root: Root;
 
 const flush = () => act(async () => { await new Promise((r) => setTimeout(r, 0)); });
-const $ = (id: string) => container.querySelector(`[data-testid="${id}"]`) as HTMLElement | null;
+// The dialog is portalled to <body> (so the mobile bottom nav cannot cover it).
+const $ = (id: string) => document.body.querySelector(`[data-testid="${id}"]`) as HTMLElement | null;
 const type = async (id: string, value: string) => {
   const input = $(id) as HTMLInputElement;
   const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!;
@@ -88,7 +89,7 @@ describe('DangerActionDialog', () => {
     svc.deletionCheck.mockResolvedValue({ allowed: true, requiresProof: true, openBookings: 2, blockers: [], methods: methods(true) });
     const { onConfirm } = await render();
 
-    expect(container.textContent).toContain('2 upcoming sessions will be cancelled');
+    expect(document.body.textContent).toContain('2 upcoming sessions will be cancelled');
     const confirm = () => $('danger-dialog-confirm') as HTMLButtonElement;
     expect(confirm().disabled).toBe(true);
 
@@ -156,7 +157,7 @@ describe('DangerActionDialog', () => {
     await render({ action: 'reset-data', onConfirm });
     expect(svc.stepUpMethods).toHaveBeenCalled();
     expect(svc.deletionCheck).not.toHaveBeenCalled();
-    expect(container.textContent).toContain('Your coin wallet and its history');
+    expect(document.body.textContent).toContain('Your coin wallet and its history');
 
     await type('danger-dialog-password', 'pw');
     await type('danger-dialog-confirm-word', 'RESET');

@@ -1002,7 +1002,16 @@ export const UserProfile: React.FC = () => {
     await wipeDeletedAccountFromDevice();
     setIsDeleteModalOpen(false);
     toast.success('Your account has been deleted.');
-    await signOut().catch(() => undefined);
+    // The server already revoked the tokens and the device is wiped, so sign-out
+    // (queue flush, push teardown, logout call) must never hold up leaving.
+    await Promise.race([
+      signOut().catch(() => undefined),
+      new Promise((resolve) => setTimeout(resolve, 3000)),
+    ]);
+    // A full reload onto sign-in: staying on this page left the app deciding
+    // from a wiped onboarding flag and rendering onboarding for nobody, and a
+    // reload also drops every in-memory cache of the deleted account.
+    window.location.replace(`${window.location.origin}/login`);
   };
 
   if (visibleFeatures?.userProfile === false) {
