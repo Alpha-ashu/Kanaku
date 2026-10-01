@@ -171,18 +171,23 @@ export const TopBar: React.FC = () => {
     if (role === 'admin') {
       pages.push(
         { id: 'admin', label: 'Admin Console', category: 'Admin Tools', icon: getPageIcon('admin'), description: 'System monitoring & user role assignment' },
-        { id: 'admin-feature-panel', label: 'Master Feature Matrix', category: 'Admin Tools', icon: getPageIcon('admin-feature-panel'), description: 'Manage global feature visibility and readiness' }
+        { id: 'admin-feature-panel', label: 'Master Feature Matrix', category: 'Admin Tools', icon: getPageIcon('admin-feature-panel'), description: 'Manage global feature visibility and readiness' },
+        { id: 'ai-management', label: 'AI Management', category: 'Admin Tools', icon: getPageIcon('ai-management'), description: 'Configure AI models and custom insights templates' }
       );
     }
     if (role === 'admin' || role === 'manager') {
       pages.push(
-        { id: 'ai-management', label: 'AI Management', category: 'Management Tools', icon: getPageIcon('ai-management'), description: 'Configure AI models and custom insights templates' },
         { id: 'advisor-verification', label: 'Advisor Verification', category: 'Management Tools', icon: getPageIcon('advisor-verification'), description: 'Verify and approve advisor applications' }
       );
     }
 
-    return pages;
-  }, [role]);
+    // Offer only what the router would open: a page switched off for this role
+    // (or AI Management for a manager) used to be listed and then bounced.
+    // Managers keep their verification page regardless, as in the sidebar.
+    return role === 'admin'
+      ? pages
+      : pages.filter((page) => canAccessPage(page.id, visibleFeatures) || (role === 'manager' && page.id === 'advisor-verification'));
+  }, [role, visibleFeatures]);
 
   const formatAmount = (amount: number, type: string) => {
     const sign = type === 'income' ? '+' : '-';

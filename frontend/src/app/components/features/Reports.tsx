@@ -233,7 +233,7 @@ type AnalyticsTab = 'all' | 'spending' | 'cashflow' | 'wealth' | 'transactions';
 
 /* ─── Main Reports Component ──────────────────────────────────────────────── */
 export const Reports: React.FC = () => {
-  const { transactions, accounts, loans, goals, investments, currency, setCurrentPage, goBack } = useApp();
+  const { transactions, accounts, loans, goals, investments, currency, goBack } = useApp();
   const canPdf = useSubFeature('reports', 'pdfExport');
   const canCsv = useSubFeature('reports', 'csvExport');
   const canExcel = useSubFeature('reports', 'excelExport');

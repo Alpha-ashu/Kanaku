@@ -1253,9 +1253,20 @@ class BackendService {
     }
   }
 
-  getBillFileUrl(id: string): string {
-    const base = this.api.defaults.baseURL || '/api/v1';
-    return `${base.replace(/\/+$/, '')}/bills/${id}/file`;
+  /**
+   * The bill's file through the authenticated API. Never hand out the bare
+   * /bills/:id/file URL: it needs the bearer token, which an <img>, a new tab or
+   * a plain fetch() never sends (it always answered 401) — and a stored signed
+   * downloadUrl expires after ~10 minutes.
+   */
+  async fetchBillFile(id: string): Promise<Blob | null> {
+    try {
+      const response = await this.api.get(`/bills/${id}/file`, { responseType: 'blob' });
+      return response.data instanceof Blob ? response.data : null;
+    } catch (error) {
+      console.warn('Failed to fetch bill file:', error);
+      return null;
+    }
   }
 
   async uploadExpenseBill(payload: { transactionId?: string | number; file: File | Blob; fileName?: string; metadata?: Record<string, unknown> }) {

@@ -8,7 +8,7 @@ import { db } from '@/lib/database';
 import { deduplicateLocalData } from '@/lib/auth-sync-integration';
 
 export const Diagnostics: React.FC = () => {
- const { setCurrentPage, goBack } = useApp();
+ const { goBack } = useApp();
  const [isTesting, setIsTesting] = useState(false);
  const [isCleaning, setIsCleaning] = useState(false);
  const [testResult, setTestResult] = useState<string>('Not tested');

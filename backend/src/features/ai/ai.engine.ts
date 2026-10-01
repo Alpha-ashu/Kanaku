@@ -28,10 +28,17 @@ const toTwoDecimals = (value: number) => Number(value.toFixed(2));
 const getWeekdayName = (date: Date) =>
   date.toLocaleDateString('en-US', { weekday: 'long' });
 
-let aiTablesReady = false;
+let aiTablesReady: Promise<void> | null = null;
 
-const ensureAITables = async () => {
-  if (aiTablesReady) return;
+// One run per process, shared by concurrent callers (startup and every request
+// that records an event): parallel CREATE TABLE IF NOT EXISTS can still collide
+// on a fresh database.
+const ensureAITables = (): Promise<void> => {
+  aiTablesReady ??= createAITables();
+  return aiTablesReady;
+};
+
+const createAITables = async () => {
   try {
     // We cannot rely on Prisma migrations for Supabase cross-schema tables,
     // so we must create them explicitly if they don't exist.
@@ -86,10 +93,10 @@ const ensureAITables = async () => {
 
     await enableRowLevelSecurity(['user_features', 'ai_insights', 'ai_events', 'ai_model_runs']);
 
-    aiTablesReady = true;
     logger.info('AI tables verified via DDL execution');
   } catch (error) {
     logger.error('Failed to create AI tables in DB:', { error });
+    aiTablesReady = null; // retry on the next call
   }
 };
 

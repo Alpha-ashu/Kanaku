@@ -16,8 +16,18 @@ import { PAGE_CONTAINER_CLASS } from '@/app/components/shared/CenteredLayout';
 
 export const ToDoListShare: React.FC = () => {
   const { setCurrentPage } = useApp();
-  const [listId, setListId] = useState<number | null>(null);
-  const [toDoList, setToDoList] = useState<any>(null);
+  // One-shot handoff from the list page: read once here, cleared on leave.
+  const [listId] = useState<number | null>(() => {
+    const parsed = parseInt(localStorage.getItem('sharingToDoListId') ?? '', 10);
+    return Number.isFinite(parsed) ? parsed : null;
+  });
+  // undefined while Dexie answers; null when there is no such list (a reload
+  // after the handoff was cleared, or the list was deleted) — which used to
+  // leave an endless spinner.
+  const toDoList = useLiveQuery(
+    async () => (listId ? (await db.toDoLists.get(listId)) ?? null : null),
+    [listId],
+  );
   const [selectedFriendEmail, setSelectedFriendEmail] = useState('');
   const [permission, setPermission] = useState<'view' | 'edit'>('view');
   const [isSharing, setIsSharing] = useState(false);
@@ -27,15 +37,7 @@ export const ToDoListShare: React.FC = () => {
     []
   ) || [];
 
-  useEffect(() => {
-    const id = localStorage.getItem('sharingToDoListId');
-    if (id) setListId(parseInt(id));
-    return () => { localStorage.removeItem('sharingToDoListId'); };
-  }, []);
-
-  useEffect(() => {
-    if (listId) db.toDoLists.get(listId).then(list => list && setToDoList(list));
-  }, [listId]);
+  useEffect(() => () => { localStorage.removeItem('sharingToDoListId'); }, []);
 
   const sharedWith: any[] = (useLiveQuery(
     () => listId ? db.toDoListShares.where('listId').equals(listId).toArray() : Promise.resolve([] as any[]),
@@ -85,10 +87,30 @@ export const ToDoListShare: React.FC = () => {
     return f?.name || userId;
   };
 
-  if (!toDoList) {
+  if (toDoList === undefined) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-white">
         <div className="w-10 h-10 rounded-full border-2 border-indigo-200 border-t-indigo-600 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!toDoList) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[80vh] p-6 text-center" data-testid="to-do-list-share-not-found">
+        <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mb-4">
+          <Share2 size={32} className="text-slate-400" />
+        </div>
+        <h3 className="text-xl font-bold text-slate-900">Nothing to Share</h3>
+        <p className="text-slate-500 mt-2 mb-6 max-w-xs">Open a list and tap Share to choose who can see it.</p>
+        <button
+          type="button"
+          data-testid="to-do-list-share-back-to-lists"
+          onClick={() => setCurrentPage('todo-lists')}
+          className="px-6 py-2.5 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-all"
+        >
+          Back to To-Do Lists
+        </button>
       </div>
     );
   }

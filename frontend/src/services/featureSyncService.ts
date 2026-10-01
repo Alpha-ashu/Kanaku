@@ -736,7 +736,8 @@ export const syncBills = (): Promise<FeatureSyncResult> =>
       // updating the first.
       const inserted = await insertIfAbsent(db.documents, row.id, {
         cloudId: row.id,
-        documentType: 'receipt',
+        // Imported statements are stored with the bills (see offlineUploadQueue).
+        documentType: serverMeta.documentType === 'statement' ? 'statement' : 'receipt',
         fileName: row.fileName || `bill-${row.id}`,
         fileType: row.fileType || 'application/octet-stream',
         fileSize: Number(row.fileSize ?? 0),

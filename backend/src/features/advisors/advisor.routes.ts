@@ -32,6 +32,14 @@ const router = Router();
 const bookAdvisorGate = requireFeature('bookAdvisor');
 const ownAvailabilityOrBookAdvisor: RequestHandler = (req, res, next) =>
   (req as AuthRequest).user?.id === req.params.id ? next() : bookAdvisorGate(req as AuthRequest, res, next);
+// Same for the feed: an advisor reading their own posts (the workspace's
+// Updates tab). Advisors never hold `bookAdvisor`, so the gate alone hid every
+// post they had published from them.
+const ownPostsOrBookAdvisor: RequestHandler = (req, res, next) => {
+  const userId = (req as AuthRequest).user?.id;
+  const ownFeed = Boolean(userId) && req.query.advisorId === userId && String(req.query.following ?? '') !== 'true';
+  return ownFeed ? next() : bookAdvisorGate(req as AuthRequest, res, next);
+};
 
 // Marketplace browse — gated by the admin feature flag `bookAdvisor`. Anonymous
 // callers are treated as role `user`; when admin disables the module this 403s
@@ -91,7 +99,7 @@ router.put('/sessions/:id/rate', validateParams(advisorIdParamSchema), validateB
 // ─── Advisor feed & follow graph ─────────────────────────────────────────────
 // Registered before the /:id catch-all below, or "posts" and "following" would
 // be read as advisor ids.
-router.get('/posts', requireFeature('bookAdvisor'), PostController.listPosts);
+router.get('/posts', ownPostsOrBookAdvisor, PostController.listPosts);
 router.post('/posts', requireRole('advisor'), requireApproved, idempotency({ scope: 'advisor.posts.create' }), validateBody(createPostSchema), duplicateSubmitGuard({ scope: 'advisor.posts.create' }), PostController.createPost);
 router.delete('/posts/:id', requireRole('advisor'), requireApproved, validateParams(advisorIdParamSchema), PostController.deletePost);
 router.post('/posts/:id/like', requireFeature('bookAdvisor'), validateParams(advisorIdParamSchema), PostController.likePost);

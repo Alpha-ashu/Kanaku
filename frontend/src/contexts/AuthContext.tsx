@@ -5,6 +5,7 @@ import { UserRole } from '@/lib/featureFlags';
 import { permissionService } from '@/services/permissionService';
 import { LOGOUT_CLEARED_TABLES } from '@/lib/localDataRegistry';
 import { resolveAvatarSelection } from '@/lib/avatar-gallery';
+import { remoteHoldsProfile, type RemoteProfileSnapshot } from '@/lib/remoteProfile';
 import { api, TokenManager } from '@/lib/api';
 import { clearSecurityData } from '@/lib/encryption';
 import {
@@ -67,28 +68,6 @@ type LocalProfile = {
   createdAt?: string;
   updatedAt?: string;
   role?: string;
-};
-
-type RemoteProfileSnapshot = {
-  displayName: string;
-  firstName: string;
-  lastName: string;
-  phone: string;
-  gender: string;
-  dateOfBirth: string;
-  jobType: string;
-  monthlyIncome: number;
-  annualIncome: number;
-  avatarUrl: string | null;
-  avatarId: string | null;
-  country: string;
-  state: string;
-  city: string;
-  updatedAt: string | null;
-  role: string;
-  hasRealProfile: boolean;
-  currency: string;
-  language: string;
 };
 
 const PROFILE_SYNC_COOLDOWN_MS = 60_000;
@@ -574,12 +553,22 @@ const syncProfileFromBackend = async (user: User) => {
     };
 
     const payloadKey = JSON.stringify(profilePayload);
-    if (profileSyncLastPayload.get(user.id) === payloadKey && pendingLocalSync) {
+    // Nothing to push unless a failed sync is waiting: this exact profile already
+    // went up this session, or the server already holds it. Every page's data
+    // sync lands here, so a profile the server does not count as "real" (date of
+    // birth / job type skipped at onboarding) used to be re-written on every
+    // navigation.
+    if (!pendingLocalSync && (
+      profileSyncLastPayload.get(user.id) === payloadKey
+      || remoteHoldsProfile(remoteProfile, profilePayload)
+    )) {
+      profileSyncLastPayload.set(user.id, payloadKey);
       return;
     }
 
     try {
-      const response = await api.auth.updateProfile(profilePayload);
+      // A background sync: no "Profile updated" toast on whatever page is open.
+      const response = await api.auth.updateProfile(profilePayload, { showSuccessToast: false });
 
       if (response.success) {
         profileSyncLastPayload.set(user.id, payloadKey);

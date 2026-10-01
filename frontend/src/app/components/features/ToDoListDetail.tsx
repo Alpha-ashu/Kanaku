@@ -33,8 +33,18 @@ export const ToDoListDetail: React.FC = () => {
   const guardSubmit = useSubmitLock();
   const { setCurrentPage } = useApp();
   const { user } = useAuth();
-  const [listId, setListId] = useState<number | null>(null);
-  const [toDoList, setToDoList] = useState<any>(null);
+  // The To-Do page stores the id of the list it opens before navigating here.
+  const [listId] = useState<number | null>(() => {
+    const parsed = parseInt(localStorage.getItem('viewingToDoListId') ?? '', 10);
+    return Number.isFinite(parsed) ? parsed : null;
+  });
+  // undefined while Dexie answers; null when this device has no such list (a
+  // reload with nothing stored, or the list was deleted) — which used to leave
+  // the page on "Loading…" forever.
+  const toDoList = useLiveQuery(
+    async () => (listId ? (await db.toDoLists.get(listId)) ?? null : null),
+    [listId],
+  );
   const [showAddForm, setShowAddForm] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [editingItemId, setEditingItemId] = useState<number | null>(null);
@@ -59,14 +69,6 @@ export const ToDoListDetail: React.FC = () => {
   const currentUserId = user?.id ?? null;
   const currentUserName = user?.user_metadata?.display_name || user?.email?.split('@')[0] || 'You';
 
-  useEffect(() => {
-    const id = localStorage.getItem('viewingToDoListId');
-    if (id) {
-      const parsed = parseInt(id, 10);
-      if (Number.isFinite(parsed)) setListId(parsed);
-    }
-  }, []);
-
   const items: ToDoItem[] = (useLiveQuery(
     () => listId ? db.toDoItems.where('listId').equals(listId).toArray() : Promise.resolve([] as ToDoItem[]),
     [listId]
@@ -77,10 +79,6 @@ export const ToDoListDetail: React.FC = () => {
     () => listId ? db.toDoListShares.where('listId').equals(listId).toArray() : Promise.resolve([] as ToDoListShare[]),
     [listId]
   ) || []) as ToDoListShare[];
-
-  useEffect(() => {
-    if (listId) db.toDoLists.get(listId).then(list => list && setToDoList(list));
-  }, [listId]);
 
   const isTogether = toDoList?.listType === 'together';
 
@@ -233,13 +231,33 @@ export const ToDoListDetail: React.FC = () => {
     </select>
   );
 
-  if (!toDoList) {
+  if (toDoList === undefined) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-white">
         <div className="flex flex-col items-center gap-3">
           <div className="w-10 h-10 rounded-full border-2 border-indigo-200 border-t-indigo-600 animate-spin" />
           <p className="text-2xs font-black text-slate-400 uppercase tracking-widest">Loading…</p>
         </div>
+      </div>
+    );
+  }
+
+  if (!toDoList) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[80vh] p-6 text-center" data-testid="to-do-list-detail-not-found">
+        <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mb-4">
+          <ListTodo size={32} className="text-slate-400" />
+        </div>
+        <h3 className="text-xl font-bold text-slate-900">List Not Found</h3>
+        <p className="text-slate-500 mt-2 mb-6 max-w-xs">This list doesn't exist on this device or has been deleted.</p>
+        <button
+          type="button"
+          data-testid="to-do-list-detail-back-to-lists"
+          onClick={() => setCurrentPage('todo-lists')}
+          className="px-6 py-2.5 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-all"
+        >
+          Back to To-Do Lists
+        </button>
       </div>
     );
   }

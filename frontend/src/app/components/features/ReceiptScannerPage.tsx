@@ -76,15 +76,21 @@ async function processBillDocument(doc: DocumentRecord): Promise<ReceiptScanResu
       ? doc.fileData
       : new File([doc.fileData], doc.fileName || 'receipt.jpg', { type: doc.fileType || 'image/jpeg' });
   } else {
-    const url = doc.fileUrl || doc.downloadUrl || (doc.cloudId ? backendService.getBillFileUrl(doc.cloudId) : null);
-    if (url) {
+    // Through the authenticated API first: a bare fetch of /bills/:id/file
+    // carries no bearer token (401), and a stored signed URL may have expired —
+    // either way the error page used to be "scanned" as the receipt.
+    let blob: Blob | null = doc.cloudId ? await backendService.fetchBillFile(doc.cloudId) : null;
+    const url = doc.fileUrl || doc.downloadUrl;
+    if (!blob && url) {
       try {
         const res = await fetch(url);
-        const blob = await res.blob();
-        file = new File([blob], doc.fileName || 'receipt.jpg', { type: doc.fileType || blob.type || 'image/jpeg' });
+        if (res.ok) blob = await res.blob();
       } catch (fetchErr) {
         console.warn('[processBillDocument] Failed to fetch remote receipt blob:', fetchErr);
       }
+    }
+    if (blob) {
+      file = new File([blob], doc.fileName || 'receipt.jpg', { type: doc.fileType || blob.type || 'image/jpeg' });
     }
   }
 
@@ -466,6 +472,66 @@ function FullscreenLightboxModal({
   return typeof document !== 'undefined' ? createPortal(content, document.body) : content;
 }
 
+/**
+ * What an <img> can show for a bill: local bytes, then the signed downloadUrl,
+ * then the file through the authenticated API. /bills/:id/file needs the bearer
+ * token an <img> cannot send (it always answered 401), and the signed URL stored
+ * with the record expires after ~10 minutes, so a URL that fails to load falls
+ * back to the API once. `preferApi` skips the stored URL (one file, on demand);
+ * `imagesOnly` leaves out what an <img> cannot draw (statement PDFs).
+ */
+function useBillImageSrc(doc: DocumentRecord, { preferApi = false, imagesOnly = true } = {}) {
+  const { fileData, downloadUrl, fileUrl, cloudId, fileType } = doc;
+  const drawable = !imagesOnly || !fileType || fileType.startsWith('image/');
+  const direct = downloadUrl || fileUrl || null;
+  const [failedDirect, setFailedDirect] = useState<string | null>(null);
+  const [src, setSrc] = useState<string | null>(null);
+  const useDirect = Boolean(direct) && failedDirect !== direct && !(preferApi && cloudId);
+
+  useEffect(() => {
+    if (!drawable) {
+      setSrc(null);
+      return undefined;
+    }
+    if (fileData) {
+      try {
+        const url = URL.createObjectURL(fileData);
+        setSrc(url);
+        return () => URL.revokeObjectURL(url);
+      } catch {
+        setSrc(null);
+        return undefined;
+      }
+    }
+    if (useDirect) {
+      setSrc(direct);
+      return undefined;
+    }
+    if (!cloudId) {
+      setSrc(null);
+      return undefined;
+    }
+    let cancelled = false;
+    let objectUrl: string | null = null;
+    void backendService.fetchBillFile(cloudId).then((blob) => {
+      if (cancelled) return;
+      objectUrl = blob ? URL.createObjectURL(blob) : null;
+      setSrc(objectUrl);
+    });
+    return () => {
+      cancelled = true;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [drawable, fileData, direct, useDirect, cloudId]);
+
+  const onError = useCallback(() => {
+    if (useDirect && cloudId) setFailedDirect(direct);
+    else setSrc(null);
+  }, [useDirect, cloudId, direct]);
+
+  return { src, onError };
+}
+
 function BillCard({
   doc,
   tx,
@@ -483,32 +549,8 @@ function BillCard({
   onProcess?: (doc: DocumentRecord) => void;
   isProcessing?: boolean;
 }) {
-  const [imgSrc, setImgSrc] = useState<string | null>(null);
+  const { src: imgSrc, onError: onImgError } = useBillImageSrc(doc);
   const [imgLoaded, setImgLoaded] = useState(false);
-
-  const { fileData, downloadUrl, fileUrl, cloudId } = doc;
-  React.useEffect(() => {
-    if (fileData) {
-      try {
-        const url = URL.createObjectURL(fileData);
-        setImgSrc(url);
-        return () => URL.revokeObjectURL(url);
-      } catch {
-        setImgSrc(null);
-      }
-    }
-    if (downloadUrl) {
-      setImgSrc(downloadUrl);
-      return;
-    }
-    if (fileUrl) {
-      setImgSrc(fileUrl);
-      return;
-    }
-    if (cloudId) {
-      setImgSrc(backendService.getBillFileUrl(cloudId));
-    }
-  }, [fileData, downloadUrl, fileUrl, cloudId]);
 
   const rawMerchant = tx?.merchant || doc.metadata?.merchantName || doc.metadata?.merchant || doc.fileName.replace(/\.[^.]+$/, '').replace(/_/g, ' ');
   const merchant = rawMerchant.length > 22 ? `${rawMerchant.slice(0, 20)}…` : rawMerchant;
@@ -539,6 +581,7 @@ function BillCard({
               src={imgSrc}
               alt={merchant}
               onLoad={() => setImgLoaded(true)}
+              onError={onImgError}
               className={cn('h-full w-full object-cover transition-opacity duration-200', imgLoaded ? 'opacity-100' : 'opacity-0')}
             />
             {!imgLoaded && <FileText size={40} className="text-gray-300" />}
@@ -646,11 +689,16 @@ function BillCard({
             <span className={cn('text-xs sm:text-sm font-black', amountColor)}>
               {amountPrefix}{formatCurrencyAmount(rawAmount, currency)}
             </span>
-          ) : (
+          ) : isPending ? (
             <div className="flex items-center gap-1 text-amber-600">
               <Loader2 size={10} className="animate-spin" />
               <span className="text-2xs font-bold uppercase tracking-wider">Processing</span>
             </div>
+          ) : (
+            // Not being read: say so instead of spinning forever under a "Failed" badge.
+            <span className={cn('text-2xs font-bold uppercase tracking-wider', doc.processingStatus === 'failed' ? 'text-red-500' : 'text-slate-400')}>
+              {doc.processingStatus === 'failed' ? "Couldn't read" : 'No amount'}
+            </span>
           )}
           {onProcess && (rawAmount === 0 || isPending) && (
             <button
@@ -708,32 +756,9 @@ function BillDetailModal({
   isProcessing?: boolean;
   isAddingExpense?: boolean;
 }) {
-  const [imgSrc, setImgSrc] = useState<string | null>(null);
+  // One file, opened on demand: fetch it fresh rather than trust a stored URL.
+  const { src: imgSrc } = useBillImageSrc(doc, { preferApi: true, imagesOnly: false });
   const [lightboxOpen, setLightboxOpen] = useState(false);
-
-  const { fileData, downloadUrl, fileUrl, cloudId } = doc;
-  React.useEffect(() => {
-    if (fileData) {
-      try {
-        const url = URL.createObjectURL(fileData);
-        setImgSrc(url);
-        return () => URL.revokeObjectURL(url);
-      } catch {
-        setImgSrc(null);
-      }
-    }
-    if (downloadUrl) {
-      setImgSrc(downloadUrl);
-      return;
-    }
-    if (fileUrl) {
-      setImgSrc(fileUrl);
-      return;
-    }
-    if (cloudId) {
-      setImgSrc(backendService.getBillFileUrl(cloudId));
-    }
-  }, [fileData, downloadUrl, fileUrl, cloudId]);
 
   const rawName = doc.fileName.replace(/\.[^/.]+$/, '').replace(/_/g, ' ');
   const merchantName = tx?.merchant || doc.metadata?.merchantName || doc.metadata?.merchant || rawName || 'Store Receipt';
@@ -1207,11 +1232,16 @@ export const ReceiptScannerPage: React.FC = () => {
 
     const autoRecoverBills = async () => {
       try {
+        // Only scans that were cut off. A finished scan that found no total, and
+        // every bill synced from another device (stored as "completed" with its
+        // amount in metadata), used to be re-scanned on EVERY visit — a cloud
+        // OCR call each, against a 20-a-day AI quota. Those keep their Process
+        // button instead.
         const pending = await db.documents
           .filter(d =>
             d.documentType === 'receipt' &&
             !d.deletedAt &&
-            (d.processingStatus === 'processing' || d.processingStatus === 'queued' || (d.processingStatus === 'completed' && (!d.extractedAmount || d.extractedAmount === 0))) &&
+            (d.processingStatus === 'processing' || d.processingStatus === 'queued') &&
             Boolean(d.fileData || d.fileUrl || d.downloadUrl || d.cloudId)
           )
           .toArray();

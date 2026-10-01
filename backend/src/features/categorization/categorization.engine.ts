@@ -195,7 +195,7 @@ const SYNONYMS: Record<string, string[]> = {
   bill: ['payment', 'charge'],
 };
 
-let ready = false;
+let ready: Promise<void> | null = null;
 
 export const normalizeText = (value: string) =>
   value
@@ -234,9 +234,22 @@ const levenshtein = (left: string, right: string) => {
   return matrix[right.length][left.length];
 };
 
-export const ensureCategorizationTables = async () => {
-  if (ready) return;
+/**
+ * One run per process, shared by concurrent callers. With a flag set only at the
+ * end, every request that arrived before the first run finished repeated the
+ * DDL and re-inserted the whole keyword list.
+ */
+export const ensureCategorizationTables = (): Promise<void> => {
+  if (!ready) {
+    ready = createCategorizationTables().catch((error) => {
+      ready = null;
+      throw error;
+    });
+  }
+  return ready;
+};
 
+const createCategorizationTables = async () => {
   await prisma.$executeRawUnsafe(`
     CREATE TABLE IF NOT EXISTS keyword_mappings (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -273,8 +286,6 @@ export const ensureCategorizationTables = async () => {
       ON CONFLICT (keyword) DO NOTHING
     `;
   }
-
-  ready = true;
 };
 
 export const categorizeTextForUser = async (userId: string, text: string): Promise<CategorizationResult> => {

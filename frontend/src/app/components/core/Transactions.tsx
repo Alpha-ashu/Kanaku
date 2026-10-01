@@ -440,7 +440,14 @@ export const Transactions: React.FC = () => {
         }
 
         const bill = await backendService.getExpenseBill(cleanBillId);
-        const resolvedUrl = bill?.downloadUrl || backendService.getBillFileUrl(cleanBillId);
+        // A fresh signed URL when storage signs one; otherwise the file through
+        // the authenticated API — /bills/:id/file alone needs the bearer token.
+        const fileBlob = bill?.downloadUrl ? null : await backendService.fetchBillFile(cleanBillId);
+        const resolvedUrl = bill?.downloadUrl || (fileBlob ? URL.createObjectURL(fileBlob) : '');
+        if (!resolvedUrl) {
+          toast.error('Could not load the attached bill. Try again when online.');
+          return;
+        }
 
         setPreviewDocument({
           fileName: bill?.fileName || 'Attached Bill',
@@ -461,7 +468,14 @@ export const Transactions: React.FC = () => {
       const document = await documentService.getDocument(documentId);
       if (!document?.fileData) {
         if (document?.cloudId) {
-          const resolvedUrl = document.downloadUrl || backendService.getBillFileUrl(document.cloudId);
+          // The downloadUrl stored with the record is a signed URL that expires
+          // after ~10 minutes, so fetch the file fresh through the API.
+          const fileBlob = await backendService.fetchBillFile(document.cloudId);
+          const resolvedUrl = fileBlob ? URL.createObjectURL(fileBlob) : document.downloadUrl;
+          if (!resolvedUrl) {
+            toast.error('Could not load the attached bill. Try again when online.');
+            return;
+          }
           setPreviewDocument(document);
           setPreviewUrl(resolvedUrl);
           return;

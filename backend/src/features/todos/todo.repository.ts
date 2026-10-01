@@ -14,12 +14,27 @@ const windowFilter = (w?: TodoPageWindow) =>
 const windowTail = (w: TodoPageWindow | undefined, legacyOrder: Prisma.Sql) =>
   w ? Prisma.sql`ORDER BY id ASC LIMIT ${w.take}` : legacyOrder;
 
-let todoTablesEnsured = false;
+let todoTablesEnsured: Promise<void> | null = null;
 
-export async function ensureTodoTablesExist() {
-  if (todoTablesEnsured) return;
-  try {
-    await prisma.$executeRawUnsafe(`
+/**
+ * Runs the DDL below once per process; concurrent callers share the one run.
+ * A boolean set only after it finished let every request that arrived
+ * meanwhile run its own copy, and parallel `ALTER TABLE` (an ACCESS EXCLUSIVE
+ * lock even when the column exists) deadlocked them (40P01) whenever several
+ * users opened their lists right after a restart.
+ */
+export function ensureTodoTablesExist(): Promise<void> {
+  if (!todoTablesEnsured) {
+    todoTablesEnsured = createTodoTables().catch(() => {
+      // Silently continue if DDL fails (e.g. read-only replica); retry next call.
+      todoTablesEnsured = null;
+    });
+  }
+  return todoTablesEnsured;
+}
+
+async function createTodoTables() {
+  await prisma.$executeRawUnsafe(`
       CREATE TABLE IF NOT EXISTS public.todo_lists (
         id          BIGSERIAL PRIMARY KEY,
         user_id     UUID NOT NULL,
@@ -71,11 +86,7 @@ export async function ensureTodoTablesExist() {
       CREATE UNIQUE INDEX IF NOT EXISTS todo_items_user_id_client_request_id_key
         ON public.todo_items(user_id, client_request_id);
     `);
-    await enableRowLevelSecurity(['todo_lists', 'todo_items', 'todo_list_shares']);
-    todoTablesEnsured = true;
-  } catch (err) {
-    // Silently continue if DDL fails (e.g. read-only replica)
-  }
+  await enableRowLevelSecurity(['todo_lists', 'todo_items', 'todo_list_shares']);
 }
 
 export class TodoRepository {

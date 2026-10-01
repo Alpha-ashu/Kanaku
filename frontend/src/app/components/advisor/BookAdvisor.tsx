@@ -324,7 +324,7 @@ function getStatusBadge(status: string) {
 }
 
 export const BookAdvisor: React.FC = () => {
-  const { setCurrentPage, goBack } = useApp();
+  const { goBack } = useApp();
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<AdvisorModuleTab>('discover');
   

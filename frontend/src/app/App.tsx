@@ -342,6 +342,26 @@ const getInitialRouteState = () => {
   };
 };
 
+// Pages about one role's own work, which the admin bypass must not open: an
+// admin has no team (the API answers 403) and no earnings to withdraw.
+const ROLE_ONLY_PAGES: Record<string, readonly string[]> = {
+  'manager-team': ['manager'],
+  'advisor-earnings': ['advisor'],
+};
+
+// Which admin has already been sent to the Admin Console in this tab. Kept in
+// sessionStorage so it survives reloads; storage can be blocked, so best-effort.
+const ADMIN_LANDED_KEY = 'kanaku:admin-landed';
+const readAdminLanded = (): string | null => {
+  try { return sessionStorage.getItem(ADMIN_LANDED_KEY); } catch { return null; }
+};
+const writeAdminLanded = (userId: string | null) => {
+  try {
+    if (userId) sessionStorage.setItem(ADMIN_LANDED_KEY, userId);
+    else sessionStorage.removeItem(ADMIN_LANDED_KEY);
+  } catch { /* storage blocked: falls back to once per page load */ }
+};
+
 const AppContent: React.FC = () => {
   const appContext = useOptionalApp();
   const { user, role, loading: authLoading, dataReady, dataSyncing, dataSyncError, triggerDataSync } = useAuth();
@@ -500,7 +520,7 @@ const AppContent: React.FC = () => {
   // renders its Provider with a value. The lint rule that catches this was also
   // not installed — see .eslintrc.json.)
   const setCurrentPage = appContext?.setCurrentPage;
-  const goBack = appContext?.goBack || ((fallback?: string) => window.history.back());
+  const goBack = appContext?.goBack || ((_fallback?: string) => window.history.back());
   const visibleFeatures = appContext?.visibleFeatures;
   const aiCapabilities = appContext?.aiCapabilities;
   const {
@@ -896,7 +916,11 @@ const AppContent: React.FC = () => {
 
   // Ensure we land on the correct default page after login, and guard disabled features.
   useEffect(() => {
-    if (!user || authLoading) return;
+    if (!user || authLoading) {
+      // Signed out: the next sign-in lands on the Admin Console again.
+      if (!user && !authLoading) writeAdminLanded(null);
+      return;
+    }
     // AppContext may not be mounted yet on the very first render — the loader
     // guard for that case lives below the final hook (Rules of Hooks), so each
     // effect that needs the context bails out on its own.
@@ -922,8 +946,11 @@ const AppContent: React.FC = () => {
     }
 
     // Admin landing on dashboard: redirect to /admin exactly once per session.
-    if (currentPage === 'dashboard' && isAdmin && ADMIN_UI_ENABLED && !hasAdminRedirectedRef.current) {
+    // The ref alone reset on every reload, so refreshing the Dashboard (or
+    // opening a /dashboard link) bounced the admin to the console each time.
+    if (currentPage === 'dashboard' && isAdmin && ADMIN_UI_ENABLED && !hasAdminRedirectedRef.current && readAdminLanded() !== user.id) {
       hasAdminRedirectedRef.current = true;
+      writeAdminLanded(user.id);
       setCurrentPage('admin');
       return;
     }
@@ -943,7 +970,7 @@ const AppContent: React.FC = () => {
 
     const isSystemAdminPage = ['admin', 'admin-feature-panel', 'admin-ai', 'ai-management', 'sync-monitor'].includes(currentPage);
     // Staff pages open to admins AND managers (the API scopes managers by permission).
-    const isManagerPage = ['manager-advisor-verification', 'admin-advisor-verification', 'advisor-verification', 'admin-finance', 'manager-team'].includes(currentPage);
+    const isManagerPage = ['manager-advisor-verification', 'admin-advisor-verification', 'advisor-verification', 'admin-finance', 'finance', 'manager-team'].includes(currentPage);
     const isPublicPage = ['privacy-policy', 'terms', 'diagnostics', 'auth-callback', 'settings', 'user-profile', 'notifications'].includes(currentPage);
 
     // User-surface build: the Admin/Manager UI is compiled out, so bounce off
@@ -1386,7 +1413,7 @@ const AppContent: React.FC = () => {
     const isManager = normalizedRole === 'manager';
 
     const isSystemAdminPage = ['admin', 'admin-feature-panel', 'admin-ai', 'ai-management', 'sync-monitor'].includes(currentPage);
-    const isManagerPage = ['manager-advisor-verification', 'admin-advisor-verification', 'advisor-verification', 'admin-finance', 'manager-team'].includes(currentPage);
+    const isManagerPage = ['manager-advisor-verification', 'admin-advisor-verification', 'advisor-verification', 'admin-finance', 'finance', 'manager-team'].includes(currentPage);
     const isPublicPage = ['privacy', 'privacy-policy', 'terms', 'data-deletion', 'account-deletion', 'delete-account', 'diagnostics', 'auth-callback', 'settings', 'user-profile', 'notifications'].includes(currentPage);
 
     // User-surface build: Admin/Manager pages are compiled out — render the
@@ -1408,7 +1435,11 @@ const AppContent: React.FC = () => {
       return <Dashboard setCurrentPage={setCurrentPage} />;
     }
 
-    if (!canAccessPage(currentPage, visibleFeatures) && !hasAdminBypass && !hasManagerBypass && !isPublicPage) {
+    const ownerRoles = ROLE_ONLY_PAGES[currentPage];
+    if (
+      (ownerRoles && !ownerRoles.includes(normalizedRole ?? ''))
+      || (!canAccessPage(currentPage, visibleFeatures) && !hasAdminBypass && !hasManagerBypass && !isPublicPage)
+    ) {
       console.warn(`[Access Denied] User role ${role} cannot access page: ${currentPage}`);
       if (!visibleFeatures.dashboard) return <Settings />;
       return <Dashboard setCurrentPage={setCurrentPage} />;

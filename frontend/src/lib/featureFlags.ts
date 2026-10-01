@@ -340,6 +340,16 @@ export const PAGE_TO_FEATURE_MAPPING: Record<string, FeatureKey> = {
   'client-management': 'clientManagement',
   'voice-input': 'transactions',
   'receipt-scanner': 'transactions',
+  // Aliases App.tsx renders under other names. An unmapped page is allowed for
+  // every role, so each must name the module of the page it shows.
+  'ai-assistant': 'transactions',
+  'bills': 'transactions',
+  'bill': 'transactions',
+  'receipts': 'transactions',
+  'advisor': 'advisorPanel',
+  'finance': 'managerPanel',
+  'admin-advisor-verification': 'managerPanel',
+  'sync-monitor': 'adminPanel',
 };
 
 const RESTRICTED_ADMIN_FEATURES: FeatureKey[] = [

@@ -189,7 +189,7 @@ const ProfileSkeleton: React.FC = () => {
 
 export const UserProfile: React.FC = () => {
  const { user, signOut, role } = useAuth();
- const { setCurrentPage, goBack, currency, setCurrency, visibleFeatures } = useApp();
+ const { goBack, currency, setCurrency, visibleFeatures } = useApp();
  const { setAuthenticated } = useSecurity();
  const { isViewOnly, openVerificationModal, promptVerification } = useProfileVerification();
  const [isSigningOut, setIsSigningOut] = useState(false);
@@ -696,7 +696,7 @@ export const UserProfile: React.FC = () => {
  mobile: nextProfileData.mobile,
  avatarId: resolvedAvatar.id,
  avatarUrl: resolvedAvatar.url,
- }).then(() => {
+ }, { showSuccessToast: false }).then(() => { // the save already toasted below
  backendSyncService.removePendingOperation(operationId);
  localStorage.removeItem('profile_sync_pending');
  console.log('... Profile synced to backend');

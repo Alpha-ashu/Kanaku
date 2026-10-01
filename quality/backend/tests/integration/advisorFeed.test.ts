@@ -49,6 +49,21 @@ describe('Advisor feed', () => {
       expect([401, 403]).toContain(res.status);
     });
 
+    it("lets an advisor read their own posts without marketplace access", async () => {
+      // The workspace's Updates tab. Advisors never hold `bookAdvisor`, so the
+      // gate alone answered 403 and hid every post the advisor had published.
+      const advisorId = 'feed-test-advisor';
+      const res = await request(app).get(`${API}/advisors/posts?advisorId=${advisorId}`).set(advisorAuth(advisorId));
+      expect(res.status).toBe(200);
+      expect(Array.isArray(res.body)).toBe(true);
+    });
+
+    it("keeps someone else's feed behind the marketplace gate", async () => {
+      const res = await request(app).get(`${API}/advisors/posts?advisorId=another-advisor`).set(advisorAuth('feed-test-advisor'));
+      expect([200, 403]).toContain(res.status);
+      if (res.status === 403) expect(res.body?.error).toMatch(/bookAdvisor/);
+    });
+
     it('returns only followed advisors when following=true', async () => {
       const res = await request(app).get(`${API}/advisors/posts?following=true`).set(userAuth());
       expect(GATED_OK).toContain(res.status);

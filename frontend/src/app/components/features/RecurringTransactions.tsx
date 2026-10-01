@@ -31,7 +31,7 @@ const CATEGORY_PRESETS = [
 
 export const RecurringTransactions: React.FC = () => {
   const guardSubmit = useSubmitLock();
-  const { currency, accounts, setCurrentPage, goBack } = useApp();
+  const { currency, accounts, goBack } = useApp();
   const [showAddForm, setShowAddForm] = useState(false);
   const [saving, setSaving] = useState(false);
   const [activeFilter, setActiveFilter] = useState<'all' | 'expense' | 'income' | 'transfer' | 'active' | 'paused'>('all');

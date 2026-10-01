@@ -128,6 +128,12 @@ export async function processUploadQueue(): Promise<void> {
           if (localDoc?.metadata) {
             docMetadata = localDoc.metadata;
           }
+          // An imported statement's original file is kept with the user's bills
+          // on the server. The marker is what keeps it out of Bills & Receipts
+          // (and out of receipt OCR) when the bills sync brings it to a device.
+          if (localDoc?.documentType === 'statement') {
+            docMetadata = { ...(docMetadata ?? {}), documentType: 'statement' };
+          }
         }
 
         // Upload to backend

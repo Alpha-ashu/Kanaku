@@ -192,17 +192,18 @@ export const useProfileVerification = () => {
           if (p.status) {
             setUserStatus(p.status);
           }
-          setIsVerified((prev) => {
-            if (serverVerified !== prev) {
-              setLocalProfileVerification(
-                serverVerified,
-                p.status || (serverVerified ? 'verified' : 'pending_verification'),
-                p.verifiedAt ? String(p.verifiedAt) : undefined
-              );
-              return serverVerified;
-            }
-            return prev;
-          });
+          // Not inside a setIsVerified updater: React runs updaters while
+          // rendering, and setLocalProfileVerification fires a window event that
+          // every other mounted copy of this hook turns into its own state update
+          // ("Cannot update AppContent while rendering LimitedModeBanner").
+          if (serverVerified !== checkIsProfileVerified()) {
+            setLocalProfileVerification(
+              serverVerified,
+              p.status || (serverVerified ? 'verified' : 'pending_verification'),
+              p.verifiedAt ? String(p.verifiedAt) : undefined
+            );
+          }
+          setIsVerified(serverVerified);
         }
       } catch {
         // Fall back to local synchronous state without disruption
