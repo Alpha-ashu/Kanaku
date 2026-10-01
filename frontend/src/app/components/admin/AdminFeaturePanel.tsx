@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useApp } from '@/contexts/AppContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { PageHeader } from '@/app/components/ui/PageHeader';
-import { Shield, Brain, Layers, Search, Settings, X } from 'lucide-react';
+import { Shield, Brain, Layers, Lock, Search, Settings, Users, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -10,6 +10,19 @@ import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { backendService } from '@/lib/backend-api';
 import { SUB_FEATURE_DEFINITIONS, AI_MODULE_DEFINITIONS, UserRole, AIModuleKey, AIModuleDef } from '@/lib/featureFlags';
 import { AdminAIFeatureSection } from './AdminAIFeatureSection';
+import { FeatureRoleView } from './FeatureRoleView';
+import {
+  DEFAULT_DISABLED_MODULES,
+  FEATURES_BASE,
+  FEATURE_DEFAULT_ROLE_ACCESS,
+  SECTION_TITLES,
+  appliesToRole,
+  enforceLocks,
+  isMasterLocked,
+  isRoleLocked,
+  restoreRoleDefaults,
+  type FeatureControlBase,
+} from './featureCatalog';
 
 const ADMIN_FEATURE_SETTINGS_KEY = 'admin_global_feature_settings';
 const ADMIN_AI_FEATURE_SETTINGS_KEY = 'admin_ai_feature_settings';
@@ -28,9 +41,7 @@ interface SubFeatureControl {
   };
 }
 
-interface FeatureControl {
-  name: string;
-  key: string;
+interface FeatureControl extends FeatureControlBase {
   enabled: boolean;
   description: string;
   lastUpdated: Date;
@@ -43,82 +54,6 @@ interface FeatureControl {
   children?: Record<string, SubFeatureControl>;
 }
 
-interface FeatureControlBase {
-  name: string;
-  key: string;
-  description: string;
-}
-
-// DENY-BY-DEFAULT: Admin is the single source of truth.
-// All feature modules start as admin-only. Admin must explicitly grant access
-// to manager/advisor/user roles via this panel.
-//
-// Structural shell features (panels, profile, settings, notifications,
-// dashboard) retain role-appropriate access so the app shell is usable
-// before admin configures application features.
-const FEATURE_DEFAULT_ROLE_ACCESS: Record<string, Record<UserRole, boolean>> = {
-  // ── Structural (shell) features — role-appropriate access maintained ──
-  dashboard:              { admin: true, manager: true,  advisor: true,  user: true  },
-  userProfile:            { admin: true, manager: true,  advisor: true,  user: true  },
-  settings:               { admin: true, manager: true,  advisor: true,  user: true  },
-  notifications:          { admin: true, manager: true,  advisor: true,  user: true  },
-  adminPanel:             { admin: true, manager: false, advisor: false, user: false },
-  managerPanel:           { admin: true, manager: true,  advisor: false, user: false },
-  advisorPanel:           { admin: true, manager: false, advisor: true,  user: false },
-  aiManagement:           { admin: true, manager: false, advisor: false, user: false },
-  // ── Application features — role-appropriate baseline matching DEFAULT_MODULE_ACCESS ──
-  accounts:               { admin: true, manager: true,  advisor: true,  user: true  },
-  accountSetup:           { admin: true, manager: true,  advisor: true,  user: true  },
-  transactions:           { admin: true, manager: true,  advisor: true,  user: true  },
-  loans:                  { admin: true, manager: true,  advisor: true,  user: true  },
-  goals:                  { admin: true, manager: true,  advisor: true,  user: true  },
-  groups:                 { admin: true, manager: true,  advisor: true,  user: true  },
-  calendar:               { admin: true, manager: true,  advisor: true,  user: true  },
-  reports:                { admin: true, manager: true,  advisor: true,  user: true  },
-  todoLists:              { admin: true, manager: true,  advisor: true,  user: true  },
-  investments:            { admin: true, manager: true,  advisor: true,  user: true  },
-  transfer:               { admin: true, manager: true,  advisor: true,  user: true  },
-  bookAdvisor:            { admin: true, manager: false, advisor: false, user: true  },
-  payments:               { admin: true, manager: false, advisor: false, user: false },
-  clientManagement:       { admin: true, manager: true,  advisor: true,  user: false },
-  aiInsights:             { admin: true, manager: false, advisor: true,  user: true  },
-  recurringTransactions:  { admin: true, manager: true,  advisor: true,  user: true  },
-  budgetAlerts:           { admin: true, manager: true,  advisor: true,  user: true  },
-  wallet:                 { admin: true, manager: false, advisor: true,  user: true  },
-};
-
-const FEATURES_BASE: FeatureControlBase[] = [
-  { name: 'Dashboard', key: 'dashboard', description: 'Main overview with financial summary and quick actions' },
-  { name: 'Accounts', key: 'accounts', description: 'Bank accounts, wallets, and financial account management' },
-  { name: 'Account Setup', key: 'accountSetup', description: 'Permission to add, create, and configure new financial accounts' },
-  { name: 'Transactions', key: 'transactions', description: 'Income and expense tracking with categorization' },
-  { name: 'Loans & EMIs', key: 'loans', description: 'Loan tracking, EMI calculations, and payment schedules' },
-  { name: 'Goals', key: 'goals', description: 'Financial goal setting and progress tracking' },
-  { name: 'Group Expenses', key: 'groups', description: 'Split bills and manage shared expenses with friends' },
-  { name: 'Investments', key: 'investments', description: 'Portfolio tracking for stocks, crypto, and mutual funds' },
-  { name: 'Calendar', key: 'calendar', description: 'Visual calendar view of transactions and recurring payments' },
-  { name: 'Reports', key: 'reports', description: 'Financial reports and analytics with charts' },
-  { name: 'Todo Lists', key: 'todoLists', description: 'Task management and collaboration features' },
-  { name: 'Book Advisor', key: 'bookAdvisor', description: 'Users can book financial advisors for sessions' },
-  { name: 'Payments', key: 'payments', description: 'In-app payments for advisor sessions and subscriptions (deferred — Phase 4)' },
-  { name: 'Notifications', key: 'notifications', description: 'Alerts for bills, budgets, and financial reminders' },
-  { name: 'User Profile', key: 'userProfile', description: 'Personal profile and account settings' },
-  { name: 'Settings', key: 'settings', description: 'App preferences, currency, and theme settings' },
-  { name: 'AI Insights', key: 'aiInsights', description: 'AI-powered spending insights and recommendations' },
-  { name: 'Recurring Transactions', key: 'recurringTransactions', description: 'Automatic recurring income and expense entries' },
-  { name: 'Budget Alerts', key: 'budgetAlerts', description: 'Notifications when spending exceeds budget limits' },
-  { name: 'Client Management', key: 'clientManagement', description: 'Advisors and Managers can manage assigned clients' },
-  { name: 'AI Management', key: 'aiManagement', description: 'Centralized control panel for AI models and insights' },
-  { name: 'Advisor Verification', key: 'managerPanel', description: 'Manager module for approving advisor applications' },
-  { name: 'Coin Wallet', key: 'wallet', description: 'Buy coins, pay for advisor sessions from the wallet, advisor earnings. Turning this on also starts charging coins for new bookings.' },
-];
-
-/**
- * Modules that start switched OFF in the panel. Every other module defaults to
- * enabled, so without this the first save of the panel for any reason would
- * silently launch coin purchases and paid sessions.
- */
-const DEFAULT_DISABLED_MODULES = new Set(['wallet']);
 
 const FEATURES: FeatureControl[] = FEATURES_BASE.map(f => {
   const defaults = SUB_FEATURE_DEFINITIONS[f.key];
@@ -147,7 +82,7 @@ const FEATURES: FeatureControl[] = FEATURES_BASE.map(f => {
 export const AdminFeaturePanel: React.FC = () => {
   const { setCurrentPage, setVisibleFeatures } = useApp();
   const { role, loading, dataReady, user } = useAuth();
-  const [activeTab, setActiveTab] = useState<'app' | 'ai'>('app');
+  const [activeTab, setActiveTab] = useState<'app' | 'roles' | 'ai'>('app');
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedFeature, setExpandedFeature] = useState<string | null>(null);
   const [selectedSubFeatureModule, setSelectedSubFeatureModule] = useState<FeatureControl | null>(null);
@@ -480,7 +415,8 @@ export const AdminFeaturePanel: React.FC = () => {
     }
   }, [dataReady, role, setCurrentPage]);
 
-  const saveAndBroadcastFeatures = (updatedFeatures: FeatureControl[]) => {
+  const saveAndBroadcastFeatures = (changed: FeatureControl[]) => {
+    const updatedFeatures = enforceLocks(changed);
     userInteractedRef.current = true;
     setFeatures(updatedFeatures);
     applyFeatureVisibility(updatedFeatures);
@@ -512,6 +448,7 @@ export const AdminFeaturePanel: React.FC = () => {
   };
 
   const handleToggleFeatureEnabled = (key: string, isEnabled: boolean) => {
+    if (!isEnabled && isMasterLocked(key)) return;
     const updatedFeatures = features.map(f => {
       if (f.key === key) {
         return { ...f, enabled: isEnabled, lastUpdated: new Date() };
@@ -523,6 +460,7 @@ export const AdminFeaturePanel: React.FC = () => {
   };
 
   const handleToggleRoleAccess = (key: string, roleKey: UserRole, isGranted: boolean) => {
+    if (!isGranted && isRoleLocked(key, roleKey)) return;
     const updatedFeatures = features.map(f => {
       if (f.key === key) {
         return {
@@ -538,6 +476,11 @@ export const AdminFeaturePanel: React.FC = () => {
     });
     saveAndBroadcastFeatures(updatedFeatures);
     toast.success(`Access to "${key}" for ${roleKey} is now ${isGranted ? 'GRANTED' : 'REVOKED'}`);
+  };
+
+  const handleRestoreRoleDefaults = (roleKey: UserRole) => {
+    saveAndBroadcastFeatures(restoreRoleDefaults(features, roleKey));
+    toast.success(`${roleKey.charAt(0).toUpperCase()}${roleKey.slice(1)} pages restored to their defaults`);
   };
 
   const handleToggleSubFeatureEnabled = (moduleKey: string, childKey: string, isEnabled: boolean) => {
@@ -613,7 +556,7 @@ export const AdminFeaturePanel: React.FC = () => {
         />
 
         {/* Tab Switcher */}
-        <div className="flex items-center gap-1 p-1 bg-white/95 backdrop-blur-xl rounded-full border border-slate-200/80 shadow-xs w-fit mb-8 shrink-0">
+        <div className="flex items-center gap-1 p-1 bg-white/95 backdrop-blur-xl rounded-full border border-slate-200/80 shadow-xs w-fit max-w-full overflow-x-auto mb-8 shrink-0">
           <button
             type="button"
             onClick={() => setActiveTab('app')}
@@ -627,6 +570,20 @@ export const AdminFeaturePanel: React.FC = () => {
           >
             <Settings size={14} />
             Application Features
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('roles')}
+            data-testid="admin-tab-roles-button"
+            className={cn(
+              "px-5 py-2 rounded-full text-xs font-bold transition-all duration-200 flex items-center gap-2 cursor-pointer",
+              activeTab === 'roles'
+                ? "bg-[#18181B] text-white shadow-xs"
+                : "text-slate-500 hover:text-slate-900 hover:bg-slate-100/60"
+            )}
+          >
+            <Users size={14} />
+            By role
           </button>
           <button
             type="button"
@@ -667,9 +624,15 @@ export const AdminFeaturePanel: React.FC = () => {
               />
             </div>
 
-            {/* Grid */}
+            {/* Grid, by section */}
+            {(['workspace', 'app'] as const).map(section => {
+              const sectionFeatures = filteredFeatures.filter(f => f.section === section);
+              if (sectionFeatures.length === 0) return null;
+              return (
+            <section key={section} className="space-y-3" aria-label={SECTION_TITLES[section]}>
+            <p className="px-1 text-xs font-extrabold uppercase tracking-wider text-slate-400">{SECTION_TITLES[section]}</p>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredFeatures.map(f => {
+              {sectionFeatures.map(f => {
                 const isExpanded = expandedFeature === f.key;
                 const children = f.children ? Object.values(f.children) : [];
 
@@ -692,12 +655,14 @@ export const AdminFeaturePanel: React.FC = () => {
                       <span className="text-2xs font-black text-slate-400 uppercase tracking-widest">Gating Status</span>
                       <button
                         type="button"
-                        title={f.enabled ? `Disable ${f.name}` : `Enable ${f.name}`}
+                        title={isMasterLocked(f.key) ? `${f.name} is always on` : f.enabled ? `Disable ${f.name}` : `Enable ${f.name}`}
                         onClick={() => handleToggleFeatureEnabled(f.key, !f.enabled)}
+                        disabled={isMasterLocked(f.key)}
                         data-testid={`admin-feature-${f.key}-toggle-button`}
                         className={cn(
                           "w-11 h-6 rounded-full relative transition-all duration-200",
-                          f.enabled ? "bg-indigo-600" : "bg-slate-200"
+                          f.enabled ? "bg-indigo-600" : "bg-slate-200",
+                          isMasterLocked(f.key) && "cursor-not-allowed opacity-70"
                         )}
                       >
                         <div
@@ -716,30 +681,45 @@ export const AdminFeaturePanel: React.FC = () => {
                         <span className="text-2xs font-black uppercase tracking-widest">Role Visibility Matrix</span>
                       </div>
                       <div className="grid grid-cols-4 gap-2">
-                        {(['admin', 'manager', 'advisor', 'user'] as const).map(role => (
+                        {(['admin', 'manager', 'advisor', 'user'] as const).map(role => {
+                          if (!appliesToRole(f.key, role)) {
+                            return (
+                              <div key={role} className="flex flex-col items-center gap-1" title={`${f.name} is not used by the ${role} role`}>
+                                <span className="text-2xs font-bold text-slate-300 capitalize">{role}</span>
+                                <span className="h-4.5 text-xs font-bold text-slate-300">—</span>
+                              </div>
+                            );
+                          }
+                          const locked = isRoleLocked(f.key, role);
+                          const on = f.enabled && (locked || f.roleAccess[role]);
+                          return (
                           <div key={role} className="flex flex-col items-center gap-1">
-                            <span className="text-2xs font-bold text-slate-500 capitalize">{role}</span>
+                            <span className="text-2xs font-bold text-slate-500 capitalize flex items-center gap-0.5">
+                              {role}{locked && <Lock size={9} className="text-slate-400" />}
+                            </span>
                             <button
                               type="button"
-                              title={`${f.roleAccess[role] ? 'Revoke' : 'Grant'} ${role} access to ${f.name}`}
+                              title={locked ? `Always on for ${role}` : `${f.roleAccess[role] ? 'Revoke' : 'Grant'} ${role} access to ${f.name}`}
                               onClick={() => handleToggleRoleAccess(f.key, role, !f.roleAccess[role])}
-                              disabled={!f.enabled}
+                              disabled={!f.enabled || locked}
                               data-testid={`admin-feature-${f.key}-role-${role}-button`}
                               className={cn(
                                 "w-8 h-4.5 rounded-full relative transition-all duration-200",
-                                f.roleAccess[role] && f.enabled ? "bg-indigo-600" : "bg-slate-200",
-                                !f.enabled && "opacity-40 cursor-not-allowed"
+                                on ? "bg-indigo-600" : "bg-slate-200",
+                                !f.enabled && "opacity-40 cursor-not-allowed",
+                                locked && f.enabled && "opacity-70 cursor-not-allowed"
                               )}
                             >
                               <div
                                 className={cn(
                                   "absolute top-0.5 w-3.5 h-3.5 bg-white rounded-full shadow-sm transition-all duration-200",
-                                  f.roleAccess[role] && f.enabled ? "right-0.5" : "left-0.5"
+                                  on ? "right-0.5" : "left-0.5"
                                 )}
                               />
                             </button>
                           </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
 
@@ -761,7 +741,19 @@ export const AdminFeaturePanel: React.FC = () => {
                 );
               })}
             </div>
+            </section>
+              );
+            })}
           </div>
+        </div>
+
+        {/* ── By-role Tab ── */}
+        <div className={activeTab === 'roles' ? '' : 'hidden'}>
+          <FeatureRoleView
+            features={features}
+            onToggle={handleToggleRoleAccess}
+            onRestoreDefaults={handleRestoreRoleDefaults}
+          />
         </div>
 
         {/* ── AI Intelligence Systems Tab ── */}

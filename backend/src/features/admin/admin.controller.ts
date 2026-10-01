@@ -5,7 +5,7 @@ import { prisma } from '../../db/prisma';
 import { logger } from '../../config/logger';
 import { getCacheMetricsSnapshot, getRedisStatus, resetCacheMetrics } from '../../cache/redis';
 import { getSystemMetrics } from '../../utils/system';
-import { invalidateFeatureCache, invalidateAIFeatureCache } from '../../middleware/featureGate';
+import { CORE_PERSONAL_FINANCE_MODULES, invalidateFeatureCache, invalidateAIFeatureCache } from '../../middleware/featureGate';
 import { getPlatformSettings, updatePlatformSettings } from '../../utils/platformSettings';
 import { auditLog } from '../../middleware/rbac';
 import { getSupabaseAdminClient } from '../../db/supabase';
@@ -303,6 +303,15 @@ export const getFeatureFlags = async (req: AuthRequest, res: Response) => {
 
     // BUG-04 FIX: Strip roleAccess from responses for non-admin users
     if (userRole !== 'admin') {
+      // Personal-finance basics cannot be revoked per role (requireFeature
+      // ignores role access for them), but the per-role reconstruction above
+      // reports `enabled` = "this role's tick" — so a manager whose Dashboard
+      // tick was off lost the Dashboard in the app while the API still served
+      // it. Report these as the platform-wide switch (on while any role has it).
+      const platformWide = reconstructFeatures(globalFeatures);
+      for (const key of CORE_PERSONAL_FINANCE_MODULES) {
+        if (reconstructed[key] && platformWide[key]) reconstructed[key].enabled = platformWide[key].enabled;
+      }
       const filtered = stripRoleAccessMatrix(reconstructed);
       return res.json(filtered);
     }

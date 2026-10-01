@@ -69,6 +69,8 @@ Architecture: [ADR-007](../architecture/ADR-007-coin-wallet-and-payments.md).
 
 ## 4. Go live
 
+- [ ] Admin → Feature Panel → **By role**: check each role's pages first — since 2026-10-01 the API
+      enforces exactly what the panel shows. *Restore defaults* puts a role back in one click.
 - [ ] Admin → Feature Panel → **Coin Wallet**: enable, grant to users/advisors. This also starts
       charging coins for **new** bookings (existing bookings stay free).
 - [ ] Switch to `rzp_live_…` keys and the live webhook secret.

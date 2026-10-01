@@ -109,7 +109,7 @@ const DEFAULT_SUB_FEATURES: Record<string, Record<string, { enabled: boolean; ro
  * frontend/src/contexts/AppContext.tsx: if the two disagree, one side shows a
  * surface the other refuses.
  */
-const CORE_PERSONAL_FINANCE_MODULES = new Set([
+export const CORE_PERSONAL_FINANCE_MODULES = new Set([
   'accounts',      // bank accounts AND wallets
   'accountSetup',  // without it, accounts are read-only on a new account
   'transactions',

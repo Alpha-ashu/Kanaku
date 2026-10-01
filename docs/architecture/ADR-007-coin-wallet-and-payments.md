@@ -161,6 +161,23 @@ app, `wallet` is an **admin opt-in** feature (`ADMIN_OPT_IN_FEATURES` in
 role — before, the role default (`false`) capped it, so the toggle could never
 show the wallet to advisors or users.
 
+Follow-up the same day: production's saved settings (16 Sep) had admins
+switched off for most pages and managers for the Dashboard, so once the API
+followed the panel those pages were gone for both roles. The panel now:
+
+* covers every gated module (`frontend/src/app/components/admin/featureCatalog.ts`
+  — Admin Console, Advisor Panel, Vault and Transfers had no switch), grouped
+  into staff workspaces and app features;
+* shows locked switches for what cannot be revoked — an admin's own
+  workspaces, and the personal-finance basics for every role — and saves them
+  as on;
+* has a **By role** tab: every page one role can have, and *Restore defaults*
+  for that role.
+
+`GET /admin/features` now reports the personal-finance basics as on for a
+non-admin whenever any role has them (it used to report the caller's own tick,
+so a manager lost the Dashboard in the app while the API still served it).
+
 ## Configuration
 
 See `backend/.env.example` (“Coin wallet & session payments”). Every business
