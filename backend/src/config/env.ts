@@ -365,6 +365,46 @@ const CONFIG_MANIFEST: readonly ConfigItem[] = [
     services: ['api'],
     tier: () => (has('RAZORPAY_KEY_ID') ? 'recommended' : 'optional'),
   },
+  {
+    key: 'PHONEPE_CLIENT_ID',
+    group: 'Payments (PhonePe)',
+    purpose: 'PhonePe PG client id + PHONEPE_CLIENT_SECRET (+ PHONEPE_CLIENT_VERSION, PHONEPE_ENV) — offered only when listed in PAYMENT_PROVIDERS',
+    services: ['api'],
+    tier: () => 'optional',
+    present: () => has('PHONEPE_CLIENT_ID') && has('PHONEPE_CLIENT_SECRET'),
+  },
+  {
+    key: 'PHONEPE_WEBHOOK_USERNAME',
+    group: 'Payments (PhonePe)',
+    purpose: 'Webhook username + PHONEPE_WEBHOOK_PASSWORD set in the PhonePe dashboard; verifies POST /api/v1/payments/webhooks/phonepe',
+    services: ['api'],
+    tier: () => (has('PHONEPE_CLIENT_ID') ? 'recommended' : 'optional'),
+    present: () => has('PHONEPE_WEBHOOK_USERNAME') && has('PHONEPE_WEBHOOK_PASSWORD'),
+  },
+  {
+    key: 'PAYTM_MID',
+    group: 'Payments (Paytm)',
+    purpose: 'Paytm merchant id + PAYTM_MERCHANT_KEY (16 chars; + PAYTM_WEBSITE, PAYTM_ENV) — offered only when listed in PAYMENT_PROVIDERS',
+    services: ['api'],
+    tier: () => 'optional',
+    present: () => has('PAYTM_MID') && has('PAYTM_MERCHANT_KEY'),
+  },
+  {
+    key: 'JITSI_APP_ID',
+    group: 'Session video',
+    purpose: 'Jitsi token auth (+ JITSI_APP_SECRET, SESSION_VIDEO_BASE_URL): join links carry a room-scoped token; unset = public meet.jit.si with secret room names',
+    services: ['api'],
+    tier: () => 'optional',
+    present: () => has('JITSI_APP_ID') && has('JITSI_APP_SECRET'),
+  },
+  {
+    key: 'API_PUBLIC_URL',
+    group: 'Payments (redirect gateways)',
+    purpose: 'Public https URL of this API for Paytm launch/return links (defaults to RENDER_EXTERNAL_URL on Render)',
+    services: ['api'],
+    tier: () => 'optional',
+    present: () => has('API_PUBLIC_URL') || has('RENDER_EXTERNAL_URL'),
+  },
 
   // ── Account Aggregator (Setu) credentials ────────────────────────────────────
   // The /aa module is fully implemented but mounted only when ENABLED_MODULES

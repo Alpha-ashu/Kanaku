@@ -4,6 +4,8 @@ import { CheckCircle2, Clock, Coins, Loader2, ShieldCheck, X, XCircle } from 'lu
 import { cn } from '@/lib/utils';
 import { describeApiFailure, failureText } from '@/lib/apiFailure';
 import { openRazorpayCheckout } from '@/lib/razorpayCheckout';
+import { openPaymentPage, rememberPendingPurchase } from '@/lib/pendingPurchase';
+import { Capacitor } from '@capacitor/core';
 import {
   CoinPackage,
   PurchaseOrder,
@@ -28,6 +30,7 @@ type Phase =
   | { kind: 'starting' }
   | { kind: 'sandbox'; order: PurchaseOrder }
   | { kind: 'checkout'; order: PurchaseOrder }
+  | { kind: 'redirecting'; order: PurchaseOrder }
   | { kind: 'verifying'; order: PurchaseOrder }
   | { kind: 'success'; order: PurchaseOrder; transactionId: string | null; balance: number }
   | { kind: 'pending'; order: PurchaseOrder }
@@ -35,6 +38,11 @@ type Phase =
 
 interface Props {
   pkg: CoinPackage | null;
+  /**
+   * Re-open on an order already in progress — the user is back from a redirect
+   * gateway (PhonePe, Paytm). Only its status is checked; nothing is bought.
+   */
+  resumeOrderId?: string | null;
   provider?: string;
   onClose: () => void;
   /** Called with the new balance once coins are credited. */
@@ -43,8 +51,18 @@ interface Props {
 
 const POLL_INTERVAL_MS = 3000;
 const POLL_LIMIT = 20;
+/** A payment finished in the system browser can take the user a few minutes. */
+const EXTERNAL_POLL_LIMIT = 80;
 
-export const CoinPurchaseDialog: React.FC<Props> = ({ pkg, provider, onClose, onCredited }) => {
+const isNative = () => {
+  try {
+    return Capacitor.isNativePlatform();
+  } catch {
+    return false;
+  }
+};
+
+export const CoinPurchaseDialog: React.FC<Props> = ({ pkg, resumeOrderId, provider, onClose, onCredited }) => {
   const [phase, setPhase] = useState<Phase>({ kind: 'starting' });
   // One key per attempt: a retried "Buy" replays the same order server-side.
   const requestKey = useRef(newRequestKey());
@@ -66,9 +84,9 @@ export const CoinPurchaseDialog: React.FC<Props> = ({ pkg, provider, onClose, on
   }, [onCredited]);
 
   /** The server has not confirmed yet: ask it again for a while before giving up the spinner. */
-  const pollOrder = useCallback(async (order: PurchaseOrder) => {
+  const pollOrder = useCallback(async (order: PurchaseOrder, limit = POLL_LIMIT) => {
     setPhase({ kind: 'verifying', order });
-    for (let i = 0; i < POLL_LIMIT && !cancelled.current; i += 1) {
+    for (let i = 0; i < limit && !cancelled.current; i += 1) {
       await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
       try {
         const latest = await walletService.getPurchase(order.id);
@@ -105,6 +123,26 @@ export const CoinPurchaseDialog: React.FC<Props> = ({ pkg, provider, onClose, on
         setPhase({ kind: 'sandbox', order });
         return;
       }
+      // Redirect gateways (PhonePe, Paytm): the payment happens on the
+      // provider's page; the order settles from the provider's own answer.
+      const mode = typeof checkout?.mode === 'string' ? checkout.mode : null;
+      if (mode === 'redirect' || mode === 'status-only') {
+        const url = typeof checkout?.url === 'string' ? checkout.url : '';
+        if (mode === 'redirect' && url) {
+          rememberPendingPurchase(order.id);
+          if (isNative()) {
+            // The app stays open; Capacitor hands the page to the system browser.
+            window.open(url, '_blank');
+            await pollOrder(order, EXTERNAL_POLL_LIMIT);
+          } else {
+            setPhase({ kind: 'redirecting', order });
+            openPaymentPage(url);
+          }
+          return;
+        }
+        await pollOrder(order);
+        return;
+      }
       if (!checkout) throw new Error('The payment could not be started.');
       setPhase({ kind: 'checkout', order });
       const outcome = await openRazorpayCheckout(checkout);
@@ -120,13 +158,25 @@ export const CoinPurchaseDialog: React.FC<Props> = ({ pkg, provider, onClose, on
       const failure = await describeApiFailure(error, 'The payment could not be started.');
       setPhase({ kind: 'failed', message: failureText(failure) });
     }
-  }, [pkg, provider, settle, verify]);
+  }, [pkg, provider, pollOrder, settle, verify]);
+
+  /** Back from a redirect gateway: show what the provider decided about the order. */
+  const resume = useCallback(async (orderId: string) => {
+    setPhase({ kind: 'starting' });
+    try {
+      const latest = await walletService.getPurchase(orderId);
+      if (!settle(latest.order, null, latest.availableBalance)) await pollOrder(latest.order);
+    } catch (error) {
+      setPhase({ kind: 'failed', message: failureText(await describeApiFailure(error, 'That purchase could not be found.')) });
+    }
+  }, [pollOrder, settle]);
 
   useEffect(() => {
     if (pkg) void start();
-    // Start once per opened package; retries go through `retry`.
+    else if (resumeOrderId) void resume(resumeOrderId);
+    // Start once per opened package / resumed order; retries go through `retry`.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pkg?.id]);
+  }, [pkg?.id, resumeOrderId]);
 
   const retry = () => {
     requestKey.current = newRequestKey();
@@ -146,11 +196,13 @@ export const CoinPurchaseDialog: React.FC<Props> = ({ pkg, provider, onClose, on
     }
   };
 
-  const busy = phase.kind === 'starting' || phase.kind === 'checkout' || phase.kind === 'verifying';
+  const busy = phase.kind === 'starting' || phase.kind === 'checkout' || phase.kind === 'verifying' || phase.kind === 'redirecting';
+  const open = Boolean(pkg || resumeOrderId);
+  const orderInView = 'order' in phase ? phase.order : undefined;
 
   return (
     <AnimatePresence>
-      {pkg && (
+      {open && (
         <div className="fixed inset-0 z-[110] flex items-end sm:items-center justify-center p-0 sm:p-6 bg-slate-950/60 backdrop-blur-sm">
           <motion.div
             initial={{ opacity: 0, y: 24 }}
@@ -167,14 +219,27 @@ export const CoinPurchaseDialog: React.FC<Props> = ({ pkg, provider, onClose, on
                   <Coins size={18} className="text-violet-600" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-card-title text-slate-900 truncate">{pkg.name} · {formatCoins(pkg.totalCoins)}</p>
-                  <p className="text-caption text-slate-500">{formatMoneyMinor(pkg.priceMinor, pkg.currency)}</p>
+                  {pkg ? (
+                    <>
+                      <p className="text-card-title text-slate-900 truncate">{pkg.name} · {formatCoins(pkg.totalCoins)}</p>
+                      <p className="text-caption text-slate-500">{formatMoneyMinor(pkg.priceMinor, pkg.currency)}</p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-card-title text-slate-900 truncate">
+                        {orderInView ? `Coin purchase · ${formatCoins(orderInView.coins)}` : 'Coin purchase'}
+                      </p>
+                      <p className="text-caption text-slate-500">
+                        {orderInView ? formatMoneyMinor(orderInView.amountMinor, orderInView.currency) : 'Checking your payment'}
+                      </p>
+                    </>
+                  )}
                 </div>
               </div>
               <button
                 type="button"
                 onClick={onClose}
-                disabled={phase.kind === 'checkout'}
+                disabled={phase.kind === 'checkout' || phase.kind === 'redirecting'}
                 className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 disabled:opacity-40"
                 aria-label="Close"
                 data-testid="coin-purchase-close"
@@ -188,7 +253,13 @@ export const CoinPurchaseDialog: React.FC<Props> = ({ pkg, provider, onClose, on
                 <div className="flex flex-col items-center text-center gap-3 py-4">
                   <Loader2 size={28} className="animate-spin text-violet-500" />
                   <p className="text-body font-bold text-slate-900">
-                    {phase.kind === 'starting' ? 'Starting secure payment…' : phase.kind === 'checkout' ? 'Complete the payment in the payment window' : 'Processing payment…'}
+                    {phase.kind === 'starting'
+                      ? (pkg ? 'Starting secure payment…' : 'Checking your payment…')
+                      : phase.kind === 'checkout'
+                        ? 'Complete the payment in the payment window'
+                        : phase.kind === 'redirecting'
+                          ? 'Opening the secure payment page…'
+                          : 'Processing payment…'}
                   </p>
                   {phase.kind === 'verifying' && (
                     <p className="text-body-sm text-slate-500">Confirming with the payment provider. This usually takes a few seconds.</p>
@@ -266,7 +337,7 @@ export const CoinPurchaseDialog: React.FC<Props> = ({ pkg, provider, onClose, on
             </div>
 
             <div className="px-5 sm:px-6 pb-6 flex gap-3">
-              {phase.kind === 'failed' && (
+              {phase.kind === 'failed' && pkg && (
                 <button
                   type="button"
                   onClick={retry}

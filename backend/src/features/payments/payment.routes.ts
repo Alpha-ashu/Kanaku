@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import express, { Router } from 'express';
 import { authMiddleware } from '../../middleware/auth';
 import { pinGate } from '../../middleware/pinGate';
 import { requireFeature } from '../../middleware/featureGate';
@@ -28,11 +28,31 @@ router.post(
 // Coin-purchase gateways (Razorpay, sandbox…). Public by necessity; trust comes
 // from each provider's signature over the RAW body, checked in the adapter.
 // Duplicate deliveries are recognised by (provider, event id) and ignored.
+// Paytm posts form-encoded callbacks and notifications; keep the raw bytes for
+// its checksum. (JSON bodies already carry rawBody from the global parser.)
+const formBody = express.urlencoded({
+  extended: false,
+  limit: '64kb',
+  verify: (req, _res, buf) => {
+    (req as unknown as { rawBody?: Buffer }).rawBody = buf;
+  },
+});
+
 router.post(
   '/webhooks/:provider',
   rateLimit({ windowMs: 60_000, max: 240, scope: 'payment-provider-webhook' }),
+  formBody,
   PaymentController.handleProviderWebhookRoute,
 );
+
+// Redirect gateways (Paytm, PhonePe): the page that opens Paytm's form-post
+// checkout, and where the gateway sends the browser back. Public by nature;
+// the launch link is signed per order, and a return only triggers a status
+// check with the provider — it never credits anything by itself.
+const returnLimiter = rateLimit({ windowMs: 60_000, max: 60, scope: 'payment-return' });
+router.get('/launch/paytm/:orderId', returnLimiter, PaymentController.launchPaytm);
+router.get('/return/:provider', returnLimiter, PaymentController.handleProviderReturn);
+router.post('/return/:provider', returnLimiter, formBody, PaymentController.handleProviderReturn);
 
 // Protected routes
 router.use(authMiddleware);

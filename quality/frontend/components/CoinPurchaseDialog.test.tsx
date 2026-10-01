@@ -4,8 +4,11 @@ import React, { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { get, post } = vi.hoisted(() => ({ get: vi.fn(), post: vi.fn() }));
+const { get, post, openPaymentPage, rememberPendingPurchase } = vi.hoisted(() => ({
+  get: vi.fn(), post: vi.fn(), openPaymentPage: vi.fn(), rememberPendingPurchase: vi.fn(),
+}));
 vi.mock('@/lib/backend-api', () => ({ backendService: { api: { get, post } } }));
+vi.mock('@/lib/pendingPurchase', () => ({ openPaymentPage, rememberPendingPurchase }));
 vi.mock('lucide-react', () => Object.fromEntries(
   ['CheckCircle2', 'Clock', 'Coins', 'Loader2', 'ShieldCheck', 'X', 'XCircle'].map((n) => [n, () => null]),
 ));
@@ -119,5 +122,33 @@ describe('CoinPurchaseDialog', () => {
     expect(container.textContent).toContain('Payment failed — try again');
     expect(byTestId('coin-purchase-retry')).not.toBeNull();
     expect(onCredited).not.toHaveBeenCalled();
+  });
+
+  it('sends the browser to a redirect gateway, remembering the order, and claims nothing', async () => {
+    post.mockImplementation(async (url: string) => {
+      if (url === '/wallet/purchases') {
+        return envelope({ order: { ...order('CREATED'), provider: 'phonepe' }, checkout: { provider: 'phonepe', mode: 'redirect', url: 'https://mercury.example/pay/order-1' } });
+      }
+      throw new Error(`unexpected ${url}`);
+    });
+    await act(async () => { root.render(<CoinPurchaseDialog pkg={pkg} provider="phonepe" onClose={() => undefined} onCredited={onCredited} />); });
+    await flush();
+    expect(rememberPendingPurchase).toHaveBeenCalledWith('order-1');
+    expect(openPaymentPage).toHaveBeenCalledWith('https://mercury.example/pay/order-1');
+    expect(container.textContent).toContain('Opening the secure payment page');
+    expect(onCredited).not.toHaveBeenCalled();
+  });
+
+  it('on return from a gateway, shows the outcome the server reports for that order', async () => {
+    get.mockImplementation(async (url: string) => {
+      if (url === '/wallet/purchases/order-1') return envelope({ order: { ...order('PAID'), provider: 'paytm' }, availableBalance: 525 });
+      throw new Error(`unexpected ${url}`);
+    });
+    await act(async () => { root.render(<CoinPurchaseDialog pkg={null} resumeOrderId="order-1" onClose={() => undefined} onCredited={onCredited} />); });
+    await flush();
+    expect(byTestId('coin-purchase-success')).not.toBeNull();
+    expect(onCredited).toHaveBeenCalledWith(525);
+    expect(post).not.toHaveBeenCalled(); // nothing is bought again
+    expect(byTestId('coin-purchase-retry')).toBeNull();
   });
 });

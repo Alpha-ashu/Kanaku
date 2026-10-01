@@ -74,14 +74,25 @@ start + grace, nothing charged), `MISSED` (paid, never started → refunded),
 `features/payments/providers/` — one `PaymentProvider` interface; the wallet,
 bookings and admin code never talk to a gateway directly.
 
-* **Razorpay** — implemented (orders, checkout signature, API status read,
-  webhooks, refunds). Google Pay / PhonePe / Paytm apps are reachable as UPI
-  methods inside Razorpay checkout.
+* **Razorpay** — popup checkout: signed result checked on the server, then the
+  captured amount read from the API. Google Pay / PhonePe / Paytm apps are also
+  reachable as UPI methods inside Razorpay checkout.
+* **PhonePe** (Standard Checkout v2) and **Paytm** (Initiate Transaction +
+  hosted page) — redirect checkout: the browser goes to the provider and comes
+  back to `/wallet?purchase=<order id>`; the order settles only from the
+  provider's status API or a verified webhook (PhonePe: SHA256(username:password)
+  header; Paytm: checksum). Paytm's page needs a form POST, so the app opens a
+  signed, per-order launch link (`GET /payments/launch/paytm/:orderId?t=`) that
+  auto-submits it; Paytm posts the browser back to `/payments/return/paytm`,
+  which only triggers a status check. Written against the providers' published
+  APIs and unit/integration tested with the APIs mocked — **run each end to end
+  on its sandbox/staging before adding it to `PAYMENT_PROVIDERS`.**
 * **Sandbox** — a fake gateway for development and tests; never offered when
   `NODE_ENV=production`.
-* **PhonePe / Paytm direct** — *not implemented.* Both need merchant sandbox
-  credentials to build and verify their checksum/status flows. Adding one is a
-  new adapter file plus a registry entry.
+
+A webhook whose signature fails is recorded as REJECTED, but a correctly signed
+delivery with the same id is still processed (a forged first delivery must not
+get the genuine one dropped as a duplicate).
 
 Webhook URL: `POST /api/v1/payments/webhooks/<provider>` — signature checked over
 the raw body; duplicates by `(provider, event_id)`.
@@ -109,10 +120,14 @@ is an environment variable with a conservative default.
 
 ## Known limitations
 
-* The video room is a public Jitsi room whose name is an HMAC the server hands
-  out only when access is granted. A self-hosted Jitsi with JWT auth would make
-  the room itself enforce access.
-* Advisor withdrawals (coins → money) are not implemented. Adding them changes
-  the wallet's regulatory character (closed → semi-closed prepaid instrument).
+* Video: by default a public Jitsi room whose name is an HMAC the server hands
+  out only when access is granted. With a token-authenticated Jitsi server
+  (`JITSI_APP_ID`/`JITSI_APP_SECRET`, `SESSION_VIDEO_BASE_URL`) each join link
+  carries a room-scoped token expiring with the join window, so the room itself
+  enforces access (advisor = moderator).
+* Advisor withdrawals (coins → money) are not implemented — deliberately kept
+  out (owner decision, 2026-10-01) pending advice on the RBI prepaid-instrument
+  rules. No platform fee is deducted from advisor earnings yet (see
+  `docs/legal/DRAFT_COINS_PAYMENTS_AND_DATA.md` §4).
 * The auth snapshot falls back to token claims if the DB lookup times out;
   money-moving code re-reads the rows it acts on inside its transaction.

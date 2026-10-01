@@ -125,6 +125,36 @@ services:
         sync: false
       - key: PAYMENT_PROVIDERS
         value: razorpay   # the sandbox provider is never offered in production regardless
+      # Optional redirect gateways — add "phonepe" / "paytm" to PAYMENT_PROVIDERS
+      # only after an end-to-end run on their sandbox/staging. Webhook URLs:
+      # https://<api-host>/api/v1/payments/webhooks/phonepe | /paytm
+      - key: PHONEPE_CLIENT_ID
+        sync: false
+      - key: PHONEPE_CLIENT_SECRET
+        sync: false
+      - key: PHONEPE_CLIENT_VERSION
+        sync: false
+      - key: PHONEPE_ENV
+        sync: false       # production | sandbox
+      - key: PHONEPE_WEBHOOK_USERNAME
+        sync: false
+      - key: PHONEPE_WEBHOOK_PASSWORD
+        sync: false
+      - key: PAYTM_MID
+        sync: false
+      - key: PAYTM_MERCHANT_KEY
+        sync: false
+      - key: PAYTM_WEBSITE
+        sync: false
+      - key: PAYTM_ENV
+        sync: false       # production | staging
+      # Session video: set these only with a token-authenticated Jitsi server.
+      - key: SESSION_VIDEO_BASE_URL
+        sync: false
+      - key: JITSI_APP_ID
+        sync: false
+      - key: JITSI_APP_SECRET
+        sync: false
       # AI & Scanner Fallback Providers
       - key: XKIRO_API_KEY
         sync: false     # xkiro proxy API key (for KAI assistant and OCR scanner backup in production)

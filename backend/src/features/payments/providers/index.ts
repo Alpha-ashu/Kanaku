@@ -1,4 +1,6 @@
 import { razorpayProvider } from './razorpay.provider';
+import { phonepeProvider } from './phonepe.provider';
+import { paytmProvider } from './paytm.provider';
 import { sandboxProvider } from './sandbox.provider';
 import type { PaymentProvider, ProviderId, ProviderStatus } from './types';
 
@@ -7,20 +9,26 @@ export type { PaymentProvider, ProviderId, ProviderStatus } from './types';
 /**
  * Provider registry — the only place that knows which gateways exist.
  *
- * To add a gateway (PhonePe, Paytm, …): implement `PaymentProvider` in its own
- * file, add it here, and add its id to `ProviderId`. Nothing in the wallet,
- * booking or admin code changes. PhonePe and Paytm are not implemented yet:
- * both need merchant sandbox credentials to build their checksum/status flows
- * against, and an unverified payment adapter is worse than none. Google Pay and
- * the PhonePe/Paytm apps are already reachable as UPI methods inside Razorpay.
+ * To add a gateway: implement `PaymentProvider` in its own file, add it here,
+ * and add its id to `ProviderId`. Nothing in the wallet, booking or admin code
+ * changes.
+ *
+ *   razorpay  popup checkout, signed result + API check (UPI incl. Google Pay /
+ *             PhonePe / Paytm apps, cards, netbanking)
+ *   phonepe   redirect to PhonePe's page; settled from its status API / webhook
+ *   paytm     redirect to Paytm's page; settled from its status API / webhook
+ *   sandbox   simulated payments for development — never offered in production
  *
  * `PAYMENT_PROVIDERS` (comma-separated, in order of preference) chooses which
- * configured providers are offered for purchases; default "razorpay,sandbox".
- * The sandbox is never offered in production whatever this says.
+ * CONFIGURED providers are offered for purchases; default "razorpay,sandbox".
+ * PhonePe and Paytm are opt-in: add them only after a successful end-to-end run
+ * on their sandbox / staging environments.
  */
 
 const ALL: Record<ProviderId, PaymentProvider> = {
   razorpay: razorpayProvider,
+  phonepe: phonepeProvider,
+  paytm: paytmProvider,
   sandbox: sandboxProvider,
 };
 
@@ -50,12 +58,7 @@ export const providerStatuses = (): ProviderStatus[] => {
     .map((id) => {
       const provider = ALL[id];
       const configured = provider.isConfigured();
-      const webhookConfigured = id === 'razorpay' ? Boolean(process.env.RAZORPAY_WEBHOOK_SECRET) : configured;
-      const mode: ProviderStatus['mode'] = !configured
-        ? 'unconfigured'
-        : id === 'sandbox'
-          ? 'sandbox'
-          : (process.env.RAZORPAY_KEY_ID || '').startsWith('rzp_live_') ? 'live' : 'test';
+      const { webhookConfigured, mode } = provider.describe();
       return { id, displayName: provider.displayName, configured, webhookConfigured, mode, enabledForPurchases: enabled.has(id) && configured };
     });
 };

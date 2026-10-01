@@ -1,6 +1,6 @@
 import { Response } from 'express';
-import { createHmac } from 'crypto';
 import { AuthRequest, getUserId } from '../../middleware/auth';
+import { sessionJoinUrl, videoRoomsUseTokens } from './videoRoom';
 import { prisma } from '../../db/prisma';
 import { getSocketManager } from '../../sockets';
 import { logger } from '../../config/logger';
@@ -93,19 +93,6 @@ export const getSession = async (req: AuthRequest, res: Response) => {
   }
 };
 
-/**
- * The video room for a session. Derived from the session id with a server
- * secret, so it cannot be guessed from anything a client sees, and handed out
- * only by the access check below — the client used to build the room name from
- * the session id itself, so anyone who learned the id could walk in.
- */
-const sessionRoomUrl = (sessionId: string) => {
-  const secret = process.env.SESSION_ROOM_SECRET || process.env.JWT_SECRET || 'kanaku-dev-room-secret';
-  const room = createHmac('sha256', secret).update(`session-room:${sessionId}`).digest('base64url').slice(0, 32);
-  const base = (process.env.SESSION_VIDEO_BASE_URL || 'https://meet.jit.si').replace(/\/+$/, '');
-  return `${base}/Kanaku-${room}`;
-};
-
 /** Whether the caller may enter the session right now — decided on the server clock. */
 export const getSessionAccess = async (req: AuthRequest, res: Response) => {
   try {
@@ -115,9 +102,22 @@ export const getSessionAccess = async (req: AuthRequest, res: Response) => {
     if (!access.state.canJoin) {
       audit({ event: 'session.access_denied', userId, resource: 'AdvisorSession', resourceId: req.params.id, meta: { lifecycle: access.state.lifecycle } });
     }
+    let joinUrl: string | undefined;
+    if (access.state.canJoin) {
+      // With a token-authenticated Jitsi the link carries a room-scoped token
+      // for this participant, valid until the join window closes (videoRoom.ts).
+      const me = videoRoomsUseTokens()
+        ? await prisma.user.findUnique({ where: { id: userId }, select: { name: true } })
+        : null;
+      joinUrl = sessionJoinUrl(
+        req.params.id,
+        { id: userId, name: me?.name, moderator: access.role === 'advisor' },
+        (access.state as { joinClosesAt?: string | null }).joinClosesAt ?? null,
+      );
+    }
     return res.json({
       success: true,
-      data: { ...access.state, role: access.role, ...(access.state.canJoin ? { joinUrl: sessionRoomUrl(req.params.id) } : {}) },
+      data: { ...access.state, role: access.role, ...(joinUrl ? { joinUrl } : {}) },
     });
   } catch (error) {
     logger.error('[Sessions] access check failed', { sessionId: req.params?.id, error });

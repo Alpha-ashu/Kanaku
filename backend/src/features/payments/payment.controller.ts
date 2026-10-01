@@ -1,9 +1,17 @@
 import { Response } from 'express';
-import { timingSafeEqual, createHmac } from 'crypto';
+import { timingSafeEqual, createHmac, randomBytes } from 'crypto';
 import { AuthRequest, getUserId } from '../../middleware/auth';
 import { prisma } from '../../db/prisma';
 import { logger } from '../../config/logger';
-import { handleProviderWebhook } from '../wallet/coinPurchase.service';
+import { handleProviderWebhook, reconcileOrder } from '../wallet/coinPurchase.service';
+import { paytmProvider } from './providers/paytm.provider';
+import {
+  autoSubmitPage,
+  isOrderId,
+  messagePage,
+  purchaseReturnUrl,
+  verifyLaunchToken,
+} from './providers/redirectCheckout';
 
 /**
  * Constant-time string comparison to prevent timing attacks on secret/token
@@ -530,4 +538,72 @@ export const handleProviderWebhookRoute = async (req: AuthRequest & { rawBody?: 
   } catch (error) {
     return failure(res, error, 'Webhook processing failed');
   }
+};
+
+/**
+ * GET /payments/launch/paytm/:orderId?t=<signed>
+ *
+ * Paytm's payment page must be opened with a form POST; a link (or the system
+ * browser the native app hands off to) can only GET. This serves a page that
+ * posts mid + orderId + txnToken to Paytm on load. The link is signed for one
+ * order and expires; the order must still be open.
+ */
+export const launchPaytm = async (req: AuthRequest, res: Response) => {
+  res.setHeader('Cache-Control', 'no-store');
+  res.setHeader('Referrer-Policy', 'no-referrer');
+  const orderId = String(req.params.orderId || '');
+  const token = typeof req.query.t === 'string' ? req.query.t : undefined;
+  if (!isOrderId(orderId) || !verifyLaunchToken(orderId, token)) {
+    return res.status(403).type('html').send(messagePage('Link expired', 'This payment link is no longer valid. Go back to KANAKU and start the purchase again.'));
+  }
+  const order = await prisma.paymentOrder.findUnique({ where: { id: orderId }, select: { provider: true, status: true } });
+  if (!order || order.provider !== 'paytm' || order.status !== 'CREATED') {
+    return res.status(409).type('html').send(messagePage('Purchase closed', 'This purchase is no longer open. Go back to KANAKU to check its status or buy again.'));
+  }
+  const form = paytmProvider.launchForm(orderId);
+  if (!form) {
+    return res.status(410).type('html').send(messagePage('Link expired', 'This payment link has expired. Go back to KANAKU and start the purchase again.'));
+  }
+  const nonce = randomBytes(16).toString('base64');
+  // Replaces the API-wide policy for this one page: its only script is the
+  // nonce'd auto-submit, and its only form may post to Paytm.
+  res.setHeader(
+    'Content-Security-Policy',
+    `default-src 'none'; script-src 'nonce-${nonce}'; style-src 'unsafe-inline'; form-action ${new URL(form.action).origin}; base-uri 'none'; frame-ancestors 'none'`,
+  );
+  return res.type('html').send(autoSubmitPage(form.action, form.fields, nonce));
+};
+
+/**
+ * GET|POST /payments/return/:provider
+ *
+ * Where a gateway sends the user's browser after paying (Paytm posts its
+ * result here). It proves nothing — anyone can post to it — so it only asks
+ * the provider for the order's real status (crediting if the PROVIDER says
+ * paid) and sends the browser on to the wallet page to watch the order.
+ */
+export const handleProviderReturn = async (req: AuthRequest & { rawBody?: unknown }, res: Response) => {
+  res.setHeader('Cache-Control', 'no-store');
+  const providerId = String(req.params.provider || '');
+  let orderId: string | undefined;
+  if (providerId === 'paytm') {
+    const raw = Buffer.isBuffer(req.rawBody)
+      ? req.rawBody
+      : Buffer.from(new URLSearchParams(Object.entries(req.query).map(([k, v]) => [k, String(v)])).toString());
+    orderId = paytmProvider.verifyReturn(raw).orderId;
+  } else {
+    const fromQuery = req.query.purchase ?? req.query.orderId;
+    orderId = typeof fromQuery === 'string' ? fromQuery : undefined;
+  }
+
+  if (isOrderId(orderId)) {
+    const order = await prisma.paymentOrder.findUnique({ where: { id: orderId }, select: { provider: true, creditedAt: true } });
+    if (order && order.provider === providerId && !order.creditedAt) {
+      // Settle from the provider's own answer; never block the redirect on it.
+      void reconcileOrder(orderId, 'callback').catch((error) => logger.warn('[payments] return reconcile failed', { orderId, error }));
+    }
+    const target = purchaseReturnUrl(orderId);
+    if (target) return res.redirect(303, target);
+  }
+  return res.type('html').send(messagePage('Payment submitted', 'You can close this page and return to KANAKU. Your coins appear as soon as the payment is confirmed.'));
 };

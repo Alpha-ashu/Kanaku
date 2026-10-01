@@ -59,7 +59,7 @@ export interface CoinPackage {
 }
 
 export interface ProviderOption {
-  id: 'razorpay' | 'sandbox';
+  id: 'razorpay' | 'phonepe' | 'paytm' | 'sandbox';
   displayName: string;
 }
 

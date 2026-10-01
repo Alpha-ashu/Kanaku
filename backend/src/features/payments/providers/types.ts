@@ -16,7 +16,7 @@
  *   - Amounts are integers in the currency's minor unit (paise).
  */
 
-export type ProviderId = 'razorpay' | 'sandbox';
+export type ProviderId = 'razorpay' | 'phonepe' | 'paytm' | 'sandbox';
 
 export interface CreateOrderInput {
   /** Our PaymentOrder id — sent to the provider as the receipt / reference. */
@@ -25,6 +25,12 @@ export interface CreateOrderInput {
   currency: string;
   description: string;
   customer?: { name?: string | null; email?: string | null };
+  /** Opaque, stable customer reference (never the raw user id) for gateways that require one. */
+  customerRef?: string;
+  /** Where a redirect gateway sends the user's BROWSER back to (the app's wallet page). */
+  returnUrl?: string;
+  /** Server endpoint a form-post gateway (Paytm) posts the browser back to. */
+  callbackUrl?: string;
 }
 
 export interface CreateOrderResult {
@@ -81,8 +87,17 @@ export interface CheckoutInput {
 export interface PaymentProvider {
   readonly id: ProviderId;
   readonly displayName: string;
+  /**
+   * `popup`: the provider's checkout opens over the app and returns a signed
+   * result the server verifies (Razorpay). `redirect`: the browser goes to the
+   * provider's page and comes back; there is no client-side proof at all, so the
+   * order is settled only from the provider's status API or a verified webhook.
+   */
+  readonly checkoutKind: 'popup' | 'redirect' | 'simulated';
   /** Credentials present. An unconfigured provider is never offered to users. */
   isConfigured(): boolean;
+  /** Configuration state for the admin console — never secrets. */
+  describe(): { webhookConfigured: boolean; mode: ProviderStatus['mode'] };
   createOrder(input: CreateOrderInput): Promise<CreateOrderResult>;
   /** Public checkout parameters for an existing provider order (e.g. when a retry replays it). */
   checkoutFor(input: CheckoutInput): Record<string, unknown>;

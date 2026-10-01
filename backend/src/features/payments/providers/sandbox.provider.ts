@@ -67,9 +67,15 @@ export const signSandboxWebhook = (rawBody: string | Buffer) => sign(rawBody);
 export const sandboxProvider: PaymentProvider = {
   id: 'sandbox',
   displayName: 'Sandbox (test payments — no real money)',
+  checkoutKind: 'simulated',
 
   isConfigured() {
     return process.env.NODE_ENV !== 'production';
+  },
+
+  describe() {
+    const configured = sandboxProvider.isConfigured();
+    return { webhookConfigured: configured, mode: configured ? 'sandbox' : 'unconfigured' };
   },
 
   async createOrder(input: CreateOrderInput): Promise<CreateOrderResult> {

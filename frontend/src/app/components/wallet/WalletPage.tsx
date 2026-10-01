@@ -20,6 +20,7 @@ import {
   walletService,
 } from '@/services/walletService';
 import { CoinPurchaseDialog } from './CoinPurchaseDialog';
+import { takePendingPurchase } from '@/lib/pendingPurchase';
 
 /**
  * The account holder's coin wallet: balance, buying coins, and every movement.
@@ -67,6 +68,9 @@ export const WalletPage: React.FC = () => {
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [buying, setBuying] = useState<CoinPackage | null>(null);
+  const [payWith, setPayWith] = useState<string | undefined>(undefined);
+  // Back from a redirect gateway (PhonePe / Paytm): show that order's outcome.
+  const [resumeOrderId, setResumeOrderId] = useState<string | null>(() => takePendingPurchase());
 
   const loadTransactions = useCallback(async (type: LedgerType | '', cursor: string | null) => {
     const page = await walletService.getTransactions({ type, cursor });
@@ -118,8 +122,11 @@ export const WalletPage: React.FC = () => {
 
   const closePurchase = () => {
     setBuying(null);
+    setResumeOrderId(null);
     void load();
   };
+
+  const selectedProvider = providers.some((p) => p.id === payWith) ? payWith : providers[0]?.id;
 
   const frozen = wallet?.status === 'FROZEN';
   const purchasesOn = Boolean(wallet?.purchasesEnabled) && packages.length > 0 && !frozen;
@@ -193,6 +200,29 @@ export const WalletPage: React.FC = () => {
           {!loading && !purchasesOn && (
             <div className="p-4 rounded-2xl border border-slate-200 bg-slate-50 text-body-sm text-slate-600">
               {frozen ? 'Purchases are unavailable while the wallet is on hold.' : 'Coin purchases are not available right now. Please check back later.'}
+            </div>
+          )}
+          {purchasesOn && providers.length > 1 && (
+            <div className="flex items-center gap-2 flex-wrap" role="radiogroup" aria-label="Pay with">
+              <span className="text-sm font-semibold text-slate-600">Pay with</span>
+              {providers.map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={selectedProvider === p.id}
+                  onClick={() => setPayWith(p.id)}
+                  data-testid={`wallet-pay-with-${p.id}`}
+                  className={cn(
+                    'px-3 py-1.5 rounded-full border text-xs font-bold transition-colors',
+                    selectedProvider === p.id
+                      ? 'bg-slate-900 border-slate-900 text-white'
+                      : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50',
+                  )}
+                >
+                  {p.displayName.split(' (')[0]}
+                </button>
+              ))}
             </div>
           )}
           {purchasesOn && (
@@ -340,7 +370,8 @@ export const WalletPage: React.FC = () => {
 
       <CoinPurchaseDialog
         pkg={buying}
-        provider={providers[0]?.id}
+        resumeOrderId={buying ? null : resumeOrderId}
+        provider={selectedProvider}
         onClose={closePurchase}
         onCredited={onCredited}
       />

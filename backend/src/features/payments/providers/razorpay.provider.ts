@@ -111,10 +111,19 @@ const sanitizeEntity = (value: unknown) => {
 export const razorpayProvider: PaymentProvider = {
   id: 'razorpay',
   displayName: 'Razorpay (UPI, cards, netbanking)',
+  checkoutKind: 'popup',
 
   isConfigured() {
     const { keyId, keySecret } = env();
     return Boolean(keyId && keySecret);
+  },
+
+  describe() {
+    const { keyId, webhookSecret } = env();
+    return {
+      webhookConfigured: Boolean(webhookSecret),
+      mode: !razorpayProvider.isConfigured() ? 'unconfigured' : keyId.startsWith('rzp_live_') ? 'live' : 'test',
+    };
   },
 
   async createOrder(input: CreateOrderInput): Promise<CreateOrderResult> {

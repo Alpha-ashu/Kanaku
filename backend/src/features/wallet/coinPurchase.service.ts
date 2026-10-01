@@ -4,6 +4,8 @@ import { logger } from '../../config/logger';
 import { audit } from '../../utils/auditLogger';
 import { notify } from '../notifications/notify';
 import { getProvider, defaultPurchaseProvider, purchaseProviders, type PaymentProvider } from '../payments/providers';
+import { apiPublicBase, purchaseReturnUrl } from '../payments/providers/redirectCheckout';
+import { createHash } from 'crypto';
 import { WalletError } from './wallet.errors';
 import { walletConfig } from './wallet.config';
 import { LEDGER_TX_OPTIONS, findEntry, lockKey, lockWallets, postEntry, setWalletStatus } from './wallet.service';
@@ -115,12 +117,19 @@ export const createPurchaseOrder = async (input: CreatePurchaseInput) => {
   }
 
   try {
+    const apiBase = apiPublicBase();
     const created = await provider.createOrder({
       orderId: order.id,
       amountMinor: order.amountMinor,
       currency: order.currency,
       description: describe(order.coins),
       customer: input.customer,
+      // Gateways that need a customer id get a stable hash, never the user id.
+      customerRef: `k${createHash('sha256').update(`kanaku-customer:${input.userId}`).digest('hex').slice(0, 30)}`,
+      // Redirect gateways send the browser back to the wallet page (PhonePe) or
+      // post it to the API first (Paytm). Nothing is credited on the way back.
+      returnUrl: purchaseReturnUrl(order.id) || undefined,
+      callbackUrl: apiBase ? `${apiBase}/api/v1/payments/return/${provider.id}` : undefined,
     });
     order = await prisma.paymentOrder.update({ where: { id: order.id }, data: { providerOrderId: created.providerOrderId } });
     audit({ event: 'payment.order_created', userId: input.userId, resource: 'PaymentOrder', resourceId: order.id, meta: { provider: provider.id, amountMinor: order.amountMinor, coins: order.coins } });
@@ -257,6 +266,10 @@ export const confirmPurchaseFromCheckout = async (userId: string, orderId: strin
   const provider = getProvider(order.provider);
   if (!provider || !order.providerOrderId) throw new WalletError('PROVIDER_UNAVAILABLE', 'Payments are not available right now.', 503);
 
+  // Redirect gateways return no signed result from the browser; "verify" can
+  // only mean "ask the provider now" — which is all reconcileOrder does.
+  if (provider.checkoutKind === 'redirect') return reconcileOrder(orderId, 'callback');
+
   const verification = provider.verifyCheckout(order.providerOrderId, payload);
   if (!verification.valid) {
     audit({ event: 'security.payment_signature_invalid', userId, resource: 'PaymentOrder', resourceId: orderId, meta: { provider: order.provider, route: 'checkout' } });
@@ -290,9 +303,27 @@ export const handleProviderWebhook = async (
   let event = await prisma.paymentWebhookEvent.findUnique({
     where: { provider_eventId: { provider: provider.id, eventId: parsed.eventId } },
   });
-  if (event && ['PROCESSED', 'IGNORED', 'REJECTED'].includes(event.status)) {
+  if (event && ['PROCESSED', 'IGNORED'].includes(event.status)) {
     // Redelivery of something already handled — acknowledge, do nothing.
     return { httpStatus: 200, body: { received: true, duplicate: true } };
+  }
+  if (event && event.status === 'REJECTED') {
+    // The id is known from a delivery whose signature FAILED. Anyone can post
+    // that — including someone who guessed the id of a real payment to get its
+    // genuine notification dropped as a "duplicate". A forged repeat is refused
+    // again; a correctly signed delivery is processed on the same row.
+    if (!parsed.valid) return { httpStatus: 401, body: { error: 'Invalid signature' } };
+    event = await prisma.paymentWebhookEvent.update({
+      where: { id: event.id },
+      data: {
+        status: 'RECEIVED',
+        signatureValid: true,
+        eventType: parsed.eventType,
+        payload: parsed.sanitizedPayload as Prisma.InputJsonValue,
+        error: null,
+        processedAt: null,
+      },
+    });
   }
   if (!event) {
     try {

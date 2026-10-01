@@ -14,7 +14,7 @@ export const ledgerQuerySchema = z.object({
 
 export const createPurchaseSchema = z.object({
   packageId: id,
-  provider: z.enum(['razorpay', 'sandbox']).optional(),
+  provider: z.enum(['razorpay', 'phonepe', 'paytm', 'sandbox']).optional(),
   clientRequestId: key,
 });
 
