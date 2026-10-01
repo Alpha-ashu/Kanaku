@@ -3,7 +3,8 @@
  * Allows users to upload, preview, edit, and import bank statements
  */
 
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useRef, useMemo, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   Upload, 
   FileText, 
@@ -109,6 +110,26 @@ export const StatementImport: React.FC<StatementImportProps> = ({
   });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Prevent background scrolling while modal is open
+  useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, []);
+
+  // Keyboard accessibility: ESC key closes modal
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onCancel?.();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onCancel]);
 
   const formatFileSize = (bytes: number): string => {
     if (bytes < 1024) return `${bytes} B`;
@@ -253,10 +274,13 @@ export const StatementImport: React.FC<StatementImportProps> = ({
         setImportState('preview');
         toast.success(`Found ${result.transactions.length} transactions from ${file.name}`);
       } else {
-        const hint = result.errors && result.errors.length > 0
+        const rawHint = result.errors && result.errors.length > 0
           ? result.errors[0]
           : 'No transactions were detected. Try a different format.';
-        setErrorDetail(hint);
+        const cleanHint = rawHint.includes('fake worker') || rawHint.includes('worker')
+          ? 'Could not initialize statement PDF parser. Please verify the document format or try a CSV/Excel statement.'
+          : rawHint;
+        setErrorDetail(cleanHint);
         setImportState('error');
       }
 
@@ -264,7 +288,11 @@ export const StatementImport: React.FC<StatementImportProps> = ({
       console.error('Statement parsing crash prevented:', error);
       setImportState('error');
       const msg = error?.message || 'Unknown error';
-      setErrorDetail(msg.includes('worker') ? 'Service worker failed to initialize. Please refresh.' : msg);
+      setErrorDetail(
+        msg.includes('worker') || msg.includes('fake worker')
+          ? 'PDF statement parsing worker encountered an issue. Please verify the document format or try a CSV/Excel statement.'
+          : msg
+      );
     }
   };
 
@@ -552,18 +580,23 @@ export const StatementImport: React.FC<StatementImportProps> = ({
 
   const fileFormatInfo = getFileFormatDetails(file);
 
-  return (
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
     <div 
       data-testid="statement-import-div" 
       onClick={(e) => { e.stopPropagation(); onCancel?.(); }}
-      className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[100] flex items-center justify-center p-3 sm:p-4"
+      className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-3 sm:p-5 md:p-6 transition-all duration-200"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="statement-import-title"
     >
       <div 
         onClick={(e) => e.stopPropagation()}
-        className={`bg-white border border-slate-100 rounded-[28px] sm:rounded-[36px] shadow-2xl overflow-hidden flex flex-col relative z-[101] pointer-events-auto transition-all duration-300 w-full ${
+        className={`bg-white border border-slate-200/90 shadow-2xl shadow-slate-950/20 rounded-[28px] sm:rounded-[32px] overflow-hidden flex flex-col relative z-[10000] pointer-events-auto transition-all duration-300 w-full ${
           importState === 'preview' 
-            ? 'max-w-4xl max-h-[92vh]' 
-            : 'max-w-lg max-h-[88vh]'
+            ? 'max-w-2xl lg:max-w-4xl max-h-[92vh] sm:max-h-[88vh]' 
+            : 'max-w-lg max-h-[85vh]'
         }`}
       >
         {/* Hidden file input */}
@@ -577,10 +610,10 @@ export const StatementImport: React.FC<StatementImportProps> = ({
         />
 
         {/* ─── Header ────────────────────────────────────────────────────────── */}
-        <div className="flex items-center justify-between px-5 sm:px-7 py-4 sm:py-5 border-b border-slate-100 bg-white/80 backdrop-blur-md shrink-0">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 border-b border-slate-100 bg-white/90 backdrop-blur-md shrink-0">
           <div className="min-w-0 pr-3">
             <div className="flex items-center gap-2">
-              <h2 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight truncate">
+              <h2 id="statement-import-title" className="text-base sm:text-lg lg:text-xl font-black text-slate-900 tracking-tight truncate">
                 {importState === 'preview' ? 'Review & Edit Statement' : 'Import Statement'}
               </h2>
               {importState === 'preview' && (
@@ -594,7 +627,7 @@ export const StatementImport: React.FC<StatementImportProps> = ({
               <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-400">
                 <Building2 size={13} className="text-slate-400 shrink-0" />
                 <span>Account:</span>
-                <span className="text-slate-900 font-bold truncate max-w-[160px] sm:max-w-[220px]">{accountName}</span>
+                <span className="text-slate-900 font-bold truncate max-w-[140px] sm:max-w-[220px]">{accountName}</span>
               </div>
               <span className="text-slate-300">•</span>
               <span className="text-2xs font-bold uppercase tracking-wider text-slate-400">{accountType}</span>
@@ -604,10 +637,10 @@ export const StatementImport: React.FC<StatementImportProps> = ({
           <button 
             data-testid="statement-import-cancel-statement-import"
             onClick={(e) => { e.stopPropagation(); onCancel?.(); }}
-            className="w-9 h-9 rounded-full bg-slate-50 hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-700 transition-all cursor-pointer shrink-0 active:scale-95"
-            aria-label="Cancel statement import"
+            className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-slate-100 hover:bg-slate-200/80 flex items-center justify-center text-slate-500 hover:text-slate-800 transition-all cursor-pointer shrink-0 active:scale-95"
+            aria-label="Close statement import modal"
           >
-            <X size={18} />
+            <X size={17} />
           </button>
         </div>
 
@@ -627,8 +660,11 @@ export const StatementImport: React.FC<StatementImportProps> = ({
                 {/* Drag and Drop Zone */}
                 {!file ? (
                   <div 
-                    className="relative group border-2 border-dashed border-slate-200/90 hover:border-slate-400 hover:bg-slate-50/60 rounded-[28px] transition-all duration-300 p-7 sm:p-10 text-center cursor-pointer"
-                    onClick={() => fileInputRef.current?.click()}
+                    className="relative group border-2 border-dashed border-slate-200/90 hover:border-slate-400 hover:bg-slate-50/60 rounded-[24px] sm:rounded-[28px] transition-all duration-300 p-6 sm:p-10 text-center cursor-pointer"
+                    onClick={() => {
+                      if (fileInputRef.current) fileInputRef.current.value = '';
+                      fileInputRef.current?.click();
+                    }}
                     onDragOver={(e) => { e.preventDefault(); e.currentTarget.classList.add('border-blue-500', 'bg-blue-50/30'); }}
                     onDragLeave={(e) => { e.preventDefault(); e.currentTarget.classList.remove('border-blue-500', 'bg-blue-50/30'); }}
                     onDrop={(e) => {
@@ -644,24 +680,28 @@ export const StatementImport: React.FC<StatementImportProps> = ({
                       <Upload size={28} />
                     </div>
                     
-                    <h3 className="text-lg font-black text-slate-900 mb-1.5 tracking-tight">
+                    <h3 className="text-base sm:text-lg font-black text-slate-900 mb-1.5 tracking-tight">
                       Upload Bank Statement
                     </h3>
                     <p className="text-xs text-slate-500 mb-6 max-w-sm mx-auto leading-relaxed">
-                      Drop your official bank statement here or click browse. Automatic data extraction identifies all credits, debits, and categories.
+                      Drop your bank statement here or click browse. Automatic data extraction identifies all credits, debits, dates, and categories.
                     </p>
                     
                     <Button 
                       data-testid="statement-import-button"
                       type="button"
-                      onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (fileInputRef.current) fileInputRef.current.value = '';
+                        fileInputRef.current?.click();
+                      }}
                       className="rounded-full px-6 h-11 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 shadow-xs font-bold text-xs cursor-pointer active:scale-95"
                     >
                       <Upload size={15} className="mr-2" />
                       Browse Files
                     </Button>
 
-                    <div className="mt-7 pt-6 border-t border-slate-100 flex flex-wrap justify-center gap-3 sm:gap-6 text-2xs font-bold text-slate-400">
+                    <div className="mt-6 pt-5 border-t border-slate-100 flex flex-wrap justify-center gap-3 sm:gap-6 text-2xs font-bold text-slate-400">
                       <span className="flex items-center gap-1.5">
                         <span className="w-1.5 h-1.5 rounded-full bg-rose-400" />
                         PDF STATEMENTS
@@ -679,13 +719,13 @@ export const StatementImport: React.FC<StatementImportProps> = ({
                 ) : (
                   /* Uploaded File Card */
                   <div className="space-y-4">
-                    <div className={`border rounded-[26px] p-5 transition-all ${fileFormatInfo.cardBg}`}>
-                      <div className="flex items-start gap-4">
-                        <div className={`w-13 h-13 rounded-2xl flex items-center justify-center shrink-0 shadow-xs ${fileFormatInfo.iconBg}`}>
+                    <div className={`border rounded-[24px] sm:rounded-[26px] p-4 sm:p-5 transition-all ${fileFormatInfo.cardBg}`}>
+                      <div className="flex items-start gap-3 sm:gap-4">
+                        <div className={`w-12 h-12 sm:w-13 sm:h-13 rounded-2xl flex items-center justify-center shrink-0 shadow-xs ${fileFormatInfo.iconBg}`}>
                           {file.type === 'text/csv' ? (
-                            <Table data-testid="statement-import-table" size={26} />
+                            <Table data-testid="statement-import-table" size={24} />
                           ) : (
-                            <FileText size={26} />
+                            <FileText size={24} />
                           )}
                         </div>
 
@@ -702,7 +742,7 @@ export const StatementImport: React.FC<StatementImportProps> = ({
                             </span>
                           </div>
 
-                          <p className="text-sm font-bold text-slate-900 truncate" title={file.name}>
+                          <p className="text-xs sm:text-sm font-bold text-slate-900 truncate" title={file.name}>
                             {file.name}
                           </p>
                           <p className="text-xs text-slate-500 mt-0.5 font-medium">
@@ -711,10 +751,13 @@ export const StatementImport: React.FC<StatementImportProps> = ({
                         </div>
                       </div>
 
-                      <div className="mt-4 pt-4 border-t border-slate-200/50 flex items-center justify-between gap-3">
+                      <div className="mt-4 pt-3.5 border-t border-slate-200/50 flex items-center justify-between gap-3">
                         <button
                           type="button"
-                          onClick={() => fileInputRef.current?.click()}
+                          onClick={() => {
+                            if (fileInputRef.current) fileInputRef.current.value = '';
+                            fileInputRef.current?.click();
+                          }}
                           className="text-xs font-bold text-slate-600 hover:text-slate-900 transition-colors flex items-center gap-1.5 cursor-pointer py-1"
                         >
                           <RefreshCw size={13} /> Change File
@@ -1000,8 +1043,8 @@ export const StatementImport: React.FC<StatementImportProps> = ({
                   </div>
                 </div>
 
-                {/* ─── Transactions List & Inline Editor ───────────────────────── */}
-                <div className="space-y-2">
+                {/* --- Transactions List & Inline Editor --- */}
+                <div className="space-y-2.5">
                   <div className="flex items-center justify-between px-1">
                     <p className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">
                       Extracted Transactions ({filteredTransactions.length})
@@ -1017,17 +1060,17 @@ export const StatementImport: React.FC<StatementImportProps> = ({
                       <p className="text-xs text-slate-400 mt-1">Try clearing your search query or filter</p>
                     </div>
                   ) : (
-                    <div className="space-y-2 max-h-[380px] overflow-y-auto custom-scrollbar pr-0.5">
+                    <div className="space-y-2.5">
                       {filteredTransactions.map(({ transaction, originalIndex }) => {
                         const isSelected = selectedTransactions.has(originalIndex);
                         const isEditing = editingIndex === originalIndex;
 
                         if (isEditing) {
-                          /* Inline Edit Card */
+                          /* Inline Edit Card Tile */
                           return (
                             <div 
                               key={originalIndex}
-                              className="bg-white border-2 border-indigo-500/80 rounded-2xl p-4 shadow-md space-y-4 animate-in fade-in zoom-in-95 duration-150"
+                              className="bg-white border-2 border-indigo-500/80 rounded-[20px] p-4 shadow-md space-y-4 animate-in fade-in zoom-in-95 duration-150"
                             >
                               <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
                                 <span className="text-xs font-black text-indigo-950 flex items-center gap-1.5">
@@ -1091,6 +1134,7 @@ export const StatementImport: React.FC<StatementImportProps> = ({
                                       type="number"
                                       step="any"
                                       min="0"
+                                      inputMode="decimal"
                                       value={editForm.amount}
                                       onChange={(e) => setEditForm(prev => ({ ...prev, amount: e.target.value }))}
                                       className="w-full h-9 pl-7 pr-3 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
@@ -1105,6 +1149,7 @@ export const StatementImport: React.FC<StatementImportProps> = ({
                                   </label>
                                   <input
                                     type="date"
+                                    inputMode="numeric"
                                     value={editForm.transaction_date}
                                     onChange={(e) => setEditForm(prev => ({ ...prev, transaction_date: e.target.value }))}
                                     className="w-full h-9 px-3 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
@@ -1130,7 +1175,7 @@ export const StatementImport: React.FC<StatementImportProps> = ({
                                 {/* Payment Channel */}
                                 <div>
                                   <label className="text-3xs font-bold text-slate-400 uppercase tracking-wider block mb-1">
-                                    Payment Method
+                                    Payment Channel
                                   </label>
                                   <select
                                     value={editForm.payment_channel}
@@ -1168,56 +1213,78 @@ export const StatementImport: React.FC<StatementImportProps> = ({
                           );
                         }
 
-                        /* Normal Display Row */
+                        /* Normal Display Row as a proper Card Tile */
                         return (
                           <div 
                             key={originalIndex}
                             data-testid={`statement-import-div-3-${originalIndex}`}
-                            className={`group p-3 sm:p-3.5 rounded-2xl border transition-all duration-150 flex items-center gap-3 sm:gap-4 ${
+                            className={`group p-3 sm:p-4 rounded-[20px] border transition-all duration-200 relative overflow-hidden flex flex-col gap-2 ${
                               isSelected 
-                                ? 'bg-white border-slate-200 shadow-2xs hover:border-slate-300' 
-                                : 'bg-slate-50/60 border-slate-100/80 opacity-60 hover:opacity-90'
+                                ? 'bg-white border-slate-200/90 shadow-2xs hover:shadow-xs hover:border-slate-300' 
+                                : 'bg-slate-50/70 border-slate-100/90 opacity-60 hover:opacity-90'
                             }`}
                           >
-                            {/* Checkbox */}
-                            <div 
-                              onClick={() => toggleTransactionSelection(originalIndex)}
-                              className={`w-5 h-5 rounded-lg border-2 flex-shrink-0 flex items-center justify-center transition-all cursor-pointer ${
-                                isSelected 
-                                  ? 'bg-[#18181B] border-[#18181B] text-white' 
-                                  : 'border-slate-300 bg-white hover:border-slate-400'
-                              }`}
-                            >
-                              {isSelected && <Check size={12} strokeWidth={3} />}
-                            </div>
+                            {/* Top Row: Checkbox + Date/Badges on left, Prominent Amount on right */}
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-2 min-w-0">
+                                <div 
+                                  onClick={() => toggleTransactionSelection(originalIndex)}
+                                  className={`w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all cursor-pointer ${
+                                    isSelected 
+                                      ? 'bg-[#18181B] border-[#18181B] text-white shadow-2xs' 
+                                      : 'border-slate-300 bg-white hover:border-slate-400'
+                                  }`}
+                                  title={isSelected ? "Deselect row" : "Select row"}
+                                >
+                                  {isSelected && <Check size={11} strokeWidth={3} />}
+                                </div>
 
-                            {/* Content & Details */}
-                            <div 
-                              onClick={() => toggleTransactionSelection(originalIndex)}
-                              className="flex-1 min-w-0 cursor-pointer"
-                            >
-                              <div className="flex items-center gap-2 mb-0.5">
-                                <span className="text-3xs font-black text-slate-400 uppercase tracking-wider">
-                                  {formatDate(transaction.transaction_date)}
-                                </span>
-                                {transaction.payment_channel && (
-                                  <span className="px-1.5 py-0.2 rounded text-3xs font-extrabold bg-slate-100 text-slate-600 uppercase">
-                                    {transaction.payment_channel}
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  <span className="text-3xs font-extrabold text-slate-400 uppercase tracking-wider">
+                                    {formatDate(transaction.transaction_date)}
                                   </span>
-                                )}
-                                {transaction.isDuplicate && (
-                                  <span className="px-1.5 py-0.2 rounded text-3xs font-black bg-amber-100 text-amber-800 uppercase tracking-tight">
-                                    Duplicate
-                                  </span>
-                                )}
+                                  {transaction.payment_channel && (
+                                    <span className="px-2 py-0.5 rounded-full text-3xs font-black uppercase tracking-wider bg-slate-100 text-slate-600 border border-slate-200/60">
+                                      {transaction.payment_channel}
+                                    </span>
+                                  )}
+                                  {transaction.isDuplicate && (
+                                    <span className="px-2 py-0.5 rounded-full text-3xs font-black bg-amber-100 text-amber-800 uppercase tracking-tight border border-amber-200">
+                                      Duplicate
+                                    </span>
+                                  )}
+                                </div>
                               </div>
 
-                              <p className="text-xs sm:text-sm font-bold text-slate-900 truncate">
-                                {transaction.cleaned_description || transaction.raw_description}
-                              </p>
+                              {/* Amount with bold tag */}
+                              <div className="text-right flex items-center gap-1.5 shrink-0">
+                                <span className={`text-sm sm:text-base font-black tracking-tight font-mono ${getTransactionTypeColor(transaction.transaction_type)}`}>
+                                  {transaction.transaction_type === 'income' ? '+' : '-'}
+                                  {formatCurrency(transaction.amount)}
+                                </span>
+                                <span className={`px-1.5 py-0.2 rounded text-3xs font-black uppercase ${
+                                  transaction.transaction_type === 'income' 
+                                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/60'
+                                    : 'bg-rose-50 text-rose-700 border border-rose-200/60'
+                                }`}>
+                                  {transaction.transaction_type}
+                                </span>
+                              </div>
+                            </div>
 
-                              <div className="flex items-center gap-2 mt-1">
-                                <span className="text-2xs font-semibold text-slate-500 bg-slate-100/90 px-2 py-0.5 rounded-full truncate max-w-[140px]">
+                            {/* Middle Row: Full-width clear Description */}
+                            <p 
+                              onClick={() => toggleTransactionSelection(originalIndex)}
+                              className="text-xs sm:text-sm font-bold text-slate-900 leading-snug cursor-pointer line-clamp-2 pl-7"
+                              title={transaction.cleaned_description || transaction.raw_description}
+                            >
+                              {transaction.cleaned_description || transaction.raw_description}
+                            </p>
+
+                            {/* Bottom Row: Category on left, Edit/Delete Action Buttons on right */}
+                            <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-100/90 pl-7">
+                              <div className="flex items-center gap-2 flex-wrap min-w-0">
+                                <span className="text-2xs font-semibold text-slate-600 bg-slate-100/90 px-2.5 py-0.5 rounded-full border border-slate-200/50 truncate max-w-[160px]">
                                   {transaction.category || 'Miscellaneous'}
                                 </span>
                                 {transaction.isDuplicate && !isSelected && (
@@ -1233,22 +1300,8 @@ export const StatementImport: React.FC<StatementImportProps> = ({
                                   </button>
                                 )}
                               </div>
-                            </div>
 
-                            {/* Amount & Actions */}
-                            <div className="text-right flex-shrink-0 flex items-center gap-3">
-                              <div>
-                                <p className={`text-xs sm:text-sm font-black tracking-tight ${getTransactionTypeColor(transaction.transaction_type)}`}>
-                                  {transaction.transaction_type === 'income' ? '+' : '-'}
-                                  {formatCurrency(transaction.amount)}
-                                </p>
-                                <span className="text-3xs font-bold text-slate-400 uppercase">
-                                  {transaction.transaction_type}
-                                </span>
-                              </div>
-
-                              {/* Row Action Buttons */}
-                              <div className="flex items-center gap-1 shrink-0">
+                              <div className="flex items-center gap-1.5 shrink-0">
                                 <button
                                   type="button"
                                   onClick={(e) => {
@@ -1333,15 +1386,24 @@ export const StatementImport: React.FC<StatementImportProps> = ({
                 key="success"
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="text-center py-16 px-6"
+                className="text-center py-12 sm:py-16 px-6"
               >
                 <div className="w-18 h-18 bg-emerald-100 rounded-3xl flex items-center justify-center mx-auto mb-5 text-emerald-600 shadow-xs">
                   <CheckCircle size={36} />
                 </div>
                 <h3 className="text-xl font-black text-slate-900 mb-2">Import Successful!</h3>
-                <p className="text-xs text-slate-500 max-w-xs mx-auto leading-relaxed">
+                <p className="text-xs text-slate-500 max-w-xs mx-auto leading-relaxed mb-6">
                   All selected transactions have been verified, categorized, and recorded in <strong className="text-slate-800">{accountName}</strong>.
                 </p>
+                <div className="flex justify-center">
+                  <Button
+                    type="button"
+                    onClick={() => onSuccess?.()}
+                    className="h-11 px-8 rounded-full bg-[#18181B] text-white hover:bg-black font-bold text-xs cursor-pointer active:scale-95 shadow-sm"
+                  >
+                    Done & View Account
+                  </Button>
+                </div>
               </motion.div>
             )}
 
@@ -1351,29 +1413,61 @@ export const StatementImport: React.FC<StatementImportProps> = ({
                 key="error"
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="text-center py-12 px-6"
+                className="text-center py-10 sm:py-12 px-4 sm:px-6"
               >
-                <div className="w-16 h-16 bg-rose-100 rounded-3xl flex items-center justify-center mx-auto mb-4 text-rose-600">
+                <div className="w-16 h-16 bg-rose-100 rounded-3xl flex items-center justify-center mx-auto mb-4 text-rose-600 shadow-xs">
                   <XCircle size={32} />
                 </div>
                 <h3 className="text-lg font-black text-slate-900 mb-2">Unable to Process Statement</h3>
                 {errorDetail ? (
-                  <div className="mx-auto max-w-sm bg-rose-50/80 border border-rose-200/80 rounded-2xl p-4 mb-6 text-left">
+                  <div className="mx-auto max-w-md bg-rose-50/80 border border-rose-200/80 rounded-2xl p-4 mb-4 text-left">
                     <p className="text-xs font-bold text-rose-800">Reason:</p>
-                    <p className="text-xs text-rose-700 mt-1 leading-relaxed">{errorDetail}</p>
+                    <p className="text-xs text-rose-700 mt-1 leading-relaxed break-words">{errorDetail}</p>
                   </div>
                 ) : (
-                  <p className="text-xs text-slate-500 mb-6 max-w-sm mx-auto leading-relaxed">
+                  <p className="text-xs text-slate-500 mb-4 max-w-sm mx-auto leading-relaxed">
                     There was an issue extracting transactions from this document. Please ensure the document is a supported PDF, CSV, or Excel statement.
                   </p>
                 )}
-                <div className="flex gap-3 justify-center">
+
+                <div className="bg-slate-50 border border-slate-100 rounded-2xl p-3.5 mb-6 max-w-md mx-auto text-left">
+                  <p className="text-2xs font-extrabold text-slate-500 uppercase tracking-wider mb-1.5">Helpful Tips:</p>
+                  <ul className="text-xs text-slate-600 space-y-1 list-disc list-inside">
+                    <li>Ensure the statement file is not password-protected.</li>
+                    <li>If the PDF has complex scanned tables, download a CSV or Excel export from your bank.</li>
+                    <li>Verify all transaction rows and dates are visible in the file.</li>
+                  </ul>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3 justify-center max-w-md mx-auto">
                   <Button 
                     data-testid="statement-import-try-again" 
                     onClick={() => { setImportState('idle'); setErrorDetail(''); }} 
-                    className="h-10 px-6 rounded-full bg-[#18181B] text-white hover:bg-black font-bold text-xs cursor-pointer active:scale-95"
+                    className="h-11 px-5 rounded-full bg-[#18181B] text-white hover:bg-black font-bold text-xs cursor-pointer active:scale-95 flex items-center justify-center gap-1.5"
                   >
-                    Try Again
+                    <RefreshCw size={14} /> Try Again
+                  </Button>
+                  <Button 
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setFile(null);
+                      setImportState('idle');
+                      setErrorDetail('');
+                      if (fileInputRef.current) fileInputRef.current.value = '';
+                      fileInputRef.current?.click();
+                    }} 
+                    className="h-11 px-5 rounded-full border-slate-200 text-slate-700 hover:bg-slate-100 font-bold text-xs cursor-pointer active:scale-95 flex items-center justify-center gap-1.5"
+                  >
+                    <Upload size={14} /> Choose Another File
+                  </Button>
+                  <Button 
+                    type="button"
+                    variant="ghost"
+                    onClick={onCancel} 
+                    className="h-11 px-4 rounded-full text-slate-500 hover:text-slate-800 font-semibold text-xs cursor-pointer active:scale-95"
+                  >
+                    Cancel
                   </Button>
                 </div>
               </motion.div>
@@ -1382,6 +1476,7 @@ export const StatementImport: React.FC<StatementImportProps> = ({
           </AnimatePresence>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

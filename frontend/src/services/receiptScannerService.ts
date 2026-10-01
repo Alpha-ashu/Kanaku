@@ -1,7 +1,5 @@
 // @ts-ignore pdfjs-dist ships no type declarations for the /build/*.mjs subpath
 import * as pdfjsLib from 'pdfjs-dist/build/pdf.mjs';
-// @ts-ignore Vite `?url` suffix import has no ambient type declaration
-import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import type {
   ReceiptCharge,
   ReceiptLineItem,
@@ -11,7 +9,18 @@ import type {
 } from '@/types/receipt.types';
 import { documentIntelligenceService } from './documentIntelligenceService';
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
+const getPdfWorkerUrl = (): string => {
+  const base = import.meta.env.BASE_URL ?? '/';
+  const cleanBase = base.endsWith('/') ? base : `${base}/`;
+  if (typeof window !== 'undefined' && window.location) {
+    return new URL(`${cleanBase}pdf.worker.min.mjs`, window.location.origin).href;
+  }
+  return `${cleanBase}pdf.worker.min.mjs`;
+};
+
+if (typeof window !== 'undefined' && pdfjsLib?.GlobalWorkerOptions) {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = getPdfWorkerUrl();
+}
 
 export type ReceiptScannerResult = ReceiptScanResult;
 export type { ReceiptScanResult };

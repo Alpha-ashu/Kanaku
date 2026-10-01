@@ -13,30 +13,42 @@ import { documentIntelligenceService } from './documentIntelligenceService';
 import { createWorker } from 'tesseract.js';
 // @ts-ignore pdfjs-dist ships no type declarations for the /build/*.mjs subpath
 import * as pdfjsLib from 'pdfjs-dist/build/pdf.mjs';
-// @ts-ignore Vite `?url` suffix import has no ambient type declaration
-import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
-
-pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
 /**
- * pdf.js standard-font data, served from our own origin.
+ * pdf.js worker data and standard-font data, served from our own static origin (frontend/public/).
  *
- * This pointed at `https://cdn.jsdelivr.net/npm/pdfjs-dist@<version>/standard_fonts/`,
- * which is wrong for this app on three counts:
+ * Vite in dev mode injects `@vite/client` into `?url` imports from node_modules, which breaks
+ * inside Web Workers (where DOM/window does not exist) and then triggers a fake worker fallback
+ * that fails with dynamic import fetch errors.
  *
- *  1. **Offline-first.** Statement import is a core offline flow; a PDF that relies on
- *     the standard 14 fonts could not resolve them without a network round-trip, and
- *     pdf.js then falls back to substitute metrics — which shifts glyph positions and
- *     corrupts the column alignment the row parser depends on.
- *  2. **Native.** The WebView runs on `https://localhost`, so this is a cross-origin
- *     fetch that a tightened CSP blocks outright.
- *  3. **Privacy.** A bank statement is the most sensitive document this app touches;
- *     parsing one should not announce itself to a third-party CDN.
- *
- * The 16 font files are already bundled in `frontend/public/standard_fonts/` — they were
- * simply not being used. BASE_URL keeps this correct under a non-root deploy base.
+ * Serving the pure worker script directly from `public/pdf.worker.min.mjs` ensures:
+ *  1. Offline first & native Capacitor support (same-origin static asset).
+ *  2. No Vite module-transform injection into worker thread.
+ *  3. Guaranteed matching version 6.3.289 for both worker and library.
  */
-const STANDARD_FONT_DATA_URL = `${import.meta.env.BASE_URL ?? '/'}standard_fonts/`;
+const getPdfWorkerUrl = (): string => {
+  const base = import.meta.env.BASE_URL ?? '/';
+  const cleanBase = base.endsWith('/') ? base : `${base}/`;
+  if (typeof window !== 'undefined' && window.location) {
+    return new URL(`${cleanBase}pdf.worker.min.mjs`, window.location.origin).href;
+  }
+  return `${cleanBase}pdf.worker.min.mjs`;
+};
+
+const getStandardFontDataUrl = (): string => {
+  const base = import.meta.env.BASE_URL ?? '/';
+  const cleanBase = base.endsWith('/') ? base : `${base}/`;
+  if (typeof window !== 'undefined' && window.location) {
+    return new URL(`${cleanBase}standard_fonts/`, window.location.origin).href;
+  }
+  return `${cleanBase}standard_fonts/`;
+};
+
+if (typeof window !== 'undefined' && pdfjsLib?.GlobalWorkerOptions) {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = getPdfWorkerUrl();
+}
+
+const STANDARD_FONT_DATA_URL = getStandardFontDataUrl();
 
 export interface ParsedTransaction {
   transaction_date: Date;
@@ -489,14 +501,29 @@ class StatementImportService {
       let rawText = '';
       let transactions: ParsedTransaction[] = [];
 
-      if (file.type === 'application/pdf') {
-        rawText = await this.extractPdfText(file);
+      if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+        try {
+          rawText = await this.extractPdfText(file);
+        } catch (pdfErr) {
+          console.warn('[StatementImport] Standard PDF text extraction failed, falling back to OCR:', pdfErr);
+          try {
+            rawText = await this.extractPdfTextWithOcr(file);
+          } catch (ocrErr) {
+            console.error('[StatementImport] PDF OCR fallback also failed:', ocrErr);
+            throw new Error(`Could not parse PDF statement: ${pdfErr instanceof Error ? pdfErr.message : 'Text extraction failed'}`);
+          }
+        }
+
         const compactTextLength = rawText.replace(/\s+/g, '').length;
 
         if (compactTextLength < 120) {
-          const ocrText = await this.extractPdfTextWithOcr(file);
-          if (ocrText.replace(/\s+/g, '').length > compactTextLength) {
-            rawText = ocrText;
+          try {
+            const ocrText = await this.extractPdfTextWithOcr(file);
+            if (ocrText.replace(/\s+/g, '').length > compactTextLength) {
+              rawText = ocrText;
+            }
+          } catch (ocrErr) {
+            console.warn('[StatementImport] Secondary OCR pass skipped:', ocrErr);
           }
         }
 
@@ -551,10 +578,15 @@ class StatementImportService {
         processingStatus: 'failed',
       });
 
+      const rawErrorMsg = error instanceof Error ? error.message : 'Unknown error occurred';
+      const cleanErrorMsg = rawErrorMsg.includes('fake worker') || rawErrorMsg.includes('worker')
+        ? 'Could not initialize statement PDF parser. Please verify the document format or try a CSV/Excel statement.'
+        : rawErrorMsg;
+
       return {
         success: false,
         transactions: [],
-        errors: [error instanceof Error ? error.message : 'Unknown error occurred'],
+        errors: [cleanErrorMsg],
         summary: { total: 0, credits: 0, debits: 0, count: 0, duplicates: 0 },
         documentId,
       };
