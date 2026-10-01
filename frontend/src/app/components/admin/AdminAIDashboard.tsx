@@ -383,10 +383,7 @@ export const AdminAIDashboard: React.FC = () => {
  <ChevronLeft size={24} className="text-gray-600" />
  </button>
  <div className="flex-1 min-w-0">
- <div className="flex items-center gap-2">
- <Brain size={22} className="text-indigo-600 shrink-0" />
  <h2 className="text-xl md:text-2xl font-bold text-gray-900 truncate">AI Intelligence Dashboard</h2>
- </div>
  <p className="text-gray-500 mt-0.5 text-xs md:text-sm">Backend AI engine Admin only</p>
  </div>
  </div>

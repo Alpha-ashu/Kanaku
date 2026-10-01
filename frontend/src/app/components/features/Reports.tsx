@@ -913,6 +913,7 @@ export const Reports: React.FC = () => {
             {canPdf && (
               <Button
                 onClick={() => { pulseExportAction('share'); void sharePDF(); }}
+                size="icon"
                 data-testid="reports-share-button"
                 aria-label="Share Report"
                 title="Share Report"

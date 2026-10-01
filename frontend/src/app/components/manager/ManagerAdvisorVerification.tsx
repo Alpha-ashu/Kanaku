@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
+import { PageHeaderCard } from '@/app/components/ui/PageHeader';
 import { useApp } from '@/contexts/AppContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { backendService } from '@/lib/backend-api';
@@ -185,26 +186,18 @@ export const ManagerAdvisorVerification: React.FC = () => {
       <div className="w-full space-y-6 pb-20">
 
         {/* Manager Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-slate-900 flex items-center justify-center text-white shadow-md">
-              <ShieldCheck size={24} />
-            </div>
-            <div>
-              <h1 className="font-page-title text-slate-900 tracking-tight leading-none truncate">Compliance Dashboard</h1>
-              <p className="text-sm text-slate-500 font-medium">Advisor Verification & KYC Management</p>
-            </div>
-          </div>
+        <PageHeaderCard title="Compliance Dashboard" subtitle="Advisor Verification & KYC Management">
           <button
             onClick={fetchApplications}
             disabled={loading}
             className="p-2.5 bg-white border border-slate-200 rounded-2xl hover:bg-slate-50 transition-all text-slate-600 shadow-sm"
             data-testid="manager-verify-refresh-button"
             title="Refresh list"
+            aria-label="Refresh list"
           >
             <RefreshCw size={20} className={loading ? 'animate-spin' : ''} />
           </button>
-        </div>
+        </PageHeaderCard>
 
         {/* Tab Navigation */}
         <div className="flex flex-wrap gap-2 p-1 bg-slate-100 rounded-2xl w-fit max-w-full">
