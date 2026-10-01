@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Activity, Coins, CreditCard, FileClock, Landmark, Package, ShieldAlert, Users, Webhook } from 'lucide-react';
+import { Activity, Banknote, Coins, CreditCard, FileClock, Landmark, Package, ShieldAlert, Users, Webhook } from 'lucide-react';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { PageHeaderCard } from '@/app/components/ui/PageHeader';
 import { useAuth } from '@/contexts/AuthContext';
@@ -11,6 +11,7 @@ import { FinanceWalletsTab } from './FinanceWalletsTab';
 import { FinancePackagesTab } from './FinancePackagesTab';
 import { FinanceSecurityTab, FinanceWebhooksTab } from './FinanceEventsTab';
 import { FinanceStaffTab } from './FinanceStaffTab';
+import { FinanceWithdrawalsTab } from './FinanceWithdrawalsTab';
 
 /**
  * Payments & wallets console.
@@ -20,12 +21,13 @@ import { FinanceStaffTab } from './FinanceStaffTab';
  * A manager without a grant sees a "no permission" notice in the tab, not data.
  */
 
-type TabId = 'overview' | 'transactions' | 'payments' | 'wallets' | 'packages' | 'webhooks' | 'security' | 'staff';
+type TabId = 'overview' | 'transactions' | 'payments' | 'withdrawals' | 'wallets' | 'packages' | 'webhooks' | 'security' | 'staff';
 
 const TABS: Array<{ id: TabId; label: string; icon: React.ElementType; adminOnly?: boolean }> = [
   { id: 'overview', label: 'Overview', icon: Activity, adminOnly: true },
   { id: 'transactions', label: 'Transactions', icon: FileClock },
   { id: 'payments', label: 'Payments', icon: CreditCard },
+  { id: 'withdrawals', label: 'Withdrawals', icon: Banknote, adminOnly: true },
   { id: 'wallets', label: 'Wallets', icon: Coins },
   { id: 'packages', label: 'Coin packages', icon: Package, adminOnly: true },
   { id: 'webhooks', label: 'Webhooks', icon: Webhook, adminOnly: true },
@@ -79,6 +81,7 @@ export const AdminFinanceConsole: React.FC = () => {
           {tab === 'overview' && <FinanceOverviewTab />}
           {tab === 'transactions' && <FinanceTransactionsTab />}
           {tab === 'payments' && <FinancePaymentsTab />}
+          {tab === 'withdrawals' && <FinanceWithdrawalsTab />}
           {tab === 'wallets' && <FinanceWalletsTab />}
           {tab === 'packages' && <FinancePackagesTab />}
           {tab === 'webhooks' && <FinanceWebhooksTab />}

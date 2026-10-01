@@ -38,6 +38,7 @@ export const PERMISSIONS = [
   'finance.adjust',
   'finance.packages.manage',
   'finance.providers.read',
+  'finance.payouts',
   'security.read',
   'staff.manage',
 ] as const;
@@ -48,8 +49,9 @@ const MANAGER_DEFAULTS: readonly Permission[] = ['team.read', 'team.bookings.rea
 
 /**
  * What an admin may grant to a manager. Anything that moves money by fiat
- * (`finance.adjust`), changes prices, or changes who holds authority
- * (`staff.manage`) stays admin-only and cannot be granted.
+ * (`finance.adjust`), pays money out (`finance.payouts`), changes prices, or
+ * changes who holds authority (`staff.manage`) stays admin-only and cannot be
+ * granted.
  */
 export const GRANTABLE_TO_MANAGER: readonly Permission[] = [
   'team.wallets.read',

@@ -9,9 +9,9 @@ Architecture: [ADR-007](../architecture/ADR-007-coin-wallet-and-payments.md).
 - [ ] Refund policy (`SESSION_CANCEL_FULL_REFUND_MINUTES`, `SESSION_LATE_CANCEL_REFUND_PERCENT`, `SESSION_REFUND_UNSTARTED`).
 - [ ] Legal: the public site states "no paid plans" — Terms, Privacy Policy and the pricing page must be
       updated before coins are sold. Start from `docs/legal/DRAFT_COINS_PAYMENTS_AND_DATA.md`, which lists
-      what the code does and the decisions still open (no-show refunds, platform fee, GST). Coins are
-      redeemable only inside KANAKU (closed-loop); do not add advisor withdrawals without advice on
-      prepaid-instrument rules.
+      what the code does and the decisions still open (no-show refunds, platform fee, GST). Bought coins
+      are redeemable only inside KANAKU; advisors can withdraw coins they EARNED (min 300 coins = ₹300),
+      paid out manually — confirm the payout terms (TDS, timelines) with your accountant first.
 - [ ] Merchant onboarding with Razorpay (KYC, settlement account, business category).
 
 ## 1. Deploy (migration runs on deploy)
@@ -45,6 +45,18 @@ Architecture: [ADR-007](../architecture/ADR-007-coin-wallet-and-payments.md).
 - [ ] `FRONTEND_URL` (users return to `/wallet`) and `API_PUBLIC_URL` (defaults to `RENDER_EXTERNAL_URL`).
 - [ ] Buy a package with each on its sandbox (web and the Android app), confirm coins arrive and the Webhooks
       tab shows PROCESSED; only then add `phonepe` / `paytm` to `PAYMENT_PROVIDERS` and switch to live keys.
+
+### Advisor withdrawals
+
+- [ ] Review `backend/prisma/migrations/20261001000000_advisor_withdrawals/migration.sql` (two new tables;
+      widens the ledger `type` CHECK by two values).
+- [ ] `AA_ENCRYPTION_ROOT_KEY` must be set — payout details are encrypted with it; without it the
+      withdrawal screens say withdrawals are unavailable.
+- [ ] Optional: `WALLET_MIN_WITHDRAWAL_COINS` (default 300), `WALLET_MAX_WITHDRAWAL_COINS`,
+      `WALLET_WITHDRAWALS_ENABLED=false` to pause new requests.
+- [ ] Paying one: Payments & Wallets → **Withdrawals** → *Approve* (the advisor can no longer cancel) →
+      *Account* (audited; check the "details changed recently" warning) → pay from the business account
+      → *Mark paid* with the UTR / UPI reference. *Reject* returns the coins with your reason.
 
 ## 3. Verify in test mode
 

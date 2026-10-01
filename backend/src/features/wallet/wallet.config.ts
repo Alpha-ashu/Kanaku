@@ -44,6 +44,15 @@ export const walletConfig = {
   /** Largest single admin adjustment, as a guard against a typo'd extra zero. */
   get maxAdjustmentCoins() { return num('WALLET_MAX_ADJUSTMENT_COINS', 100_000, { min: 1 }); },
   /**
+   * Advisor withdrawals of earned coins. On by default; 'false' stops new
+   * requests (requests already made can still be paid, rejected or cancelled).
+   */
+  get withdrawalsEnabled() { return process.env.WALLET_WITHDRAWALS_ENABLED !== 'false'; },
+  /** Smallest withdrawal, in coins (300 coins = ₹300 at the default coin value). */
+  get minWithdrawalCoins() { return num('WALLET_MIN_WITHDRAWAL_COINS', 300, { min: 1 }); },
+  /** Largest single withdrawal, in coins. */
+  get maxWithdrawalCoins() { return num('WALLET_MAX_WITHDRAWAL_COINS', 100_000, { min: 1 }); },
+  /**
    * 'on' | 'off' | 'auto'. 'auto' (default) follows the admin panel's `wallet`
    * module: session prices are charged in coins only once an admin has turned
    * the wallet on. Bookings made while it is off stay free (NOT_REQUIRED).

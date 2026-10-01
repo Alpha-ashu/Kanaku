@@ -18,6 +18,13 @@ import { adminAdjust, getWalletSummary, ledgerTotals, pageLedger, setWalletStatu
 import { reconcileOrder, refundPurchase, toOrderView } from './coinPurchase.service';
 import { adminRefundCompletedSession, cancelBookingWithRefund } from './sessionPayment.service';
 import { requestIdOf, sendWalletError } from './wallet.http';
+import {
+  approveWithdrawal,
+  decryptPayoutDetails,
+  markWithdrawalPaid,
+  rejectWithdrawal,
+  toWithdrawalView,
+} from './withdrawal.service';
 
 /**
  * Finance console (admin, and managers holding explicit grants).
@@ -58,7 +65,7 @@ const usersById = async (ids: string[]) => {
 export const getFinanceOverview = async (req: AuthRequest, res: Response) => {
   try {
     const since = new Date(Date.now() - 24 * 60 * 60_000);
-    const [balances, paidToday, revenueToday, failedToday, openOrders, pendingSessions, webhookFailures, mismatches] = await Promise.all([
+    const [balances, paidToday, revenueToday, failedToday, openOrders, pendingSessions, webhookFailures, mismatches, openWithdrawals] = await Promise.all([
       prisma.wallet.aggregate({ _sum: { availableBalance: true, pendingBalance: true }, _count: { _all: true } }),
       prisma.paymentOrder.count({ where: { status: 'PAID', paidAt: { gte: since } } }),
       prisma.paymentOrder.aggregate({ where: { status: 'PAID', paidAt: { gte: since } }, _sum: { amountMinor: true } }),
@@ -67,6 +74,7 @@ export const getFinanceOverview = async (req: AuthRequest, res: Response) => {
       prisma.bookingRequest.count({ where: { status: 'accepted', paymentStatus: 'PAID' } }),
       prisma.paymentWebhookEvent.count({ where: { status: { in: ['REJECTED', 'FAILED'] }, receivedAt: { gte: since } } }),
       prisma.paymentOrder.count({ where: { failureReason: { startsWith: 'AMOUNT_MISMATCH' } } }),
+      prisma.withdrawalRequest.aggregate({ where: { status: { in: ['REQUESTED', 'APPROVED'] } }, _count: { _all: true }, _sum: { amountMinor: true } }),
     ]);
     res.json({
       success: true,
@@ -78,6 +86,7 @@ export const getFinanceOverview = async (req: AuthRequest, res: Response) => {
         openOrders,
         paidUpcomingSessions: pendingSessions,
         ordersNeedingReview: mismatches,
+        openWithdrawals: { count: openWithdrawals._count._all, amountMinor: openWithdrawals._sum.amountMinor ?? 0 },
         providers: providerStatuses(),
         serverNow: new Date().toISOString(),
       },
@@ -563,5 +572,95 @@ export const removeManagerAssignment = async (req: AuthRequest, res: Response) =
     res.json({ success: true });
   } catch (error) {
     sendWalletError(res, error, 'remove assignment', requestIdOf(req));
+  }
+};
+
+// ─── Withdrawals ───────────────────────────────────────────────────────────────
+
+/**
+ * Advisor withdrawal requests, newest first; `status=OPEN` is the work queue
+ * (requested + approved). Only the masked payout label is listed — the full
+ * account details are a separate, audited read.
+ */
+export const listWithdrawals = async (req: AuthRequest, res: Response) => {
+  try {
+    const q = req.query as Record<string, string | undefined>;
+    const limit = Math.min(Math.max(Number(q.limit) || 25, 1), 100);
+    const where: Prisma.WithdrawalRequestWhereInput = {
+      ...(q.status === 'OPEN' ? { status: { in: ['REQUESTED', 'APPROVED'] } } : q.status ? { status: q.status } : {}),
+      ...(q.userId ? { userId: q.userId } : {}),
+    };
+    const rows = await prisma.withdrawalRequest.findMany({
+      where,
+      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+      take: limit + 1,
+      ...(q.cursor ? { cursor: { id: q.cursor }, skip: 1 } : {}),
+    });
+    const hasMore = rows.length > limit;
+    const items = hasMore ? rows.slice(0, limit) : rows;
+    const userIds = [...new Set(items.map((r) => r.userId))];
+    const [users, methods] = await Promise.all([
+      usersById(userIds),
+      prisma.payoutMethod.findMany({ where: { userId: { in: userIds } }, select: { userId: true, updatedAt: true } }),
+    ]);
+    const methodChangedAt = new Map(methods.map((m) => [m.userId, m.updatedAt]));
+    res.json({
+      success: true,
+      data: {
+        items: items.map((r) => ({
+          ...toWithdrawalView(r),
+          userId: r.userId,
+          reviewedBy: r.reviewedBy,
+          // A payout account changed shortly before a request is the classic
+          // takeover pattern — shown so staff can check before paying.
+          payoutMethodChangedAt: methodChangedAt.get(r.userId) ?? null,
+          user: users.get(r.userId) ?? { id: r.userId, name: 'Deleted account', email: '', role: '' },
+        })),
+        nextCursor: hasMore ? items[items.length - 1].id : null,
+      },
+    });
+  } catch (error) {
+    sendWalletError(res, error, 'list withdrawals', requestIdOf(req));
+  }
+};
+
+/** The full UPI ID / bank account for paying one request. Every read is audited. */
+export const revealWithdrawalPayoutDetails = async (req: AuthRequest, res: Response) => {
+  try {
+    const row = await prisma.withdrawalRequest.findUnique({ where: { id: req.params.id } });
+    if (!row) throw new WalletError('WITHDRAWAL_NOT_FOUND', 'Withdrawal not found.', 404);
+    const details = decryptPayoutDetails(row);
+    audit({ event: 'wallet.payout_details_viewed', userId: getUserId(req), resource: 'WithdrawalRequest', resourceId: row.id, meta: { advisorId: row.userId, status: row.status } });
+    res.setHeader('Cache-Control', 'no-store');
+    res.json({ success: true, data: { details } });
+  } catch (error) {
+    sendWalletError(res, error, 'reveal payout details', requestIdOf(req));
+  }
+};
+
+export const approveWithdrawalRequest = async (req: AuthRequest, res: Response) => {
+  try {
+    const request = await approveWithdrawal(req.params.id, actorOf(req));
+    res.json({ success: true, data: { withdrawal: toWithdrawalView(request) } });
+  } catch (error) {
+    sendWalletError(res, error, 'approve withdrawal', requestIdOf(req));
+  }
+};
+
+export const markWithdrawalRequestPaid = async (req: AuthRequest, res: Response) => {
+  try {
+    const request = await markWithdrawalPaid(req.params.id, actorOf(req), req.body.payoutReference, req.body.note);
+    res.json({ success: true, data: { withdrawal: toWithdrawalView(request) } });
+  } catch (error) {
+    sendWalletError(res, error, 'mark withdrawal paid', requestIdOf(req));
+  }
+};
+
+export const rejectWithdrawalRequest = async (req: AuthRequest, res: Response) => {
+  try {
+    const request = await rejectWithdrawal(req.params.id, actorOf(req), req.body.reason);
+    res.json({ success: true, data: { withdrawal: toWithdrawalView(request) } });
+  } catch (error) {
+    sendWalletError(res, error, 'reject withdrawal', requestIdOf(req));
   }
 };

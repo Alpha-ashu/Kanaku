@@ -7,7 +7,7 @@ import { ingestServerNotification } from '@/lib/notifications';
 import { isBoilerplateDescription } from '@/services/smartExpenseImportService';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSecurity } from '@/contexts/SecurityContext';
-import { getVisibleFeaturesForRole, mergeVisibleFeatures, normalizeFeatures, FeatureVisibility, FeatureKey, computeSubFeatureMap, AIModuleKey, computeAICapabilityMap } from '@/lib/featureFlags';
+import { ADMIN_OPT_IN_FEATURES, getVisibleFeaturesForRole, isOptInFeatureEnabled, mergeVisibleFeatures, normalizeFeatures, FeatureVisibility, FeatureKey, computeSubFeatureMap, AIModuleKey, computeAICapabilityMap } from '@/lib/featureFlags';
 import { type SyncStats, useSyncStats, offlineSyncEngine } from '@/lib/offline-sync-engine';
 import { deduplicateLocalData, saveAccountWithBackendSync, syncUserDataFromCloud, updateAccountWithBackendSync } from '@/lib/auth-sync-integration';
 import { computeDerivedBalances } from '@/lib/transactionAggregation';
@@ -633,6 +633,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
               }
             }
             merged[key] = isVisible;
+          } else if (ADMIN_OPT_IN_FEATURES.includes(key as FeatureKey)) {
+            // Off by default; the admin's saved setting turns it on per role
+            // (see ADMIN_OPT_IN_FEATURES). The role default is not a ceiling here.
+            merged[key] = isOptInFeatureEnabled(role, value);
           } else {
             // Non-admin roles (user, advisor, manager):
             // Check global toggle and role-specific access toggle

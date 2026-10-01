@@ -69,7 +69,7 @@ export async function buildUserExport(userId: string) {
     profileRows, settings, accounts, transactions, categories, budgets, goals, goalContributions,
     loans, loanPayments, investments, goldAssets, friends, groupExpenses, recurringTransactions,
     todos, notifications, expenseBills, vaultFolders, vaultDocuments, application,
-    bookings, wallet, walletTransactions, purchases, devices, aaConsents,
+    bookings, wallet, walletTransactions, purchases, withdrawals, payoutMethod, devices, aaConsents,
   ] = await Promise.all([
     prisma.$queryRaw<Array<Record<string, unknown>>>`SELECT * FROM public.profiles WHERE id::text = ${userId} LIMIT 1`,
     prisma.userSettings.findUnique({ where: { userId } }),
@@ -105,6 +105,16 @@ export async function buildUserExport(userId: string) {
     prisma.wallet.findUnique({ where: { userId }, select: { availableBalance: true, pendingBalance: true, status: true, createdAt: true } }),
     prisma.walletTransaction.findMany({ where: { userId }, orderBy: { createdAt: 'asc' }, take: CAPS.walletTransactions + 1 }),
     prisma.paymentOrder.findMany({ where: { userId }, orderBy: { createdAt: 'asc' } }),
+    // Never the encrypted account details — the masked label identifies the account.
+    prisma.withdrawalRequest.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'asc' },
+      select: {
+        id: true, coins: true, amountMinor: true, currency: true, status: true, method: true, payoutLabel: true,
+        payoutReference: true, decisionNote: true, createdAt: true, approvedAt: true, paidAt: true, rejectedAt: true, cancelledAt: true,
+      },
+    }),
+    prisma.payoutMethod.findUnique({ where: { userId }, select: { method: true, label: true, updatedAt: true } }),
     prisma.device.findMany({ where: { userId } }),
     prisma.aaConsent.findMany({ where: { userId } }),
   ]);
@@ -167,6 +177,8 @@ export async function buildUserExport(userId: string) {
       balance: wallet,
       transactions: cleanAll(ledger.rows),
       purchases: cleanAll(purchases),
+      withdrawals,
+      payoutMethod,
     },
     devices: cleanAll(devices),
     aaConsents: cleanAll(aaConsents),

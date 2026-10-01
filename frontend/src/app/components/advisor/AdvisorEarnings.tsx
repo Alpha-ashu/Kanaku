@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { AlertTriangle, BadgeIndianRupee, CalendarCheck, Clock, Hourglass, RefreshCw, TrendingUp } from 'lucide-react';
+import { AlertTriangle, ArrowDownLeft, BadgeIndianRupee, CalendarCheck, Clock, Hourglass, RefreshCw, TrendingUp } from 'lucide-react';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { PageHeaderCard } from '@/app/components/ui/PageHeader';
 import { useApp } from '@/contexts/AppContext';
@@ -52,6 +52,14 @@ export const AdvisorEarnings: React.FC = () => {
     <CenteredLayout onRefresh={load}>
       <div className="max-w-5xl mx-auto w-full space-y-6 pb-12">
         <PageHeaderCard title="Earnings" subtitle="Coins earned from completed sessions" icon={<BadgeIndianRupee className="w-5 h-5" />}>
+          <button
+            type="button"
+            onClick={() => setCurrentPage('wallet')}
+            className="flex items-center gap-2 px-4 py-2 rounded-full bg-slate-900 text-sm font-bold text-white hover:bg-black"
+            data-testid="earnings-withdraw"
+          >
+            <ArrowDownLeft size={14} /> Withdraw
+          </button>
           <button
             type="button"
             onClick={() => void load()}
@@ -137,6 +145,7 @@ export const AdvisorEarnings: React.FC = () => {
           </div>
           <p className="text-caption text-slate-500">
             Earnings are held as pending until the session is completed, then move to your available balance. Refunds for cancelled sessions reverse the matching earning.
+            Released earnings can be withdrawn to your UPI ID or bank account from the Wallet (minimum 300 coins, 1 coin = ₹1).
           </p>
         </section>
       </div>

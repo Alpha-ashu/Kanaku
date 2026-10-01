@@ -1,4 +1,5 @@
 import { backendService } from '@/lib/backend-api';
+import type { StepUpProof } from '@/services/accountLifecycleService';
 
 /**
  * Client for the coin wallet, session payments and the finance console.
@@ -15,7 +16,8 @@ const unwrap = <T>(res: { data: Envelope<T> }): T => res.data.data;
 
 export type LedgerType =
   | 'PAYMENT_CREDIT' | 'SESSION_PAYMENT' | 'SESSION_EARNING' | 'EARNING_RELEASE'
-  | 'SESSION_REFUND' | 'EARNING_REVERSAL' | 'PURCHASE_REVERSAL' | 'ADMIN_ADJUSTMENT';
+  | 'SESSION_REFUND' | 'EARNING_REVERSAL' | 'PURCHASE_REVERSAL' | 'ADMIN_ADJUSTMENT'
+  | 'WITHDRAWAL' | 'WITHDRAWAL_REVERSAL';
 
 export interface WalletSummary {
   availableBalance: number;
@@ -89,6 +91,48 @@ export interface EarningsSummary {
   recent: LedgerEntry[];
   serverNow: string;
 }
+
+export type WithdrawalStatus = 'REQUESTED' | 'APPROVED' | 'PAID' | 'REJECTED' | 'CANCELLED';
+export type PayoutMethodType = 'UPI' | 'BANK';
+
+export interface Withdrawal {
+  id: string;
+  coins: number;
+  amountMinor: number;
+  currency: string;
+  status: WithdrawalStatus;
+  method: PayoutMethodType;
+  /** Masked, e.g. "UPI · ra•••@okhdfc". */
+  payoutLabel: string;
+  payoutReference: string | null;
+  decisionNote: string | null;
+  createdAt: string;
+  approvedAt: string | null;
+  paidAt: string | null;
+  rejectedAt: string | null;
+  cancelledAt: string | null;
+}
+
+export interface WithdrawalOverview {
+  /** False while withdrawals are paused on the server. */
+  enabled: boolean;
+  minCoins: number;
+  maxCoins: number;
+  coinValueMinor: number;
+  currency: string;
+  availableBalance: number;
+  /** Earned coins that can be withdrawn now (bought coins never can). */
+  withdrawableCoins: number;
+  walletStatus: 'ACTIVE' | 'FROZEN';
+  paidOut: { coins: number; amountMinor: number };
+  payoutMethod: { method: PayoutMethodType; label: string; updatedAt: string } | null;
+  open: Withdrawal | null;
+  recent: Withdrawal[];
+}
+
+export type PayoutDetailsInput =
+  | { method: 'UPI'; upiId: string }
+  | { method: 'BANK'; accountHolder: string; accountNumber: string; ifsc: string };
 
 export type BookingLifecycle =
   | 'REQUESTED' | 'RESCHEDULE_PROPOSED' | 'REJECTED' | 'AWAITING_PAYMENT' | 'PAYMENT_DUE'
@@ -168,6 +212,26 @@ export const walletService = {
     return unwrap(await backendService.api.get('/wallet/earnings'));
   },
 
+  // ─── Advisor withdrawals ──────────────────────────────────────────────────────
+
+  async getWithdrawals(): Promise<WithdrawalOverview> {
+    return unwrap(await backendService.api.get('/wallet/withdrawals'));
+  },
+
+  /** Needs step-up proof (password or a verified email code). */
+  async savePayoutMethod(details: PayoutDetailsInput, proof: StepUpProof | undefined): Promise<{ payoutMethod: NonNullable<WithdrawalOverview['payoutMethod']> }> {
+    return unwrap(await backendService.api.put('/wallet/payout-method', { details, proof }));
+  },
+
+  /** `clientRequestId` must be stable across retries of the same request. */
+  async requestWithdrawal(coins: number, clientRequestId: string): Promise<{ withdrawal: Withdrawal; replayed: boolean }> {
+    return unwrap(await backendService.api.post('/wallet/withdrawals', { coins, clientRequestId }));
+  },
+
+  async cancelWithdrawal(id: string): Promise<{ withdrawal: Withdrawal }> {
+    return unwrap(await backendService.api.post(`/wallet/withdrawals/${encodeURIComponent(id)}/cancel`, {}));
+  },
+
   // ─── Session payments ────────────────────────────────────────────────────────
 
   async getBookingPayment(bookingId: string): Promise<BookingPaymentState> {
@@ -226,6 +290,7 @@ export interface FinanceOverview {
   openOrders: number;
   paidUpcomingSessions: number;
   ordersNeedingReview: number;
+  openWithdrawals?: { count: number; amountMinor: number };
   providers: ProviderStatus[];
   serverNow: string;
 }
@@ -276,6 +341,18 @@ export interface WebhookEvent {
   receivedAt: string;
   processedAt: string | null;
 }
+
+export interface AdminWithdrawal extends Withdrawal {
+  userId: string;
+  reviewedBy: string | null;
+  /** When the advisor last changed their payout account — recent changes deserve a second look. */
+  payoutMethodChangedAt: string | null;
+  user: UserRef;
+}
+
+export type PayoutDetails =
+  | { method: 'UPI'; upiId: string }
+  | { method: 'BANK'; accountHolder: string; accountNumber: string; ifsc: string };
 
 export interface StaffManager {
   id: string;
@@ -340,6 +417,22 @@ export const financeService = {
   },
   async securityEvents(params: Record<string, unknown>): Promise<Page<SecurityEvent> & { actions: string[] }> {
     return unwrap(await backendService.api.get('/finance/security-events', { params: clean(params) }));
+  },
+  async withdrawals(params: Record<string, unknown>): Promise<Page<AdminWithdrawal>> {
+    return unwrap(await backendService.api.get('/finance/withdrawals', { params: clean(params) }));
+  },
+  /** The full payout account for one request. Audited on the server. */
+  async withdrawalPayoutDetails(id: string): Promise<{ details: PayoutDetails }> {
+    return unwrap(await backendService.api.get(`/finance/withdrawals/${encodeURIComponent(id)}/payout-details`));
+  },
+  async approveWithdrawal(id: string): Promise<{ withdrawal: Withdrawal }> {
+    return unwrap(await backendService.api.post(`/finance/withdrawals/${encodeURIComponent(id)}/approve`, {}));
+  },
+  async markWithdrawalPaid(id: string, payoutReference: string, note?: string): Promise<{ withdrawal: Withdrawal }> {
+    return unwrap(await backendService.api.post(`/finance/withdrawals/${encodeURIComponent(id)}/paid`, { payoutReference, note: note || undefined }));
+  },
+  async rejectWithdrawal(id: string, reason: string): Promise<{ withdrawal: Withdrawal }> {
+    return unwrap(await backendService.api.post(`/finance/withdrawals/${encodeURIComponent(id)}/reject`, { reason }));
   },
   async staff(): Promise<{ grantable: string[]; managers: StaffManager[] }> {
     return unwrap(await backendService.api.get('/finance/staff'));
@@ -426,6 +519,27 @@ export const LEDGER_LABELS: Record<LedgerType, string> = {
   EARNING_REVERSAL: 'Earning reversed',
   PURCHASE_REVERSAL: 'Purchase refunded',
   ADMIN_ADJUSTMENT: 'Adjustment',
+  WITHDRAWAL: 'Withdrawal',
+  WITHDRAWAL_REVERSAL: 'Withdrawal returned',
+};
+
+/** Coins as rupees at the server's coin value (1 coin = ₹1 by default). */
+export const coinsToMinor = (coins: number, coinValueMinor = 100) => coins * coinValueMinor;
+
+/** 950 → "950", 12,400 → "12.4K" — for tight spots like the top bar. */
+export const formatCoinsCompact = (n: number) =>
+  Math.abs(n) < 10_000
+    ? n.toLocaleString('en-IN')
+    : new Intl.NumberFormat('en-IN', { notation: 'compact', maximumFractionDigits: 1 }).format(n);
+
+/**
+ * Fired after anything that changes the signed-in user's balance (a purchase,
+ * a withdrawal), so the top-bar balance refreshes without polling.
+ */
+export const WALLET_CHANGED_EVENT = 'kanaku:wallet-changed';
+
+export const announceWalletChange = () => {
+  if (typeof window !== 'undefined') window.dispatchEvent(new Event(WALLET_CHANGED_EVENT));
 };
 
 /** A fresh idempotency key for one purchase attempt (kept across its retries). */

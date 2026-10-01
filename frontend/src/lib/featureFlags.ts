@@ -229,6 +229,39 @@ export function normalizeFeatures(
   } as FeatureVisibility;
 }
 
+/**
+ * Modules that stay off for every role but admin until an admin switches them
+ * on in the Feature Panel — the web app's mirror of the API's deny-by-default
+ * rule (`requireFeature` in backend/src/middleware/featureGate.ts).
+ *
+ * Everywhere else the role default is a ceiling and the admin's settings can
+ * only take access away. For these modules the role default is `false` (dark
+ * until decided), so under that rule the admin's toggle could never turn them
+ * on: here the saved setting GRANTS access instead.
+ */
+export const ADMIN_OPT_IN_FEATURES: readonly FeatureKey[] = ['wallet'];
+
+interface SavedModuleSettings {
+  enabled?: unknown;
+  readiness?: unknown;
+  roleAccess?: Partial<Record<UserRole, unknown>>;
+}
+
+/**
+ * Whether an opt-in module is on for `role`, given the admin's saved settings
+ * for that module (undefined = never configured = off). Same checks as the
+ * API, in the same order, so the UI never offers a page the API refuses.
+ */
+export function isOptInFeatureEnabled(role: UserRole, saved: unknown): boolean {
+  if (role === 'admin') return true;
+  if (!saved || typeof saved !== 'object') return false;
+  const settings = saved as SavedModuleSettings;
+  if (settings.enabled === false) return false;
+  if (settings.readiness === 'deprecated' || settings.readiness === 'unreleased') return false;
+  if (settings.readiness === 'beta' && role === 'user') return false;
+  return settings.roleAccess?.[role] !== false;
+}
+
 export function getVisibleFeaturesForRole(
   role: UserRole,
   env = 'development',

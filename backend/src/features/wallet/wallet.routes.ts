@@ -6,10 +6,13 @@ import { requireRole, requireApproved } from '../../middleware/rbac';
 import { authenticatedRateLimit } from '../../middleware/rateLimit';
 import { validateBody, validateParams, validateQuery } from '../../middleware/validate';
 import * as WalletController from './wallet.controller';
+import * as Withdrawals from './withdrawal.controller';
 import {
   createPurchaseSchema,
+  createWithdrawalSchema,
   idParamSchema,
   ledgerQuerySchema,
+  payoutMethodSchema,
   sandboxPaySchema,
   verifyPurchaseSchema,
 } from './wallet.validation';
@@ -54,5 +57,25 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 router.get('/earnings', requireRole('advisor'), requireApproved, WalletController.getMyEarnings);
+
+// Advisor withdrawals of earned coins (paid out manually by finance staff).
+const advisorOnly = [requireRole('advisor'), requireApproved];
+const withdrawalLimiter = authenticatedRateLimit({
+  windowMs: 60 * 60_000,
+  max: 10,
+  scope: 'wallet-withdrawal-create',
+  message: 'Too many withdrawal attempts. Please wait a while and try again.',
+});
+const payoutMethodLimiter = authenticatedRateLimit({
+  windowMs: 60 * 60_000,
+  max: 5,
+  scope: 'wallet-payout-method',
+  message: 'Too many changes to payout details. Please try again later.',
+});
+
+router.get('/withdrawals', ...advisorOnly, Withdrawals.getMyWithdrawals);
+router.put('/payout-method', ...advisorOnly, payoutMethodLimiter, validateBody(payoutMethodSchema), Withdrawals.saveMyPayoutMethod);
+router.post('/withdrawals', ...advisorOnly, withdrawalLimiter, validateBody(createWithdrawalSchema), Withdrawals.requestWithdrawal);
+router.post('/withdrawals/:id/cancel', ...advisorOnly, validateParams(idParamSchema), Withdrawals.cancelMyWithdrawal);
 
 export { router as walletRoutes };

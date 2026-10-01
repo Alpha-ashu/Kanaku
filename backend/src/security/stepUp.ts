@@ -37,7 +37,7 @@ export const stepUpProofSchema = z.discriminatedUnion('method', [
 
 export type StepUpProof = z.infer<typeof stepUpProofSchema>;
 
-export type StepUpAction = 'account.delete' | 'data.reset';
+export type StepUpAction = 'account.delete' | 'data.reset' | 'payout.method_change';
 
 const BCRYPT_HASH = /^\$2[aby]\$\d{2}\$/;
 const PROVIDER_MANAGED = 'supabase-managed-account';

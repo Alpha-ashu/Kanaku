@@ -4,6 +4,7 @@ import { useApp } from '@/contexts/AppContext';
 import { Search, Bell, Menu, GripVertical, Wallet, LogOut, Receipt, X } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from '@/app/components/ui/sheet';
 import { NavigationItem, headerMenuItems } from '@/app/constants/navigation';
+import { canAccessPage } from '@/lib/featureFlags';
 import { useSharedMenu } from '@/hooks/useSharedMenu';
 import { useAuth } from '@/contexts/AuthContext';
 import { motion, Reorder, useDragControls } from 'framer-motion';
@@ -15,6 +16,9 @@ import { NotificationPopup, type NotificationItem } from '@/app/components/ui/No
 import { SyncStatusBar } from '@/app/components/ui/SyncStatusBar';
 import { KANAKULogo } from '@/app/components/ui/KANAKULogo';
 import { UserAvatar } from '@/app/components/ui/UserAvatar';
+import { WalletChip } from '@/app/components/wallet/WalletChip';
+
+const walletNavItem = headerMenuItems.find((item) => item.id === 'wallet');
 
 interface DraggablePageMenuItemProps {
  item: NavigationItem;
@@ -77,6 +81,7 @@ export const TopBar: React.FC = () => {
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [profileVersion, setProfileVersion] = useState(0);
   const [activeResultIndex, setActiveResultIndex] = useState(-1);
+  const showWallet = Boolean(walletNavItem?.roles?.includes(role)) && canAccessPage('wallet', visibleFeatures);
 
   const searchInputRef = React.useRef<HTMLInputElement>(null);
   const searchContainerRef = React.useRef<HTMLDivElement>(null);
@@ -629,7 +634,7 @@ export const TopBar: React.FC = () => {
 </div>
 
         {/* Right: Bell and Profile */}
-        <div className="flex items-center gap-3 lg:gap-4 flex-shrink-0">
+        <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 flex-shrink-0">
           {/* Sync status pill - hidden on very small screens to save space */}
           <div className="hidden sm:block">
             <SyncStatusBar compact />
@@ -644,6 +649,12 @@ export const TopBar: React.FC = () => {
           >
             <Search size={18} />
           </button>
+
+          {/* Coin wallet — same rule as the Wallet menu item: only once an admin
+              has turned the wallet module on for this role. */}
+          {showWallet && (
+            <WalletChip onOpen={() => setCurrentPage('wallet')} active={currentPage === 'wallet'} />
+          )}
 
           {/* Notification Bell */}
           {visibleFeatures?.notifications !== false && (

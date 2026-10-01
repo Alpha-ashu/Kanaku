@@ -30,7 +30,7 @@ import request from 'supertest';
 import { app } from '../../../../backend/src/app';
 import { prisma } from '../../../../backend/src/db/prisma';
 import { authMiddleware } from '../../../../backend/src/middleware/auth';
-import { requireFeature } from '../../../../backend/src/middleware/featureGate';
+import { invalidateFeatureCache, requireFeature } from '../../../../backend/src/middleware/featureGate';
 import { adminAdjust } from '../../../../backend/src/features/wallet/wallet.service';
 import { invalidatePermissionCache } from '../../../../backend/src/security/permissions';
 import { API, bearer, cleanupUsers, istSlot, makeAdvisor, makeUser, walletOf } from '../helpers/walletKit';
@@ -216,6 +216,31 @@ describe('Finance and messaging authorization', () => {
       const admin = await request(gated).get('/probe').set(as(ids.admin, 'admin'));
       expect(admin.status).toBe(200);
       expect(user.status).toBe(403);
+    });
+
+    it('opens it to exactly the roles the admin ticked in the Feature Panel', async () => {
+      if (!dbReady) return;
+      // The panel saves role-centric settings to the PlatformSettings singleton;
+      // the gate used to read a legacy per-admin copy and never saw them.
+      const previous = await prisma.platformSettings.findUnique({ where: { id: 'global' } });
+      const base = (previous?.settings as Record<string, unknown> | undefined) ?? {};
+      const saved = {
+        ...base,
+        admin_global_feature_settings: {
+          admin: { wallet: true }, manager: { wallet: false }, advisor: { wallet: true }, user: { wallet: false },
+        },
+      };
+      try {
+        await prisma.platformSettings.upsert({ where: { id: 'global' }, create: { id: 'global', settings: saved }, update: { settings: saved } });
+        invalidateFeatureCache();
+        expect((await request(gated).get('/probe').set(as(ids.advisor, 'advisor'))).status).toBe(200);
+        expect((await request(gated).get('/probe').set(as(ids.user))).status).toBe(403);
+        expect((await request(gated).get('/probe').set(as(ids.admin, 'admin'))).status).toBe(200);
+      } finally {
+        if (previous) await prisma.platformSettings.update({ where: { id: 'global' }, data: { settings: previous.settings as object } });
+        else await prisma.platformSettings.delete({ where: { id: 'global' } }).catch(() => undefined);
+        invalidateFeatureCache();
+      }
     });
   });
 });

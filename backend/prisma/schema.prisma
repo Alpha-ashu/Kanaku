@@ -947,6 +947,7 @@ model User {
   permissionGrants            StaffPermissionGrant[]     @relation("StaffPermissionGrant_user")
   managedAssignments          ManagerAssignment[]        @relation("ManagerAssignment_manager")
   managerAssignments          ManagerAssignment[]        @relation("ManagerAssignment_subject")
+  payoutMethod                PayoutMethod?              @relation("PayoutMethod_user")
 
 
   @@index([isApproved])
@@ -2039,7 +2040,8 @@ model WalletTransaction {
   walletId           String              @map("wallet_id")
   userId             String              @map("user_id")
   /// PAYMENT_CREDIT | SESSION_PAYMENT | SESSION_EARNING | EARNING_RELEASE |
-  /// SESSION_REFUND | EARNING_REVERSAL | PURCHASE_REVERSAL | ADMIN_ADJUSTMENT
+  /// SESSION_REFUND | EARNING_REVERSAL | PURCHASE_REVERSAL | ADMIN_ADJUSTMENT |
+  /// WITHDRAWAL | WITHDRAWAL_REVERSAL
   type               String
   /// AVAILABLE | PENDING — the balance this row moved.
   bucket             String              @default("AVAILABLE")
@@ -2189,5 +2191,64 @@ model ManagerAssignment {
   @@unique([managerId, subjectUserId])
   @@index([subjectUserId])
   @@map("manager_assignments")
+  @@schema("public")
+}
+
+/// Where an advisor's withdrawals are paid: one UPI ID or bank account per user.
+/// The details are AES-256-GCM encrypted (security/crypto.ts, AAD bound to the
+/// user); only the masked `label` is ever shown or listed.
+model PayoutMethod {
+  id               String   @id @default(uuid())
+  userId           String   @unique @map("user_id")
+  /// UPI | BANK
+  method           String
+  /// Masked and display-safe, e.g. "UPI · ra•••@okhdfc".
+  label            String   @map("display_label")
+  detailsEncrypted String   @map("details_encrypted")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+  user             User     @relation("PayoutMethod_user", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("payout_methods")
+  @@schema("public")
+}
+
+/// An advisor's request to be paid for earned coins. The coins leave the wallet
+/// when the request is made (ledger WITHDRAWAL) and come back if it is rejected
+/// or cancelled (WITHDRAWAL_REVERSAL). Finance staff pay outside the app and
+/// record the bank/UPI reference. Kept after account deletion (no FK to User),
+/// like payment orders, as a financial record.
+model WithdrawalRequest {
+  id                     String    @id @default(uuid())
+  userId                 String    @map("user_id")
+  coins                  Int
+  /// coins × coin value at request time, in paise.
+  amountMinor            Int       @map("amount_minor")
+  currency               String    @default("INR")
+  /// REQUESTED | APPROVED | PAID | REJECTED | CANCELLED
+  status                 String    @default("REQUESTED")
+  /// = userId while REQUESTED/APPROVED, NULL otherwise: the unique index makes
+  /// "one open withdrawal per user" a database rule, not only an app check.
+  openKey                String?   @unique @map("open_key")
+  /// UPI | BANK — snapshot of the payout method when the request was made.
+  method                 String
+  payoutLabel            String    @map("payout_label")
+  payoutDetailsEncrypted String    @map("payout_details_encrypted")
+  idempotencyKey         String    @map("idempotency_key")
+  /// Bank UTR / UPI reference recorded by staff when marking it paid.
+  payoutReference        String?   @map("payout_reference")
+  decisionNote           String?   @map("decision_note")
+  reviewedBy             String?   @map("reviewed_by")
+  approvedAt             DateTime? @map("approved_at")
+  paidAt                 DateTime? @map("paid_at")
+  rejectedAt             DateTime? @map("rejected_at")
+  cancelledAt            DateTime? @map("cancelled_at")
+  createdAt              DateTime  @default(now()) @map("created_at")
+  updatedAt              DateTime  @updatedAt @map("updated_at")
+
+  @@unique([userId, idempotencyKey])
+  @@index([userId, createdAt])
+  @@index([status, createdAt])
+  @@map("withdrawal_requests")
   @@schema("public")
 }

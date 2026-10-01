@@ -1,17 +1,23 @@
 import type { Response } from 'express';
 import { logger } from '../../config/logger';
 import { isDatabaseUnavailableError } from '../../utils/databaseAvailability';
+import { AppError } from '../../utils/AppError';
 import { isWalletError } from './wallet.errors';
 
 /**
  * One error mapping for every wallet, payment and finance handler: a typed
- * WalletError becomes its own status/code/message; anything else is logged in
- * full and answered generically with the request id, never with internals.
+ * WalletError (or operational AppError) becomes its own status/code/message;
+ * anything else is logged in full and answered generically with the request
+ * id, never with internals.
  */
 export const sendWalletError = (res: Response, error: unknown, context: string, requestId?: string) => {
   if (res.headersSent) return undefined;
   if (isWalletError(error)) {
     return res.status(error.status).json({ success: false, error: error.message, code: error.code, ...(error.details ? { details: error.details } : {}) });
+  }
+  // Shared checks (step-up re-authentication) throw AppError with a safe message.
+  if (error instanceof AppError && error.isOperational) {
+    return res.status(error.statusCode).json({ success: false, error: error.message, code: error.code, ...(error.details ? { details: error.details } : {}) });
   }
   if ((error as { code?: string })?.code === 'INVALID_CURSOR') {
     return res.status(400).json({ success: false, error: 'Invalid pagination cursor', code: 'INVALID_CURSOR' });

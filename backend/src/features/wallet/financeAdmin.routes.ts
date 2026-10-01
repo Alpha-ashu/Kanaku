@@ -10,6 +10,7 @@ import {
   adminLedgerQuerySchema,
   adminOrdersQuerySchema,
   adminWalletsQuerySchema,
+  adminWithdrawalsQuerySchema,
   idParamSchema,
   managerParamSchema,
   packageCreateSchema,
@@ -23,6 +24,8 @@ import {
   userIdParamSchema,
   walletStatusSchema,
   webhookEventsQuerySchema,
+  withdrawalPaidSchema,
+  withdrawalRejectSchema,
 } from './wallet.validation';
 
 /**
@@ -58,6 +61,14 @@ router.post('/wallets/:userId/adjust', moneyLimiter, requirePermission('finance.
 router.post('/wallets/:userId/status', moneyLimiter, requirePermission('finance.adjust'), validateParams(userIdParamSchema), validateBody(walletStatusSchema), Finance.setWalletState);
 
 router.post('/bookings/:id/refund', moneyLimiter, requirePermission('finance.refund'), validateParams(idParamSchema), validateBody(refundBookingSchema), Finance.refundBooking);
+
+// Advisor withdrawals: paid by staff outside the app. Acting on them is
+// admin-only (`finance.payouts` cannot be granted to a manager).
+router.get('/withdrawals', requirePermission('finance.payouts', 'finance.read'), validateQuery(adminWithdrawalsQuerySchema), Finance.listWithdrawals);
+router.get('/withdrawals/:id/payout-details', moneyLimiter, requirePermission('finance.payouts'), validateParams(idParamSchema), Finance.revealWithdrawalPayoutDetails);
+router.post('/withdrawals/:id/approve', moneyLimiter, requirePermission('finance.payouts'), validateParams(idParamSchema), Finance.approveWithdrawalRequest);
+router.post('/withdrawals/:id/paid', moneyLimiter, requirePermission('finance.payouts'), validateParams(idParamSchema), validateBody(withdrawalPaidSchema), Finance.markWithdrawalRequestPaid);
+router.post('/withdrawals/:id/reject', moneyLimiter, requirePermission('finance.payouts'), validateParams(idParamSchema), validateBody(withdrawalRejectSchema), Finance.rejectWithdrawalRequest);
 
 router.get('/packages', requirePermission('finance.packages.manage', 'finance.read'), Finance.listAllPackages);
 router.post('/packages', requirePermission('finance.packages.manage'), validateBody(packageCreateSchema), Finance.createPackage);

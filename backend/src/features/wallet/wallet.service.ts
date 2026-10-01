@@ -37,7 +37,9 @@ export type LedgerType =
   | 'SESSION_REFUND'
   | 'EARNING_REVERSAL'
   | 'PURCHASE_REVERSAL'
-  | 'ADMIN_ADJUSTMENT';
+  | 'ADMIN_ADJUSTMENT'
+  | 'WITHDRAWAL'
+  | 'WITHDRAWAL_REVERSAL';
 
 export type LedgerBucket = 'AVAILABLE' | 'PENDING';
 

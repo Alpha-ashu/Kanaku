@@ -3,6 +3,7 @@ import { prisma } from '../db/prisma';
 import { logger } from '../config/logger';
 import { AuthRequest } from './auth';
 import { reconstructFeatures, reconstructAIFeatures } from '../utils/featureHelpers';
+import { getPlatformSettings } from '../utils/platformSettings';
 import { audit } from '../utils/auditLogger';
 
 /**
@@ -150,6 +151,32 @@ export const invalidateFeatureCache = () => {
   logger.info('[FeatureGate] Global feature flags cache invalidated');
 };
 
+/**
+ * The admin's saved settings under `key`.
+ *
+ * The Feature Panel saves to the PlatformSettings singleton (admin.controller →
+ * updatePlatformSettings). This gate used to read only the legacy copy inside
+ * the first admin's UserSettings, which the panel no longer writes — so the
+ * server enforced a frozen snapshot (or the role defaults) while the web app
+ * showed the admin's current choices: a module switched on in the panel stayed
+ * refused by the API. PlatformSettings is now the source; the legacy copy is
+ * read only when the panel has never saved there.
+ */
+const loadSavedAdminSettings = async (key: 'admin_global_feature_settings' | 'admin_ai_feature_settings') => {
+  const platform = await getPlatformSettings();
+  if (platform && platform[key] && typeof platform[key] === 'object') return platform[key];
+
+  const adminUser = await prisma.user.findFirst({ where: { role: 'admin' } });
+  if (!adminUser) return null;
+  const settings = await prisma.userSettings.findUnique({ where: { userId: adminUser.id } });
+  if (!settings || !settings.settings) return null;
+  const parsedSettings = typeof settings.settings === 'string'
+    ? JSON.parse(settings.settings)
+    : (settings.settings as any);
+  // A legacy settings row without this key meant "role defaults" before; keep that.
+  return parsedSettings?.[key] || {};
+};
+
 const getGlobalFeatures = async () => {
   const now = Date.now();
   if (cachedFeatures && (now - cacheTimestamp < CACHE_TTL_MS)) {
@@ -157,27 +184,11 @@ const getGlobalFeatures = async () => {
   }
 
   try {
-    const adminUser = await prisma.user.findFirst({
-      where: { role: 'admin' },
-    });
-
-    if (!adminUser) {
+    const saved = await loadSavedAdminSettings('admin_global_feature_settings');
+    if (!saved) {
       return {};
     }
-
-    const settings = await prisma.userSettings.findUnique({
-      where: { userId: adminUser.id },
-    });
-
-    if (!settings || !settings.settings) {
-      return {};
-    }
-
-    const parsedSettings = typeof settings.settings === 'string'
-      ? JSON.parse(settings.settings)
-      : (settings.settings as any);
-    const roleCentric = parsedSettings.admin_global_feature_settings || {};
-    cachedFeatures = reconstructFeatures(roleCentric);
+    cachedFeatures = reconstructFeatures(saved);
     cacheTimestamp = now;
     return cachedFeatures;
   } catch (error) {
@@ -350,34 +361,14 @@ const getAIGlobalFeatures = async () => {
   }
 
   try {
-    const adminUser = await prisma.user.findFirst({
-      where: { role: 'admin' },
-    });
-
-    if (!adminUser) {
-      // No admin user found, use defaults
+    const saved = await loadSavedAdminSettings('admin_ai_feature_settings');
+    if (!saved) {
+      // No settings saved anywhere, use defaults
       cachedAIFeatures = DEFAULT_AI_FEATURES;
       cacheAITimestamp = now;
       return cachedAIFeatures;
     }
-
-    const settings = await prisma.userSettings.findUnique({
-      where: { userId: adminUser.id },
-    });
-
-    if (!settings || !settings.settings) {
-      // No settings found, use defaults
-      cachedAIFeatures = DEFAULT_AI_FEATURES;
-      cacheAITimestamp = now;
-      return cachedAIFeatures;
-    }
-
-    const parsedSettings = typeof settings.settings === 'string'
-      ? JSON.parse(settings.settings)
-      : (settings.settings as any);
-    // Use configured settings if available, otherwise use defaults
-    const roleCentric = parsedSettings.admin_ai_feature_settings || {};
-    cachedAIFeatures = reconstructAIFeatures(roleCentric);
+    cachedAIFeatures = reconstructAIFeatures(saved);
     cacheAITimestamp = now;
     return cachedAIFeatures;
   } catch (error) {

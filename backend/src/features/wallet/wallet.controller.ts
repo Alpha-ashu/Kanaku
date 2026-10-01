@@ -26,6 +26,7 @@ import { requestIdOf, sendWalletError } from './wallet.http';
 const LEDGER_TYPES = new Set([
   'PAYMENT_CREDIT', 'SESSION_PAYMENT', 'SESSION_EARNING', 'EARNING_RELEASE',
   'SESSION_REFUND', 'EARNING_REVERSAL', 'PURCHASE_REVERSAL', 'ADMIN_ADJUSTMENT',
+  'WITHDRAWAL', 'WITHDRAWAL_REVERSAL',
 ]);
 
 const providerOptions = () => purchaseProviders().map((p) => ({ id: p.id, displayName: p.displayName }));

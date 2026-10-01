@@ -107,10 +107,59 @@ it may *do*.
   users assigned to them. An admin may grant `team.wallets.read`,
   `team.payments.read`, `users.directory.read`, `finance.read`,
   `finance.refund`, `finance.reconcile`, `security.read`.
-  `finance.adjust`, `finance.packages.manage`, `finance.providers.read` and
-  `staff.manage` can never be granted.
+  `finance.adjust`, `finance.payouts`, `finance.packages.manage`,
+  `finance.providers.read` and `staff.manage` can never be granted.
 * **advisor / user** — ownership only; no route takes a user id to read a
   wallet, and someone else's booking/session/order answers 404.
+
+## Advisor withdrawals (added 2026-10-01)
+
+Owner decision: advisors may withdraw coins **earned** from completed sessions;
+coins bought with money stay spend-only. Finance staff pay manually (UPI / bank
+transfer outside the app) and record the reference. Migration
+`20261001000000_advisor_withdrawals` (two tables; the ledger `type` CHECK gains
+`WITHDRAWAL` and `WITHDRAWAL_REVERSAL`).
+
+* **What can be withdrawn:** `min(available, released − reversed earnings −
+  withdrawals + returned withdrawals)`. Spending, refunds and earlier
+  withdrawals all count against it, so a purchase can never be cashed out.
+  Minimum `WALLET_MIN_WITHDRAWAL_COINS` (300), maximum
+  `WALLET_MAX_WITHDRAWAL_COINS`; 1 coin = ₹1 (`SESSION_COIN_VALUE_MINOR`).
+* **Payout details** (`payout_methods`, one per user): a UPI ID or bank account +
+  IFSC, AES-256-GCM encrypted with `security/crypto.ts` (AAD bound to the user),
+  shown only masked. Saving requires step-up proof (password or emailed code),
+  is audited and always emailed to the account holder. The finance console
+  flags requests whose payout details changed within 72 hours.
+* **Lifecycle** (`withdrawal_requests`): `REQUESTED → APPROVED → PAID`, or
+  `REJECTED` / `CANCELLED` (advisor, only while `REQUESTED`). The coins leave
+  the wallet when the request is made (`withdrawal:<id>`) and come back on
+  reject/cancel (`withdrawal:<id>:reversal`, unique — at most once). Approval
+  locks out the advisor's cancel, so staff never pay a withdrawn request.
+  Transitions are compare-and-set on the status.
+* **Duplicate-proofing:** `useSubmitLock` + a request key kept across network
+  retries (client); per-user advisory lock, unique `(user_id, idempotency_key)`,
+  and `open_key` — set to the user id while a request is open, with a UNIQUE
+  index and a CHECK tying it to the status — so one open request per advisor is
+  a database rule.
+* **Who acts:** `finance.payouts` (admin only, not grantable). Viewing the full
+  account is a separate, audited read (`wallet.payout_details_viewed`); lists
+  carry only the masked label. Staff cannot review their own request.
+* **Deletion / export:** an open request blocks account deletion; requests (no
+  account details) and the masked payout method are in the data export.
+  Requests outlive the account as financial records, like payment orders.
+* `WALLET_WITHDRAWALS_ENABLED=false` pauses new requests without touching open ones.
+
+## Feature Panel → server gate (fixed 2026-10-01)
+
+The admin Feature Panel saves to the `PlatformSettings` singleton, but
+`requireFeature` / `requireAIFeature` still read the legacy copy in the first
+admin's `UserSettings`, so the API enforced a stale snapshot (or the role
+defaults) whatever the panel showed. The gate now reads `PlatformSettings` and
+falls back to the legacy copy only when the panel has never saved. In the web
+app, `wallet` is an **admin opt-in** feature (`ADMIN_OPT_IN_FEATURES` in
+`lib/featureFlags.ts`): dark by default, and the admin's setting grants it per
+role — before, the role default (`false`) capped it, so the toggle could never
+show the wallet to advisors or users.
 
 ## Configuration
 
@@ -125,9 +174,10 @@ is an environment variable with a conservative default.
   (`JITSI_APP_ID`/`JITSI_APP_SECRET`, `SESSION_VIDEO_BASE_URL`) each join link
   carries a room-scoped token expiring with the join window, so the room itself
   enforces access (advisor = moderator).
-* Advisor withdrawals (coins → money) are not implemented — deliberately kept
-  out (owner decision, 2026-10-01) pending advice on the RBI prepaid-instrument
-  rules. No platform fee is deducted from advisor earnings yet (see
+* No platform fee is deducted from advisor earnings yet (see
   `docs/legal/DRAFT_COINS_PAYMENTS_AND_DATA.md` §4).
+* An admin refund of a session whose earning was already withdrawn fails with
+  "not enough coins" (the reversal comes out of the advisor's available
+  balance); settle it with an audited adjustment.
 * The auth snapshot falls back to token claims if the DB lookup times out;
   money-moving code re-reads the rows it acts on inside its transaction.

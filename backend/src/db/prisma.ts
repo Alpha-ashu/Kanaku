@@ -39,7 +39,7 @@ export const AUDIT_MODELS_FULL = new Set([
   'CollaborationParticipant', 'ExpenseBill', 'Friend',
   // Coin wallet & payments. The ledger itself (WalletTransaction) is excluded
   // below: it is already an append-only financial record.
-  'Wallet', 'PaymentOrder', 'CoinPackage',
+  'Wallet', 'PaymentOrder', 'CoinPackage', 'PayoutMethod', 'WithdrawalRequest',
   // Staff authority
   'StaffPermissionGrant', 'ManagerAssignment',
 ]);
@@ -95,6 +95,9 @@ const AUDIT_SENSITIVE_FIELDS: Record<string, readonly string[]> = {
   VaultDocument: ['encryptionIv'],
   VaultDocumentVersion: ['encryptionIv'],
   Device: ['fcmToken', 'apnsToken', 'publicKey'],
+  // Ciphertext, but a bank account has no business being copied into the audit trail.
+  PayoutMethod: ['detailsEncrypted'],
+  WithdrawalRequest: ['payoutDetailsEncrypted'],
 };
 
 const stripSensitive = (model: string, value: unknown): unknown => {

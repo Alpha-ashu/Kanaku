@@ -26,6 +26,35 @@ export const verifyPurchaseSchema = z.object({
 
 export const sandboxPaySchema = z.object({ outcome: z.enum(['paid', 'failed']).default('paid') });
 
+// ─── Withdrawals ───────────────────────────────────────────────────────────────
+
+/** name@bank — case-insensitive, so stored lower-case. */
+const UPI_ID = /^[a-z0-9][a-z0-9._-]{1,255}@[a-z][a-z0-9.-]{1,63}$/;
+/** 4 letters (bank), a zero, 6 letters/digits (branch). */
+const IFSC = /^[A-Z]{4}0[A-Z0-9]{6}$/;
+
+export const payoutMethodSchema = z.object({
+  details: z.discriminatedUnion('method', [
+    z.object({
+      method: z.literal('UPI'),
+      upiId: z.string().trim().toLowerCase().max(300).regex(UPI_ID, 'Enter a valid UPI ID, like name@bank'),
+    }),
+    z.object({
+      method: z.literal('BANK'),
+      accountHolder: z.string().trim().min(2, 'Enter the account holder name').max(100).regex(/^[\p{L} .'-]+$/u, 'Use letters only for the account holder name'),
+      accountNumber: z.string().transform((v) => v.replace(/[\s-]/g, '')).pipe(z.string().regex(/^\d{9,18}$/, 'Account numbers have 9 to 18 digits')),
+      ifsc: z.string().trim().toUpperCase().regex(IFSC, 'Enter a valid 11-character IFSC code'),
+    }),
+  ]),
+  // Checked by verifyStepUp (password or a consumed email code).
+  proof: z.unknown().optional(),
+});
+
+export const createWithdrawalSchema = z.object({
+  coins: z.number().int('Whole coins only').min(1).max(10_000_000),
+  clientRequestId: key,
+});
+
 // ─── Admin ─────────────────────────────────────────────────────────────────────
 
 export const adminLedgerQuerySchema = z.object({
@@ -103,6 +132,21 @@ export const securityEventsQuerySchema = z.object({
   from: z.string().datetime({ offset: true }).optional(),
   to: z.string().datetime({ offset: true }).optional(),
 }).passthrough();
+
+export const adminWithdrawalsQuerySchema = z.object({
+  cursor: z.string().max(500).optional(),
+  limit: z.coerce.number().int().min(1).max(100).optional(),
+  status: z.enum(['REQUESTED', 'APPROVED', 'PAID', 'REJECTED', 'CANCELLED', 'OPEN']).optional(),
+  userId: z.string().max(100).optional(),
+}).passthrough();
+
+export const withdrawalPaidSchema = z.object({
+  payoutReference: z.string().trim().min(4, 'Enter the UTR / UPI reference').max(64)
+    .regex(/^[A-Za-z0-9][A-Za-z0-9 ._/-]*$/, 'Use letters, digits, spaces, dots, dashes or slashes'),
+  note: z.string().trim().max(500).optional(),
+});
+
+export const withdrawalRejectSchema = z.object({ reason: z.string().trim().min(5, 'A reason of at least 5 characters is required').max(500) });
 
 export const staffPermissionsSchema = z.object({
   permissions: z.array(z.string().max(60)).max(30),

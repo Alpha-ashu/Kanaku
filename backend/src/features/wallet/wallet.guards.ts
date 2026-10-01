@@ -11,15 +11,17 @@ import { prisma } from '../../db/prisma';
  * admin adjustment.
  */
 export const financialDeletionBlockers = async (userId: string): Promise<string[]> => {
-  const [wallet, openPaid] = await Promise.all([
+  const [wallet, openPaid, openWithdrawal] = await Promise.all([
     prisma.wallet.findUnique({ where: { userId }, select: { availableBalance: true, pendingBalance: true } }),
     prisma.bookingRequest.count({
       where: { OR: [{ clientId: userId }, { advisorId: userId }], status: 'accepted', paymentStatus: 'PAID' },
     }),
+    prisma.withdrawalRequest.findUnique({ where: { openKey: userId }, select: { coins: true } }),
   ]);
   const blockers: string[] = [];
   if (wallet && wallet.availableBalance > 0) blockers.push(`the wallet still holds ${wallet.availableBalance} coins`);
   if (wallet && wallet.pendingBalance > 0) blockers.push(`${wallet.pendingBalance} coins of session earnings are still pending`);
   if (openPaid > 0) blockers.push(`${openPaid} paid session(s) have not taken place yet`);
+  if (openWithdrawal) blockers.push(`a withdrawal of ${openWithdrawal.coins} coins is still being processed`);
   return blockers;
 };

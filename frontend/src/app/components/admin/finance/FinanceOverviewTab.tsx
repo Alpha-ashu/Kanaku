@@ -46,6 +46,11 @@ export const FinanceOverviewTab: React.FC = () => {
     { label: 'Paid, upcoming sessions', value: data.paidUpcomingSessions.toLocaleString('en-IN') },
     { label: 'Webhook failures (24h)', value: data.last24h.webhookFailures.toLocaleString('en-IN'), warn: data.last24h.webhookFailures > 0 },
     { label: 'Orders needing review', value: data.ordersNeedingReview.toLocaleString('en-IN'), warn: data.ordersNeedingReview > 0 },
+    {
+      label: 'Withdrawals to pay',
+      value: `${(data.openWithdrawals?.count ?? 0).toLocaleString('en-IN')} · ${formatMoneyMinor(data.openWithdrawals?.amountMinor ?? 0)}`,
+      warn: (data.openWithdrawals?.count ?? 0) > 0,
+    },
   ];
 
   return (
