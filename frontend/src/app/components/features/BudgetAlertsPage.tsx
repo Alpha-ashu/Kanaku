@@ -3,7 +3,7 @@ import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import {
   Sliders, Mail, Smartphone,
   MessageSquare, Plus, Trash2, ShieldCheck, Wallet,
-  AlertTriangle, X, BellRing
+  AlertTriangle, X, BellRing, ChevronLeft
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { db } from '@/lib/database';
@@ -76,7 +76,7 @@ const BudgetGauge: React.FC<{ pct: number; over: boolean; value: string; caption
 
 export const BudgetAlertsPage: React.FC = () => {
   const guardSubmit = useSubmitLock();
-  const { currency } = useApp();
+  const { currency, goBack } = useApp();
   const [showAddModal, setShowAddModal] = useState(false);
   const [newCategory, setNewCategory] = useState('');
   const [newLimit, setNewLimit] = useState<number>(0);
@@ -281,9 +281,21 @@ export const BudgetAlertsPage: React.FC = () => {
       <div className="space-y-5 sm:space-y-6 w-full">
         {/* Header */}
         <div className="flex items-center justify-between gap-3 w-full">
-          <div className="min-w-0">
-            <p className="text-xs sm:text-sm font-semibold text-slate-400 truncate">{monthLabel}</p>
-            <h1 className="font-page-title text-slate-900 tracking-tight leading-tight truncate">Budgets</h1>
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <button
+              type="button"
+              data-testid="budget-alerts-go-back-button"
+              onClick={() => goBack('dashboard')}
+              className="back-button shrink-0"
+              aria-label="Go back"
+              title="Go back"
+            >
+              <ChevronLeft className="w-5 h-5 text-slate-700" />
+            </button>
+            <div className="min-w-0">
+              <p className="text-xs sm:text-sm font-semibold text-slate-400 truncate">{monthLabel}</p>
+              <h1 className="font-page-title text-slate-900 tracking-tight leading-tight truncate">Budgets</h1>
+            </div>
           </div>
           <button
             type="button"

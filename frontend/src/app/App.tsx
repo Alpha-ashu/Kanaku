@@ -500,6 +500,7 @@ const AppContent: React.FC = () => {
   // renders its Provider with a value. The lint rule that catches this was also
   // not installed — see .eslintrc.json.)
   const setCurrentPage = appContext?.setCurrentPage;
+  const goBack = appContext?.goBack || ((fallback?: string) => window.history.back());
   const visibleFeatures = appContext?.visibleFeatures;
   const aiCapabilities = appContext?.aiCapabilities;
   const {
@@ -1509,7 +1510,8 @@ const AppContent: React.FC = () => {
       case 'privacy-policy': return (
         <PrivacyPolicy
           hideNavbar
-          onNavigate={(page) => setCurrentPage(page)}
+          onBack={() => goBack('settings')}
+          onNavigate={(page) => setCurrentPage?.(page)}
         />
       );
       case 'data-deletion':
@@ -1517,13 +1519,15 @@ const AppContent: React.FC = () => {
       case 'delete-account': return (
         <DataDeletion
           hideNavbar
-          onNavigate={(page) => setCurrentPage(page)}
+          onBack={() => goBack('settings')}
+          onNavigate={(page) => setCurrentPage?.(page)}
         />
       );
       case 'terms': return (
         <Terms
           hideNavbar
-          onNavigate={(page) => setCurrentPage(page)}
+          onBack={() => goBack('settings')}
+          onNavigate={(page) => setCurrentPage?.(page)}
         />
       );
       case 'diagnostics': return <Diagnostics />;

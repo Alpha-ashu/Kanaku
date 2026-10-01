@@ -10,6 +10,7 @@ import {
   FEATURES_BASE,
   FEATURE_DEFAULT_ROLE_ACCESS,
   appliesToRole,
+  childrenOffDefault,
   enforceLocks,
   isRoleLocked,
   restoreRoleDefaults,
@@ -71,5 +72,25 @@ describe('feature catalogue', () => {
     expect(manager.find((f) => f.key === 'aiInsights')!.roleAccess.manager).toBe(false);
     expect(manager.find((f) => f.key === 'managerPanel')!.roleAccess.manager).toBe(true);
     expect(manager.find((f) => f.key === 'goals')!.lastUpdated.getTime()).toBe(0);
+  });
+
+  it('restores the actions inside a page too, e.g. Import statement for admins', () => {
+    // Production: admins had Accounts → Import statement / Create account switched
+    // off, so restoring only the page left the Import button hidden and refused.
+    const accounts = {
+      ...feature('accounts', { admin: false, user: true }),
+      children: {
+        importStatement: { roleAccess: { admin: false, manager: true, advisor: true, user: true } },
+        createAccount: { roleAccess: { admin: false, manager: true, advisor: true, user: false } },
+      },
+    };
+    expect(childrenOffDefault(accounts, 'admin')).toEqual(['importStatement', 'createAccount']);
+
+    const [restored] = restoreRoleDefaults([accounts], 'admin');
+    expect(restored.children?.importStatement.roleAccess).toEqual({ admin: true, manager: true, advisor: true, user: true });
+    expect(restored.children?.createAccount.roleAccess.admin).toBe(true);
+    // Other roles keep what the admin chose for them.
+    expect(restored.children?.createAccount.roleAccess.user).toBe(false);
+    expect(childrenOffDefault(restored, 'admin')).toEqual([]);
   });
 });

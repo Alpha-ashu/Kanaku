@@ -233,7 +233,7 @@ type AnalyticsTab = 'all' | 'spending' | 'cashflow' | 'wealth' | 'transactions';
 
 /* ─── Main Reports Component ──────────────────────────────────────────────── */
 export const Reports: React.FC = () => {
-  const { transactions, accounts, loans, goals, investments, currency, setCurrentPage } = useApp();
+  const { transactions, accounts, loans, goals, investments, currency, setCurrentPage, goBack } = useApp();
   const canPdf = useSubFeature('reports', 'pdfExport');
   const canCsv = useSubFeature('reports', 'csvExport');
   const canExcel = useSubFeature('reports', 'excelExport');
@@ -874,13 +874,13 @@ export const Reports: React.FC = () => {
           <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
             <button
               type="button"
-              onClick={() => setCurrentPage('dashboard')}
-              className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-white border border-slate-200/80 hover:bg-slate-50 active:scale-95 shadow-xs flex items-center justify-center text-slate-700 transition-all shrink-0 cursor-pointer"
+              onClick={() => goBack('dashboard')}
+              className="back-button"
               aria-label="Go to dashboard"
               title="Go to dashboard"
               data-testid="reports-go-back-button"
             >
-              <ArrowLeft size={17} className="text-slate-700" />
+              <ArrowLeft size={17} />
             </button>
             <div className="min-w-0">
               <div className="flex items-center gap-2">

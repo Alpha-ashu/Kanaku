@@ -1,4 +1,4 @@
-import type { UserRole } from '@/lib/featureFlags';
+import { SUB_FEATURE_DEFINITIONS, type UserRole } from '@/lib/featureFlags';
 
 /**
  * What the admin Feature Panel can switch, per module and per role.
@@ -154,12 +154,31 @@ export const isRoleLocked = (key: string, role: UserRole): boolean =>
 
 export const isMasterLocked = (key: string): boolean => Boolean(BASE_BY_KEY.get(key)?.masterLocked);
 
+interface SwitchableChild {
+  roleAccess: RoleAccess;
+}
+
 interface SwitchableFeature {
   key: string;
   enabled: boolean;
   roleAccess: RoleAccess;
   lastUpdated: Date;
+  /** Sub-features (actions inside a page): Import statement, Add transaction… */
+  children?: Record<string, SwitchableChild>;
 }
+
+/** Default access to one sub-feature for a role, or undefined if it has no default. */
+export const defaultChildAccess = (moduleKey: string, childKey: string, role: UserRole): boolean | undefined =>
+  SUB_FEATURE_DEFINITIONS[moduleKey]?.[childKey]?.roleAccess[role];
+
+/** Sub-features of a module whose access for `role` differs from the default. */
+export const childrenOffDefault = (feature: { key: string; children?: Record<string, SwitchableChild> }, role: UserRole): string[] =>
+  Object.entries(feature.children ?? {})
+    .filter(([childKey, child]) => {
+      const wanted = defaultChildAccess(feature.key, childKey, role);
+      return wanted !== undefined && child.roleAccess[role] !== wanted;
+    })
+    .map(([childKey]) => childKey);
 
 /** Locked switches are saved as on, whatever an older save or a stale tab says. */
 export function enforceLocks<T extends SwitchableFeature>(features: T[]): T[] {
@@ -173,14 +192,23 @@ export function enforceLocks<T extends SwitchableFeature>(features: T[]): T[] {
 }
 
 /**
- * Puts one role's access back to the defaults above, for every module, and
- * leaves the other roles and each module's master switch as they are.
+ * Puts one role's access back to the defaults above, for every module and
+ * every sub-feature inside it (Import statement, Add transaction…), and leaves
+ * the other roles and each module's master switch as they are.
  */
 export function restoreRoleDefaults<T extends SwitchableFeature>(features: T[], role: UserRole, now = new Date()): T[] {
   return enforceLocks(features.map((f) => {
     const wanted = defaultRoleAccess(f.key)[role];
-    if (f.roleAccess[role] === wanted) return f;
-    return { ...f, roleAccess: { ...f.roleAccess, [role]: wanted }, lastUpdated: now };
+    const offChildren = childrenOffDefault(f, role);
+    if (f.roleAccess[role] === wanted && offChildren.length === 0) return f;
+    const children = f.children && offChildren.length > 0
+      ? Object.fromEntries(Object.entries(f.children).map(([childKey, child]) => (
+        offChildren.includes(childKey)
+          ? [childKey, { ...child, roleAccess: { ...child.roleAccess, [role]: defaultChildAccess(f.key, childKey, role) as boolean } }]
+          : [childKey, child]
+      )))
+      : f.children;
+    return { ...f, roleAccess: { ...f.roleAccess, [role]: wanted }, children, lastUpdated: now };
   }));
 }
 

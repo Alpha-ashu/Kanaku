@@ -46,7 +46,7 @@ function getStatusBadge(status: string) {
 }
 
 export const AdvisorWorkspace: React.FC = () => {
- const { setCurrentPage } = useApp();
+ const { setCurrentPage, goBack } = useApp();
  const { user, role } = useAuth();
  const [activeTab, setActiveTab] = useState<WorkspaceTab>('bookings');
  const [bookings, setBookings] = useState<any[]>([]);
@@ -338,10 +338,10 @@ export const AdvisorWorkspace: React.FC = () => {
       <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
         <button
           data-testid="advisor-workspace-button"
-          onClick={() => setCurrentPage('dashboard')}
-          className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200/80 hover:bg-slate-50 active:scale-95 shadow-xs flex items-center justify-center text-slate-700 transition-all shrink-0 cursor-pointer"
-          aria-label="Go to dashboard"
-          title="Go to dashboard"
+          onClick={() => goBack('dashboard')}
+          className="back-button shrink-0"
+          aria-label="Go back"
+          title="Go back"
         >
           <ChevronLeft className="w-5 h-5 text-slate-700" />
         </button>

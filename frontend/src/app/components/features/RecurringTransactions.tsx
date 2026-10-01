@@ -31,7 +31,7 @@ const CATEGORY_PRESETS = [
 
 export const RecurringTransactions: React.FC = () => {
   const guardSubmit = useSubmitLock();
-  const { currency, accounts, setCurrentPage } = useApp();
+  const { currency, accounts, setCurrentPage, goBack } = useApp();
   const [showAddForm, setShowAddForm] = useState(false);
   const [saving, setSaving] = useState(false);
   const [activeFilter, setActiveFilter] = useState<'all' | 'expense' | 'income' | 'transfer' | 'active' | 'paused'>('all');
@@ -209,12 +209,12 @@ export const RecurringTransactions: React.FC = () => {
           <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
             <button
               type="button"
-              onClick={() => setCurrentPage('dashboard')}
+              onClick={() => goBack('dashboard')}
               title="Back to Dashboard"
               aria-label="Back to Dashboard"
-              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200/80 hover:bg-slate-50 active:scale-95 shadow-xs flex items-center justify-center text-slate-700 transition-all shrink-0 cursor-pointer"
+              className="back-button"
             >
-              <ArrowLeft size={18} className="text-slate-700" />
+              <ArrowLeft size={18} />
             </button>
             <h1 className="font-page-title text-slate-900 tracking-tight leading-none truncate">
               Recurring Schedules

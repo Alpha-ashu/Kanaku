@@ -34,7 +34,7 @@ const createDraftId = () => `draft_${Date.now()}_${Math.random().toString(36).sl
 
 export const ToDoLists: React.FC = () => {
   const guardSubmit = useSubmitLock();
-  const { setCurrentPage } = useApp();
+  const { setCurrentPage, goBack } = useApp();
   const { user } = useAuth();
 
   // Create modal state
@@ -345,13 +345,13 @@ export const ToDoLists: React.FC = () => {
           <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
             <button
               type="button"
-              onClick={() => setCurrentPage('dashboard')}
-              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200/80 hover:bg-slate-50 active:scale-95 shadow-xs flex items-center justify-center text-slate-700 transition-all shrink-0 cursor-pointer"
+              onClick={() => goBack('dashboard')}
+              className="back-button"
               aria-label="Go to dashboard"
               title="Go to dashboard"
               data-testid="todo-go-back-button"
             >
-              <ArrowLeft size={18} className="text-slate-700" />
+              <ArrowLeft size={18} />
             </button>
             <h1 className="font-page-title text-slate-900 tracking-tight leading-none truncate">To-Do Lists</h1>
           </div>

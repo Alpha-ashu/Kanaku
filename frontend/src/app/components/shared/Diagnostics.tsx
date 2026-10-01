@@ -8,7 +8,7 @@ import { db } from '@/lib/database';
 import { deduplicateLocalData } from '@/lib/auth-sync-integration';
 
 export const Diagnostics: React.FC = () => {
- const { setCurrentPage } = useApp();
+ const { setCurrentPage, goBack } = useApp();
  const [isTesting, setIsTesting] = useState(false);
  const [isCleaning, setIsCleaning] = useState(false);
  const [testResult, setTestResult] = useState<string>('Not tested');
@@ -127,8 +127,8 @@ export const Diagnostics: React.FC = () => {
     <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
       <button
         data-testid="diagnostics-button"
-        onClick={() => setCurrentPage('dashboard')}
-        className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200/80 hover:bg-slate-50 active:scale-95 shadow-xs flex items-center justify-center text-slate-700 transition-all shrink-0 cursor-pointer"
+        onClick={() => goBack('dashboard')}
+        className="back-button"
         aria-label="Go to dashboard"
         title="Go to dashboard"
       >

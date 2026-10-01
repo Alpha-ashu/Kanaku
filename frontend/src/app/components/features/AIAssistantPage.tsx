@@ -115,7 +115,7 @@ const loadConversationId = (userId?: string): string | undefined => {
 export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
   defaultMode = 'voice',
 }) => {
-  const { setCurrentPage, currency } = useApp();
+  const { setCurrentPage, goBack, currency } = useApp();
   const { user } = useAuth();
   const userId = user?.id;
 
@@ -330,14 +330,15 @@ export const AIAssistantPage: React.FC<AIAssistantPageProps> = ({
           <button
             type="button"
             onClick={() => {
-              if (mode === 'chat') {
+              if (mode === 'chat' && defaultMode === 'voice') {
                 setMode('voice');
               } else {
-                setCurrentPage('dashboard');
+                goBack('dashboard');
               }
             }}
-            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/80 backdrop-blur-md shadow-xs border border-white/60 hover:bg-white text-slate-700 flex items-center justify-center transition-all cursor-pointer active:scale-95 shrink-0"
-            aria-label={mode === 'chat' ? 'Back to Kai' : 'Back to Dashboard'}
+            className="back-button"
+            data-testid="ai-assistant-go-back-button"
+            aria-label={mode === 'chat' && defaultMode === 'voice' ? 'Back to Kai Voice' : 'Back to Dashboard'}
           >
             <ChevronLeft size={18} strokeWidth={2.4} />
           </button>

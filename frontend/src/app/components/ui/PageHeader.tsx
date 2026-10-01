@@ -16,6 +16,31 @@ export interface PageHeaderProps {
   className?: string;
 }
 
+const getDefaultFallbackForPage = (current: string): string => {
+  const adminSubPages = [
+    'admin-feature-panel',
+    'admin-ai',
+    'ai-management',
+    'sync-monitor',
+    'admin-advisor-verification',
+    'admin-finance',
+    'finance',
+  ];
+  if (adminSubPages.includes(current)) return 'admin';
+  if (current === 'manager-advisor-verification' || current === 'advisor-verification') return 'manager-team';
+  if (current === 'client-management') return 'advisor-panel';
+  if (current === 'admin' || current === 'manager-team' || current === 'advisor-earnings' || current === 'advisor-panel' || current === 'advisor') return 'dashboard';
+  if (current === 'add-account' || current === 'edit-account') return 'accounts';
+  if (current === 'add-transaction') return 'transactions';
+  if (current === 'add-investment' || current === 'edit-investment' || current === 'add-gold') return 'investments';
+  if (current === 'add-goal' || current === 'goal-detail') return 'goals';
+  if (current === 'add-group' || current === 'add-friends' || current === 'friends' || current === 'friend-profile') return 'groups';
+  if (current === 'todo-list-detail' || current === 'todo-list-share') return 'todo-lists';
+  if (current === 'pay-emi') return 'loans';
+  if (current === 'user-profile') return 'settings';
+  return 'dashboard';
+};
+
 export const PageHeaderCard: React.FC<PageHeaderProps> = ({
   title,
   subtitle,
@@ -26,16 +51,15 @@ export const PageHeaderCard: React.FC<PageHeaderProps> = ({
   onBack,
   className,
 }) => {
-  const { setCurrentPage, goBack, currentPage } = useApp();
+  const { goBack, currentPage } = useApp();
 
   const handleBackClick = () => {
     if (onBack) {
       onBack();
-    } else if (backTo && backTo !== 'dashboard') {
-      setCurrentPage(backTo);
-    } else {
-      goBack();
+      return;
     }
+    const fallback = backTo && backTo !== 'dashboard' ? backTo : getDefaultFallbackForPage(currentPage);
+    goBack(fallback);
   };
 
   // Automatically show back button on all non-dashboard pages by default

@@ -212,7 +212,8 @@ export interface KaiUnderstandResponse {
 export type StatementTransactionType = 'debit' | 'credit';
 
 /** Which engine produced the parsed rows. */
-export type StatementParserSource = 'gemini' | 'groq' | 'openrouter' | 'heuristic';
+/** 'loan-statement' = a lender's Statement of Account, read deterministically (no LLM). */
+export type StatementParserSource = 'gemini' | 'groq' | 'openrouter' | 'heuristic' | 'loan-statement';
 
 /** One typed row extracted from a bank statement. */
 export interface StatementTransaction {
@@ -244,6 +245,11 @@ export interface StatementMeta {
   reconciliationDelta?: number;
   parser?: StatementParserSource | string;
   warnings?: string[];
+  /**
+   * Loan statements: the borrower's own account the EMIs are debited from, as
+   * printed by the lender — the account the payments belong in.
+   */
+  repaymentAccount?: { bankName?: string; accountNumber?: string };
 }
 
 /** One row of the /import/statement (and /import/upload) review preview. */

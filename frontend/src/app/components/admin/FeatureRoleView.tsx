@@ -7,6 +7,7 @@ import {
   ROLES,
   SECTION_TITLES,
   appliesToRole,
+  childrenOffDefault,
   defaultRoleAccess,
   isRoleLocked,
   type FeatureSection,
@@ -28,7 +29,15 @@ export interface RoleViewFeature {
   section: FeatureSection;
   enabled: boolean;
   roleAccess: RoleAccess;
+  /** actions inside the page (Import statement, Add transaction…) */
+  children?: Record<string, { name: string; roleAccess: RoleAccess }>;
 }
+
+/** What "restore defaults" changes for one page: its own switch and/or some actions. */
+const pageChange = (f: RoleViewFeature, role: UserRole) => ({
+  pageSwitch: !isRoleLocked(f.key, role) && f.roleAccess[role] !== defaultRoleAccess(f.key)[role],
+  actions: childrenOffDefault(f, role).map((childKey) => f.children?.[childKey]?.name ?? childKey),
+});
 
 interface FeatureRoleViewProps {
   features: RoleViewFeature[];
@@ -69,7 +78,10 @@ export const FeatureRoleView: React.FC<FeatureRoleViewProps> = ({ features, onTo
 
   const rows = useMemo(() => features.filter((f) => appliesToRole(f.key, role)), [features, role]);
   const onCount = rows.filter((f) => f.enabled && (isRoleLocked(f.key, role) || f.roleAccess[role])).length;
-  const differsFromDefault = rows.filter((f) => !isRoleLocked(f.key, role) && f.roleAccess[role] !== defaultRoleAccess(f.key)[role]);
+  const differsFromDefault = rows.filter((f) => {
+    const change = pageChange(f, role);
+    return change.pageSwitch || change.actions.length > 0;
+  });
 
   return (
     <div className="space-y-6" data-testid="feature-role-view">
@@ -132,7 +144,11 @@ export const FeatureRoleView: React.FC<FeatureRoleViewProps> = ({ features, onTo
                         {locked && <Lock size={12} className="text-slate-400" aria-label="Always on" />}
                       </p>
                       <p className="text-xs text-slate-500 truncate">
-                        {!f.enabled ? 'Switched off for everyone in the module grid.' : locked ? 'Always on for this role.' : f.description}
+                        {!f.enabled
+                          ? 'Switched off for everyone in the module grid.'
+                          : on && pageChange(f, role).actions.length > 0
+                            ? <span className="font-semibold text-amber-700">Actions switched off: {pageChange(f, role).actions.join(', ')}</span>
+                            : locked ? 'Always on for this role.' : f.description}
                       </p>
                     </div>
                     <Switch
@@ -160,14 +176,24 @@ export const FeatureRoleView: React.FC<FeatureRoleViewProps> = ({ features, onTo
               </p>
             </div>
             <ul className="max-h-56 overflow-y-auto rounded-2xl bg-slate-50 border border-slate-100 divide-y divide-slate-100">
-              {differsFromDefault.map((f) => (
-                <li key={f.key} className="flex items-center justify-between px-4 py-2 text-sm">
-                  <span className="font-semibold text-slate-800">{f.name}</span>
-                  <span className={cn('text-xs font-bold', defaultRoleAccess(f.key)[role] ? 'text-emerald-700' : 'text-slate-500')}>
-                    {defaultRoleAccess(f.key)[role] ? 'turns on' : 'turns off'}
-                  </span>
-                </li>
-              ))}
+              {differsFromDefault.map((f) => {
+                const change = pageChange(f, role);
+                return (
+                  <li key={f.key} className="flex items-start justify-between gap-3 px-4 py-2 text-sm">
+                    <span className="font-semibold text-slate-800 min-w-0">
+                      {f.name}
+                      {change.actions.length > 0 && (
+                        <span className="block text-xs font-medium text-slate-500">Actions: {change.actions.join(', ')}</span>
+                      )}
+                    </span>
+                    {change.pageSwitch && (
+                      <span className={cn('shrink-0 text-xs font-bold', defaultRoleAccess(f.key)[role] ? 'text-emerald-700' : 'text-slate-500')}>
+                        {defaultRoleAccess(f.key)[role] ? 'turns on' : 'turns off'}
+                      </span>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
             <div className="flex gap-3">
               <button type="button" onClick={() => setConfirming(false)} className="flex-1 py-2.5 rounded-full border border-slate-200 text-sm font-bold text-slate-700 hover:bg-slate-50">Cancel</button>

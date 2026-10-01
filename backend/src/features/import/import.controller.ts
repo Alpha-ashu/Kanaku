@@ -276,7 +276,11 @@ export const uploadStatement = async (req: AuthRequest, res: Response) => {
     });
 
     const transactions: ImportedTransaction[] = await mapWithConcurrency(parsed.transactions.slice(0, 2000), 8, async (row, idx) => {
-      const suggestion = await categorize(userId, row.description, row.type === 'credit' ? 'Other Income' : 'Others');
+      // A loan statement's rows are, by construction, payments on that loan —
+      // no keyword guess needed (the categoriser filed them under "Others").
+      const suggestion = parsed.parser === 'loan-statement'
+        ? { category: 'Loan / Debt Payments', subcategory: 'EMI Payment', confidence: 0.95 }
+        : await categorize(userId, row.description, row.type === 'credit' ? 'Other Income' : 'Others');
       return {
         rowIndex: idx,
         description: row.description,

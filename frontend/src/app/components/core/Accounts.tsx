@@ -1044,23 +1044,27 @@ export const Accounts: React.FC = () => {
                                                                     key={t.id}
                                                                     className="hover:bg-blue-50/50 transition-colors"
                                                                 >
-                                                                    <td className="px-3 sm:px-4 md:px-8 py-3 sm:py-4 md:py-5 text-xs sm:text-sm font-medium text-gray-500">
+                                                                    <td className="px-3 sm:px-4 md:px-8 py-3 sm:py-4 md:py-5 text-xs sm:text-sm font-medium text-gray-500 whitespace-nowrap">
                                                                         {formatLocalDate(t.date, "en-US", {
                                                                             month: "short",
                                                                             day: "numeric",
+                                                                            // Imported statements span years: "Sep 4" alone read as this year.
+                                                                            ...(new Date(t.date).getFullYear() !== new Date().getFullYear() ? { year: "numeric" as const } : {}),
                                                                         })}
                                                                     </td>
-                                                                    <td className="px-3 sm:px-4 md:px-8 py-3 sm:py-4 md:py-5 text-xs sm:text-sm font-bold text-gray-900">
-                                                                        {t.description}
+                                                                    {/* Takes the free width and clamps: a long imported narration must
+                                                                        not squeeze the amount and category into broken lines. */}
+                                                                    <td className="w-full max-w-0 px-3 sm:px-4 md:px-8 py-3 sm:py-4 md:py-5 text-xs sm:text-sm font-bold text-gray-900">
+                                                                        <p className="line-clamp-2 break-words" title={t.description}>{t.description}</p>
                                                                     </td>
-                                                                    <td className="hidden md:table-cell px-8 py-5">
-                                                                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-white border border-gray-200 text-gray-700 shadow-sm">
+                                                                    <td className="hidden md:table-cell px-8 py-5 whitespace-nowrap">
+                                                                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-white border border-gray-200 text-gray-700 shadow-sm whitespace-nowrap">
                                                                             {t.category}
                                                                         </span>
                                                                     </td>
                                                                     <td
                                                                         className={cn(
-                                                                            "px-3 sm:px-4 md:px-8 py-3 sm:py-4 md:py-5 text-xs sm:text-sm font-bold text-right",
+                                                                            "px-3 sm:px-4 md:px-8 py-3 sm:py-4 md:py-5 text-xs sm:text-sm font-bold text-right whitespace-nowrap",
                                                                             (t.type === "income" || (t.type === "transfer" && t.transferToAccountId === selectedAccountId))
                                                                                 ? "text-emerald-600"
                                                                                 : "text-gray-900",

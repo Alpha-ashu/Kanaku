@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import { app } from '../../../../backend/src/app';
 import { prisma } from '../../../../backend/src/db/prisma';
 import { heuristicParseStatement } from '../../../../backend/src/features/import/statement.parser';
+import { loanStatementText } from '../helpers/loanStatementFixture';
 
 const API = '/api/v1';
 const TEST_USER_ID = 'stmt-import-test-user';
@@ -104,6 +105,30 @@ describe('BANK STATEMENT IMPORT', () => {
       expect(res.body.transactions.map((t: any) => t.type)).toEqual(['debit', 'credit', 'debit']);
       expect(res.body.statement).toBeDefined();
       sessionId = res.body.sessionId;
+    }, 30000);
+
+    it("reads a lender statement as the borrower's payments, never as income", async () => {
+      const res = await request(app)
+        .post(`${API}/import/statement`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .attach('file', Buffer.from(loanStatementText('pdfparse'), 'utf-8'), 'statement-of-account.txt');
+
+      expect(res.status).toBe(200);
+      expect(res.body.statement).toMatchObject({
+        parser: 'loan-statement',
+        bankName: 'Bajaj Finance',
+        reconciled: true,
+        repaymentAccount: { bankName: 'HDFC BANK LTD', accountNumber: 'xxxxxxxx4321' },
+      });
+      expect(res.body.transactions.map((t: any) => [t.date, t.amount, t.type])).toEqual([
+        ['2024-02-07', 2680, 'debit'],
+        ['2024-02-20', 2000, 'debit'],
+        ['2024-04-02', 25, 'debit'],
+        ['2024-04-04', 1998, 'debit'],
+        ['2025-01-15', 400, 'debit'],
+      ]);
+      expect(res.body.transactions.every((t: any) => t.suggestedCategory === 'Loan / Debt Payments')).toBe(true);
+      expect(res.body.transactions.every((t: any) => t.description.length < 80)).toBe(true);
     }, 30000);
 
     it('rejects confirm without a target account', async () => {

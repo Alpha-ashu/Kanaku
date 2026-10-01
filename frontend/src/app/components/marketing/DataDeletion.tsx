@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Trash2, ShieldAlert, Mail, CheckCircle2, UserX } from 'lucide-react';
+import { Trash2, ShieldAlert, Mail, CheckCircle2, UserX, ArrowLeft } from 'lucide-react';
 import { PublicNavbar } from '@/app/components/ui/PublicNavbar';
 import { SUPPORT_EMAIL } from '@/config/support';
 
@@ -13,6 +13,7 @@ interface DataDeletionProps {
 }
 
 export const DataDeletion: React.FC<DataDeletionProps> = ({
+  onBack = () => {},
   onGetStarted = () => {},
   onNavigate = () => {},
   onLogin = () => {},
@@ -50,7 +51,21 @@ export const DataDeletion: React.FC<DataDeletionProps> = ({
         <div className="absolute top-[10%] right-1/4 w-[400px] h-[400px] bg-violet-100/30 rounded-full blur-3xl" />
       </div>
 
-      {!hideNavbar && (
+      {hideNavbar ? (
+        <div className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200/80 px-4 sm:px-6 py-3 flex items-center gap-3">
+          <button
+            type="button"
+            onClick={onBack}
+            className="back-button"
+            data-testid="data-deletion-go-back-button"
+            aria-label="Go back"
+            title="Go back"
+          >
+            <ArrowLeft className="w-5 h-5 text-slate-700" />
+          </button>
+          <span className="text-sm font-bold text-slate-800">Back</span>
+        </div>
+      ) : (
         <PublicNavbar
           onNavigate={onNavigate}
           onLogin={onLogin}
@@ -59,7 +74,7 @@ export const DataDeletion: React.FC<DataDeletionProps> = ({
         />
       )}
 
-      <div className="max-w-4xl mx-auto px-6 pt-36 lg:pt-48 pb-24">
+      <div className={`max-w-4xl mx-auto px-6 pb-24 ${hideNavbar ? 'pt-6 sm:pt-8' : 'pt-36 lg:pt-48'}`}>
         <div className="mb-14 text-center">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}

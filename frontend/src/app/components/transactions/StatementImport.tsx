@@ -941,6 +941,14 @@ export const StatementImport: React.FC<StatementImportProps> = ({
                         </span>
                       )}
                     </div>
+                    {/* What the parser found and left out, e.g. a loan statement's dues and bounced debits */}
+                    {(importResult.statementMeta.warnings?.length ?? 0) > 0 && (
+                      <ul data-testid="statement-import-notes" className="space-y-1 border-t border-slate-100 pt-2">
+                        {importResult.statementMeta.warnings?.map((note) => (
+                          <li key={note} className="text-2xs font-semibold text-slate-600 leading-relaxed">{note}</li>
+                        ))}
+                      </ul>
+                    )}
                   </div>
                 )}
 

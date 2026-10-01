@@ -62,7 +62,7 @@ const ProfileSkeleton: React.FC = () => {
             title="User Profile"
             icon={<User size={20} className="sm:w-6 sm:h-6" />}
             showBack
-            backTo="dashboard"
+            backTo="settings"
           />
         
 
@@ -189,7 +189,7 @@ const ProfileSkeleton: React.FC = () => {
 
 export const UserProfile: React.FC = () => {
  const { user, signOut, role } = useAuth();
- const { setCurrentPage, currency, setCurrency, visibleFeatures } = useApp();
+ const { setCurrentPage, goBack, currency, setCurrency, visibleFeatures } = useApp();
  const { setAuthenticated } = useSecurity();
  const { isViewOnly, openVerificationModal, promptVerification } = useProfileVerification();
  const [isSigningOut, setIsSigningOut] = useState(false);
@@ -1027,7 +1027,7 @@ export const UserProfile: React.FC = () => {
   The User Profile and account settings feature is currently disabled by the system administrator.
   </p>
   <Button data-testid="user-profile-go-to-dashboard" 
-  onClick={() => setCurrentPage('dashboard')}
+  onClick={() => goBack('settings')}
   className="w-full bg-black text-white hover:bg-gray-900 rounded-full py-3 font-semibold transition-all shadow-md"
   >
   Go to Dashboard
@@ -1051,7 +1051,7 @@ export const UserProfile: React.FC = () => {
  title="User Profile"
  icon={<User size={20} className="sm:w-6 sm:h-6" />}
  showBack
- backTo="dashboard"
+ backTo="settings"
  >
    <button
      type="button"

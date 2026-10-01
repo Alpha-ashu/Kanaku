@@ -15,6 +15,7 @@
  *   opening + Σcredits − Σdebits ≈ closing  (±0.05 tolerance)
  */
 import { logger } from '../../config/logger';
+import { describeLoanStatement, parseLoanStatement, type LoanStatement } from './loanStatement';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 // Wire-contract shapes come from @kanaku/shared (also consumed by the
@@ -433,9 +434,45 @@ const finaliseStatement = (
   };
 };
 
+// ─── Loan statements ─────────────────────────────────────────────────────────
+
+/**
+ * A lender's Statement of Account becomes the borrower's payments (money out
+ * of their bank), not the loan's ledger — see loanStatement.ts. Read
+ * deterministically: an LLM told "credit = money IN" books every EMI paid as
+ * income, and the bank-statement heuristic cannot read the layout at all.
+ */
+export const fromLoanStatement = (loan: LoanStatement): ParsedStatement => ({
+  bankName: loan.lender,
+  accountNumber: loan.loanAccountNumber,
+  currency: 'INR',
+  period: { from: loan.rows[0]?.date, to: loan.statementDate },
+  transactions: loan.payments.map((payment) => ({
+    date: payment.date,
+    description: payment.description,
+    amount: payment.amount,
+    type: 'debit',
+    reference: payment.reference,
+  })),
+  reconciled: loan.reconciled,
+  parser: 'loan-statement',
+  warnings: describeLoanStatement(loan),
+  repaymentAccount: loan.repaymentBank
+    ? { bankName: loan.repaymentBank.name, accountNumber: loan.repaymentBank.accountNumber }
+    : undefined,
+});
+
 // ─── Main entry ───────────────────────────────────────────────────────────────
 
 export const parseStatementText = async (text: string): Promise<ParsedStatement> => {
+  const loan = parseLoanStatement(text);
+  if (loan) {
+    logger.info('Statement: loan statement read', {
+      payments: loan.payments.length, rows: loan.rows.length, reconciled: loan.reconciled, unreadRows: loan.unreadRows,
+    });
+    return fromLoanStatement(loan);
+  }
+
   const providers: Array<{ label: ParsedStatement['parser']; run: () => Promise<LLMStatementRaw | null> }> = [];
   if (process.env.GOOGLE_API_KEY) {
     providers.push({ label: 'gemini', run: () => extractWithGemini(text) });

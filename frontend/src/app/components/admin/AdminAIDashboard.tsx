@@ -157,7 +157,7 @@ const ChartTooltip: React.FC<{
 
 // Main component 
 export const AdminAIDashboard: React.FC = () => {
- const { setCurrentPage } = useApp();
+ const { setCurrentPage, goBack } = useApp();
  const { role, loading: authLoading, dataReady } = useAuth();
 
  const [state, setState] = useState<LoadState>('idle');
@@ -375,12 +375,14 @@ export const AdminAIDashboard: React.FC = () => {
  {/* Header */}
  <div className="flex flex-col md:flex-row md:items-center gap-4 justify-between">
  <div className="flex items-start gap-3">
- <button data-testid="admin-aidashboard-back-to-admin-panel"
- onClick={() => setCurrentPage('admin-feature-panel')}
- className="md:!hidden p-2 hover:bg-gray-100 rounded-lg transition-colors mt-0.5 md:mt-0"
- aria-label="Back to admin panel"
+ <button
+ data-testid="admin-aidashboard-back-to-admin-panel"
+ onClick={() => goBack('admin')}
+ className="back-button shrink-0"
+ aria-label="Go back"
+ title="Go back"
  >
- <ChevronLeft size={24} className="text-gray-600" />
+ <ChevronLeft size={20} className="text-slate-700" />
  </button>
  <div className="flex-1 min-w-0">
  <h2 className="text-xl md:text-2xl font-bold text-gray-900 truncate">AI Intelligence Dashboard</h2>

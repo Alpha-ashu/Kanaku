@@ -175,8 +175,15 @@ export const AdminAdvisorVerification: React.FC = () => {
 
         {/* Header */}
         <div className="flex items-center gap-4">
-          <button data-testid="admin-advisor-verification-go-back" type="button" onClick={goBack} aria-label="Go back" className="p-2 hover:bg-gray-100 rounded-xl transition-colors md:!hidden">
-            <ChevronLeft size={20} className="text-gray-600" />
+          <button
+            data-testid="admin-advisor-verification-go-back"
+            type="button"
+            onClick={() => goBack('admin')}
+            aria-label="Go back"
+            title="Go back"
+            className="back-button shrink-0"
+          >
+            <ChevronLeft size={20} className="text-slate-700" />
           </button>
           <h1 className="font-page-title text-slate-900 tracking-tight leading-none flex-1 truncate">
             Advisor Verification

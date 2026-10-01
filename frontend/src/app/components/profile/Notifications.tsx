@@ -140,7 +140,6 @@ export const Notifications: React.FC = () => {
           title="Notifications"
           showBack={true}
           backTestId="notifications-go-back-button"
-          onBack={() => setCurrentPage('dashboard')}
         >
           <div className="flex items-center gap-2 shrink-0">
             {unreadCount > 0 && (

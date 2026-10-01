@@ -57,7 +57,7 @@ interface AppContextType {
   /** Level-3 AI capability visibility: { moduleKey: { capabilityKey: boolean } } */
   aiCapabilities: Record<string, Record<string, boolean>>;
   // Navigation
-  goBack: () => void;
+  goBack: (fallback?: string) => void;
   historyStack: string[];
   // Offline-first sync
   syncStats: SyncStats;
@@ -112,7 +112,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   }, [navigate, location.pathname, currentPage]);
 
-  const goBack = useCallback(() => {
+  const goBack = useCallback((fallback?: string) => {
     const stack = historyStackRef.current;
     if (stack.length > 0) {
       const prevPage = stack.pop();
@@ -122,9 +122,17 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         return;
       }
     }
-    
-    // Fallback: use browser history so back works after page refresh (historyStack is in-memory only)
-    navigate(-1);
+
+    // Fallback: check if browser history has somewhere to go before hard defaulting
+    if (typeof window !== 'undefined' && window.history.state && window.history.state.idx > 0) {
+      navigate(-1);
+      return;
+    }
+
+    // Direct fallback navigation when history is empty (e.g. reload or fresh tab)
+    const target = fallback || 'dashboard';
+    const targetPath = target === 'dashboard' ? '/' : `/${target}`;
+    navigate(targetPath);
   }, [navigate]);
 
   const initialPreferences = readStoredAppPreferences();

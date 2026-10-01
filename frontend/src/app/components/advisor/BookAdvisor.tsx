@@ -324,7 +324,7 @@ function getStatusBadge(status: string) {
 }
 
 export const BookAdvisor: React.FC = () => {
-  const { setCurrentPage } = useApp();
+  const { setCurrentPage, goBack } = useApp();
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<AdvisorModuleTab>('discover');
   
@@ -834,8 +834,8 @@ export const BookAdvisor: React.FC = () => {
           <div className="flex items-center gap-3 min-w-0">
             <button
               type="button"
-              onClick={() => setCurrentPage('dashboard')}
-              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200/80 hover:bg-slate-50 active:scale-95 shadow-xs flex items-center justify-center text-slate-700 transition-all shrink-0 cursor-pointer"
+              onClick={() => goBack('dashboard')}
+              className="back-button"
               aria-label="Go to dashboard"
               title="Go to dashboard"
               data-testid="book-advisor-go-back-button"

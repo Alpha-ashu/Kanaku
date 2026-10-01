@@ -116,7 +116,7 @@ const formatFullDateTime = (dateVal?: Date | string | null): string => {
 };
 
 export const Transactions: React.FC = () => {
-  const { accounts, transactions, currency, setCurrentPage, refreshData } = useApp();
+  const { accounts, transactions, currency, setCurrentPage, refreshData, goBack } = useApp();
   const { isViewOnly, promptVerification } = useProfileVerification();
   const canAdd = useSubFeature('transactions', 'addTransaction');
   const canEdit = useSubFeature('transactions', 'editTransaction');
@@ -534,11 +534,23 @@ export const Transactions: React.FC = () => {
       <div className="space-y-4 sm:space-y-6 lg:space-y-8 pb-32">
         {/* Page Header */}
         <div className="flex items-center justify-between gap-3 w-full">
-          <div className="min-w-0">
-            <p className="text-xs sm:text-sm font-semibold text-slate-400 truncate">
-              {getPeriodLabel(timePeriod, selectedDate)}
-            </p>
-            <h1 className="font-page-title text-slate-900 tracking-tight leading-tight truncate">Transactions</h1>
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <button
+              type="button"
+              data-testid="transactions-go-back-button"
+              onClick={() => goBack('dashboard')}
+              className="back-button shrink-0"
+              aria-label="Go back"
+              title="Go back"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <div className="min-w-0">
+              <p className="text-xs sm:text-sm font-semibold text-slate-400 truncate">
+                {getPeriodLabel(timePeriod, selectedDate)}
+              </p>
+              <h1 className="font-page-title text-slate-900 tracking-tight leading-tight truncate">Transactions</h1>
+            </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <button

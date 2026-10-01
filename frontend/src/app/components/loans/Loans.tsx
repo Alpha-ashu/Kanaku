@@ -118,7 +118,7 @@ const getEffectiveLoanStatus = (loan: { dueDate?: Date | string; outstandingBala
  getLoanStatusFromDueDate(loan.dueDate, loan.outstandingBalance);
 
 export const Loans: React.FC = () => {
- const { loans, currency, accounts, setCurrentPage } = useApp();
+ const { loans, currency, accounts, setCurrentPage, goBack } = useApp();
  const canBorrow = useSubFeature('loans', 'borrowMoney');
  const canLend = useSubFeature('loans', 'lendMoney');
  const canDelete = useSubFeature('loans', 'loanSettlement');
@@ -298,13 +298,13 @@ export const Loans: React.FC = () => {
     <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
       <button
         type="button"
-        onClick={() => setCurrentPage('dashboard')}
-        className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200/80 hover:bg-slate-50 active:scale-95 shadow-xs flex items-center justify-center text-slate-700 transition-all shrink-0 cursor-pointer"
-        aria-label="Go to dashboard"
-        title="Go to dashboard"
+        onClick={() => goBack('dashboard')}
+        className="back-button"
+        aria-label="Go back"
+        title="Go back"
         data-testid="loans-go-back-button"
       >
-        <ArrowLeft size={18} className="text-slate-700" />
+        <ArrowLeft size={18} />
       </button>
       <h1 className="font-page-title text-slate-900 tracking-tight leading-none truncate">Loans & EMIs</h1>
     </div>

@@ -64,7 +64,21 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({
 
   return (
     <div className="relative min-h-screen bg-[#FDFEFE] text-slate-900 font-sans select-none overflow-x-hidden">
-      {!hideNavbar && (
+      {hideNavbar ? (
+        <div className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200/80 px-4 sm:px-6 py-3 flex items-center gap-3">
+          <button
+            type="button"
+            onClick={onBack}
+            className="back-button"
+            data-testid="privacy-go-back-button"
+            aria-label="Go back"
+            title="Go back"
+          >
+            <ArrowLeft className="w-5 h-5 text-slate-700" />
+          </button>
+          <span className="text-sm font-bold text-slate-800">Back</span>
+        </div>
+      ) : (
         <PublicNavbar
           onNavigate={onNavigate}
           onLogin={onLogin}
@@ -73,7 +87,7 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({
         />
       )}
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-36 sm:pt-44 lg:pt-48 pb-24">
+      <div className={`max-w-4xl mx-auto px-4 sm:px-6 pb-24 ${hideNavbar ? 'pt-6 sm:pt-8' : 'pt-36 sm:pt-44 lg:pt-48'}`}>
         {/* Header */}
         <div className="mb-14 text-center">
           <div className="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-200 px-3.5 py-1.5 rounded-full text-emerald-700 font-extrabold text-xs uppercase tracking-widest mb-4">

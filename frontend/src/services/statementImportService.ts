@@ -70,6 +70,7 @@ export interface ParsedTransaction {
 
 // Statement metadata is the shared wire contract (same shape the backend emits)
 import type { StatementMeta, ImportPreviewResponse } from '@kanaku/shared';
+import { describeLoanStatement, parseLoanStatement, type LoanStatement } from '@/lib/loanStatement';
 import { getConfiguredApiBase } from '@/lib/apiBase';
 
 export type { StatementMeta };
@@ -281,6 +282,7 @@ function looksLikeTableRows(rows: string[][]) {
 function cleanDescription(value: string) {
   return value
     .replace(/\b(?:ref|txn|trn|utr|chq|cheque|no)\b[:\s-]*[a-z0-9/-]+/gi, ' ')
+    .replace(/\(\s*\)/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -360,6 +362,62 @@ function isBoilerplateText(text: string): boolean {
   return false;
 }
 
+/**
+ * A lender's statement becomes the borrower's payments — expenses in the
+ * account the EMIs were paid from (see lib/loanStatement.ts).
+ */
+function loanPaymentsToTransactions(loan: LoanStatement): ParsedTransaction[] {
+  return loan.payments.map((payment) => ({
+    transaction_date: new Date(`${payment.date}T00:00:00`),
+    raw_description: payment.description,
+    cleaned_description: payment.reference ? `${payment.description} (Ref: ${payment.reference})` : payment.description,
+    amount: payment.amount,
+    transaction_type: 'expense' as const,
+    payment_channel: extractPaymentChannel(payment.description),
+    merchant_name: loan.lender,
+    category: 'Loan / Debt Payments',
+    currency: 'INR',
+    confidenceScore: 0.95,
+  }));
+}
+
+function loanStatementMeta(loan: LoanStatement): StatementMeta {
+  return {
+    bankName: loan.lender,
+    accountNumber: loan.loanAccountNumber,
+    currency: 'INR',
+    period: { from: loan.rows[0]?.date, to: loan.statementDate },
+    reconciled: loan.reconciled,
+    parser: 'loan-statement',
+    warnings: describeLoanStatement(loan),
+    repaymentAccount: loan.repaymentBank
+      ? { bankName: loan.repaymentBank.name, accountNumber: loan.repaymentBank.accountNumber }
+      : undefined,
+  };
+}
+
+/**
+ * Where a transaction's wrapped lines end: the table's totals / end marker, or
+ * the statement's footer (notes, disclaimers, links, company registration,
+ * office addresses, or plain prose). Without this the last row of a statement
+ * swallowed the whole footer as its description.
+ */
+function endsTransactionRow(line: string): boolean {
+  if (/^-?\s*(?:grand\s+)?total\b|end of statement/i.test(line)) return true;
+  // A line carrying an amount is still a transaction, even when its narration
+  // names a website ("POS/…/WWW.NETFLIX.COM 649.00").
+  if (/\d[\d,]*\.\d{2}/.test(line)) return false;
+  return /^(?:notes?|disclaimer|important)\b\s*[:.-]?/i.test(line)
+    || /https?:\/\/|www\.|\b[\w.+-]+@[\w-]+\.[a-z]{2,}/i.test(line)
+    || /\b(?:CIN|GSTIN|PAN)\s*:|registered office|corporate office/i.test(line)
+    || line.split(' ').length >= 14;
+}
+
+/** Column headings repeated on each page, e.g. "Debit ( ₹ ) Credit ( ₹ )". */
+function isColumnHeading(line: string): boolean {
+  return /\(\s*(?:₹|rs\.?|inr)\s*\)/i.test(line) && !/\d/.test(line.replace(/\(\s*(?:₹|rs\.?|inr)\s*\)/gi, ''));
+}
+
 class StatementImportService {
   /**
    * Parse a statement, server-first: the backend `/import/statement` endpoint
@@ -416,11 +474,13 @@ class StatementImportService {
     const rows: ParsedTransaction[] = (preview.transactions || [])
       .filter((row) => typeof row.amount === 'number' && row.amount > 0)
       .map((row) => {
-        const description = row.reference ? `${row.description} (Ref: ${row.reference})` : row.description;
+        // The reference goes on after cleaning: cleanDescription strips
+        // "Ref: 1234…", which used to leave an empty "( )" behind.
+        const cleaned = cleanDescription(row.description) || row.description;
         return {
           transaction_date: new Date(`${row.date}T00:00:00`),
           raw_description: row.description,
-          cleaned_description: cleanDescription(description) || row.description,
+          cleaned_description: row.reference ? `${cleaned} (Ref: ${row.reference})` : cleaned,
           amount: row.amount as number,
           transaction_type: row.type === 'credit' ? 'income' as const : 'expense' as const,
           payment_channel: extractPaymentChannel(row.description),
@@ -449,7 +509,9 @@ class StatementImportService {
     }
 
     const meta = preview.statement;
-    const suggestedAccount = await this.findSuggestedAccount(meta?.bankName, meta?.accountNumber);
+    const suggestedAccount = meta?.repaymentAccount
+      ? await this.findSuggestedAccount(meta.repaymentAccount.bankName, meta.repaymentAccount.accountNumber)
+      : await this.findSuggestedAccount(meta?.bankName, meta?.accountNumber);
     const annotatedTransactions = await this.annotateTransactions(rows, options);
     const summary = this.generateSummary(annotatedTransactions);
 
@@ -500,6 +562,7 @@ class StatementImportService {
     try {
       let rawText = '';
       let transactions: ParsedTransaction[] = [];
+      let loan: LoanStatement | null = null;
 
       if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
         try {
@@ -527,10 +590,12 @@ class StatementImportService {
           }
         }
 
-        transactions = await this.extractTransactionsFromText(rawText, options.userId);
+        loan = parseLoanStatement(rawText);
+        transactions = loan ? loanPaymentsToTransactions(loan) : await this.extractTransactionsFromText(rawText, options.userId);
       } else if (file.type.startsWith('image/') || /\.(png|jpe?g|webp|bmp|tiff)$/i.test(file.name)) {
         rawText = await this.extractImageTextWithOcr(file);
-        transactions = await this.extractTransactionsFromText(rawText, options.userId);
+        loan = parseLoanStatement(rawText);
+        transactions = loan ? loanPaymentsToTransactions(loan) : await this.extractTransactionsFromText(rawText, options.userId);
       } else if (file.type === 'text/csv' || file.name.toLowerCase().endsWith('.csv')) {
         rawText = await file.text();
         transactions = await this.extractTransactionsFromDelimitedText(rawText, options.userId);
@@ -544,11 +609,16 @@ class StatementImportService {
       }
 
 
-      const statementBankName = documentIntelligenceService.detectBankName(rawText);
-      const statementAccountNumber = documentIntelligenceService.detectAccountNumber(rawText);
-      const openingBalance = documentIntelligenceService.detectOpeningBalance(rawText);
+      const loanMeta = loan ? loanStatementMeta(loan) : undefined;
+      const statementBankName = loanMeta?.bankName ?? documentIntelligenceService.detectBankName(rawText);
+      const statementAccountNumber = loanMeta?.accountNumber ?? documentIntelligenceService.detectAccountNumber(rawText);
+      const openingBalance = loan ? undefined : documentIntelligenceService.detectOpeningBalance(rawText);
       
-      const suggestedAccount = await this.findSuggestedAccount(statementBankName, statementAccountNumber);
+      // A loan statement's payments belong in the account the EMIs came from,
+      // not one matching the lender's loan number.
+      const suggestedAccount = loanMeta?.repaymentAccount
+        ? await this.findSuggestedAccount(loanMeta.repaymentAccount.bankName, loanMeta.repaymentAccount.accountNumber)
+        : await this.findSuggestedAccount(statementBankName, statementAccountNumber);
       const annotatedTransactions = await this.annotateTransactions(transactions, options);
       const summary = this.generateSummary(annotatedTransactions);
 
@@ -560,13 +630,16 @@ class StatementImportService {
           accountNumber: statementAccountNumber || '',
           openingBalance: openingBalance?.toString() || '',
           transactionCount: String(annotatedTransactions.length),
+          ...(loanMeta ? { parser: 'loan-statement' } : {}),
         },
       });
 
       return {
         success: annotatedTransactions.length > 0,
         transactions: annotatedTransactions,
-        errors,
+        // With nothing to import, the loan notes explain why.
+        errors: loanMeta && annotatedTransactions.length === 0 ? (loanMeta.warnings ?? errors) : errors,
+        statementMeta: loanMeta,
         summary,
         statementAccountName: statementBankName,
         suggestedAccountId: suggestedAccount?.id,
@@ -1012,17 +1085,33 @@ class StatementImportService {
     let acc: string[] = [];
 
     if (isDateFirst) {
+      let rowOpen = false;
       for (const line of lines) {
-        if (SKIP_RE.test(line)) continue;
-        if (DATE_START_RE.test(line) && acc.length > 0) { blocks.push([...acc]); acc = []; }
-        acc.push(line);
+        if (DATE_START_RE.test(line)) {
+          if (acc.length > 0) { blocks.push([...acc]); acc = []; }
+          acc.push(line);
+          rowOpen = true;
+        } else if (endsTransactionRow(line)) {
+          // Before SKIP_RE, which also matches "Total …" and "*** … ***" but
+          // only skipped them, leaving the row open for the footer.
+          if (acc.length > 0) { blocks.push([...acc]); acc = []; }
+          rowOpen = false;
+        } else if (SKIP_RE.test(line) || isColumnHeading(line)) {
+          continue;
+        } else if (rowOpen) {
+          acc.push(line);
+        }
       }
     } else {
       const TRAILING_AMT_RE = /[\d,]+\.\d{2}(?:\s+[\d,]+\.\d{2})?\s*$/;
       const NEW_TXN_RE = /^\s*(?:\d+\s+)?(?:UPI\/|NEFT|RTGS|IMPS|POS\/|CASH|ATM|ACH\/|INB\/|BIL\/|\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d{2,4})/i;
       let hasAmt = false;
       for (const line of lines) {
-        if (SKIP_RE.test(line)) continue;
+        if (endsTransactionRow(line)) {
+          if (acc.length > 0) { blocks.push([...acc]); acc = []; hasAmt = false; }
+          continue;
+        }
+        if (SKIP_RE.test(line) || isColumnHeading(line)) continue;
         if (hasAmt && NEW_TXN_RE.test(line)) { blocks.push([...acc]); acc = []; hasAmt = false; }
         acc.push(line);
         if (TRAILING_AMT_RE.test(line)) hasAmt = true;
@@ -1094,7 +1183,7 @@ class StatementImportService {
 
       const upiRef = fullText.match(/UPI\/(?:DR|CR)\/(\d{10,})\//i) ?? fullText.match(/\/UPI\/(\d{10,})\//i);
       const ref = upiRef?.[1];
-      const cleanedDesc = cleanDescription(cleanedRaw) + (ref ? ` (Ref: ${ref})` : '');
+      const cleanedDesc = cleanDescription(cleanedRaw).slice(0, 160) + (ref ? ` (Ref: ${ref})` : '');
 
       const cat = await documentIntelligenceService.predictCategory({ merchantName, text: cleanedDesc, amount: txnAmt, userId });
 
@@ -1239,10 +1328,14 @@ class StatementImportService {
 
     if (bankName) {
       const normalizedBank = normalizeText(bankName);
-      const match = accounts.find(a => 
-        normalizeText(a.name).includes(normalizedBank) || 
-        normalizeText((a as any).bankName || '').includes(normalizedBank)
-      );
+      // Statements print the legal name ("ICICI BANK LTD"); accounts are named
+      // by people ("ICICI Savings"). Also compare on the core name.
+      const coreBank = normalizedBank.replace(/\b(?:bank|ltd|limited|co|corp|corporation|of india)\b/g, ' ').replace(/\s+/g, ' ').trim();
+      const corePattern = coreBank.length >= 3 ? new RegExp(`\\b${coreBank}\\b`) : null;
+      const match = accounts.find(a => {
+        const names = `${normalizeText(a.name)} ${normalizeText((a as any).bankName || '')}`;
+        return names.includes(normalizedBank) || Boolean(corePattern?.test(names));
+      });
       if (match) return match;
     }
 
