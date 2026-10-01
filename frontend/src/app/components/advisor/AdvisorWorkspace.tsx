@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { PAGE_FRAME_SPACING, PAGE_GUTTERS } from '@/app/components/shared/CenteredLayout';
 import { describeApiFailure, failureText } from '@/lib/apiFailure';
 import { SessionPaymentPanel } from '@/app/components/wallet/SessionPaymentPanel';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -332,8 +333,8 @@ export const AdvisorWorkspace: React.FC = () => {
 
  return (
  <div className="min-h-screen bg-white">
-  <div className="bg-white/95 backdrop-blur-md border-b border-slate-100 px-4 lg:px-8 py-4 sticky top-0 z-10">
-    <div className="max-w-5xl mx-auto flex items-center justify-between gap-3 w-full">
+  <div className="bg-white/95 backdrop-blur-md border-b border-slate-100 py-4 sticky top-0 z-10">
+    <div className={cn(PAGE_GUTTERS, 'flex items-center justify-between gap-3')}>
       <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
         <button
           data-testid="advisor-workspace-button"
@@ -364,7 +365,7 @@ export const AdvisorWorkspace: React.FC = () => {
   </div>
 
  <div className="bg-white border-b border-gray-100">
- <div className="max-w-5xl mx-auto px-4 lg:px-8 flex overflow-x-auto scrollbar-hide">
+ <div className={cn(PAGE_GUTTERS, 'flex overflow-x-auto scrollbar-hide')}>
  {TABS.map(tab => (
  <button key={tab.id} onClick={() => setActiveTab(tab.id)}
  className={cn('relative flex items-center gap-1.5 px-5 py-4 text-sm font-bold whitespace-nowrap border-b-2 transition-all',
@@ -378,7 +379,7 @@ export const AdvisorWorkspace: React.FC = () => {
  </div>
  </div>
 
- <div className="max-w-5xl mx-auto px-4 lg:px-8 py-6">
+ <div className={cn(PAGE_GUTTERS, PAGE_FRAME_SPACING, 'pb-6')}>
  {loading ? (
  <div className="flex items-center justify-center py-16"><Loader2 size={28} className="animate-spin text-indigo-400" /></div>
  ) : (

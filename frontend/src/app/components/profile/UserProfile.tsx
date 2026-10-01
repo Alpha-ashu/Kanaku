@@ -3,6 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useApp } from '@/contexts/AppContext';
 import { useSecurity } from '@/contexts/SecurityContext';
 import { PageHeader } from '@/app/components/ui/PageHeader';
+import { PAGE_CONTAINER_CLASS } from '@/app/components/shared/CenteredLayout';
 import { Button } from '@/app/components/ui/button';
 import { Card } from '@/app/components/ui/card';
 import { Skeleton } from '@/app/components/ui/skeleton';
@@ -54,19 +55,19 @@ interface VerificationState {
 const ProfileSkeleton: React.FC = () => {
   return (
     <div className="w-full min-h-screen bg-white lg:pb-8 animate-pulse" style={{ paddingBottom: 'calc(var(--bottom-reserved-space) + 8px)' }}>
-      <div className="max-w-[1920px] mx-auto">
+      <div className={PAGE_CONTAINER_CLASS}>
         {/* Header */}
-        <div className="px-4 sm:px-6 lg:px-8 pt-6 lg:pt-10">
+        
           <PageHeader
             title="User Profile"
             icon={<User size={20} className="sm:w-6 sm:h-6" />}
             showBack
             backTo="dashboard"
           />
-        </div>
+        
 
         {/* Content */}
-        <div className="px-4 sm:px-6 lg:px-8 mt-6 lg:mt-8">
+        
           <div className="lg:grid lg:grid-cols-[340px_1fr] lg:gap-8 lg:items-start space-y-6 lg:space-y-0">
             {/* LEFT COLUMN */}
             <div className="space-y-4">
@@ -180,7 +181,7 @@ const ProfileSkeleton: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>
+        
       </div>
     </div>
   );
@@ -1043,9 +1044,9 @@ export const UserProfile: React.FC = () => {
  return (
  <>
  <div className="w-full min-h-screen bg-transparent lg:pb-8" style={{ paddingBottom: 'calc(var(--bottom-reserved-space) + 8px)' }}>
- <div className="max-w-[1920px] mx-auto">
+ <div className={PAGE_CONTAINER_CLASS}>
  {/* Header */}
- <div className="px-4 sm:px-6 lg:px-8 pt-6 lg:pt-10">
+ 
  <PageHeader
  title="User Profile"
  icon={<User size={20} className="sm:w-6 sm:h-6" />}
@@ -1069,10 +1070,10 @@ export const UserProfile: React.FC = () => {
      <span className="hidden sm:inline">{isSigningOut ? 'Signing Out...' : 'Sign Out'}</span>
    </button>
  </PageHeader>
- </div>
+ 
 
  {/* Content */}
- <div className="px-4 sm:px-6 lg:px-8 mt-6 lg:mt-8">
+ 
  <div className="lg:grid lg:grid-cols-[340px_1fr] lg:gap-8 lg:items-start space-y-6 lg:space-y-0">
  {/* LEFT COLUMN */}
  <div className="space-y-4">
@@ -2061,7 +2062,7 @@ export const UserProfile: React.FC = () => {
  </motion.div>
  </div>{/* end right col */}
  </div>
- </div>{/* end px wrapper */}
+ {/* end px wrapper */}
  </div>{/* end max-w-7xl */}
 
  {/* Delete Account — server-verified, shared with every role */}

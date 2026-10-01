@@ -6,6 +6,7 @@ import { SearchableDropdown } from '@/app/components/ui/SearchableDropdown';
 import { Users, UserPlus, X, Check, ArrowLeft, Loader2, Calculator, Tag, AlignLeft, Calendar, Info, Sparkles, Trash2, Plus, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { PAGE_CONTAINER_CLASS } from '@/app/components/shared/CenteredLayout';
 import { decodeQuotedPrintable, sanitizeContactName } from '@/services/contactsService';
 
 import { FloatingSaveBar } from '@/app/components/ui/FloatingSaveBar';
@@ -309,10 +310,10 @@ export const AddGroup: React.FC = () => {
   });
 
  return (
- <div className="flex flex-col min-h-screen bg-white">
+ <div className={cn('min-h-screen bg-white', PAGE_CONTAINER_CLASS)}>
 
   {/* Header */}
-  <header className="px-4 lg:px-6 py-4 bg-white border-b border-slate-100">
+  <header className="pb-4 mb-4 border-b border-slate-100">
     <div className="flex items-center justify-between gap-3 w-full">
       <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
         <button
@@ -330,7 +331,7 @@ export const AddGroup: React.FC = () => {
   </header>
 
  {/* Main Single-Page Content Area */}
- <main className="flex-1 p-3 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 overflow-y-auto pb-48">
+ <main className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 pb-48">
  
  {/* Left Column: context & types (lg:col-7) */}
  <div className="lg:col-span-7 flex flex-col gap-4">

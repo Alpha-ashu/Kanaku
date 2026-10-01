@@ -388,7 +388,7 @@ export const Calendar: React.FC = () => {
   </div>
 
   {/* Calendar Card */}
-  <div className="bg-white rounded-[28px] sm:rounded-[32px] shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] border border-slate-100 overflow-hidden max-w-[980px] mx-auto">
+  <div className="bg-white rounded-[28px] sm:rounded-[32px] shadow-[0_10px_30px_-4px_rgba(112,144,176,0.06)] border border-slate-100 overflow-hidden w-full">
   {/* Month & Year Navigation Header */}
   <div className="bg-[#18181B] px-3 sm:px-5 py-3.5 flex items-center justify-between gap-2 text-white">
     {/* Left Controls: Previous Year & Previous Month */}

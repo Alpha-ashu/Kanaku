@@ -155,7 +155,7 @@ export const ManagerTeamDashboard: React.FC = () => {
 
   return (
     <CenteredLayout enablePullToRefresh={false}>
-      <div className="max-w-7xl mx-auto w-full space-y-5 pb-12">
+      <div className="w-full space-y-5 pb-12">
         <PageHeaderCard title="My Team" subtitle="Users and advisors assigned to you" icon={<Users className="w-5 h-5" />}>
           <div className="flex gap-2">
             <button type="button" onClick={() => setRefreshKey((k) => k + 1)} className="p-2.5 rounded-full border border-slate-200 bg-white text-slate-600 hover:bg-slate-50" aria-label="Refresh"><RefreshCw size={14} /></button>

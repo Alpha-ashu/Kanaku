@@ -626,7 +626,7 @@ export const Vault: React.FC = () => {
 
         {/* Security Tab — Privacy Center + Vault Lock + Audit Trail */}
         {activeTab === 'security' && (
-          <div className="space-y-5 max-w-xl mx-auto">
+          <div className="space-y-5">
             {/* Security Assurance Badges */}
             <div className="grid grid-cols-3 gap-2 sm:gap-3">
               <div className="p-3 bg-white rounded-2xl border border-slate-200/80 shadow-xs flex flex-col items-center text-center">

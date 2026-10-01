@@ -379,7 +379,7 @@ export const EditInvestment: React.FC = () => {
 
  return (
  <CenteredLayout>
- <div className="max-w-2xl lg:max-w-4xl mx-auto pb-48">
+ <div className="w-full pb-48">
  <PageHeader
  title="Edit Investment"
  icon={<TrendingUp size={20} className="sm:w-6 sm:h-6" />}

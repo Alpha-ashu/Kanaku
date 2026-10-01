@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { updateAccountWithBackendSync } from '@/lib/auth-sync-integration';
 import { setAccountTargetBalance, setAccountOpeningBalance } from '@/lib/transactionAggregation';
 import { cn } from '@/lib/utils';
+import { PAGE_CONTAINER_CLASS } from '@/app/components/shared/CenteredLayout';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const accountTypes = [
@@ -133,9 +134,9 @@ export const EditAccount: React.FC<{ accountId?: number }> = ({ accountId: propA
  }
 
  return (
- <div className="min-h-screen bg-white flex flex-col">
+ <div className={cn('min-h-screen bg-white', PAGE_CONTAINER_CLASS)}>
   {/* Header Section */}
-  <div className="px-4 sm:px-6 lg:px-8 xl:px-12 pt-6 lg:pt-8 pb-4">
+  <div className="pb-4">
     <div className="flex items-center gap-2.5 sm:gap-3">
       <button
         data-testid="edit-account-back"
@@ -151,8 +152,8 @@ export const EditAccount: React.FC<{ accountId?: number }> = ({ accountId: propA
   </div>
 
  {/* Main Content - Scrollable Area */}
- <div className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 xl:px-12 pb-48">
- <div className="max-w-3xl mx-auto space-y-6">
+ <div className="flex-1 pb-48">
+ <div className="space-y-6">
  
  {/* Visual Card Preview (Optional, but looks premium) */}
  <motion.div 

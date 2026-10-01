@@ -55,7 +55,7 @@ export const AdminFinanceConsole: React.FC = () => {
 
   return (
     <CenteredLayout enablePullToRefresh={false}>
-      <div className="max-w-7xl mx-auto w-full space-y-5 pb-12">
+      <div className="w-full space-y-5 pb-12">
         <PageHeaderCard title="Payments & Wallets" subtitle="Coin purchases, session payments, refunds and audit" icon={<Landmark className="w-5 h-5" />} />
 
         <nav className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1" role="tablist" aria-label="Finance sections">

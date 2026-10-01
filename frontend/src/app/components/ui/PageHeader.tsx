@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 export interface PageHeaderProps {
   title: string;
   subtitle?: string;
+  /** No longer shown: page headers are title-only on every page. Kept so callers still compile. */
   icon?: React.ReactNode;
   children?: React.ReactNode;
   showBack?: boolean;
@@ -18,7 +19,6 @@ export interface PageHeaderProps {
 export const PageHeaderCard: React.FC<PageHeaderProps> = ({
   title,
   subtitle,
-  icon,
   children,
   showBack,
   backTo = 'dashboard',
@@ -55,12 +55,6 @@ export const PageHeaderCard: React.FC<PageHeaderProps> = ({
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
-          )}
-
-          {icon && (
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200/80 shadow-xs flex items-center justify-center text-slate-800 shrink-0">
-              {icon}
-            </div>
           )}
 
           <div className="min-w-0">

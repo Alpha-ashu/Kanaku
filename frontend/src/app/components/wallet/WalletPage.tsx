@@ -194,7 +194,7 @@ export const WalletPage: React.FC = () => {
 
   return (
     <CenteredLayout onRefresh={load}>
-      <div className="max-w-5xl mx-auto w-full space-y-6 pb-12">
+      <div className="w-full space-y-6 pb-12">
         <PageHeaderCard
           title="Wallet"
           subtitle="KANAKU coins for advisor sessions"

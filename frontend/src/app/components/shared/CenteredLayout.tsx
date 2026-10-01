@@ -4,6 +4,18 @@ import { useOptionalApp } from '@/contexts/AppContext';
 import { backendSyncService } from '@/lib/backend-sync-service';
 import { cn } from '@/lib/utils';
 
+/**
+ * The one page frame every screen uses, for every role: full width up to
+ * 1920px, the same side gutters and the same top spacing. Pages put their
+ * content straight inside it — no extra max-width wrapper narrowing a page.
+ * A full-bleed bar (sticky header, tab strip) lines its content up with the
+ * page by using PAGE_GUTTERS inside it.
+ */
+export const PAGE_GUTTERS = 'max-w-[1920px] w-full mx-auto px-4 sm:px-6 lg:px-8 xl:px-10';
+export const PAGE_FRAME_WIDTH = `${PAGE_GUTTERS} flex flex-col flex-1`;
+export const PAGE_FRAME_SPACING = 'pt-4 sm:pt-5 lg:pt-6 lg:pb-10';
+export const PAGE_CONTAINER_CLASS = `${PAGE_FRAME_WIDTH} ${PAGE_FRAME_SPACING}`;
+
 export interface CenteredLayoutProps {
   children: React.ReactNode;
   maxWidth?: string;
@@ -46,9 +58,9 @@ export const CenteredLayout: React.FC<CenteredLayoutProps> = ({
   const content = (
     <div
       className={cn(
-        maxWidth,
-        'w-full mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 flex flex-col flex-1',
-        fullHeight ? 'min-h-0 h-full overflow-hidden' : 'pt-4 sm:pt-5 lg:pt-6 lg:pb-10',
+        PAGE_FRAME_WIDTH,
+        maxWidth !== 'max-w-[1920px]' && maxWidth,
+        fullHeight ? 'min-h-0 h-full overflow-hidden' : PAGE_FRAME_SPACING,
         className
       )}
       style={noBottomPadding || fullHeight ? undefined : { paddingBottom: 'calc(var(--bottom-reserved-space) + 8px)' }}

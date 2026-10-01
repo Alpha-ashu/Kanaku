@@ -12,6 +12,7 @@ import {
   deleteToDoListShareWithBackendSync
 } from '@/lib/auth-sync-integration';
 import { cn } from '@/lib/utils';
+import { PAGE_CONTAINER_CLASS } from '@/app/components/shared/CenteredLayout';
 
 export const ToDoListShare: React.FC = () => {
   const { setCurrentPage } = useApp();
@@ -93,10 +94,10 @@ export const ToDoListShare: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-white">
+    <div className={cn('min-h-screen bg-white', PAGE_CONTAINER_CLASS)}>
 
       {/* Header */}
-      <header className="px-4 lg:px-6 py-4 bg-white border-b border-slate-100">
+      <header className="pb-4 mb-4 border-b border-slate-100">
         <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
           <button
             data-testid="to-do-list-share-back"
@@ -115,7 +116,7 @@ export const ToDoListShare: React.FC = () => {
         </div>
       </header>
 
-      <main className="flex-1 p-4 lg:p-6 space-y-4 pb-28">
+      <main className="flex-1 space-y-4 pb-28">
 
         {/* No Friends State */}
         {friends.length === 0 ? (

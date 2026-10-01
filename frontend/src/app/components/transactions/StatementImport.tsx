@@ -10,15 +10,12 @@ import {
   Table, 
   CheckCircle, 
   XCircle, 
-  AlertCircle, 
   Download, 
   Eye, 
   Edit2, 
   Trash2, 
   Plus, 
   Search, 
-  Calendar, 
-  CreditCard, 
   ArrowUpRight, 
   ArrowDownLeft, 
   Check, 
@@ -28,14 +25,12 @@ import {
   RefreshCw,
   FileCheck,
   Building2,
-  Receipt
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { statementImportService, ImportResult, ParsedTransaction, StatementImportOptions } from '@/services/statementImportService';
 import { financialDataCaptureService } from '@/services/financialDataCaptureService';
 import { Button } from '@/app/components/ui/button';
-import { Card } from '@/app/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import { useApp } from '@/contexts/AppContext';
 import { formatCurrencyAmount, getCurrencySymbol } from '@/lib/currencyUtils';

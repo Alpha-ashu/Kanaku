@@ -50,7 +50,7 @@ export const AdvisorEarnings: React.FC = () => {
 
   return (
     <CenteredLayout onRefresh={load}>
-      <div className="max-w-5xl mx-auto w-full space-y-6 pb-12">
+      <div className="w-full space-y-6 pb-12">
         <PageHeaderCard title="Earnings" subtitle="Coins earned from completed sessions" icon={<BadgeIndianRupee className="w-5 h-5" />}>
           <button
             type="button"
