@@ -848,47 +848,73 @@ export const BookAdvisor: React.FC = () => {
             </div>
           </div>
 
-          {/* 5 Primary Navigation Tabs */}
-          <nav className="flex items-center justify-start sm:justify-center gap-1 bg-slate-100/90 backdrop-blur-xl p-1.5 rounded-full border border-slate-200/70 max-w-full overflow-x-auto scrollbar-hide shrink-0 shadow-2xs">
-            {[
-              { id: 'discover', label: 'Discover', icon: Search },
-              { id: 'consultations', label: 'Consultations', icon: Briefcase, badge: bookings.length },
-              { id: 'messages', label: 'Messages', icon: MessageSquare },
-              { id: 'following', label: 'Following', icon: Users, badge: followedAdvisorIds.length },
-              { id: 'bookings', label: 'Bookings', icon: Calendar },
-            ].map(tab => {
-              const Icon = tab.icon;
-              const isActive = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id as AdvisorModuleTab)}
-                  title={tab.label}
-                  aria-label={tab.label}
-                  className={cn(
-                    'flex items-center justify-center gap-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap px-3.5 sm:px-4 py-2 cursor-pointer',
-                    isActive
-                      ? 'bg-[#18181B] text-white shadow-xs'
-                      : 'text-slate-500 hover:text-slate-900 hover:bg-slate-200/60'
-                  )}
-                >
-                  <Icon size={14} className="shrink-0" />
-                  <span>{tab.label}</span>
-                  {tab.badge !== undefined && tab.badge > 0 && (
-                    <span
-                      className={cn(
-                        'px-1.5 py-0.2 rounded-full text-2xs font-black shrink-0',
-                        isActive
-                          ? 'bg-white/20 text-white'
-                          : 'bg-slate-200/80 text-slate-700'
+          {/* 5 Primary Navigation Tabs - Responsive across all device screen sizes */}
+          <nav
+            aria-label="Advisor navigation"
+            className="w-full sm:w-auto p-1 sm:p-1.5 bg-slate-100/90 backdrop-blur-xl rounded-full border border-slate-200/70 shadow-2xs shrink-0"
+          >
+            <div className="grid grid-cols-5 sm:flex sm:items-center sm:justify-center gap-0.5 sm:gap-1 w-full">
+              {[
+                { id: 'discover' as const, label: 'Discover', mobileLabel: 'Discover', icon: Search },
+                { id: 'consultations' as const, label: 'Consultations', mobileLabel: 'Consults', icon: Briefcase, badge: bookings.length },
+                { id: 'messages' as const, label: 'Messages', mobileLabel: 'Messages', icon: MessageSquare },
+                { id: 'following' as const, label: 'Following', mobileLabel: 'Following', icon: Users, badge: followedAdvisorIds.length },
+                { id: 'bookings' as const, label: 'Bookings', mobileLabel: 'Bookings', icon: Calendar },
+              ].map(tab => {
+                const Icon = tab.icon;
+                const isActive = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id as AdvisorModuleTab)}
+                    title={tab.label}
+                    aria-label={tab.label}
+                    data-testid={`book-advisor-tab-${tab.id}`}
+                    className={cn(
+                      'relative flex flex-col min-[360px]:flex-row items-center justify-center rounded-full font-bold transition-all select-none cursor-pointer w-full sm:w-auto min-w-0',
+                      'gap-0.5 min-[360px]:gap-1 sm:gap-1.5',
+                      'py-1.5 sm:py-2 px-1 xs:px-1.5 sm:px-3.5 md:px-4',
+                      'text-[9.5px] xs:text-[10.5px] sm:text-xs',
+                      isActive
+                        ? 'bg-[#18181B] text-white shadow-xs'
+                        : 'text-slate-500 hover:text-slate-900 hover:bg-slate-200/60'
+                    )}
+                  >
+                    <div className="relative shrink-0 flex items-center justify-center">
+                      <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+                      {tab.badge !== undefined && tab.badge > 0 && (
+                        <span
+                          className={cn(
+                            'sm:hidden absolute -top-1 -right-1.5 flex items-center justify-center min-w-[13px] h-3 px-0.5 rounded-full text-[8px] font-black leading-none shadow-2xs',
+                            isActive
+                              ? 'bg-rose-500 text-white'
+                              : 'bg-rose-500 text-white'
+                          )}
+                        >
+                          {tab.badge}
+                        </span>
                       )}
-                    >
-                      {tab.badge}
+                    </div>
+                    <span className="truncate leading-none">
+                      <span className="sm:hidden">{tab.mobileLabel}</span>
+                      <span className="hidden sm:inline">{tab.label}</span>
                     </span>
-                  )}
-                </button>
-              );
-            })}
+                    {tab.badge !== undefined && tab.badge > 0 && (
+                      <span
+                        className={cn(
+                          'hidden sm:inline-flex px-1.5 py-0.2 rounded-full text-2xs font-black shrink-0 leading-none',
+                          isActive
+                            ? 'bg-white/20 text-white'
+                            : 'bg-slate-200/80 text-slate-700'
+                        )}
+                      >
+                        {tab.badge}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           </nav>
         </div>
 
