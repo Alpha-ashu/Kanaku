@@ -3660,7 +3660,9 @@ async function saveTransactionOnce(transaction: any) {
             // 429: throttled before it ran — keep the user's write locally; the queue retries it.
             backendError?.status === 429 ||
             backendError?.status === 0 ||
-            backendError?.status === 400 ||
+            // A request the server rejected as INVALID can never sync: keeping it locally
+            // showed it as saved while it lived on this device only (lost on sign-out).
+            (backendError?.status === 400 && backendError?.code !== 'VALIDATION_ERROR') ||
             backendError?.status === 409 ||
             backendError?.code === 'DATABASE_UNAVAILABLE' ||
             backendError?.code === 'NETWORK_ERROR' ||
@@ -3756,7 +3758,7 @@ export async function updateTransactionWithBackendSync(localId: number, updates:
           backendError?.status === 503 ||
           backendError?.status === 429 ||
           backendError?.status === 0 ||
-          backendError?.status === 400 ||
+          (backendError?.status === 400 && backendError?.code !== 'VALIDATION_ERROR') ||
           backendError?.status === 409 ||
           backendError?.code === 'DATABASE_UNAVAILABLE' ||
           backendError?.code === 'NETWORK_ERROR' ||
@@ -3899,7 +3901,7 @@ async function saveAccountOnce(account: any) {
         backendError?.status === 503 ||
         backendError?.status === 429 ||
         backendError?.status === 0 ||
-        backendError?.status === 400 ||
+        (backendError?.status === 400 && backendError?.code !== 'VALIDATION_ERROR') ||
         backendError?.status === 409 ||
         backendError?.code === 'DATABASE_UNAVAILABLE' ||
         backendError?.code === 'NETWORK_ERROR' ||
@@ -4007,7 +4009,7 @@ export async function updateAccountWithBackendSync(accountId: number, updates: a
           backendError?.status === 503 ||
           backendError?.status === 429 ||
           backendError?.status === 0 ||
-          backendError?.status === 400 ||
+          (backendError?.status === 400 && backendError?.code !== 'VALIDATION_ERROR') ||
           backendError?.status === 409 ||
           backendError?.code === 'DATABASE_UNAVAILABLE' ||
           backendError?.code === 'NETWORK_ERROR' ||

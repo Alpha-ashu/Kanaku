@@ -556,6 +556,7 @@ export const AdvisorWorkspace: React.FC = () => {
  <div className="flex-1 min-w-0">
  <p className="font-bold text-gray-900 text-sm">{s.client?.name ?? 'Client'}</p>
  <p className="text-xs text-gray-500">{s.sessionType} {s.startTime ? new Date(s.startTime).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'TBD'}</p>
+ {s.feedback && <p className="text-xs text-gray-600 italic line-clamp-2 mt-0.5" title={s.feedback}>“{s.feedback}”</p>}
  </div>
  <div className="text-right shrink-0">
  {s.amount ? <p className="font-black text-emerald-700 text-sm">₹{Number(s.amount).toLocaleString('en-IN')}</p> : <p className="text-xs text-gray-400"></p>}

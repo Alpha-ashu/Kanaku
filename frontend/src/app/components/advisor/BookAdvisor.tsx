@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useApp } from '@/contexts/AppContext';
+import { useApp, useSubFeature } from '@/contexts/AppContext';
+import { SessionRating } from '@/app/components/advisor/SessionRating';
 import { useAuth } from '@/contexts/AuthContext';
 import { backendService } from '@/lib/backend-api';
 import {
@@ -18,8 +19,9 @@ import type { BookingPaymentState } from '@/services/walletService';
 import { resolveAvatarSelection } from '@/lib/avatar-gallery';
 import { motion, AnimatePresence } from 'framer-motion';
 import { db } from '@/lib/database';
-import { applyTransactionAccountImpact } from '@/lib/transactionAggregation';
-import { queueRecordUpsertSync } from '@/lib/auth-sync-integration';
+import { saveTransactionWithBackendSync } from '@/lib/auth-sync-integration';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { useSubmitLock } from '@/hooks/useSubmitLock';
 import { CenteredLayout } from '@/app/components/shared/CenteredLayout';
 import { FinancialAmount } from '@/app/components/ui/FinancialAmount';
 
@@ -67,6 +69,9 @@ export interface BookingData {
     paymentMethod?: string;
   } | null;
   sessionStatus?: string;
+  /** The client's own rating of the session (1-5) and review text, once given. */
+  rating?: number | null;
+  feedback?: string | null;
   unsent?: boolean;
   /**
    * Who proposed the time currently on the booking, when `status` is
@@ -148,6 +153,8 @@ interface BookingApiRow {
   session?: {
     id: string;
     status: string;
+    rating?: number | null;
+    feedback?: string | null;
     payment?: {
       id: string;
       status: string;
@@ -223,6 +230,13 @@ const BOOKING_STATUSES: BookingData['status'][] = [
  */
 const isOffPlatformFee = (bkg: BookingData) => !bkg.paymentState || bkg.paymentState.paymentStatus === 'NOT_REQUIRED';
 
+// A fee paid to the advisor outside the app is recorded as the client's own
+// expense, tagged with its booking. The tag syncs with the transaction, so
+// "already recorded" holds on every device and a fee is never booked twice.
+// Kept short: the API caps a tag at 40 characters ("fee:" + a 36-char uuid).
+const FEE_TAG_PREFIX = 'fee:';
+const feeTag = (bookingId: string) => `${FEE_TAG_PREFIX}${bookingId}`;
+
 const mapBooking = (row: BookingApiRow, advisorLookup: Map<string, AdvisorProfileData>): BookingData => {
   const advisor = advisorLookup.get(row.advisorId);
   // Older rows carry 'confirmed' — the same state the API now calls 'accepted'.
@@ -257,6 +271,8 @@ const mapBooking = (row: BookingApiRow, advisorLookup: Map<string, AdvisorProfil
     sessionId: row.session?.id,
     payment,
     sessionStatus: row.session?.status,
+    rating: row.session?.rating ?? null,
+    feedback: row.session?.feedback ?? null,
     rescheduleProposedBy: row.rescheduleProposedBy ?? null,
     rescheduleMessage: row.rescheduleMessage ?? null,
     rescheduleCount: row.rescheduleCount ?? 0,
@@ -326,6 +342,19 @@ function getStatusBadge(status: string) {
 export const BookAdvisor: React.FC = () => {
   const { goBack } = useApp();
   const { user } = useAuth();
+  const guardSubmit = useSubmitLock();
+  const canReview = useSubFeature('bookAdvisor', 'reviews');
+  // Bookings whose off-platform fee is already recorded, on any device.
+  const recordedFeeBookingIds = useLiveQuery(async () => {
+    const ids = new Set<string>();
+    await db.transactions
+      .filter((t) => !t.deletedAt && (t.tags ?? []).some((tag) => typeof tag === 'string' && tag.startsWith(FEE_TAG_PREFIX)))
+      .each((t) => {
+        for (const tag of t.tags ?? []) if (typeof tag === 'string' && tag.startsWith(FEE_TAG_PREFIX)) ids.add(tag.slice(FEE_TAG_PREFIX.length));
+      });
+    return ids;
+  }, [], new Set<string>());
+  const feeRecorded = (bkg: BookingData) => bkg.payment?.status === 'completed' || recordedFeeBookingIds.has(bkg.id);
   const [activeTab, setActiveTab] = useState<AdvisorModuleTab>('discover');
   
   const [advisors, setAdvisors] = useState<AdvisorProfileData[]>([]);
@@ -396,47 +425,54 @@ export const BookAdvisor: React.FC = () => {
     }
   };
 
-  const handleConfirmPayment = async () => {
+  const handleConfirmPayment = guardSubmit(async () => {
     if (!payingBooking) return;
+    const booking = payingBooking;
+    const amountToPay = Number(booking.payment?.amount || booking.amount || 0);
+    const tag = feeTag(booking.id);
+
+    // Already recorded — here, or on another device once it synced. The fee
+    // used to be "recorded" only in screen state, so after a reload the card
+    // said "Fee Pending" again and a second tap booked a second expense.
+    const alreadyRecorded = recordedFeeBookingIds.has(booking.id)
+      || Boolean(await db.transactions.filter((t) => !t.deletedAt && (t.tags ?? []).includes(tag)).first());
+    if (alreadyRecorded) {
+      toast.info('This fee is already recorded in your accounts.');
+      setPayingBooking(null);
+      return;
+    }
+    if (selectedAccountId === null || amountToPay <= 0) {
+      toast.error(selectedAccountId === null ? 'Add or choose an account to record this fee in.' : 'This booking has no fee to record.');
+      return;
+    }
+
     setIsProcessingPayment(true);
-    const amountToPay = Number(payingBooking.payment?.amount || payingBooking.amount || 0);
-
     try {
-      // This records a fee the user paid the advisor OUTSIDE the app, in the
-      // user's own accounts. It used to also call /payments/complete — the
-      // browser marking a payment as received — which the server now refuses:
-      // in-app session payments are settled by the server from the coin wallet.
-      const paymentId = payingBooking.payment?.id;
-
-      if (selectedAccountId !== null && amountToPay > 0) {
-        try {
-          const newTx = {
-            accountId: selectedAccountId,
-            type: 'expense' as const,
-            amount: amountToPay,
-            category: 'Consultation',
-            subcategory: 'Financial Advisory',
-            description: `Consultation fee for ${payingBooking.advisorName} (${payingBooking.sessionType} session)`,
-            date: new Date(),
-            tags: ['advisory', 'consultation'],
-            expenseMode: 'individual' as const,
-            syncStatus: 'pending' as const,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          };
-          const txLocalId = await db.transactions.add(newTx);
-          await applyTransactionAccountImpact(newTx);
-          if (typeof txLocalId === 'number') {
-            queueRecordUpsertSync('transactions', txLocalId);
-          }
-          queueRecordUpsertSync('accounts', selectedAccountId);
-        } catch (localErr) {
-          console.warn('[BookAdvisor] Local transaction recording warning:', localErr);
-        }
-      }
+      // A fee the user paid the advisor OUTSIDE the app, recorded as their own
+      // expense. In-app session payments are settled by the server from the coin
+      // wallet. This goes through the standard save (coalesced, server-first,
+      // stable idempotency key) instead of a raw Dexie add that skipped every
+      // duplicate guard and changed the account balance on the device.
+      const paymentId = booking.payment?.id;
+      await saveTransactionWithBackendSync({
+        accountId: selectedAccountId,
+        type: 'expense',
+        amount: amountToPay,
+        category: 'Consultation',
+        subcategory: 'Financial Advisory',
+        // The session's date and time keep two real fees apart: the server folds
+        // same-day transactions with identical amount + description into one
+        // (its duplicate guard), which silently merged a second ₹1,200 session
+        // fee into the first and left the books short.
+        description: `Consultation fee for ${booking.advisorName} (${booking.sessionType} session on ${booking.proposedDate} at ${booking.proposedTime})`,
+        date: new Date(),
+        tags: ['advisory', 'consultation', tag],
+        expenseMode: 'individual',
+        dedupHash: tag,
+      });
 
       setBookings(prev => prev.map(b => {
-        if (b.id === payingBooking.id) {
+        if (b.id === booking.id) {
           return {
             ...b,
             payment: {
@@ -454,11 +490,11 @@ export const BookAdvisor: React.FC = () => {
       toast.success(`Fee of ₹${amountToPay.toLocaleString('en-IN')} recorded in your accounts.`);
       setPayingBooking(null);
     } catch (err: any) {
-      toast.error(err?.response?.data?.error || 'Failed to complete payment');
+      toast.error(err?.message || 'Failed to record the fee');
     } finally {
       setIsProcessingPayment(false);
     }
-  };
+  });
 
   const handleDownloadIcs = (bkg: BookingData) => {
     try {
@@ -1077,7 +1113,9 @@ export const BookAdvisor: React.FC = () => {
                       <div className="flex items-center justify-between text-xs font-bold text-slate-500 pt-2.5 border-t border-slate-100">
                         <span className="flex items-center gap-1 text-amber-500 font-black">
                           <Star size={12} className="fill-current" />
-                          {adv.rating.toFixed(1)} <span className="text-slate-400 font-normal">({adv.reviewCount})</span>
+                          {adv.reviewCount > 0
+                            ? <>{adv.rating.toFixed(1)} <span className="text-slate-400 font-normal">({adv.reviewCount})</span></>
+                            : <span className="text-slate-400 font-semibold">New</span>}
                         </span>
                         <span className="text-slate-400 font-medium">{adv.experienceYears}y exp</span>
                         <span className="text-slate-900 font-black">
@@ -1210,10 +1248,10 @@ export const BookAdvisor: React.FC = () => {
                     )}
 
                     {/* Consultation Settlement Status (fees paid outside the app) */}
-                    {!isOffPlatformFee(bkg) ? null : bkg.payment?.status === 'completed' ? (
+                    {!isOffPlatformFee(bkg) ? null : feeRecorded(bkg) ? (
                       <div className="flex items-center justify-between px-3.5 py-2.5 bg-emerald-50 border border-emerald-200/80 rounded-2xl text-emerald-700 text-xs font-bold">
                         <span className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-emerald-600" /> Fee Settled</span>
-                        <span className="font-black"><FinancialAmount value={bkg.payment.amount} /></span>
+                        <span className="font-black"><FinancialAmount value={bkg.payment?.amount ?? bkg.amount} /></span>
                       </div>
                     ) : (bkg.status === 'completed' || bkg.payment?.status === 'pending') ? (
                       <div className="flex items-center justify-between p-3 bg-amber-50/80 border border-amber-200/80 rounded-2xl">
@@ -1231,6 +1269,15 @@ export const BookAdvisor: React.FC = () => {
                         </button>
                       </div>
                     ) : null}
+
+                    {canReview && bkg.sessionId && bkg.sessionStatus === 'completed' && (
+                      <SessionRating
+                        sessionId={bkg.sessionId}
+                        rating={bkg.rating}
+                        feedback={bkg.feedback}
+                        onRated={(rating, feedback) => setBookings((prev) => prev.map((b) => (b.id === bkg.id ? { ...b, rating, feedback } : b)))}
+                      />
+                    )}
                   </div>
 
                   {/* Actions Bar */}
@@ -1636,7 +1683,7 @@ export const BookAdvisor: React.FC = () => {
                       </button>
                     )}
 
-                    {isOffPlatformFee(bkg) && (bkg.status === 'completed' || bkg.payment?.status === 'pending') && bkg.payment?.status !== 'completed' && (
+                    {isOffPlatformFee(bkg) && (bkg.status === 'completed' || bkg.payment?.status === 'pending') && !feeRecorded(bkg) && (
                       <button
                         type="button"
                         onClick={() => void openPaymentModal(bkg)}
@@ -1646,9 +1693,9 @@ export const BookAdvisor: React.FC = () => {
                       </button>
                     )}
 
-                    {bkg.payment?.status === 'completed' && (
+                    {feeRecorded(bkg) && (
                       <span className="px-3.5 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200/80 rounded-full text-xs font-bold flex items-center gap-1.5">
-                        <CheckCircle2 size={13} /> Paid <FinancialAmount value={bkg.payment.amount} />
+                        <CheckCircle2 size={13} /> Paid <FinancialAmount value={bkg.payment?.amount ?? bkg.amount} />
                       </span>
                     )}
 
@@ -1759,7 +1806,7 @@ export const BookAdvisor: React.FC = () => {
                     <p className="text-xs text-slate-300 font-medium">{viewingProfileAdvisor.title}</p>
                     <div className="flex items-center gap-2 mt-1 text-xs font-bold text-white/80">
                       <span className="text-amber-400 font-black flex items-center gap-1">
-                        <Star size={12} className="fill-current" /> {viewingProfileAdvisor.rating.toFixed(1)}
+                        <Star size={12} className="fill-current" /> {viewingProfileAdvisor.reviewCount > 0 ? viewingProfileAdvisor.rating.toFixed(1) : 'New'}
                       </span>
                       <span>· {viewingProfileAdvisor.experienceYears} Years Exp</span>
                       <span>· {viewingProfileAdvisor.reviewCount} Reviews</span>
@@ -1772,14 +1819,15 @@ export const BookAdvisor: React.FC = () => {
               <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto text-xs font-medium">
                 <div>
                   <h4 className="text-2xs font-black uppercase text-slate-400 tracking-wider mb-1.5">About & Advisory Practice</h4>
-                  <p className="text-slate-700 leading-relaxed font-medium">{viewingProfileAdvisor.bio || 'Accredited advisory partner providing specialized financial planning and statutory compliance services.'}</p>
+                  <p className="text-slate-700 leading-relaxed font-medium">{viewingProfileAdvisor.bio || "This advisor hasn't added a bio yet."}</p>
                 </div>
 
                 <div className="grid grid-cols-3 gap-2.5 p-3.5 bg-slate-50/80 rounded-2xl text-center border border-slate-100">
                   <div>
                     <p className="text-2xs font-bold uppercase text-slate-400 tracking-wider">Rating</p>
                     <p className="font-black text-sm text-emerald-600 mt-0.5">
-                      {viewingProfileAdvisor.reviewCount > 0 ? viewingProfileAdvisor.rating.toFixed(1) : '5.0'}
+                      {/* No reviews yet is "New" — it used to claim a perfect 5.0. */}
+                      {viewingProfileAdvisor.reviewCount > 0 ? viewingProfileAdvisor.rating.toFixed(1) : 'New'}
                     </p>
                   </div>
                   <div>

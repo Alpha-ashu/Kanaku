@@ -3,6 +3,7 @@ import { AuthRequest, getUserId } from '../../middleware/auth';
 import type { TimeoutRequest } from '../../middleware/timeout';
 import { prisma } from '../../db/prisma';
 import { logger } from '../../config/logger';
+import { SessionReviewError, submitSessionReview } from './sessionReview.service';
 import { AppError } from '../../utils/AppError';
 import { auditFromRequest } from '../../utils/auditLogger';
 import { isDatabaseUnavailableError } from '../../utils/databaseAvailability';
@@ -307,27 +308,16 @@ export const getSessions = async (req: AuthRequest, res: Response) => {
   }
 };
 
+// Older route for the same action as POST /bookings/sessions/:id/review — one
+// implementation (sessionReview.service) so the two can no longer disagree.
 export const rateSession = async (req: AuthRequest, res: Response) => {
   try {
-    const clientId = getUserId(req);
-    const { id } = req.params;
-    const { rating, feedback } = req.body;
-    if (!rating || rating < 1 || rating > 5) {
-      return res.status(400).json({ error: 'Rating must be between 1 and 5' });
+    res.json(await submitSessionReview(getUserId(req), req.params.id, req.body ?? {}));
+  } catch (error) {
+    if (error instanceof SessionReviewError) {
+      return res.status(error.status).json({ error: error.message, code: error.code });
     }
-    const session = await prisma.advisorSession.findUnique({ where: { id } });
-    if (!session || session.clientId !== clientId) return res.status(403).json({ error: 'Access denied' });
-    if (session.status !== 'completed') return res.status(400).json({ error: 'Can only rate completed sessions' });
-    const updated = await prisma.advisorSession.update({ where: { id }, data: { rating, feedback: feedback || '' } });
-    await prisma.notification.create({
-      // '/sessions/:id' is not a registered frontend route (see App.tsx's page
-      // switch) — falls through to the Dashboard default case. Recipient is
-      // the ADVISOR; sessions live under advisor-panel (AdvisorWorkspace.tsx,
-      // advisor-only).
-      data: { userId: session.advisorId, title: 'New Session Rating', message: `You received a ${rating} star rating`, category: 'session', deepLink: '/advisor-panel' },
-    });
-    res.json(updated);
-  } catch {
+    logger.error('[advisors] rate session failed', { sessionId: req.params?.id, error });
     res.status(500).json({ error: 'Failed to rate session' });
   }
 };

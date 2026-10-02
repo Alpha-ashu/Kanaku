@@ -668,7 +668,12 @@ export const cancelSession = async (req: AuthRequest, res: Response) => {
     // Session, booking and any coin refund change together. This route used to
     // cancel the session but leave the booking 'accepted', and marked the legacy
     // payment 'refunded' without returning anything.
-    await cancelBookingWithRefund(session.bookingId, { actor, actorId: userId, reason: reason ?? null });
+    const outcome = await cancelBookingWithRefund(session.bookingId, { actor, actorId: userId, reason: reason ?? null });
+    if (!outcome.changed) {
+      // Lost a race (the other party, or the session clock, moved it first):
+      // say so instead of reporting a cancellation and notifying for nothing.
+      return res.status(409).json({ error: 'This session changed while you were cancelling it. Reload and try again.', code: 'BOOKING_CONFLICT' });
+    }
     const updated = await prisma.advisorSession.findUniqueOrThrow({ where: { id } });
 
     // Notify both parties

@@ -6,6 +6,7 @@ import { getSocketManager } from '../../sockets';
 import { logger } from '../../config/logger';
 import { asClientRequestId } from '../../utils/idempotentCreate';
 import { notify } from '../notifications/notify';
+import { SessionReviewError, submitSessionReview as submitReview } from '../advisors/sessionReview.service';
 import {
   checkTransition,
   failureHttpStatus,
@@ -232,6 +233,8 @@ export const getBookings = async (req: AuthRequest, res: Response) => {
               id: true,
               status: true,
               startTime: true,
+              rating: true,
+              feedback: true,
               payment: {
                 select: { id: true, status: true, amount: true, currency: true, paymentMethod: true },
               },
@@ -259,6 +262,8 @@ export const getBookings = async (req: AuthRequest, res: Response) => {
               id: true,
               status: true,
               startTime: true,
+              rating: true,
+              feedback: true,
               payment: {
                 select: { id: true, status: true, amount: true, currency: true, paymentMethod: true },
               },
@@ -304,6 +309,8 @@ export const getBooking = async (req: AuthRequest, res: Response) => {
             id: true,
             status: true,
             startTime: true,
+            rating: true,
+            feedback: true,
             payment: {
               select: { id: true, status: true, amount: true, currency: true, paymentMethod: true },
             },
@@ -822,43 +829,18 @@ export const payBooking = async (req: AuthRequest, res: Response) => {
 };
 
 // ── Submit Session Review (reviews sub-feature) ──────────────────────────────
-// Clients can rate their advisor sessions and leave feedback.
-// Gated by the `reviews` sub-feature under `bookAdvisor`.
+// Clients rate a completed session and may leave a written review. Gated by the
+// `reviews` sub-feature under `bookAdvisor`; rules live in sessionReview.service.
 export const submitSessionReview = async (req: AuthRequest, res: Response) => {
   try {
-    const clientId = getUserId(req);
-    const { sessionId } = req.params;
-    const { rating, feedback } = req.body;
-
-    if (rating === undefined || rating === null) {
-      return res.status(400).json({ error: 'Rating is required' });
-    }
-
-    const numRating = Number(rating);
-    if (isNaN(numRating) || numRating < 1 || numRating > 5) {
-      return res.status(400).json({ error: 'Rating must be between 1 and 5' });
-    }
-
-    const session = await prisma.advisorSession.findFirst({
-      where: { id: sessionId, clientId },
-    });
-
-    if (!session) {
-      return res.status(404).json({ error: 'Advisor session not found or you do not have permission to review it' });
-    }
-
-    const updatedSession = await prisma.advisorSession.update({
-      where: { id: sessionId },
-      data: {
-        rating: numRating,
-        feedback: feedback ? String(feedback) : null,
-      },
-    });
-
-    res.json({ success: true, data: updatedSession });
+    const updated = await submitReview(getUserId(req), req.params.sessionId, req.body ?? {});
+    res.json({ success: true, data: updated });
   } catch (error: any) {
-    console.error('Submit review error:', error);
-    res.status(500).json({ error: 'Failed to submit review' });
+    if (error instanceof SessionReviewError) {
+      return res.status(error.status).json({ success: false, error: error.message, code: error.code });
+    }
+    logger.error('[bookings] session review failed', { sessionId: req.params?.sessionId, error });
+    res.status(500).json({ success: false, error: 'Failed to submit review' });
   }
 };
 

@@ -94,7 +94,7 @@ router.delete('/availability/:id', requireRole('advisor'), requireApproved, vali
 router.get('/me/sessions', requireRole('advisor'), requireApproved, AdvisorController.getSessions);
 
 // Client only
-router.put('/sessions/:id/rate', validateParams(advisorIdParamSchema), validateBody(rateSessionSchema), AdvisorController.rateSession);
+router.put('/sessions/:id/rate', requireFeature('bookAdvisor', 'reviews'), validateParams(advisorIdParamSchema), validateBody(rateSessionSchema), AdvisorController.rateSession);
 
 // ─── Advisor feed & follow graph ─────────────────────────────────────────────
 // Registered before the /:id catch-all below, or "posts" and "following" would

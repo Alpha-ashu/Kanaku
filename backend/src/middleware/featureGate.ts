@@ -211,6 +211,22 @@ export const isModuleExplicitlyEnabled = async (moduleKey: string): Promise<bool
   return settings.readiness !== 'deprecated' && settings.readiness !== 'unreleased';
 };
 
+/**
+ * Whether `role` passes the module-level checks `requireFeature` applies
+ * (master switch, readiness, per-role access) — for server-side decisions made
+ * on someone else's behalf, e.g. whether the client of a booking could pay.
+ */
+export const isModuleOpenToRole = async (moduleKey: string, role: string): Promise<boolean> => {
+  const features = await getGlobalFeatures();
+  const settings = features?.[moduleKey];
+  if (!settings || settings.enabled !== true) return false;
+  const readiness = settings.readiness;
+  if (readiness === 'deprecated') return false;
+  if (readiness === 'unreleased' && role !== 'admin') return false;
+  if (readiness === 'beta' && role === 'user') return false;
+  return !(settings.roleAccess && settings.roleAccess[role] === false);
+};
+
 export const requireFeature = (moduleKey: string, childKey?: string) => {
   return async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {

@@ -69,8 +69,16 @@ export const sessionPaymentsEnabled = async (): Promise<boolean> => {
   if (mode !== 'auto') return mode === 'on';
   // Imported lazily: featureGate pulls in Prisma, and this module is also used
   // by pure helpers and unit tests.
-  const { isModuleExplicitlyEnabled } = await import('../../middleware/featureGate');
-  return isModuleExplicitlyEnabled('wallet');
+  const { isModuleExplicitlyEnabled, isModuleOpenToRole } = await import('../../middleware/featureGate');
+  if (!(await isModuleExplicitlyEnabled('wallet'))) return false;
+  // The client must be able to pay: open the wallet (their role — 'user' —
+  // has access) and buy coins (a configured payment provider). Otherwise every
+  // coin-priced booking expires unpaid at its deadline — the module switched on
+  // for advisors only, or before provider keys were set, did exactly that.
+  // SESSION_COIN_PAYMENTS=on overrides.
+  if (!(await isModuleOpenToRole('wallet', 'user'))) return false;
+  const { purchaseProviders } = await import('../payments/providers');
+  return purchaseProviders().length > 0;
 };
 
 /** Coins for a session: the advisor's hourly rate pro-rated to the duration, rounded up. */
