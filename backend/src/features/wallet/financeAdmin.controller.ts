@@ -14,6 +14,7 @@ import {
   type Permission,
 } from '../../security/permissions';
 import { WalletError } from './wallet.errors';
+import { walletConfig } from './wallet.config';
 import { adminAdjust, getWalletSummary, ledgerTotals, pageLedger, setWalletStatus } from './wallet.service';
 import { reconcileOrder, refundPurchase, toOrderView } from './coinPurchase.service';
 import { adminRefundCompletedSession, cancelBookingWithRefund } from './sessionPayment.service';
@@ -245,6 +246,8 @@ export const refundPaymentOrder = async (req: AuthRequest, res: Response) => {
     const scope = await scopeUserIds(req);
     const existing = await prisma.paymentOrder.findUnique({ where: { id: req.params.id }, select: { userId: true } });
     if (!existing || !inScope(scope, existing.userId)) throw new WalletError('ORDER_NOT_FOUND', 'Order not found.', 404);
+    // Same rule as adjusting or freezing: staff never act on their own money.
+    if (existing.userId === getUserId(req)) throw new WalletError('NOT_REFUNDABLE', 'You cannot refund your own purchase. Ask another administrator.', 403);
     const order = await refundPurchase(req.params.id, actorOf(req), req.body.reason);
     audit({ event: 'payment.refunded', userId: getUserId(req), resource: 'PaymentOrder', resourceId: order.id, meta: { reason: req.body.reason } });
     res.json({ success: true, data: { order: toOrderView(order) } });
@@ -374,6 +377,9 @@ export const refundBooking = async (req: AuthRequest, res: Response) => {
     if (!booking || (scope && !scope.includes(booking.clientId) && !scope.includes(booking.advisorId))) {
       throw new WalletError('BOOKING_NOT_FOUND', 'Booking not found.', 404);
     }
+    if (booking.clientId === actor.id || booking.advisorId === actor.id) {
+      throw new WalletError('NOT_REFUNDABLE', 'You cannot refund a session you took part in. Ask another administrator.', 403);
+    }
     if (booking.paymentStatus !== 'PAID') throw new WalletError('NOT_REFUNDABLE', 'Only a paid session can be refunded.', 409);
     const { percent, reason } = req.body as { percent: number; reason: string };
     const result = booking.earningsReleasedAt
@@ -399,8 +405,28 @@ export const listAllPackages = async (req: AuthRequest, res: Response) => {
   }
 };
 
+/**
+ * A package must be worth what it costs, give or take a bonus: base coins at
+ * most the price at face value (1 coin = ₹1 by default), and coins + bonus at
+ * most 1.5× that. Without bounds a typo — 100,000 coins for ₹1 — went on sale.
+ */
+const MAX_PACKAGE_VALUE_RATIO = 1.5;
+const packageValueProblem = (pkg: { coins: number; bonusCoins: number; priceMinor: number }): string | null => {
+  const faceCoins = Math.floor(pkg.priceMinor / walletConfig.coinValueMinor);
+  if (pkg.coins > faceCoins) {
+    return `Base coins (${pkg.coins}) exceed what the price buys (${faceCoins} coins). Put extras in bonus coins.`;
+  }
+  const maxTotal = Math.floor(faceCoins * MAX_PACKAGE_VALUE_RATIO);
+  if (pkg.coins + pkg.bonusCoins > maxTotal) {
+    return `Coins plus bonus (${pkg.coins + pkg.bonusCoins}) can be at most ${maxTotal} for this price.`;
+  }
+  return null;
+};
+
 export const createPackage = async (req: AuthRequest, res: Response) => {
   try {
+    const problem = packageValueProblem({ coins: req.body.coins, bonusCoins: req.body.bonusCoins ?? 0, priceMinor: req.body.priceMinor });
+    if (problem) return res.status(400).json({ success: false, error: problem, code: 'PACKAGE_VALUE_OUT_OF_RANGE' });
     const created = await prisma.coinPackage.create({ data: req.body });
     audit({ event: 'finance.package_changed', userId: getUserId(req), resource: 'CoinPackage', resourceId: created.id, meta: { action: 'create', ...req.body } });
     res.status(201).json({ success: true, data: created });
@@ -413,6 +439,12 @@ export const createPackage = async (req: AuthRequest, res: Response) => {
 export const updatePackage = async (req: AuthRequest, res: Response) => {
   try {
     // Existing orders snapshot price and coins, so an edit never changes a purchase in flight.
+    if (['coins', 'bonusCoins', 'priceMinor'].some((key) => key in req.body)) {
+      const current = await prisma.coinPackage.findUnique({ where: { id: req.params.id }, select: { coins: true, bonusCoins: true, priceMinor: true } });
+      if (!current) return res.status(404).json({ success: false, error: 'Package not found.', code: 'NOT_FOUND' });
+      const problem = packageValueProblem({ ...current, ...req.body });
+      if (problem) return res.status(400).json({ success: false, error: problem, code: 'PACKAGE_VALUE_OUT_OF_RANGE' });
+    }
     const updated = await prisma.coinPackage.update({ where: { id: req.params.id }, data: req.body });
     audit({ event: 'finance.package_changed', userId: getUserId(req), resource: 'CoinPackage', resourceId: updated.id, meta: { action: 'update', ...req.body } });
     res.json({ success: true, data: updated });

@@ -241,7 +241,8 @@ export const AdminDashboard: React.FC = () => {
       void fetchOverviewData();
       if (selectedUser?.id === u.id) setSelectedUser({ ...u, status: newStatus });
     } catch {
-      toast.error('Failed to update user status');
+      // The API layer already showed the server's reason ("only active
+      // administrator", "your own account"…); a second generic toast hid it.
     }
   };
 
@@ -255,7 +256,8 @@ export const AdminDashboard: React.FC = () => {
       void fetchOverviewData();
       if (selectedUser?.id === u.id) setSelectedUser({ ...u, role: newRole });
     } catch {
-      toast.error('Failed to update user role');
+      // The API layer already showed the server's reason (KYC, last admin,
+      // open advisor obligations…); a second generic toast hid it.
     }
   };
 

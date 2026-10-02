@@ -1,4 +1,5 @@
 import { Response } from 'express';
+import { sendOperationalError } from '../../utils/sendOperationalError';
 import { AuthRequest } from '../../middleware/auth';
 import { prisma } from '../../db/prisma';
 import { approvalService } from '../admin/approval.service';
@@ -95,7 +96,7 @@ export const submitApprovalRequest = async (req: AuthRequest, res: Response) => 
       data: request,
     });
   } catch (error: any) {
-    res.status(error.statusCode || 500).json({ error: error?.message || 'Failed to submit approval request' });
+    sendOperationalError(res, error, 'Failed to submit approval request');
   }
 };
 
@@ -126,18 +127,23 @@ export const requestDemoStatusChange = async (req: AuthRequest, res: Response) =
   try {
     const { userId } = req.params;
     const { status, reason } = req.body;
+    // Anything but ENABLED used to become a DISABLE request.
+    const nextStatus = String(status ?? '').toUpperCase();
+    if (nextStatus !== 'ENABLED' && nextStatus !== 'DISABLED') {
+      return res.status(400).json({ error: 'Status must be ENABLED or DISABLED', code: 'INVALID_STATUS' });
+    }
 
     const result = await demoService.toggleDemoAccountStatus(
       req.userId!,
       'manager',
       userId,
-      String(status).toUpperCase() as 'ENABLED' | 'DISABLED',
+      nextStatus,
       reason,
     );
 
     res.json(result);
   } catch (error: any) {
-    res.status(error.statusCode || 500).json({ error: error?.message || 'Failed to request demo status change' });
+    sendOperationalError(res, error, 'Failed to request demo status change');
   }
 };
 

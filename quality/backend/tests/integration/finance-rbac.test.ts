@@ -252,4 +252,53 @@ describe('Finance and messaging authorization', () => {
       }
     });
   });
+
+  describe('finance console money rules', () => {
+    const extra = { admin2: '', paidAdvisor: '' };
+    const createdPackages: string[] = [];
+
+    afterAll(async () => {
+      await prisma.coinPackage.deleteMany({ where: { id: { in: createdPackages } } }).catch(() => undefined);
+      await cleanupUsers(Object.values(extra).filter(Boolean));
+    });
+
+    it('keeps coin packages worth what they cost', async () => {
+      if (!dbReady) return;
+      const post = (body: Record<string, unknown>) => request(app).post(`${API}/finance/packages`).set(as(ids.admin, 'admin')).send(body);
+      const code = `rbac-pkg-${Date.now()}`;
+      const typo = await post({ code: `${code}-typo`, name: 'Typo', coins: 100_000, priceMinor: 100 });
+      expect(typo.status).toBe(400);
+      expect(typo.body.code).toBe('PACKAGE_VALUE_OUT_OF_RANGE');
+      const greedyBonus = await post({ code: `${code}-bonus`, name: 'Bonus', coins: 500, bonusCoins: 400, priceMinor: 50_000 });
+      expect(greedyBonus.body.code).toBe('PACKAGE_VALUE_OUT_OF_RANGE');
+
+      const fair = await post({ code, name: 'Fair', coins: 500, bonusCoins: 25, priceMinor: 50_000 });
+      expect(fair.status).toBe(201);
+      createdPackages.push(fair.body.data.id);
+      const cheapened = await request(app).patch(`${API}/finance/packages/${fair.body.data.id}`).set(as(ids.admin, 'admin')).send({ priceMinor: 10_000 });
+      expect(cheapened.body.code).toBe('PACKAGE_VALUE_OUT_OF_RANGE');
+      // Edits that do not touch value still go through (e.g. switching it on).
+      expect((await request(app).patch(`${API}/finance/packages/${fair.body.data.id}`).set(as(ids.admin, 'admin')).send({ isActive: false })).status).toBe(200);
+    });
+
+    it('does not let staff refund a session they took part in', async () => {
+      if (!dbReady) return;
+      extra.admin2 = (await makeUser('Rbac Admin Two', 'admin')).id;
+      extra.paidAdvisor = (await makeAdvisor('Rbac Paid Advisor', 600)).id;
+      await adminAdjust({ userId: extra.admin2, amount: 2000, reason: 'RBAC refund fixture', actorId: ids.admin, actorRole: 'admin', idempotencyKey: `rbac-admin2-${extra.admin2}` });
+
+      const booked = await request(app).post(`${API}/bookings`).set(as(extra.admin2, 'admin')).send({
+        advisorId: extra.paidAdvisor, sessionType: 'video', duration: 60, ...istSlot(120),
+      });
+      expect(booked.status).toBe(201);
+      expect((await request(app).put(`${API}/bookings/${booked.body.id}/accept`).set(as(extra.paidAdvisor, 'advisor')).send({})).status).toBe(200);
+      const paid = await request(app).post(`${API}/bookings/${booked.body.id}/pay`).set(as(extra.admin2, 'admin'));
+      expect(paid.status).toBe(200);
+
+      const ownRefund = await request(app).post(`${API}/finance/bookings/${booked.body.id}/refund`).set(as(extra.admin2, 'admin')).send({ percent: 100, reason: 'Refund my own session' });
+      expect(ownRefund.status).toBe(403);
+      const byAnother = await request(app).post(`${API}/finance/bookings/${booked.body.id}/refund`).set(as(ids.admin, 'admin')).send({ percent: 100, reason: 'Advisor unavailable' });
+      expect(byAnother.status).toBe(200);
+    });
+  });
 });

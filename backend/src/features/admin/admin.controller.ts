@@ -1,6 +1,5 @@
 import { Response } from 'express';
 import { AuthRequest, invalidateUserSnapshotCache } from '../../middleware/auth';
-import { ASSIGNABLE_ACCOUNT_STATUSES } from '../../utils/accountStatus';
 import { prisma } from '../../db/prisma';
 import { logger } from '../../config/logger';
 import { getCacheMetricsSnapshot, getRedisStatus, resetCacheMetrics } from '../../cache/redis';
@@ -14,6 +13,9 @@ import { isProtectedAccount } from '../../utils/protectedAccounts';
 import { sendAdminChangeEmail } from '../../emails';
 import { demoService } from './demo.service';
 import { approvalService } from './approval.service';
+import { sendOperationalError } from '../../utils/sendOperationalError';
+import { StaffActionError, assertRoleChangeAllowed, assertStatusChangeAllowed } from './staffActionPolicy';
+import { notify } from '../notifications/notify';
 import { approveAdvisorApplication, rejectAdvisorApplication } from '../advisors/advisorReview.service';
 import { 
   UserRole,
@@ -895,15 +897,17 @@ export const getUserStorageStats = async (req: AuthRequest, res: Response) => {
   }
 };
 
+const sendStaffActionError = (res: Response, error: StaffActionError) =>
+  res.status(error.status).json({ error: error.message, code: error.code });
+
 // Block/Unblock user (admin only)
 export const toggleUserStatus = async (req: AuthRequest, res: Response) => {
   try {
     const { userId } = req.params;
     const { status } = req.body; // 'verified' or 'blocked' (admin UI vocabulary)
 
-    if (!ASSIGNABLE_ACCOUNT_STATUSES.includes(status)) {
-      return res.status(400).json({ error: 'Invalid status specified' });
-    }
+    // Not yourself, not a protected account, never the last active admin.
+    const { fromStatus } = await assertStatusChangeAllowed(String(req.userId), userId, status);
 
     const user = await prisma.user.update({
       where: { id: userId },
@@ -917,6 +921,12 @@ export const toggleUserStatus = async (req: AuthRequest, res: Response) => {
     // not after the TTL expires.
     invalidateUserSnapshotCache(userId);
 
+    await auditLog(req.userId, 'STATUS_CHANGE', `user:${userId}`, 'success', {
+      targetEmail: user.email,
+      fromStatus,
+      toStatus: status,
+    });
+
     // Notify the affected user + email the admin a confirmation.
     void announceAdminChange(
       req.userId,
@@ -926,6 +936,8 @@ export const toggleUserStatus = async (req: AuthRequest, res: Response) => {
 
     res.json({ message: `User ${status} successfully`, user });
   } catch (error: any) {
+    if (error instanceof StaffActionError) return sendStaffActionError(res, error);
+    logger.error('[AdminController] Failed to update user status', { error });
     res.status(500).json({ error: 'Failed to update user status' });
   }
 };
@@ -936,11 +948,9 @@ export const updateUserRole = async (req: AuthRequest, res: Response) => {
     const { userId } = req.params;
     const { role } = req.body; // 'admin', 'manager', 'advisor', 'user'
 
-    if (!['admin', 'manager', 'advisor', 'user'].includes(role)) {
-      return res.status(400).json({ error: 'Invalid role specified' });
-    }
-
-    const before = await prisma.user.findUnique({ where: { id: userId }, select: { role: true, email: true } });
+    // Not yourself, not a protected account, not the last admin, advisors only
+    // after the KYC review, and no advisor demoted with money still open.
+    const { fromRole } = await assertRoleChangeAllowed(String(req.userId), userId, role);
 
     const updated = await prisma.user.update({
       where: { id: userId },
@@ -969,31 +979,35 @@ export const updateUserRole = async (req: AuthRequest, res: Response) => {
     // takes effect immediately.
     invalidateUserSnapshotCache(userId);
 
-    // Notify user
-    await prisma.notification.create({
-      data: {
-        userId: userId,
-        title: 'Role Updated',
-        message: `Your account role has been updated to ${role} by the administrator.`,
-        category: 'system',
-      },
+    // Through notify(): a raw insert skipped the user's preferences and the
+    // live push, so the change showed only after a refetch.
+    await notify({
+      userId,
+      sourceUserId: req.userId,
+      topic: 'account',
+      type: 'role_changed',
+      title: 'Role Updated',
+      message: `Your account role has been updated to ${role} by an administrator.`,
+      priority: 'high',
     });
 
     await auditLog(req.userId, 'ROLE_CHANGE', `user:${userId}`, 'success', {
       targetEmail: updated.email,
-      fromRole: before?.role ?? null,
+      fromRole,
       toRole: role,
     });
 
     // The affected user was already notified above; just email the admin a summary.
     void announceAdminChange(
       req.userId,
-      `Role of ${updated.email} changed from ${before?.role ?? 'unknown'} to ${role}.`,
+      `Role of ${updated.email} changed from ${fromRole} to ${role}.`,
       { notifyUsers: false },
     );
 
     res.json({ message: `User role updated to ${role} successfully`, user: updated });
   } catch (error: any) {
+    if (error instanceof StaffActionError) return sendStaffActionError(res, error);
+    logger.error('[AdminController] Failed to update user role', { error });
     res.status(500).json({ error: 'Failed to update user role' });
   }
 };
@@ -1076,7 +1090,7 @@ export const approveApprovalRequest = async (req: AuthRequest, res: Response) =>
     const result = await approvalService.approveRequest(req.userId!, requestId);
     res.json(result);
   } catch (error: any) {
-    res.status(error.statusCode || 500).json({ error: error?.message || 'Failed to approve request' });
+    sendOperationalError(res, error, 'Failed to approve request');
   }
 };
 
@@ -1087,7 +1101,7 @@ export const rejectApprovalRequest = async (req: AuthRequest, res: Response) => 
     const result = await approvalService.rejectRequest(req.userId!, requestId, reason);
     res.json(result);
   } catch (error: any) {
-    res.status(error.statusCode || 500).json({ error: error?.message || 'Failed to reject request' });
+    sendOperationalError(res, error, 'Failed to reject request');
   }
 };
 

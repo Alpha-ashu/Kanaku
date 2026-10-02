@@ -93,6 +93,16 @@ const USER_FRIENDLY_MESSAGES: Record<string, string> = {
  * Returns a user-friendly message for a server error code/HTTP status.
  * Logs the raw technical message to the console so developers can debug.
  */
+const GENERIC_ERROR_CODES = new Set(['BAD_REQUEST', 'FORBIDDEN', 'NOT_FOUND', 'CONFLICT', 'UNKNOWN_ERROR', 'INTERNAL_ERROR', 'VALIDATION_ERROR']);
+
+/** A sentence written for people — not a stack trace, an HTML page, Express's "Cannot GET" or database text. */
+function looksLikeUserMessage(message: unknown): message is string {
+  return typeof message === 'string'
+    && message.length > 5
+    && message.length < 300
+    && !/<html|\n\s+at |\bat \S+ \(|:\d+:\d+\)|Cannot (GET|POST|PUT|PATCH|DELETE) |prisma|SQLSTATE|ECONN|Invalid `/i.test(message);
+}
+
 function getUserMessage(
   status: number,
   serverCode: string | undefined,
@@ -111,6 +121,20 @@ function getUserMessage(
 
   if (serverCode && USER_FRIENDLY_MESSAGES[serverCode]) {
     return USER_FRIENDLY_MESSAGES[serverCode];
+  }
+
+  // A refusal the server explained with its own code ("This is the only active
+  // administrator…", "Approve their advisor application first…") beats a
+  // generic status line: every 409 used to read "This item already exists"
+  // and every 403 "You do not have permission", whatever the actual reason.
+  if (
+    [400, 403, 409, 422].includes(status)
+    && serverCode
+    && !GENERIC_ERROR_CODES.has(serverCode)
+    && !serverCode.startsWith('HTTP_')
+    && looksLikeUserMessage(technicalMessage)
+  ) {
+    return technicalMessage;
   }
 
   // Fall back to HTTP-status-based friendly message
