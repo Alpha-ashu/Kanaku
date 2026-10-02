@@ -590,6 +590,17 @@ export const getUserId = (req: AuthRequest): string => {
  * Strictly ensures the authenticated user has verified their profile / email before
  * performing sensitive mutations (adding or editing records).
  */
+/**
+ * requireVerifiedProfile for every write on a router (reads stay open in
+ * View-Only Mode). Loans, goals, investments, gold, groups, budgets and
+ * recurring had the rule only in the web app, so a direct API call — or any
+ * other client — could still move money from a view-only account.
+ */
+export const requireVerifiedForWrites = (req: AuthRequest, res: Response, next: NextFunction) => {
+  if (req.method === 'GET' || req.method === 'HEAD' || req.method === 'OPTIONS') return next();
+  return requireVerifiedProfile(req, res, next);
+};
+
 export const requireVerifiedProfile = (req: AuthRequest, res: Response, next: NextFunction) => {
   const isPending = isAccountPending(req.user?.status, req.user?.emailVerified, req.user?.verifiedAt);
   const isExpired = isVerificationExpired(req.user?.verifiedAt);

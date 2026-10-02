@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { authMiddleware } from '../../middleware/auth';
+import { authMiddleware, requireVerifiedForWrites } from '../../middleware/auth';
 import { pinGate } from '../../middleware/pinGate';
 import { validateBody, validateParams } from '../../middleware/validate';
 import { idempotency } from '../../middleware/idempotency';
@@ -14,6 +14,7 @@ const router = Router();
 
 router.use(authMiddleware);
 router.use(pinGate); // financial data requires a live PIN unlock
+router.use(requireVerifiedForWrites); // View-Only Mode: reads only
 router.use(requireFeature('loans'));
 
 // borrowMoney / lendMoney: the `type` field in the body distinguishes borrow vs. lend.

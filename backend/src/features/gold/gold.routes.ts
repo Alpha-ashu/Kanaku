@@ -1,6 +1,7 @@
 import { Router } from 'express';
-import { authMiddleware } from '../../middleware/auth';
+import { authMiddleware, requireVerifiedForWrites } from '../../middleware/auth';
 import { pinGate } from '../../middleware/pinGate';
+import { requireFeature } from '../../middleware/featureGate';
 import { validateBody, validateParams, validateQuery } from '../../middleware/validate';
 import { idempotency } from '../../middleware/idempotency';
 import { duplicateSubmitGuard } from '../../middleware/duplicateSubmitGuard';
@@ -16,6 +17,8 @@ const router = Router();
 
 router.use(authMiddleware);
 router.use(pinGate); // financial data requires a live PIN unlock
+router.use(requireVerifiedForWrites); // View-Only Mode: reads only
+router.use(requireFeature('investments')); // the web app gates Add Gold under Investments
 
 router.get('/', validateQuery(goldQuerySchema), GoldController.getGoldAssets);
 router.post(
