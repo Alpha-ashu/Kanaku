@@ -23,6 +23,8 @@ vi.mock('@/contexts/AuthContext', () => ({
 
 // Mock api
 vi.mock('@/lib/api', () => ({
+  // Signed in: the hook skips the remote fetch when there is no token.
+  TokenManager: { getAccessToken: () => 'test-token' },
   api: {
     auth: {
       getProfile: vi.fn().mockResolvedValue({

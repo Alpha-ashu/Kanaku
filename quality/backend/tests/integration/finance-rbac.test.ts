@@ -91,6 +91,15 @@ describe('Finance and messaging authorization', () => {
     expect(directory.body.users).toHaveLength(0);
   });
 
+  it('tells a manager their own permissions, and no one else', async () => {
+    if (!dbReady) return;
+    const own = await request(app).get(`${API}/manager/permissions`).set(as(ids.manager, 'manager'));
+    expect(own.status).toBe(200);
+    expect(own.body.data.permissions).toEqual(expect.arrayContaining(['team.read', 'team.bookings.read']));
+    expect(own.body.data.permissions).not.toContain('finance.read');
+    expect((await request(app).get(`${API}/manager/permissions`).set(as(ids.user, 'user'))).status).toBe(403);
+  });
+
   it('refuses to grant admin-only powers to a manager', async () => {
     if (!dbReady) return;
     const res = await request(app).put(`${API}/finance/staff/${ids.manager}/permissions`).set(as(ids.admin, 'admin'))

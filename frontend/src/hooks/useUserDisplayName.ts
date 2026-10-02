@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { api } from '@/lib/api';
+import { api, TokenManager } from '@/lib/api';
 
 const PROFILE_KEY = 'user_profile';
 
@@ -123,6 +123,7 @@ export function useUserDisplayName(fallback = 'User'): string {
     // Check remote profile if we don't have a reliable first name cached yet,
     // or to keep it synchronized with the backend.
     const fetchRemote = async () => {
+      if (!TokenManager.getAccessToken()) return; // signed out: avoid a pointless 401
       try {
         const res = await api.auth.getProfile();
         if (isCancelled) return;

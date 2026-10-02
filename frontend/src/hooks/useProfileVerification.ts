@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { api } from '@/lib/api';
+import { api, TokenManager } from '@/lib/api';
 
 export interface ProfileVerificationState {
   isVerified: boolean;
@@ -165,6 +165,9 @@ export const useProfileVerification = () => {
   useEffect(() => {
     let isMounted = true;
     const checkServerStatus = async () => {
+      // Signed out (e.g. the public site): nothing to check, and the call only
+      // produced a 401 in the console.
+      if (!TokenManager.getAccessToken()) return;
       try {
         setIsLoading(true);
         const res = await api.auth.getProfile();

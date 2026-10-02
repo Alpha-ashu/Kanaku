@@ -999,6 +999,8 @@ const AppContent: React.FC = () => {
 
     if (!canAccessPage(currentPage, visibleFeatures) && !hasAdminBypass && !hasManagerBypass && !isPublicPage) {
       console.warn(`[Route Guard] Redirecting from disabled page: ${currentPage} (Role: ${role})`);
+      // Say why instead of silently showing another page; the id keeps one toast.
+      toast.info("You don't have access to that page.", { id: 'route-guard-denied' });
       if (visibleFeatures.dashboard && currentPage !== 'dashboard') {
         setCurrentPage('dashboard');
       } else if (currentPage !== 'settings') {

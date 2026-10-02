@@ -5,6 +5,19 @@ import { sidebarMenuItems, NavigationItem } from '@/app/constants/navigation';
 import { canAccessPage, FeatureVisibility } from '@/lib/featureFlags';
 
 
+// Payments & Wallets is permission-based for managers: by design they hold no
+// finance permission until an admin grants one, and the page was offered anyway
+// with every tab answering 403. One fetch per session, shared by every caller.
+const FINANCE_PERMISSIONS = ['finance.read', 'team.wallets.read', 'team.payments.read', 'security.read'];
+let managerPermissions: Promise<string[] | null> | null = null;
+const loadManagerPermissions = () => {
+  managerPermissions ??= import('@/lib/backend-api')
+    .then(({ backendService }) => backendService.api.get('/manager/permissions'))
+    .then((res) => (Array.isArray(res.data?.data?.permissions) ? res.data.data.permissions as string[] : null))
+    .catch(() => { managerPermissions = null; return null; });
+  return managerPermissions;
+};
+
 export const useSharedMenu = () => {
   const app = useOptionalApp();
   const { role } = useAuth();
@@ -12,6 +25,17 @@ export const useSharedMenu = () => {
   const setCurrentPage = app?.setCurrentPage ?? (() => { });
   const visibleFeatures = (app?.visibleFeatures ?? {}) as FeatureVisibility;
   const [orderedItems, setOrderedItems] = useState<NavigationItem[]>([]);
+  // null = not known (yet, or the call failed): keep offering the page.
+  const [financeAllowed, setFinanceAllowed] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    if (role !== 'manager') return undefined;
+    let cancelled = false;
+    void loadManagerPermissions().then((perms) => {
+      if (!cancelled && perms) setFinanceAllowed(perms.some((p) => FINANCE_PERMISSIONS.includes(p)));
+    });
+    return () => { cancelled = true; };
+  }, [role]);
 
   const menuOrderKey = useMemo(() => `sidebar_menu_order_${role}`, [role]);
 
@@ -27,7 +51,8 @@ export const useSharedMenu = () => {
 
       // Special case: Admin/Manager core panels are ALWAYS visible to their respective roles to prevent lockouts
       if (['admin', 'admin-feature-panel', 'admin-ai', 'ai-management', 'manager-advisor-verification', 'advisor-verification', 'admin-finance'].includes(item.id) && role === 'admin') return true;
-      if (['advisor-verification', 'manager-advisor-verification', 'manager-team', 'admin-finance'].includes(item.id) && role === 'manager') return true;
+      if (item.id === 'admin-finance' && role === 'manager') return financeAllowed !== false;
+      if (['advisor-verification', 'manager-advisor-verification', 'manager-team'].includes(item.id) && role === 'manager') return true;
 
       // Gate AI insights based on the aiAutomation system status
       if (item.id === 'ai-insights' && aiCapabilities?.aiAutomation?.enabled === false) {
@@ -37,7 +62,7 @@ export const useSharedMenu = () => {
       return canAccessPage(item.id, visibleFeatures);
     });
 
-  }, [role, visibleFeatures, app?.aiCapabilities]);
+  }, [role, visibleFeatures, app?.aiCapabilities, financeAllowed]);
 
   // Load saved order from localStorage
   useEffect(() => {
