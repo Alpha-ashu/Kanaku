@@ -1,9 +1,9 @@
-fastapi==0.141.1
+fastapi==0.142.1
 # Pinned to patch starlette CVEs (multipart/path/DoS); fastapi 0.137 allows starlette 1.x.
-starlette==1.6.0
-uvicorn==0.53.0
+starlette==1.7.0
+uvicorn==0.54.0
 websockets==17.1
-watchfiles==1.2.0
+watchfiles==1.3.0
 httptools==0.8.0
 python-multipart==0.0.32
 Pillow==12.3.0
